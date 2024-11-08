@@ -207,7 +207,7 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine")])
+@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_distance")])
 async def test_weaviate_collection_create_collection(
     clear_weaviate_env,
     data_model_type,

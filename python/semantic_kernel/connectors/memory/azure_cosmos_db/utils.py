@@ -12,8 +12,11 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
     AzureCosmosDBNoSQLCompositeKey,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 
 INDEX_KIND_MAPPING = {
     IndexKind.FLAT: "flat",
@@ -41,9 +44,9 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
 
 
 DISTANCE_FUNCTION_MAPPING = {
-    DistanceFunction.COSINE: "cosine",
+    DistanceFunction.COSINE_SIMILARITY: "cosine",
     DistanceFunction.DOT_PROD: "dotproduct",
-    DistanceFunction.EUCLIDEAN: "euclidean",
+    DistanceFunction.EUCLIDEAN_DISTANCE: "euclidean",
 }
 
 

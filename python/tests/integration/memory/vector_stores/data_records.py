@@ -55,7 +55,7 @@ PANDAS_RECORD_DEFINITION_FLAT = VectorStoreRecordDefinition(
             name="vector",
             index_kind="flat",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
         "id": VectorStoreRecordKeyField(name="id"),
@@ -102,7 +102,7 @@ class TestDataModelArrayFlat:
         VectorStoreRecordVectorField(
             index_kind="flat",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
             serialize_function=np.ndarray.tolist,
             deserialize_function=np.array,
@@ -146,7 +146,7 @@ class TestDataModelListFlat:
         VectorStoreRecordVectorField(
             index_kind="flat",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
     ] = None

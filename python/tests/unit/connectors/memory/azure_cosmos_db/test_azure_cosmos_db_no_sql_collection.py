@@ -185,7 +185,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
 @pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine")])
+@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
 async def test_azure_cosmos_db_no_sql_collection_create_collection(
     mock_database_proxy,
     mock_cosmos_client,
@@ -219,7 +219,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
 @pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine")])
+@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
 async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_indexing_policy(
     mock_database_proxy,
     mock_cosmos_client,
@@ -253,7 +253,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 @pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine")])
+@pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
 async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_vector_embedding_policy(
     mock_database_proxy,
     mock_cosmos_client,
@@ -287,7 +287,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 @pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine")])
+@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_similarity")])
 async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_index_kind(
     mock_database_proxy,
     mock_cosmos_client,
