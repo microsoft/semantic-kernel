@@ -50,7 +50,7 @@ public class ChatHistoryExtensionsTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItKeepsOrNotToolCallsCorrectlyForStreamingChatContentsAsync(bool removeToolCalls)
+    public async Task ItKeepsOrNotToolCallsCorrectlyForStreamingChatContentsAsync(bool includeToolcalls)
     {
         var chatHistoryStreamingContents = new List<OpenAIStreamingChatMessageContent>
         {
@@ -58,7 +58,7 @@ public class ChatHistoryExtensionsTests
             new(null, "! ", [ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString("{\"index\":0,\"function\":{\"arguments\":\"{}\"}}"))!]),
         }.ToAsyncEnumerable();
         var chatHistory = new ChatHistory();
-        await foreach (var chatMessageChunk in chatHistory.AddStreamingMessageAsync(chatHistoryStreamingContents, removeToolCalls))
+        await foreach (var chatMessageChunk in chatHistory.AddStreamingMessageAsync(chatHistoryStreamingContents, includeToolcalls))
         {
         }
 
@@ -66,13 +66,13 @@ public class ChatHistoryExtensionsTests
         var lastMessage = chatHistory.Last();
         Assert.IsType<OpenAIChatMessageContent>(lastMessage);
         var openAIChatMessageContent = (OpenAIChatMessageContent)lastMessage;
-        if (removeToolCalls)
+        if (includeToolcalls)
         {
-            Assert.Empty(openAIChatMessageContent.ToolCalls);
+            Assert.NotEmpty(openAIChatMessageContent.ToolCalls);
         }
         else
         {
-            Assert.NotEmpty(openAIChatMessageContent.ToolCalls);
+            Assert.Empty(openAIChatMessageContent.ToolCalls);
         }
     }
 }

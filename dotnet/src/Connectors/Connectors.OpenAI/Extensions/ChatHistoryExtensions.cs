@@ -19,7 +19,7 @@ public static class OpenAIChatHistoryExtensions
     /// </summary>
     /// <param name="chatHistory">Target chat history</param>
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
-    /// <param name="removeToolCalls">The tool call information from the processed message will be ignored by default.</param>
+    /// <param name="includeToolCalls">The tool call information from the processed message will be ignored (<c>false</c>) by default.</param>
     /// <remarks>
     /// Setting <c>removeToolCalls</c> to <c>false</c> should be only for manual tool calling scenarios, otherwise
     /// may result in the error below. See <a href="https://github.com/microsoft/semantic-kernel/issues/9458">Issue 9458</a>
@@ -30,7 +30,7 @@ public static class OpenAIChatHistoryExtensions
     public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(
         this ChatHistory chatHistory,
         IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents,
-        bool removeToolCalls = true)
+        bool includeToolCalls = false)
     {
         List<StreamingChatMessageContent> messageContents = [];
 
@@ -52,7 +52,7 @@ public static class OpenAIChatHistoryExtensions
                 (contentBuilder ??= new()).Append(contentUpdate);
             }
 
-            if (!removeToolCalls)
+            if (includeToolCalls)
             {
                 OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
             }
@@ -74,8 +74,9 @@ public static class OpenAIChatHistoryExtensions
                     role,
                     contentBuilder?.ToString() ?? string.Empty,
                     messageContents[0].ModelId!,
-                    removeToolCalls
-                        ? [] : OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    includeToolCalls
+                        ? OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex)
+                        : [],
                     metadata)
                 { AuthorName = streamedName });
         }
