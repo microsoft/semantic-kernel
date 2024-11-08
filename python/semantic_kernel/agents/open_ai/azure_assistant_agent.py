@@ -13,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
@@ -122,9 +123,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             and ad_token is None
             and azure_openai_settings.token_endpoint
         ):
-            ad_token = azure_openai_settings.get_azure_openai_auth_token(
-                token_endpoint=azure_openai_settings.token_endpoint
-            )
+            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
 
         if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")

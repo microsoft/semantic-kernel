@@ -6,16 +6,16 @@ from typing import Any, TypeVar
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text_base import OpenAIAudioToTextBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image_base import OpenAITextToImageBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
-T_ = TypeVar("T_", bound="OpenAITextToImage")
+T_ = TypeVar("T_", bound="OpenAIAudioToText")
 
 
-class OpenAITextToImage(OpenAIConfigBase, OpenAITextToImageBase):
+class OpenAIAudioToText(OpenAIConfigBase, OpenAIAudioToTextBase):
     """OpenAI Text to Image service."""
 
     def __init__(
@@ -29,7 +29,7 @@ class OpenAITextToImage(OpenAIConfigBase, OpenAITextToImageBase):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the OpenAITextToImage class.
+        """Initializes a new instance of the OpenAIAudioToText class.
 
         Args:
             ai_model_id: OpenAI model name, see
@@ -50,18 +50,18 @@ class OpenAITextToImage(OpenAIConfigBase, OpenAITextToImageBase):
             openai_settings = OpenAISettings.create(
                 api_key=api_key,
                 org_id=org_id,
-                text_to_image_model_id=ai_model_id,
+                audio_to_text_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
-        if not openai_settings.text_to_image_model_id:
-            raise ServiceInitializationError("The OpenAI text to image model ID is required.")
+        if not openai_settings.audio_to_text_model_id:
+            raise ServiceInitializationError("The OpenAI audio to text model ID is required.")
         super().__init__(
-            ai_model_id=openai_settings.text_to_image_model_id,
+            ai_model_id=openai_settings.audio_to_text_model_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
-            ai_model_type=OpenAIModelTypes.TEXT_TO_IMAGE,
+            ai_model_type=OpenAIModelTypes.AUDIO_TO_TEXT,
             org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,
