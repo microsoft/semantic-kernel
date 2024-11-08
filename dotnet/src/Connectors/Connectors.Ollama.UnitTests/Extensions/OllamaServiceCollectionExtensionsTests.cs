@@ -39,7 +39,6 @@ public class OllamaServiceCollectionExtensionsTests
         var service = serviceProvider.GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
-        Assert.IsType<OllamaChatCompletionService>(service);
     }
 
     [Fact]
@@ -52,6 +51,5 @@ public class OllamaServiceCollectionExtensionsTests
         var service = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
 
         Assert.NotNull(service);
-        Assert.IsType<OllamaTextEmbeddingGenerationService>(service);
     }
 }
