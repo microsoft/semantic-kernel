@@ -5,6 +5,7 @@ import mimetypes
 from typing import Any, ClassVar, Literal, TypeVar
 
 from pydantic import Field
+from typing_extensions import deprecated
 
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ContentTypes
@@ -23,8 +24,9 @@ class ImageContent(BinaryContent):
     The uri is a reference to the source, and might or might not point to the same thing as the data.
 
     Use the .from_image_file method to create an instance from a image file.
-        This reads the file and guesses the mime_type.
-    If both uri and data is provided, data will be used and a warning is logged.
+    This reads the file and guesses the mime_type.
+
+    If both data_uri and data is provided, data will be used and a warning is logged.
 
     Args:
         uri (Url | None): The reference uri of the content.
@@ -45,18 +47,23 @@ class ImageContent(BinaryContent):
 
     Raises:
         ValidationError: If neither uri or data is provided.
-
     """
 
     content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = IMAGE_CONTENT_TAG
 
     @classmethod
+    @deprecated("The `from_image_path` method is deprecated; use `from_image_file` instead.", category=None)
     def from_image_path(cls: type[_T], image_path: str) -> _T:
         """Create an instance from an image file."""
-        mime_type = mimetypes.guess_type(image_path)[0]
-        with open(image_path, "rb") as image_file:
-            return cls(data=image_file.read(), data_format="base64", mime_type=mime_type, uri=image_path)
+        return cls.from_image_file(image_path)
+
+    @classmethod
+    def from_image_file(cls: type[_T], path: str) -> _T:
+        """Create an instance from an image file."""
+        mime_type = mimetypes.guess_type(path)[0]
+        with open(path, "rb") as image_file:
+            return cls(data=image_file.read(), data_format="base64", mime_type=mime_type, uri=path)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""

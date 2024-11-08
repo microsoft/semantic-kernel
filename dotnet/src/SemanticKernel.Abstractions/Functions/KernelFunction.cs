@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -227,9 +228,9 @@ public abstract class KernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= [];
-        logger.LogFunctionInvoking(this.Name);
+        logger.LogFunctionInvoking(this.PluginName, this.Name);
 
-        this.LogFunctionArguments(logger, arguments);
+        this.LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -249,7 +250,7 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
-            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
+            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, isStreaming: false, async (context) =>
             {
                 // Invoking the function and updating context with result.
                 context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
@@ -274,9 +275,9 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(this.Name);
+            logger.LogFunctionInvokedSuccess(this.PluginName, this.Name);
 
-            this.LogFunctionResult(logger, functionResult);
+            this.LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
 
             return functionResult;
         }
@@ -290,7 +291,7 @@ public abstract class KernelFunction
             // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionComplete(duration.TotalSeconds);
+            logger.LogFunctionComplete(this.PluginName, this.Name, duration.TotalSeconds);
         }
     }
 
@@ -354,9 +355,9 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         arguments ??= [];
-        logger.LogFunctionStreamingInvoking(this.Name);
+        logger.LogFunctionStreamingInvoking(this.PluginName, this.Name);
 
-        this.LogFunctionArguments(logger, arguments);
+        this.LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -381,7 +382,7 @@ public abstract class KernelFunction
 
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
-                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, (context) =>
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, isStreaming: true, (context) =>
                 {
                     // Invoke the function and get its streaming enumerable.
                     var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
@@ -435,7 +436,7 @@ public abstract class KernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionStreamingComplete(duration.TotalSeconds);
+            logger.LogFunctionStreamingComplete(this.PluginName, this.Name, duration.TotalSeconds);
         }
     }
 
@@ -492,7 +493,7 @@ public abstract class KernelFunction
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
         activity?.SetError(ex);
-        logger.LogFunctionError(ex, ex.Message);
+        logger.LogFunctionError(kernelFunction.PluginName, kernelFunction.Name, ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
@@ -512,29 +513,104 @@ public abstract class KernelFunction
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionArguments(ILogger logger, KernelArguments arguments)
+    private void LogFunctionArguments(ILogger logger, string? pluginName, string functionName, KernelArguments arguments)
     {
         if (this.JsonSerializerOptions is not null)
         {
-            logger.LogFunctionArguments(arguments, this.JsonSerializerOptions);
+            logger.LogFunctionArguments(pluginName, functionName, arguments, this.JsonSerializerOptions);
         }
         else
         {
-            logger.LogFunctionArguments(arguments);
+            logger.LogFunctionArguments(pluginName, functionName, arguments);
         }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionResult(ILogger logger, FunctionResult functionResult)
+    private void LogFunctionResult(ILogger logger, string? pluginName, string functionName, FunctionResult functionResult)
     {
         if (this.JsonSerializerOptions is not null)
         {
-            logger.LogFunctionResultValue(functionResult, this.JsonSerializerOptions);
+            logger.LogFunctionResultValue(pluginName, functionName, functionResult, this.JsonSerializerOptions);
         }
         else
         {
-            logger.LogFunctionResultValue(functionResult);
+            logger.LogFunctionResultValue(pluginName, functionName, functionResult);
+        }
+    }
+
+    /// <summary>Creates an <see cref="AIFunction"/> for this <see cref="KernelFunction"/>.</summary>
+    /// <param name="kernel">
+    /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/> when it's invoked as part of the <see cref="AIFunction"/>'s invocation.
+    /// </param>
+    /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public AIFunction AsAIFunction(Kernel? kernel = null)
+    {
+        return new KernelAIFunction(this, kernel);
+    }
+
+    /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
+    private sealed class KernelAIFunction : AIFunction
+    {
+        private readonly KernelFunction _kernelFunction;
+        private readonly Kernel? _kernel;
+
+        public KernelAIFunction(KernelFunction kernelFunction, Kernel? kernel)
+        {
+            this._kernelFunction = kernelFunction;
+            this._kernel = kernel;
+
+            string name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
+                kernelFunction.Name :
+                $"{kernelFunction.PluginName}-{kernelFunction.Name}";
+
+            this.Metadata = new AIFunctionMetadata(name)
+            {
+                Description = kernelFunction.Description,
+
+                JsonSerializerOptions = kernelFunction.JsonSerializerOptions,
+
+                Parameters = kernelFunction.Metadata.Parameters.Select(p => new AIFunctionParameterMetadata(p.Name)
+                {
+                    Description = p.Description,
+                    ParameterType = p.ParameterType,
+                    IsRequired = p.IsRequired,
+                    HasDefaultValue = p.DefaultValue is not null,
+                    DefaultValue = p.DefaultValue,
+                    Schema = p.Schema?.RootElement,
+                }).ToList(),
+
+                ReturnParameter = new AIFunctionReturnParameterMetadata()
+                {
+                    Description = kernelFunction.Metadata.ReturnParameter.Description,
+                    ParameterType = kernelFunction.Metadata.ReturnParameter.ParameterType,
+                    Schema = kernelFunction.Metadata.ReturnParameter.Schema?.RootElement,
+                },
+            };
+        }
+
+        public override AIFunctionMetadata Metadata { get; }
+
+        protected override async Task<object?> InvokeCoreAsync(
+            IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        {
+            Verify.NotNull(arguments);
+
+            // Create the KernelArguments from the supplied arguments.
+            KernelArguments args = [];
+            foreach (var argument in arguments)
+            {
+                args[argument.Key] = argument.Value;
+            }
+
+            // Invoke the KernelFunction.
+            var functionResult = await this._kernelFunction.InvokeAsync(this._kernel ?? new(), args, cancellationToken).ConfigureAwait(false);
+
+            // Serialize the result to JSON, as with AIFunctionFactory.Create AIFunctions.
+            return functionResult.Value is object value ?
+                JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), this._kernelFunction.JsonSerializerOptions)) :
+                null;
         }
     }
 }

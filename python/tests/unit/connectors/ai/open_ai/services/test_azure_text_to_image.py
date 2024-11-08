@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.images import AsyncImages
+from openai.types.image import Image
+from openai.types.images_response import ImagesResponse
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_image import AzureTextToImage
 from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
@@ -77,18 +79,18 @@ def test_azure_text_to_image_init_with_from_dict(azure_openai_unit_test_env) -> 
 
 
 @pytest.mark.asyncio
-@patch.object(AsyncImages, "generate", new_callable=AsyncMock)
+@patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
 async def test_azure_text_to_image_calls_with_parameters(mock_generate, azure_openai_unit_test_env) -> None:
+    mock_generate.return_value.data = [Image(url="abc")]
+
     prompt = "A painting of a vase with flowers"
     width = 512
 
     azure_text_to_image = AzureTextToImage()
-
     await azure_text_to_image.generate_image(prompt, width, width)
 
     mock_generate.assert_awaited_once_with(
         prompt=prompt,
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME"],
         size=f"{width}x{width}",
-        response_format="url",
     )

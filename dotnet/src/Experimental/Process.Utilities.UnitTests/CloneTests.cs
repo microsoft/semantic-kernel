@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
 namespace SemanticKernel.Process.Utilities.UnitTests;
@@ -40,7 +40,7 @@ public class CloneTests
     public void VerifyCloneTypedStepStateTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "v1", "test") { State = new TestState() };
 
         // Act
         KernelProcessStepState copy = state.Clone(state.GetType(), typeof(TestState), NullLogger.Instance);
@@ -72,7 +72,7 @@ public class CloneTests
     public void VerifyCloneRealStepTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "v1", "test") { State = new TestState() };
         KernelProcessStepInfo source = new(typeof(KernelProcessStep<TestState>), state, CreateTestEdges());
 
         // Act
@@ -90,7 +90,7 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
-        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "test");
+        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "v1", "test");
         KernelProcess source = new(processState, [step], CreateTestEdges());
 
         // Act
@@ -108,8 +108,8 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "teststep"), []);
-        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "inner"), [step], CreateTestEdges());
-        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "outer"), [subProcess], []);
+        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "v2", "inner"), [step], CreateTestEdges());
+        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "outer"), [subProcess], []);
 
         // Act
         KernelProcess copy = source.CloneProcess(NullLogger.Instance);
@@ -122,6 +122,7 @@ public class CloneTests
     {
         Assert.Equal(expected.State.Id, actual.State.Id);
         Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.State.Version, actual.State.Version);
         Assert.Equal(expected.InnerStepType, actual.InnerStepType);
         Assert.Equivalent(expected.Edges, actual.Edges);
         foreach (var (expectedStep, actualStep) in expected.Steps.Zip(actual.Steps))
