@@ -36,4 +36,12 @@
     <ProjectReference Include="..\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\create_transcript_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AssemblyAI" />
+  </ItemGroup>
+
 </Project>

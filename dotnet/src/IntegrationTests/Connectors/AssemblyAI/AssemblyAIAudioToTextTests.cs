@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AssemblyAI.Transcripts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
@@ -48,7 +48,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentsAsync(new AudioContent(audioData));
+        var result = await service.GetTextContentsAsync(new AudioContent(audioData.ToMemory(), null));
 
         // Assert
         Console.WriteLine(result[0].Text);
@@ -83,35 +83,12 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act
         var result = await service.GetTextContentsAsync(
-            new AudioContent(audioData),
+            new AudioContent(audioData.ToMemory(), null),
             new AssemblyAIAudioToTextExecutionSettings
             {
                 PollingInterval = TimeSpan.FromMilliseconds(750)
             }
         );
-
-        // Assert
-        Console.WriteLine(result[0].Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
-    public async Task AssemblyAIAudioToTextWithStreamTestAsync()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
-        var apiKey = this.GetAssemblyAIApiKey();
-
-        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
-        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await fileService.UploadAsync(audioStream);
-        // Act
-        var result = await sttService.GetTextContentsAsync(audioData);
 
         // Assert
         Console.WriteLine(result[0].Text);
@@ -166,25 +143,22 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
     {
         // Arrange
         using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
         var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await fileService.UploadAsync(audioStream);
-        var textExecutionSettings = new PromptExecutionSettings
+        var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
         {
-            ExtensionData = new Dictionary<string, object>
+            TranscriptParams = new TranscriptOptionalParams
             {
-                ["language_code"] = "en_us"
+                LanguageCode = TranscriptLanguageCode.En
             }
         };
 
         // Act
-        var result = await sttService.GetTextContentsAsync(audioData, textExecutionSettings);
+        var result = await sttService.GetTextContentsAsync(
+            new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3")),
+            textExecutionSettings
+        );
 
         // Assert
         Console.WriteLine(result[0].Text);
@@ -193,44 +167,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
     [Fact]
     // [Fact(Skip = "This test is for manual verification.")]
-    public async Task AssemblyAIAudioToTextWithUnknownParamShouldThrowAsync()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
-        var apiKey = this.GetAssemblyAIApiKey();
-
-        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
-        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await fileService.UploadAsync(audioStream);
-        var textExecutionSettings = new PromptExecutionSettings
-        {
-            ExtensionData = new Dictionary<string, object>
-            {
-                ["unknown_key"] = "unknown_value"
-            }
-        };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await sttService.GetTextContentsAsync(audioData, textExecutionSettings)
-        );
-    }
-
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLocalhostBaseAddressShouldThrowAsync()
     {
         // Arrange
-        using var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("https://localhost:9999");
-
         var apiKey = this.GetAssemblyAIApiKey();
-
-        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
+        var sttService = new AssemblyAIAudioToTextService(apiKey, new Uri("https://localhost:9999"));
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<HttpOperationException>(
