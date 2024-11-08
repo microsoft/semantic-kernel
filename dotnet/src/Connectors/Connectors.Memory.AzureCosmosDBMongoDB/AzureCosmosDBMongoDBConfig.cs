@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <remarks>
 /// Initialize the <see cref="AzureCosmosDBMongoDBConfig"/> with default values.
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class AzureCosmosDBMongoDBConfig(int dimensions)
 {
     private const string DefaultIndexName = "default_index";
