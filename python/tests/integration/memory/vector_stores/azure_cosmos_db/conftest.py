@@ -35,7 +35,7 @@ def data_model_type() -> type:
             VectorStoreRecordVectorField(
                 index_kind="flat",
                 dimensions=5,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
         ] = None
@@ -67,7 +67,7 @@ def data_model_type_with_key_as_key_field() -> type:
             VectorStoreRecordVectorField(
                 index_kind="flat",
                 dimensions=5,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
         ] = None
