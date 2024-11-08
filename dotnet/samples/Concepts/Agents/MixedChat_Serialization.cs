@@ -7,8 +7,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Agents;
 /// <summary>
-/// Demonstrate that serialization of <see cref="AgentGroupChat"/> in with a <see cref="ChatCompletionAgent"/>
-/// and <see cref="OpenAIAssistantAgent"/> participant.
+/// Demonstrate the serialization of <see cref="AgentGroupChat"/> with a <see cref="ChatCompletionAgent"/>
+/// and an <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
 {
