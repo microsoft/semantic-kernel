@@ -52,7 +52,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         functions_dict = {}
         if type:
             # Initialize functions dictionary by fetching the function metadata
-            functions_dict = self.get_function_metadata_map(type, name, kwargs.get("kernel", None))
+            functions_dict = self.get_function_metadata_map(type, name, kwargs.get("kernel"))
 
         # Call the parent Pydantic BaseModel constructor using super()
         super().__init__(

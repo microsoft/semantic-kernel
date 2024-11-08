@@ -20,12 +20,12 @@ from redis.commands.search.indexDefinition import IndexDefinition
 
 from semantic_kernel.connectors.memory.redis.const import INDEX_TYPE_MAP, RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper, data_model_definition_to_redis_fields
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
@@ -58,6 +58,7 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
         connection_string: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
 
@@ -73,6 +74,7 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
                 redis_database=redis_database,
                 prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
                 collection_type=collection_type,
+                managed_client=False,
             )
             return
         try:
@@ -144,6 +146,12 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
             await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
         else:
             logger.debug("Collection does not exist, skipping deletion.")
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.redis_database.aclose()
 
 
 @experimental_class

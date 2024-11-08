@@ -26,6 +26,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.CandidateCount);
         Assert.Null(executionSettings.SafetySettings);
+        Assert.Null(executionSettings.AudioTimestamp);
         Assert.Equal(GeminiPromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
     }
 
@@ -39,6 +40,7 @@ public sealed class GeminiPromptExecutionSettingsTests
             TopP = 0.7,
             TopK = 20,
             CandidateCount = 3,
+            AudioTimestamp = true,
             StopSequences = ["foo", "bar"],
             MaxTokens = 128,
             SafetySettings =
@@ -64,7 +66,8 @@ public sealed class GeminiPromptExecutionSettingsTests
             ExtensionData = new Dictionary<string, object>
             {
                 { "max_tokens", 1000 },
-                { "temperature", 0 }
+                { "temperature", 0 },
+                { "audio_timestamp", true }
             }
         };
 
@@ -75,6 +78,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.NotNull(executionSettings);
         Assert.Equal(1000, executionSettings.MaxTokens);
         Assert.Equal(0, executionSettings.Temperature);
+        Assert.True(executionSettings.AudioTimestamp);
     }
 
     [Fact]
@@ -91,6 +95,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                           "candidate_count": 2,
                           "stop_sequences": [ "foo", "bar" ],
                           "max_tokens": 128,
+                          "audio_timestamp": true,
                           "safety_settings": [
                             {
                               "category": "{{category.Label}}",
@@ -112,6 +117,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equal(2, executionSettings.CandidateCount);
         Assert.Equal(["foo", "bar"], executionSettings.StopSequences);
         Assert.Equal(128, executionSettings.MaxTokens);
+        Assert.True(executionSettings.AudioTimestamp);
         Assert.Single(executionSettings.SafetySettings!, settings =>
             settings.Category.Equals(category) &&
             settings.Threshold.Equals(threshold));
@@ -130,6 +136,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                           "top_p": 0.7,
                           "top_k": 25,
                           "candidate_count": 2,
+                          "audio_timestamp": true,
                           "stop_sequences": [ "foo", "bar" ],
                           "max_tokens": 128,
                           "safety_settings": [
@@ -152,6 +159,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
         Assert.Equivalent(executionSettings.StopSequences, clone.StopSequences);
         Assert.Equivalent(executionSettings.SafetySettings, clone.SafetySettings);
+        Assert.Equal(executionSettings.AudioTimestamp, clone.AudioTimestamp);
     }
 
     [Fact]
@@ -167,6 +175,7 @@ public sealed class GeminiPromptExecutionSettingsTests
                           "top_p": 0.7,
                           "top_k": 25,
                           "candidate_count": 2,
+                          "audio_timestamp": true,
                           "stop_sequences": [ "foo", "bar" ],
                           "max_tokens": 128,
                           "safety_settings": [
@@ -187,6 +196,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gemini-ultra");
         Assert.Throws<InvalidOperationException>(() => executionSettings.CandidateCount = 5);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 0.5);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.AudioTimestamp = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences!.Add("baz"));
     }
 }

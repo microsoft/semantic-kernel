@@ -15,10 +15,10 @@ from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchColle
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
+from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.volatile import VolatileCollection
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.data import (
     VectorStoreRecordCollection,
@@ -91,7 +91,7 @@ DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE)
 # - redis_json: Redis JSON
 # - redis_hashset: Redis Hashset
 # - qdrant: Qdrant
-# - volatile: In-memory store
+# - in_memory: In-memory store
 # - weaviate: Weaviate
 #   Please either configure the weaviate settings via environment variables or provide them through the constructor.
 #   Note that embed mode is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315
@@ -126,7 +126,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "qdrant": lambda: QdrantCollection[DataModel](
         data_model_type=DataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
     ),
-    "volatile": lambda: VolatileCollection[DataModel](
+    "in_memory": lambda: InMemoryVectorCollection[DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--collection", default="volatile", choices=collections.keys(), help="What collection to use.")
+    parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model

@@ -47,6 +47,11 @@ public class AutoFunctionInvocationContext
     public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
+    /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
+    /// </summary>
+    public bool IsStreaming { get; init; }
+
+    /// <summary>
     /// Gets the arguments associated with the operation.
     /// </summary>
     public KernelArguments? Arguments { get; init; }

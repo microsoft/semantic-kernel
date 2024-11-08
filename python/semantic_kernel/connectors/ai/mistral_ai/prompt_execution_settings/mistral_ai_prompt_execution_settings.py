@@ -43,5 +43,3 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
-    
-    

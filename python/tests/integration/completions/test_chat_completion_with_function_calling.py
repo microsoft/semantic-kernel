@@ -281,6 +281,10 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skip(
+                reason="Possible regression on the Azure AI Inference side when"
+                " returning tool calls in streaming responses. Investigating..."
+            ),
             id="azure_ai_inference_tool_call_non_auto",
         ),
         pytest.param(

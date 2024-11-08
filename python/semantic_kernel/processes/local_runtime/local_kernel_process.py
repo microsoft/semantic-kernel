@@ -27,7 +27,7 @@ async def start(
         raise ProcessInvalidConfigurationException("initial_event cannot be None")
 
     if isinstance(initial_event, str):
-        initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data", None))
+        initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data"))
 
     process_context = LocalKernelProcessContext(process, kernel)
     await process_context.start_with_event(initial_event)

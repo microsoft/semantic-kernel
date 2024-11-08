@@ -23,6 +23,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _maxTokens;
     private int? _candidateCount;
     private IList<string>? _stopSequences;
+    private bool? _audioTimestamp;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -171,6 +172,21 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Indicates if the audio response should include timestamps.
+    /// if enabled, audio timestamp will be included in the request to the model.
+    /// </summary>
+    [JsonPropertyName("audio_timestamp")]
+    public bool? AudioTimestamp
+    {
+        get => this._audioTimestamp;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._audioTimestamp = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -207,6 +223,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
+            AudioTimestamp = this.AudioTimestamp
         };
     }
 

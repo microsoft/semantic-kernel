@@ -7,7 +7,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_st
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
 from semantic_kernel.connectors.memory.weaviate.weaviate_store import WeaviateStore
-from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.data import VectorStore
 
 
 class VectorStoreTestBase:
