@@ -18,9 +18,16 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import A
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.audio_content import AudioContent
 
-# This simple sample demonstrates how to use the AzureChatCompletion and AzureTextToAudio services
-# to create a chat bot that can communicate with the user using audio output.
-# The chatbot will engage in a conversation with the user and respond using audio output.
+# This simple sample demonstrates how to use the AzureChatCompletion, AzureTextToAudio, and AzureAudioToText
+# services to create a chat bot that can communicate with the user using both audio input and output.
+# The chatbot will engage in a conversation with the user by audio only.
+# This sample combines the functionality of the samples/concepts/audio/01-chat_with_audio_input.py and
+# samples/concepts/audio/02-chat_with_audio_output.py samples.
+
+# Resources required for this sample:
+# 1. An Azure OpenAI model deployment (e.g. GPT-4o-mini).
+# 2. An Azure Text to Speech deployment (e.g. tts).
+# 3. An Azure Speech to Text deployment (e.g. whisper).
 
 # Additional dependencies required for this sample:
 # - pyaudio: `pip install pyaudio` or `uv pip install pyaudio` if you are using uv and have a virtual env activated.
@@ -42,8 +49,8 @@ flowery prose.
 
 
 chat_service = AzureChatCompletion()
-text_to_audio_service = AzureTextToAudio(endpoint="https://oai-sk-integration-test-swedencentral.openai.azure.com/")
-audio_to_text_service = AzureAudioToText(endpoint="https://oai-sk-integration-test-swedencentral.openai.azure.com/")
+text_to_audio_service = AzureTextToAudio()
+audio_to_text_service = AzureAudioToText()
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")
@@ -85,9 +92,8 @@ async def chat() -> bool:
     audio_content = await text_to_audio_service.get_audio_content(
         response.content, OpenAITextToAudioExecutionSettings(response_format="wav")
     )
+    print("Mosscap:> ", end="", flush=True)
     AudioPlayer(audio_content=audio_content).play(text=response.content)
-
-    print(f"Mosscap:> {response.content}")
 
     history.add_assistant_message(response.content)
 

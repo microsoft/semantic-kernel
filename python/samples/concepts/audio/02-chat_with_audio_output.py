@@ -18,6 +18,10 @@ from semantic_kernel.contents import ChatHistory
 # to create a chat bot that can communicate with the user using audio output.
 # The chatbot will engage in a conversation with the user and respond using audio output.
 
+# Resources required for this sample:
+# 1. An Azure OpenAI model deployment (e.g. GPT-4o-mini).
+# 2. An Azure Text to Speech deployment (e.g. tts).
+
 # Additional dependencies required for this sample:
 # - pyaudio: `pip install pyaudio` or `uv pip install pyaudio` if you are using uv and have a virtual env activated.
 # - keyboard: `pip install keyboard` or `uv pip install keyboard` if you are using uv and have a virtual env activated.

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import io
+import logging
 import wave
 from typing import ClassVar
 
@@ -8,6 +9,9 @@ import pyaudio
 
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logging.basicConfig(level=logging.WARNING)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AudioPlayer(KernelBaseModel):
@@ -43,12 +47,17 @@ class AudioPlayer(KernelBaseModel):
                     data_frames.append(data)
                     data = wf.readframes(self.CHUNK)
 
-                # Split the text into chunks based on the lenght of the data frames
-                # so that the text is displayed at the same rate as the audio is played
-                text_chunk_size_per_frame = max(1, len(text) / len(data_frames))
-                for i, data in enumerate(data_frames):
-                    stream.write(data)
-                    print(text[i * text_chunk_size_per_frame : (i + 1) * text_chunk_size_per_frame], end="", flush=True)
+                if len(data_frames) < len(text):
+                    logger.warning(
+                        "The audio is too short to play the entire text. ",
+                        "The text will be displayed without synchronization.",
+                    )
+                    print(text)
+                else:
+                    for data_frame, text_frame in self._zip_text_and_audio(text, data_frames):
+                        stream.write(data_frame)
+                        print(text_frame, end="", flush=True)
+                    print()
             else:
                 data = wf.readframes(self.CHUNK)
                 while data:
@@ -58,3 +67,33 @@ class AudioPlayer(KernelBaseModel):
             stream.stop_stream()
             stream.close()
             audio.terminate()
+
+    def _zip_text_and_audio(self, text: str, audio_frames: list) -> zip:
+        """Zip the text and audio frames together so that they can be displayed in sync.
+
+        This is done by evenly distributing empty strings between each character and
+        append the remaining empty strings at the end.
+
+        Args:
+            text (str): The text to display while playing the audio.
+            audio_frames (list): The audio frames to play.
+
+        Returns:
+            zip: The zipped text and audio frames.
+        """
+        text_frames = list(text)
+        empty_string_count = len(audio_frames) - len(text_frames)
+        empty_string_spacing = len(text_frames) // empty_string_count
+
+        modified_text_frames = []
+        current_empty_string_count = 0
+        for i, text_frame in enumerate(text_frames):
+            modified_text_frames.append(text_frame)
+            if current_empty_string_count < empty_string_count and i % empty_string_spacing == 0:
+                modified_text_frames.append("")
+                current_empty_string_count += 1
+
+        if current_empty_string_count < empty_string_count:
+            modified_text_frames.extend([""] * (empty_string_count - current_empty_string_count))
+
+        return zip(audio_frames, modified_text_frames)

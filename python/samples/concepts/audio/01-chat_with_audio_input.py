@@ -17,6 +17,10 @@ from semantic_kernel.contents.audio_content import AudioContent
 # to create a chat bot that can communicate with the user using audio input.
 # The user can enage a long conversation with the chat bot by speaking to it.
 
+# Resources required for this sample:
+# 1. An Azure OpenAI model deployment (e.g. GPT-4o-mini).
+# 2. An Azure Speech to Text deployment (e.g. whisper).
+
 # Additional dependencies required for this sample:
 # - pyaudio: `pip install pyaudio` or `uv pip install pyaudio` if you are using uv and have a virtual env activated.
 # - keyboard: `pip install keyboard` or `uv pip install keyboard` if you are using uv and have a virtual env activated.
