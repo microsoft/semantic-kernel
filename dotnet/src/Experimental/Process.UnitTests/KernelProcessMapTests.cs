@@ -25,7 +25,6 @@ public class KernelProcessMapTests
 
         // Assert
         Assert.Equal(state, map.State);
-        //Assert.Equal("values", map.InputParameterName);
         Assert.Equivalent(process, map.Operation);
         Assert.Empty(map.Edges);
     }
@@ -34,7 +33,7 @@ public class KernelProcessMapTests
     /// Verify <see cref="KernelProcessMapState"/> requires a name and id
     /// </summary>
     [Fact]
-    public void KernelProcessMapStateRequiresNameAndId()
+    public void KernelProcessMapStateRequiredProperties()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState(name: null!, "vTest", "testid"));

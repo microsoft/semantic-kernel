@@ -24,7 +24,8 @@ internal static class ProcessConstants
     /// </summary>
     public enum SupportedComponents
     {
-        Step = 0,
-        Process = 1,
+        Step,
+        Process,
+        Map,
     }
 }
