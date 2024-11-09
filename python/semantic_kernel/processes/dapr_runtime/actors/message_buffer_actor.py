@@ -8,11 +8,13 @@ from dapr.actor import Actor, ActorId
 from dapr.actor.runtime.context import ActorRuntimeContext
 
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
-from semantic_kernel.processes.dapr_runtime.message_buffer_interface import MessageBufferInterface
+from semantic_kernel.processes.dapr_runtime.interfaces.message_buffer_interface import MessageBufferInterface
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class MessageBufferActor(Actor, MessageBufferInterface):
     """Represents a message buffer actor that follows the MessageBuffer abstract class."""
 
@@ -54,8 +56,6 @@ class MessageBufferActor(Actor, MessageBufferInterface):
             raise Exception(error_message)
 
     async def _on_activate(self) -> None:
-        from semantic_kernel.processes.process_message import ProcessMessage
-
         try:
             logger.info(f"Activating actor with ID: {self.id.id}")
 
@@ -63,8 +63,7 @@ class MessageBufferActor(Actor, MessageBufferInterface):
             if has_value and queue_list:
                 self.queue = Queue()
                 for item_dict in queue_list:
-                    message_obj = ProcessMessage(**item_dict)
-                    self.queue.put(message_obj)
+                    self.queue.put(item_dict)
             else:
                 self.queue = Queue()
         except Exception as e:

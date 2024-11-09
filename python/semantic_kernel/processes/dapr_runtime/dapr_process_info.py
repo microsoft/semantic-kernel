@@ -7,14 +7,13 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class DaprProcessInfo(DaprStepInfo):
     """A Dapr process info."""
 
-    # info: KernelProcessEdge | KernelProcessState | KernelProcessStepState | KernelProcessStepState[TState] = Field(
-    #     discriminator="type"
-    # )
     steps: list[DaprStepInfo] = Field(default_factory=list)
 
     def to_kernel_process(self) -> KernelProcess:
@@ -38,7 +37,7 @@ class DaprProcessInfo(DaprStepInfo):
             raise ValueError("Kernel process must be provided")
 
         dapr_step_info = DaprStepInfo.from_kernel_step_info(kernel_process)
-        dapr_steps = []
+        dapr_steps: list[DaprProcessInfo | DaprStepInfo] = []
 
         for step in kernel_process.steps:
             if isinstance(step, KernelProcess):

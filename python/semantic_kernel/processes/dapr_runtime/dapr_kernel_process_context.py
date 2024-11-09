@@ -6,15 +6,17 @@ from dapr.actor import ActorId, ActorProxy
 
 from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
 from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
-from semantic_kernel.processes.dapr_runtime.process_interface import ProcessInterface
+from semantic_kernel.processes.dapr_runtime.interfaces.process_interface import ProcessInterface
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class DaprKernelProcessContext:
     """A Dapr kernel process context."""
 
-    dapr_process: ProcessInterface
+    dapr_process: ActorProxy
     process: KernelProcess
 
     def __init__(self, process: KernelProcess):

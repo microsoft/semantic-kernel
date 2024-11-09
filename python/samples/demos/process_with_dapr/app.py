@@ -130,7 +130,7 @@ class CStep(KernelProcessStep[CStepState]):
     async def do_it(self, context: KernelProcessStepContext, astepdata: str, bstepdata: str):
         self.state.current_cycle += 1
         print(f"CStep Current Cycle: {self.state.current_cycle}")
-        if self.state.current_cycle == 3:
+        if self.state.current_cycle >= 3:
             print("CStep Exit Requested")
             await context.emit_event(process_event=CommonEvents.ExitRequested.value)
             return

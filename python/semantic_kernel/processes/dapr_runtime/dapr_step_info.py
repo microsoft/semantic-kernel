@@ -10,8 +10,10 @@ from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.step_utils import get_fully_qualified_name
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
@@ -26,7 +28,7 @@ class DaprStepInfo(KernelBaseModel):
             raise KernelException(
                 f"Unable to create inner step type from assembly qualified name `{self.inner_step_python_type}`"
             )
-        return KernelProcessStepInfo(inner_step_type=inner_step_type, state=self.state, edges=self.edges)
+        return KernelProcessStepInfo(inner_step_type=inner_step_type, state=self.state, output_edges=self.edges)
 
     @classmethod
     def from_kernel_step_info(cls, kernel_step_info: KernelProcessStepInfo) -> "DaprStepInfo":

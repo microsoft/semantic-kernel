@@ -1,42 +1,49 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from abc import ABC, abstractmethod
+
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-class StepInterface(ActorInterface):
+@experimental_class
+class StepInterface(ActorInterface, ABC):
     """Abstract base class for a step in the process workflow."""
 
+    @abstractmethod
     @actormethod(name="initialize_step")
-    # async def initialize_step(self, step_info: "DaprStepInfo", parent_process_id: str | None = None) -> None:
-    async def initialize_step(self, input: dict) -> None:
+    async def initialize_step(self, input: str) -> None:
         """Initializes the step with the provided step information.
 
-        :param step_info: The DaprStepInfo object to initialize the step with.
-        :param parent_process_id: Optional parent process ID if one exists.
-        :raises KernelException: If an error occurs during initialization.
+        Args:
+            input: the DaprStepinfo and ParentProcessId dictionary as a str
         """
-        pass
+        ...
 
+    @abstractmethod
     @actormethod(name="prepare_incoming_messages")
     async def prepare_incoming_messages(self) -> int:
         """Triggers the step to dequeue all pending messages and prepare for processing.
 
-        :return: An integer indicating the number of messages prepared for processing.
+        Returns:
+            The number of messages that were dequeued.
         """
-        pass
+        ...
 
+    @abstractmethod
     @actormethod(name="process_incoming_messages")
     async def process_incoming_messages(self) -> None:
         """Triggers the step to process all prepared messages."""
-        pass
+        ...
 
+    @abstractmethod
     @actormethod(name="to_dapr_step_info")
-    async def to_dapr_step_info(self) -> "DaprStepInfo":
+    async def to_dapr_step_info(self) -> str:
         """Builds the current state of the step into a DaprStepInfo.
 
-        :return: An instance of DaprStepInfo representing the step's current state.
+        Returns:
+            The DaprStepInfo representing the current state of the step.
         """
-        pass
+        ...

@@ -8,11 +8,15 @@ from dapr.actor import Actor, ActorId
 from dapr.actor.runtime.context import ActorRuntimeContext
 
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
-from semantic_kernel.processes.dapr_runtime.external_event_buffer_interface import ExternalEventBufferInterface
+from semantic_kernel.processes.dapr_runtime.interfaces.external_event_buffer_interface import (
+    ExternalEventBufferInterface,
+)
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class ExternalEventBufferActor(Actor, ExternalEventBufferInterface):
     """Represents a message buffer actor that follows the MessageBuffer abstract class."""
 
