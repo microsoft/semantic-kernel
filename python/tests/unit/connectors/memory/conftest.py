@@ -34,7 +34,14 @@ def distance_function(request) -> str:
 
 
 @fixture
-def dataclass_vector_data_model(index_kind: str, distance_function: str) -> object:
+def vector_property_type(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "float"
+
+
+@fixture
+def dataclass_vector_data_model(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     @vectorstoremodel
     @dataclass
     class MyDataModel:
@@ -45,7 +52,7 @@ def dataclass_vector_data_model(index_kind: str, distance_function: str) -> obje
                 index_kind=index_kind,
                 dimensions=1536,
                 distance_function=distance_function,
-                property_type="float",
+                property_type=vector_property_type,
             ),
         ] = None
         other: str | None = None
@@ -58,7 +65,7 @@ def dataclass_vector_data_model(index_kind: str, distance_function: str) -> obje
 
 
 @fixture
-def data_model_definition(index_kind: str, distance_function: str) -> object:
+def data_model_definition(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     return VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),
@@ -70,13 +77,14 @@ def data_model_definition(index_kind: str, distance_function: str) -> object:
                 dimensions=3,
                 index_kind=index_kind,
                 distance_function=distance_function,
+                property_type=vector_property_type,
             ),
         }
     )
 
 
 @fixture
-def data_model_type(index_kind: str, distance_function: str) -> object:
+def data_model_type(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     @vectorstoremodel
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
@@ -85,6 +93,7 @@ def data_model_type(index_kind: str, distance_function: str) -> object:
             VectorStoreRecordVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
+                property_type=vector_property_type,
             ),
         ]
         id: Annotated[str, VectorStoreRecordKeyField()]
@@ -93,7 +102,7 @@ def data_model_type(index_kind: str, distance_function: str) -> object:
 
 
 @fixture
-def data_model_type_with_key_as_key_field(index_kind: str, distance_function: str) -> object:
+def data_model_type_with_key_as_key_field(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     """Data model type with key as key field."""
 
     @vectorstoremodel
@@ -104,6 +113,7 @@ def data_model_type_with_key_as_key_field(index_kind: str, distance_function: st
             VectorStoreRecordVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
+                property_type=vector_property_type,
             ),
         ]
         key: Annotated[str, VectorStoreRecordKeyField()]

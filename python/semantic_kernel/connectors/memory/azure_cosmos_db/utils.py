@@ -13,6 +13,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.const import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
+    DATATYPES_MAPPING,
     DISTANCE_FUNCTION_MAPPING,
     INDEX_KIND_MAPPING,
 )
@@ -37,6 +38,10 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
     Returns:
         str: The vector index policy type.
     """
+    if index_kind is None:
+        # Use IndexKind.FLAT as the default index kind.
+        return INDEX_KIND_MAPPING[IndexKind.FLAT]
+
     if index_kind in INDEX_KIND_MAPPING:
         return INDEX_KIND_MAPPING[index_kind]
 
@@ -45,11 +50,29 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
 
 def to_distance_function(distance_function: DistanceFunction | None) -> str:
     """Converts the distance function to the distance function for Azure Cosmos DB NoSQL container."""
+    if distance_function is None:
+        # Use DistanceFunction.COSINE_SIMILARITY as the default distance function.
+        return DISTANCE_FUNCTION_MAPPING[DistanceFunction.COSINE_SIMILARITY]
+
     if distance_function in DISTANCE_FUNCTION_MAPPING:
         return DISTANCE_FUNCTION_MAPPING[distance_function]
 
     raise VectorStoreModelException(
         f"Distance function '{distance_function}' is not supported by Azure Cosmos DB NoSQL container."
+    )
+
+
+def to_datatype(property_type: str | None) -> str:
+    """Converts the property type to the data type for Azure Cosmos DB NoSQL container."""
+    if property_type is None:
+        # Use the default data type.
+        return DATATYPES_MAPPING["default"]
+
+    if property_type in DATATYPES_MAPPING:
+        return DATATYPES_MAPPING[property_type]
+
+    raise VectorStoreModelException(
+        f"Property type '{property_type}' is not supported by Azure Cosmos DB NoSQL container."
     )
 
 
@@ -113,7 +136,7 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
         if isinstance(field, VectorStoreRecordVectorField):
             vector_embedding_policy["vectorEmbeddings"].append({
                 "path": f'/"{field.name}"',
-                "dataType": "float32",
+                "dataType": to_datatype(field.property_type),
                 "distanceFunction": to_distance_function(field.distance_function),
                 "dimensions": field.dimensions,
             })

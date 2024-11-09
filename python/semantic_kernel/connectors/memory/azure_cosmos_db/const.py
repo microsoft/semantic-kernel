@@ -16,3 +16,11 @@ DISTANCE_FUNCTION_MAPPING = {
     DistanceFunction.DOT_PROD: "dotproduct",
     DistanceFunction.EUCLIDEAN_DISTANCE: "euclidean",
 }
+
+DATATYPES_MAPPING = {
+    "default": "float32",
+    "float": "float32",
+    "list[float]": "float32",
+    "int": "int32",
+    "list[int]": "int32",
+}

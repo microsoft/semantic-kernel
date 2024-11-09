@@ -287,8 +287,15 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
 @pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_similarity")])
-async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_index_kind(
+@pytest.mark.parametrize(
+    "index_kind, distance_function, vector_property_type",
+    [
+        ("hnsw", "cosine_similarity", "float"),  # unsupported index kind
+        ("flat", "hamming", "float"),  # unsupported distance function
+        ("flat", "cosine_similarity", "double"),  # unsupported property type
+    ],
+)
+async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_vector_field_property(
     mock_database_proxy,
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -297,33 +304,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_i
     collection_name: str,
 ):
     """Test the creation of a cosmos DB NoSQL collection with an unsupported index kind."""
-    vector_collection = AzureCosmosDBNoSQLCollection(
-        data_model_type=data_model_type,
-        database_name=database_name,
-        collection_name=collection_name,
-    )
-
-    vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
-
-    mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
-
-    with pytest.raises(MemoryConnectorException):
-        await vector_collection.create_collection()
-
-
-@pytest.mark.asyncio
-@patch("azure.cosmos.aio.CosmosClient")
-@patch("azure.cosmos.aio.DatabaseProxy")
-@pytest.mark.parametrize("index_kind, distance_function", [("flat", "hamming")])
-async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_distance_function(
-    mock_database_proxy,
-    mock_cosmos_client,
-    azure_cosmos_db_no_sql_unit_test_env,
-    data_model_type,
-    database_name: str,
-    collection_name: str,
-):
-    """Test the creation of a cosmos DB NoSQL collection with an unsupported distance function."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
         database_name=database_name,
