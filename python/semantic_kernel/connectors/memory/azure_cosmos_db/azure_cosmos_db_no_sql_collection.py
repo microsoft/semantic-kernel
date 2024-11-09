@@ -81,6 +81,7 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
                 partition_key = PartitionKey(path=f"/{partition_key.strip('/')}")
 
         super().__init__(
+            partition_key=partition_key,
             database_name=database_name,
             url=url,
             key=key,
@@ -89,7 +90,7 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
-            partition_key=partition_key,
+            managed_client=cosmos_client is None,
         )
 
     @override
@@ -210,3 +211,9 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
             await database_proxy.delete_container(self.collection_name)
         except CosmosHttpResponseError as e:
             raise MemoryConnectorException("Container could not be deleted.") from e
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.cosmos_client.close()

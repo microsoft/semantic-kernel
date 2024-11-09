@@ -9,6 +9,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
     AzureCosmosDBNoSQLCollection,
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
+from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 
 
@@ -72,3 +73,13 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
         cosmos_client=vector_store.cosmos_client,
         create_database=vector_store.create_database,
     )
+
+
+@pytest.mark.asyncio
+@patch.object(CosmosClientWrapper, "close", return_value=None)
+async def test_client_is_closed(mock_cosmos_client_close, azure_cosmos_db_no_sql_unit_test_env) -> None:
+    """Test the close method of an AzureCosmosDBNoSQLStore object."""
+    async with AzureCosmosDBNoSQLStore(database_name="test") as vector_store:
+        assert vector_store.cosmos_client is not None
+
+    mock_cosmos_client_close.assert_called_once()

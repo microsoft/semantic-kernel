@@ -54,6 +54,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
             key=key,
             cosmos_client=cosmos_client,
             create_database=create_database,
+            managed_client=cosmos_client is None,
         )
 
     @override
@@ -85,3 +86,8 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
             return [container["id"] async for container in containers]
         except Exception as e:
             raise MemoryConnectorException("Failed to list collection names.") from e
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.cosmos_client.close()

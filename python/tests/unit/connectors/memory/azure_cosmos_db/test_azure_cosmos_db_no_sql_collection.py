@@ -487,3 +487,23 @@ async def test_azure_cosmos_db_no_sql_get_without_id(
     assert record.content == "test_content"
     assert record.vector == [1.0, 2.0, 3.0]
     assert record.key == "test_key"
+
+
+@pytest.mark.asyncio
+@patch.object(CosmosClientWrapper, "close", return_value=None)
+async def test_client_is_closed(
+    mock_cosmos_client_close,
+    azure_cosmos_db_no_sql_unit_test_env,
+    data_model_type,
+    database_name: str,
+    collection_name: str,
+) -> None:
+    """Test the close method of an AzureCosmosDBNoSQLCollection object."""
+    async with AzureCosmosDBNoSQLCollection(
+        data_model_type=data_model_type,
+        database_name=database_name,
+        collection_name=collection_name,
+    ) as collection:
+        assert collection.cosmos_client is not None
+
+    mock_cosmos_client_close.assert_called_once()
