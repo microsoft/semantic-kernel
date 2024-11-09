@@ -46,12 +46,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         - MISTRALAI_EMBEDDING_MODEL_ID
 
         Args:
-            ai_model_id: (str | None): A string that is used to identify the model such as the model name.
-            api_key (str | None): The API key for the Mistral AI service deployment.
-            service_id (str | None): Service ID for the embedding completion service.
-            async_client (MistralAsyncClient | None): The Mistral AI client to use.
-            env_file_path (str | None): The path to the environment file.
-            env_file_encoding (str | None): The encoding of the environment file.
+            ai_model_id: : A string that is used to identify the model such as the model name.
+            api_key : The API key for the Mistral AI service deployment.
+            service_id : Service ID for the embedding completion service.
+            async_client : The Mistral AI client to use.
+            env_file_path : The path to the environment file.
+            env_file_encoding : The encoding of the environment file.
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -69,12 +69,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         if not mistralai_settings.embedding_model_id:
             raise ServiceInitializationError("The MistralAI embedding model ID is required.")
 
-        # ensure backwards compatibility with MistralAsyncClient
-        if not async_client or isinstance(async_client, MistralAsyncClient):
-            if isinstance(async_client, MistralAsyncClient):
-                logger.warning(
-                    "MistralAIChatCompletion: The MistralAsyncClient is deprecated, please use Mistral instead."
-                )
+        if not async_client:
             async_client = Mistral(
                 api_key=mistralai_settings.api_key.get_secret_value(),
             )

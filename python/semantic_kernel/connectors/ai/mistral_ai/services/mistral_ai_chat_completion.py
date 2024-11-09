@@ -11,7 +11,6 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from mistralai import Mistral
-from mistralai.async_client import MistralAsyncClient
 from mistralai.models import (
     AssistantMessage,
     ChatCompletionChoice,
@@ -64,22 +63,22 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         ai_model_id: str | None = None,
         service_id: str | None = None,
         api_key: str | None = None,
-        async_client: MistralAsyncClient | Mistral | None = None,
+        async_client: Mistral | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
         """Initialize an MistralAIChatCompletion service.
 
         Args:
-            ai_model_id (str): MistralAI model name, see
+            ai_model_id : MistralAI model name, see
                 https://docs.mistral.ai/getting-started/models/
-            service_id (str | None): Service ID tied to the execution settings.
-            api_key (str | None): The optional API key to use. If provided will override,
+            service_id : Service ID tied to the execution settings.
+            api_key : The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            async_client (MistralAsyncClient | None) : An existing client to use.
-            env_file_path (str | None): Use the environment settings file as a fallback
+            async_client : An existing client to use.
+            env_file_path : Use the environment settings file as a fallback
                 to environment variables.
-            env_file_encoding (str | None): The encoding of the environment settings file.
+            env_file_encoding : The encoding of the environment settings file.
         """
         try:
             mistralai_settings = MistralAISettings.create(
@@ -94,12 +93,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         if not mistralai_settings.chat_model_id:
             raise ServiceInitializationError("The MistralAI chat model ID is required.")
 
-        # ensure backwards compatibility with MistralAsyncClient
-        if not async_client or isinstance(async_client, MistralAsyncClient):
-            if isinstance(async_client, MistralAsyncClient):
-                logger.warning(
-                    "MistralAIChatCompletion: The MistralAsyncClient is deprecated, please use Mistral instead."
-                )
+        if not async_client:
             async_client = Mistral(
                 api_key=mistralai_settings.api_key.get_secret_value(),
             )

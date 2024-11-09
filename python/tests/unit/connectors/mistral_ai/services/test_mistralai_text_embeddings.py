@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from mistralai.async_client import MistralAsyncClient
-from mistralai.models.embeddings import EmbeddingResponse
+from mistralai.models import EmbeddingResponse
 
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
