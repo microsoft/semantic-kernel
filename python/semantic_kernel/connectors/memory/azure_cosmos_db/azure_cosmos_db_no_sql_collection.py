@@ -98,16 +98,13 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
         self,
         records: Sequence[Any],
         **kwargs: Any,
-    ) -> Sequence[AzureCosmosDBNoSQLCompositeKey]:
+    ) -> Sequence[TKey]:
         batch_operations = [("upsert", (record,)) for record in records]
         partition_key = [record[self.partition_key.path.strip("/")] for record in records]
         try:
             container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
             results = await container_proxy.execute_item_batch(batch_operations, partition_key, **kwargs)
-            return [
-                AzureCosmosDBNoSQLCompositeKey.from_record(result["resourceBody"], self.partition_key)
-                for result in results
-            ]
+            return [result["resourceBody"][COSMOS_ITEM_ID_PROPERTY_NAME] for result in results]
         except CosmosResourceNotFoundError as e:
             raise MemoryConnectorResourceNotFound(
                 "The collection does not exist yet. Create the collection first."

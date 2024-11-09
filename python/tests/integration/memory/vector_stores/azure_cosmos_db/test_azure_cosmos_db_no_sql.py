@@ -193,8 +193,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         # Upsert
         await collection.create_collection()
         result = await collection.upsert(data_model_type_with_key_as_key_field(**data_record_with_key_as_key_field))
-        assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
-        assert data_record_with_key_as_key_field["key"] == result.key
+        assert data_record_with_key_as_key_field["key"] == result
 
         # Verify
         record = await collection.get(data_record_with_key_as_key_field["key"])

@@ -9,9 +9,6 @@ from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFo
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
-    AzureCosmosDBNoSQLCompositeKey,
-)
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
     CosmosClientWrapper,
@@ -393,8 +390,7 @@ async def test_azure_cosmos_db_no_sql_upsert(
     result = await vector_collection.upsert(item)
 
     mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item,))], [item["id"]])
-    assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
-    assert result.key == item["id"]
+    assert result == item["id"]
 
 
 @pytest.mark.asyncio
@@ -425,8 +421,7 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
     result = await vector_collection.upsert(item)
 
     mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item_with_id,))], [item["key"]])
-    assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
-    assert result.key == item["key"]
+    assert result == item["key"]
 
 
 @pytest.mark.asyncio
