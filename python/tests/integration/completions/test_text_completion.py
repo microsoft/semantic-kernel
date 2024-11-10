@@ -8,6 +8,8 @@ from typing import Any
 import pytest
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
@@ -29,6 +31,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -38,12 +41,14 @@ else:
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.completions.test_utils import is_service_setup_for_testing, retry
+from tests.integration.utils import is_service_setup_for_testing, retry
 
-ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
-google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
-vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
-onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_TEXT_MODEL_FOLDER")
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
+onnx_setup: bool = is_service_setup_for_testing(
+    ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
+)  # Tests are optional for ONNX
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
@@ -56,14 +61,14 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             id="openai_text_completion",
         ),
         pytest.param(
             "azure",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             id="azure_text_completion",
         ),
@@ -99,7 +104,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "ollama",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_completion",
@@ -107,7 +112,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "google_ai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_completion",
@@ -115,7 +120,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "vertex_ai",
             {},
-            ["Repeat the word Hello"],
+            ["Repeat the word Hello once"],
             {},
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Need VertexAI setup"),
             id="vertex_ai_text_completion",
@@ -127,6 +132,53 @@ pytestmark = pytest.mark.parametrize(
             {},
             marks=pytest.mark.skipif(not onnx_setup, reason="Need local Onnx setup"),
             id="onnx_gen_ai_text_completion",
+        ),
+        pytest.param(
+            "bedrock_amazon_titan",
+            {},
+            ["Repeat the word Hello once"],
+            {},
+            id="bedrock_amazon_titan_text_completion",
+        ),
+        pytest.param(
+            "bedrock_anthropic_claude",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_anthropic_claude_text_completion",
+        ),
+        pytest.param(
+            "bedrock_cohere_command",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_cohere_command_text_completion",
+        ),
+        pytest.param(
+            "bedrock_ai21labs",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_ai21labs_text_completion",
+        ),
+        pytest.param(
+            "bedrock_meta_llama",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_meta_llama_text_completion",
+        ),
+        pytest.param(
+            "bedrock_mistralai",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_mistralai_text_completion",
         ),
     ],
 )
@@ -142,7 +194,7 @@ class TestTextCompletion(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = azure_openai_settings.get_azure_openai_auth_token()
+        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureTextCompletion(
             async_client=AsyncAzureOpenAI(
@@ -188,6 +240,32 @@ class TestTextCompletion(CompletionTestBase):
             "onnx_gen_ai": (
                 OnnxGenAITextCompletion() if onnx_setup else None,
                 OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
+            ),
+            # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
+            # inconsistent. So we need to test each model separately.
+            "bedrock_amazon_titan": (
+                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_anthropic_claude": (
+                BedrockTextCompletion(model_id="anthropic.claude-v2"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_cohere_command": (
+                BedrockTextCompletion(model_id="cohere.command-text-v14"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_ai21labs": (
+                BedrockTextCompletion(model_id="ai21.j2-mid-v1"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_meta_llama": (
+                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_mistralai": (
+                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2"),
+                BedrockTextPromptExecutionSettings,
             ),
         }
 
@@ -247,6 +325,9 @@ class TestTextCompletion(CompletionTestBase):
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
+        if "streaming" in kwargs and not kwargs["streaming"]:
+            pytest.skip("Skipping streaming test")
+
         await self._test_helper(service_id, services, execution_settings_kwargs, inputs, True)
 
     @override

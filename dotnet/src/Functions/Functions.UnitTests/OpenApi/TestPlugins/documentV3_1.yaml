@@ -5,6 +5,7 @@ info:
   version: '1.0'
 servers:
   - url: https://my-key-vault.vault.azure.net
+  - url: https://ppe.my-key-vault.vault.azure.net
 paths:
   '/secrets/{secret-name}':
     get:
@@ -105,6 +106,11 @@ paths:
                     enabled:
                       type: boolean
                       description: Determines whether the object is enabled.
+                    encrypted:
+                      type: boolean
+                      description: Determines whether the object is encrypted.
+                  required:
+                    - enabled
                   description: attributes
                 value:
                   type: string

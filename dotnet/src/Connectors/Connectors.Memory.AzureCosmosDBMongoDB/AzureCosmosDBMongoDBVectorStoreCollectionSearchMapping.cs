@@ -3,7 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -13,6 +14,12 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
 {
+    /// <summary>Returns index kind specified on vector property or default <see cref="MongoDBConstants.DefaultIndexKind"/>.</summary>
+    public static string GetVectorPropertyIndexKind(string? indexKind) => !string.IsNullOrWhiteSpace(indexKind) ? indexKind! : MongoDBConstants.DefaultIndexKind;
+
+    /// <summary>Returns distance function specified on vector property or default <see cref="MongoDBConstants.DefaultDistanceFunction"/>.</summary>
+    public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : MongoDBConstants.DefaultDistanceFunction;
+
     /// <summary>
     /// Build Azure CosmosDB MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>

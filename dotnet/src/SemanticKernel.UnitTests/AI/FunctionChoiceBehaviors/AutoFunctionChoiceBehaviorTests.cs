@@ -262,6 +262,24 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(configuration.Options);
     }
 
+    [Fact]
+    public void ItShouldPropagateAllowConcurrentInvocationOptionToConfiguration()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions
+        {
+            AllowConcurrentInvocation = true
+        };
+
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.True(configuration.Options.AllowConcurrentInvocation);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

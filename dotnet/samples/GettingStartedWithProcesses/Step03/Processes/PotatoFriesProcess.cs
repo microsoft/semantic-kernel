@@ -8,7 +8,6 @@ namespace Step03.Processes;
 
 /// <summary>
 /// Sample process that showcases how to create a process with sequential steps and reuse of existing steps.<br/>
-/// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Potato_Fries_Preparation_Process" >diagram</see>
 /// </summary>
 public static class PotatoFriesProcess
 {
@@ -21,12 +20,18 @@ public static class PotatoFriesProcess
         public const string PotatoFriesReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
     }
 
+    /// <summary>
+    /// For a visual reference of the PotatoFriesProcess check this
+    /// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#potato-fries-preparation-process" >diagram</see>
+    /// </summary>
+    /// <param name="processName">name of the process</param>
+    /// <returns><see cref="ProcessBuilder"/></returns>
     public static ProcessBuilder CreateProcess(string processName = "PotatoFriesProcess")
     {
         var processBuilder = new ProcessBuilder(processName);
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherPotatoFriesIngredientsStep>();
-        var sliceStep = processBuilder.AddStepFromType<CutFoodStep>();
+        var sliceStep = processBuilder.AddStepFromType<CutFoodStep>("sliceStep");
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
 
         processBuilder
@@ -48,26 +53,58 @@ public static class PotatoFriesProcess
         return processBuilder;
     }
 
-    private sealed class GatherPotatoFriesIngredientsStep : GatherIngredientsStep
+    /// <summary>
+    /// For a visual reference of the PotatoFriesProcess with stateful steps check this
+    /// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#potato-fries-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
+    /// </summary>
+    /// <param name="processName">name of the process</param>
+    /// <returns><see cref="ProcessBuilder"/></returns>
+    public static ProcessBuilder CreateProcessWithStatefulSteps(string processName = "PotatoFriesWithStatefulStepsProcess")
     {
-        public override async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
-        {
-            var ingredient = FoodIngredients.Pototoes.ToFriendlyString();
-            var updatedFoodActions = new List<string>();
-            updatedFoodActions.AddRange(foodActions);
-            if (updatedFoodActions.Count == 0)
-            {
-                updatedFoodActions.Add(ingredient);
-            }
-            updatedFoodActions.Add($"{ingredient}_gathered");
+        var processBuilder = new ProcessBuilder(processName);
 
-            Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = updatedFoodActions });
-        }
+        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherPotatoFriesIngredientsWithStockStep>();
+        var sliceStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>("sliceStep");
+        var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
+
+        processBuilder
+            .OnInputEvent(ProcessEvents.PreparePotatoFries)
+            .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        gatherIngredientsStep
+            .OnEvent(GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsGathered)
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SliceFood));
+
+        gatherIngredientsStep
+            .OnEvent(GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock)
+            .StopProcess();
+
+        sliceStep
+            .OnEvent(CutFoodWithSharpeningStep.OutputEvents.SlicingReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(fryStep));
+
+        sliceStep
+            .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening)
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SharpenKnife));
+
+        sliceStep
+            .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened)
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SliceFood));
+
+        fryStep
+            .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        return processBuilder;
     }
 
-    private sealed class ExternalPotatoFriesStep : ExternalStep
+    private sealed class GatherPotatoFriesIngredientsStep : GatherIngredientsStep
     {
-        public ExternalPotatoFriesStep() : base(ProcessEvents.PotatoFriesReady) { }
+        public GatherPotatoFriesIngredientsStep() : base(FoodIngredients.Pototoes) { }
+    }
+
+    private sealed class GatherPotatoFriesIngredientsWithStockStep : GatherIngredientsWithStockStep
+    {
+        public GatherPotatoFriesIngredientsWithStockStep() : base(FoodIngredients.Pototoes) { }
     }
 }

@@ -51,14 +51,12 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
-    
-    # The safe_mode setting is no longer supported in Mistral 1.0, ensure backwards compatibility by ignoring it.
-    @field_validator('safe_mode')
+
+    @field_validator("safe_mode")
     @classmethod
     def check_safe_mode(cls, v: bool) -> bool:
+        """The safe_mode setting is no longer supported."""
         logger.warning(
             "The 'safe_mode' setting is no longer supported and is being ignored, it will be removed in the Future."
         )
         return v
-    
-    

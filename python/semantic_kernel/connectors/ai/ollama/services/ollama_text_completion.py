@@ -60,7 +60,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         """
         try:
             ollama_settings = OllamaSettings.create(
-                model=ai_model_id,
+                text_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -68,12 +68,12 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
-        if not ollama_settings.model:
-            raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
+        if not ollama_settings.text_model_id:
+            raise ServiceInitializationError("Ollama text model ID is required.")
 
         super().__init__(
-            service_id=service_id or ollama_settings.model,
-            ai_model_id=ollama_settings.model,
+            service_id=service_id or ollama_settings.text_model_id,
+            ai_model_id=ollama_settings.text_model_id,
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
@@ -112,8 +112,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
 
         if not isinstance(response_object, Mapping):
             raise ServiceInvalidResponseError(
-                "Invalid response type from Ollama chat completion. "
-                f"Expected Mapping but got {type(response_object)}."
+                f"Invalid response type from Ollama chat completion. Expected Mapping but got {type(response_object)}."
             )
 
         inner_content = response_object

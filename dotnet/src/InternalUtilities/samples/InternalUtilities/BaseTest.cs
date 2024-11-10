@@ -39,10 +39,22 @@ public abstract class BaseTest : TextWriter
             TestConfiguration.OpenAI.ChatModelId :
             TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
+    /// <summary>
+    /// Returns true if the test configuration has a valid Bing API key.
+    /// </summary>
+    protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
+
     protected Kernel CreateKernelWithChatCompletion()
     {
         var builder = Kernel.CreateBuilder();
 
+        AddChatCompletionToKernel(builder);
+
+        return builder.Build();
+    }
+
+    protected void AddChatCompletionToKernel(IKernelBuilder builder)
+    {
         if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
@@ -56,8 +68,6 @@ public abstract class BaseTest : TextWriter
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
         }
-
-        return builder.Build();
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)

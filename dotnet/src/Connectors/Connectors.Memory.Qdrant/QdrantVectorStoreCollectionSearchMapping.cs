@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -85,7 +85,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="operationName">The type of database operation being run.</param>
     /// <returns>The mapped <see cref="VectorSearchResult{TRecord}"/>.</returns>
     public static VectorSearchResult<TRecord> MapScoredPointToVectorSearchResult<TRecord>(ScoredPoint point, IVectorStoreRecordMapper<TRecord, PointStruct> mapper, bool includeVectors, string databaseSystemName, string collectionName, string operationName)
-        where TRecord : class
     {
         // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
         var pointStruct = new PointStruct

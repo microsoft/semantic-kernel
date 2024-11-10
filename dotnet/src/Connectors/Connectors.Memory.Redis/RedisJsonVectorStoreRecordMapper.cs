@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
 internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, JsonNode Node)>
-    where TConsumerDataModel : class
 {
     /// <summary>The name of the temporary json property that the key field will be serialized / parsed from.</summary>
     private readonly string _keyFieldJsonPropertyName;

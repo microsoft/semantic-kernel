@@ -267,12 +267,26 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(2, additionalProperties.Count);
+        Assert.Equal(6, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
+        Assert.Contains("operation", additionalProperties.Keys);
+        Assert.Contains("info", additionalProperties.Keys);
+        Assert.Contains("security", additionalProperties.Keys);
+        Assert.Contains("server-urls", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
+        var operation = additionalProperties["operation"] as RestApiOperation;
+        Assert.NotNull(operation);
         Assert.Equal("GET", additionalProperties["method"]);
+        Assert.Equal("/api-with-open-api-extensions", operation.Path);
+        var serverUrls = additionalProperties["server-urls"] as string[];
+        Assert.NotNull(serverUrls);
+        Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
+        var info = additionalProperties["info"] as RestApiInfo;
+        Assert.NotNull(info);
+        var security = additionalProperties["info"] as List<RestApiSecurityRequirement>;
+        Assert.Null(security);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
@@ -391,6 +405,61 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         Assert.IsAssignableFrom<Stream>(response.Content);
     }
+
+    [Theory]
+    [MemberData(nameof(GenerateSecurityMemberData))]
+    public async Task ItAddSecurityMetadataToOperationAsync(string documentFileName, IDictionary<string, string[]> securityTypeMap)
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
+
+        // Assert Security Metadata Keys and Values
+        foreach (var function in plugin)
+        {
+            var additionalProperties = function.Metadata.AdditionalProperties;
+            Assert.Contains("operation", additionalProperties.Keys);
+
+            var securityTypes = securityTypeMap[function.Name];
+
+            var operation = additionalProperties["operation"] as RestApiOperation;
+            Assert.NotNull(operation);
+            Assert.NotNull(operation.SecurityRequirements);
+            Assert.Equal(securityTypes.Length, operation.SecurityRequirements?.Count);
+            foreach (var securityType in securityTypes)
+            {
+                Assert.Contains(operation.SecurityRequirements!, sr => sr.Keys.Any(k => k.SecuritySchemeType == securityType));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Generate theory data for ItAddSecurityMetadataToOperationAsync
+    /// </summary>
+    public static TheoryData<string, IDictionary<string, string[]>> GenerateSecurityMemberData() =>
+        new()
+        {
+            { "no-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", Array.Empty<string>() },
+                    { "Security", new[] { "ApiKey" } },
+                    { "SecurityAndScope", new[] { "ApiKey" } }
+                }},
+            { "apikey-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", Array.Empty<string>() },
+                    { "Security", new[] { "ApiKey" } },
+                    { "SecurityAndScope", new[] { "ApiKey" } }
+                }},
+            { "oauth-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", Array.Empty<string>() },
+                    { "Security", new[] { "OAuth2" } },
+                    { "SecurityAndScope", new[] { "OAuth2" } }
+                }}
+        };
 
     [Fact]
     public void Dispose()

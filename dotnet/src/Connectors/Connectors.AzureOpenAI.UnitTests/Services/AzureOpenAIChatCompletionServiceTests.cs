@@ -1342,6 +1342,61 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("required", optionsJson.GetProperty("tool_choice").ToString());
     }
 
+    [Theory]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("auto", null)]
+    [InlineData("required", true)]
+    [InlineData("required", false)]
+    [InlineData("required", null)]
+    public async Task ItPassesAllowParallelCallsOptionToLLMAsync(string choice, bool? optionValue)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var functionChoiceBehaviorOptions = new FunctionChoiceBehaviorOptions() { AllowParallelCalls = optionValue };
+
+        var executionSettings = new OpenAIPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = choice switch
+            {
+                "auto" => FunctionChoiceBehavior.Auto(options: functionChoiceBehaviorOptions),
+                "required" => FunctionChoiceBehavior.Required(options: functionChoiceBehaviorOptions),
+                _ => throw new ArgumentException("Invalid choice", nameof(choice))
+            }
+        };
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!));
+
+        if (optionValue is null)
+        {
+            Assert.False(optionsJson.TryGetProperty("parallel_tool_calls", out _));
+        }
+        else
+        {
+            Assert.Equal(optionValue, optionsJson.GetProperty("parallel_tool_calls").GetBoolean());
+        }
+    }
+
     [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
@@ -1440,6 +1495,44 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(this._messageHandlerStub.RequestContents[0]);
 
         Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAndEmptyArgumentsDoNotThrowAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string addressCode) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]));
+        using var multiHttpClient = new HttpClient(this._messageHandlerStub, false);
+        var service = new OpenAIChatCompletionService("model-id", "api-key", httpClient: multiHttpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_empty_assistance_response.txt"))
+            });
+
+        this._messageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+            });
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+        }
+
+        Assert.Equal(1, functionCallCount);
     }
 
     public static TheoryData<string?, string?> Versions => new()

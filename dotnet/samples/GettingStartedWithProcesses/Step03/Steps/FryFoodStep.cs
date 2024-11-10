@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 
 namespace Step03.Steps;
 
@@ -8,6 +9,7 @@ namespace Step03.Steps;
 /// Step used in the Processes Samples:
 /// - Step_03_FoodPreparation.cs
 /// </summary>
+[KernelProcessStepMetadata("FryFoodStep.V1")]
 public class FryFoodStep : KernelProcessStep
 {
     public static class Functions
@@ -31,7 +33,7 @@ public class FryFoodStep : KernelProcessStep
         int fryerMalfunction = _randomSeed.Next(0, 10);
 
         // foodToFry could potentially be used to set the frying temperature and cooking duration
-        if (fryerMalfunction > 6)
+        if (fryerMalfunction < 5)
         {
             // Oh no! Food got burnt :(
             foodActions.Add($"{foodToFry}_frying_failed");
