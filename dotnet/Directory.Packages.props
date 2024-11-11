@@ -16,7 +16,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
-    <PackageVersion Include="OpenAI" Version="[2.1.0-beta.1]" />
+    <PackageVersion Include="OpenAI" Version="[2.1.0-beta.2]" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[2.1.0-beta.1]" />
     <PackageVersion Include="Azure.Identity" Version="1.13.1" />
