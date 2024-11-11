@@ -21,6 +21,7 @@ namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Services;
 /// <summary>
 /// Tests for the <see cref="AzureAIInferenceChatCompletionService"/> class.
 /// </summary>
+[Obsolete("Keeping this test until the service is removed from code-base")]
 public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 {
     private readonly Uri _endpoint = new("https://localhost:1234");

@@ -43,17 +43,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = (config.ApiKey is not null)
-                ? new AzureAIInferenceChatCompletionService(
-                    modelId: "model",
-                    endpoint: config.Endpoint,
-                    apiKey: config.ApiKey,
-                    loggerFactory: this._loggerFactory)
-                : new AzureAIInferenceChatCompletionService(
-                    modelId: null,
-                    endpoint: config.Endpoint,
-                    credential: new AzureCliCredential(),
-                    loggerFactory: this._loggerFactory);
+        IChatCompletionService sut = this.CreateChatService(config);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -75,17 +65,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = (config.ApiKey is not null)
-                ? new AzureAIInferenceChatCompletionService(
-                    modelId: "model",
-                    endpoint: config.Endpoint,
-                    apiKey: config.ApiKey,
-                    loggerFactory: this._loggerFactory)
-                : new AzureAIInferenceChatCompletionService(
-                    modelId: "model",
-                    endpoint: config.Endpoint,
-                    credential: new AzureCliCredential(),
-                    loggerFactory: this._loggerFactory);
+        IChatCompletionService sut = this.CreateChatService(config);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -153,10 +133,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
         Assert.NotNull(config.Endpoint);
+        Assert.NotNull(config.ChatModelId);
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureAIInferenceChatCompletion(modelId: "any", endpoint: config.Endpoint, apiKey: null);
+        kernelBuilder.AddAzureAIInferenceChatCompletion(modelId: config.ChatModelId, endpoint: config.Endpoint, apiKey: null);
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -242,13 +223,40 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureAIInferenceChatCompletion(
-            "any",
+            config.ChatModelId,
             endpoint: config.Endpoint,
             apiKey: config.ApiKey,
             serviceId: config.ServiceId,
             httpClient: httpClient);
 
         return kernelBuilder.Build();
+    }
+
+    private IChatCompletionService CreateChatService(AzureAIInferenceConfiguration config)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(this._loggerFactory);
+
+        Assert.NotNull(config.ChatModelId);
+
+        if (config.ApiKey is not null)
+        {
+            serviceCollection.AddAzureAIInferenceChatCompletion(
+                modelId: config.ChatModelId,
+                endpoint: config.Endpoint,
+                apiKey: config.ApiKey);
+        }
+        else
+        {
+            serviceCollection.AddAzureAIInferenceChatCompletion(
+                modelId: config.ChatModelId,
+                endpoint: config.Endpoint,
+                credential: new AzureCliCredential());
+        }
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        return serviceProvider.GetRequiredService<IChatCompletionService>();
     }
 
     public void Dispose()

@@ -12,4 +12,5 @@ internal sealed class AzureAIInferenceConfiguration(Uri endpoint, string apiKey,
     public Uri Endpoint { get; set; } = endpoint;
     public string? ApiKey { get; set; } = apiKey;
     public string? ServiceId { get; set; } = serviceId;
+    public string? ChatModelId { get; set; }
 }
