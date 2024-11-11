@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 

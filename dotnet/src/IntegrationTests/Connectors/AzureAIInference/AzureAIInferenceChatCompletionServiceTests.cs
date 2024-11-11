@@ -219,6 +219,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.NotNull(config);
         Assert.NotNull(config.ApiKey);
         Assert.NotNull(config.Endpoint);
+        Assert.NotNull(config.ChatModelId);
 
         var kernelBuilder = base.CreateKernelBuilder();
 
