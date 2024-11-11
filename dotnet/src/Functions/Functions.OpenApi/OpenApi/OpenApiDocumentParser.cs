@@ -183,7 +183,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
-        var operationServers = CreateRestApiOperationServers(server);
+        var operationServers = CreateRestApiOperationServers(document.Servers);
         var operationsToExcludeLookup = operationsToExclude is not null ? new HashSet<string>(operationsToExclude, StringComparer.OrdinalIgnoreCase) : null;
 
         foreach (var operationPair in pathItem.Operations)
