@@ -12,6 +12,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -38,7 +39,7 @@ var builder = Kernel.CreateBuilder()
 var kernel = builder.Build();
 
 // Get the instances of the services
-var chatService = kernel.GetRequiredService<IChatCompletionService>();
+using var chatService = kernel.GetRequiredService<IChatCompletionService>() as OnnxRuntimeGenAIChatCompletionService;
 var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
 // Create a vector store and a collection to store information

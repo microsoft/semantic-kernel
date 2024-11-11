@@ -25,6 +25,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private Model? _model;
     private Tokenizer? _tokenizer;
+    private readonly OgaHandle _ogaHandle = new();
 
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
@@ -212,5 +213,6 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     {
         this._tokenizer?.Dispose();
         this._model?.Dispose();
+        this._ogaHandle.Dispose();
     }
 }
