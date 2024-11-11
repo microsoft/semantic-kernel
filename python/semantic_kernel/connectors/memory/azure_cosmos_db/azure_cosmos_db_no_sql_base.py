@@ -46,12 +46,12 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
                                     Defaults to False.
             kwargs: Additional keyword arguments.
         """
-        try:
-            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
-        except ValidationError as e:
-            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
-
         if cosmos_client is None:
+            try:
+                cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
+            except ValidationError as e:
+                raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
+
             if cosmos_db_nosql_settings.key is not None:
                 cosmos_client = CosmosClientWrapper(
                     str(cosmos_db_nosql_settings.url), credential=cosmos_db_nosql_settings.key.get_secret_value()
