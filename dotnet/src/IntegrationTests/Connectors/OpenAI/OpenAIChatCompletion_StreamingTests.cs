@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -72,7 +74,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -135,7 +137,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(metadata);
 
-        Assert.True(metadata.TryGetValue("Id", out object? id));
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -145,6 +147,46 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
         Assert.True(metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
+    }
+
+    [Fact]
+    public async Task RepeatedChatHistoryAddStreamingMessageWorksAsExpectedAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+        var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
+
+        kernel.ImportPluginFromFunctions("TestFunctions",
+        [
+            kernel.CreateFunctionFromMethod((string input) => Task.FromResult(input), "Test", "Test executed.")
+        ]);
+
+        // Prepare Chat
+        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+
+        OpenAIPromptExecutionSettings settings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        ChatHistory chatHistory = new("You are to test the system");
+
+        for (int i = 0; i < 2; i++)
+        {
+            chatHistory.AddUserMessage("Please test the system");
+
+            var results = chatHistory.AddStreamingMessageAsync(chatService
+                .GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel)
+                .Cast<OpenAIStreamingChatMessageContent>()
+            );
+
+            await foreach (var result in results)
+            {
+                Console.Write(result.ToString());
+            }
+
+            Console.WriteLine($"Call #{i} OK");
+        }
     }
 
     #region internals

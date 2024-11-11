@@ -33,7 +33,9 @@ MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
 
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"
+CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
 TEXT_COMPLETION_OPERATION = "text.completions"
+TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
@@ -81,12 +83,8 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 return await completion_func(*args, **kwargs)
 
             completion_service: "ChatCompletionClientBase" = args[0]
-            chat_history: ChatHistory = (
-                kwargs.get("chat_history") if kwargs.get("chat_history") is not None else args[1]
-            )
-            settings: "PromptExecutionSettings" = (
-                kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
-            )
+            chat_history: ChatHistory = kwargs.get("chat_history") or args[1]  # type: ignore
+            settings: "PromptExecutionSettings" = kwargs.get("settings") or args[2]  # type: ignore
 
             with use_span(
                 _start_completion_activity(
@@ -140,18 +138,14 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
                 return
 
             completion_service: "ChatCompletionClientBase" = args[0]
-            chat_history: ChatHistory = (
-                kwargs.get("chat_history") if kwargs.get("chat_history") is not None else args[1]
-            )
-            settings: "PromptExecutionSettings" = (
-                kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
-            )
+            chat_history: ChatHistory = kwargs.get("chat_history") or args[1]  # type: ignore
+            settings: "PromptExecutionSettings" = kwargs.get("settings") or args[2]  # type: ignore
 
             all_messages: dict[int, list[StreamingChatMessageContent]] = {}
 
             with use_span(
                 _start_completion_activity(
-                    CHAT_COMPLETION_OPERATION,
+                    CHAT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
@@ -205,7 +199,7 @@ def trace_text_completion(model_provider: str) -> Callable:
                 return await completion_func(*args, **kwargs)
 
             completion_service: "TextCompletionClientBase" = args[0]
-            prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
+            prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]  # type: ignore
             settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             with use_span(
@@ -258,14 +252,14 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
                 return
 
             completion_service: "TextCompletionClientBase" = args[0]
-            prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
+            prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]  # type: ignore
             settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             all_text_contents: dict[int, list["StreamingTextContent"]] = {}
 
             with use_span(
                 _start_completion_activity(
-                    TEXT_COMPLETION_OPERATION,
+                    TEXT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),

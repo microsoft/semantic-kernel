@@ -33,7 +33,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// The agents participating in the chat.
     /// </summary>
-    public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
@@ -175,6 +175,31 @@ public sealed class AgentGroupChat : AgentChat
         this.IsComplete = await this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+    }
+
+    /// <summary>
+    /// Convenience method to create a <see cref="KernelFunction"/> for a given strategy without HTML encoding the specified parameters.
+    /// </summary>
+    /// <param name="template">The prompt template string that defines the prompt.</param>
+    /// <param name="templateFactory">
+    /// On optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
+    /// The default factory will be used when none is provided.
+    /// </param>
+    /// <param name="safeParameterNames">The parameter names to exclude from being HTML encoded.</param>
+    /// <returns>A <see cref="KernelFunction"/> created via <see cref="KernelFunctionFactory"/> using the specified template.</returns>
+    /// <remarks>
+    /// This is particularly targeted to easily avoid encoding the history used by <see cref="KernelFunctionSelectionStrategy"/>
+    /// or <see cref="KernelFunctionTerminationStrategy"/>.
+    /// </remarks>
+    public static KernelFunction CreatePromptFunctionForStrategy(string template, IPromptTemplateFactory? templateFactory = null, params string[] safeParameterNames)
+    {
+        PromptTemplateConfig config =
+            new(template)
+            {
+                InputVariables = safeParameterNames.Select(parameterName => new InputVariable { Name = parameterName, AllowDangerouslySetContent = true }).ToList()
+            };
+
+        return KernelFunctionFactory.CreateFromPrompt(config, promptTemplateFactory: templateFactory);
     }
 
     /// <summary>

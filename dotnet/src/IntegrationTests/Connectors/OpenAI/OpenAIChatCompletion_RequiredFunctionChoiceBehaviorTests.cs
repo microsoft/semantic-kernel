@@ -96,7 +96,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -132,7 +131,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -165,7 +163,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -238,7 +236,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -278,8 +275,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         // Assert
         Assert.NotNull(result);
-
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -314,7 +309,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -349,7 +343,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -387,7 +381,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);

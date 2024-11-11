@@ -7,8 +7,8 @@ import numpy as np
 from pandas import DataFrame
 from pytest import fixture, mark, raises
 
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.data import VectorStoreRecordCollection
+from semantic_kernel.exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
@@ -77,18 +77,6 @@ def test_init(DictVectorStoreRecordCollection, data_model_definition):
     assert vsrc._container_mode is False
     assert vsrc.data_model_definition == data_model_definition
     assert vsrc._key_field_name == "id"
-
-
-@mark.asyncio
-async def test_context_manager(DictVectorStoreRecordCollection, data_model_definition):
-    DictVectorStoreRecordCollection.close = AsyncMock()
-    async with DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
-    ):
-        pass
-    DictVectorStoreRecordCollection.close.assert_called()
 
 
 @mark.asyncio
@@ -311,7 +299,7 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_def
     assert len(vector_store_record_collection.inner_storage) == 1
     with (
         patch(
-            "semantic_kernel.data.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
+            "semantic_kernel.data.vector_storage.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
         ) as deserialize_mock,
         raises(MemoryConnectorException, match="Error deserializing record, multiple records returned:"),
     ):
@@ -416,9 +404,10 @@ def test_deserialize_dict_data_model_fail(DictVectorStoreRecordCollection, data_
         data_model_definition=data_model_definition,
     )
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
-        vector_store_record_collection._deserialize_dict_to_data_model(
-            {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
-        )
+        vector_store_record_collection._deserialize_dict_to_data_model({
+            "content": "test_content",
+            "vector": [1.0, 2.0, 3.0],
+        })
 
 
 def test_deserialize_dict_data_model_shortcut(DictVectorStoreRecordCollection, data_model_definition):
@@ -427,9 +416,9 @@ def test_deserialize_dict_data_model_shortcut(DictVectorStoreRecordCollection, d
         data_model_type=dict,
         data_model_definition=data_model_definition,
     )
-    record = vector_store_record_collection._deserialize_dict_to_data_model(
-        [{"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}]
-    )
+    record = vector_store_record_collection._deserialize_dict_to_data_model([
+        {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    ])
     assert record == {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
 
 

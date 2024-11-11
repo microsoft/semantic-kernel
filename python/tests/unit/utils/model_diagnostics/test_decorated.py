@@ -146,6 +146,6 @@ pytestmark = pytest.mark.parametrize(
 
 def test_decorated(decorated_method, expected_attribute):
     """Test that the connectors are being decorated properly with the model diagnostics decorators."""
-    assert hasattr(decorated_method, expected_attribute) and getattr(
-        decorated_method, expected_attribute
-    ), f"{decorated_method} should be decorated with the appropriate model diagnostics decorator."
+    assert hasattr(decorated_method, expected_attribute) and getattr(decorated_method, expected_attribute), (
+        f"{decorated_method} should be decorated with the appropriate model diagnostics decorator."
+    )

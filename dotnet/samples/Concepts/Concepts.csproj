@@ -33,13 +33,11 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Numerics.Tensors" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -60,6 +58,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
@@ -106,6 +105,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -117,5 +122,9 @@
     <EmbeddedResource Include="Resources\Agents\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
+    <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
   </ItemGroup>
 </Project>

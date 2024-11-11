@@ -30,6 +30,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -50,6 +51,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 in the env vars or .env file.
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
+            token_endpoint: The Azure Active Directory token endpoint. (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
@@ -64,21 +66,12 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 base_url=base_url,
                 api_key=api_key,
                 api_version=api_version,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as ex:
             raise ServiceInitializationError(f"Invalid settings: {ex}") from ex
         if not azure_openai_settings.text_deployment_name:
             raise ServiceInitializationError("The Azure Text deployment name is required.")
-
-        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
-        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
-        if api_key is None and ad_token_provider is None and azure_openai_settings.token_endpoint and ad_token is None:
-            ad_token = azure_openai_settings.get_azure_openai_auth_token(
-                token_endpoint=azure_openai_settings.token_endpoint
-            )
-
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
 
         super().__init__(
             deployment_name=azure_openai_settings.text_deployment_name,
@@ -89,6 +82,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT,
             client=async_client,

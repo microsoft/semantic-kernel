@@ -58,7 +58,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                 {
                     Instructions = TutorInstructions,
                     Name = TutorName,
-                    Kernel = sp.GetRequiredService<Kernel>(),
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
                 });
 
         // Create a service provider for resolving registered services

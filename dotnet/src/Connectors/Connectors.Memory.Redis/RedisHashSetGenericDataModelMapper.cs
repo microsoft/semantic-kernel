@@ -4,28 +4,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Redis when using hash sets.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
 internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>All the properties from the record definition.</summary>
+    private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetGenericDataModelMapper"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public RedisHashSetGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    /// <param name="properties">All the properties from the record definition.</param>
+    public RedisHashSetGenericDataModelMapper(IReadOnlyList<VectorStoreRecordProperty> properties)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
-
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+        Verify.NotNull(properties);
+        this._properties = properties;
     }
 
     /// <inheritdoc />
@@ -33,7 +32,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     {
         var hashEntries = new List<HashEntry>();
 
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -82,7 +81,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     {
         var dataModel = new VectorStoreGenericDataModel<string>(storageModel.Key);
 
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -108,6 +107,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 var convertedValue = Convert.ChangeType(hashEntry.Value, typeOrNullableType);
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
+
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {

@@ -3,9 +3,12 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAITextToImageTests
@@ -40,7 +43,7 @@ public sealed class OpenAITextToImageTests
         Assert.NotEmpty(result);
     }
 
-    [Fact]
+    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 400 (invalid_request_error: billing_hard_limit_reached) error.")]
     public async Task OpenAITextToImageUseDallE2ByDefaultAsync()
     {
         // Arrange
@@ -48,7 +51,7 @@ public sealed class OpenAITextToImageTests
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();
@@ -59,5 +62,27 @@ public sealed class OpenAITextToImageTests
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
+    }
+
+    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 400 (invalid_request_error: billing_hard_limit_reached) error.")]
+    public async Task OpenAITextToImageDalle3GetImagesTestAsync()
+    {
+        // Arrange
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: "dall-e-3")
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        // Act
+        var result = await service.GetImageContentsAsync("The sun rises in the east and sets in the west.", new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.NotEmpty(result[0].Uri!.ToString());
     }
 }

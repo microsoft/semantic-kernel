@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
-using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -38,7 +38,7 @@ internal partial class AzureClientCore
 
         var options = new ChatCompletionOptions
         {
-            MaxTokens = executionSettings.MaxTokens,
+            MaxOutputTokenCount = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -88,6 +88,11 @@ internal partial class AzureClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
         }
 
         return options;

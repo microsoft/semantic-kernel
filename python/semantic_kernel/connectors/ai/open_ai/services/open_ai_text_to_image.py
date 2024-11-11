@@ -29,7 +29,7 @@ class OpenAITextToImage(OpenAIConfigBase, OpenAITextToImageBase):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the OpenAITextCompletion class.
+        """Initializes a new instance of the OpenAITextToImage class.
 
         Args:
             ai_model_id: OpenAI model name, see
@@ -61,7 +61,7 @@ class OpenAITextToImage(OpenAIConfigBase, OpenAITextToImageBase):
         super().__init__(
             ai_model_id=openai_settings.text_to_image_model_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
-            ai_model_type=OpenAIModelTypes.IMAGE,
+            ai_model_type=OpenAIModelTypes.TEXT_TO_IMAGE,
             org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,

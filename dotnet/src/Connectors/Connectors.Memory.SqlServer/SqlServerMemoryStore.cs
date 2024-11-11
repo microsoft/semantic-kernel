@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 public class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "dbo";
+    internal const int DefaultEmbeddingDimensionsCount = 1536;
 
     private readonly ISqlServerClient _sqlServerClient;
     private readonly SqlConnection? _connection;
@@ -25,10 +26,11 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="schema">Database schema of collection tables.</param>
-    public SqlServerMemoryStore(string connectionString, string schema = DefaultSchema)
+    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeddings will use</param>
+    public SqlServerMemoryStore(string connectionString, string schema = DefaultSchema, int embeddingDimensionsCount = DefaultEmbeddingDimensionsCount)
     {
         this._connection = new SqlConnection(connectionString);
-        this._sqlServerClient = new SqlServerClient(this._connection, schema);
+        this._sqlServerClient = new SqlServerClient(this._connection, schema, embeddingDimensionsCount);
     }
 
     /// <summary>
@@ -36,8 +38,9 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connection">Database connection.</param>
     /// <param name="schema">Database schema of collection tables.</param>
-    public SqlServerMemoryStore(SqlConnection connection, string schema = DefaultSchema)
-        : this(new SqlServerClient(connection, schema))
+    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeddings will use</param>
+    public SqlServerMemoryStore(SqlConnection connection, string schema = DefaultSchema, int embeddingDimensionsCount = DefaultEmbeddingDimensionsCount)
+        : this(new SqlServerClient(connection, schema, embeddingDimensionsCount))
     { }
 
     /// <summary>

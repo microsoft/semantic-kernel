@@ -18,9 +18,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = provider.Client.GetFileClient();
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo uploadFile =
+        OpenAIFile uploadFile =
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("sales.csv")!),
                 "sales.csv",
@@ -29,14 +29,14 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 provider,
-                new(this.Model)
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
                     Metadata = AssistantSampleMetadata,
-                });
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();

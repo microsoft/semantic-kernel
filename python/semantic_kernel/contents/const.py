@@ -2,13 +2,16 @@
 from enum import Enum
 from typing import Final
 
+AUDIO_CONTENT_TAG: Final[str] = "audio"
 CHAT_MESSAGE_CONTENT_TAG: Final[str] = "message"
 CHAT_HISTORY_TAG: Final[str] = "chat_history"
 TEXT_CONTENT_TAG: Final[str] = "text"
 IMAGE_CONTENT_TAG: Final[str] = "image"
 ANNOTATION_CONTENT_TAG: Final[str] = "annotation"
+STREAMING_ANNOTATION_CONTENT_TAG: Final[str] = "streaming_annotation"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
+STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
 FUNCTION_CALL_CONTENT_TAG: Final[str] = "function_call"
 FUNCTION_RESULT_CONTENT_TAG: Final[str] = "function_result"
 DISCRIMINATOR_FIELD: Final[str] = "content_type"
@@ -17,6 +20,7 @@ DISCRIMINATOR_FIELD: Final[str] = "content_type"
 class ContentTypes(str, Enum):
     """Content types enumeration."""
 
+    AUDIO_CONTENT = AUDIO_CONTENT_TAG
     ANNOTATION_CONTENT = ANNOTATION_CONTENT_TAG
     BINARY_CONTENT = BINARY_CONTENT_TAG
     CHAT_MESSAGE_CONTENT = CHAT_MESSAGE_CONTENT_TAG
@@ -24,4 +28,6 @@ class ContentTypes(str, Enum):
     FILE_REFERENCE_CONTENT = FILE_REFERENCE_CONTENT_TAG
     FUNCTION_CALL_CONTENT = FUNCTION_CALL_CONTENT_TAG
     FUNCTION_RESULT_CONTENT = FUNCTION_RESULT_CONTENT_TAG
+    STREAMING_ANNOTATION_CONTENT = STREAMING_ANNOTATION_CONTENT_TAG
+    STREAMING_FILE_REFERENCE_CONTENT = STREAMING_FILE_REFERENCE_CONTENT_TAG
     TEXT_CONTENT = TEXT_CONTENT_TAG

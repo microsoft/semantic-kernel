@@ -34,6 +34,24 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{}");
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.Single(messages, item =>
+            item.Role == AuthorRole.Assistant &&
+            string.IsNullOrEmpty(item.Content) &&
+            item.Metadata == null);
+    }
+
+    [Fact]
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange
@@ -218,7 +236,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
         {
             MaxTokens = 102,
             Temperature = 0.45,
-            TopP = 0.6
+            TopP = 0.6,
+            AudioTimestamp = true
         };
 
         // Act
@@ -229,6 +248,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         Assert.NotNull(geminiRequest);
         Assert.Equal(executionSettings.MaxTokens, geminiRequest.Configuration!.MaxOutputTokens);
         Assert.Equal(executionSettings.Temperature, geminiRequest.Configuration!.Temperature);
+        Assert.Equal(executionSettings.AudioTimestamp, geminiRequest.Configuration!.AudioTimestamp);
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
@@ -417,12 +437,12 @@ public sealed class GeminiChatGenerationTests : IDisposable
         using var httpClient = new HttpClient(multipleMessageHandlerStub, false);
 
         var client = new GeminiChatCompletionClient(
-                httpClient: httpClient,
-                modelId: "fake-model",
-                apiVersion: VertexAIVersion.V1,
-                bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
-                location: "fake-location",
-                projectId: "fake-project-id");
+            httpClient: httpClient,
+            modelId: "fake-model",
+            apiVersion: VertexAIVersion.V1,
+            bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
+            location: "fake-location",
+            projectId: "fake-project-id");
 
         var chatHistory = CreateSampleChatHistory();
 

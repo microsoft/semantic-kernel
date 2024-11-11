@@ -25,8 +25,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 

@@ -38,6 +38,8 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
+        agent.ThrowIfDeleted();
+
         return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
@@ -50,4 +52,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._client.DeleteThreadAsync(this._threadId, cancellationToken);
+
+    /// <inheritdoc/>
+    protected override string Serialize() => this._threadId;
 }
