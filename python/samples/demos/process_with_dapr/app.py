@@ -158,7 +158,7 @@ def get_process() -> "KernelProcess":
     myAStep = process.add_step(step_type=AStep)
     myBStep = process.add_step(step_type=BStep)
 
-    # Intialize the CStep with an initial state and the state's current cycle set to 1
+    # Initialize the CStep with an initial state and the state's current cycle set to 1
     myCStep = process.add_step(step_type=CStep, initial_state=CStepState(current_cycle=1))
 
     # Define the input event and where to send it to
