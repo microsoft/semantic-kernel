@@ -33,7 +33,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// The agents participating in the chat.
     /// </summary>
-    public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
