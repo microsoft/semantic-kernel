@@ -86,8 +86,6 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         reply = await StreamMessageOutputFromKernelAsync(kernel, chatPrompt.ToString());
 
         Console.WriteLine(reply);
-
-        (kernel.GetRequiredService<IChatCompletionService>() as IDisposable)?.Dispose();
     }
 
     /// <summary>
