@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// The context is to be provided by the choice behavior consumer – AI connector in order to obtain the choice behavior configuration.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfigurationContext
 {
     /// <summary>
