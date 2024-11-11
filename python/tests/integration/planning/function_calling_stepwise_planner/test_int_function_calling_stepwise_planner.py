@@ -22,7 +22,6 @@ from semantic_kernel.planners.function_calling_stepwise_planner.function_calling
 
 @pytest.mark.asyncio
 async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel):
-
     service_id = "planner"
     kernel.add_service(
         OpenAIChatCompletion(

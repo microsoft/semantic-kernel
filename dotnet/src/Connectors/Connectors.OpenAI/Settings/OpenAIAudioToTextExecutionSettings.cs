@@ -98,6 +98,26 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// The timestamp granularities to populate for this transcription. response_format must be set <c>verbose_json</c> to use timestamp granularities.
+    /// Either or both of these options are supported: word, or segment.
+    /// </summary>
+    /// <remarks>
+    /// There is no additional latency for segment timestamps, but generating word timestamps incurs additional latency.
+    /// </remarks>
+    [JsonPropertyName("timestamp_granularities")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<string>? TimestampGranularities
+    {
+        get => this._timestampGranularities;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._timestampGranularities = value;
+        }
+    }
+
+    /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
     /// </summary>
     public OpenAIAudioToTextExecutionSettings()
@@ -161,6 +181,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     private string _filename;
     private string? _language;
     private string? _prompt;
+    private IList<string>? _timestampGranularities;
 
     #endregion
 }

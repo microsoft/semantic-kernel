@@ -350,6 +350,53 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.True(requestIndexLog.All((item) => item == 0)); // Assert that all functions called by the AI model were executed within the same initial request.  
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SpecifiedInCodeInstructsAIModelToCallFunctionInParallelOrSequentiallyAsync(bool callInParallel)
+    {
+        // Arrange
+        var requestIndexLog = new ConcurrentBag<int>();
+
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
+        this._kernel.ImportPluginFromFunctions("WeatherUtils", [KernelFunctionFactory.CreateFromMethod(() => "Rainy day magic!", "GetCurrentWeather")]);
+
+        var invokedFunctions = new ConcurrentBag<string>();
+
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            requestIndexLog.Add(context.RequestSequenceIndex);
+            invokedFunctions.Add(context.Function.Name);
+
+            await next(context);
+        });
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { AllowParallelCalls = callInParallel }) };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Give me today's date and weather.");
+
+        // Act
+        var result = await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernel);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+        Assert.Contains("GetCurrentWeather", invokedFunctions);
+
+        if (callInParallel)
+        {
+            // Assert that all functions are called within the same initial request.
+            Assert.True(requestIndexLog.All((item) => item == 0));
+        }
+        else
+        {
+            // Assert that all functions are called in separate requests.
+            Assert.Equal([0, 1], requestIndexLog);
+        }
+    }
+
     private Kernel InitializeKernel()
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();

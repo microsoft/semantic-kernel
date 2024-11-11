@@ -13,7 +13,7 @@ public class SimpleStyleParametersSerializerTests
     public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer");
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: "integer");
 
         // Act
         var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -28,7 +28,7 @@ public class SimpleStyleParametersSerializerTests
     public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayStringItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer");
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: "integer");
 
         // Act
         var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
@@ -43,7 +43,7 @@ public class SimpleStyleParametersSerializerTests
     public void ItShouldCreateParameterForPrimitiveValue()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "integer", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple);
+        var parameter = new RestApiParameter(name: "id", type: "integer", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple);
 
         // Act
         var result = SimpleStyleParameterSerializer.Serialize(parameter, "28");
@@ -62,7 +62,7 @@ public class SimpleStyleParametersSerializerTests
     public void ItShouldNotEncodeSpecialSymbolsInPrimitiveParameterValues(string specialSymbol, string expectedSymbol)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple);
+        var parameter = new RestApiParameter(name: "id", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple);
 
         // Act
         var result = SimpleStyleParameterSerializer.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
@@ -81,7 +81,7 @@ public class SimpleStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInCommaSeparatedParameterValues(string specialSymbol, string expectedSymbol)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple);
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple);
 
         // Act
         var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));

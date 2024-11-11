@@ -178,6 +178,47 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
 
+    [Theory]
+    [InlineData(new[] { "word" }, new[] { "word" })]
+    [InlineData(new[] { "word", "Word", "wOrd", "Segment" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "Word", "Segment" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "Segment" }, new[] { "segment" })]
+    [InlineData(new[] { "Segment", "wOrd" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "WORD" }, new[] { "word" })]
+    [InlineData(new string[] { }, null)]
+    [InlineData(null, null)]
+    public async Task GetTextContentGranularitiesWorksCorrectlyAsync(string[]? granularities, string[]? expectedGranularities)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("file.mp3")
+        {
+            ResponseFormat = "verbose_json",
+            TimestampGranularities = granularities
+        });
+
+        // Assert
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        if (granularities is null || granularities.Length == 0)
+        {
+            Assert.DoesNotContain("timestamp_granularities[]", requestBody);
+        }
+        else
+        {
+            foreach (var granularity in expectedGranularities!)
+            {
+                Assert.Contains($"Content-Disposition: form-data; name=\"timestamp_granularities[]\"\r\n\r\n{granularity}", requestBody);
+            }
+        }
+    }
+
     public static TheoryData<string?, string?> Versions => new()
     {
         { null, "2024-08-01-preview" },

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -28,6 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+[Experimental("SKEXP0020")]
 public partial class WeaviateMemoryStore : IMemoryStore
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {

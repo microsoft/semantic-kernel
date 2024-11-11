@@ -11,7 +11,9 @@ using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -31,7 +33,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
     internal Type? _stepStateType;
-    internal readonly ILoggerFactory? LoggerFactory;
     internal Dictionary<string, List<KernelProcessEdge>>? _outputEdges;
     internal readonly Dictionary<string, KernelFunction> _functions = [];
     internal Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
@@ -44,11 +45,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="host">The host.</param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
-    /// <param name="loggerFactory">An instance of <see cref="ILoggerFactory"/> used to create loggers.</param>
-    public StepActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
+    public StepActor(ActorHost host, Kernel kernel)
         : base(host)
     {
-        this.LoggerFactory = loggerFactory;
         this._kernel = kernel;
         this._activateTask = new Lazy<ValueTask>(this.ActivateStepAsync);
     }
@@ -63,7 +62,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId)
     {
-        Verify.NotNull(stepInfo);
+        Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -88,21 +87,19 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public Task Int_InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId)
     {
-        Verify.NotNull(stepInfo);
+        Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // Attempt to load the inner step type
         this._innerStepType = Type.GetType(stepInfo.InnerStepDotnetType);
         if (this._innerStepType is null)
         {
-            var errorMessage = $"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException($"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.").Log(this._logger);
         }
 
         this.ParentProcessId = parentProcessId;
         this._stepInfo = stepInfo;
         this._stepState = this._stepInfo.State;
-        this._logger = this.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
         this._isInitialized = true;
@@ -115,9 +112,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task{Task}"/> where T is an <see cref="int"/> indicating the number of messages that are prepared for processing.</returns>
     public async Task<int> PrepareIncomingMessagesAsync()
     {
-        var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
-        var incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
-        foreach (var message in incoming)
+        IMessageBuffer messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
+        IList<string> incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
+        IList<ProcessMessage> messages = incoming.ToProcessMessages();
+
+        foreach (ProcessMessage message in messages)
         {
             this._incomingMessages.Enqueue(message);
         }
@@ -188,17 +187,14 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.");
+    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
 
     /// <summary>
     /// Emits an event from the step.
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
-    {
-        return this.EmitEventAsync(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
-    }
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(ProcessEvent.Create(processEvent, this._eventNamespace!));
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
@@ -208,14 +204,14 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <exception cref="KernelException"></exception>
     internal virtual async Task HandleMessageAsync(ProcessMessage message)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(message, nameof(message));
 
         // Lazy one-time initialization of the step before processing a message
         await this._activateTask.Value.ConfigureAwait(false);
 
         if (this._functions is null || this._inputs is null || this._initialInputs is null)
         {
-            throw new KernelException("The step has not been initialized.");
+            throw new KernelException("The step has not been initialized.").Log(this._logger);
         }
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
@@ -231,7 +227,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
             if (!this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionParameters))
             {
-                this._inputs[message.FunctionName] = new();
+                this._inputs[message.FunctionName] = [];
                 functionParameters = this._inputs[message.FunctionName];
             }
 
@@ -251,7 +247,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // A message can only target one function and should not result in a different function being invoked.
         var targetFunction = invocableFunctions.FirstOrDefault((name) => name == message.FunctionName) ??
-            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?");
+            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?").Log(this._logger);
 
         this._logger?.LogInformation("Step with Id `{StepId}` received all required input for function [{TargetFunction}] and is executing.", this.Name, targetFunction);
 
@@ -259,39 +255,45 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         KernelArguments arguments = new(this._inputs[targetFunction]!);
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
-            throw new ArgumentException($"Function {targetFunction} not found in plugin {this.Name}");
+            throw new InvalidOperationException($"Function {targetFunction} not found in plugin {this.Name}").Log(this._logger);
         }
-
-        FunctionResult? invokeResult = null;
-        string? eventName = null;
-        object? eventValue = null;
 
         // Invoke the function, catching all exceptions that it may throw, and then post the appropriate event.
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             this?._logger?.LogInformation("Invoking function {FunctionName} with arguments {Arguments}", targetFunction, arguments);
-            invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
+            FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
 
             this?.Logger?.LogInformation("Function {FunctionName} returned {Result}", targetFunction, invokeResult);
-            eventName = $"{targetFunction}.OnResult";
-            eventValue = invokeResult?.GetValue<object>();
 
             // Persist the state after the function has been executed
             var stateJson = JsonSerializer.Serialize(this._stepState, this._stepStateType!);
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
+
+            await this.EmitEventAsync(
+                new ProcessEvent
+                {
+                    Namespace = this._eventNamespace!,
+                    SourceId = $"{targetFunction}.OnResult",
+                    Data = invokeResult.GetValue<object>()
+                }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this._logger?.LogInformation("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            eventName = $"{targetFunction}.OnError";
-            eventValue = ex.Message;
+            this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
+            await this.EmitEventAsync(
+                new ProcessEvent
+                {
+                    Namespace = this._eventNamespace!,
+                    SourceId = $"{targetFunction}.OnError",
+                    Data = KernelProcessError.FromException(ex),
+                    IsError = true
+                }).ConfigureAwait(false);
         }
         finally
         {
-            await this.EmitEventAsync(new KernelProcessEvent { Id = eventName, Data = eventValue }).ConfigureAwait(false);
-
             // Reset the inputs for the function that was just executed
             this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
         }
@@ -307,14 +309,12 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     {
         if (this._stepInfo is null)
         {
-            var errorMessage = "A step cannot be activated before it has been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("A step cannot be activated before it has been initialized.").Log(this._logger);
         }
 
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name!);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
@@ -351,19 +351,12 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         if (stateType is null || stateObject is null)
         {
-            var errorMessage = "The state object for the KernelProcessStep could not be created.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("The state object for the KernelProcessStep could not be created.").Log(this._logger);
         }
 
-        MethodInfo? methodInfo = this._innerStepType!.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]);
-
-        if (methodInfo is null)
-        {
-            var errorMessage = "The ActivateAsync method for the KernelProcessStep could not be found.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
+        MethodInfo? methodInfo =
+            this._innerStepType!.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]) ??
+            throw new KernelException("The ActivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
 
         this._stepState = stateObject;
         this._stepStateType = stateType;
@@ -389,38 +382,34 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
-        var scopedEvent = this.ScopedEvent(daprEvent);
-
         // Emit the event out of the process (this one) if it's visibility is public.
         if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
         {
             if (this.ParentProcessId is not null)
             {
                 // Emit the event to the parent process
-                var parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
-                await parentProcess.EnqueueAsync(scopedEvent).ConfigureAwait(false);
+                IEventBuffer parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
+                await parentProcess.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
             }
         }
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
-        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
+        bool foundEdge = false;
+        foreach (var edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
-            var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
-            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
-            await targetStep.EnqueueAsync(message).ConfigureAwait(false);
+            ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+            IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
+            await targetStep.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
+            foundEdge = true;
         }
-    }
 
-    /// <summary>
-    /// Generates a scoped event for the step.
-    /// </summary>
-    /// <param name="daprEvent">The event.</param>
-    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    internal ProcessEvent ScopedEvent(ProcessEvent daprEvent)
-    {
-        Verify.NotNull(daprEvent);
-        return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        // Error event was raised with no edge to handle it, send it to the global error event buffer.
+        if (!foundEdge && daprEvent.IsError && this.ParentProcessId != null)
+        {
+            IEventBuffer parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.ParentProcessId), nameof(EventBufferActor));
+            await parentProcess1.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
