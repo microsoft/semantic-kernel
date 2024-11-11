@@ -47,42 +47,30 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the specified function has been successfully invoked.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnResult");
     }
 
     /// <summary>
     /// Define the behavior of the step when the specified function has thrown an exception.
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionError(string? functionName = null)
     {
-        return this.OnEvent($"{functionName}.OnError");
-    }
-
-    /// <summary>
-    /// Define the behavior of the step when the function has been successfully invoked.
-    /// This method is only valid if the step has exactly one function.
-    /// </summary>
-    /// <returns></returns>
-    public ProcessStepEdgeBuilder OnFunctionResult()
-    {
-        var functionName = this.ResolveFunctionName();
-        return this.OnEvent($"{functionName}.OnResult");
-    }
-
-    /// <summary>
-    /// Define the behavior of the step when the function has thrown an exception.
-    /// This method is only valid if the step has exactly one function.
-    /// </summary>
-    /// <returns></returns>
-    public ProcessStepEdgeBuilder OnFunctionError()
-    {
-        var functionName = this.ResolveFunctionName();
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnError");
     }
 
