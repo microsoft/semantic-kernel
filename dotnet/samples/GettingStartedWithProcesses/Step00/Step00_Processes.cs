@@ -27,14 +27,14 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
         Kernel kernel = Kernel.CreateBuilder()
             .Build();
 
-        var processBuilder = new ProcessBuilder(nameof(Step00_Processes));
+        ProcessBuilder processBuilder = new(nameof(Step00_Processes));
 
         // Create a process that will interact with the chat completion service
         ProcessBuilder process = new("ChatBot");
         var startStep = processBuilder.AddStepFromType<StartStep>();
         var doSomeWorkStep = processBuilder.AddStepFromType<DoSomeWorkStep>();
         var doMoreWorkStep = processBuilder.AddStepFromType<DoMoreWorkStep>();
-        var endStep = processBuilder.AddStepFromType<EndStep>();
+        var lastStep = processBuilder.AddStepFromType<LastStep>();
 
         // Define the process flow
         processBuilder
@@ -51,9 +51,9 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         doMoreWorkStep
             .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(endStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep));
 
-        endStep
+        lastStep
             .OnFunctionResult()
             .StopProcess();
 

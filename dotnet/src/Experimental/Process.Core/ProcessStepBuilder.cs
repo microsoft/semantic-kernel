@@ -110,10 +110,8 @@ public abstract class ProcessStepBuilder
         {
             throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
         }
-        else
-        {
-            return this.FunctionsDict.Keys.First();
-        }
+
+        return this.FunctionsDict.Keys.First();
     }
 
     /// <summary>

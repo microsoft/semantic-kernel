@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 
 namespace Step00.Steps;
 
-public sealed class EndStep : KernelProcessStep
+public sealed class LastStep : KernelProcessStep
 {
     [KernelFunction]
     public async ValueTask ExecuteAsync(KernelProcessStepContext context)
