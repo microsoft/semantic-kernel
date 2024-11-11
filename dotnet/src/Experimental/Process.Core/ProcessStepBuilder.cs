@@ -64,6 +64,28 @@ public abstract class ProcessStepBuilder
         return this.OnEvent($"{functionName}.OnError");
     }
 
+    /// <summary>
+    /// Define the behavior of the step when the function has been successfully invoked.
+    /// This method is only valid if the step has exactly one function.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnFunctionResult()
+    {
+        var functionName = this.ResolveFunctionName();
+        return this.OnEvent($"{functionName}.OnResult");
+    }
+
+    /// <summary>
+    /// Define the behavior of the step when the function has thrown an exception.
+    /// This method is only valid if the step has exactly one function.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnFunctionError()
+    {
+        var functionName = this.ResolveFunctionName();
+        return this.OnEvent($"{functionName}.OnError");
+    }
+
     #endregion
 
     /// <summary>The namespace for events that are scoped to this step.</summary>
@@ -84,6 +106,27 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
     internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+
+    /// <summary>
+    /// Resolves the function name for the step.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    private string ResolveFunctionName()
+    {
+        if (this.FunctionsDict.Count == 0)
+        {
+            throw new KernelException($"The step {this.Name} has no functions.");
+        }
+        else if (this.FunctionsDict.Count > 1)
+        {
+            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+        }
+        else
+        {
+            return this.FunctionsDict.Keys.First();
+        }
+    }
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
