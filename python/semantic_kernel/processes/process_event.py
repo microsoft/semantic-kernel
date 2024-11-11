@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
+from typing import Any
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_event import (
@@ -21,7 +21,7 @@ class ProcessEvent(KernelBaseModel):
         return f"{self.namespace}.{self.inner_event.id}"
 
     @property
-    def data(self) -> Optional[object]:
+    def data(self) -> Any | None:
         """The data of the event."""
         return self.inner_event.data
 
