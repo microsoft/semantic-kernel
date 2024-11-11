@@ -18,18 +18,17 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         ["ContactsPlugin", "me_ListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
         ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
-        #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
+        // Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
         ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
-        #endregion
     ];
     [Theory, MemberData(nameof(s_parameters))]
     public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
-        var kernel = Kernel.CreateBuilder().Build();
+        var kernel = new Kernel();
         await AddMicrosoftManifestPluginsAsync(kernel, pluginsToLoad);
 
         var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
@@ -37,6 +36,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         Console.WriteLine($"\nResult:\n{result}\n");
         Console.WriteLine("--------------------");
     }
+
     private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         Console.WriteLine();
@@ -94,7 +94,6 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
             try
             {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                KernelPlugin plugin =
                 await kernel.ImportPluginFromMicrosoftManifestAsync(
                     pluginName,
                     Path.Combine(manifestLookupDirectory, pluginName, $"{pluginName[..^6].ToLowerInvariant()}-apiplugin.json"),
@@ -106,7 +105,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
             }
             catch (Exception ex)
             {
-                kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+                Console.WriteLine("Plugin creation failed. Message: {0}", ex.Message);
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }

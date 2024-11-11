@@ -77,6 +77,7 @@ internal static class DocumentLoader
 #endif
             ).ConfigureAwait(false);
     }
+
     private static void CheckIfFileExists(string filePath)
     {
         if (!File.Exists(filePath))

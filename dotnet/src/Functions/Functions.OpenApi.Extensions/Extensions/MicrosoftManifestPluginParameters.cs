@@ -5,9 +5,9 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>
-/// API manifest plugin parameters.
+/// Microsoft manifest plugin parameters.
 /// </summary>
-public class MicrosoftManifestPluginParameters
+public sealed class MicrosoftManifestPluginParameters
 {
     /// <summary>
     /// Gets the HTTP client to be used in plugin initialization phase.
