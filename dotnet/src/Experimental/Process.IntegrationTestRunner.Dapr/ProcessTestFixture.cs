@@ -14,6 +14,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
 {
     private System.Diagnostics.Process? _process;
     private HttpClient? _httpClient;
+    private string? _daprAppIdd;
 
     /// <summary>
     /// Called by xUnit before the test is run.
@@ -21,6 +22,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     /// <returns></returns>
     public async Task InitializeAsync()
     {
+        this._daprAppIdd = Guid.NewGuid().ToString("n");
         this._httpClient = new HttpClient();
         await this.StartTestHostAsync();
     }
@@ -37,7 +39,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dapr",
-                Arguments = "run --app-id daprprocesstests --app-port 5200 --dapr-http-port 3500 -- dotnet run --urls http://localhost:5200",
+                Arguments = $"run --app-id {this._daprAppIdd!} --app-port 5200 --dapr-http-port 3500 -- dotnet run --urls http://localhost:5200",
                 WorkingDirectory = workingDirectory,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
@@ -64,7 +66,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dapr",
-            Arguments = "stop --app-id daprprocesstests",
+            Arguments = $"stop --app-id {this._daprAppIdd}",
             RedirectStandardOutput = false,
             RedirectStandardError = false,
             UseShellExecute = true,
