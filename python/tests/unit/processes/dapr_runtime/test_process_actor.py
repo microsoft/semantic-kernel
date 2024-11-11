@@ -66,7 +66,6 @@ async def test_initialize_process(actor_context):
 
     expected_process_info = clean_structure(input_data["process_info"])
 
-    # Convert input data into the expected DaprProcessInfo instance
     dapr_process_info_instance = DaprProcessInfo(
         inner_step_python_type="SomeProcessType",
         state=KernelProcessStepState(name="Test Process", id="proc_123"),
@@ -105,7 +104,6 @@ async def test_initialize_process(actor_context):
 
         mock_save_state.assert_called_once()
 
-        # Check that _initialize_process_actor was called with the expected DaprProcessInfo
         actor_context._initialize_process_actor.assert_called_once_with(dapr_process_info_instance, "parent_123")
 
 
