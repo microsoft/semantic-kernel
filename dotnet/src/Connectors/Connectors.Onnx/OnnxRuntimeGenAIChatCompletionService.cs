@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -18,14 +17,11 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// <summary>
 /// Represents a chat completion service using OnnxRuntimeGenAI.
 /// </summary>
-public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
+public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService
 {
     private readonly string _modelId;
     private readonly string _modelPath;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
-    private Model? _model;
-    private Tokenizer? _tokenizer;
-    private readonly OgaHandle _ogaHandle = new();
 
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
@@ -91,13 +87,17 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         OnnxRuntimeGenAIPromptExecutionSettings onnxPromptExecutionSettings = this.GetOnnxPromptExecutionSettingsSettings(executionSettings);
 
         var prompt = this.GetPrompt(chatHistory, onnxPromptExecutionSettings);
-        var tokens = this.GetTokenizer().Encode(prompt);
 
-        using var generatorParams = new GeneratorParams(this.GetModel());
+        using var ogaHandle = new OgaHandle();
+        using var model = new Model(this._modelPath);
+        using var tokenizer = new Tokenizer(model);
+
+        var tokens = tokenizer.Encode(prompt);
+
+        using var generatorParams = new GeneratorParams(model);
         this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxPromptExecutionSettings);
         generatorParams.SetInputSequences(tokens);
-
-        using var generator = new Generator(this.GetModel(), generatorParams);
+        using var generator = new Generator(model, generatorParams);
 
         bool removeNextTokenStartingWithSpace = true;
         while (!generator.IsDone())
@@ -111,7 +111,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
-                string output = this.GetTokenizer().Decode(newToken);
+                string output = tokenizer.Decode(newToken);
 
                 if (removeNextTokenStartingWithSpace && output[0] == ' ')
                 {
@@ -123,10 +123,6 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
             }, cancellationToken).ConfigureAwait(false);
         }
     }
-
-    private Model GetModel() => this._model ??= new Model(this._modelPath);
-
-    private Tokenizer GetTokenizer() => this._tokenizer ??= new Tokenizer(this.GetModel());
 
     private string GetPrompt(ChatHistory chatHistory, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
@@ -206,13 +202,5 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         }
 
         return OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this._tokenizer?.Dispose();
-        this._model?.Dispose();
-        this._ogaHandle.Dispose();
     }
 }

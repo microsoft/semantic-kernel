@@ -57,7 +57,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
     [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseServiceGetStreamingChatMessageContentsAsync()
     {
-        using var chat = CreateService();
+        var chat = CreateService();
 
         ChatHistory history = [];
         history.AddUserMessage("Where is the most famous fish market in Seattle, Washington, USA?");
@@ -76,7 +76,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
     [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseServiceGetChatMessageContentsAsync()
     {
-        using var chat = CreateService();
+        var chat = CreateService();
 
         ChatHistory history = [];
         history.AddUserMessage("Where is the most famous fish market in Seattle, Washington, USA?");
