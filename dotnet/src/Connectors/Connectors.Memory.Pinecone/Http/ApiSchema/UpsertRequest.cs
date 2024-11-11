@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// UpsertRequest
 /// See https://docs.pinecone.io/reference/upsert
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class UpsertRequest
 {
     /// <summary>

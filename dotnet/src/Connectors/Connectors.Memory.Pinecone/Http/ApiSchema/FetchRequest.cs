@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// FetchRequest
 /// See https://docs.pinecone.io/reference/fetch
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class FetchRequest
 {
     /// <summary>

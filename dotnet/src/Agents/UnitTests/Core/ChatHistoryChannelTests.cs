@@ -21,7 +21,7 @@ public class ChatHistoryChannelTests
     public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
     {
         // Arrange
-        Mock<Agent> agent = new(); // Not a IChatHistoryHandler
+        Mock<Agent> agent = new(); // Not a ChatHistoryKernelAgent
         ChatHistoryChannel channel = new(); // Requires IChatHistoryHandler
 
         // Act & Assert

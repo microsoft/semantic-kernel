@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// QueryResponse
 /// See https://docs.pinecone.io/reference/query
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class QueryResponse
 {
     /// <summary>

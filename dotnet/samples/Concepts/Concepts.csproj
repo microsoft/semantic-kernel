@@ -106,6 +106,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -117,5 +123,9 @@
     <EmbeddedResource Include="Resources\Agents\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
+    <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
   </ItemGroup>
 </Project>

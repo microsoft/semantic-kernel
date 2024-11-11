@@ -19,9 +19,18 @@ public static class OpenAIChatHistoryExtensions
     /// </summary>
     /// <param name="chatHistory">Target chat history</param>
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
+    /// <param name="includeToolCalls">The tool call information from the processed message will be ignored (<c>false</c>) by default.</param>
+    /// <remarks>
+    /// Setting <c>removeToolCalls</c> to <c>false</c> should be only for manual tool calling scenarios, otherwise
+    /// may result in the error below. See <a href="https://github.com/microsoft/semantic-kernel/issues/9458">Issue 9458</a>
+    /// <code>An assistant message with 'tool_calls' must be followed by tool messages</code>
+    /// </remarks>
     /// <returns>Returns the original streaming results with some message processing</returns>
     [Experimental("SKEXP0010")]
-    public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
+    public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(
+        this ChatHistory chatHistory,
+        IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents,
+        bool includeToolCalls = false)
     {
         List<StreamingChatMessageContent> messageContents = [];
 
@@ -43,7 +52,10 @@ public static class OpenAIChatHistoryExtensions
                 (contentBuilder ??= new()).Append(contentUpdate);
             }
 
-            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+            if (includeToolCalls)
+            {
+                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+            }
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
@@ -62,7 +74,9 @@ public static class OpenAIChatHistoryExtensions
                     role,
                     contentBuilder?.ToString() ?? string.Empty,
                     messageContents[0].ModelId!,
-                    OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    includeToolCalls
+                        ? OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex)
+                        : [],
                     metadata)
                 { AuthorName = streamedName });
         }
