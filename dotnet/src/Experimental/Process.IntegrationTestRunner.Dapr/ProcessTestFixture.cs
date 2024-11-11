@@ -33,7 +33,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     {
         try
         {
-            string workingDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\Process.IntegrationTestHost.Dapr"));
+            string workingDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"../../../../Process.IntegrationTestHost.Dapr"));
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dapr",
