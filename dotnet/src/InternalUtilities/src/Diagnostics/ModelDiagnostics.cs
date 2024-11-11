@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS`
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE`
 /// </summary>
+[Experimental("SKEXP0001")]
 [ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
