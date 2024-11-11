@@ -4,11 +4,14 @@
 import logging
 from typing import Any
 
+from typing_extensions import deprecated
+
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated("The `OpenAIUtils` class is deprecated; use OpenAPI Plugins instead.", category=None)
 class OpenAIUtils:
     """Utility functions for OpenAI plugins."""
 

@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 servers:
   - url: http://example.com
+  - url: https://example-two.com
 paths:
   /todos:
     get:

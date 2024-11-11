@@ -51,7 +51,7 @@ class RestApiOperation:
         self,
         id: str,
         method: str,
-        server_url: str | ParseResult,
+        servers: list[str | ParseResult],
         path: str,
         summary: str | None = None,
         description: str | None = None,
@@ -62,7 +62,7 @@ class RestApiOperation:
         """Initialize the RestApiOperation."""
         self.id = id
         self.method = method.upper()
-        self.server_url = urlparse(server_url) if isinstance(server_url, str) else server_url
+        self.servers = [urlparse(s) if isinstance(s, str) else s for s in servers]
         self.path = path
         self.summary = summary
         self.description = description
@@ -106,16 +106,16 @@ class RestApiOperation:
 
     def get_server_url(self, server_url_override=None, api_host_url=None):
         """Get the server URL for the operation."""
-        if server_url_override is not None and server_url_override.geturl() != b"":
-            server_url_string = server_url_override.geturl()
+        if server_url_override is not None and server_url_override.geturl() != "":
+            server_url = server_url_override
+        elif self.servers and self.servers[0].geturl() != "":
+            server_url = self.servers[0]
+        elif api_host_url is not None:
+            server_url = api_host_url
         else:
-            server_url_string = (
-                self.server_url.geturl()
-                if self.server_url
-                else api_host_url.geturl()
-                if api_host_url
-                else self._raise_invalid_operation_exception()
-            )
+            raise FunctionExecutionException(f"No valid server URL for operation {self.id}")
+
+        server_url_string = server_url.geturl()
 
         # make sure the base URL ends with a trailing slash
         if not server_url_string.endswith("/"):

@@ -4,7 +4,6 @@ import logging
 from collections import OrderedDict
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Final
-from urllib.parse import urlparse
 
 from prance import ResolvingParser
 
@@ -178,12 +177,11 @@ class OpenApiParser:
         paths = parsed_document.get("paths", {})
         request_objects = {}
 
-        base_url = "/"
         servers = parsed_document.get("servers", [])
-        base_url = servers[0].get("url") if servers else "/"
+        server_urls = [server.get("url") for server in servers] if servers else ["/"]
 
         if execution_settings and execution_settings.server_url_override:
-            base_url = execution_settings.server_url_override
+            server_urls = [execution_settings.server_url_override]
 
         for path, methods in paths.items():
             for method, details in methods.items():
@@ -201,7 +199,7 @@ class OpenApiParser:
                 rest_api_operation = RestApiOperation(
                     id=operationId,
                     method=request_method,
-                    server_url=urlparse(base_url),
+                    servers=server_urls,
                     path=path,
                     params=parsed_params,
                     request_body=request_body,

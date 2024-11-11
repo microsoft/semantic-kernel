@@ -6,6 +6,7 @@ from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
+from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
@@ -233,6 +234,10 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             )
         )
 
+    @deprecated(
+        "The `add_plugin_from_openai` method is deprecated; use the `add_plugin_from_openapi` method instead.",
+        category=None,
+    )
     async def add_plugin_from_openai(
         self,
         plugin_name: str,
