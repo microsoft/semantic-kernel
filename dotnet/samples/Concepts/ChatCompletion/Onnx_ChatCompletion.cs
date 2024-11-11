@@ -34,7 +34,7 @@ public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine("======== Onnx - Chat Completion ========");
 
-        var chatService = new OnnxRuntimeGenAIChatCompletionService(
+        using var chatService = new OnnxRuntimeGenAIChatCompletionService(
             modelId: TestConfiguration.Onnx.ModelId,
             modelPath: TestConfiguration.Onnx.ModelPath);
 
@@ -105,5 +105,7 @@ public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
         Console.WriteLine(reply);
+
+        (kernel.GetRequiredService<IChatCompletionService>() as IDisposable)?.Dispose();
     }
 }

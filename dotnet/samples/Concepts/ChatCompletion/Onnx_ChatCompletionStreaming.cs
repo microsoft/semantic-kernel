@@ -86,6 +86,8 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         reply = await StreamMessageOutputFromKernelAsync(kernel, chatPrompt.ToString());
 
         Console.WriteLine(reply);
+
+        (kernel.GetRequiredService<IChatCompletionService>() as IDisposable)?.Dispose();
     }
 
     /// <summary>
@@ -135,7 +137,7 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         }
     }
 
-    private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
+    private async Task StartStreamingChatAsync(OnnxRuntimeGenAIChatCompletionService chatCompletionService)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -156,9 +158,11 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
 
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
+
+        chatCompletionService.Dispose();
     }
 
-    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
+    private async Task StreamMessageOutputAsync(OnnxRuntimeGenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
         string fullMessage = string.Empty;
