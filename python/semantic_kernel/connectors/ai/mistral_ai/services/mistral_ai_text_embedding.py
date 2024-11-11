@@ -98,13 +98,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
     ) -> Any:
         """Generate embeddings from the Mistral AI service."""
         try:
-            embedding_response: EmbeddingResponse = await self.async_client.embeddings.create_async(
-                model=self.ai_model_id, inputs=texts
-            )
+            embedding_response = await self.async_client.embeddings.create_async(model=self.ai_model_id, inputs=texts)
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the embedding request.",
                 ex,
             ) from ex
-
-        return [item.embedding for item in embedding_response.data]
+        if isinstance(embedding_response, EmbeddingResponse):
+            return [item.embedding for item in embedding_response.data]
+        return []

@@ -18,6 +18,7 @@ from mistralai.models import (
     CompletionChunk,
     CompletionResponseStreamChoice,
     DeltaMessage,
+    ToolCall,
 )
 from pydantic import ValidationError
 
@@ -142,8 +143,15 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 ex,
             ) from ex
 
-        response_metadata = self._get_metadata_from_response(response)
-        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+        if isinstance(response, ChatCompletionResponse):
+            response_metadata = self._get_metadata_from_response(response)
+            # If there are no choices, return an empty list
+            if isinstance(response.choices, list) and len(response.choices) > 0:
+                return [
+                    self._create_chat_message_content(response, choice, response_metadata)
+                    for choice in response.choices
+                ]
+        return []
 
     @override
     @trace_streaming_chat_completion(MistralAIBase.MODEL_PROVIDER_NAME)
@@ -166,14 +174,17 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 f"{type(self)} service failed to complete the prompt",
                 ex,
             ) from ex
-        async for chunk in response:
-            if len(chunk.data.choices) == 0:
-                continue
-            chunk_metadata = self._get_metadata_from_response(chunk.data)
-            yield [
-                self._create_streaming_chat_message_content(chunk.data, choice, chunk_metadata)
-                for choice in chunk.data.choices
-            ]
+
+        # If there is no response end the generator
+        if isinstance(response, AsyncGenerator):
+            async for chunk in response:
+                if len(chunk.data.choices) == 0:
+                    continue
+                chunk_metadata = self._get_metadata_from_response(chunk.data)
+                yield [
+                    self._create_streaming_chat_message_content(chunk.data, choice, chunk_metadata)
+                    for choice in chunk.data.choices
+                ]
 
     # endregion
 
@@ -267,6 +278,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 arguments=tool.function.arguments,
             )
             for tool in content.tool_calls
+            if isinstance(tool, ToolCall)
         ]
 
     # endregion
