@@ -40,15 +40,17 @@ You are a helpful math tutor. Guide the user through the solution step by step.
 # used to parse the structured output from the OpenAI service,
 # and ensure that the model correctly outputs the schema based
 # on the Pydantic model.
-
-# class Step(KernelBaseModel):
-#     explanation: str
-#     output: str
+from semantic_kernel.kernel_pydantic import KernelBaseModel  # noqa: E402
 
 
-# class Reasoning(KernelBaseModel):
-#     steps: list[Step]
-#     final_answer: str
+class Step(KernelBaseModel):
+    explanation: str
+    output: str
+
+
+class Reasoning(KernelBaseModel):
+    steps: list[Step]
+    final_answer: str
 
 
 ###################################################################
@@ -59,14 +61,14 @@ You are a helpful math tutor. Guide the user through the solution step by step.
 # converted to the proper JSON Schema and sent to the LLM.
 # Uncomment the follow lines and comment out the Pydantic model
 # above to use this option.
-class Step:
-    explanation: str
-    output: str
+# class Step:
+#     explanation: str
+#     output: str
 
 
-class Reasoning:
-    steps: list[Step]
-    final_answer: str
+# class Reasoning:
+#     steps: list[Step]
+#     final_answer: str
 
 
 ###################################################################

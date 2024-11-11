@@ -75,14 +75,10 @@ async def main():
     await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
     print(f"# {AuthorRole.USER}: '{input}'")
 
-    chat_history: list[ChatMessageContent] = []
     async for content in chat.invoke():
         print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-        chat_history.append(content)
 
     print(f"# IS COMPLETE: {chat.is_complete}")
-    for msg in chat_history:
-        print(msg.model_dump_json())
 
 
 if __name__ == "__main__":

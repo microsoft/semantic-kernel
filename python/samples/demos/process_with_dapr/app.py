@@ -37,16 +37,19 @@ logging.basicConfig(level=logging.ERROR)
 kernel = Kernel()
 
 
+# Define a Process Actor Factory that allows a dependency to be injected during Process Actor creation
 def process_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> ProcessActor:
     """Factory function to create ProcessActor instances with dependencies."""
     return ProcessActor(ctx, actor_id, kernel)
 
 
+# Define a Step Actor Factory that allows a dependency to be injected during Step Actor creation
 def step_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> StepActor:
     """Factory function to create StepActor instances with dependencies."""
     return StepActor(ctx, actor_id, kernel=kernel)
 
 
+# Define a lifespan method that registers the actors with the Dapr runtime
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("## actor startup ##")
@@ -58,6 +61,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# Define the FastAPI app along with the DaprApp and the DaprActor
 app = FastAPI(title="SKProcess", lifespan=lifespan)
 dapr_app = DaprApp(app)
 actor = DaprActor(app)
