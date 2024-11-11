@@ -20,38 +20,52 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
 
     cosmos_client: CosmosClient
     database_name: str
+    cosmos_db_nosql_settings: AzureCosmosDBNoSQLSettings
     # If create_database is True, the database will be created
     # if it does not exist when an operation requires a database.
     create_database: bool
 
     def __init__(
         self,
-        database_name: str,
         url: str | None = None,
         key: str | None = None,
+        database_name: str | None = None,
         cosmos_client: CosmosClient | None = None,
         create_database: bool = False,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
         **kwargs,
     ):
         """Initialize the AzureCosmosDBNoSQLBase.
 
         Args:
-            database_name (str): The name of the database. The database may not exist yet.
-                                 If it does not exist, it will be created when the first collection is created.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            database_name (str): The name of the database. The database may not exist yet. If it does not exist,
+                                 it will be created when the first collection is created. Defaults to None.
             cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
                                           Defaults to None.
             create_database (bool): If True, the database will be created if it does not exist.
                                     Defaults to False.
+            env_file_path (str): The path to the .env file. Defaults to None.
+            env_file_encoding (str): The encoding of the .env file. Defaults to None.
             kwargs: Additional keyword arguments.
         """
-        if cosmos_client is None:
-            try:
-                cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
-            except ValidationError as e:
-                raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
+        try:
+            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(
+                url=url,
+                key=key,
+                database_name=database_name,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as e:
+            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
 
+        if cosmos_db_nosql_settings.database_name is None:
+            raise MemoryConnectorInitializationError("The name of the Azure Cosmos DB NoSQL database is missing.")
+
+        if cosmos_client is None:
             if cosmos_db_nosql_settings.key is not None:
                 cosmos_client = CosmosClientWrapper(
                     str(cosmos_db_nosql_settings.url), credential=cosmos_db_nosql_settings.key.get_secret_value()
@@ -62,8 +76,9 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
                 )
 
         super().__init__(
-            database_name=database_name,
             cosmos_client=cosmos_client,
+            database_name=cosmos_db_nosql_settings.database_name,
+            cosmos_db_nosql_settings=cosmos_db_nosql_settings,
             create_database=create_database,
             **kwargs,
         )

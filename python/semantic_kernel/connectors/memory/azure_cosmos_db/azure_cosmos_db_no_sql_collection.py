@@ -49,21 +49,24 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
     def __init__(
         self,
         data_model_type: type[TModel],
-        database_name: str,
         collection_name: str,
+        database_name: str | None = None,
         data_model_definition: VectorStoreRecordDefinition | None = None,
         url: str | None = None,
         key: str | None = None,
         cosmos_client: CosmosClient | None = None,
         partition_key: PartitionKey | str | None = None,
         create_database: bool = False,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Initializes a new instance of the AzureCosmosDBNoSQLCollection class.
 
         Args:
             data_model_type (type[TModel]): The type of the data model.
-            database_name (str): The name of the database. Used to create a database proxy if not provided.
             collection_name (str): The name of the collection.
+            database_name (str): The name of the database. Used to create a database proxy if not provided.
+                                 Defaults to None.
             data_model_definition (VectorStoreRecordDefinition): The definition of the data model. Defaults to None.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
@@ -73,6 +76,8 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
                                                 https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
             create_database (bool): Indicates whether to create the database if it does not exist.
                                     Defaults to False.
+            env_file_path (str): The path to the .env file. Defaults to None.
+            env_file_encoding (str): The encoding of the .env file. Defaults to None.
         """
         if not partition_key:
             partition_key = PartitionKey(path=f"/{COSMOS_ITEM_ID_PROPERTY_NAME}")
@@ -82,11 +87,13 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
 
         super().__init__(
             partition_key=partition_key,
-            database_name=database_name,
             url=url,
             key=key,
+            database_name=database_name,
             cosmos_client=cosmos_client,
             create_database=create_database,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,

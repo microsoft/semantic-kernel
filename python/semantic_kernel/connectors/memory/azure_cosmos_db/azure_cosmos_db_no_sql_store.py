@@ -30,30 +30,36 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
 
     def __init__(
         self,
-        database_name: str,
         url: str | None = None,
         key: str | None = None,
+        database_name: str | None = None,
         cosmos_client: CosmosClient | None = None,
         create_database: bool = False,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Initialize the AzureCosmosDBNoSQLStore.
 
         Args:
-            database_name (str): The name of the database. The database may not exist yet.
-                                 If it does not exist, it will be created when the first collection is created.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            database_name (str): The name of the database. The database may not exist yet. If it does not exist,
+                                 it will be created when the first collection is created. Defaults to None.
             cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
                                           Defaults to None.
             create_database (bool): If True, the database will be created if it does not exist.
                                     Defaults to False.
+            env_file_path (str): The path to the .env file. Defaults to None.
+            env_file_encoding (str): The encoding of the .env file. Defaults to None.
         """
         super().__init__(
-            database_name=database_name,
             url=url,
             key=key,
+            database_name=database_name,
             cosmos_client=cosmos_client,
             create_database=create_database,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
             managed_client=cosmos_client is None,
         )
 
@@ -73,6 +79,8 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
                 data_model_definition=data_model_definition,
                 cosmos_client=self.cosmos_client,
                 create_database=self.create_database,
+                env_file_path=self.cosmos_db_nosql_settings.env_file_path,
+                env_file_encoding=self.cosmos_db_nosql_settings.env_file_encoding,
                 **kwargs,
             )
 

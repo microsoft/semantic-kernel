@@ -22,18 +22,23 @@ class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
 
     Required settings for prefix 'AZURE_COSMOS_DB_NO_SQL_':
     - url: HttpsUrl - The uri of the Azure CosmosDB NoSQL account.
-           This value can be found in the Keys & Endpoint section when examining
-           your resource from the Azure portal.
-           (Env var name: AZURE_COSMOS_DB_NO_SQL_URL)
+       This value can be found in the Keys & Endpoint section when examining
+       your resource from the Azure portal.
+       (Env var name: AZURE_COSMOS_DB_NO_SQL_URL)
 
     Optional settings for prefix 'AZURE_COSMOS_DB_NO_SQL_':
     - key: SecretStr - The primary key of the Azure CosmosDB NoSQL account.
-           This value can be found in the Keys & Endpoint section when examining
-           your resource from the Azure portal.
-           (Env var name: AZURE_COSMOS_DB_NO_SQL_KEY)
+       This value can be found in the Keys & Endpoint section when examining
+       your resource from the Azure portal.
+       (Env var name: AZURE_COSMOS_DB_NO_SQL_KEY)
+    - database_name: str - The name of the database. Please refer to this documentation
+       on Azure CosmosDB NoSQL resource model:
+       https://learn.microsoft.com/en-us/azure/cosmos-db/resource-model
+       (Env var name: AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME)
     """
 
     env_prefix: ClassVar[str] = "AZURE_COSMOS_DB_NO_SQL_"
 
     url: HttpUrl
     key: SecretStr | None = None
+    database_name: str | None = None

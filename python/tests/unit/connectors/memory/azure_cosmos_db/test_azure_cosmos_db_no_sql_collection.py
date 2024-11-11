@@ -33,8 +33,8 @@ def test_azure_cosmos_db_no_sql_collection_init(
     """Test the initialization of an AzureCosmosDBNoSQLCollection object."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
+        database_name=database_name,
         url=url,
         key=key,
     )
@@ -50,34 +50,64 @@ def test_azure_cosmos_db_no_sql_collection_init(
 def test_azure_cosmos_db_no_sql_collection_init_env(
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLCollection object with environment variables."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
     assert vector_collection is not None
-    assert vector_collection.database_name == database_name
+    assert (
+        vector_collection.database_name == azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"]
+    )
     assert vector_collection.collection_name == collection_name
     assert vector_collection.partition_key.path == f"/{vector_collection.data_model_definition.key_field_name}"
     assert vector_collection.create_database is False
 
 
+@pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_NO_SQL_URL"]], indirect=True)
+def test_azure_cosmos_db_no_sql_collection_init_no_url(
+    azure_cosmos_db_no_sql_unit_test_env,
+    data_model_type,
+    collection_name: str,
+) -> None:
+    """Test the initialization of an AzureCosmosDBNoSQLCollection object with missing URL."""
+    with pytest.raises(MemoryConnectorInitializationError):
+        AzureCosmosDBNoSQLCollection(
+            data_model_type=data_model_type,
+            collection_name=collection_name,
+            env_file_path="fake_path",
+        )
+
+
+@pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"]], indirect=True)
+def test_azure_cosmos_db_no_sql_collection_init_no_database_name(
+    azure_cosmos_db_no_sql_unit_test_env,
+    data_model_type,
+    collection_name: str,
+) -> None:
+    """Test the initialization of an AzureCosmosDBNoSQLCollection object with missing database name."""
+    with pytest.raises(
+        MemoryConnectorInitializationError, match="The name of the Azure Cosmos DB NoSQL database is missing."
+    ):
+        AzureCosmosDBNoSQLCollection(
+            data_model_type=data_model_type,
+            collection_name=collection_name,
+            env_file_path="fake_path",
+        )
+
+
 def test_azure_cosmos_db_no_sql_collection_invalid_settings(
     clear_azure_cosmos_db_no_sql_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLCollection object with invalid settings."""
     with pytest.raises(MemoryConnectorInitializationError):
         AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
-            database_name=database_name,
             collection_name=collection_name,
             url="invalid_url",
         )
@@ -88,13 +118,11 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client(
     mock_cosmos_client_init,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the creation of a cosmos client."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -110,15 +138,15 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
     mock_cosmos_client_init,
     clear_azure_cosmos_db_no_sql_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
+    database_name: str,
     url: str,
 ) -> None:
     """Test the creation of a cosmos client."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
+        database_name=database_name,
         url=url,
     )
 
@@ -132,7 +160,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the creation of a cosmos DB NoSQL database if it does not exist when create_database=True."""
@@ -141,7 +168,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
 
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
         cosmos_client=mock_cosmos_client,
         create_database=True,
@@ -151,8 +177,12 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
 
     await vector_collection._get_database_proxy()
 
-    mock_cosmos_client.get_database_client.assert_called_once_with(database_name)
-    mock_cosmos_client.create_database.assert_called_once_with(database_name)
+    mock_cosmos_client.get_database_client.assert_called_once_with(
+        azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"]
+    )
+    mock_cosmos_client.create_database.assert_called_once_with(
+        azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"]
+    )
 
 
 @pytest.mark.asyncio
@@ -161,7 +191,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test _get_database_proxy raises an error if the database does not exist when create_database=False."""
@@ -170,7 +199,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
 
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
         cosmos_client=mock_cosmos_client,
         create_database=False,
@@ -191,13 +219,11 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ):
     """Test the creation of a cosmos DB NoSQL collection."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -224,13 +250,11 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ):
     """Test the creation of a cosmos DB NoSQL collection with a custom indexing policy."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -257,13 +281,11 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ):
     """Test the creation of a cosmos DB NoSQL collection with a custom vector embedding policy."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -297,13 +319,11 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
     mock_cosmos_client,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ):
     """Test the creation of a cosmos DB NoSQL collection with an unsupported index kind."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -321,13 +341,11 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
     mock_database_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the deletion of a cosmos DB NoSQL collection."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -346,13 +364,11 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
     mock_database_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the deletion of a cosmos DB NoSQL collection that does not exist."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -369,7 +385,6 @@ async def test_azure_cosmos_db_no_sql_upsert(
     mock_container_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the upsert of a document in a cosmos DB NoSQL collection."""
@@ -377,7 +392,6 @@ async def test_azure_cosmos_db_no_sql_upsert(
 
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -399,7 +413,6 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
     mock_container_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type_with_key_as_key_field,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the upsert of a document in a cosmos DB NoSQL collection where the name of the key field is 'key'."""
@@ -408,7 +421,6 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
 
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type_with_key_as_key_field,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -430,13 +442,11 @@ async def test_azure_cosmos_db_no_sql_get(
     mock_container_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the retrieval of a document from a cosmos DB NoSQL collection."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -459,13 +469,11 @@ async def test_azure_cosmos_db_no_sql_get_without_id(
     mock_container_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type_with_key_as_key_field,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the retrieval of a document from a cosmos DB NoSQL collection where the name of the key field is 'key'."""
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type_with_key_as_key_field,
-        database_name=database_name,
         collection_name=collection_name,
     )
 
@@ -490,13 +498,11 @@ async def test_client_is_closed(
     mock_cosmos_client_close,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
-    database_name: str,
     collection_name: str,
 ) -> None:
     """Test the close method of an AzureCosmosDBNoSQLCollection object."""
     async with AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
-        database_name=database_name,
         collection_name=collection_name,
     ) as collection:
         assert collection.cosmos_client is not None
