@@ -154,16 +154,14 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             logger.error(f"Error in prepare_incoming_messages: {error_message}")
             raise Exception(error_message)
 
-    async def process_incoming_messages(self) -> None:
-        """Triggers the step to process all prepared messages."""
-        logger.info(f"Processing incoming messages for step {self.name}.")
-
+    async def process_incoming_messages(self):
+        """Processes the incoming messages for the step."""
         while not self.incoming_messages.empty():
             message = self.incoming_messages.get()
-            logger.info(f"Processing message {message}.")
             await self.handle_message(message)
 
-        await self._state_manager.try_add_state(ActorStateKeys.StepIncomingMessagesState.value, self.incoming_messages)
+        messages_to_save = [json.dumps(msg.model_dump()) for msg in list(self.incoming_messages.queue)]
+        await self._state_manager.try_add_state(ActorStateKeys.StepIncomingMessagesState.value, messages_to_save)
         await self._state_manager.save_state()
 
     def _get_class_from_string(self, full_class_name: str):

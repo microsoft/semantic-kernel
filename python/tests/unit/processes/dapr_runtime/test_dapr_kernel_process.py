@@ -1,0 +1,117 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
+import pytest
+
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.processes.dapr_runtime.dapr_kernel_process import start
+from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
+from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
+from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+
+
+# Define a fake DaprKernelProcessContext with only the needed method
+class FakeDaprKernelProcessContext:
+    def __init__(self, process):
+        self.process = process
+        self.start_with_event = AsyncMock()
+        print("FakeDaprKernelProcessContext initialized")  # Diagnostic print to confirm usage
+
+
+@pytest.mark.asyncio
+async def test_start_with_valid_parameters():
+    # Arrange
+    state = MagicMock(spec=KernelProcessState)
+    state.name = "valid_state"
+    state.id = "state_1"
+
+    mock_step = MagicMock(spec=KernelProcessStepInfo)
+    process = KernelProcess(state=state, steps=[mock_step])
+
+    kernel = MagicMock(spec=Kernel)
+    initial_event = KernelProcessEvent(id="event_1", data="data_1")
+
+    with patch(
+        "semantic_kernel.processes.dapr_runtime.dapr_kernel_process.DaprKernelProcessContext",
+        new=FakeDaprKernelProcessContext,
+    ):
+        # Act
+        result = await start(process=process, kernel=kernel, initial_event=initial_event)
+
+        # Assert
+        assert isinstance(result, FakeDaprKernelProcessContext)
+        assert result.process == process
+        result.start_with_event.assert_called_once_with(initial_event)
+
+
+@pytest.mark.asyncio
+async def test_start_with_invalid_process():
+    # Arrange
+    kernel = MagicMock(spec=Kernel)
+    initial_event = KernelProcessEvent(id="event_1", data="data_1")
+
+    # Act & Assert
+    with pytest.raises(ProcessInvalidConfigurationException, match="process cannot be None"):
+        await start(process=None, kernel=kernel, initial_event=initial_event)
+
+
+@pytest.mark.asyncio
+async def test_start_with_invalid_kernel():
+    # Arrange
+    state = MagicMock(spec=KernelProcessState)
+    type(state).name = PropertyMock(return_value="valid_state")
+    mock_step = MagicMock(spec=KernelProcessStepInfo)
+    process = KernelProcess(state=state, steps=[mock_step])
+    initial_event = KernelProcessEvent(id="event_1", data="data_1")
+
+    # Act & Assert
+    with pytest.raises(ProcessInvalidConfigurationException, match="kernel cannot be None"):
+        await start(process=process, kernel=None, initial_event=initial_event)
+
+
+@pytest.mark.asyncio
+async def test_start_with_invalid_initial_event():
+    # Arrange
+    state = MagicMock(spec=KernelProcessState)
+    type(state).name = PropertyMock(return_value="valid_state")
+    mock_step = MagicMock(spec=KernelProcessStepInfo)
+    process = KernelProcess(state=state, steps=[mock_step])
+    kernel = MagicMock(spec=Kernel)
+
+    # Act & Assert
+    with pytest.raises(ProcessInvalidConfigurationException, match="initial_event cannot be None"):
+        await start(process=process, kernel=kernel, initial_event=None)
+
+
+@pytest.mark.asyncio
+async def test_start_with_initial_event_as_string():
+    # Arrange
+    state = MagicMock(spec=KernelProcessState)
+    type(state).name = PropertyMock(return_value="valid_state")
+    mock_step = MagicMock(spec=KernelProcessStepInfo)
+    process = KernelProcess(state=state, steps=[mock_step])
+    kernel = MagicMock(spec=Kernel)
+    initial_event = "start_event"
+
+    # Mock DaprKernelProcessContext and its start_with_event method
+    with patch(
+        "semantic_kernel.processes.dapr_runtime.dapr_kernel_process.DaprKernelProcessContext", new=MagicMock()
+    ) as mock_process_context_class:
+        mock_process_context_instance = mock_process_context_class.return_value
+        mock_process_context_instance.start_with_event = AsyncMock()
+
+        # Act
+        result = await start(process=process, kernel=kernel, initial_event=initial_event, data="event_data")
+
+        # Assert
+        assert result == mock_process_context_instance
+        # Verify that the initial event was correctly converted to a KernelProcessEvent
+        mock_process_context_instance.start_with_event.assert_called_once()
+        args, _ = mock_process_context_instance.start_with_event.call_args
+        actual_event = args[0]
+        assert isinstance(actual_event, KernelProcessEvent)
+        assert actual_event.id == "start_event"
+        assert actual_event.data == "event_data"

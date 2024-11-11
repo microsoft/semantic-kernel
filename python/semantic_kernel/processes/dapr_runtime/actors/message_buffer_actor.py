@@ -24,7 +24,11 @@ class MessageBufferActor(Actor, MessageBufferInterface):
         self.queue: Queue[str] = Queue()
 
     async def enqueue(self, message: str) -> None:
-        """Enqueues a message event into the buffer and updates the state."""
+        """Enqueues a message event into the buffer and updates the state.
+
+        Args:
+            message (str): The message to enqueue.
+        """
         try:
             self.queue.put(message)
 
@@ -45,7 +49,7 @@ class MessageBufferActor(Actor, MessageBufferInterface):
             while not self.queue.empty():
                 items.append(self.queue.get())
 
-            await self._state_manager.try_add_state(ActorStateKeys.MessageQueueState.value, json.dumps(items))
+            await self._state_manager.try_add_state(ActorStateKeys.MessageQueueState.value, json.dumps([]))
             await self._state_manager.save_state()
 
             return items
@@ -56,6 +60,7 @@ class MessageBufferActor(Actor, MessageBufferInterface):
             raise Exception(error_message)
 
     async def _on_activate(self) -> None:
+        """Called when the actor is activated."""
         try:
             logger.info(f"Activating actor with ID: {self.id.id}")
 

@@ -31,7 +31,7 @@ from semantic_kernel.processes.process_builder import ProcessBuilder
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 
 kernel = Kernel()
@@ -49,7 +49,7 @@ def step_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> StepActor
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("~~ actor startup")
+    print("## actor startup ##")
     await actor.register_actor(ProcessActor, actor_factory=process_actor_factory)
     await actor.register_actor(StepActor, actor_factory=step_actor_factory)
     await actor.register_actor(EventBufferActor)
@@ -90,6 +90,7 @@ class KickOffStep(KernelProcessStep):
 
     @kernel_function(name=KICK_OFF_FUNCTION)
     async def print_welcome_message(self, context: KernelProcessStepContext):
+        print("##### Kickoff ran.")
         await context.emit_event(process_event=CommonEvents.StartARequested.value, data="Get Going A")
         await context.emit_event(process_event=CommonEvents.StartBRequested.value, data="Get Going B")
 
@@ -99,6 +100,7 @@ class KickOffStep(KernelProcessStep):
 class AStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
+        print("##### AStep ran.")
         await asyncio.sleep(1)
         await context.emit_event(process_event=CommonEvents.AStepDone.value, data="I did A")
 
@@ -108,13 +110,14 @@ class AStep(KernelProcessStep):
 class BStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
+        print("##### BStep ran.")
         await asyncio.sleep(2)
         await context.emit_event(process_event=CommonEvents.BStepDone.value, data="I did B")
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
 class CStepState(KernelBaseModel):
-    current_cycle: int = 0
+    current_cycle: int = 1
 
 
 # Define a sample `CStep` step that will emit an `ExitRequested` event after 3 cycles.
@@ -124,16 +127,18 @@ class CStep(KernelProcessStep[CStepState]):
     # The activate method overrides the base class method to set the state in the step.
     async def activate(self, state: KernelProcessStepState[CStepState]):
         """Activates the step and sets the state."""
+        step_state = CStepState.model_validate(state.state)
+        print(f"##### CStep activated with Cycle = '{step_state.current_cycle}'.")
         self.state = state.state
 
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext, astepdata: str, bstepdata: str):
         self.state.current_cycle += 1
-        print(f"CStep Current Cycle: {self.state.current_cycle}")
         if self.state.current_cycle >= 3:
-            print("CStep Exit Requested")
+            print("##### CStep run cycle 3 - exiting.")
             await context.emit_event(process_event=CommonEvents.ExitRequested.value)
             return
+        print(f"##### CStep run cycle {self.state.current_cycle}")
         await context.emit_event(process_event=CommonEvents.CStepDone.value)
 
 
@@ -148,7 +153,9 @@ def get_process() -> "KernelProcess":
     kickoff_step = process.add_step(step_type=KickOffStep)
     myAStep = process.add_step(step_type=AStep)
     myBStep = process.add_step(step_type=BStep)
-    myCStep = process.add_step(step_type=CStep)
+
+    # Intialize the CStep with an initial state and the state's current cycle set to 1
+    myCStep = process.add_step(step_type=CStep, initial_state=CStepState(current_cycle=1))
 
     # Define the input event and where to send it to
     process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(target=kickoff_step)
@@ -180,4 +187,4 @@ async def start_process(process_id: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5001)  # nosec
+    uvicorn.run(app, host="0.0.0.0", port=5001, log_level="error")  # nosec

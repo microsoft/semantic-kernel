@@ -16,7 +16,6 @@ class ProcessInterface(ActorInterface, ABC):
 
     @abstractmethod
     @actormethod(name="initialize_process")
-    # async def initialize_process(self, process_info: "DaprProcessInfo", parent_process_id: str | None = None) -> None:
     async def initialize_process(self, input: dict) -> None:
         """Initializes the process with the specified instance of DaprProcessInfo.
 

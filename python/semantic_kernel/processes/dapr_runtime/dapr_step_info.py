@@ -36,7 +36,6 @@ class DaprStepInfo(KernelBaseModel):
         if kernel_step_info is None:
             raise KernelException("Kernel step info must be provided")
 
-        # Get the fully qualified name of the inner step type
         inner_step_type = get_fully_qualified_name(kernel_step_info.inner_step_type)
 
         return DaprStepInfo(

@@ -39,19 +39,14 @@ class DaprKernelProcessContext:
         dapr_process = DaprProcessInfo.from_kernel_process(self.process)
         dapr_process_dict = dapr_process.model_dump()
 
-        # Prepare the payload with the serialized DaprProcessInfo
         payload = {
             "process_info": dapr_process_dict,
             "parent_process_id": None,
         }
 
-        # Send the payload to the actor method
         await self.dapr_process.initialize_process(payload)
-
-        # Serialize the initial event
         initial_event_json = initial_event.model_dump_json()
 
-        # Start the process with the initial event
         await self.dapr_process.run_once(initial_event_json)
 
     async def send_event(self, event: KernelProcessEvent) -> None:

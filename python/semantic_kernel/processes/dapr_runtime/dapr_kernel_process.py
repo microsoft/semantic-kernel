@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING
 
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
@@ -22,15 +23,15 @@ async def start(
     """Start the kernel process."""
     if process is None:
         raise ProcessInvalidConfigurationException("process cannot be None")
-    if process.state is None or not process.state.name:
-        raise ProcessInvalidConfigurationException("process state name cannot be empty")
+    if process.state is None:
+        raise ProcessInvalidConfigurationException("process state cannot be empty")
     if kernel is None:
         raise ProcessInvalidConfigurationException("kernel cannot be None")
     if initial_event is None:
         raise ProcessInvalidConfigurationException("initial_event cannot be None")
 
     if isinstance(initial_event, str):
-        initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data", None))
+        initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data"))
 
     if process_id is not None:
         process.state.id = process_id
