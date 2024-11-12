@@ -24,7 +24,7 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     user_agent: str | None = None
     enable_dynamic_payload: bool = True
     enable_payload_namespacing: bool = False
-    operations_to_exclude: list[str] = Field(default_factory=list)
+    operations_to_exclude: list[str] = Field(default_factory=list, description="The operationId(s) to exclude")
 
     def model_post_init(self, __context: Any) -> None:
         """Post initialization method for the model."""

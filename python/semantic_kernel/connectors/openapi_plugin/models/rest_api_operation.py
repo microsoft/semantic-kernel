@@ -18,6 +18,7 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload_property import (
     RestApiOperationPayloadProperty,
 )
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -58,6 +59,7 @@ class RestApiOperation:
         params: list["RestApiOperationParameter"] | None = None,
         request_body: "RestApiOperationPayload | None" = None,
         responses: dict[str, "RestApiOperationExpectedResponse"] | None = None,
+        security_requirements: list[RestApiSecurityRequirement] | None = None,
     ):
         """Initialize the RestApiOperation."""
         self.id = id
@@ -69,6 +71,7 @@ class RestApiOperation:
         self.parameters = params if params else []
         self.request_body = request_body
         self.responses = responses
+        self.security_requirements = security_requirements
 
     def url_join(self, base_url: str, path: str):
         """Join a base URL and a path, correcting for any missing slashes."""

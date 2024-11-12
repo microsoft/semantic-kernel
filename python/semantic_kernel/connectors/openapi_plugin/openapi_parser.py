@@ -19,6 +19,8 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload_property import (
     RestApiOperationPayloadProperty,
 )
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme import RestApiSecurityScheme
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -160,20 +162,59 @@ class OpenApiParser:
                     ),
                 )
 
+    def _parse_security_schemes(self, components: dict) -> dict[str, dict]:
+        security_schemes = {}
+        schemes = components.get("securitySchemes", {})
+        for scheme_name, scheme_data in schemes.items():
+            security_schemes[scheme_name] = scheme_data
+        return security_schemes
+
+    def _create_rest_api_security_scheme(self, security_scheme_data: dict) -> RestApiSecurityScheme:
+        return RestApiSecurityScheme(
+            security_scheme_type=security_scheme_data.get("type", ""),
+            description=security_scheme_data.get("description"),
+            name=security_scheme_data.get("name", ""),
+            in_=security_scheme_data.get("in", ""),
+            scheme=security_scheme_data.get("scheme", ""),
+            bearer_format=security_scheme_data.get("bearerFormat"),
+            flows=security_scheme_data.get("flows"),
+            open_id_connect_url=security_scheme_data.get("openIdConnectUrl", ""),
+        )
+
+    def _create_security_requirements(
+        self,
+        security: list[dict[str, list[str]]],
+        security_schemes: dict[str, dict],
+    ) -> list[RestApiSecurityRequirement]:
+        security_requirements: list[RestApiSecurityRequirement] = []
+
+        for requirement in security:
+            for scheme_name, scopes in requirement.items():
+                scheme_data = security_schemes.get(scheme_name)
+                if not scheme_data:
+                    raise PluginInitializationError(f"Security scheme '{scheme_name}' is not defined in components.")
+                scheme = self._create_rest_api_security_scheme(scheme_data)
+                security_requirements.append(RestApiSecurityRequirement({scheme: scopes}))
+
+        return security_requirements
+
     def create_rest_api_operations(
         self,
         parsed_document: Any,
         execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
     ) -> dict[str, RestApiOperation]:
-        """Create the REST API Operations from the parsed OpenAPI document.
+        """Create REST API operations from the parsed OpenAPI document.
 
         Args:
-            parsed_document: The parsed OpenAPI document
-            execution_settings: The execution settings
+            parsed_document: The parsed OpenAPI document.
+            execution_settings: The execution settings.
 
         Returns:
-            A dictionary of RestApiOperation objects keyed by operationId
+            A dictionary of RestApiOperation instances.
         """
+        components = parsed_document.get("components", {})
+        security_schemes = self._parse_security_schemes(components)
+
         paths = parsed_document.get("paths", {})
         request_objects = {}
 
@@ -186,15 +227,22 @@ class OpenApiParser:
         for path, methods in paths.items():
             for method, details in methods.items():
                 request_method = method.lower()
-
-                parameters = details.get("parameters", [])
                 operationId = details.get("operationId", path + "_" + request_method)
+
+                if execution_settings and operationId in execution_settings.operations_to_exclude:
+                    logger.info(f"Skipping operation {operationId} as it is excluded.")
+                    continue
+
                 summary = details.get("summary", None)
                 description = details.get("description", None)
 
+                parameters = details.get("parameters", [])
                 parsed_params = self._parse_parameters(parameters)
                 request_body = self._create_rest_api_operation_payload(operationId, details.get("requestBody", None))
                 responses = dict(self._create_response(details.get("responses", {})))
+
+                operation_security = details.get("security", [])
+                security_requirements = self._create_security_requirements(operation_security, security_schemes)
 
                 rest_api_operation = RestApiOperation(
                     id=operationId,
@@ -206,6 +254,7 @@ class OpenApiParser:
                     summary=summary,
                     description=description,
                     responses=OrderedDict(responses),
+                    security_requirements=security_requirements,
                 )
 
                 request_objects[operationId] = rest_api_operation

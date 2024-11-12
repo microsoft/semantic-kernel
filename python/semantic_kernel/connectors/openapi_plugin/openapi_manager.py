@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter import RestApiOperationParameter
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import RestApiOperationRunOptions
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_uri import Uri
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.connectors.openapi_plugin.openapi_runner import OpenApiRunner
@@ -16,7 +18,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.schema.kernel_json_schema_builder import TYPE_MAPPING
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -27,6 +29,18 @@ if TYPE_CHECKING:
     )
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@experimental_class
+class OperationExtensions(Enum):
+    """The operation extensions."""
+
+    METHOD_KEY = "method"
+    OPERATION_KEY = "operation"
+    INFO_KEY = "info"
+    SECURITY_KEY = "security"
+    SERVER_URLS_KEY = "server-urls"
+    METADATA_KEY = "operation-extensions"
 
 
 @experimental_function
@@ -50,6 +64,8 @@ def create_functions_from_openapi(
         raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
     operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 
+    global_security_requirements = parsed_doc.get("security", [])
+
     auth_callback = None
     if execution_settings and execution_settings.auth_callback:
         auth_callback = execution_settings.auth_callback
@@ -63,7 +79,13 @@ def create_functions_from_openapi(
     )
 
     return [
-        _create_function_from_operation(openapi_runner, operation, plugin_name, execution_parameters=execution_settings)
+        _create_function_from_operation(
+            openapi_runner,
+            operation,
+            plugin_name,
+            execution_parameters=execution_settings,
+            security=global_security_requirements,
+        )
         for operation in operations.values()
     ]
 
@@ -75,6 +97,7 @@ def _create_function_from_operation(
     plugin_name: str | None = None,
     execution_parameters: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
     document_uri: str | None = None,
+    security: list[RestApiSecurityRequirement] | None = None,
 ) -> KernelFunctionFromMethod:
     logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation.id}")
 
@@ -145,7 +168,18 @@ def _create_function_from_operation(
 
     return_parameter = operation.get_default_return_parameter()
 
-    additional_metadata = {"method": operation.method.upper()}
+    additional_metadata = {
+        OperationExtensions.METHOD_KEY.value: operation.method.upper(),
+        OperationExtensions.OPERATION_KEY.value: operation,
+        OperationExtensions.SERVER_URLS_KEY.value: (
+            [operation.servers[0].geturl()]
+            if operation.servers and len(operation.servers) > 0 and operation.servers[0].geturl()
+            else []
+        ),
+    }
+
+    if security is not None:
+        additional_metadata[OperationExtensions.SECURITY_KEY.value] = security
 
     return KernelFunctionFromMethod(
         method=run_openapi_operation,
