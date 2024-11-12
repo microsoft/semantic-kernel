@@ -101,7 +101,8 @@ qdrant = [
 ]
 redis = [
     "redis[hiredis] ~= 5.0",
-    "types-redis ~= 4.6.0.20240425"
+    "types-redis ~= 4.6.0.20240425",
+    "redisvl >= 0.3.6",
 ]
 usearch = [
     "usearch ~= 2.9",
@@ -206,8 +207,4 @@ name = "semantic_kernel"
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
-[dependency-groups]
-redis = [
-    "redisvl>=0.3.6",
-]
 

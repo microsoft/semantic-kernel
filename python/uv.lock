@@ -4661,6 +4661,7 @@ qdrant = [
 ]
 redis = [
     { name = "redis", extra = ["hiredis"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "redisvl", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "types-redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 usearch = [
@@ -4684,9 +4685,6 @@ dev = [
     { name = "ruff", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "snoop", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "types-pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-redis = [
-    { name = "redisvl", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 
 [package.metadata]
@@ -4730,6 +4728,7 @@ requires-dist = [
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.11" },
     { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=5.0" },
+    { name = "redisvl", marker = "extra == 'redis'", specifier = ">=0.3.6" },
     { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<4.0" },
     { name = "torch", marker = "extra == 'hugging-face'", specifier = "==2.5.1" },
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
@@ -4752,7 +4751,6 @@ dev = [
     { name = "snoop", specifier = "~=0.4" },
     { name = "types-pyyaml", specifier = "~=6.0.12.20240311" },
 ]
-redis = [{ name = "redisvl", specifier = ">=0.3.6" }]
 
 [[package]]
 name = "sentence-transformers"
