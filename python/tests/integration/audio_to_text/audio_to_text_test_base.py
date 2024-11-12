@@ -5,8 +5,7 @@ import os
 import pytest
 
 from semantic_kernel.connectors.ai.audio_to_text_client_base import AudioToTextClientBase
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
+from semantic_kernel.connectors.ai.open_ai import AzureAudioToText, OpenAIAudioToText
 from tests.integration.utils import is_service_setup_for_testing
 
 # There is only the whisper model available on Azure OpenAI for audio to text. And that model is

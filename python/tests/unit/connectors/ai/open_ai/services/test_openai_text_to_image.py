@@ -8,10 +8,7 @@ from openai.resources.images import AsyncImages
 from openai.types.image import Image
 from openai.types.images_response import ImagesResponse
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
-    OpenAITextToImageExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
+from semantic_kernel.connectors.ai.open_ai import OpenAITextToImage, OpenAITextToImageExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,

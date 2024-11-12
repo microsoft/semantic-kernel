@@ -7,7 +7,7 @@ import pytest
 from openai import AsyncAzureOpenAI, _legacy_response
 from openai.resources.audio.speech import AsyncSpeech
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
+from semantic_kernel.connectors.ai.open_ai import AzureTextToAudio
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 

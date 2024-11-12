@@ -12,21 +12,15 @@ from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.images_response import ImagesResponse
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_audio_to_text_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
     OpenAIAudioToTextExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
     OpenAITextToAudioExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
     OpenAITextToImageExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema

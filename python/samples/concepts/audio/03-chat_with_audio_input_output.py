@@ -6,17 +6,14 @@ import os
 
 from samples.concepts.audio.audio_player import AudioPlayer
 from samples.concepts.audio.audio_recorder import AudioRecorder
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureAudioToText,
+    AzureChatCompletion,
+    AzureTextToAudio,
     OpenAIChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
     OpenAITextToAudioExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent, ChatHistory
 
 # This simple sample demonstrates how to use the AzureChatCompletion, AzureTextToAudio, and AzureAudioToText
 # services to create a chat bot that can communicate with the user using both audio input and output.
@@ -95,7 +92,7 @@ async def chat() -> bool:
     print("Mosscap:> ", end="", flush=True)
     AudioPlayer(audio_content=audio_content).play(text=response.content)
 
-    history.add_assistant_message(response.content)
+    history.add_message(response)
 
     return True
 

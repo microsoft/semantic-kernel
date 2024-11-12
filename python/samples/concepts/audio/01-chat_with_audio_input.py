@@ -5,13 +5,11 @@ import logging
 import os
 
 from samples.concepts.audio.audio_recorder import AudioRecorder
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureAudioToText, AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent, ChatHistory
 
 # This simple sample demonstrates how to use the AzureChatCompletion and AzureAudioToText services
 # to create a chat bot that can communicate with the user using audio input.

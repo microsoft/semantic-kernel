@@ -4,14 +4,12 @@ import asyncio
 import logging
 
 from samples.concepts.audio.audio_player import AudioPlayer
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureChatCompletion,
+    AzureTextToAudio,
     OpenAIChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
     OpenAITextToAudioExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
 from semantic_kernel.contents import ChatHistory
 
 # This simple sample demonstrates how to use the AzureChatCompletion and AzureTextToAudio services
@@ -82,7 +80,7 @@ async def chat() -> bool:
 
     print(f"Mosscap:> {response.content}")
 
-    history.add_assistant_message(response.content)
+    history.add_message(response)
 
     return True
 

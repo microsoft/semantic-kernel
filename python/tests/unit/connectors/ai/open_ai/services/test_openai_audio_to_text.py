@@ -9,11 +9,9 @@ from openai import AsyncClient
 from openai.resources.audio.transcriptions import AsyncTranscriptions
 from openai.types.audio import Transcription
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_audio_to_text_execution_settings import (
-    OpenAIAudioToTextExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIAudioToTextExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 

@@ -6,15 +6,15 @@ import wave
 from typing import ClassVar
 
 import pyaudio
+from pydantic import BaseModel
 
-from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.contents import AudioContent
 
 logging.basicConfig(level=logging.WARNING)
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AudioPlayer(KernelBaseModel):
+class AudioPlayer(BaseModel):
     """A class to play an audio file to the default audio output device."""
 
     # Audio replay parameters

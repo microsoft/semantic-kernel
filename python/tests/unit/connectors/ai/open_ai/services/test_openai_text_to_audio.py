@@ -8,10 +8,7 @@ import pytest
 from openai import AsyncClient, _legacy_response
 from openai.resources.audio.speech import AsyncSpeech
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
-    OpenAITextToAudioExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
+from semantic_kernel.connectors.ai.open_ai import OpenAITextToAudio, OpenAITextToAudioExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 

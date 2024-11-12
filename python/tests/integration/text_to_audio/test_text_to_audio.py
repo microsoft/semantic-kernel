@@ -4,7 +4,7 @@
 import pytest
 
 from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent
 from tests.integration.text_to_audio.text_to_audio_test_base import TextToAudioTestBase
 
 pytestmark = pytest.mark.parametrize(

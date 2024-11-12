@@ -4,8 +4,7 @@ import os
 
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
+from semantic_kernel.connectors.ai.open_ai import AzureTextToAudio, OpenAITextToAudio
 from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
 from tests.integration.utils import is_service_setup_for_testing
 
