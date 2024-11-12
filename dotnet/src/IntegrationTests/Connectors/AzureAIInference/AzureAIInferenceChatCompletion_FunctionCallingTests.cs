@@ -44,7 +44,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
@@ -60,7 +60,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task CanAutoInvokeKernelFunctionsWithEnumTypeParametersAsync()
     {
         // Arrange
@@ -76,7 +76,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("rain", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
         // Arrange
@@ -102,7 +102,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingAsync()
     {
         // Arrange
@@ -142,7 +142,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("rain", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorAsync()
     {
         // Arrange
@@ -186,7 +186,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         TestHelpers.AssertChatErrorExcuseMessage(messageContent.Content);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesSupportSimulatedFunctionCallsAsync()
     {
         // Arrange
@@ -215,7 +215,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("tornado", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingAsync()
     {
         // Arrange
@@ -264,7 +264,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
     {
         // Arrange
@@ -288,7 +288,7 @@ public sealed class AzureAIInferenceChatCompletionFunctionCallingTests : BaseInt
         Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task RequiredFunctionShouldBeCalledAsync()
     {
         // Arrange

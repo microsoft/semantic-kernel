@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 /// <summary>
 /// Chat completion service for Azure AI Inference.
 /// </summary>
-[Obsolete("Dedicated AzureAIInferenceChatCompletionService is deprecated. Use OllamaApiClient.AsChatCompletionService() instead.")]
+[Obsolete("Dedicated AzureAIInferenceChatCompletionService is deprecated. Use Azure.AI.Inference.ChatCompletionsClient.AsChatClient().AsChatCompletionService() instead.")]
 public sealed class AzureAIInferenceChatCompletionService : IChatCompletionService
 {
     private readonly ChatClientCore _core;
