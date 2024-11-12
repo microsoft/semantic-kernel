@@ -10,11 +10,13 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.open_ai import OpenAITextToAudioExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
+    OpenAITextToAudioExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
-from semantic_kernel.contents import AudioContent
+from semantic_kernel.contents.audio_content import AudioContent
 
 
 class OpenAITextToAudioBase(OpenAIHandler, TextToAudioClientBase):

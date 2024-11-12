@@ -5,7 +5,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import AudioContent, TextContent
+from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 

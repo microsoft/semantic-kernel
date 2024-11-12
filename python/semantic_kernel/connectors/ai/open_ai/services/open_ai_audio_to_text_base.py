@@ -13,7 +13,9 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.ai.audio_to_text_client_base import AudioToTextClientBase
-from semantic_kernel.connectors.ai.open_ai import OpenAIAudioToTextExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_audio_to_text_execution_settings import (
+    OpenAIAudioToTextExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import AudioContent, TextContent

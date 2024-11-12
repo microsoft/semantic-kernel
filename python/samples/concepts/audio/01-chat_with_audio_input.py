@@ -5,8 +5,9 @@ import logging
 import os
 
 from samples.concepts.audio.audio_recorder import AudioRecorder
-from semantic_kernel.connectors.ai.open_ai import AzureAudioToText, AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureAudioToText,
+    AzureChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.contents import AudioContent, ChatHistory
