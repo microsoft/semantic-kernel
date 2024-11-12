@@ -361,7 +361,6 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 
     public static TheoryData<string?, string?> Versions => new()
     {
-        { null, "2024-08-01-preview" },
         { "V2024_10_01_preview", "2024-10-01-preview" },
         { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
         { "2024_10_01_Preview", "2024-10-01-preview" },

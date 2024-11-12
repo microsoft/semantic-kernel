@@ -5,7 +5,8 @@
     <AssemblyName>Microsoft.SemanticKernel.PromptTemplates.Liquid</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

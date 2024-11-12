@@ -170,7 +170,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             Console.WriteLine($"Chunk ID: {citation.ChunkId}");
             Console.WriteLine($"Title: {citation.Title}");
             Console.WriteLine($"File path: {citation.FilePath}");
-            Console.WriteLine($"URI: {citation.Uri}");
+            Console.WriteLine($"URL: {citation.Url}");
             Console.WriteLine($"Content: {citation.Content}");
         }
     }

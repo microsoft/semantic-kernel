@@ -100,6 +100,8 @@ jobs:
       VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
       VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+      AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+      AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
@@ -150,6 +152,12 @@ jobs:
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -159,31 +167,37 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
@@ -255,6 +269,8 @@ jobs:
       VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
       VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+      AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+      AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
@@ -305,6 +321,12 @@ jobs:
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -314,31 +336,37 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
