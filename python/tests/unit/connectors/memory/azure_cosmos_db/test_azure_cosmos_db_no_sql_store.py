@@ -85,8 +85,8 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
     assert vector_store.vector_record_collections.get(collection_name) is not None
     mock_azure_cosmos_db_no_sql_collection_init.assert_called_once_with(
         data_model_type,
-        azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"],
         collection_name,
+        database_name=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"],
         data_model_definition=None,
         cosmos_client=vector_store.cosmos_client,
         create_database=vector_store.create_database,

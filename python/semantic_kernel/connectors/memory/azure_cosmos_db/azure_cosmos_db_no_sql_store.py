@@ -74,8 +74,8 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         if collection_name not in self.vector_record_collections:
             self.vector_record_collections[collection_name] = AzureCosmosDBNoSQLCollection(
                 data_model_type,
-                self.database_name,
                 collection_name,
+                database_name=self.database_name,
                 data_model_definition=data_model_definition,
                 cosmos_client=self.cosmos_client,
                 create_database=self.create_database,
