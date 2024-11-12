@@ -2,22 +2,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
-using OllamaSharp.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
 /// Represents a embedding generation service using Ollama Original API.
 /// </summary>
+[Obsolete("Dedicated OllamaTextEmbeddingGenerationService is deprecated. Use OllamaApiClient.AsEmbeddingGenerationService() instead.")]
 public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmbeddingGenerationService
 {
     /// <summary>
@@ -33,6 +31,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         : base(modelId, endpoint, null, loggerFactory)
     {
         Verify.NotNull(endpoint);
+        this._textEmbeddingService = (ITextEmbeddingGenerationService)this._client.AsEmbeddingGenerationService();
     }
 
     /// <summary>
@@ -49,45 +48,33 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
     {
         Verify.NotNull(httpClient);
         Verify.NotNull(httpClient.BaseAddress);
+
+        this._textEmbeddingService = (ITextEmbeddingGenerationService)this._client.AsEmbeddingGenerationService();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
-    /// <param name="modelId">The hosted model.</param>
     /// <param name="ollamaClient">The Ollama API client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextEmbeddingGenerationService(
-        string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, ollamaClient, loggerFactory)
+        : base(ollamaClient.SelectedModel, ollamaClient, loggerFactory)
     {
+        this._textEmbeddingService = (ITextEmbeddingGenerationService)this._client.AsEmbeddingGenerationService();
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => this._textEmbeddingService.Attributes;
 
     /// <inheritdoc/>
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
-        IList<string> data,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        var request = new EmbedRequest
-        {
-            Model = this.GetModelId()!,
-            Input = data.ToList(),
-        };
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => await this._textEmbeddingService.GenerateEmbeddingsAsync(data, kernel, cancellationToken).ConfigureAwait(false);
 
-        var response = await this._client.Embed(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+    #region Private
 
-        List<ReadOnlyMemory<float>> embeddings = [];
-        foreach (var embedding in response.Embeddings)
-        {
-            embeddings.Add(embedding.Select(@decimal => (float)@decimal).ToArray());
-        }
+    private readonly ITextEmbeddingGenerationService _textEmbeddingService;
 
-        return embeddings;
-    }
+    #endregion
 }

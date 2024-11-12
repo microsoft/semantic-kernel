@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Deletes an index and all its data.
 /// See https://docs.pinecone.io/reference/delete_index
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class DeleteIndexRequest
 {
     public static DeleteIndexRequest Create(string indexName)

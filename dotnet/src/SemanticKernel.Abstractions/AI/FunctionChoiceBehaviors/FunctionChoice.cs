@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents an AI model's decision-making strategy for calling functions, offering predefined choices: Auto, Required, and None.
 /// Auto allows the model to decide if and which functions to call, Required enforces calling one or more functions, and None prevents any function calls, generating only a user-facing message.
 /// </summary>
-[Experimental("SKEXP0001")]
 public readonly struct FunctionChoice : IEquatable<FunctionChoice>
 {
     /// <summary>

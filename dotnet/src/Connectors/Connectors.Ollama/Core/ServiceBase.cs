@@ -13,7 +13,9 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Represents the core of a service.
 /// </summary>
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 public abstract class ServiceBase
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     /// <summary>
     /// Attributes of the service.
