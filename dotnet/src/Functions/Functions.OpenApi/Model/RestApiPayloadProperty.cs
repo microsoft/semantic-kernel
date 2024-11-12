@@ -20,7 +20,7 @@ public sealed class RestApiPayloadProperty
     /// <summary>
     /// The property argument name.
     /// If provided, the argument name will be used to search for the corresponding property value in function arguments.
-    /// If no property value is found using the argument name, the original name - <see cref="RestApiOperationPayloadProperty.Name"/> will be used for the search instead.
+    /// If no property value is found using the argument name, the original name - <see cref="RestApiPayloadProperty.Name"/> will be used for the search instead.
     /// </summary>
     public string? ArgumentName
     {
@@ -110,7 +110,7 @@ public sealed class RestApiPayloadProperty
     }
 
     /// <summary>
-    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiOperationPayloadProperty"/> is frozen.
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiPayloadProperty"/> is frozen.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
     private void ThrowIfFrozen()

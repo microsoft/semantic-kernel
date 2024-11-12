@@ -16,7 +16,7 @@ public sealed class RestApiServerVariable
     /// <summary>
     /// The variable argument name.
     /// If provided, the argument name will be used to search for the corresponding variable value in function arguments.
-    /// If no property value is found using the argument name, the original name represented by the  <see cref="RestApiOperationServer.Variables"/> dictionary key will be used for the search instead.
+    /// If no property value is found using the argument name, the original name represented by the  <see cref="RestApiServer.Variables"/> dictionary key will be used for the search instead.
     /// </summary>
     public string? ArgumentName
     {
@@ -75,7 +75,7 @@ public sealed class RestApiServerVariable
     }
 
     /// <summary>
-    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiOperationServerVariable"/> is frozen.
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiServerVariable"/> is frozen.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
     private void ThrowIfFrozen()
