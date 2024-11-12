@@ -9,8 +9,9 @@ from openai import AsyncClient
 from openai.resources.audio.transcriptions import AsyncTranscriptions
 from openai.types.audio import Transcription
 
+from semantic_kernel.connectors.ai.open_ai import OpenAIAudioToTextExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -55,6 +56,11 @@ def test_init_to_from_dict(openai_unit_test_env):
     dumped_settings = audio_to_text.to_dict()
     assert dumped_settings["ai_model_id"] == settings["ai_model_id"]
     assert dumped_settings["api_key"] == settings["api_key"]
+
+
+def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
+    openai_audio_to_text = OpenAIAudioToText()
+    assert openai_audio_to_text.get_prompt_execution_settings_class() == OpenAIAudioToTextExecutionSettings
 
 
 @pytest.mark.asyncio

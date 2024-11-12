@@ -194,7 +194,7 @@ internal static class AssistantThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -475,11 +475,14 @@ internal static class AssistantThreadActions
 
             if (run.Status == RunStatus.RequiresAction)
             {
-                IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
+                RunStep[] activeSteps =
+                    await client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken)
+                    .Where(step => step.Status == RunStepStatus.InProgress)
+                    .ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                 // Capture map between the tool call and its associated step
                 Dictionary<string, string> toolMap = [];
-                foreach (RunStep step in steps)
+                foreach (RunStep step in activeSteps)
                 {
                     foreach (RunStepToolCall stepDetails in step.Details.ToolCalls)
                     {
@@ -488,7 +491,7 @@ internal static class AssistantThreadActions
                 }
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = activeSteps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -504,7 +507,7 @@ internal static class AssistantThreadActions
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run.ThreadId, run.Id, toolOutputs, cancellationToken);
 
-                    foreach (RunStep step in steps)
+                    foreach (RunStep step in activeSteps)
                     {
                         stepFunctionResults.Add(step.Id, functionResults.Where(result => step.Id == toolMap[result.CallId!]).ToArray());
                     }
@@ -558,18 +561,6 @@ internal static class AssistantThreadActions
         while (run?.Status != RunStatus.Completed);
 
         logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
-    }
-
-    private static async Task<IReadOnlyList<RunStep>> GetRunStepsAsync(AssistantClient client, ThreadRun run, CancellationToken cancellationToken)
-    {
-        List<RunStep> steps = [];
-
-        await foreach (RunStep step in client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken).ConfigureAwait(false))
-        {
-            steps.Add(step);
-        }
-
-        return steps;
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
@@ -788,7 +779,7 @@ internal static class AssistantThreadActions
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults, RunStep completedStep)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, IEnumerable<FunctionResultContent> functionResults, RunStep completedStep)
     {
         ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {

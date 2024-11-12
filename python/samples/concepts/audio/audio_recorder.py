@@ -6,11 +6,10 @@ from typing import ClassVar
 
 import keyboard
 import pyaudio
+from pydantic import BaseModel
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-
-class AudioRecorder(KernelBaseModel):
+class AudioRecorder(BaseModel):
     """A class to record audio from the microphone and save it to a WAV file.
 
     To start recording, press the spacebar. To stop recording, release the spacebar.

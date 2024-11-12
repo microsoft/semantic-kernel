@@ -42,7 +42,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
             api_key: The optional api key. If provided, will override the value in the
                     env vars or .env file.
             deployment_name: The optional deployment. If provided, will override the value
-                (text_to_image_deployment_name) in the env vars or .env file.
+                (audio_to_text_deployment_name) in the env vars or .env file.
             endpoint: The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
             base_url: The optional deployment base_url. If provided will override the value
