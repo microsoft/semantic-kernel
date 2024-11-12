@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 public static class AzureAIInferenceServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds a Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds an Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">Target Model Id</param>
@@ -69,7 +69,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds an Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">Target Model Id</param>
@@ -119,7 +119,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds an Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">Azure AI Inference model id</param>
@@ -156,7 +156,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds an Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="chatClient"><see cref="AzureAIInferenceChatClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
