@@ -186,7 +186,7 @@ class LocalProcess(LocalStep):
                 await asyncio.gather(*message_tasks)
 
         except Exception as ex:
-            print("An error occurred while running the process: %s.", ex)
+            print("An error occurred while running the process: %s." % ex)
             raise
 
     async def to_kernel_process(self) -> "KernelProcess":
@@ -218,9 +218,9 @@ class LocalProcess(LocalStep):
         for step_event in all_step_events:
             if step_event.visibility == KernelProcessEventVisibility.Public:
                 if isinstance(step_event, KernelProcessEvent):
-                    self.emit_event(step_event)  # type: ignore
+                    await self.emit_event(step_event)  # type: ignore
                 elif isinstance(step_event, LocalEvent):
-                    self.emit_local_event(step_event)  # type: ignore
+                    await self.emit_local_event(step_event)  # type: ignore
 
             for edge in step.get_edge_for_event(step_event.id):
                 message = LocalMessageFactory.create_from_edge(edge, step_event.data)

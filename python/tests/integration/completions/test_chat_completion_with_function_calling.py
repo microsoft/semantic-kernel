@@ -21,10 +21,11 @@ from tests.integration.completions.chat_completion_test_base import (
     anthropic_setup,
     google_ai_setup,
     mistral_ai_setup,
+    ollama_tool_call_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.test_utils import retry
+from tests.integration.utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -280,6 +281,10 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skip(
+                reason="Possible regression on the Azure AI Inference side when"
+                " returning tool calls in streaming responses. Investigating..."
+            ),
             id="azure_ai_inference_tool_call_non_auto",
         ),
         pytest.param(
@@ -649,6 +654,107 @@ pytestmark = pytest.mark.parametrize(
             id="vertex_ai_tool_call_auto_complex_return_type",
         ),
         # endregion
+        # region Ollama
+        pytest.param(
+            "ollama_tool_call",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.SYSTEM,
+                        items=[TextContent(text="You're very bad at math. Don't attempt to do it yourself.")],
+                    ),
+                    ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 345 + 3?")]),
+                ]
+            ],
+            {
+                "test_type": FunctionChoiceTestTypes.AUTO,
+                "streaming": False,  # Streaming tool calls are not supported by Ollama
+            },
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            id="ollama_tool_call_auto",
+        ),
+        pytest.param(
+            "ollama_tool_call",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.SYSTEM,
+                        items=[TextContent(text="You're very bad at math. Don't attempt to do it yourself.")],
+                    ),
+                    ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 345 + 3?")]),
+                ]
+            ],
+            {
+                "test_type": FunctionChoiceTestTypes.NON_AUTO,
+                "streaming": False,  # Streaming tool calls are not supported by Ollama
+            },
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            id="ollama_tool_call_non_auto",
+        ),
+        pytest.param(
+            "ollama_tool_call",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            {
+                "test_type": FunctionChoiceTestTypes.FLOW,
+                "streaming": False,  # Streaming tool calls are not supported by Ollama
+            },
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            id="ollama_tool_call_flow",
+        ),
+        pytest.param(
+            "ollama_tool_call",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                )
+            },
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="Find the person whose id is 9b3f6e40.")],
+                    ),
+                ]
+            ],
+            {
+                "test_type": FunctionChoiceTestTypes.AUTO,
+                "streaming": False,  # Streaming tool calls are not supported by Ollama
+            },
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            id="ollama_tool_call_auto_complex_return_type",
+        ),
+        # endregion
         # region Bedrock Anthropic Claude
         pytest.param(
             "bedrock_anthropic_claude",
@@ -833,6 +939,9 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
+        if "streaming" in kwargs and not kwargs["streaming"]:
+            pytest.skip("Skipping streaming test")
+
         await self._test_helper(
             kernel,
             service_id,

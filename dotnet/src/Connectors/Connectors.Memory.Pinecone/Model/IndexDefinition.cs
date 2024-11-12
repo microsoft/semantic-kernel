@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Used to create a new index.
 /// See https://docs.pinecone.io/reference/create_index
 /// </summary>
+[Experimental("SKEXP0020")]
 public class IndexDefinition
 {
     /// <summary>

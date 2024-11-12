@@ -143,19 +143,17 @@ public static class OllamaKernelBuilderExtensions
     /// Add Ollama Chat Completion service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
     /// <param name="ollamaClient">The Ollama Sharp library client.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddOllamaChatCompletion(
         this IKernelBuilder builder,
-        string modelId,
         OllamaApiClient ollamaClient,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddOllamaChatCompletion(modelId, ollamaClient, serviceId);
+        builder.Services.AddOllamaChatCompletion(ollamaClient, serviceId);
 
         return builder;
     }
@@ -210,19 +208,17 @@ public static class OllamaKernelBuilderExtensions
     /// Add Ollama Text Embeddings Generation service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
     /// <param name="ollamaClient">The Ollama Sharp library client.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
         this IKernelBuilder builder,
-        string modelId,
         OllamaApiClient ollamaClient,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddOllamaTextEmbeddingGeneration(modelId, ollamaClient, serviceId);
+        builder.Services.AddOllamaTextEmbeddingGeneration(ollamaClient, serviceId);
 
         return builder;
     }

@@ -3,7 +3,7 @@
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp;
 using OllamaSharp.Models.Chat;
 
 namespace ChatCompletion;
@@ -21,9 +21,11 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine("======== Ollama - Chat Completion ========");
 
-        var chatService = new OllamaChatCompletionService(
-            endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
-            modelId: TestConfiguration.Ollama.ModelId);
+        using var ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        var chatService = ollamaClient.AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -63,9 +65,11 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine("======== Ollama - Chat Completion ========");
 
-        var chatService = new OllamaChatCompletionService(
-            endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
-            modelId: TestConfiguration.Ollama.ModelId);
+        using var ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        var chatService = ollamaClient.AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");

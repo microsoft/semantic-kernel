@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -9,6 +10,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
+[Experimental("SKEXP0020")]
 internal struct DatabaseEntry
 {
     public string Key { get; set; }
@@ -20,6 +22,7 @@ internal struct DatabaseEntry
     public string? Timestamp { get; set; }
 }
 
+[Experimental("SKEXP0020")]
 internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";

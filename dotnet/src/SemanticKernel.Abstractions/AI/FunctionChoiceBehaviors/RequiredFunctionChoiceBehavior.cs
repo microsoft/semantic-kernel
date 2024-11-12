@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones.
 /// This behavior forces the model to always call one or more functions.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
@@ -81,12 +79,10 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
         var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
-        IReadOnlyList<KernelFunction>? selectedFunctions = null;
-
         return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
-            Functions = selectedFunctions ?? functions,
+            Functions = functions,
             AutoInvoke = this._autoInvoke,
         };
     }

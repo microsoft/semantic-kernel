@@ -13,7 +13,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionForUnsupportedParameterStyle()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Label);
+        var parameter = new RestApiParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.Label);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
@@ -28,7 +28,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionIfParameterTypeIsNotArray(string parameterType)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
+        var parameter = new RestApiParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.SpaceDelimited);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
@@ -38,13 +38,13 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(
+        var parameter = new RestApiParameter(
                 name: "id",
                 type: "array",
                 isRequired: true,
                 expand: true, //Specifies to generate a separate parameter for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.SpaceDelimited,
+                location: RestApiParameterLocation.Query,
+                style: RestApiParameterStyle.SpaceDelimited,
                 arrayItemType: "integer");
 
         // Act
@@ -60,13 +60,13 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldCreateParameterWithSpaceSeparatedValuePerArrayItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(
+        var parameter = new RestApiParameter(
                 name: "id",
                 type: "array",
                 isRequired: true,
                 expand: false, //Specify generating a parameter with space-separated values for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.SpaceDelimited,
+                location: RestApiParameterLocation.Query,
+                style: RestApiParameterStyle.SpaceDelimited,
                 arrayItemType: "integer");
 
         // Act
@@ -86,7 +86,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInSpaceDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.SpaceDelimited);
 
         // Act
         var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
@@ -105,7 +105,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInAmpersandDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.SpaceDelimited);
 
         // Act
         var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));

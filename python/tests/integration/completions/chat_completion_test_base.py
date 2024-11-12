@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import os
 import platform
 import sys
 from functools import reduce
@@ -54,8 +55,9 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.test_utils import is_service_setup_for_testing
+from tests.integration.utils import is_service_setup_for_testing
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -70,7 +72,12 @@ else:
 mistral_ai_setup: bool = is_service_setup_for_testing(
     ["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"], raise_if_not_set=False
 )  # We don't have a MistralAI deployment
+# There is no single model in Ollama that supports both image and tool call in chat completion
+# We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
+# can be any model that supports chat completion.
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
+ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
@@ -110,7 +117,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
-        ad_token = azure_openai_settings.get_azure_openai_auth_token()
+        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(
@@ -124,7 +131,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_ai_inference_client = AzureAIInferenceChatCompletion(
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
-                endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
+                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 api_version=DEFAULT_AZURE_API_VERSION,
@@ -142,6 +149,18 @@ class ChatCompletionTestBase(CompletionTestBase):
                 MistralAIChatPromptExecutionSettings,
             ),
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
+            "ollama_image": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+                if ollama_image_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
+            "ollama_tool_call": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
+                if ollama_tool_call_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (

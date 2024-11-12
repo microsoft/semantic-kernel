@@ -46,17 +46,17 @@ public sealed class WeaviateVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        if (typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
                 this._httpClient,
                 name,
                 vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(Guid))
+        {
+            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
         }
 
         var recordCollection = new WeaviateVectorStoreRecordCollection<TRecord>(

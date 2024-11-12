@@ -126,7 +126,6 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task DifferentWaysOfAddingFiltersWorkCorrectlyAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
@@ -183,7 +182,6 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task MultipleFiltersAreExecutedInOrderAsync(bool isStreaming)
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
@@ -571,6 +569,61 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         Assert.Equal("function1-value", lastMessageContent.Content);
         Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var filter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Plugins.Add(plugin);
+
+        builder.Services.AddSingleton<IChatCompletionService, OpenAIChatCompletionService>((serviceProvider) =>
+        {
+            return new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
+        });
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
+
+        var kernel = builder.Build();
+
+        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+            await kernel.InvokePromptStreamingAsync("Test prompt", arguments).ToListAsync();
+        }
+        else
+        {
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+            await kernel.InvokePromptAsync("Test prompt", arguments);
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 
     public void Dispose()

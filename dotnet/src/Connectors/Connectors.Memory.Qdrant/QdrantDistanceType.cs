@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// The vector distance type used by Qdrant.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
+[Experimental("SKEXP0020")]
 public enum QdrantDistanceType
 {
     /// <summary>

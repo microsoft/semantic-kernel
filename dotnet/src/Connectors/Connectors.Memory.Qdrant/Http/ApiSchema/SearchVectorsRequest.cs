@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+[Experimental("SKEXP0020")]
 internal sealed class SearchVectorsRequest
 {
     [JsonPropertyName("vector")]

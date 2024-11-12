@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// A record structure used by Qdrant that contains an embedding and metadata.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class QdrantVectorRecord
 {
     /// <summary>

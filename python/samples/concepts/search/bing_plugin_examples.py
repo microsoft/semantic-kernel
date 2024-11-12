@@ -1,5 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+#####################################################
+# This sample should be considered obsolete, as we are moving things towards the new text search model.
+# Please check out the bing_text_search_as_plugin.py sample for the latest implementation.
+#####################################################
+
 import asyncio
 
 from semantic_kernel import Kernel
