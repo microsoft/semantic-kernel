@@ -73,7 +73,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(settings)
         assert isinstance(response, (TextCompletion, ChatCompletion))  # nosec
 
         metadata = self._get_metadata_from_text_response(response)
@@ -101,7 +101,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.stream = True
 
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(settings)
         assert isinstance(response, AsyncStream)  # nosec
 
         async for chunk in response:

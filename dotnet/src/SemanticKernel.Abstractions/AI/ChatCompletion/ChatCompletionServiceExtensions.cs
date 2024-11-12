@@ -211,12 +211,13 @@ public static class ChatCompletionServiceExtensions
 
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatMessageContent ToChatMessageContent(ChatMessage message)
+    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Microsoft.Extensions.AI.ChatCompletion? completion = null)
     {
         ChatMessageContent result = new()
         {
+            ModelId = completion?.ModelId,
             AuthorName = message.AuthorName,
-            InnerContent = message.RawRepresentation,
+            InnerContent = completion?.RawRepresentation ?? message.RawRepresentation,
             Metadata = message.AdditionalProperties,
             Role = new AuthorRole(message.Role.Value),
         };
@@ -261,11 +262,14 @@ public static class ChatCompletionServiceExtensions
             {
                 resultContent.Metadata = content.AdditionalProperties;
                 resultContent.InnerContent = content.RawRepresentation;
-
+                resultContent.ModelId = completion?.ModelId;
                 result.Items.Add(resultContent);
             }
         }
 
         return result;
     }
+
+    internal static List<ChatMessage> ToChatMessageList(ChatHistory chatHistory)
+        => chatHistory.Select(ToChatMessage).ToList();
 }

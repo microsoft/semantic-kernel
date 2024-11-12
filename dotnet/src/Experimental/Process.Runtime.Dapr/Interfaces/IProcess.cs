@@ -31,7 +31,7 @@ public interface IProcess : IActor, IStep
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task RunOnceAsync(KernelProcessEvent processEvent);
+    Task RunOnceAsync(string processEvent);
 
     /// <summary>
     /// Stops a running process. This will cancel the process and wait for it to complete before returning.
@@ -45,7 +45,7 @@ public interface IProcess : IActor, IStep
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task SendMessageAsync(KernelProcessEvent processEvent);
+    Task SendMessageAsync(string processEvent);
 
     /// <summary>
     /// Gets the process information.

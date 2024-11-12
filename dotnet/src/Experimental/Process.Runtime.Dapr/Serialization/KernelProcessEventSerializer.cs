@@ -34,11 +34,20 @@ internal static class KernelProcessEventSerializer
         {
             foreach (string json in jsonEvents)
             {
-                EventContainer<KernelProcessEvent> eventContainer =
-                    JsonSerializer.Deserialize<EventContainer<KernelProcessEvent>>(json) ??
-                    throw new KernelException($"Unable to deserialize {nameof(KernelProcessEvent)} queue.");
-                yield return eventContainer.Payload with { Data = TypeInfo.ConvertValue(eventContainer.DataTypeName, eventContainer.Payload.Data) };
+                yield return json.ToKernelProcessEvent();
             }
         }
+    }
+
+    /// <summary>
+    /// Deserialize a list of JSON events into a list of <see cref="KernelProcessEvent"/> objects.
+    /// </summary>
+    /// <exception cref="KernelException">If any event fails deserialization</exception>
+    public static KernelProcessEvent ToKernelProcessEvent(this string jsonEvent)
+    {
+        EventContainer<KernelProcessEvent> eventContainer =
+            JsonSerializer.Deserialize<EventContainer<KernelProcessEvent>>(jsonEvent) ??
+            throw new KernelException($"Unable to deserialize {nameof(KernelProcessEvent)} queue.");
+        return eventContainer.Payload with { Data = TypeInfo.ConvertValue(eventContainer.DataTypeName, eventContainer.Payload.Data) };
     }
 }

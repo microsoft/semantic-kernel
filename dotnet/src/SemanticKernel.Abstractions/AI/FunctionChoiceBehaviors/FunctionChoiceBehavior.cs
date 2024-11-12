@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents the base class for different function choice behaviors.
 /// These behaviors define the way functions are chosen by AI model and various aspects of their invocation by AI connectors.
 /// </summary>
-[Experimental("SKEXP0001")]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: "auto")]
 [JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: "required")]
@@ -105,9 +103,7 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     /// <param name="context">The context provided by AI connectors, used to determine the configuration.</param>
     /// <returns>The configuration.</returns>
-#pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
-#pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>
     /// Returns functions AI connector should provide to the AI model.

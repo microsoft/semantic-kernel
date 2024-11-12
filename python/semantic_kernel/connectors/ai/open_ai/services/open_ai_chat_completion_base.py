@@ -85,7 +85,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(settings)
         assert isinstance(response, ChatCompletion)  # nosec
         response_metadata = self._get_metadata_from_chat_response(response)
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
@@ -106,7 +106,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(settings)
         if not isinstance(response, AsyncStream):
             raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
         async for chunk in response:

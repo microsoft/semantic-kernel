@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
 /// See https://docs.pinecone.io/reference/update
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class UpdateVectorRequest
 {
     /// <summary>
