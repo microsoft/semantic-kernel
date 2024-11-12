@@ -25,7 +25,6 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
     /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
     /// </remarks>
-    [Experimental("SKEXP0001")]
     public bool AllowDangerouslySetContent { get; init; } = false;
 
     /// <summary>

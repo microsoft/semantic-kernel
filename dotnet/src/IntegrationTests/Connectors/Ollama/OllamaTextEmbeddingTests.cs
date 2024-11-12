@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.Ollama;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
+using OllamaSharp;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -32,9 +32,11 @@ public sealed class OllamaTextEmbeddingTests
         Assert.NotNull(config);
         Assert.NotNull(config.Endpoint);
 
-        var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
-            modelId,
-            new Uri(config.Endpoint));
+        using var ollamaClient = new OllamaApiClient(
+            uriString: config.Endpoint,
+            defaultModel: modelId);
+
+        var embeddingGenerator = ollamaClient.AsEmbeddingGenerationService();
 
         // Act
         var result = await embeddingGenerator.GenerateEmbeddingAsync(TestInputString);
@@ -56,9 +58,12 @@ public sealed class OllamaTextEmbeddingTests
         Assert.NotNull(config);
         Assert.NotNull(config.Endpoint);
 
-        var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
-            modelId,
-            new Uri(config.Endpoint));
+        using var ollamaClient = new OllamaApiClient(
+            uriString: config.Endpoint,
+            defaultModel: modelId);
+
+        var chatService = ollamaClient.AsChatCompletionService();
+        var embeddingGenerator = ollamaClient.AsEmbeddingGenerationService();
 
         // Act
         var result = await embeddingGenerator.GenerateEmbeddingsAsync(testInputStrings);

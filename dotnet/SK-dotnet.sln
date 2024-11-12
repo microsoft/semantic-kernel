@@ -420,7 +420,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.IntegrationTestRunn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.IntegrationTestHost.Dapr", "src\Experimental\Process.IntegrationTestHost.Dapr\Process.IntegrationTestHost.Dapr.csproj", "{A2D349C4-EA6E-465C-B86D-00C2942E3135}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process.IntegrationTests.Resources", "src\Experimental\Process.IntegrationTests.Resources\Process.IntegrationTests.Resources.csproj", "{B35B1DEB-04DF-4141-9163-01031B22C5D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.IntegrationTests.Resources", "src\Experimental\Process.IntegrationTests.Resources\Process.IntegrationTests.Resources.csproj", "{B35B1DEB-04DF-4141-9163-01031B22C5D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OllamaFunctionCalling", "samples\Demos\OllamaFunctionCalling\OllamaFunctionCalling.csproj", "{481A680F-476A-4627-83DE-2F56C484525E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAIRealtime", "samples\Demos\OpenAIRealtime\OpenAIRealtime.csproj", "{6154129E-7A35-44A5-998E-B7001B5EDE14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1125,6 +1129,18 @@ Global
 		{B35B1DEB-04DF-4141-9163-01031B22C5D1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{B35B1DEB-04DF-4141-9163-01031B22C5D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B35B1DEB-04DF-4141-9163-01031B22C5D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{481A680F-476A-4627-83DE-2F56C484525E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1279,6 +1295,8 @@ Global
 		{BB358B41-6F95-4513-BFA4-6F026005B5AB} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{A2D349C4-EA6E-465C-B86D-00C2942E3135} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{B35B1DEB-04DF-4141-9163-01031B22C5D1} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
+		{481A680F-476A-4627-83DE-2F56C484525E} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{6154129E-7A35-44A5-998E-B7001B5EDE14} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

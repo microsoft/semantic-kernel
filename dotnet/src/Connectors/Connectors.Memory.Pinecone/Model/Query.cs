@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Query parameters for use in a query request.
 /// </summary>
+[Experimental("SKEXP0020")]
 public sealed class Query
 {
     /// <summary>

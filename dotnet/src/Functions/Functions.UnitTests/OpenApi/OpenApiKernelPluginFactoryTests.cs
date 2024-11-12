@@ -285,8 +285,8 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
         var info = additionalProperties["info"] as RestApiInfo;
         Assert.NotNull(info);
-        var security = additionalProperties["info"] as List<RestApiSecurityRequirement>;
-        Assert.Null(security);
+        var security = additionalProperties["security"] as List<RestApiSecurityRequirement>;
+        Assert.NotNull(security);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;

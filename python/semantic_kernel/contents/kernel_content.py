@@ -13,7 +13,9 @@ _T = TypeVar("_T", bound="KernelContent")
 class KernelContent(KernelBaseModel, ABC):
     """Base class for all kernel contents."""
 
-    inner_content: Any | None = None
+    # NOTE: if you wish to hold on to the inner content, you are responsible
+    # for saving it before serializing the content/chat history as it won't be included.
+    inner_content: Any | None = Field(None, exclude=True)
     ai_model_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 

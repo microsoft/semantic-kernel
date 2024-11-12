@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -22,6 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// For that reason, we use the term "Index" in Pinecone to refer to what is a "Collection" in IMemoryStore. So, in the case of Pinecone,
 ///  "Collection" is synonymous with "Index" when referring to IMemoryStore.
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class PineconeMemoryStore : IPineconeMemoryStore
 {
     /// <summary>
