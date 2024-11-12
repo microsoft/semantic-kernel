@@ -8,16 +8,16 @@ from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text_base import OpenAIAudioToTextBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio_base import OpenAITextToAudioBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
-T_ = TypeVar("T_", bound="AzureAudioToText")
+T_ = TypeVar("T_", bound="AzureTextToAudio")
 
 
-class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
-    """Azure audio to text service."""
+class AzureTextToAudio(AzureOpenAIConfigBase, OpenAITextToAudioBase):
+    """Azure text to audio service."""
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
         deployment_name: str | None = None,
         endpoint: str | None = None,
         base_url: str | None = None,
-        api_version: str | None = None,
+        api_version: str | None = "2024-10-01-preview",
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         token_endpoint: str | None = None,
@@ -35,20 +35,20 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initialize an AzureAudioToText service.
+        """Initialize an AzureTextToAudio service.
 
         Args:
             service_id: The service ID. (Optional)
             api_key: The optional api key. If provided, will override the value in the
                     env vars or .env file.
             deployment_name: The optional deployment. If provided, will override the value
-                (audio_to_text_deployment_name) in the env vars or .env file.
+                (text_to_audio_deployment_name) in the env vars or .env file.
             endpoint: The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
             base_url: The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
             api_version: The optional deployment api version. If provided will override the value
-                in the env vars or .env file.
+                in the env vars or .env file. Default is "2024-10-01-preview".
             ad_token: The Azure AD token for authentication. (Optional)
             ad_token_provider: Azure AD Token provider. (Optional)
             token_endpoint: The Azure AD token endpoint. (Optional)
@@ -64,7 +64,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 api_key=api_key,
-                audio_to_text_deployment_name=deployment_name,
+                text_to_audio_deployment_name=deployment_name,
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
@@ -72,11 +72,11 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
-        if not azure_openai_settings.audio_to_text_deployment_name:
-            raise ServiceInitializationError("The Azure OpenAI audio to text deployment name is required.")
+        if not azure_openai_settings.text_to_audio_deployment_name:
+            raise ServiceInitializationError("The Azure OpenAI text to audio deployment name is required.")
 
         super().__init__(
-            deployment_name=azure_openai_settings.audio_to_text_deployment_name,
+            deployment_name=azure_openai_settings.text_to_audio_deployment_name,
             endpoint=azure_openai_settings.endpoint,
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
@@ -86,7 +86,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
             ad_token_provider=ad_token_provider,
             token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
-            ai_model_type=OpenAIModelTypes.AUDIO_TO_TEXT,
+            ai_model_type=OpenAIModelTypes.TEXT_TO_AUDIO,
             client=async_client,
         )
 
