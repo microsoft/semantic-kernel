@@ -38,10 +38,10 @@ internal static partial class RestApiOperationExtensions
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
 
-        // Create a property alternative name without special symbols that are not supported by SK template language.
+        // Set parameter argument names, if not already set, that contain only supported by SK template language symbols.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = InvalidSymbolsRegex().Replace(parameter.Name, "_");
+            parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
@@ -181,7 +181,10 @@ internal static partial class RestApiOperationExtensions
                     defaultValue: property.DefaultValue,
                     description: property.Description,
                     format: property.Format,
-                    schema: property.Schema));
+                    schema: property.Schema)
+                {
+                    ArgumentName = property.ArgumentName
+                });
             }
 
             parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
