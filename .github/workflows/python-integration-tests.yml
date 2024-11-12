@@ -167,31 +167,37 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
@@ -330,31 +336,37 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
+        timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
