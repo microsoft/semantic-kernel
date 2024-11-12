@@ -19,7 +19,7 @@ namespace OpenAIRealtime;
 /// For conversational experiences, it is recommended to use <see cref="RealtimeConversationClient"/> from the Azure/OpenAI SDK.
 /// Since the OpenAI Realtime API supports function calling, the example shows how to combine it with Semantic Kernel plugins and functions.
 /// </summary>
-internal class Program
+internal sealed class Program
 {
     public static async Task Main(string[] args)
     {
