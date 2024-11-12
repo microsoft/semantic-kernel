@@ -152,7 +152,7 @@ public sealed class AggregatorAgentTests()
             new()
             {
                 Kernel = kernel,
-                Instructions = "Your job is to count.  Always add one to the prevous number and respond using the english word for that number, without explanation.",
+                Instructions = "Your job is to count.  Always add one to the previous number and respond using the english word for that number, without explanation.",
             };
 
         return new AgentGroupChat(agent)

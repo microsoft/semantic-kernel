@@ -76,7 +76,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             }
             else if (agent.Mode == AggregatorMode.Nested)
             {
-                ChatMessageContent finalMessage = history[0]; // Order decending
+                ChatMessageContent finalMessage = history[0]; // Order descending
                 yield return new StreamingChatMessageContent(finalMessage.Role, finalMessage.Content) { AuthorName = finalMessage.AuthorName };
                 messages.Add(finalMessage);
             }
