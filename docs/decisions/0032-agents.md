@@ -60,7 +60,7 @@ An _Agent_ can be of various modalities.  Modalities are asymmetrical with regar
 - _Agent Framework_ shall be extensible so that other libraries can build their own agents and chat experiences.
 - _Agent Framework_ shall be as simple as possible to facilitate extensibility.
 - _Agent Framework_ shall encapsulate complexity within implementation details, not calling patterns.
-- _Agent_ abstraction shall support different modalities (see [Agent Modalities](#Agent-Modalities:) section).
+- _Agent_ abstraction shall support different modalities (see [Agent Modalities](#Agent-Modalities) section).
 - An _Agent_ of any modality shall be able to interact with an _Agent_ of any other modality.
 - An _Agent_ shall be able to support its own modality requirements. (Specialization)
 - _Agent_ input and output shall align to SK content type `ChatMessageContent`.
