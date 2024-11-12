@@ -5,8 +5,6 @@ import sys
 from collections.abc import Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -29,6 +27,7 @@ from semantic_kernel.exceptions import (
     VectorStoreModelValidationError,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
@@ -79,8 +78,6 @@ class QdrantCollection(
             or set location to ":memory:" to use an in-memory qdrant instance.
         When nothing is supplied, it defaults to an in-memory qdrant instance.
         You can also supply a async qdrant client directly.
-
-        If you want to use the vectorizable_text_search you will need to install `qrant_client[fastembed]`.
 
         Args:
             data_model_type (type[TModel]): The type of the data model.

@@ -85,7 +85,7 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
 collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE)
+DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILARITY)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
