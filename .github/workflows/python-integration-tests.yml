@@ -100,8 +100,8 @@ jobs:
       VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
       VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-      COSMOS_DB_NOSQL_URL: ${{ vars.COSMOS_DB_NOSQL_URL }}
-      COSMOS_DB_NOSQL_KEY: ${{ secrets.COSMOS_DB_NOSQL_KEY }}
+      AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+      AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
@@ -263,8 +263,8 @@ jobs:
       VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
       VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-      COSMOS_DB_NOSQL_URL: ${{ vars.COSMOS_DB_NOSQL_URL }}
-      COSMOS_DB_NOSQL_KEY: ${{ secrets.COSMOS_DB_NOSQL_KEY }}
+      AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+      AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
