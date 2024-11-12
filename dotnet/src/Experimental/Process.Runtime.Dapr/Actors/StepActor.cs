@@ -376,8 +376,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         this._stepState = stateObject;
         this._stepStateType = stateType;
-        methodInfo.Invoke(stepInstance, [stateObject]);
+
+        ValueTask activateTask =
+            (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]) ??
+            throw new KernelException("The ActivateAsync method failed to complete.").Log(this._logger);
+
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
+        await activateTask.ConfigureAwait(false);
     }
 
     /// <summary>
