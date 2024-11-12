@@ -21,3 +21,10 @@ jobs:
         with:
           use-verbose-mode: "yes"
           config-file: ".github/workflows/markdown-link-check-config.json"
+      - name: Run linkspector
+        uses: umbrelladocs/action-linkspector@v1
+        with:
+          reporter: github-pr-review
+          filter_mode: nofilter
+          fail_on_error: true
+          config_file: ".github/workflows/.linkspector.yml"
