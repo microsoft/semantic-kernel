@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// Azure AI Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class AzureAISearchMemoryRecord
 {
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// The current status of a index.
 /// </summary>
+[Experimental("SKEXP0020")]
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexState
 {

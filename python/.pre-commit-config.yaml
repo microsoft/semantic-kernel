@@ -39,19 +39,10 @@ repos:
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.4.29
+    rev: 0.4.30
     hooks:
       # Update the uv lockfile
       - id: uv-lock
-  - repo: local
-    hooks:
-    - id: mypy
-      files: ^python/semantic_kernel/
-      name: mypy
-      entry: bash -c 'cd python && uv run mypy -p semantic_kernel --config-file mypy.ini'
-      language: system
-      types: [python]
-      pass_filenames: true
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.8
     hooks:

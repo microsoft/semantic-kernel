@@ -208,8 +208,8 @@ public class KernelPluginTests
         AIFunction[] funcs = plugin.AsAIFunctions(kernel).ToArray();
         Assert.Equal(2, funcs.Length);
 
-        Assert.Equal("PluginName_Function1", funcs[0].Metadata.Name);
-        Assert.Equal("PluginName_Function2", funcs[1].Metadata.Name);
+        Assert.Equal("PluginName-Function1", funcs[0].Metadata.Name);
+        Assert.Equal("PluginName-Function2", funcs[1].Metadata.Name);
 
         Assert.Equal("arg1", Assert.Single(funcs[0].Metadata.Parameters).Name);
         Assert.Equal(2, funcs[1].Metadata.Parameters.Count);

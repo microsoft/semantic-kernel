@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -23,6 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <remarks>The embedded data is saved to the Redis server database specified in the constructor.
 /// Similarity search capability is provided through the RediSearch module. Use RediSearch's "Index" to implement "Collection".
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class RedisMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>

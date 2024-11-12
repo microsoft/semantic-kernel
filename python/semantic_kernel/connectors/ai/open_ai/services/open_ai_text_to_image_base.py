@@ -2,6 +2,12 @@
 
 from typing import Any
 
+from openai.types.images_response import ImagesResponse
+
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
+    ImageSize,
+    OpenAITextToImageExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
@@ -22,16 +28,17 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         Returns:
             bytes | str: Image bytes or image URL.
         """
-        try:
-            result = await self.client.images.generate(
-                prompt=description,
-                model=self.ai_model_id,
-                size=f"{width}x{height}",  # type: ignore
-                response_format="url",
-                **kwargs,
-            )
-        except Exception as ex:
-            raise ServiceResponseException(f"Failed to generate image: {ex}") from ex
-        if not result.data or not result.data[0].url:
+        settings = OpenAITextToImageExecutionSettings(
+            prompt=description,
+            size=ImageSize(width=width, height=height),
+            ai_model_id=self.ai_model_id,
+            **kwargs,
+        )
+
+        response = await self._send_request(settings)
+
+        assert isinstance(response, ImagesResponse)  # nosec
+        if not response.data or not response.data[0].url:
             raise ServiceResponseException("Failed to generate image.")
-        return result.data[0].url
+
+        return response.data[0].url

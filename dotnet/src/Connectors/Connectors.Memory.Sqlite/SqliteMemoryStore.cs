@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics.Tensors;
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
+[Experimental("SKEXP0020")]
 public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
