@@ -1,6 +1,8 @@
 # OpenAI Realtime API
 
-TODO
+This console application demonstrates the use of the OpenAI Realtime API with function calling and Semantic Kernel.
+For conversational experiences, it is recommended to use `RealtimeConversationClient` from the Azure/OpenAI SDK.
+Since the OpenAI Realtime API supports function calling, the example shows how to combine it with Semantic Kernel plugins and functions.
 
 ## Configuring Secrets
 
@@ -15,7 +17,6 @@ cd dotnet/samples/Demos/OpenAIRuntime
 
 dotnet user-secrets init
 
-dotnet user-secrets set "OpenAI:ModelId" "..."
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "..."
@@ -29,7 +30,6 @@ Use these names:
 
 ```
 # OpenAI
-OpenAI__ModelId
 OpenAI__ApiKey
 
 # Azure OpenAI

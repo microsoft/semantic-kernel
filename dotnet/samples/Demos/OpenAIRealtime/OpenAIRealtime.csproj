@@ -16,5 +16,11 @@
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Assets\realtime_whats_the_weather_pcm16_24khz_mono.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
