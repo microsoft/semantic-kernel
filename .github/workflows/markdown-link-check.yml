@@ -16,11 +16,6 @@ jobs:
       - uses: actions/checkout@v4
 
       # Checks the status of hyperlinks in .md files in verbose mode
-      - name: Check links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          use-verbose-mode: "yes"
-          config-file: ".github/workflows/markdown-link-check-config.json"
       - name: Run linkspector
         uses: umbrelladocs/action-linkspector@v1
         with:
@@ -28,3 +23,8 @@ jobs:
           filter_mode: nofilter
           fail_on_error: true
           config_file: ".github/workflows/.linkspector.yml"
+      - name: Check links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-verbose-mode: "yes"
+          config-file: ".github/workflows/markdown-link-check-config.json"
