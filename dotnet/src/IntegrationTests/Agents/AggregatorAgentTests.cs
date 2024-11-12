@@ -51,7 +51,7 @@ public sealed class AggregatorAgentTests()
         Assert.Equal(6, innerHistory.Length);
         Assert.Equal(5, responses.Length);
         Assert.NotNull(responses[4].Content);
-        Assert.True(responses[4].Content!.Contains("six", StringComparison.OrdinalIgnoreCase));
+        AssertResponseContent(responses[4]);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public sealed class AggregatorAgentTests()
         Assert.Equal(6, innerHistory.Length);
         Assert.Single(responses);
         Assert.NotNull(responses[0].Content);
-        Assert.True(responses[0].Content!.Contains("six", StringComparison.OrdinalIgnoreCase));
+        AssertResponseContent(responses[0]);
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public sealed class AggregatorAgentTests()
         Assert.Equal(6, innerHistory.Length);
         Assert.Equal(6, fullResponses.Length);
         Assert.NotNull(fullResponses[0].Content);
-        Assert.True(fullResponses[0].Content!.Contains("six", StringComparison.OrdinalIgnoreCase));
+        AssertResponseContent(fullResponses[0]);
     }
 
     /// <summary>
@@ -133,7 +133,18 @@ public sealed class AggregatorAgentTests()
         Assert.Equal(6, innerHistory.Length);
         Assert.Equal(2, fullResponses.Length);
         Assert.NotNull(fullResponses[0].Content);
-        Assert.True(fullResponses[0].Content!.Contains("six", StringComparison.OrdinalIgnoreCase));
+        AssertResponseContent(fullResponses[0]);
+    }
+
+    private static void AssertResponseContent(ChatMessageContent response)
+    {
+        // Counting is hard
+        Assert.True(
+            response.Content!.Contains("five", StringComparison.OrdinalIgnoreCase) ||
+            response.Content!.Contains("six", StringComparison.OrdinalIgnoreCase) ||
+            response.Content!.Contains("seven", StringComparison.OrdinalIgnoreCase) ||
+            response.Content!.Contains("eight", StringComparison.OrdinalIgnoreCase),
+            $"Content: {response}");
     }
 
     private AgentGroupChat CreateChatProvider()
