@@ -10,8 +10,11 @@ from uuid import uuid4
 import numpy as np
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureTextEmbedding,
+    OpenAIEmbeddingPromptExecutionSettings,
+    OpenAITextEmbedding,
+)
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
@@ -22,20 +25,20 @@ from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.data import (
+    DistanceFunction,
+    IndexKind,
+    VectorizedSearchMixin,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    VectorTextSearchMixin,
     vectorstoremodel,
 )
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
 
 def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
@@ -139,7 +142,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "redis_hashset": lambda: RedisHashsetCollection[DataModel](
+    "redis_hash": lambda: RedisHashsetCollection[DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
@@ -171,9 +174,6 @@ def print_record(result: VectorSearchResult | None = None, record: DataModel | N
     print(f"    Content: {record.content}")
     if record.vector is not None:
         print(f"    Vector (first five): {record.vector[:5]}")
-    if result:
-        print(f"  Score: {result.score:.4f}")
-    print()
 
 
 async def main(collection: str, use_azure_openai: bool, embedding_model: str):
@@ -207,6 +207,7 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
             [record1, record2], data_model_type=DataModel
         )
+
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
         print("Getting records!")

@@ -206,3 +206,8 @@ name = "semantic_kernel"
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
+[dependency-groups]
+redis = [
+    "redisvl>=0.3.6",
+]
+
