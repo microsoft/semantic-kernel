@@ -199,7 +199,7 @@ class QdrantCollection(
             **kwargs,
         )
         return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(results),
+            results=self._get_vector_search_results_from_results(results, options),
             total_count=len(results) if options.include_total_count else None,
         )
 

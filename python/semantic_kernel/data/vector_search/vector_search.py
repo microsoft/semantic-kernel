@@ -101,12 +101,14 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
     # region: New methods
 
     async def _get_vector_search_results_from_results(
-        self, results: AsyncIterable[Any] | Sequence[Any]
+        self, results: AsyncIterable[Any] | Sequence[Any], options: VectorSearchOptions | None = None
     ) -> AsyncIterable[VectorSearchResult[TModel]]:
         if isinstance(results, Sequence):
             results = desync_list(results)
         async for result in results:
-            record = self.deserialize(self._get_record_from_result(result))
+            record = self.deserialize(
+                self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
+            )
             score = self._get_score_from_result(result)
             if record:
                 # single records are always returned as single records by the deserializer
