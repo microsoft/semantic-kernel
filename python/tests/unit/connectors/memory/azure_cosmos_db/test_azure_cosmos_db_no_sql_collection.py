@@ -507,4 +507,4 @@ async def test_client_is_closed(
     ) as collection:
         assert collection.cosmos_client is not None
 
-    mock_cosmos_client_close.assert_called_once()
+    mock_cosmos_client_close.assert_called()

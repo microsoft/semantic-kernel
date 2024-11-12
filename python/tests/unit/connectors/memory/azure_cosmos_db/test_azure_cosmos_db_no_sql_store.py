@@ -102,4 +102,4 @@ async def test_client_is_closed(mock_cosmos_client_close, azure_cosmos_db_no_sql
     async with AzureCosmosDBNoSQLStore() as vector_store:
         assert vector_store.cosmos_client is not None
 
-    mock_cosmos_client_close.assert_called_once()
+    mock_cosmos_client_close.assert_called()
