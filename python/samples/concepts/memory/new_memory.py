@@ -16,14 +16,12 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
-    AzureCosmosDBNoSQLCollection,
-)
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
-from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
+from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
+from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
     DistanceFunction,
     IndexKind,
