@@ -29,7 +29,7 @@ public static partial class OpenApiKernelPluginFactory
     /// <param name="filePath">The file path to the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         string filePath,
@@ -42,9 +42,12 @@ public static partial class OpenApiKernelPluginFactory
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
+        var loggerFactory = executionParameters?.LoggerFactory;
+        var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
+
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            NullLogger.Instance,
+            logger,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -52,6 +55,7 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters,
             httpClient,
             openApiSpec,
+            loggerFactory: loggerFactory,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -62,7 +66,7 @@ public static partial class OpenApiKernelPluginFactory
     /// <param name="uri">A local or remote URI referencing the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Uri uri,
@@ -75,9 +79,12 @@ public static partial class OpenApiKernelPluginFactory
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
+        var loggerFactory = executionParameters?.LoggerFactory;
+        var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
+
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            NullLogger.Instance,
+            logger,
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -89,6 +96,7 @@ public static partial class OpenApiKernelPluginFactory
             httpClient,
             openApiSpec,
             uri,
+            loggerFactory,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -99,7 +107,7 @@ public static partial class OpenApiKernelPluginFactory
     /// <param name="stream">A stream representing the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Stream stream,
@@ -119,6 +127,7 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters,
             httpClient,
             openApiSpec,
+            loggerFactory: executionParameters?.LoggerFactory,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -160,13 +169,13 @@ public static partial class OpenApiKernelPluginFactory
         {
             try
             {
-                logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                logger.LogTrace("Registering Rest function {PluginName}.{OperationId}", pluginName, operation.Id);
                 functions.Add(CreateRestApiFunction(pluginName, runner, restApi.Info, restApi.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
                 operation.Freeze();
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                //Logging the exception and keep registering other Rest functions
+                // Logging the exception and keep registering other Rest functions
                 logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {PluginName}.{OperationId}. Error: {Message}",
                     pluginName, operation.Id, ex.Message);
             }
@@ -176,7 +185,7 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Registers KernelFunctionFactory for a REST API operation.
+    /// Registers <see cref="KernelFunctionFactory"/>> for a REST API operation.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
@@ -221,7 +230,7 @@ public static partial class OpenApiKernelPluginFactory
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                logger!.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
+                logger!.LogError(ex, "RestAPI function {Plugin}.{OperationId} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
                 throw;
             }
         }
@@ -293,7 +302,7 @@ public static partial class OpenApiKernelPluginFactory
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="logger">The logger.</param>
-    /// <returns>Valid KernelFunction name.</returns>
+    /// <returns>Valid <see cref="KernelFunction"/>> name.</returns>
     private static string ConvertOperationToValidFunctionName(RestApiOperation operation, ILogger logger)
     {
         if (!string.IsNullOrWhiteSpace(operation.Id))
@@ -324,7 +333,7 @@ public static partial class OpenApiKernelPluginFactory
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="logger">The logger.</param>
-    /// <returns>Valid KernelFunction name.</returns>
+    /// <returns>Valid <see cref="KernelFunction"/> name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
     {
         try
@@ -359,7 +368,6 @@ public static partial class OpenApiKernelPluginFactory
     /// Converts the parameter type to a C# <see cref="Type"/> object.
     /// </summary>
     /// <param name="parameter">The REST API parameter.</param>
-    /// <returns></returns>
     private static Type? ConvertParameterDataType(RestApiParameter parameter)
     {
         return parameter.Type switch

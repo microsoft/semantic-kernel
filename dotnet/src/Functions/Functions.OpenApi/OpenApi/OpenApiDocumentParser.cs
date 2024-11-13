@@ -45,7 +45,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         return new(
             ExtractRestApiInfo(result.OpenApiDocument),
-            CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements),
+            CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements, this._logger),
             ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
@@ -201,10 +201,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 path: path,
                 method: new HttpMethod(method),
                 description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters, logger),
+                payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody, logger),
                 responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
+                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security, logger)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -231,25 +231,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Build a dictionary of <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> objects.
-    /// </summary>
-    /// <param name="securitySchemes">Represents the security schemes used by the REST API.</param>
-    private static ReadOnlyDictionary<string, RestApiSecurityScheme> CreateRestApiOperationSecuritySchemes(IDictionary<string, OpenApiSecurityScheme>? securitySchemes)
-    {
-        var result = new Dictionary<string, RestApiSecurityScheme>();
-
-        if (securitySchemes is not null)
-        {
-            foreach (var item in securitySchemes)
-            {
-                result.Add(item.Key, CreateRestApiSecurityScheme(item.Value));
-            }
-        }
-
-        return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
     }
 
     /// <summary>
@@ -305,7 +286,8 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
     /// <param name="security">The REST API security.</param>
-    internal static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging.</param>
+    internal static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security, ILogger logger)
     {
         var operationRequirements = new List<RestApiSecurityRequirement>();
 
@@ -317,7 +299,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 {
                     if (keyValuePair.Key is not OpenApiSecurityScheme openApiSecurityScheme)
                     {
-                        throw new KernelException("The security scheme is not supported.");
+                        var exception = new KernelException("The security scheme is not supported.");
+                        logger.LogError(exception, "The security scheme is not supported.");
+                        throw exception;
                     }
 
                     operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
@@ -378,8 +362,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="parameters">The OpenAPI parameters.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging.</param>
     /// <returns>The parameters.</returns>
-    private static List<RestApiParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
+    private static List<RestApiParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters, ILogger logger)
     {
         var result = new List<RestApiParameter>();
 
@@ -387,12 +372,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         {
             if (parameter.In is null)
             {
-                throw new KernelException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
+                var exception = new KernelException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
+                logger.LogError(exception, "Parameter location of {ParameterName} parameter of {OperationId} operation is undefined.", parameter.Name, operationId);
+                throw exception;
             }
 
             if (parameter.Style is null)
             {
-                throw new KernelException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
+                var exception = new KernelException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
+                logger.LogError(exception, "Parameter style of {ParameterName} parameter of {OperationId} operation is undefined.", parameter.Name, operationId);
+                throw exception;
             }
 
             var restParameter = new RestApiParameter(
@@ -420,8 +409,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="requestBody">The OpenAPI request body.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging.</param>
     /// <returns>The REST API payload.</returns>
-    private static RestApiPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
+    private static RestApiPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody, ILogger logger)
     {
         if (requestBody?.Content is null)
         {
@@ -431,7 +421,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         var mediaType = s_supportedMediaTypes.FirstOrDefault(requestBody.Content.ContainsKey) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema);
+        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, logger);
 
         return new RestApiPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
@@ -456,9 +446,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API payload properties.</returns>
-    private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
+    private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ILogger logger, int level = 0)
     {
         if (schema is null)
         {
@@ -467,7 +458,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         if (level > PayloadPropertiesHierarchyMaxDepth)
         {
-            throw new KernelException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            var exception = new KernelException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            logger.LogError(exception, "Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {OperationId} operation is exceeded.", PayloadPropertiesHierarchyMaxDepth, operationId);
+            throw exception;
         }
 
         var result = new List<RestApiPayloadProperty>();
@@ -482,7 +475,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 propertyName,
                 propertySchema.Type,
                 schema.Required.Contains(propertyName),
-                GetPayloadProperties(operationId, propertySchema, level + 1),
+                GetPayloadProperties(operationId, propertySchema, logger, level + 1),
                 propertySchema.Description,
                 propertySchema.Format,
                 propertySchema.ToJsonSchema(),
@@ -537,14 +530,17 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         if (readResult.OpenApiDiagnostic.Errors.Any())
         {
-            var message = $"Parsing of '{readResult.OpenApiDocument.Info?.Title}' OpenAPI document complete with the following errors: {string.Join(";", readResult.OpenApiDiagnostic.Errors)}";
-
-            this._logger.LogWarning("{Message}", message);
+            var title = readResult.OpenApiDocument.Info?.Title;
+            var errors = string.Join(";", readResult.OpenApiDiagnostic.Errors);
 
             if (!ignoreNonCompliantErrors)
             {
-                throw new KernelException(message);
+                var exception = new KernelException($"Parsing of '{title}' OpenAPI document complete with the following errors: {errors}");
+                this._logger.LogError(exception, "Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
+                throw exception;
             }
+
+            this._logger.LogWarning("Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
         }
     }
 

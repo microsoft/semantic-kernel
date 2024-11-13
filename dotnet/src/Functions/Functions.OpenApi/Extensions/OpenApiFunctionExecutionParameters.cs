@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -69,6 +70,11 @@ public class OpenApiFunctionExecutionParameters
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
+    /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
+    /// </summary>
+    public ILoggerFactory? LoggerFactory { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
