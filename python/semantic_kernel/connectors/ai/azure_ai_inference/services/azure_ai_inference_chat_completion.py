@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azire_ai_inference_tracing import AzureAIInferenceTracing
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -29,6 +27,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
     AzureAIInferenceBase,
     AzureAIInferenceClientType,
 )
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_tracing import AzureAIInferenceTracing
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
