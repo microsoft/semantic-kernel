@@ -318,7 +318,7 @@ public class RestApiOperationExtensionsTests
         //Arrange
         List<RestApiParameter> parameters = [
             new RestApiParameter("p-1", "number", false, false, RestApiParameterLocation.Path) { ArgumentName = "alt.p1" },
-            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query)  { ArgumentName = "alt.p2" },
+            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query) { ArgumentName = "alt.p2" },
             new RestApiParameter("p3", "number", false, false, RestApiParameterLocation.Header) { ArgumentName = "alt.p3" }
         ];
 

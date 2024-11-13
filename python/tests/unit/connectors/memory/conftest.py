@@ -20,7 +20,28 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 
 
 @fixture
-def dataclass_vector_data_model() -> object:
+def index_kind(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "hnsw"
+
+
+@fixture
+def distance_function(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "cosine_similarity"
+
+
+@fixture
+def vector_property_type(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "float"
+
+
+@fixture
+def dataclass_vector_data_model(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     @vectorstoremodel
     @dataclass
     class MyDataModel:
@@ -28,10 +49,10 @@ def dataclass_vector_data_model() -> object:
             list[float] | None,
             VectorStoreRecordVectorField(
                 embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-                index_kind="hnsw",
+                index_kind=index_kind,
                 dimensions=1536,
-                distance_function="cosine_similarity",
-                property_type="float",
+                distance_function=distance_function,
+                property_type=vector_property_type,
             ),
         ] = None
         other: str | None = None
@@ -44,7 +65,7 @@ def dataclass_vector_data_model() -> object:
 
 
 @fixture
-def data_model_definition() -> object:
+def data_model_definition(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     return VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),
@@ -52,17 +73,49 @@ def data_model_definition() -> object:
                 has_embedding=True,
                 embedding_property_name="vector",
             ),
-            "vector": VectorStoreRecordVectorField(dimensions=3),
+            "vector": VectorStoreRecordVectorField(
+                dimensions=3,
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
         }
     )
 
 
 @fixture
-def data_model_type():
+def data_model_type(index_kind: str, distance_function: str, vector_property_type: str) -> object:
     @vectorstoremodel
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
+        ]
         id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_with_key_as_key_field(index_kind: str, distance_function: str, vector_property_type: str) -> object:
+    """Data model type with key as key field."""
+
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        vector: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
+        ]
+        key: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass

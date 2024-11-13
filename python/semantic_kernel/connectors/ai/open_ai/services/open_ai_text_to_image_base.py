@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_tex
     OpenAITextToImageExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_to_image_client_base import TextToImageClientBase
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 
@@ -42,3 +43,7 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
             raise ServiceResponseException("Failed to generate image.")
 
         return response.data[0].url
+
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+        """Get the request settings class."""
+        return OpenAITextToImageExecutionSettings

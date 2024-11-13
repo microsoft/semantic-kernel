@@ -38,9 +38,13 @@ internal static partial class RestApiOperationExtensions
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
 
-        // Set parameter argument name, if not already set, that contain only supported by SK template language symbols.
         foreach (var parameter in parameters)
         {
+            // The functionality of replacing invalid symbols and setting the argument name   
+            // was introduced to handle dashes allowed in OpenAPI parameter names and   
+            // not supported by SK at that time. More context -   
+            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780   
+            // It's kept for backward compatibility only.  
             parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 

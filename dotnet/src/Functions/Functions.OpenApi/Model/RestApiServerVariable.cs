@@ -71,6 +71,11 @@ public sealed class RestApiServerVariable
     /// </summary>
     internal void Freeze()
     {
+        if (this._isFrozen)
+        {
+            return;
+        }
+
         this._isFrozen = true;
     }
 
