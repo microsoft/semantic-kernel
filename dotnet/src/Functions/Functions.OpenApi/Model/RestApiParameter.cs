@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -16,9 +17,19 @@ public sealed class RestApiParameter
     public string Name { get; }
 
     /// <summary>
-    /// The property alternative name. It can be used as an alternative name in contexts where the original name can't be used.
+    /// The parameter argument name.
+    /// If provided, the argument name will be used to search for the parameter value in function arguments.
+    /// If no value is found using the argument name, the original name - <see cref="RestApiParameter.Name"/> will be used for the search instead.
     /// </summary>
-    public string? AlternativeName { get; internal set; }
+    public string? ArgumentName
+    {
+        get => this._argumentName;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._argumentName = value;
+        }
+    }
 
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
@@ -111,4 +122,32 @@ public sealed class RestApiParameter
         this.Format = format;
         this.Schema = schema;
     }
+
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        if (this._isFrozen)
+        {
+            return;
+        }
+
+        this._isFrozen = true;
+    }
+
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiParameter"/> is frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    private void ThrowIfFrozen()
+    {
+        if (this._isFrozen)
+        {
+            throw new InvalidOperationException("RestApiOperationParameter is frozen and cannot be modified.");
+        }
+    }
+
+    private string? _argumentName;
+    private bool _isFrozen = false;
 }

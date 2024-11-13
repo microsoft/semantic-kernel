@@ -197,12 +197,10 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         this._executionParameters.HttpClient = httpClient;
 
-        var fakePlugin = new FakePlugin();
-
         using var registerCancellationToken = new System.Threading.CancellationTokenSource();
         using var executeCancellationToken = new System.Threading.CancellationTokenSource();
 
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
+        var openApiPlugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
 
         var kernel = new Kernel();
 
@@ -214,7 +212,7 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         // Act
         registerCancellationToken.Cancel();
-        var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
+        var result = await kernel.InvokeAsync(openApiPlugin["GetSecret"], arguments, executeCancellationToken.Token);
 
         // Assert
         Assert.NotNull(result);
@@ -338,17 +336,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
             ["X-API-Version"] = 6,
             ["payload"] = "fake-payload"
         };
-    }
-
-    private sealed class FakePlugin
-    {
-        public string? ParameterValueFakeMethodCalledWith { get; private set; }
-
-        [KernelFunction]
-        public void DoFakeAction(string parameter)
-        {
-            this.ParameterValueFakeMethodCalledWith = parameter;
-        }
     }
 
     #endregion
