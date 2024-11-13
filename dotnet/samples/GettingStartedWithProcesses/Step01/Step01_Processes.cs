@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SharedSteps;
+using Microsoft.SemanticKernel.Process;
 
 namespace Step01;
 
@@ -63,6 +64,11 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // Build the process to get a handle that can be started
         KernelProcess kernelProcess = process.Build();
+
+        string mermaidGraph = kernelProcess.ToMermaid();
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine(mermaidGraph);
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
 
         // Start the process with an initial external event
         using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
