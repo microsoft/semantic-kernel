@@ -18,8 +18,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_aud
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents import AudioContent, TextContent
 
 
 class OpenAIAudioToTextBase(OpenAIHandler, AudioToTextClientBase):
@@ -58,3 +57,7 @@ class OpenAIAudioToTextBase(OpenAIHandler, AudioToTextClientBase):
                 inner_content=response,
             )
         ]
+
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+        """Get the request settings class."""
+        return OpenAIAudioToTextExecutionSettings

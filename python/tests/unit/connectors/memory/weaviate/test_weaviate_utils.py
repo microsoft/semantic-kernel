@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import pytest
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 
 from semantic_kernel.connectors.memory.weaviate.utils import to_weaviate_vector_distance
@@ -15,5 +16,6 @@ def test_distance_function_mapping() -> None:
     assert to_weaviate_vector_distance(DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE) == VectorDistances.L2_SQUARED
     assert to_weaviate_vector_distance(DistanceFunction.MANHATTAN) == VectorDistances.MANHATTAN
     assert to_weaviate_vector_distance(DistanceFunction.HAMMING) == VectorDistances.HAMMING
-    assert to_weaviate_vector_distance(DistanceFunction.COSINE_SIMILARITY) is None
-    assert to_weaviate_vector_distance(DistanceFunction.EUCLIDEAN_DISTANCE) is None
+    with pytest.raises(ValueError):
+        to_weaviate_vector_distance(DistanceFunction.COSINE_SIMILARITY) is None
+        to_weaviate_vector_distance(DistanceFunction.EUCLIDEAN_DISTANCE) is None

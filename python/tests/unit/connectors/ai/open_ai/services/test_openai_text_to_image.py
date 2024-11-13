@@ -8,7 +8,7 @@ from openai.resources.images import AsyncImages
 from openai.types.image import Image
 from openai.types.images_response import ImagesResponse
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
+from semantic_kernel.connectors.ai.open_ai import OpenAITextToImage, OpenAITextToImageExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -57,6 +57,11 @@ def test_init_with_no_model_id(openai_unit_test_env) -> None:
         OpenAITextToImage(
             env_file_path="test.env",
         )
+
+
+def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
+    openai_text_to_image = OpenAITextToImage()
+    assert openai_text_to_image.get_prompt_execution_settings_class() == OpenAITextToImageExecutionSettings
 
 
 @pytest.mark.asyncio

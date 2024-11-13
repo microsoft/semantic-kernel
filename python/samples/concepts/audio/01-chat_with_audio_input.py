@@ -4,18 +4,21 @@ import asyncio
 import logging
 import os
 
-from samples.concepts.audio_to_text.audio_recorder import AudioRecorder
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from samples.concepts.audio.audio_recorder import AudioRecorder
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureAudioToText,
+    AzureChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent, ChatHistory
 
 # This simple sample demonstrates how to use the AzureChatCompletion and AzureAudioToText services
 # to create a chat bot that can communicate with the user using audio input.
 # The user can enage a long conversation with the chat bot by speaking to it.
+
+# Resources required for this sample:
+# 1. An Azure OpenAI model deployment (e.g. GPT-4o-mini).
+# 2. An Azure Speech to Text deployment (e.g. whisper).
 
 # Additional dependencies required for this sample:
 # - pyaudio: `pip install pyaudio` or `uv pip install pyaudio` if you are using uv and have a virtual env activated.
