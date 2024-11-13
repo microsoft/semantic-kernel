@@ -529,6 +529,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
+        include_vectors = kwargs.get("include_vectors", True)
         if self.data_model_definition.from_dict:
             if isinstance(record, Sequence):
                 return self.data_model_definition.from_dict(record, **kwargs)
@@ -544,9 +545,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.model_validate(record)  # type: ignore
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        record[field.name] = field.serialize_function(record[field.name])  # type: ignore
+                if include_vectors:
+                    for field in self.data_model_definition.vector_fields:
+                        if field.serialize_function:
+                            record[field.name] = field.serialize_function(record[field.name])  # type: ignore
                 return self.data_model_type.model_validate(record)  # type: ignore
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
@@ -554,14 +556,17 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.from_dict(record)  # type: ignore
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        record[field.name] = field.serialize_function(record[field.name])  # type: ignore
+                if include_vectors:
+                    for field in self.data_model_definition.vector_fields:
+                        if field.serialize_function:
+                            record[field.name] = field.serialize_function(record[field.name])  # type: ignore
                 return self.data_model_type.from_dict(record)  # type: ignore
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         data_model_dict: dict[str, Any] = {}
         for field_name in self.data_model_definition.fields:  # type: ignore
+            if not include_vectors and field_name in self.data_model_definition.vector_field_names:
+                continue
             try:
                 value = record[field_name]
                 if func := getattr(self.data_model_definition.fields[field_name], "deserialize_function", None):

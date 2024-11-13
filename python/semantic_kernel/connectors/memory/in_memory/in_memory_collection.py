@@ -132,7 +132,7 @@ class InMemoryVectorCollection(
         if return_records:
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(
-                    self._generate_return_list(return_records, options)
+                    self._generate_return_list(return_records, options), options
                 ),
                 total_count=len(return_records) if options and options.include_total_count else None,
             )
@@ -167,7 +167,7 @@ class InMemoryVectorCollection(
         if sorted_records:
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(
-                    self._generate_return_list(sorted_records, options)
+                    self._generate_return_list(sorted_records, options), options
                 ),
                 total_count=len(return_records) if options and options.include_total_count else None,
             )
