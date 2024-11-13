@@ -24,21 +24,4 @@ public sealed class MicrosoftManifestPluginParameters
     /// and the value is OpenApiFunctionExecutionParameters specific to that dependency.
     /// </summary>
     public Dictionary<string, OpenApiFunctionExecutionParameters>? FunctionExecutionParameters { get; init; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MicrosoftManifestPluginParameters"/> class.
-    /// </summary>
-    /// <param name="httpClient">Http client to be used in plugin initialization phase.</param>
-    /// <param name="userAgent">User agent to be used in plugin initialization phase.</param>
-    /// <param name="functionExecutionParameters">A map of function execution parameters.</param>
-    public MicrosoftManifestPluginParameters(
-        HttpClient? httpClient = default,
-        string? userAgent = default,
-        Dictionary<string, OpenApiFunctionExecutionParameters>? functionExecutionParameters = default
-    )
-    {
-        this.HttpClient = httpClient;
-        this.UserAgent = userAgent;
-        this.FunctionExecutionParameters = functionExecutionParameters;
-    }
 }

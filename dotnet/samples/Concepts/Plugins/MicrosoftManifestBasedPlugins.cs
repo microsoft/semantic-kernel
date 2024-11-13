@@ -80,12 +80,13 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 request.RequestUri = uriBuilder.Uri;
             });
 
-        var apiManifestPluginParameters = new MicrosoftManifestPluginParameters(
-            functionExecutionParameters: new()
+        var apiManifestPluginParameters = new MicrosoftManifestPluginParameters {
+            FunctionExecutionParameters = new()
             {
                 { "https://graph.microsoft.com/v1.0", graphOpenApiFunctionExecutionParameters },
                 { "https://api.nasa.gov/planetary", nasaOpenApiFunctionExecutionParameters }
-            });
+            }
+        };
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MicrosoftManifestPlugins");
 
         foreach (var pluginName in pluginNames)
