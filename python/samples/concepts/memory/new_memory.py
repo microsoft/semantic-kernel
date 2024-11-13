@@ -269,7 +269,7 @@ if __name__ == "__main__":
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--collection", default="weaviate", choices=collections.keys(), help="What collection to use.")
+    parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model
