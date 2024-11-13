@@ -61,7 +61,7 @@
       ],
       "authType": null,
       "authReferenceId": null,
-      "descriptionLocation": "https://raw.githubusercontent.com/zengin/openapi-directory/zengin/nasa/APIs/nasa.gov/apod/1.0.0/openapi.yaml",
+      "descriptionLocation": "./OpenAPI/NASA/apod.yaml",
       "includePatterns": [
         "/apod#GET"
       ],
