@@ -46,8 +46,8 @@ internal static class DocumentLoader
 
         if (!File.Exists(filePath))
         {
-            var exception = new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
-            logger.LogError(exception, "Invalid URI. The specified path '{FilePath}' does not exist.", filePath);
+            var exception = new FileNotFoundException($"Invalid file path. The specified path '{filePath}' does not exist.");
+            logger.LogError(exception, "Invalid file path. The specified path '{FilePath}' does not exist.", filePath);
             throw exception;
         }
 

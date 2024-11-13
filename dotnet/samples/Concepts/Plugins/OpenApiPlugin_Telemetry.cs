@@ -63,7 +63,9 @@ public sealed class OpenApiPlugin_Telemetry(ITestOutputHelper output) : BaseTest
         // List All Repairs
         result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+
         Assert.True(repairs?.Length > 0);
+
         var id = repairs[repairs.Length - 1].Id;
 
         // Update Repair
