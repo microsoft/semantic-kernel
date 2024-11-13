@@ -7,6 +7,49 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Plugins;
+/// <summary>
+/// These examples demonstrate how to use MicrosoftManifest plugins to call Microsoft Graph and NASA APIs.
+/// Microsoft Manifest plugins are created from the OpenAPI document and the manifest file.
+/// The manifest file contains the API dependencies and their execution parameters.
+/// The manifest file also contains the authentication information for the APIs, however this is not used by the extension method and MUST be setup separately at the moment, which the example demonstrates.
+///
+/// Important stages being demonstrated:
+/// 1. Load MicrosoftManifest plugins
+/// 2. Configure authentication for the APIs
+/// 3. Call functions from the loaded plugins
+///
+/// Running this test requires the following configuration in `dotnet\samples\Concepts\bin\Debug\net8.0\appsettings.Development.json`:
+///
+/// ```json
+/// {
+///  "MSGraph": {
+///    "ClientId": "clientId",
+///    "TenantId": "tenantId",
+///    "Scopes": [
+///      "Calendars.Read",
+///      "Contacts.Read",
+///      "Files.Read.All",
+///      "Mail.Read",
+///      "User.Read"
+///    ],
+///    "RedirectUri": "http://localhost"
+///  }
+/// }
+///```
+///
+/// Replace the clientId and TenantId by your own values.
+///
+/// To create the application registration:
+/// 1. Go to https://aad.portal.azure.com
+/// 2. Select create a new application registration
+/// 3. Select new public client (add the redirect URI).
+/// 4. Navigate to API access, add the listed Microsoft Graph delegated scopes.
+/// 5. Grant consent after adding the scopes.
+///
+/// During the first run, your browser will open to get the token.
+///
+/// </summary>
+/// <param name="output">The output helper to use to the test can emit status information</param>
 public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     public static readonly IEnumerable<object[]> s_parameters =
