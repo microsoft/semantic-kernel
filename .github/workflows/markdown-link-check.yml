@@ -6,7 +6,7 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   markdown-link-check:
@@ -19,7 +19,7 @@ jobs:
       - name: Run linkspector
         uses: umbrelladocs/action-linkspector@v1
         with:
-          reporter: github-pr-review
+          reporter: local
           filter_mode: nofilter
           fail_on_error: true
           config_file: ".github/.linkspector.yml"
