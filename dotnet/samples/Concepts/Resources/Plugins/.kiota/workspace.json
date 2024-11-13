@@ -13,7 +13,7 @@
         "/me/calendar/events#GET"
       ],
       "excludePatterns": [],
-      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/CalendarPlugin"
+      "outputPath": "./MicrosoftManifestPlugins/CalendarPlugin"
     },
     "Contacts": {
       "types": [
@@ -26,7 +26,7 @@
         "/me/contacts#GET"
       ],
       "excludePatterns": [],
-      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/ContactsPlugin"
+      "outputPath": "./MicrosoftManifestPlugins/ContactsPlugin"
     },
     "DriveItem": {
       "types": [
@@ -39,7 +39,7 @@
         "/drive/root/children/{driveItem-id}/content#GET"
       ],
       "excludePatterns": [],
-      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/DriveItemPlugin"
+      "outputPath": "./MicrosoftManifestPlugins/DriveItemPlugin"
     },
     "Messages": {
       "types": [
@@ -53,7 +53,7 @@
         "/me/messages#POST"
       ],
       "excludePatterns": [],
-      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/MessagesPlugin"
+      "outputPath": "./MicrosoftManifestPlugins/MessagesPlugin"
     },
     "Astronomy": {
       "types": [
@@ -66,7 +66,7 @@
         "/apod#GET"
       ],
       "excludePatterns": [],
-      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/AstronomyPlugin"
+      "outputPath": "./MicrosoftManifestPlugins/AstronomyPlugin"
     }
   }
 }
