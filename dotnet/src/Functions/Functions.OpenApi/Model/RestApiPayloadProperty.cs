@@ -106,6 +106,11 @@ public sealed class RestApiPayloadProperty
     /// </summary>
     internal void Freeze()
     {
+        if (this._isFrozen)
+        {
+            return;
+        }
+
         this._isFrozen = true;
     }
 

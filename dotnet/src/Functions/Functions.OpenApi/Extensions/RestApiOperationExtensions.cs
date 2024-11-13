@@ -38,7 +38,7 @@ internal static partial class RestApiOperationExtensions
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
 
-        // Set parameter argument name, if not already set, that contain only supported by SK template language symbols.
+        // Initialize parameter argument name, with a string that only contains valid template language symbols.
         foreach (var parameter in parameters)
         {
             parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
