@@ -101,6 +101,7 @@ internal sealed class Program
         {
             services.AddAzureAIInferenceChatCompletion(
                 serviceId: "azureai",
+                modelId: config["AzureAIInference:ChatModelId"]!,
                 endpoint: new Uri(config["AzureAIInference:Endpoint"]!),
                 apiKey: config["AzureAIInference:ApiKey"]);
 
