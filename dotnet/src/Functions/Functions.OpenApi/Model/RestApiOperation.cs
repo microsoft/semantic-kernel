@@ -279,7 +279,7 @@ public sealed class RestApiOperation
 
         if (parameter.IsRequired)
         {
-            throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+            throw new KernelException($"No argument '{parameter.ArgumentName ?? parameter.Name}' is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
         }
 
         return null;
@@ -330,7 +330,7 @@ public sealed class RestApiOperation
                 // Throw an exception if there's no value for the variable.
                 else
                 {
-                    throw new KernelException($"No argument provided for the '{variableName}' server variable of the operation - '{this.Id}'.");
+                    throw new KernelException($"No argument '{variable.Value.ArgumentName ?? variableName}' provided for the '{variableName}' server variable of the operation - '{this.Id}'.");
                 }
             }
         }
