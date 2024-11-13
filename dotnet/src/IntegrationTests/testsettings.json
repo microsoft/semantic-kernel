@@ -9,7 +9,7 @@
     "ServiceId": "azure-ai-inference",
     "Endpoint": "",
     "ApiKey": "",
-    "ModelId": "phi3"
+    "ChatModelId ": "phi3"
   },
   "AzureOpenAI": {
     "ServiceId": "azure-gpt",
