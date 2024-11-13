@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
 from typing import Any
 
 import pandas as pd
@@ -10,10 +11,13 @@ from semantic_kernel.data import VectorStore, VectorStoreRecordDefinition
 from semantic_kernel.exceptions import MemoryConnectorConnectionException
 from tests.integration.memory.vector_stores.data_records import (
     PANDAS_RECORD_DEFINITION,
+    PANDAS_RECORD_DEFINITION_FLAT,
     RAW_RECORD_ARRAY,
     RAW_RECORD_LIST,
     TestDataModelArray,
+    TestDataModelArrayFlat,
     TestDataModelList,
+    TestDataModelListFlat,
 )
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
 
@@ -223,6 +227,47 @@ class TestVectorStore(VectorStoreTestBase):
                 PANDAS_RECORD_DEFINITION,
                 RAW_RECORD_LIST,
                 id="weaviate_local_pandas_data_model",
+            ),
+            # endregion
+            # region Azure Cosmos DB NoSQL
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_array_data_model",
+                {},
+                TestDataModelArrayFlat,
+                None,
+                RAW_RECORD_ARRAY,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_array_data_model",
+            ),
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_list_data_model",
+                {},
+                TestDataModelListFlat,
+                None,
+                RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_list_data_model",
+            ),
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_pandas_data_model",
+                {},
+                pd.DataFrame,
+                PANDAS_RECORD_DEFINITION_FLAT,
+                RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_pandas_data_model",
             ),
             # endregion
         ],
