@@ -123,7 +123,8 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 request.RequestUri = uriBuilder.Uri;
             });
 
-        var apiManifestPluginParameters = new MicrosoftManifestPluginParameters {
+        var apiManifestPluginParameters = new MicrosoftManifestPluginParameters
+        {
             FunctionExecutionParameters = new()
             {
                 { "https://graph.microsoft.com/v1.0", graphOpenApiFunctionExecutionParameters },
