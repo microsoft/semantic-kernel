@@ -15,8 +15,10 @@ using Microsoft.OpenApi.ApiManifest;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
 /// </summary>
