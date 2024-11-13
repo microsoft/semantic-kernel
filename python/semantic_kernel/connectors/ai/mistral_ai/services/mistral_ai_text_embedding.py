@@ -10,7 +10,6 @@ else:
 import logging
 
 from mistralai import Mistral
-from mistralai.async_client import MistralAsyncClient
 from mistralai.models import EmbeddingResponse
 from numpy import array, ndarray
 from pydantic import ValidationError
@@ -34,7 +33,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         ai_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
-        async_client: Mistral | MistralAsyncClient | None = None,
+        async_client: Mistral | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
