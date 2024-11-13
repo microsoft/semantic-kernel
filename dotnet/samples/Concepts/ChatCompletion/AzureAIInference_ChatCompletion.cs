@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Azure.AI.Inference;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 namespace ChatCompletion;
 
@@ -15,9 +16,13 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
     {
         Console.WriteLine("======== Azure AI Inference - Chat Completion ========");
 
-        var chatService = new AzureAIInferenceChatCompletionService(
-            endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
-            apiKey: TestConfiguration.AzureAIInference.ApiKey);
+        Assert.NotNull(TestConfiguration.AzureAIInference.ApiKey);
+
+        var chatService = new ChatCompletionsClient(
+                endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
+                credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey))
+            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -81,6 +86,7 @@ public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTes
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureAIInferenceChatCompletion(
+                modelId: TestConfiguration.AzureAIInference.ChatModelId,
                 endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
                 apiKey: TestConfiguration.AzureAIInference.ApiKey)
             .Build();

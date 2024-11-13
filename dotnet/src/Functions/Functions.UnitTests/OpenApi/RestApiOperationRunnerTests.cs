@@ -1387,6 +1387,136 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.False(contentStream!.CanSeek);
     }
 
+    [Fact]
+    public async Task ItShouldUseRestApiOperationPayloadPropertyArgumentNameToLookupArgumentsAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, []) { ArgumentName = "alt-name" },
+            new("attributes", "object", false,
+            [
+                new("enabled", "boolean", false, []) { ArgumentName = "alt-enabled" },
+            ])
+        ];
+
+        var payload = new RestApiPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "alt-name", "fake-name-value" },
+            { "alt-enabled", true }
+        };
+
+        var options = new RestApiOperationRunOptions()
+        {
+            Kernel = new(),
+            KernelFunction = KernelFunctionFactory.CreateFromMethod(() => false),
+            KernelArguments = arguments,
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments, options);
+
+        // Assert
+        var requestContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(requestContent);
+
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(requestContent));
+        Assert.NotNull(deserializedPayload);
+
+        var nameProperty = deserializedPayload["name"]?.ToString();
+        Assert.Equal("fake-name-value", nameProperty);
+
+        var attributesProperty = deserializedPayload["attributes"];
+        Assert.NotNull(attributesProperty);
+
+        var enabledProperty = attributesProperty["enabled"]?.AsValue();
+        Assert.NotNull(enabledProperty);
+        Assert.Equal("true", enabledProperty.ToString());
+    }
+
+    [Fact]
+    public async Task ItShouldUseRestApiOperationPayloadPropertyNameToLookupArgumentsIfNoArgumentNameProvidedAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, []) { ArgumentName = "alt-name" },
+            new("attributes", "object", false,
+            [
+                new("enabled", "boolean", false, []) { ArgumentName = "alt-enabled" },
+            ])
+        ];
+
+        var payload = new RestApiPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: payload
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "name", "fake-name-value" },
+            { "enabled", true }
+        };
+
+        var options = new RestApiOperationRunOptions()
+        {
+            Kernel = new(),
+            KernelFunction = KernelFunctionFactory.CreateFromMethod(() => false),
+            KernelArguments = arguments,
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments, options);
+
+        // Assert
+        var requestContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(requestContent);
+
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(requestContent));
+        Assert.NotNull(deserializedPayload);
+
+        var nameProperty = deserializedPayload["name"]?.ToString();
+        Assert.Equal("fake-name-value", nameProperty);
+
+        var attributesProperty = deserializedPayload["attributes"];
+        Assert.NotNull(attributesProperty);
+
+        var enabledProperty = attributesProperty["enabled"]?.AsValue();
+        Assert.NotNull(enabledProperty);
+        Assert.Equal("true", enabledProperty.ToString());
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()

@@ -146,15 +146,10 @@ public sealed class RestApiOperation
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
@@ -187,15 +182,10 @@ public sealed class RestApiOperation
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
@@ -215,6 +205,24 @@ public sealed class RestApiOperation
         return string.Join("&", segments);
     }
 
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        this.Payload?.Freeze();
+
+        foreach (var parameter in this.Parameters)
+        {
+            parameter.Freeze();
+        }
+
+        foreach (var server in this.Servers)
+        {
+            server.Freeze();
+        }
+    }
+
     #region private
 
     /// <summary>
@@ -229,15 +237,10 @@ public sealed class RestApiOperation
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
@@ -255,6 +258,31 @@ public sealed class RestApiOperation
         }
 
         return pathTemplate;
+    }
+
+    private object? GetArgumentForParameter(IDictionary<string, object?> arguments, RestApiParameter parameter)
+    {
+        // Try to get the parameter value by the argument name.
+        if (!string.IsNullOrEmpty(parameter.ArgumentName) &&
+            arguments.TryGetValue(parameter.ArgumentName!, out object? argument) &&
+            argument is not null)
+        {
+            return argument;
+        }
+
+        // Try to get the parameter value by the parameter name.
+        if (arguments.TryGetValue(parameter.Name, out argument) &&
+            argument is not null)
+        {
+            return argument;
+        }
+
+        if (parameter.IsRequired)
+        {
+            throw new KernelException($"No argument '{parameter.ArgumentName ?? parameter.Name}' is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -275,21 +303,34 @@ public sealed class RestApiOperation
         else if (this.Servers is { Count: > 0 } servers && servers[0].Url is { } url)
         {
             serverUrlString = url;
+
             foreach (var variable in servers[0].Variables)
             {
-                arguments.TryGetValue(variable.Key, out object? value);
-                string? strValue = value as string;
-                if (strValue is not null && variable.Value.IsValid(strValue))
+                var variableName = variable.Key;
+
+                // Try to get the variable value by the argument name.
+                if (!string.IsNullOrEmpty(variable.Value.ArgumentName) &&
+                    arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
+                    value is string { } argStrValue && variable.Value.IsValid(argStrValue))
                 {
-                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", strValue);
+                    serverUrlString = url.Replace($"{{{variableName}}}", argStrValue);
                 }
+                // Try to get the variable value by the variable name.
+                else if (arguments.TryGetValue(variableName, out value) &&
+                    value is string { } strValue &&
+                    variable.Value.IsValid(strValue))
+                {
+                    serverUrlString = url.Replace($"{{{variableName}}}", strValue);
+                }
+                // Use the default value if no argument is provided.
                 else if (variable.Value.Default is not null)
                 {
-                    serverUrlString = serverUrlString.Replace($"{{{variable.Key}}}", variable.Value.Default);
+                    serverUrlString = url.Replace($"{{{variableName}}}", variable.Value.Default);
                 }
+                // Throw an exception if there's no value for the variable.
                 else
                 {
-                    throw new KernelException($"No value provided for the '{variable.Key}' server variable of the operation - '{this.Id}'.");
+                    throw new KernelException($"No argument '{variable.Value.ArgumentName ?? variableName}' provided for the '{variableName}' server variable of the operation - '{this.Id}'.");
                 }
             }
         }

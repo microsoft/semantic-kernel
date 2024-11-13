@@ -162,6 +162,7 @@ public static partial class OpenApiKernelPluginFactory
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
                 functions.Add(CreateRestApiFunction(pluginName, runner, restApi.Info, restApi.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
+                operation.Freeze();
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -207,44 +208,16 @@ public static partial class OpenApiKernelPluginFactory
         {
             try
             {
-                // Extract function arguments from context
-                var arguments = new KernelArguments();
-                foreach (var parameter in restOperationParameters)
-                {
-                    // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) &&
-                        variables.TryGetValue(parameter.AlternativeName!, out object? value) &&
-                        value is not null)
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    // A try to resolve argument by original parameter name
-                    if (variables.TryGetValue(parameter.Name, out value) &&
-                        value is not null)
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    if (parameter.IsRequired)
-                    {
-                        throw new KeyNotFoundException(
-                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{pluginName}.{operation.Id}' Rest function.");
-                    }
-                }
-
                 var options = new RestApiOperationRunOptions
                 {
                     Kernel = kernel,
                     KernelFunction = function,
-                    KernelArguments = arguments,
+                    KernelArguments = variables,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
+                return await runner.RunAsync(operation, variables, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -254,7 +227,7 @@ public static partial class OpenApiKernelPluginFactory
         }
 
         var parameters = restOperationParameters
-            .Select(p => new KernelParameterMetadata(p.AlternativeName ?? p.Name)
+            .Select(p => new KernelParameterMetadata(p.ArgumentName ?? p.Name)
             {
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
