@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure Cosmos DB database.
 /// Get more details about Azure Cosmos DB vector search  https://learn.microsoft.com/en-us/azure/cosmos-db/
 /// </summary>
+[Experimental("SKEXP0020")]
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
     private const string EmbeddingPath = "/embedding";
@@ -444,6 +446,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 /// <param name="timestamp"></param>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
 #pragma warning disable CA1812 // 'MemoryRecordWithSimilarityScore' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic). (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812)
+[Experimental("SKEXP0020")]
 internal sealed class MemoryRecordWithSimilarityScore(
 #pragma warning restore CA1812
     MemoryRecordMetadata metadata,
@@ -465,6 +468,7 @@ internal sealed class MemoryRecordWithSimilarityScore(
 /// <summary>
 /// Creates a new record that also serializes an "id" property.
 /// </summary>
+[Experimental("SKEXP0020")]
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
 internal sealed class MemoryRecordWithId : MemoryRecord
 {

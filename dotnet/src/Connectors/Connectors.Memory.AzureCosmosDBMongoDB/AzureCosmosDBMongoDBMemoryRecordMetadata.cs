@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// A MongoDB memory record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
+[Experimental("SKEXP0020")]
 internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
