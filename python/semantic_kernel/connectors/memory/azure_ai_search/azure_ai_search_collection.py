@@ -282,7 +282,7 @@ class AzureAISearchCollection(
             ]
         raw_results = await self.search_client.search(**search_args)
         return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(raw_results),
+            results=self._get_vector_search_results_from_results(raw_results, options),
             total_count=await raw_results.get_count() if options.include_total_count else None,
         )
 

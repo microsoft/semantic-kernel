@@ -4,7 +4,7 @@ import logging
 from abc import ABC
 from typing import Any, Union
 
-from openai import AsyncOpenAI, AsyncStream, BadRequestError
+from openai import AsyncOpenAI, AsyncStream, BadRequestError, _legacy_response
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
@@ -12,18 +12,15 @@ from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.images_response import ImagesResponse
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_audio_to_text_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
     OpenAIAudioToTextExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
+    OpenAITextToAudioExecutionSettings,
     OpenAITextToImageExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
@@ -42,6 +39,7 @@ RESPONSE_TYPE = Union[
     list[Any],
     ImagesResponse,
     Transcription,
+    _legacy_response.HttpxBinaryResponseContent,
 ]
 
 
@@ -68,6 +66,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
         if self.ai_model_type == OpenAIModelTypes.AUDIO_TO_TEXT:
             assert isinstance(settings, OpenAIAudioToTextExecutionSettings)  # nosec
             return await self._send_audio_to_text_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.TEXT_TO_AUDIO:
+            assert isinstance(settings, OpenAITextToAudioExecutionSettings)  # nosec
+            return await self._send_text_to_audio_request(settings)
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
 
@@ -141,6 +142,23 @@ class OpenAIHandler(KernelBaseModel, ABC):
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to transcribe audio",
+                ex,
+            ) from ex
+
+    async def _send_text_to_audio_request(
+        self, settings: OpenAITextToAudioExecutionSettings
+    ) -> _legacy_response.HttpxBinaryResponseContent:
+        """Send a request to the OpenAI text to audio endpoint.
+
+        The OpenAI API returns the content of the generated audio file.
+        """
+        try:
+            return await self.client.audio.speech.create(
+                **settings.prepare_settings_dict(),
+            )
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to generate audio",
                 ex,
             ) from ex
 

@@ -165,6 +165,11 @@ class BinaryContent(KernelContent):
 
         return cls(uri=element.get("uri", None))
 
+    def write_to_file(self, path: str | FilePath) -> None:
+        """Write the data to a file."""
+        with open(path, "wb") as file:
+            file.write(self.data)
+
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "binary", "binary": {"uri": str(self)}}
