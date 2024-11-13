@@ -2,25 +2,20 @@
 
 import logging
 from collections.abc import AsyncIterable
-from html import escape
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote_plus
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse
-from semantic_kernel.connectors.search.bing.bing_search_settings import BingSettings
-from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
-from semantic_kernel.connectors.search.bing.const import (
-    DEFAULT_CUSTOM_URL,
-    DEFAULT_URL,
-    QUERY_PARAMETERS,
-)
+from semantic_kernel.connectors.search.google.const import CUSTOM_SEARCH_URL, QUERY_PARAMETERS
+from semantic_kernel.connectors.search.google.google_search_response import GoogleSearchResponse
+from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
+from semantic_kernel.connectors.search.google.google_search_settings import GoogleSearchSettings
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
@@ -35,33 +30,33 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class BingSearch(KernelBaseModel, TextSearch):
-    """A search engine connector that uses the Bing Search API to perform a web search."""
+class GoogleSearch(KernelBaseModel, TextSearch):
+    """A search engine connector that uses the Google Search API to perform a web search."""
 
-    settings: BingSettings
+    settings: GoogleSearchSettings
 
     def __init__(
         self,
         api_key: str | None = None,
-        custom_config: str | None = None,
+        search_engine_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the Bing Search class.
+        """Initializes a new instance of the Google Search class.
 
         Args:
             api_key: The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
-            custom_config: The Bing Custom Search instance's unique identifier.
+            search_engine_id: The Google search engine ID.
                 If provided, will override the value in the env vars or .env file.
             env_file_path: The optional path to the .env file. If provided,
                 the settings are read from this file path location.
             env_file_encoding: The optional encoding of the .env file.
         """
         try:
-            settings = BingSettings.create(
-                api_key=api_key,
-                custom_config=custom_config,
+            settings = GoogleSearchSettings.create(
+                search_api_key=api_key,
+                search_engine_id=search_engine_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -96,51 +91,54 @@ class BingSearch(KernelBaseModel, TextSearch):
 
     async def get_search_results(
         self, query: str, options: "SearchOptions | None" = None, **kwargs
-    ) -> "KernelSearchResults[BingWebPage]":
+    ) -> "KernelSearchResults[GoogleSearchResult]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
         options = self._get_options(options, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
-            results=self._get_bing_web_pages(results),
+            results=self._get_google_search_results(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
-    async def _get_result_strings(self, response: BingSearchResponse) -> AsyncIterable[str]:
-        if response.web_pages is None:
+    async def _get_result_strings(self, response: GoogleSearchResponse) -> AsyncIterable[str]:
+        if response.items is None:
             return
-        for web_page in response.web_pages.value:
-            yield web_page.snippet or ""
+        for item in response.items:
+            yield item.snippet or ""
 
-    async def _get_text_search_results(self, response: BingSearchResponse) -> AsyncIterable[TextSearchResult]:
-        if response.web_pages is None:
+    async def _get_text_search_results(self, response: GoogleSearchResponse) -> AsyncIterable[TextSearchResult]:
+        if response.items is None:
             return
-        for web_page in response.web_pages.value:
+        for item in response.items:
             yield TextSearchResult(
-                name=web_page.name,
-                value=web_page.snippet,
-                link=web_page.url,
+                name=item.title,
+                value=item.snippet,
+                link=item.link,
             )
 
-    async def _get_bing_web_pages(self, response: BingSearchResponse) -> AsyncIterable[BingWebPage]:
-        if response.web_pages is None:
+    async def _get_google_search_results(self, response: GoogleSearchResponse) -> AsyncIterable[GoogleSearchResult]:
+        if response.items is None:
             return
-        for val in response.web_pages.value:
+        for val in response.items:
             yield val
 
-    def _get_metadata(self, response: BingSearchResponse) -> dict[str, Any]:
+    def _get_metadata(self, response: GoogleSearchResponse) -> dict[str, Any]:
         return {
-            "altered_query": response.query_context.get("alteredQuery"),
+            "search_time": response.search_information.search_time if response.search_information else 0,
         }
 
-    def _get_total_count(self, response: BingSearchResponse, options: TextSearchOptions) -> int | None:
-        return (
+    def _get_total_count(self, response: GoogleSearchResponse, options: TextSearchOptions) -> int | None:
+        total_results = (
             None
             if not options.include_total_count
-            else response.web_pages.total_estimated_matches or None
-            if response.web_pages
+            else response.search_information.total_results or None
+            if response.search_information
             else None
         )
+        if total_results is not None:
+            return int(total_results)
+        return None
 
     def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> TextSearchOptions:
         if options is not None and isinstance(options, TextSearchOptions):
@@ -150,28 +148,21 @@ class BingSearch(KernelBaseModel, TextSearch):
         except ValidationError:
             return TextSearchOptions()
 
-    async def _inner_search(self, query: str, options: TextSearchOptions) -> BingSearchResponse:
+    async def _inner_search(self, query: str, options: TextSearchOptions) -> GoogleSearchResponse:
         self._validate_options(options)
 
         logger.info(
-            f"Received request for bing web search with \
+            f"Received request for google web search with \
                 params:\nquery: {query}\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
-        url = self._get_url()
-        params = self._build_request_parameters(query, options)
-
-        logger.info(f"Sending GET request to {url}")
-
-        headers = {
-            "Ocp-Apim-Subscription-Key": self.settings.api_key.get_secret_value(),
-            "user_agent": SEMANTIC_KERNEL_USER_AGENT,
-        }
+        full_url = f"{CUSTOM_SEARCH_URL}{self._build_query(query, options)}"
+        headers = {"user_agent": SEMANTIC_KERNEL_USER_AGENT}
         try:
             async with AsyncClient() as client:
-                response = await client.get(url, headers=headers, params=params)
+                response = await client.get(full_url, headers=headers)
                 response.raise_for_status()
-                return BingSearchResponse.model_validate_json(response.text)
+                return GoogleSearchResponse.model_validate_json(response.text)
         except HTTPStatusError as ex:
             logger.error(f"Failed to get search results: {ex}")
             raise ServiceInvalidRequestError("Failed to get search results.") from ex
@@ -183,30 +174,21 @@ class BingSearch(KernelBaseModel, TextSearch):
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
     def _validate_options(self, options: TextSearchOptions) -> None:
-        if options.top >= 50:
-            raise ServiceInvalidRequestError("count value must be less than 50.")
+        if options.top >= 10:
+            raise ServiceInvalidRequestError("count value must be less than or equal to 10.")
 
-    def _get_url(self) -> str:
-        if not self.settings.custom_config:
-            return DEFAULT_URL
-        return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
-
-    def _build_request_parameters(self, query: str, options: TextSearchOptions) -> dict[str, str | int]:
-        params: dict[str, str | int] = {"count": options.top, "offset": options.skip}
-        if not options.filter:
-            params["q"] = query or ""
-            return params
-        extra_query_params = []
-        for filter in options.filter.filters:
-            if isinstance(filter, TextSearchFilter):
-                logger.warning("Groups are not supported by Bing search, ignored.")
-                continue
-            if isinstance(filter, EqualTo):
-                if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = escape(filter.value)
-                else:
-                    extra_query_params.append(f"{filter.field_name}:{filter.value}")
-            elif isinstance(filter, AnyTagsEqualTo):
-                logger.debug("Any tag equals to filter is not supported by Bing Search API.")
-        params["q"] = f"{query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
-        return params
+    def _build_query(self, query: str, options: TextSearchOptions) -> str:
+        params = {
+            "key": self.settings.search_api_key.get_secret_value(),
+            "cx": self.settings.search_engine_id,
+            "num": options.top,
+            "start": options.skip,
+        }
+        if options.filter:
+            for filter in options.filter.filters:
+                if isinstance(filter, EqualTo):
+                    if filter.field_name in QUERY_PARAMETERS:
+                        params[filter.field_name] = quote_plus(filter.value)
+                elif isinstance(filter, AnyTagsEqualTo):
+                    logger.debug("Any tag equals to filter is not supported by Google Search API.")
+        return f"?q={quote_plus(query)}&{'&'.join(f'{k}={v}' for k, v in params.items())}"
