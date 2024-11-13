@@ -1,19 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
 from typing import Any
 
 import pandas as pd
 import pytest
 
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data import VectorStore, VectorStoreRecordDefinition
+from semantic_kernel.exceptions import MemoryConnectorConnectionException
 from tests.integration.memory.vector_stores.data_records import (
     PANDAS_RECORD_DEFINITION,
+    PANDAS_RECORD_DEFINITION_FLAT,
     RAW_RECORD_ARRAY,
     RAW_RECORD_LIST,
     TestDataModelArray,
+    TestDataModelArrayFlat,
     TestDataModelList,
+    TestDataModelListFlat,
 )
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
 
@@ -225,6 +229,47 @@ class TestVectorStore(VectorStoreTestBase):
                 id="weaviate_local_pandas_data_model",
             ),
             # endregion
+            # region Azure Cosmos DB NoSQL
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_array_data_model",
+                {},
+                TestDataModelArrayFlat,
+                None,
+                RAW_RECORD_ARRAY,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_array_data_model",
+            ),
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_list_data_model",
+                {},
+                TestDataModelListFlat,
+                None,
+                RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_list_data_model",
+            ),
+            pytest.param(
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_pandas_data_model",
+                {},
+                pd.DataFrame,
+                PANDAS_RECORD_DEFINITION_FLAT,
+                RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
+                id="azure_cosmos_db_no_sql_pandas_data_model",
+            ),
+            # endregion
         ],
     )
     async def test_vector_store(
@@ -237,30 +282,34 @@ class TestVectorStore(VectorStoreTestBase):
         data_model_definition: VectorStoreRecordDefinition | None,
         record: dict[str, Any],
     ):
-        vector_store = stores[store_id]
-        collection = vector_store.get_collection(
-            collection_name, data_model_type, data_model_definition, **collection_options
-        )
-
         try:
-            await collection.create_collection_if_not_exists()
-        except Exception as exc:
-            pytest.fail(f"Failed to create collection: {exc}")
+            async with (
+                stores[store_id] as vector_store,
+                vector_store.get_collection(
+                    collection_name, data_model_type, data_model_definition, **collection_options
+                ) as collection,
+            ):
+                try:
+                    await collection.create_collection_if_not_exists()
+                except Exception as exc:
+                    pytest.fail(f"Failed to create collection: {exc}")
 
-        # Upsert record
-        await collection.upsert(
-            data_model_type([record]) if data_model_type == pd.DataFrame else data_model_type(**record)
-        )
-        # Get record
-        result = await collection.get(record["id"])
-        assert result is not None
-        # Delete record
-        await collection.delete(record["id"])
-        # Get record again, expect None
-        result = await collection.get(record["id"])
-        assert result is None
+                # Upsert record
+                await collection.upsert(
+                    data_model_type([record]) if data_model_type == pd.DataFrame else data_model_type(**record)
+                )
+                # Get record
+                result = await collection.get(record["id"])
+                assert result is not None
+                # Delete record
+                await collection.delete(record["id"])
+                # Get record again, expect None
+                result = await collection.get(record["id"])
+                assert result is None
 
-        try:
-            await collection.delete_collection()
-        except Exception as exc:
-            pytest.fail(f"Failed to delete collection: {exc}")
+                try:
+                    await collection.delete_collection()
+                except Exception as exc:
+                    pytest.fail(f"Failed to delete collection: {exc}")
+        except MemoryConnectorConnectionException as exc:
+            pytest.xfail(f"Failed to connect to store: {exc}")

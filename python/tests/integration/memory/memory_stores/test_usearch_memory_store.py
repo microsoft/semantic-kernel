@@ -108,23 +108,23 @@ def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> list[Memo
 def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool):
     """Compare two MemoryRecord instances and assert they are the same."""
     assert record1._key == record2._key, f"_key mismatch: {record1._key} != {record2._key}"
-    assert (
-        record1._timestamp == record2._timestamp
-    ), f"_timestamp mismatch: {record1._timestamp} != {record2._timestamp}"
-    assert (
-        record1._is_reference == record2._is_reference
-    ), f"_is_reference mismatch: {record1._is_reference} != {record2._is_reference}"
-    assert (
-        record1._external_source_name == record2._external_source_name
-    ), f"_external_source_name mismatch: {record1._external_source_name} != {record2._external_source_name}"
+    assert record1._timestamp == record2._timestamp, (
+        f"_timestamp mismatch: {record1._timestamp} != {record2._timestamp}"
+    )
+    assert record1._is_reference == record2._is_reference, (
+        f"_is_reference mismatch: {record1._is_reference} != {record2._is_reference}"
+    )
+    assert record1._external_source_name == record2._external_source_name, (
+        f"_external_source_name mismatch: {record1._external_source_name} != {record2._external_source_name}"
+    )
     assert record1._id == record2._id, f"_id mismatch: {record1._id} != {record2._id}"
-    assert (
-        record1._description == record2._description
-    ), f"_description mismatch: {record1._description} != {record2._description}"
+    assert record1._description == record2._description, (
+        f"_description mismatch: {record1._description} != {record2._description}"
+    )
     assert record1._text == record2._text, f"_text mismatch: {record1._text} != {record2._text}"
-    assert (
-        record1._additional_metadata == record2._additional_metadata
-    ), f"_additional_metadata mismatch: {record1._additional_metadata} != {record2._additional_metadata}"
+    assert record1._additional_metadata == record2._additional_metadata, (
+        f"_additional_metadata mismatch: {record1._additional_metadata} != {record2._additional_metadata}"
+    )
     if with_embedding is True:
         assert record1._embedding == pytest.approx(record2._embedding, abs=1e-2), "_embedding arrays are not equal"
 

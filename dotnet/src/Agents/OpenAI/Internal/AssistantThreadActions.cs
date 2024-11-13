@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -179,9 +180,11 @@ internal static class AssistantThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
-
         do
         {
+            // Check for cancellation
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Poll run and steps until actionable
             await PollRunStatusAsync().ConfigureAwait(false);
 
@@ -191,7 +194,7 @@ internal static class AssistantThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -301,20 +304,49 @@ internal static class AssistantThreadActions
 
             do
             {
-                // Reduce polling frequency after a couple attempts
-                await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (count > 0)
+                {
+                    // Reduce polling frequency after a couple attempts
+                    await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
+                }
+
                 ++count;
 
-#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
                     run = await client.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
                 }
-                catch
+                // The presence of a `Status` code means the server responded with error...always fail in that case
+                catch (ClientResultException clientException) when (clientException.Status <= 0)
                 {
-                    // Retry anyway..
+                    // Check maximum retry count
+                    if (count >= agent.PollingOptions.MaximumRetryCount)
+                    {
+                        throw;
+                    }
+
+                    // Retry for potential transient failure
+                    continue;
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (AggregateException aggregateException) when (aggregateException.InnerException is ClientResultException innerClientException)
+                {
+                    // The presence of a `Status` code means the server responded with error
+                    if (innerClientException.Status > 0)
+                    {
+                        throw;
+                    }
+
+                    // Check maximum retry count
+                    if (count >= agent.PollingOptions.MaximumRetryCount)
+                    {
+                        throw;
+                    }
+
+                    // Retry for potential transient failure
+                    continue;
+                }
             }
             while (s_pollingStatuses.Contains(run.Status));
 
@@ -373,6 +405,9 @@ internal static class AssistantThreadActions
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
         do
         {
+            // Check for cancellation
+            cancellationToken.ThrowIfCancellationRequested();
+
             stepsToProcess.Clear();
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
@@ -440,11 +475,14 @@ internal static class AssistantThreadActions
 
             if (run.Status == RunStatus.RequiresAction)
             {
-                IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
+                RunStep[] activeSteps =
+                    await client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken)
+                    .Where(step => step.Status == RunStepStatus.InProgress)
+                    .ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                 // Capture map between the tool call and its associated step
                 Dictionary<string, string> toolMap = [];
-                foreach (RunStep step in steps)
+                foreach (RunStep step in activeSteps)
                 {
                     foreach (RunStepToolCall stepDetails in step.Details.ToolCalls)
                     {
@@ -453,7 +491,7 @@ internal static class AssistantThreadActions
                 }
 
                 // Execute functions in parallel and post results at once.
-                FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] functionCalls = activeSteps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
@@ -469,7 +507,7 @@ internal static class AssistantThreadActions
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run.ThreadId, run.Id, toolOutputs, cancellationToken);
 
-                    foreach (RunStep step in steps)
+                    foreach (RunStep step in activeSteps)
                     {
                         stepFunctionResults.Add(step.Id, functionResults.Where(result => step.Id == toolMap[result.CallId!]).ToArray());
                     }
@@ -523,18 +561,6 @@ internal static class AssistantThreadActions
         while (run?.Status != RunStatus.Completed);
 
         logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
-    }
-
-    private static async Task<IReadOnlyList<RunStep>> GetRunStepsAsync(AssistantClient client, ThreadRun run, CancellationToken cancellationToken)
-    {
-        List<RunStep> steps = [];
-
-        await foreach (RunStep step in client.GetRunStepsAsync(run.ThreadId, run.Id, cancellationToken: cancellationToken).ConfigureAwait(false))
-        {
-            steps.Add(step);
-        }
-
-        return steps;
     }
 
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
@@ -753,7 +779,7 @@ internal static class AssistantThreadActions
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults, RunStep completedStep)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, IEnumerable<FunctionResultContent> functionResults, RunStep completedStep)
     {
         ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {

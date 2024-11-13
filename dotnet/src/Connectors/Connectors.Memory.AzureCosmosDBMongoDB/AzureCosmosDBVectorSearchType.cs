@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Type of vector index to create. The options are vector-ivf and vector-hnsw.
 /// </summary>
+[Experimental("SKEXP0020")]
 public enum AzureCosmosDBVectorSearchType
 {
     /// <summary>
@@ -24,6 +26,7 @@ public enum AzureCosmosDBVectorSearchType
     VectorHNSW
 }
 
+[Experimental("SKEXP0020")]
 internal static class AzureCosmosDBVectorSearchTypeExtensions
 {
     public static string GetCustomName(this AzureCosmosDBVectorSearchType type)

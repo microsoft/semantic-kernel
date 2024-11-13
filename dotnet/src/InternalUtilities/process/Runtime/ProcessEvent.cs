@@ -1,33 +1,54 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Runtime.Serialization;
-
 namespace Microsoft.SemanticKernel.Process.Runtime;
 
 /// <summary>
 /// A wrapper around <see cref="KernelProcessEvent"/> that helps to manage the namespace of the event.
 /// </summary>
-/// <param name="Namespace">The namespace of the event.</param>
-/// <param name="InnerEvent">The instance of <see cref="KernelProcessEvent"/> that this <see cref="ProcessEvent"/> came from.</param>
-/// <param name="IsError">This event represents a runtime error / exception raised internally by the framework.</param>
-[DataContract]
-[KnownType(typeof(KernelProcessError))]
-public record ProcessEvent(
-    [property: DataMember] string? Namespace,
-    [property: DataMember] KernelProcessEvent InnerEvent,
-    [property: DataMember] bool IsError = false)
+public record ProcessEvent
 {
     /// <summary>
-    /// The Id of the event.
+    /// The namespace of the event.
     /// </summary>
-    internal string Id => $"{this.Namespace}.{this.InnerEvent.Id}";
+    public string Namespace { get; init; } = string.Empty;
 
     /// <summary>
-    /// The data of the event.
+    /// The source Id of the event.
     /// </summary>
-    internal object? Data => this.InnerEvent.Data;
+    public string SourceId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// An optional data payload associated with the event.
+    /// </summary>
+    public object? Data { get; init; }
 
     /// <summary>
     /// The visibility of the event.
     /// </summary>
-    internal KernelProcessEventVisibility Visibility => this.InnerEvent.Visibility;
+    public KernelProcessEventVisibility Visibility { get; init; }
+
+    /// <summary>
+    /// This event represents a runtime error / exception raised internally by the framework.
+    /// </summary>
+    public bool IsError { get; init; }
+
+    /// <summary>
+    /// The Qualified Id of the event.
+    /// </summary>
+    internal string QualifiedId => $"{this.Namespace}.{this.SourceId}";
+
+    /// <summary>
+    /// Creates a new <see cref="ProcessEvent"/> from a <see cref="KernelProcessEvent"/>.
+    /// </summary>
+    /// <param name="kernelProcessEvent">The <see cref="KernelProcessEvent"/></param>
+    /// <param name="eventNamespace">The namespace of the event.</param>
+    /// <param name="isError">Indicates if event is from a runtime error.</param>
+    internal static ProcessEvent Create(KernelProcessEvent kernelProcessEvent, string eventNamespace, bool isError = false) =>
+        new()
+        {
+            Namespace = eventNamespace,
+            SourceId = kernelProcessEvent.Id,
+            Data = kernelProcessEvent.Data,
+            Visibility = kernelProcessEvent.Visibility,
+            IsError = isError,
+        };
 }

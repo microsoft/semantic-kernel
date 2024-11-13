@@ -22,7 +22,7 @@ public class Step3_Switch_VectorStore(ITestOutputHelper output, VectorStoresFixt
     [Fact]
     public async Task UseAnAzureAISearchVectorStoreAsync()
     {
-        // Construct a Redis vector store and get the collection.
+        // Construct an Azure AI Search vector store and get the collection.
         var vectorStore = new AzureAISearchVectorStore(new SearchIndexClient(
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
             new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey)));

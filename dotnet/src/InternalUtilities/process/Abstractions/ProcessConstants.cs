@@ -12,4 +12,19 @@ internal static class ProcessConstants
     /// Qualified name of the end step.
     /// </summary>
     public const string EndStepName = "Microsoft.SemanticKernel.Process.EndStep";
+
+    /// <summary>
+    /// Version for state of internal steps
+    /// </summary>
+    public const string InternalStepsVersion = "v0";
+
+    /// <summary>
+    /// Enum containing the name of internal components.
+    /// Used for serialization purposes.
+    /// </summary>
+    public enum SupportedComponents
+    {
+        Step = 0,
+        Process = 1,
+    }
 }

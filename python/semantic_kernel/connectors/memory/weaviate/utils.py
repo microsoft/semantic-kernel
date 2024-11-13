@@ -5,11 +5,15 @@ from typing import Any
 from weaviate.classes.config import Configure, Property
 from weaviate.collections.classes.config_named_vectors import _NamedVectorConfigCreate
 from weaviate.collections.classes.config_vector_index import _VectorIndexConfigCreate
+from weaviate.collections.classes.config_vectorizers import VectorDistances
 
 from semantic_kernel.connectors.memory.weaviate.const import TYPE_MAPPER_DATA
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelDeserializationException
 
 
@@ -86,7 +90,7 @@ def to_weaviate_vector_index_config(vector: VectorStoreRecordVectorField) -> _Ve
     return Configure.VectorIndex.none()
 
 
-def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> str | None:
+def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> VectorDistances | None:
     """Convert a distance function to a Weaviate vector distance metric.
 
     Args:
@@ -96,18 +100,18 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> s
         str: The Weaviate vector distance metric name.
     """
     match distance_function:
-        case DistanceFunction.COSINE:
-            return "cosine"
+        case DistanceFunction.COSINE_DISTANCE:
+            return VectorDistances.COSINE
         case DistanceFunction.DOT_PROD:
-            return "dot"
-        case DistanceFunction.EUCLIDEAN:
-            return "l2-squared"
+            return VectorDistances.DOT
+        case DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE:
+            return VectorDistances.L2_SQUARED
         case DistanceFunction.MANHATTAN:
-            return "manhattan"
+            return VectorDistances.MANHATTAN
         case DistanceFunction.HAMMING:
-            return "hamming"
+            return VectorDistances.HAMMING
 
-    return None
+    raise ValueError(f"Unsupported distance function for Weaviate: {distance_function}")
 
 
 # region Serialization helpers

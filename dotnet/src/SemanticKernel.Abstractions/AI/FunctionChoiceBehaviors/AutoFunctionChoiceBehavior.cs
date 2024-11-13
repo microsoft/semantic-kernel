@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// Represents a <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones.
 /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>

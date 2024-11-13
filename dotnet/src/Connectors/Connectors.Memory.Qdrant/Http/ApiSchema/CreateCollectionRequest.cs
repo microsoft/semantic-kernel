@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+[Experimental("SKEXP0020")]
 internal sealed class CreateCollectionRequest
 {
     /// <summary>

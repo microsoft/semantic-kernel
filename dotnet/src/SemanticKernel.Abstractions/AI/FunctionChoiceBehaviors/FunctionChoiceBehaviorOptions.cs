@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the options for a function choice behavior.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorOptions
 {
     /// <summary>

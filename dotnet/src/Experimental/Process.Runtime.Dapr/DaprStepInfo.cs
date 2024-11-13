@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel;
 [KnownType(typeof(KernelProcessEdge))]
 [KnownType(typeof(KernelProcessStepState))]
 [KnownType(typeof(DaprProcessInfo))]
+[JsonDerivedType(typeof(DaprProcessInfo))]
 public record DaprStepInfo
 {
     /// <summary>
@@ -37,7 +39,7 @@ public record DaprStepInfo
     /// <exception cref="KernelException"></exception>
     public KernelProcessStepInfo ToKernelProcessStepInfo()
     {
-        var innerStepType = Type.GetType(this.InnerStepDotnetType);
+        Type? innerStepType = Type.GetType(this.InnerStepDotnetType);
         if (innerStepType is null)
         {
             throw new KernelException($"Unable to create inner step type from assembly qualified name `{this.InnerStepDotnetType}`");

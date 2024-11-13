@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// DeleteRequest
 /// See https://docs.pinecone.io/reference/delete_post
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class DeleteRequest
 {
     /// <summary>

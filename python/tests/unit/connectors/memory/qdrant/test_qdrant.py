@@ -8,7 +8,8 @@ from qdrant_client.models import Datatype, Distance, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
@@ -105,6 +106,17 @@ def mock_get(collection):
 def mock_delete():
     with patch(f"{BASE_PATH}.delete") as mock_delete:
         yield mock_delete
+
+
+@fixture(autouse=True)
+def mock_search():
+    with patch(f"{BASE_PATH}.search") as mock_search:
+        from qdrant_client.models import ScoredPoint
+
+        response1 = ScoredPoint(id="id1", version=1, score=0.0, payload={"content": "content"})
+        response2 = ScoredPoint(id="id2", version=1, score=0.0, payload={"content": "content"})
+        mock_search.return_value = [response1, response2]
+        yield mock_search
 
 
 def test_vector_store_defaults(vector_store):
@@ -269,3 +281,11 @@ async def test_create_index_fail(collection_to_use, request):
     collection.data_model_definition.fields["vector"].dimensions = None
     with raises(MemoryConnectorException, match="Vector field must have dimensions."):
         await collection.create_collection()
+
+
+@mark.asyncio
+async def test_search(collection):
+    results = await collection._inner_search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
+    async for result in results.results:
+        assert result.record["id"] == "id1"
+        break

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -25,6 +26,11 @@ public abstract class ProcessStepBuilder
     /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// Alternative names that have been used to previous versions of the step
+    /// </summary>
+    public List<string> Aliases { get; set; } = [];
 
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
@@ -76,14 +82,8 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Builds the step with step state
     /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata);
-
-    /// <summary>
-    /// Builds the step.
-    /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep();
+    /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
+    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
@@ -219,18 +219,14 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         this._initialState = initialState;
     }
 
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.BuildStep(null);
-    }
-
     /// <summary>
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
+        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
 
         if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
@@ -242,18 +238,15 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            if (stateMetadata != null && stateMetadata.State != null)
+            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
             {
-                if (stateMetadata.State is JsonElement jsonState)
+                try
                 {
-                    try
-                    {
-                        this._initialState = jsonState.Deserialize(userStateType);
-                    }
-                    catch (JsonException)
-                    {
-                        throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                    }
+                    this._initialState = jsonState.Deserialize(userStateType);
+                }
+                catch (JsonException)
+                {
+                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
                 }
             }
 
@@ -264,13 +257,13 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             }
 
             var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id);
             stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Name, this.Id);
+            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version, this.Id);
         }
 
         Verify.NotNull(stateObject);

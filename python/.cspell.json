@@ -33,6 +33,7 @@
         "datamodel",
         "dotenv",
         "endregion",
+        "entra",
         "genai",
         "generativeai",
         "hnsw",
@@ -46,6 +47,7 @@
         "mongocluster",
         "ndarray",
         "nopep",
+        "NOSQL",
         "ollama",
         "onyourdatatest",
         "OPENAI",
@@ -65,6 +67,15 @@
         "vectorizer",
         "vectorstoremodel",
         "vertexai",
-        "Weaviate"
+        "Weaviate",
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry",
+        "SEMANTICKERNEL",
+        "OTEL",
+        "vectorizable",
+        "desync"
     ]
 }

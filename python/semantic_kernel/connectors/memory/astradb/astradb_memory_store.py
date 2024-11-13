@@ -73,8 +73,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
-                f"Dimensionality of {self._embedding_dim} exceeds "
-                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {self._embedding_dim} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         self._client = AstraClient(
@@ -101,7 +100,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         dimension_num: int | None = None,
-        distance_type: str | None = "cosine",
+        distance_type: str | None = "cosine_similarity",
     ) -> None:
         """Creates a new collection in Astra if it does not exist.
 

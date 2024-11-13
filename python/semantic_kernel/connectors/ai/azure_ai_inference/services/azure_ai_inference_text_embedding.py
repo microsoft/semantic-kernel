@@ -3,14 +3,14 @@
 import sys
 from typing import TYPE_CHECKING, Any
 
-from azure.ai.inference.aio import EmbeddingsClient
-from azure.ai.inference.models import EmbeddingsResult
-from numpy import array, ndarray
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+from azure.ai.inference.aio import EmbeddingsClient
+from azure.ai.inference.models import EmbeddingsResult
+from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,

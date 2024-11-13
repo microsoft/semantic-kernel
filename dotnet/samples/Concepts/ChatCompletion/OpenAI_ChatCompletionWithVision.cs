@@ -56,4 +56,28 @@ public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTes
 
         Console.WriteLine(reply.Content);
     }
+
+    [Fact]
+    public async Task LocalImageWithImageDetailInMetadataAsync()
+    {
+        var imageBytes = await EmbeddedResource.ReadAllAsync("sample_image.jpg");
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion("gpt-4-vision-preview", TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory("You are a friendly assistant.");
+
+        chatHistory.AddUserMessage(
+        [
+            new TextContent("What’s in this image?"),
+            new ImageContent(imageBytes, "image/jpg") { Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = "high" } }
+        ]);
+
+        var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+
+        Console.WriteLine(reply.Content);
+    }
 }
