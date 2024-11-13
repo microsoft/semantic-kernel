@@ -14,7 +14,7 @@ using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 /// <summary>
 /// Base class for samples that demonstrate the usage of agents.
 /// </summary>
-public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output)
+public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Metadata key to indicate the assistant as created for a sample.
@@ -78,7 +78,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             }
             else if (item is FunctionResultContent functionResult)
             {
-                Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId}");
+                Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId} - {functionResult.Result?.AsJson() ?? "*"}");
             }
         }
 
