@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,6 +16,21 @@ public sealed class RestApiPayloadProperty
     /// The property name.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// The property argument name.
+    /// If provided, the argument name will be used to search for the corresponding property value in function arguments.
+    /// If no property value is found using the argument name, the original name - <see cref="RestApiPayloadProperty.Name"/> will be used for the search instead.
+    /// </summary>
+    public string? ArgumentName
+    {
+        get => this._argumentName;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._argumentName = value;
+        }
+    }
 
     /// <summary>
     /// The property type.
@@ -84,4 +100,32 @@ public sealed class RestApiPayloadProperty
         this.Format = format;
         this.DefaultValue = defaultValue;
     }
+
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        if (this._isFrozen)
+        {
+            return;
+        }
+
+        this._isFrozen = true;
+    }
+
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiPayloadProperty"/> is frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    private void ThrowIfFrozen()
+    {
+        if (this._isFrozen)
+        {
+            throw new InvalidOperationException("RestApiOperationPayloadProperty is frozen and cannot be modified.");
+        }
+    }
+
+    private string? _argumentName;
+    private bool _isFrozen = false;
 }
