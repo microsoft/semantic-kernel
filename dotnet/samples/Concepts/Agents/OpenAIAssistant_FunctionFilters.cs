@@ -37,21 +37,25 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
         await InvokeAssistantStreamingAsync(agent);
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UseAutoFunctionInvocationFilterAsync(bool terminate)
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter());
+        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter(terminate));
 
         // Invoke assistant agent (non streaming)
         await InvokeAssistantAsync(agent);
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync(bool terminate)
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter());
+        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter(terminate));
 
         // Invoke assistant agent (streaming)
         await InvokeAssistantStreamingAsync(agent);
@@ -133,13 +137,13 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
         return agent;
     }
 
-    private Kernel CreateKernelWithAutoFilter()
+    private Kernel CreateKernelWithAutoFilter(bool terminate)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         base.AddChatCompletionToKernel(builder);
 
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter(terminate));
 
         return builder.Build();
     }
