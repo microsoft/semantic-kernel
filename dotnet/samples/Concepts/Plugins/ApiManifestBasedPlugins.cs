@@ -30,7 +30,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
     ];
 
     [Theory, MemberData(nameof(s_parameters))]
-    public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public async Task RunApiManifestPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
         var kernel = Kernel.CreateBuilder().Build();

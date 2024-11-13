@@ -24,7 +24,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
     ];
     [Theory, MemberData(nameof(s_parameters))]
-    public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public async Task RunMicrosoftManifestPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
         var kernel = new Kernel();
