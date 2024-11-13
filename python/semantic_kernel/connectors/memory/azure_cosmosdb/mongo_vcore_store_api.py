@@ -32,6 +32,9 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
     m = None
     ef_construction = None
     ef_search = None
+    max_degree = None
+    l_build = None
+    l_search = None
 
     """
     Args:
@@ -55,7 +58,8 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         kind: Type of vector index to create.
             Possible options are:
                 - vector-ivf
-                - vector-hnsw: available as a preview feature only,
+                - vector-hnsw
+                - vector-diskann: available as a preview feature only
                                to enable visit https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/preview-features
         m: The max number of connections per layer (16 by default, minimum
            value is 2, maximum value is 100). Higher m is suitable for datasets
@@ -68,6 +72,12 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                         ef_construction has to be at least 2 * m
        ef_search: The size of the dynamic candidate list for search (40 by default).
                   A higher value provides better recall at  the cost of speed.
+       max_degree: Max number of neighbors for diskann index.
+                   Default value is 32, range from 20 to 2048.
+       l_build: l value for diskann index building.
+                Default value is 50, range from 10 to 500.
+       l_search: l value for diskann index searching.
+                 Default value is 40, range from 10 to 10000.
        database: The Mongo Database object of the azure cosmos db mongo store
     """
 
@@ -82,6 +92,9 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         m: int,
         ef_construction: int,
         ef_search: int,
+        max_degree: int,
+        l_build: int,
+        l_search: int,
         database=None,
     ):
         """Initializes a new instance of the MongoStoreApi class."""
@@ -95,6 +108,9 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.m = m
         self.ef_construction = ef_construction
         self.ef_search = ef_search
+        self.max_degree = max_degree
+        self.l_build = l_build
+        self.l_search = l_search
 
     @override
     async def create_collection(self, collection_name: str) -> None:
@@ -115,6 +131,15 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                     self.kind,
                     self.m,
                     self.ef_construction,
+                    self.similarity,
+                    self.vector_dimensions,
+                )
+            elif self.kind == CosmosDBVectorSearchType.VECTOR_DISKANN:
+                create_index_commands = self._get_vector_index_diskann(
+                    collection_name,
+                    self.kind,
+                    self.max_degree,
+                    self.l_build,
                     self.similarity,
                     self.vector_dimensions,
                 )
@@ -154,6 +179,26 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                         "kind": kind,
                         "m": m,
                         "efConstruction": ef_construction,
+                        "similarity": similarity,
+                        "dimensions": dimensions,
+                    },
+                }
+            ],
+        }
+
+    def _get_vector_index_diskann(
+        self, collection_name: str, kind: str, max_degree: int, l_build: int, similarity: str, dimensions: int
+    ) -> dict[str, Any]:
+        return {
+            "createIndexes": collection_name,
+            "indexes": [
+                {
+                    "name": self.index_name,
+                    "key": {"embedding": "cosmosSearch"},
+                    "cosmosSearchOptions": {
+                        "kind": kind,
+                        "maxDegree": max_degree,
+                        "lBuild": l_build,
                         "similarity": similarity,
                         "dimensions": dimensions,
                     },
@@ -254,6 +299,8 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             pipeline = self._get_pipeline_vector_ivf(embedding.tolist(), limit)
         elif self.kind == CosmosDBVectorSearchType.VECTOR_HNSW:
             pipeline = self._get_pipeline_vector_hnsw(embedding.tolist(), limit, self.ef_search)
+        elif self.kind == CosmosDBVectorSearchType.VECTOR_DISKANN:
+            pipeline = self._get_pipeline_vector_diskann(embedding.tolist(), limit, self.l_search)
 
         cursor = self.collection.aggregate(pipeline)
 
@@ -306,6 +353,29 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                         "path": "embedding",
                         "k": k,
                         "efSearch": ef_search,
+                    },
+                }
+            },
+            {
+                "$project": {
+                    "similarityScore": {"$meta": "searchScore"},
+                    "document": "$$ROOT",
+                }
+            },
+        ]
+        return pipeline
+
+    def _get_pipeline_vector_diskann(
+        self, embeddings: list[float], k: int = 4, l_search: int = 40
+    ) -> list[dict[str, Any]]:
+        pipeline: list[dict[str, Any]] = [
+            {
+                "$search": {
+                    "cosmosSearch": {
+                        "vector": embeddings,
+                        "path": "embedding",
+                        "k": k,
+                        "lSearch": l_search,
                     },
                 }
             },

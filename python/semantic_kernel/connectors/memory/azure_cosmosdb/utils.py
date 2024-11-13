@@ -25,3 +25,5 @@ class CosmosDBVectorSearchType(str, Enum):
     """IVF vector index"""
     VECTOR_HNSW = "vector-hnsw"
     """HNSW vector index"""
+    VECTOR_DISKANN = "vector-diskann"
+    """DISKANN vector index"""

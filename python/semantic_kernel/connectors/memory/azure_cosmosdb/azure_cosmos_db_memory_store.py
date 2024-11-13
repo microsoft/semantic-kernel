@@ -42,6 +42,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     m = None
     ef_construction = None
     ef_search = None
+    max_degree = None
+    l_build = None
+    l_search = None
 
     def __init__(
         self,
@@ -55,6 +58,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         m: int = 16,
         ef_construction: int = 64,
         ef_search: int = 40,
+        max_degree: int = 32,
+        l_build: int = 50,
+        l_search: int = 40,
     ):
         """Initializes a new instance of the AzureCosmosDBMemoryStore class."""
         if vector_dimensions <= 0:
@@ -72,6 +78,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         self.m = m
         self.ef_construction = ef_construction
         self.ef_search = ef_search
+        self.max_degree = max_degree
+        self.l_build = l_build
+        self.l_search = l_search
 
     @staticmethod
     async def create(
@@ -84,6 +93,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         m: int,
         ef_construction: int,
         ef_search: int,
+        max_degree: int,
+        l_build: int,
+        l_search: int,
         index_name: str | None = None,
         cosmos_connstr: str | None = None,
         application_name: str | None = None,
@@ -115,6 +127,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
                 m=m,
                 ef_construction=ef_construction,
                 ef_search=ef_search,
+                max_degree=max_degree,
+                l_build=l_build,
+                l_search=l_search,
             )
         else:
             raise MemoryConnectorInitializationError(f"API type {cosmos_api} is not supported.")
@@ -130,6 +145,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             m,
             ef_construction,
             ef_search,
+            max_degree,
+            l_build,
+            l_search,
         )
         await store.create_collection(collection_name)
         return store
