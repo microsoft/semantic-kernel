@@ -35,7 +35,8 @@ internal static class DocumentLoader
     {
         //disposing the response disposes the stream
         var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        return new HttpResponseStream(stream, response);
     }
 
     private static async Task<HttpResponseMessage> LoadDocumentResponseFromUriAsync(
