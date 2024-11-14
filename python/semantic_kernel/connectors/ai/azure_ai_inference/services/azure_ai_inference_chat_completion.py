@@ -20,7 +20,6 @@ from azure.ai.inference.models import (
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
 )
-from azure.core.settings import settings
 
 from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
@@ -50,9 +49,6 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-# Enable Azure SDK tracing
-settings.tracing_implementation = "opentelemetry"
 
 
 @experimental_class
