@@ -16,6 +16,17 @@ from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
 
+# This sample shows how to setup Google Search as a plugin in the Semantic Kernel.
+# With that plugin you can do function calling to augment your chat bot capabilities.
+# The plugin uses the search function of the GoogleSearch instance,
+# which returns only the snippet of the search results.
+# It also shows how the Parameters of the function can be used to pass arguments to the plugin,
+# this is shown with the siteSearch parameter.
+# The LLM can choose to override that but it will take the default value otherwise.
+# You can also set this up with the 'get_search_results', this returns a object with the full results of the search
+# and then you can add a `string_mapper` to the function to return the desired string of information
+# that you want to pass to the LLM.
+
 kernel = Kernel()
 kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 kernel.add_plugin(

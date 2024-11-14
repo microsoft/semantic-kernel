@@ -45,7 +45,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         """Initializes a new instance of the Google Search class.
 
         Args:
-            api_key: The Bing Search API key. If provided, will override
+            api_key: The Google Search API key. If provided, will override
                 the value in the env vars or .env file.
             search_engine_id: The Google search engine ID.
                 If provided, will override the value in the env vars or .env file.
@@ -55,13 +55,13 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         """
         try:
             settings = GoogleSearchSettings.create(
-                search_api_key=api_key,
-                search_engine_id=search_engine_id,
+                api_key=api_key,
+                engine_id=search_engine_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Bing settings.") from ex
+            raise ServiceInitializationError("Failed to create Google settings.") from ex
 
         super().__init__(settings=settings)
 
@@ -174,13 +174,13 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
     def _validate_options(self, options: TextSearchOptions) -> None:
-        if options.top >= 10:
+        if options.top > 10:
             raise ServiceInvalidRequestError("count value must be less than or equal to 10.")
 
     def _build_query(self, query: str, options: TextSearchOptions) -> str:
         params = {
-            "key": self.settings.search_api_key.get_secret_value(),
-            "cx": self.settings.search_engine_id,
+            "key": self.settings.api_key.get_secret_value(),
+            "cx": self.settings.engine_id,
             "num": options.top,
             "start": options.skip,
         }
@@ -190,5 +190,5 @@ class GoogleSearch(KernelBaseModel, TextSearch):
                     if filter.field_name in QUERY_PARAMETERS:
                         params[filter.field_name] = quote_plus(filter.value)
                 elif isinstance(filter, AnyTagsEqualTo):
-                    logger.debug("Any tag equals to filter is not supported by Google Search API.")
+                    logger.debug("AnyTagEqualTo filter is not supported by Google Search API.")
         return f"?q={quote_plus(query)}&{'&'.join(f'{k}={v}' for k, v in params.items())}"
