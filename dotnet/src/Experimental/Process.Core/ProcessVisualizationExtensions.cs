@@ -33,6 +33,25 @@ public static class ProcessVisualizationExtensions
         sb.AppendLine("flowchart LR");
         //sb.AppendLine("graph LR");
 
+        // Generate the Mermaid flowchart content with indentation
+        string flowchartContent = GenerateMermaidFlowchart(process);
+
+        // Append the formatted content to the main StringBuilder
+        sb.Append(flowchartContent);
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Generates the Mermaid graph for a given process.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
+    private static string GenerateMermaidFlowchart(KernelProcess process)
+    {
+        StringBuilder sb = new();
+        string indentation = new(' ', 4);
+
         // Dictionary to map step IDs to step names
         var stepNames = process.Steps
             .Where(step => step.State.Id != null && step.State.Name != null)
@@ -41,13 +60,9 @@ public static class ProcessVisualizationExtensions
                 step => step.State.Name!
                 );
 
-        //var stepNames = process.Steps.ToDictionary(
-        //    step => step.State.Id,
-        //    step => step.State.Name);
-
         // Add Start and End nodes with proper Mermaid styling
-        sb.AppendLine("Start[Start]");
-        sb.AppendLine("End[End]");
+        sb.AppendLine($"{indentation}Start[Start]");
+        sb.AppendLine($"{indentation}End[End]");
 
         // Handle all edges without a predefined "Start"
         foreach (var kvp in process.Edges)
@@ -62,7 +77,7 @@ public static class ProcessVisualizationExtensions
                 // Link edges without a specific preceding step to the Start node
                 if (!process.Steps.Any(s => s.Edges.ContainsKey(stepId)))
                 {
-                    sb.AppendLine($"Start[Start] --> {targetStepName}[{targetStepName}]");
+                    sb.AppendLine($"{indentation}Start[Start] --> {targetStepName}[{targetStepName}]");
                 }
             }
         }
@@ -100,7 +115,7 @@ public static class ProcessVisualizationExtensions
                         }
 
                         // Append the connection without showing IDs
-                        sb.AppendLine($"{source} --> {target}");
+                        sb.AppendLine($"{indentation}{source} --> {target}");
                     }
                 }
             }
