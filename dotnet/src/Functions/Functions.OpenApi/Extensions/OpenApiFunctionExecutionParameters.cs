@@ -42,16 +42,19 @@ public class OpenApiFunctionExecutionParameters
 
     /// <summary>
     /// Determines whether the REST API operation payload is constructed dynamically based on payload metadata.
-    /// If false, the payload must be provided via the 'payload' argument.
+    /// It's enabled by default and allows to support operations with simple payload structure - no properties with the same name at different levels.
+    /// To support more complex payloads, it should be disabled and the payload should be provided via the 'payload' argument.
+    /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
     public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
-    /// Determines whether payload parameter names are augmented with namespaces.
+    /// Determines whether payload parameter names are augmented with namespaces. It's only applicable when EnableDynamicPayload property is set to true.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.
     /// For instance, without namespaces, the 'email' parameter for both the 'sender' and 'receiver' parent parameters
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
+    /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
     public bool EnablePayloadNamespacing { get; set; }
 
