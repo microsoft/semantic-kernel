@@ -70,19 +70,17 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         """Creates a new ProcessStepEdgeBuilder for the input event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
-        if isinstance(event_id, Enum):
-            event_id = event_id.value
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
 
-        return ProcessStepEdgeBuilder(source=self, event_id=event_id)
+        return ProcessStepEdgeBuilder(source=self, event_id=event_id_str)
 
     def on_event(self, event_id: str | Enum) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
-        if isinstance(event_id, Enum):
-            event_id = event_id.value
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
 
-        scoped_event_id = self.get_scoped_event_id(event_id)
+        scoped_event_id = self.get_scoped_event_id(event_id_str)
         return ProcessStepEdgeBuilder(source=self, event_id=scoped_event_id)
 
     def resolve_function_target(

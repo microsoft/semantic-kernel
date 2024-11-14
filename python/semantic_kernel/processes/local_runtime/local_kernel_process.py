@@ -27,12 +27,13 @@ async def start(
     if initial_event is None:
         raise ProcessInvalidConfigurationException("initial_event cannot be None")
 
-    if isinstance(initial_event, Enum):
-        initial_event = initial_event.value
+    initial_event_str: str | KernelProcessEvent = (
+        initial_event.value if isinstance(initial_event, Enum) else initial_event
+    )
 
-    if isinstance(initial_event, str):
-        initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data"))
+    if isinstance(initial_event_str, str):
+        initial_event_str = KernelProcessEvent(id=initial_event_str, data=kwargs.get("data"))
 
     process_context = LocalKernelProcessContext(process, kernel)
-    await process_context.start_with_event(initial_event)
+    await process_context.start_with_event(initial_event_str)
     return process_context

@@ -26,18 +26,17 @@ class ProcessFunctionTargetBuilder(KernelBaseModel):
 
         ProcessFunctionTargetBuilder.model_rebuild()
 
-        if isinstance(function_name, Enum):
-            function_name = function_name.value
+        function_name_str: str | None = function_name.value if isinstance(function_name, Enum) else function_name
 
         if isinstance(step, EndStep):
-            function_name = "END"
+            function_name_str = "END"
             parameter_name = None
         else:
-            target = step.resolve_function_target(function_name, parameter_name)
-            function_name = target.function_name
+            target = step.resolve_function_target(function_name_str, parameter_name)
+            function_name_str = target.function_name
             parameter_name = target.parameter_name
 
-        super().__init__(step=step, function_name=function_name, parameter_name=parameter_name)
+        super().__init__(step=step, function_name=function_name_str, parameter_name=parameter_name)
 
     def build(self) -> KernelProcessFunctionTarget:
         """Builds the KernelProcessFunctionTarget."""

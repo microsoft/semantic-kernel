@@ -76,16 +76,15 @@ class ProcessBuilder(ProcessStepBuilder):
 
     def where_input_event_is(self, event_id: str | Enum) -> "ProcessFunctionTargetBuilder":
         """Filters the input event."""
-        if isinstance(event_id, Enum):
-            event_id = event_id.value
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
 
-        if event_id not in self.external_event_target_map:
-            raise ValueError(f"The process named '{self.name}' does not expose an event with Id '{event_id}'")
+        if event_id_str not in self.external_event_target_map:
+            raise ValueError(f"The process named '{self.name}' does not expose an event with Id '{event_id_str}'")
 
-        target = self.external_event_target_map[event_id]
+        target = self.external_event_target_map[event_id_str]
         target = copy(target)
         target.step = self
-        target.target_event_id = event_id
+        target.target_event_id = event_id_str
         return target
 
     def on_input_event(self, event_id: str | Enum) -> "ProcessEdgeBuilder":  # type: ignore
@@ -94,10 +93,9 @@ class ProcessBuilder(ProcessStepBuilder):
 
         ProcessEdgeBuilder.model_rebuild()
 
-        if isinstance(event_id, Enum):
-            event_id = event_id.value
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
 
-        return ProcessEdgeBuilder(source=self, event_id=event_id)
+        return ProcessEdgeBuilder(source=self, event_id=event_id_str)
 
     def link_to(self, event_id: str, edge_builder: ProcessStepEdgeBuilder) -> None:
         """Links to the given event ID."""
