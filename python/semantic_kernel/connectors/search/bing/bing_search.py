@@ -155,7 +155,7 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         logger.info(
             f"Received request for bing web search with \
-                params:\nquery: {query}\nnum_results: {options.top}\noffset: {options.skip}"
+                params:\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
         url = self._get_url()

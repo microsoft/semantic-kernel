@@ -153,7 +153,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
 
         logger.info(
             f"Received request for google web search with \
-                params:\nquery: {query}\nnum_results: {options.top}\noffset: {options.skip}"
+                params:\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
         full_url = f"{CUSTOM_SEARCH_URL}{self._build_query(query, options)}"
