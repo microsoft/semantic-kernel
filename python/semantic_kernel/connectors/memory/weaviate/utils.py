@@ -276,7 +276,8 @@ def extract_vectors_from_weaviate_object_based_on_data_model_definition(
 # region VectorSearch helpers
 
 
-def _create_filter_from_vector_search_filters(filters: VectorSearchFilter | None) -> "_Filters | None":
+def create_filter_from_vector_search_filters(filters: VectorSearchFilter | None) -> "_Filters | None":
+    """Create a Weaviate filter from a vector search filter."""
     if not filters:
         return None
     weaviate_filters: list["_Filters"] = []

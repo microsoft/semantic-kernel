@@ -16,9 +16,10 @@ from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
+from weaviate.exceptions import WeaviateClosedClientError
 
 from semantic_kernel.connectors.memory.weaviate.utils import (
-    _create_filter_from_vector_search_filters,
+    create_filter_from_vector_search_filters,
     data_model_definition_to_weaviate_named_vectors,
     data_model_definition_to_weaviate_properties,
     extract_key_from_dict_record_based_on_data_model_definition,
@@ -43,6 +44,7 @@ from semantic_kernel.exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -172,6 +174,10 @@ class WeaviateCollection(
         try:
             collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
             response = await collection.data.insert_many(records)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to upsert records: {ex}")
 
@@ -187,6 +193,10 @@ class WeaviateCollection(
             )
 
             return result.objects
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to get records: {ex}")
 
@@ -195,6 +205,10 @@ class WeaviateCollection(
         try:
             collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
             await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to delete records: {ex}")
 
@@ -210,7 +224,7 @@ class WeaviateCollection(
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
         args = {
-            "filters": _create_filter_from_vector_search_filters(options.filter),
+            "filters": create_filter_from_vector_search_filters(options.filter),
             "include_vector": options.include_vectors,
             "limit": options.top,
             "offset": options.skip,
@@ -287,6 +301,10 @@ class WeaviateCollection(
                 return_metadata=MetadataQuery(distance=True),
                 **args,
             )
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed searching using a vector: {ex}") from ex
 
@@ -349,6 +367,10 @@ class WeaviateCollection(
         if kwargs:
             try:
                 await self.async_client.collections.create(**kwargs)
+            except WeaviateClosedClientError as ex:
+                raise MemoryConnectorException(
+                    "Client is closed, please use the context manager or self.async_client.connect."
+                ) from ex
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
         try:
@@ -364,6 +386,10 @@ class WeaviateCollection(
                 if self.named_vectors
                 else None,
             )
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
 
@@ -379,6 +405,10 @@ class WeaviateCollection(
         """
         try:
             return await self.async_client.collections.exists(self.collection_name)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to check if collection exists: {ex}") from ex
 
@@ -391,14 +421,17 @@ class WeaviateCollection(
         """
         try:
             await self.async_client.collections.delete(self.collection_name)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
         except Exception as ex:
             raise MemoryConnectorException(f"Failed to delete collection: {ex}") from ex
 
     @override
     async def __aenter__(self) -> "WeaviateCollection":
         """Enter the context manager."""
-        if not await self.async_client.is_ready():
-            await self.async_client.connect()
+        await self.async_client.connect()
         return self
 
     @override
@@ -406,3 +439,10 @@ class WeaviateCollection(
         """Exit the context manager."""
         if self.managed_client:
             await self.async_client.close()
+
+    def _validate_data_model(self):
+        super()._validate_data_model()
+        if self.named_vectors and len(self.data_model_definition.vector_field_names) > 1:
+            raise VectorStoreModelValidationError(
+                "Named vectors must be enabled if there are more then 1 vector fields in the data model definition."
+            )
