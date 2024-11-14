@@ -274,7 +274,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <exception cref="KernelException"></exception>
     public ProcessFunctionTargetBuilder WhereInputEventIs(string eventId)
     {
-        Verify.NotNullOrWhiteSpace(eventId);
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
         if (!this._externalEventTargetMap.TryGetValue(eventId, out var target))
         {

@@ -29,6 +29,26 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     public string Version { get; init; } = "v1";
 
     /// <summary>
+    /// Retrieves the target for a given external event. The step associated with the target is the process itself (this).
+    /// </summary>
+    /// <param name="eventId">The Id of the event</param>
+    /// <returns>An instance of <see cref="ProcessFunctionTargetBuilder"/></returns>
+    /// <exception cref="KernelException"></exception>
+    public ProcessFunctionTargetBuilder WhereInputEventIs(string eventId)
+    {
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
+
+        if (this.MapOperation is not ProcessBuilder process)
+        {
+            throw new KernelException($"Map operation is not a process.");
+        }
+
+        ProcessFunctionTargetBuilder operationTarget = process.WhereInputEventIs(eventId);
+
+        return operationTarget with { Step = this, TargetEventId = eventId };
+    }
+
+    /// <summary>
     /// The map operation that will be executed for each element in the input.
     /// </summary>
     internal ProcessStepBuilder MapOperation { get; }
@@ -47,26 +67,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     {
         if (this.MapOperation is ProcessBuilder processOperation)
         {
-            KernelProcessFunctionTarget? inputTarget = null;
-            foreach (var step in processOperation.Steps)
-            {
-                try
-                {
-                    inputTarget = step.ResolveFunctionTarget(functionName, parameterName);
-                }
-                catch (KernelException)
-                {
-                    // Function not found, try the next step
-                }
-            }
-
-            if (inputTarget == null)
-            {
-                throw new KernelException($"Failed to resolve function target for map-step - {this.Name}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
-            }
-
-            //return processOperation.WhereInputEventIs(ProcessConstants.MapEventId); // %%% DON'T KNOW EVENTID
-            return inputTarget;
+            throw new KernelException($"Map operation is a process.  Use {nameof(ProcessMapBuilder)}.{nameof(WhereInputEventIs)} to resolve target.");
         }
 
         return this.MapOperation.ResolveFunctionTarget(functionName, parameterName);

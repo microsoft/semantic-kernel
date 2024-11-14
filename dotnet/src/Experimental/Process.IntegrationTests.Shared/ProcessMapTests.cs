@@ -37,11 +37,10 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
         // Arrange
         ProcessBuilder process = new(nameof(TestMapAsync));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
