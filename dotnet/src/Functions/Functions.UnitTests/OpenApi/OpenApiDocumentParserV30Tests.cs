@@ -280,7 +280,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var nonComplaintOpenApiDocument = ResourcePluginsProvider.LoadFromResource("nonCompliant_documentV3_0.json");
 
         // Act
-        await this._sut.ParseAsync(nonComplaintOpenApiDocument, ignoreNonCompliantErrors: true);
+        await this._sut.ParseAsync(nonComplaintOpenApiDocument, new OpenApiDocumentParserOptions() { IgnoreNonCompliantErrors = true });
 
         // Assert
         // The absence of any thrown exceptions serves as evidence of the functionality's success.
