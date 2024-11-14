@@ -103,7 +103,7 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
 collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_DISTANCE)
+DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILARITY)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -268,9 +268,7 @@ if __name__ == "__main__":
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--collection", default="azure_cosmos_nosql", choices=collections.keys(), help="What collection to use."
-    )
+    parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model
