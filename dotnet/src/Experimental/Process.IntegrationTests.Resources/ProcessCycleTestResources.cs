@@ -203,7 +203,7 @@ public sealed class FanInStep : KernelProcessStep<StepState>
 }
 
 /// <summary>
-/// A step that conditionaly throws an exception.
+/// A step that conditionally throws an exception.
 /// </summary>
 public sealed class ErrorStep : KernelProcessStep<StepState>
 {
