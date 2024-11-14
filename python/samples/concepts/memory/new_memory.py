@@ -157,7 +157,6 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     ),
     "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection(
         data_model_type=DataModel,
-        database_name="sample_database",
         collection_name=collection_name,
         create_database=True,
     ),
@@ -269,7 +268,9 @@ if __name__ == "__main__":
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
+    parser.add_argument(
+        "--collection", default="azure_cosmos_nosql", choices=collections.keys(), help="What collection to use."
+    )
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model

@@ -397,13 +397,11 @@ async def test_azure_cosmos_db_no_sql_upsert(
 
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
-    mock_container_proxy.execute_item_batch = AsyncMock(
-        return_value=[{"resourceBody": {COSMOS_ITEM_ID_PROPERTY_NAME: item["id"]}}]
-    )
+    mock_container_proxy.upsert_item = AsyncMock(return_value={COSMOS_ITEM_ID_PROPERTY_NAME: item["id"]})
 
     result = await vector_collection.upsert(item)
 
-    mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item,))], [item["id"]])
+    mock_container_proxy.upsert_item.assert_called_once_with(item)
     assert result == item["id"]
 
 
@@ -426,13 +424,11 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
 
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
-    mock_container_proxy.execute_item_batch = AsyncMock(
-        return_value=[{"resourceBody": {COSMOS_ITEM_ID_PROPERTY_NAME: item["key"]}}]
-    )
+    mock_container_proxy.upsert_item = AsyncMock(return_value={COSMOS_ITEM_ID_PROPERTY_NAME: item["key"]})
 
     result = await vector_collection.upsert(item)
 
-    mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item_with_id,))], [item["key"]])
+    mock_container_proxy.upsert_item.assert_called_once_with(item_with_id)
     assert result == item["key"]
 
 
