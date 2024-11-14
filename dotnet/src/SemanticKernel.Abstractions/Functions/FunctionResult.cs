@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
@@ -72,7 +71,6 @@ public sealed class FunctionResult
     /// <summary>
     /// Gets the prompt used during function invocation if any was rendered.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public string? RenderedPrompt { get; internal set; }
 
     /// <summary>

@@ -87,7 +87,13 @@ public sealed class OpenApiKernelPluginFactoryTests
         this._executionParameters.HttpClient = httpClient;
         this._executionParameters.ServerUrlOverride = new Uri(ServerUrlOverride);
 
-        var arguments = this.GetFakeFunctionArguments();
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = "fake-secret-name",
+            ["api-version"] = "7.0",
+            ["X-API-Version"] = 6,
+            ["payload"] = "fake-payload"
+        };
 
         var kernel = new Kernel();
 
@@ -120,7 +126,13 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         this._executionParameters.HttpClient = httpClient;
 
-        var arguments = this.GetFakeFunctionArguments();
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = "fake-secret-name",
+            ["api-version"] = "7.0",
+            ["X-API-Version"] = 6,
+            ["payload"] = "fake-payload"
+        };
 
         var kernel = new Kernel();
 
@@ -160,7 +172,13 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         this._executionParameters.HttpClient = httpClient;
 
-        var arguments = this.GetFakeFunctionArguments();
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = "fake-secret-name",
+            ["api-version"] = "7.0",
+            ["X-API-Version"] = 6,
+            ["payload"] = "fake-payload"
+        };
 
         var kernel = new Kernel();
 
@@ -305,6 +323,22 @@ public sealed class OpenApiKernelPluginFactoryTests
     }
 
     [Fact]
+    public async Task ItShouldFreezeOperationMetadataAsync()
+    {
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.True(plugin.TryGetFunction("SetSecret", out var function));
+
+        RestApiOperation additionalProperties = (RestApiOperation)function.Metadata.AdditionalProperties["operation"]!;
+
+        // Assert that operation metadata is frozen
+        var secretNameParameter = additionalProperties.Parameters.Single(p => p.Name == "secret-name");
+        Assert.Throws<InvalidOperationException>(() => secretNameParameter.ArgumentName = "a new value");
+    }
+
+    [Fact]
     public async Task ItShouldHandleEmptyOperationNameAsync()
     {
         // Arrange
@@ -396,8 +430,15 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         messageHandlerStub.ResetResponse();
 
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = "fake-secret-name",
+            ["api-version"] = "7.0",
+            ["X-API-Version"] = 6
+        };
+
         // Act
-        var result = await kernel.InvokeAsync(plugin["GetSecret"], this.GetFakeFunctionArguments());
+        var result = await kernel.InvokeAsync(plugin["GetSecret"], arguments);
 
         // Assert
         var response = result.GetValue<RestApiOperationResponse>();
@@ -476,17 +517,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal(2, function.Metadata.Parameters.Count);
         Assert.Equal("payload", function.Metadata.Parameters[0].Name);
         Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
-    }
-
-    private KernelArguments GetFakeFunctionArguments()
-    {
-        return new KernelArguments
-        {
-            ["secret-name"] = "fake-secret-name",
-            ["api-version"] = "7.0",
-            ["X-API-Version"] = 6,
-            ["payload"] = "fake-payload"
-        };
     }
 
     private sealed class FakePlugin

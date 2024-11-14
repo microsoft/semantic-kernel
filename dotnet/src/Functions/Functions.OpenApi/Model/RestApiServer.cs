@@ -37,4 +37,15 @@ public sealed class RestApiServer
         this.Url = string.IsNullOrEmpty(url) ? null : url;
         this.Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
     }
+
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        foreach (var variable in this.Variables.Values)
+        {
+            variable.Freeze();
+        }
+    }
 }
