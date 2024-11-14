@@ -139,16 +139,18 @@ public class CloneTests
         }
     }
 
-    private static Dictionary<string, List<KernelProcessEdge>> CreateTestEdges() =>
-        new()
+    private static Dictionary<string, List<KernelProcessEdge>> CreateTestEdges()
+    {
+        return new()
         {
             {
                 "sourceId",
                 [
-                    new KernelProcessEdge("sourceId", new KernelProcessFunctionTarget("sourceId", "targetFunction", "targetParameter", "targetEventId")),
+                    new KernelProcessEdge("sourceId", new KernelProcessFunctionTarget("sourceId", "targetFunction", "targetParameter", "targetEventId"), "eventName", "eventId"),
                 ]
             }
         };
+    }
 
     private sealed record TestState
     {

@@ -36,7 +36,7 @@ public sealed class ProcessEdgeBuilder
     public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
         this.Target = target;
-        ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId) { Target = this.Target };
+        ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId, this.EventId) { Target = this.Target };
         this.Source.LinkTo(this.EventId, edgeBuilder);
 
         return new ProcessEdgeBuilder(this.Source, this.EventId);

@@ -6,6 +6,40 @@ using Step03.Models;
 using Step03.Steps;
 namespace Step03.Processes;
 
+public enum FishProcessEvents
+{
+    PrepareFriedFish,
+    MiddleStep,
+    FriedFishFailed,
+    FriedFishReady,
+}
+
+public class FriedFishEventSubscribers : KernelProcessEventsSubscriber<FishProcessEvents>
+{
+    [ProcessEventSubscriber(FishProcessEvents.MiddleStep)]
+    public void OnMiddleStep(List<string> data)
+    {
+        // do something with data
+        Console.WriteLine($"=============> ON MIDDLE STEP: {data.FirstOrDefault() ?? ""}");
+    }
+
+    [ProcessEventSubscriber(FishProcessEvents.FriedFishReady)]
+    public void OnPrepareFish(object data)
+    {
+        // do something with data
+        // TODO: if event is linked to last event it doesnt get hit
+        // even when it may be linked to StopProcess() -> need additional special step?
+        Console.WriteLine("=============> ON FISH READY");
+    }
+
+    [ProcessEventSubscriber(FishProcessEvents.FriedFishFailed)]
+    public void OnFriedFisFailed(object data)
+    {
+        // do something with data
+        Console.WriteLine("=============> ON FISH FAILED");
+    }
+}
+
 /// <summary>
 /// Sample process that showcases how to create a process with sequential steps and reuse of existing steps.<br/>
 /// </summary>
@@ -26,20 +60,21 @@ public static class FriedFishProcess
     /// </summary>
     /// <param name="processName">name of the process</param>
     /// <returns><see cref="ProcessBuilder"/></returns>
-    public static ProcessBuilder CreateProcess(string processName = "FriedFishProcess")
+    public static ProcessBuilder<FishProcessEvents> CreateProcess(string processName = "FriedFishProcess")
     {
-        var processBuilder = new ProcessBuilder(processName);
+        var processBuilder = new ProcessBuilder<FishProcessEvents>(processName);
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsStep>();
         var chopStep = processBuilder.AddStepFromType<CutFoodStep>();
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
 
         processBuilder
-            .OnInputEvent(ProcessEvents.PrepareFriedFish)
+            .OnInputEvent(FishProcessEvents.PrepareFriedFish)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsStep.OutputEvents.IngredientsGathered)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(FishProcessEvents.MiddleStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodStep.Functions.ChopFood));
 
         chopStep
@@ -48,7 +83,13 @@ public static class FriedFishProcess
 
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(FishProcessEvents.FriedFishFailed))
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        fryStep
+            .OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(FishProcessEvents.FriedFishReady))
+            .StopProcess();
 
         return processBuilder;
     }
@@ -81,23 +122,23 @@ public static class FriedFishProcess
         return processBuilder;
     }
 
-    /// <summary>
-    /// For a visual reference of the FriedFishProcess with stateful steps check this
-    /// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
-    /// </summary>
-    /// <param name="processName">name of the process</param>
-    /// <returns><see cref="ProcessBuilder"/></returns>
-    public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
+	/// <summary>
+	/// For a visual reference of the FriedFishProcess with stateful steps check this
+	/// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
+	/// </summary>
+	/// <param name="processName">name of the process</param>
+	/// <returns><see cref="ProcessBuilder"/></returns>
+	public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
     {
         // It is recommended to specify process version in case this process is used as a step by another process
-        var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v2" };
+        var processBuilder = new ProcessBuilder<FishProcessEvents>(processName) { Version = "FriedFishProcess.v2" };
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>(name: "gatherFishIngredientStep", aliases: ["GatherFriedFishIngredientsWithStockStep"]);
         var chopStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>(name: "chopFishStep", aliases: ["CutFoodStep"]);
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>(name: "fryFishStep", aliases: ["FryFoodStep"]);
 
         processBuilder
-            .OnInputEvent(ProcessEvents.PrepareFriedFish)
+            .GetProcessEvent(FishProcessEvents.PrepareFriedFish)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         gatherIngredientsStep
@@ -106,6 +147,7 @@ public static class FriedFishProcess
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(FishProcessEvents.FriedFishFailed))
             .StopProcess();
 
         chopStep
@@ -123,6 +165,9 @@ public static class FriedFishProcess
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        fryStep.OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(FishProcessEvents.FriedFishReady));
 
         return processBuilder;
     }

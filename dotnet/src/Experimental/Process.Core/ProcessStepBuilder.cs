@@ -37,11 +37,11 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnEvent(string eventId)
+    public ProcessStepEdgeBuilder OnEvent(string eventName)
     {
         // scope the event to this instance of this step
-        var scopedEventId = this.GetScopedEventId(eventId);
-        return new ProcessStepEdgeBuilder(this, scopedEventId);
+        var scopedEventId = this.GetScopedEventId(eventName);
+        return new ProcessStepEdgeBuilder(this, scopedEventId, eventName);
     }
 
     /// <summary>
@@ -51,6 +51,7 @@ public abstract class ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
     public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
     {
+        // TODO: ADD CHECK SO FUNCTION_NAME IS NOT EMPTY OR ADD FUNCTION RESOLVER IN CASE STEP HAS ONLY ONE FUNCTION
         return this.OnEvent($"{functionName}.OnResult");
     }
 

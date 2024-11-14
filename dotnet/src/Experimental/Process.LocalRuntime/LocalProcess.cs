@@ -256,6 +256,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 List<Task> messageTasks = [];
                 foreach (var message in messagesToProcess)
                 {
+                    // Check if message has external event handler linked to it
+                    this.TryEmitMessageToExternalSubscribers(message);
+
                     // Check for end condition
                     if (message.DestinationId.Equals(ProcessConstants.EndStepName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -289,6 +292,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
 
         return;
+    }
+
+    private void TryEmitMessageToExternalSubscribers(string processEventId, object? processEventData)
+    {
+        this._process.EventsSubscriber?.TryInvokeProcessEventFromStepMessage(processEventId, processEventData);
+    }
+
+    private void TryEmitMessageToExternalSubscribers(ProcessMessage message)
+    {
+        this.TryEmitMessageToExternalSubscribers(message.EventId, message.TargetEventData);
     }
 
     /// <summary>
@@ -338,15 +351,20 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             }
 
             // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
-            if (!foundEdge && stepEvent.IsError)
+            if (!foundEdge)
             {
-                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+                if (stepEvent.IsError && this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
                         ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                         messageChannel.Enqueue(message);
                     }
+                }
+                else
+                {
+                    // Checking in case the step with no edges linked to it has event that should be emitted externally
+                    this.TryEmitMessageToExternalSubscribers(stepEvent.QualifiedId, stepEvent.Data);
                 }
             }
         }

@@ -14,8 +14,14 @@ public sealed class ProcessStepEdgeBuilder
 
     /// <summary>
     /// The event Id that the edge fires on.
+    /// Unique event Id linked to the source id.
     /// </summary>
     internal string EventId { get; }
+
+    /// <summary>
+    /// The event name that the edge fires on.
+    /// </summary>
+    internal string EventName { get; }
 
     /// <summary>
     /// The source step of the edge.
@@ -27,13 +33,16 @@ public sealed class ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
-    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId)
+    /// <param name="eventName">The name of the event</param>
+    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName)
     {
         Verify.NotNull(source);
         Verify.NotNullOrWhiteSpace(eventId);
+        Verify.NotNullOrWhiteSpace(eventName);
 
         this.Source = source;
         this.EventId = eventId;
+        this.EventName = eventName;
     }
 
     /// <summary>
@@ -44,7 +53,7 @@ public sealed class ProcessStepEdgeBuilder
         Verify.NotNull(this.Source?.Id);
         Verify.NotNull(this.Target);
 
-        return new KernelProcessEdge(this.Source.Id, this.Target.Build());
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build(), this.EventName, this.EventId);
     }
 
     /// <summary>
@@ -62,7 +71,20 @@ public sealed class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventId);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventId, this.EventName);
+    }
+
+    /// <summary>
+    /// Forward specific step events to process events so specific functions linked get executed
+    /// when receiving the specific event
+    /// </summary>
+    /// <param name="processEdge"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder EmitAsProcessEvent(ProcessEdgeBuilder processEdge)
+    {
+        processEdge.Source._eventsSubscriber?.LinkStepEventToProcessEvent(this.EventId, processEventId: processEdge.EventId);
+
+        return new ProcessStepEdgeBuilder(this.Source, this.EventId, this.EventName);
     }
 
     /// <summary>

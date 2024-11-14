@@ -22,6 +22,8 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
     public async Task UsePrepareFriedFishProcessAsync()
     {
         var process = FriedFishProcess.CreateProcess();
+        process.LinkEventSubscribersFromType<FriedFishEventSubscribers>();
+
         await UsePrepareSpecificProductAsync(process, FriedFishProcess.ProcessEvents.PrepareFriedFish);
     }
 

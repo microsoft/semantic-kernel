@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -11,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed class ProcessBuilder : ProcessStepBuilder
+public class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];
@@ -21,6 +22,8 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+
+    internal KernelProcessEventsSubscriberInfo _eventsSubscriber;
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
@@ -108,7 +111,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     #region Public Interface
-
     /// <summary>
     /// A read-only collection of steps in the process.
     /// </summary>
@@ -258,7 +260,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         var state = new KernelProcessState(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        var process = new KernelProcess(state, builtSteps, builtEdges);
+        var process = new KernelProcess(state, builtSteps, builtEdges, this._eventsSubscriber);
         return process;
     }
 
@@ -269,7 +271,49 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder(string name)
         : base(name)
     {
+        this._eventsSubscriber = new();
     }
 
+    #endregion
+}
+
+public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enum, new()
+{
+    private readonly Dictionary<TEvents, string> _eventNames = [];
+
+    private void PopulateEventNames()
+    {
+        foreach (TEvents processEvent in Enum.GetValues(typeof(TEvents)))
+        {
+            this._eventNames.Add(processEvent, Enum.GetName(typeof(TEvents), processEvent)!);
+        }
+    }
+
+    #region Public Interface
+
+    public void LinkEventSubscribersFromType<TEventListeners>() where TEventListeners : KernelProcessEventsSubscriber<TEvents>
+    {
+        this._eventsSubscriber.SubscribeToEventsFromClass<TEventListeners, TEvents>();
+    }
+
+    public ProcessEdgeBuilder OnInputEvent(TEvents eventId)
+    {
+        return this.OnInputEvent(this.GetEventName(eventId));
+    }
+
+    public string GetEventName(TEvents processEvent)
+    {
+        return this._eventNames[processEvent];
+    }
+
+    public ProcessEdgeBuilder GetProcessEvent(TEvents processEvent)
+    {
+        return this.OnInputEvent(this.GetEventName(processEvent));
+    }
+
+    public ProcessBuilder(string name) : base(name)
+    {
+        this.PopulateEventNames();
+    }
     #endregion
 }
