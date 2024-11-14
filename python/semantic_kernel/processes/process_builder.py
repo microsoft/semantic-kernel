@@ -3,6 +3,7 @@
 import contextlib
 import inspect
 from copy import copy
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -73,8 +74,11 @@ class ProcessBuilder(ProcessStepBuilder):
 
         return targets[0]
 
-    def where_input_event_is(self, event_id: str) -> "ProcessFunctionTargetBuilder":
+    def where_input_event_is(self, event_id: str | Enum) -> "ProcessFunctionTargetBuilder":
         """Filters the input event."""
+        if isinstance(event_id, Enum):
+            event_id = event_id.value
+
         if event_id not in self.external_event_target_map:
             raise ValueError(f"The process named '{self.name}' does not expose an event with Id '{event_id}'")
 
@@ -84,11 +88,15 @@ class ProcessBuilder(ProcessStepBuilder):
         target.target_event_id = event_id
         return target
 
-    def on_input_event(self, event_id: str) -> "ProcessEdgeBuilder":  # type: ignore
+    def on_input_event(self, event_id: str | Enum) -> "ProcessEdgeBuilder":  # type: ignore
         """Creates a new ProcessEdgeBuilder for the input event."""
         from semantic_kernel.processes.process_builder import ProcessBuilder  # noqa: F401
 
         ProcessEdgeBuilder.model_rebuild()
+
+        if isinstance(event_id, Enum):
+            event_id = event_id.value
+
         return ProcessEdgeBuilder(source=self, event_id=event_id)
 
     def link_to(self, event_id: str, edge_builder: ProcessStepEdgeBuilder) -> None:

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 async def start(
     process: "KernelProcess",
     kernel: "Kernel",
-    initial_event: KernelProcessEvent | str,
+    initial_event: KernelProcessEvent | str | Enum,
     process_id: str | None = None,
     **kwargs,
 ) -> DaprKernelProcessContext:
@@ -29,6 +30,9 @@ async def start(
         raise ProcessInvalidConfigurationException("kernel cannot be None")
     if initial_event is None:
         raise ProcessInvalidConfigurationException("initial_event cannot be None")
+
+    if isinstance(initial_event, Enum):
+        initial_event = initial_event.value
 
     if isinstance(initial_event, str):
         initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data"))

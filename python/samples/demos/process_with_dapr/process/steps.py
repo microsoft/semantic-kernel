@@ -38,8 +38,8 @@ class KickOffStep(KernelProcessStep):
     @kernel_function(name=KICK_OFF_FUNCTION)
     async def print_welcome_message(self, context: KernelProcessStepContext):
         print("##### Kickoff ran.")
-        await context.emit_event(process_event=CommonEvents.StartARequested.value, data="Get Going A")
-        await context.emit_event(process_event=CommonEvents.StartBRequested.value, data="Get Going B")
+        await context.emit_event(process_event=CommonEvents.StartARequested, data="Get Going A")
+        await context.emit_event(process_event=CommonEvents.StartBRequested, data="Get Going B")
 
 
 # Define a sample `AStep` step that will emit an event after 1 second.
@@ -49,7 +49,7 @@ class AStep(KernelProcessStep):
     async def do_it(self, context: KernelProcessStepContext):
         print("##### AStep ran.")
         await asyncio.sleep(1)
-        await context.emit_event(process_event=CommonEvents.AStepDone.value, data="I did A")
+        await context.emit_event(process_event=CommonEvents.AStepDone, data="I did A")
 
 
 # Define a sample `BStep` step that will emit an event after 2 seconds.
@@ -59,7 +59,7 @@ class BStep(KernelProcessStep):
     async def do_it(self, context: KernelProcessStepContext):
         print("##### BStep ran.")
         await asyncio.sleep(2)
-        await context.emit_event(process_event=CommonEvents.BStepDone.value, data="I did B")
+        await context.emit_event(process_event=CommonEvents.BStepDone, data="I did B")
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
@@ -83,7 +83,7 @@ class CStep(KernelProcessStep[CStepState]):
         self.state.current_cycle += 1
         if self.state.current_cycle >= 3:
             print("##### CStep run cycle 3 - exiting.")
-            await context.emit_event(process_event=CommonEvents.ExitRequested.value)
+            await context.emit_event(process_event=CommonEvents.ExitRequested)
             return
         print(f"##### CStep run cycle {self.state.current_cycle}")
-        await context.emit_event(process_event=CommonEvents.CStepDone.value)
+        await context.emit_event(process_event=CommonEvents.CStepDone)

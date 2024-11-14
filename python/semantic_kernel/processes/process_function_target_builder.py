@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.process_end_step import EndStep
@@ -16,11 +18,16 @@ class ProcessFunctionTargetBuilder(KernelBaseModel):
     parameter_name: str | None = None
     target_event_id: str | None = None
 
-    def __init__(self, step: ProcessStepBuilder, function_name: str | None = None, parameter_name: str | None = None):
+    def __init__(
+        self, step: ProcessStepBuilder, function_name: str | Enum | None = None, parameter_name: str | None = None
+    ):
         """Initializes a new instance of ProcessFunctionTargetBuilder."""
         from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata  # noqa: F401
 
         ProcessFunctionTargetBuilder.model_rebuild()
+
+        if isinstance(function_name, Enum):
+            function_name = function_name.value
 
         if isinstance(step, EndStep):
             function_name = "END"

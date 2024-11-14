@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Generic
 
 from pydantic import Field
@@ -65,15 +66,21 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             **kwargs,
         )
 
-    def on_input_event(self, event_id: str) -> "ProcessStepEdgeBuilder":
+    def on_input_event(self, event_id: str | Enum) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the input event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
+        if isinstance(event_id, Enum):
+            event_id = event_id.value
+
         return ProcessStepEdgeBuilder(source=self, event_id=event_id)
 
-    def on_event(self, event_id: str) -> "ProcessStepEdgeBuilder":
+    def on_event(self, event_id: str | Enum) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
+
+        if isinstance(event_id, Enum):
+            event_id = event_id.value
 
         scoped_event_id = self.get_scoped_event_id(event_id)
         return ProcessStepEdgeBuilder(source=self, event_id=scoped_event_id)

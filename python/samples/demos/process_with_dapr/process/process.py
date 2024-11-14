@@ -22,17 +22,17 @@ def get_process() -> "KernelProcess":
     myCStep = process.add_step(step_type=CStep, initial_state=CStepState(current_cycle=1))
 
     # Define the input event and where to send it to
-    process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(target=kickoff_step)
+    process.on_input_event(event_id=CommonEvents.StartProcess).send_event_to(target=kickoff_step)
 
     # Define the process flow
-    kickoff_step.on_event(event_id=CommonEvents.StartARequested.value).send_event_to(target=myAStep)
-    kickoff_step.on_event(event_id=CommonEvents.StartBRequested.value).send_event_to(target=myBStep)
-    myAStep.on_event(event_id=CommonEvents.AStepDone.value).send_event_to(target=myCStep, parameter_name="astepdata")
+    kickoff_step.on_event(event_id=CommonEvents.StartARequested).send_event_to(target=myAStep)
+    kickoff_step.on_event(event_id=CommonEvents.StartBRequested).send_event_to(target=myBStep)
+    myAStep.on_event(event_id=CommonEvents.AStepDone).send_event_to(target=myCStep, parameter_name="astepdata")
 
     # Define the fan in behavior once both AStep and BStep are done
-    myBStep.on_event(event_id=CommonEvents.BStepDone.value).send_event_to(target=myCStep, parameter_name="bstepdata")
-    myCStep.on_event(event_id=CommonEvents.CStepDone.value).send_event_to(target=kickoff_step)
-    myCStep.on_event(event_id=CommonEvents.ExitRequested.value).stop_process()
+    myBStep.on_event(event_id=CommonEvents.BStepDone).send_event_to(target=myCStep, parameter_name="bstepdata")
+    myCStep.on_event(event_id=CommonEvents.CStepDone).send_event_to(target=kickoff_step)
+    myCStep.on_event(event_id=CommonEvents.ExitRequested).stop_process()
 
     # Build the process
     return process.build()
