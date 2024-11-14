@@ -34,21 +34,27 @@ internal sealed class LocalMap : LocalStep
     /// <inheritdoc/>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
+        // Retrieve map input values
         IEnumerable values = message.GetMapInput(this._logger);
 
+        // Access the map operation
+        KernelProcess mapOperation = this._map.Operation as KernelProcess ?? this.CreateProxyOperation(message);
+
+        // Prepare state for map execution
         int index = 0;
         List<(Task Task, LocalKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
         ConcurrentDictionary<string, Type> capturedEvents = [];
-
         try
         {
+            // Execute the map operation for each value
             foreach (var value in values)
             {
                 ++index;
 
-                KernelProcess process = this._map.Operation.CloneProcess(this._logger);
+                KernelProcess process = mapOperation.CloneProcess(this._logger);
                 MapOperationContext context = new(this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
+                //LocalKernelProcessContext processContext = new(process, this._kernel, this.ParentProcessId, context.Filter);
                 LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);
                 Task processTask =
                     processContext.StartWithEventAsync(
@@ -107,6 +113,17 @@ internal sealed class LocalMap : LocalStep
         // The map does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
+    }
+
+    private KernelProcess CreateProxyOperation(ProcessMessage message)
+    {
+        string? parameterName = message.Values.SingleOrDefault(kvp => kvp.Value == message.TargetEventData).Key;
+        string proxyId = Guid.NewGuid().ToString("N");
+        return
+            new KernelProcess(
+                new KernelProcessState($"Map{this._map.Operation.State.Name}", this._map.Operation.State.Version, proxyId),
+                [this._map.Operation],
+                new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(this._map.Operation.State.Id!, message.FunctionName, parameterName))] } });
     }
 
     private sealed record MapOperationContext(in HashSet<string> EventTargets, in IDictionary<string, Type> CapturedEvents)

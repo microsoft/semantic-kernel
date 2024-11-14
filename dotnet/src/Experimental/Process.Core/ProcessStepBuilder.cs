@@ -30,7 +30,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Alternative names that have been used to previous versions of the step
     /// </summary>
-    public List<string> Aliases { get; set; } = [];
+    public IReadOnlyList<string> Aliases { get; internal set; } = [];
 
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.

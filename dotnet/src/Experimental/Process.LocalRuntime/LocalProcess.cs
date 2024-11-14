@@ -276,7 +276,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                         break;
                     }
 
-                    var destinationStep = this._steps.First(v => v.Id == message.DestinationId);
+                    var destinationStep = this._steps.FirstOrDefault(v => v.Id == message.DestinationId);
+                    if (destinationStep == null)
+                    {
+                        throw new InvalidOperationException();
+                    }
 
                     // Send a message to the step
                     messageTasks.Add(destinationStep.HandleMessageAsync(message));

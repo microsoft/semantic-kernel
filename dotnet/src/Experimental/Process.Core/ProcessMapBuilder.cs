@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -14,17 +13,14 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class ProcessMapBuilder : ProcessStepBuilder
 {
-    internal readonly ProcessFunctionTargetBuilder _mapTarget;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessMapBuilder"/> class.
     /// </summary>
-    /// <param name="mapTarget">The target of the map operation.  May target a step or process</param>
-    internal ProcessMapBuilder(ProcessFunctionTargetBuilder mapTarget)
-        : base($"Map{mapTarget.Step.Name}")
+    /// <param name="mapOperation">The target of the map operation.  May target a step or process</param>
+    internal ProcessMapBuilder(ProcessStepBuilder mapOperation)
+        : base($"Map{mapOperation.Name}")
     {
-        this._mapTarget = mapTarget;
-        this.MapOperation = this.CreateMapProcess(mapTarget);
+        this.MapOperation = mapOperation;
     }
 
     /// <summary>
@@ -35,7 +31,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     /// <summary>
     /// The map operation that will be executed for each element in the input.
     /// </summary>
-    internal ProcessBuilder MapOperation { get; }
+    internal ProcessStepBuilder MapOperation { get; }
 
     /// <inheritdoc/>
     /// <remarks>
@@ -49,7 +45,31 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     /// <inheritdoc/>
     internal override KernelProcessFunctionTarget ResolveFunctionTarget(string? functionName, string? parameterName)
     {
-        return new KernelProcessFunctionTarget(this.Id, this._mapTarget.FunctionName, this._mapTarget.ParameterName);
+        if (this.MapOperation is ProcessBuilder processOperation)
+        {
+            KernelProcessFunctionTarget? inputTarget = null;
+            foreach (var step in processOperation.Steps)
+            {
+                try
+                {
+                    inputTarget = step.ResolveFunctionTarget(functionName, parameterName);
+                }
+                catch (KernelException)
+                {
+                    // Function not found, try the next step
+                }
+            }
+
+            if (inputTarget == null)
+            {
+                throw new KernelException($"Failed to resolve function target for map-step - {this.Name}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
+            }
+
+            //return processOperation.WhereInputEventIs(ProcessConstants.MapEventId); // %%% DON'T KNOW EVENTID
+            return inputTarget;
+        }
+
+        return this.MapOperation.ResolveFunctionTarget(functionName, parameterName);
     }
 
     /// <inheritdoc/>
@@ -60,46 +80,9 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
+        // Define the map state
         KernelProcessMapState state = new(this.Name, this.Version, this.Id);
-        return new KernelProcessMap(state, this.MapOperation.Build(mapMetadata?.OperationState), builtEdges);
-    }
 
-    private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)
-    {
-        if (mapTarget.Step is ProcessBuilder mapProcess)
-        {
-            if (string.IsNullOrWhiteSpace(mapTarget.TargetEventId))
-            {
-                throw new InvalidOperationException($"Invalid target for map: {this.Name}");
-            }
-
-            return CreateMapOperationFromProcess(mapProcess, mapTarget.TargetEventId!);
-        }
-
-        return CreateMapOperationFromStep(mapTarget);
-    }
-
-    private static ProcessBuilder CreateMapOperationFromProcess(ProcessBuilder mapProcess, string eventId)
-    {
-        ProcessBuilder transformBuilder = new($"One{mapProcess.Name}");
-
-        var transformProcess = transformBuilder.AddStepFromProcess(mapProcess);
-        transformBuilder
-            .OnInputEvent(ProcessConstants.MapEventId)
-            .SendEventTo(transformProcess.WhereInputEventIs(eventId));
-
-        return transformBuilder;
-    }
-
-    private static ProcessBuilder CreateMapOperationFromStep(ProcessFunctionTargetBuilder mapTarget)
-    {
-        ProcessBuilder transformBuilder = new($"One{mapTarget.Step.Name}");
-
-        transformBuilder.AddStepFromBuilder(mapTarget.Step);
-        transformBuilder
-            .OnInputEvent(ProcessConstants.MapEventId)
-            .SendEventTo(mapTarget);
-
-        return transformBuilder;
+        return new KernelProcessMap(state, this.MapOperation.BuildStep(mapMetadata?.OperationState), builtEdges);
     }
 }

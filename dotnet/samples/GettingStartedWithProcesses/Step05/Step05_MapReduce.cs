@@ -64,11 +64,10 @@ public class Step05_MapReduce : BaseTest
             .OnInputEvent(inputEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(chunkStep));
 
-        ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(countStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<CountStep>();
         chunkStep
             .OnEvent(ChunkStep.EventId)
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder resultStep = process.AddStepFromType<ResultStep>();
         mapStep
