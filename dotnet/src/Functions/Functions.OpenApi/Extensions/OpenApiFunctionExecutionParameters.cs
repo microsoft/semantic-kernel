@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
 
@@ -45,6 +46,7 @@ public class OpenApiFunctionExecutionParameters
     /// To support more complex payloads, it should be disabled and the payload should be provided via the 'payload' argument.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
+    [Experimental("SKEXP0040")]
     public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
@@ -55,11 +57,13 @@ public class OpenApiFunctionExecutionParameters
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
+    [Experimental("SKEXP0040")]
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.
     /// </summary>
+    [Experimental("SKEXP0040")]
     public IList<string> OperationsToExclude { get; set; }
 
     /// <summary>
@@ -71,6 +75,7 @@ public class OpenApiFunctionExecutionParameters
     /// as a stream rather than as a string.
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
+    [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
 
     /// <summary>
@@ -88,6 +93,7 @@ public class OpenApiFunctionExecutionParameters
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    [Experimental("SKEXP0040")]
     public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
