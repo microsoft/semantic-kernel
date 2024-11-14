@@ -3,7 +3,7 @@
 from abc import ABC
 from typing import ClassVar
 
-from mistralai.async_client import MistralAsyncClient
+from mistralai import Mistral
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -13,4 +13,4 @@ class MistralAIBase(KernelBaseModel, ABC):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "mistralai"
 
-    async_client: MistralAsyncClient
+    async_client: Mistral

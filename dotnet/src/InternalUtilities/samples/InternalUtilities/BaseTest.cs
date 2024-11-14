@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -27,7 +28,7 @@ public abstract class BaseTest : TextWriter
 
     protected bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
-    protected string ApiKey =>
+    protected string? ApiKey =>
         this.UseOpenAIConfig ?
             TestConfiguration.OpenAI.ApiKey :
             TestConfiguration.AzureOpenAI.ApiKey;
@@ -61,12 +62,19 @@ public abstract class BaseTest : TextWriter
                 TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
-        else
+        else if (!string.IsNullOrEmpty(this.ApiKey))
         {
             builder.AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                new AzureCliCredential());
         }
     }
 
