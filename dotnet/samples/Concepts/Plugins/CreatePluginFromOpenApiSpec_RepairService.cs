@@ -36,7 +36,7 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
         Console.WriteLine(result.ToString());
 
         // List All Repairs
-        result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
         Assert.True(repairs?.Length > 0);
         var id = repairs[repairs.Length - 1].Id;

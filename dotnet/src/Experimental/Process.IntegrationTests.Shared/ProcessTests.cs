@@ -218,6 +218,32 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
+    /// Test with a process that has an error step that emits an error event
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task ProcessWithErrorEmitsErrorEventAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        var process = this.CreateProcessWithError("ProcessWithError").Build();
+
+        // Act
+        bool shouldError = true;
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = shouldError });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        var reportStep = processInfo.Steps.Where(s => s.State.Name == nameof(ReportStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
+        Assert.NotNull(reportStep?.State);
+        Assert.Equal(1, reportStep.State.InvocationCount);
+
+        var repeatStep = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
+        Assert.NotNull(repeatStep?.State);
+        Assert.Null(repeatStep.State.LastMessage);
+    }
+
+    /// <summary>
     /// Test with a single step that then connects to a nested fan in process with 2 input steps
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
@@ -277,6 +303,20 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 
         echoAStep.OnFunctionResult(nameof(EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
         repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
+
+        return processBuilder;
+    }
+
+    private ProcessBuilder CreateProcessWithError(string name)
+    {
+        var processBuilder = new ProcessBuilder(name);
+        var errorStep = processBuilder.AddStepFromType<ErrorStep>("ErrorStep");
+        var repeatStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStep");
+        var reportStep = processBuilder.AddStepFromType<ReportStep>("ReportStep");
+
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(errorStep));
+        errorStep.OnEvent(ProcessTestsEvents.ErrorStepSuccess).SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
+        errorStep.OnFunctionError("ErrorWhenTrue").SendEventTo(new ProcessFunctionTargetBuilder(reportStep));
 
         return processBuilder;
     }
