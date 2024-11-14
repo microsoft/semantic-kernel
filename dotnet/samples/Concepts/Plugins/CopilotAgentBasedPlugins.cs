@@ -8,13 +8,13 @@ using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Plugins;
 /// <summary>
-/// These examples demonstrate how to use CopilotAgent plugins to call Microsoft Graph and NASA APIs.
-/// Copilot Agent Plugin plugins are created from the OpenAPI document and the manifest file.
+/// These examples demonstrate how to use Copilot Agent plugins to call Microsoft Graph and NASA APIs.
+/// Copilot Agent Plugins are created from the OpenAPI document and the manifest file.
 /// The manifest file contains the API dependencies and their execution parameters.
 /// The manifest file also contains the authentication information for the APIs, however this is not used by the extension method and MUST be setup separately at the moment, which the example demonstrates.
 ///
 /// Important stages being demonstrated:
-/// 1. Load CopilotAgent plugins
+/// 1. Load Copilot Agent Plugins
 /// 2. Configure authentication for the APIs
 /// 3. Call functions from the loaded plugins
 ///

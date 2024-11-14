@@ -5,7 +5,7 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>
-/// Copilot Agent Plugin plugin parameters.
+/// Copilot Agent Plugin parameters.
 /// </summary>
 public sealed class CopilotAgentPluginParameters
 {
