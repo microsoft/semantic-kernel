@@ -128,4 +128,9 @@
     <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
     <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

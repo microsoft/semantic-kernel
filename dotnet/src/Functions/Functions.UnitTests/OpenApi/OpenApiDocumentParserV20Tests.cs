@@ -414,6 +414,27 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.Null(property.Format);
     }
 
+    [Fact]
+    public async Task ItCanFilterOutSpecifiedOperationsAsync()
+    {
+        // Arrange
+        var operationsToExclude = new[] { "Excuses", "TestDefaultValues", "OpenApiExtensions", "TestParameterDataTypes" };
+
+        var options = new OpenApiDocumentParserOptions
+        {
+            OperationSelectionPredicate = (context) => !operationsToExclude.Contains(context.Id)
+        };
+
+        // Act
+        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument, options);
+
+        // Assert
+        Assert.Equal(2, restApiSpec.Operations.Count);
+
+        Assert.Contains(restApiSpec.Operations, o => o.Id == "SetSecret");
+        Assert.Contains(restApiSpec.Operations, o => o.Id == "GetSecret");
+    }
+
     private static RestApiParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,
         RestApiParameterLocation location, string name)
     {
