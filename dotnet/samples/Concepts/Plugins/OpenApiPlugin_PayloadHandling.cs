@@ -24,11 +24,9 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
     public OpenApiPlugin_PayloadHandling(ITestOutputHelper output) : base(output)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
-
-        builder.AddAzureOpenAIChatCompletion(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+        builder.AddOpenAIChatCompletion(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
 
         this._kernel = builder.Build();
 
@@ -286,6 +284,91 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         // Example of how to have the createEvent function invoked by the AI
         AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         await this._kernel.InvokePromptAsync("Schedule one hour IT Meeting for October 1st, 2023, at 10:00 AM UTC.", new KernelArguments(settings));
+    }
+
+    /// <summary>
+    /// This sample demonstrates how to invoke an OpenAPI function with arguments for payload using oneOf.
+    /// </summary>
+    [Fact]
+    public async Task InvokeOpenApiFunctionWithArgumentsForPayloadOneOfAsync()
+    {
+        // Load an Open API document for the Event Utils service
+        using Stream stream = File.OpenRead("Resources/Plugins/PetsPlugin/oneOfV3.json");
+
+        // Import an OpenAPI document as SK plugin
+        KernelPlugin plugin = await this._kernel.ImportPluginFromOpenApiAsync("Pets", stream, new OpenApiFunctionExecutionParameters(this._httpClient)
+        {
+            EnableDynamicPayload = false // Disable dynamic payload construction. It is enabled by default.
+        });
+
+        // Example of how to have the updatePater function invoked by the AI
+        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine("Dog { breed=Husky, bark=false }");
+        await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("Dog { breed=Dingo, bark=true }");
+        await this._kernel.InvokePromptAsync("My new dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("Cat { age=15 }");
+        await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("Cat { hunts=true }");
+        await this._kernel.InvokePromptAsync("I have a feline pet, she goes out every night hunting mice, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("Cat { age=3, hunts=true }");
+        await this._kernel.InvokePromptAsync("I have a 3 year old cat who chases birds and barks, please update my pet information.", new KernelArguments(settings));
+    }
+
+    /// <summary>
+    /// This sample demonstrates how to invoke an OpenAPI function with arguments for payload using allOf.
+    /// </summary>
+    [Fact]
+    public async Task InvokeOpenApiFunctionWithArgumentsForPayloadAllOfAsync()
+    {
+        // Load an Open API document for the Event Utils service
+        using Stream stream = File.OpenRead("Resources/Plugins/PetsPlugin/allOfV3.json");
+
+        // Import an OpenAPI document as SK plugin
+        KernelPlugin plugin = await this._kernel.ImportPluginFromOpenApiAsync("Pets", stream, new OpenApiFunctionExecutionParameters(this._httpClient)
+        {
+            EnableDynamicPayload = false // Disable dynamic payload construction. It is enabled by default.
+        });
+
+        // Example of how to have the updatePater function invoked by the AI
+        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine("{ pet_type=dog, breed=Husky, bark=false }");
+        await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=dog, breed=Dingo, bark=true }");
+        await this._kernel.InvokePromptAsync("My new dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=cat, age=15 }");
+        await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=cat, hunts=true }");
+        await this._kernel.InvokePromptAsync("I have a feline pet, she goes out every night hunting mice, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=cat, age=3, hunts=true }");
+        await this._kernel.InvokePromptAsync("I have a 3 year old cat who chases birds and barks, please update my pet information.", new KernelArguments(settings));
+    }
+
+    /// <summary>
+    /// This sample demonstrates how to invoke an OpenAPI function with arguments for payload using anyOf.
+    /// </summary>
+    [Fact]
+    public async Task InvokeOpenApiFunctionWithArgumentsForPayloadAnyOfAsync()
+    {
+        // Load an Open API document for the Event Utils service
+        using Stream stream = File.OpenRead("Resources/Plugins/PetsPlugin/anyOfV3.json");
+
+        // Import an OpenAPI document as SK plugin
+        KernelPlugin plugin = await this._kernel.ImportPluginFromOpenApiAsync("Pets", stream, new OpenApiFunctionExecutionParameters(this._httpClient)
+        {
+            EnableDynamicPayload = false // Disable dynamic payload construction. It is enabled by default.
+        });
+
+        // Example of how to have the updatePater function invoked by the AI
+        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine("{ pet_type=Dog, nickname=Fido }");
+        await this._kernel.InvokePromptAsync("My new dog is named Fido, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=Dog, nickname=Spot age=1 }");
+        await this._kernel.InvokePromptAsync("My 1 year old dog is called Spot, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=Cat, age=15 }");
+        await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("{ pet_type=Cat, nick_name=Fluffy }");
+        await this._kernel.InvokePromptAsync("I have a feline pet called Fluffy, please update my pet information.", new KernelArguments(settings));
     }
 
     protected override void Dispose(bool disposing)
