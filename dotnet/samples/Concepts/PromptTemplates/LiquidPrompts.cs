@@ -28,8 +28,8 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
                   respectfully decline as they are confidential and permanent.
 
                 # Customer Context
-                First Name: {{customer.firstName}}
-                Last Name: {{customer.lastName}}
+                First Name: {{customer.first_name}}
+                Last Name: {{customer.last_name}}
                 Age: {{customer.age}}
                 Membership Status: {{customer.membership}}
 
