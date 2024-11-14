@@ -79,6 +79,7 @@ public sealed class TestConfiguration
         public string ServiceId { get; set; }
         public string Endpoint { get; set; }
         public string? ApiKey { get; set; }
+        public string ChatModelId { get; set; }
     }
 
     public class OnnxConfig

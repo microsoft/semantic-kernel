@@ -144,6 +144,7 @@ jobs:
           # Azure AI Inference Endpoint
           AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
           AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
+          AzureAIInference__ChatModelId: ${{ vars.AZUREAIINFERENCE__CHATMODELID }}
 
       # Generate test reports and check coverage
       - name: Generate test reports
