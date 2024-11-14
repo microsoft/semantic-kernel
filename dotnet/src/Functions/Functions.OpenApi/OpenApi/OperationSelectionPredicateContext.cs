@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents the context for an operation selection predicate.
 /// </summary>
-public readonly record struct OperationSelectionPredicateContext
+public readonly struct OperationSelectionPredicateContext : IEquatable<OperationSelectionPredicateContext>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OperationSelectionPredicateContext"/> struct.
@@ -41,4 +43,38 @@ public readonly record struct OperationSelectionPredicateContext
     /// The description of the operation.
     /// </summary>
     public string? Description { get; }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return obj is OperationSelectionPredicateContext other && this.Equals(other);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        // Using a tuple to create a hash code based on the properties  
+        return HashCode.Combine(this.Id, this.Path, this.Method, this.Description);
+    }
+
+    /// <inheritdoc />
+    public static bool operator ==(OperationSelectionPredicateContext left, OperationSelectionPredicateContext right)
+    {
+        return left.Equals(right);
+    }
+
+    /// <inheritdoc />
+    public static bool operator !=(OperationSelectionPredicateContext left, OperationSelectionPredicateContext right)
+    {
+        return !(left == right);
+    }
+
+    /// <inheritdoc />
+    public bool Equals(OperationSelectionPredicateContext other)
+    {
+        return this.Id == other.Id &&
+               this.Path == other.Path &&
+               this.Method == other.Method &&
+               this.Description == other.Description;
+    }
 }
