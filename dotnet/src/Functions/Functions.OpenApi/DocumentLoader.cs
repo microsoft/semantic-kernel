@@ -29,7 +29,7 @@ internal static class DocumentLoader
             await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
-        logger.LogTrace("Importing document from {Uri}", uri);
+        logger.LogTrace("Importing document from '{Uri}'", uri);
 
         using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -51,7 +51,7 @@ internal static class DocumentLoader
             throw exception;
         }
 
-        logger.LogTrace("Importing document from {FilePath}", filePath);
+        logger.LogTrace("Importing document from '{FilePath}'", filePath);
 
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
