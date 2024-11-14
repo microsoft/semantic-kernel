@@ -202,6 +202,9 @@ public sealed class FanInStep : KernelProcessStep<StepState>
     }
 }
 
+/// <summary>
+/// A step that conditionaly throws an exception.
+/// </summary>
 public sealed class ErrorStep : KernelProcessStep<StepState>
 {
     private StepState? _state;
@@ -231,6 +234,9 @@ public sealed class ErrorStep : KernelProcessStep<StepState>
     }
 }
 
+/// <summary>
+/// A step that reports an error sent to it by logging it to the console.
+/// </summary>
 public sealed class ReportStep : KernelProcessStep<StepState>
 {
     private StepState? _state;
