@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 {
     /// <summary>
@@ -184,39 +186,47 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <returns>Rest operation.</returns>
     internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, OpenApiDocumentParserOptions? options, ILogger logger)
     {
-        var operations = new List<RestApiOperation>();
-
-        foreach (var operationPair in pathItem.Operations)
+        try
         {
-            var method = operationPair.Key.ToString();
+            var operations = new List<RestApiOperation>();
 
-            var operationItem = operationPair.Value;
-
-            // Skip the operation parsing and don't add it to the result operations list if it's explicitly excluded by the predicate.
-            if (!options?.OperationSelectionPredicate?.Invoke(new OperationSelectionPredicateContext(operationItem.OperationId, path, method, operationItem.Description)) ?? false)
+            foreach (var operationPair in pathItem.Operations)
             {
-                continue;
+                var method = operationPair.Key.ToString();
+
+                var operationItem = operationPair.Value;
+
+                // Skip the operation parsing and don't add it to the result operations list if it's explicitly excluded by the predicate.
+                if (!options?.OperationSelectionPredicate?.Invoke(new OperationSelectionPredicateContext(operationItem.OperationId, path, method, operationItem.Description)) ?? false)
+                {
+                    continue;
+                }
+
+                var operation = new RestApiOperation(
+                    id: operationItem.OperationId,
+                    servers: CreateRestApiOperationServers(document.Servers),
+                    path: path,
+                    method: new HttpMethod(method),
+                    description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                    payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                    responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                    securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
+                )
+                {
+                    Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                };
+
+                operations.Add(operation);
             }
 
-            var operation = new RestApiOperation(
-                id: operationItem.OperationId,
-                servers: CreateRestApiOperationServers(document.Servers),
-                path: path,
-                method: new HttpMethod(method),
-                description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
-            )
-            {
-                Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
-            };
-
-            operations.Add(operation);
+            return operations;
         }
-
-        return operations;
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred during REST API operation creation.");
+            throw;
+        }
     }
 
     /// <summary>
@@ -234,25 +244,6 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Build a dictionary of <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> objects.
-    /// </summary>
-    /// <param name="securitySchemes">Represents the security schemes used by the REST API.</param>
-    private static ReadOnlyDictionary<string, RestApiSecurityScheme> CreateRestApiOperationSecuritySchemes(IDictionary<string, OpenApiSecurityScheme>? securitySchemes)
-    {
-        var result = new Dictionary<string, RestApiSecurityScheme>();
-
-        if (securitySchemes is not null)
-        {
-            foreach (var item in securitySchemes)
-            {
-                result.Add(item.Key, CreateRestApiSecurityScheme(item.Value));
-            }
-        }
-
-        return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
     }
 
     /// <summary>
@@ -540,14 +531,17 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
         if (readResult.OpenApiDiagnostic.Errors.Any())
         {
-            var message = $"Parsing of '{readResult.OpenApiDocument.Info?.Title}' OpenAPI document complete with the following errors: {string.Join(";", readResult.OpenApiDiagnostic.Errors)}";
-
-            this._logger.LogWarning("{Message}", message);
+            var title = readResult.OpenApiDocument.Info?.Title;
+            var errors = string.Join(";", readResult.OpenApiDiagnostic.Errors);
 
             if (!ignoreNonCompliantErrors)
             {
-                throw new KernelException(message);
+                var exception = new KernelException($"Parsing of '{title}' OpenAPI document complete with the following errors: {errors}");
+                this._logger.LogError(exception, "Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
+                throw exception;
             }
+
+            this._logger.LogWarning("Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
         }
     }
 
