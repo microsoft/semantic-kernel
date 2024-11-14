@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 namespace Plugins;
 
 /// <summary>
-/// These samples different ways OpenAPI document can be transformed to change its various aspects before creating a plugin out of it.
+/// These samples show different ways OpenAPI document can be transformed to change its various aspects before creating a plugin out of it.
 /// The transformations can be useful if the original OpenAPI document can't be consumed as is.
 /// </summary>
 public sealed class OpenApiPlugin_Customization : BaseTest
@@ -35,7 +35,8 @@ public sealed class OpenApiPlugin_Customization : BaseTest
     }
 
     /// <summary>
-    /// This sample demonstrates how to provide arguments for parameters that have the same name - 'id' but represent different entities:
+    /// This sample demonstrates how to assign argument names to parameters and variables that have the same name.
+    /// For example, in this sample, there are multiple parameters named 'id' in the 'getProductFromCart' operation.
     ///   * Region of the API in the server variable.
     ///   * User ID in the path.
     ///   * Subscription ID in the query string.
@@ -46,13 +47,13 @@ public sealed class OpenApiPlugin_Customization : BaseTest
     {
         OpenApiDocumentParser parser = new();
 
-        using var sr = File.OpenText("Resources/Plugins/ProductsPlugin/openapi.json");
+        using StreamReader sr = File.OpenText("Resources/Plugins/ProductsPlugin/openapi.json");
 
         // Register the custom HTTP client with the stub handler
-        var executionParameters = new OpenApiFunctionExecutionParameters() { HttpClient = this._httpClient };
+        OpenApiFunctionExecutionParameters executionParameters = new() { HttpClient = this._httpClient };
 
         // Parse the OpenAPI document
-        var specification = await parser.ParseAsync(sr.BaseStream);
+        RestApiSpecification specification = await parser.ParseAsync(sr.BaseStream);
 
         // Get the 'getProductFromCart' operation
         RestApiOperation getProductFromCartOperation = specification.Operations.Single(o => o.Id == "getProductFromCart");
@@ -76,8 +77,9 @@ public sealed class OpenApiPlugin_Customization : BaseTest
         // Import the transformed OpenAPI plugin specification
         KernelPlugin plugin = this._kernel.ImportPluginFromOpenApi("Products_Plugin", specification, new OpenApiFunctionExecutionParameters(this._httpClient));
 
-        // Create arguments for the 'addProductToCart' operation
-        var arguments = new KernelArguments
+        // Create arguments for the 'addProductToCart' operation using the new argument names defined earlier.
+        // Internally these will be mapped to the correct entity when invoking the Open API endpoint.
+        KernelArguments arguments = new()
         {
             ["region"] = "en",
             ["subscriptionId"] = "subscription-12345",
