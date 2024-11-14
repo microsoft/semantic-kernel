@@ -147,7 +147,7 @@ public static class ApiManifestKernelExtensions
             if (server?.Url is not null)
             {
                 var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
-                var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements, logger);
+                var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
                     var operations = OpenApiDocumentParser.CreateRestApiOperations(filteredOpenApiDocument, path.Key, path.Value, null, logger);
