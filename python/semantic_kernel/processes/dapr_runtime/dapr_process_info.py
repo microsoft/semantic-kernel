@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import Literal
+
 from pydantic import Field
 
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
@@ -14,7 +16,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class DaprProcessInfo(DaprStepInfo):
     """A Dapr process info."""
 
-    steps: list[DaprStepInfo] = Field(default_factory=list)
+    type: Literal["DaprProcessInfo"] = Field("DaprProcessInfo")  # type: ignore
+    steps: list["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
     def to_kernel_process(self) -> KernelProcess:
         """Converts the Dapr process info to a kernel process."""

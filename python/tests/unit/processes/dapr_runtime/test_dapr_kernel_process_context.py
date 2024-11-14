@@ -53,7 +53,7 @@ async def test_start_with_event(process_context):
 
     dapr_process_info = DaprProcessInfo.from_kernel_process(context.process)
     expected_payload = {
-        "process_info": dapr_process_info.model_dump(),
+        "process_info": dapr_process_info.model_dump_json(),
         "parent_process_id": None,
     }
     mock_dapr_process.initialize_process.assert_awaited_once_with(expected_payload)

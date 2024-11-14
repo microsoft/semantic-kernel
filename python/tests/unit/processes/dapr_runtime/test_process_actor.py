@@ -51,11 +51,13 @@ def clean_structure(data):
 async def test_initialize_process(actor_context):
     input_data = {
         "process_info": {
+            "type": "DaprProcessInfo",
             "state": {"name": "Test Process", "id": "proc_123"},
             "steps": [
                 {
                     "state": {"name": "Step1", "id": "step_123"},
                     "inner_step_python_type": "SomeStepType",
+                    "type": "DaprStepInfo",
                 }
             ],
             "inner_step_python_type": "SomeProcessType",

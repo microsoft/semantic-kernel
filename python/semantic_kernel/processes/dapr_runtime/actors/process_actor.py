@@ -6,6 +6,7 @@ import json
 import logging
 import uuid
 from queue import Queue
+from typing import Any
 
 from dapr.actor import ActorId, ActorProxy
 from dapr.actor.runtime.context import ActorRuntimeContext
@@ -71,14 +72,26 @@ class ProcessActor(StepActor, ProcessInterface):
             raise KernelException(error_message)
         return self.process.state.name
 
-    async def initialize_process(self, input: dict) -> None:
+    async def initialize_process(self, input: dict | str) -> None:
         """Initializes the process."""
-        process_info_dict = input.get("process_info")
+        if isinstance(input, str):
+            input = json.loads(input)
 
-        if process_info_dict is None:
+        if not isinstance(input, dict):
+            raise TypeError("input must be a JSON string or a dictionary")
+
+        process_info_data = input.get("process_info")
+        parent_process_id = input.get("parent_process_id")
+
+        if process_info_data is None:
             raise ValueError("The process info is not defined.")
 
-        parent_process_id = input.get("parent_process_id")
+        if isinstance(process_info_data, str):
+            process_info_dict = json.loads(process_info_data)
+        elif isinstance(process_info_data, dict):
+            process_info_dict = process_info_data
+        else:
+            raise TypeError("process_info must be a JSON string or a dictionary")
 
         # Reconstruct the DaprProcessInfo from the dictionary
         dapr_process_info = DaprProcessInfo.model_validate(process_info_dict)
@@ -141,9 +154,8 @@ class ProcessActor(StepActor, ProcessInterface):
                 try:
                     await self.process_task
                 except asyncio.CancelledError:
-                    print("Process task was cancelled")
+                    logger.error("Process task was cancelled")
         except Exception as ex:
-            print(ex)
             logger.error(f"Error in run_once: {ex}")
             raise ex
 
@@ -159,6 +171,11 @@ class ProcessActor(StepActor, ProcessInterface):
 
     async def initialize_step(self):
         """Initializes the step."""
+        # The process does not need any further initialization
+        pass
+
+    async def activate_step(self):
+        """Overrides the step's activate_step method."""
         # The process does not need any further initialization
         pass
 
@@ -251,8 +268,11 @@ class ProcessActor(StepActor, ProcessInterface):
                     actor_id=scoped_process_id,
                     actor_interface=ProcessInterface,
                 )
-                payload = {"process_info": step.model_dump(), "parent_process_id": self.id.id}
-                await process_actor.initialize_process(payload)
+                process_payload: dict[str, Any] = {
+                    "process_info": step.model_dump_json(),
+                    "parent_process_id": self.id.id,
+                }
+                await process_actor.initialize_process(process_payload)
                 step_actor = ActorProxy.create(  # type: ignore
                     actor_type=f"{ProcessActor.__name__}",
                     actor_id=scoped_process_id,
@@ -263,17 +283,18 @@ class ProcessActor(StepActor, ProcessInterface):
                 assert step.state and step.state.id is not None  # nosec
 
                 scoped_step_id = self._scoped_actor_id(ActorId(step.state.id))
-                step_actor = ActorProxy.create(  # type: ignore
+                step_actor: StepInterface = ActorProxy.create(  # type: ignore
                     actor_type=f"{StepActor.__name__}",
                     actor_id=scoped_step_id,
                     actor_interface=StepInterface,
                 )
+                assert step_actor is not None  # nosec
                 step_dict = step.model_dump()
-                payload = {"step_info": step_dict, "parent_process_id": self.id.id}
+                step_payload: dict[str, Any] = {"step_info": step_dict, "parent_process_id": self.id.id}
                 try:
-                    await step_actor.initialize_step(json.dumps(payload))
+                    await step_actor.initialize_step(json.dumps(step_payload))
                 except Exception as ex:
-                    print(ex)
+                    logger.error(f"Error initializing ProcessActor step: {ex}")
                     raise ex
 
             # Add the local step to the list of steps
@@ -316,8 +337,7 @@ class ProcessActor(StepActor, ProcessInterface):
                 await self.send_outgoing_public_events()
 
         except Exception as ex:
-            print(f"An error occurred while running the process: {ex}")
-            # Optionally handle the exception
+            logger.error(f"An error occurred while running the process: {ex}")
             raise
 
     def _scoped_event(self, dapr_event: ProcessEvent):

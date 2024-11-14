@@ -16,7 +16,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class DaprKernelProcessContext:
     """A Dapr kernel process context."""
 
-    dapr_process: ActorProxy
+    dapr_process: ProcessInterface
     process: KernelProcess
 
     def __init__(self, process: KernelProcess):
@@ -28,7 +28,7 @@ class DaprKernelProcessContext:
 
         self.process = process
         process_id = ActorId(process.state.id)
-        self.dapr_process = ActorProxy.create(
+        self.dapr_process = ActorProxy.create(  # type: ignore
             actor_type=f"{ProcessActor.__name__}",
             actor_id=process_id,
             actor_interface=ProcessInterface,
@@ -37,7 +37,7 @@ class DaprKernelProcessContext:
     async def start_with_event(self, initial_event: KernelProcessEvent) -> None:
         """Starts the process with the provided initial event."""
         dapr_process = DaprProcessInfo.from_kernel_process(self.process)
-        dapr_process_dict = dapr_process.model_dump()
+        dapr_process_dict = dapr_process.model_dump_json()
 
         payload = {
             "process_info": dapr_process_dict,

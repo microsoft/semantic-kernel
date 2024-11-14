@@ -29,8 +29,3 @@ class ProcessEvent(KernelBaseModel):
     def visibility(self) -> "KernelProcessEventVisibility":
         """The visibility of the event."""
         return self.inner_event.visibility
-
-    @classmethod
-    def from_kernel_process_event(cls, kernel_process_event: KernelProcessEvent, namespace: str) -> "ProcessEvent":
-        """Creates a new ProcessEvent from a KernelProcessEvent."""
-        return cls(namespace=namespace, inner_event=kernel_process_event)

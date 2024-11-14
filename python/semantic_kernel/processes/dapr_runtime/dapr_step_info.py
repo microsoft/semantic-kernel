@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import importlib
+from typing import Literal
 
 from pydantic import Field
 
@@ -17,6 +18,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
+    type: Literal["DaprStepInfo"] = Field("DaprStepInfo")
     inner_step_python_type: str
     state: KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)

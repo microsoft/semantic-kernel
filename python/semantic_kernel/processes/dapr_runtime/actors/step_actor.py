@@ -85,15 +85,15 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if input is None:
             raise ValueError("step_info must not be None")
 
+        if self.initialize_task:
+            return
+
         try:
             input_dict: dict[str, Any] = json.loads(input)
         except (json.JSONDecodeError, TypeError):
             raise ValueError("Input must be a valid JSON string representing a dictionary")
 
         step_info = DaprStepInfo.model_validate(input_dict.get("step_info"))
-
-        if self.initialize_task:
-            return
 
         await self._int_initialize_step(step_info, input_dict.get("parent_process_id"))
 
@@ -358,7 +358,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if self.event_namespace is None:
             raise ValueError("The event namespace must be initialized before emitting an event.")
 
-        await self.emit_process_event(ProcessEvent.from_kernel_process_event(process_event, self.event_namespace))
+        await self.emit_process_event(ProcessEvent(inner_event=process_event, namespace=self.event_namespace))
 
     async def emit_process_event(self, dapr_event: ProcessEvent):
         """Emits an event from the step."""
@@ -408,7 +408,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         try:
             has_value, existing_step_info = await self._state_manager.try_get_state(ActorStateKeys.StepInfoState.value)
         except Exception as ex:
-            print(f"Error in Step {self.name}: {ex!s}")
+            logger.error(f"Error in Step {self.name}: {ex!s}")
             raise ex
         if has_value:
             parent_process_id = await self._state_manager.get_state(ActorStateKeys.StepParentProcessId.value)

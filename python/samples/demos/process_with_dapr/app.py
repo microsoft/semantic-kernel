@@ -17,16 +17,20 @@ from pydantic import Field
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.processes.dapr_runtime.actors.event_buffer_actor import EventBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.external_event_buffer_actor import ExternalEventBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.message_buffer_actor import MessageBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
-from semantic_kernel.processes.dapr_runtime.actors.step_actor import StepActor
-from semantic_kernel.processes.dapr_runtime.dapr_kernel_process import start
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.process_builder import ProcessBuilder
+from semantic_kernel.processes import ProcessBuilder
+from semantic_kernel.processes.dapr_runtime import (
+    EventBufferActor,
+    ExternalEventBufferActor,
+    MessageBufferActor,
+    ProcessActor,
+    StepActor,
+    start,
+)
+from semantic_kernel.processes.kernel_process import (
+    KernelProcessStep,
+    KernelProcessStepContext,
+    KernelProcessStepState,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
@@ -133,7 +137,7 @@ class CStep(KernelProcessStep[CStepState]):
         """Activates the step and sets the state."""
         step_state = CStepState.model_validate(state.state)
         print(f"##### CStep activated with Cycle = '{step_state.current_cycle}'.")
-        self.state = state.state
+        self.state = step_state
 
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext, astepdata: str, bstepdata: str):
@@ -144,9 +148,6 @@ class CStep(KernelProcessStep[CStepState]):
             return
         print(f"##### CStep run cycle {self.state.current_cycle}")
         await context.emit_event(process_event=CommonEvents.CStepDone.value)
-
-
-kernel = Kernel()
 
 
 def get_process() -> "KernelProcess":
@@ -182,8 +183,12 @@ def get_process() -> "KernelProcess":
 async def start_process(process_id: str):
     try:
         process = get_process()
+
         _ = await start(
-            process=process, kernel=kernel, initial_event=CommonEvents.StartProcess.value, process_id=process_id
+            process=process,
+            kernel=kernel,
+            initial_event=CommonEvents.StartProcess.value,
+            process_id=process_id,
         )
         return JSONResponse(content={"processId": process_id}, status_code=200)
     except Exception as e:
