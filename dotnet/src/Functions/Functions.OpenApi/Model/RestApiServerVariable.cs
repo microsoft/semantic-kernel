@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,6 +13,21 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 [Experimental("SKEXP0040")]
 public sealed class RestApiServerVariable
 {
+    /// <summary>
+    /// The variable argument name.
+    /// If provided, the argument name will be used to search for the corresponding variable value in function arguments.
+    /// If no property value is found using the argument name, the original name represented by the  <see cref="RestApiServer.Variables"/> dictionary key will be used for the search instead.
+    /// </summary>
+    public string? ArgumentName
+    {
+        get => this._argumentName;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._argumentName = value;
+        }
+    }
+
     /// <summary>
     /// An optional description for the server variable. CommonMark syntax MAY be used for rich text representation.
     /// </summary>
@@ -49,4 +65,32 @@ public sealed class RestApiServerVariable
     {
         return this.Enum?.Contains(value!) ?? true;
     }
+
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        if (this._isFrozen)
+        {
+            return;
+        }
+
+        this._isFrozen = true;
+    }
+
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiServerVariable"/> is frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    private void ThrowIfFrozen()
+    {
+        if (this._isFrozen)
+        {
+            throw new InvalidOperationException("RestApiOperationServerVariable is frozen and cannot be modified.");
+        }
+    }
+
+    private string? _argumentName;
+    private bool _isFrozen = false;
 }

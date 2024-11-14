@@ -38,7 +38,7 @@ public class RepairServiceTests
         Assert.Equal("New repair created", result.ToString());
 
         // List All Repairs
-        result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
 
         Assert.NotNull(result);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
@@ -95,7 +95,7 @@ public class RepairServiceTests
         Assert.Equal("New repair created", result.ToString());
 
         // List All Repairs
-        result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
 
         Assert.NotNull(result);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
@@ -178,15 +178,10 @@ public class RepairServiceTests
             stream,
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-        var arguments = new KernelArguments
-        {
-            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
-        };
-
         var id = 99999;
 
         // Update Repair
-        arguments = new KernelArguments
+        var arguments = new KernelArguments
         {
             ["payload"] = $"{{ \"id\": {id}, \"assignedTo\": \"Karin Blair\", \"date\": \"2024-04-16\", \"image\": \"https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg\" }}"
         };

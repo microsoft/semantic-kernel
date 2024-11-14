@@ -25,6 +25,7 @@
     </PackageReference>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
@@ -126,5 +127,10 @@
   <ItemGroup>
     <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
     <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

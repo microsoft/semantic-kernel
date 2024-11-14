@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,18 +19,18 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Provides static factory methods for creating OpenAPI KernelPlugin implementations.
+/// Provides static factory methods for creating KernelPlugins from OpenAPI specifications.
 /// </summary>
 public static partial class OpenApiKernelPluginFactory
 {
     /// <summary>
-    /// Creates a plugin from an OpenAPI specification.
+    /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
-    /// <param name="pluginName">Plugin name.</param>
-    /// <param name="filePath">The file path to the OpenAPI Plugin.</param>
-    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="pluginName">The plugin name.</param>
+    /// <param name="filePath">The file path to the OpenAPI specification.</param>
+    /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         string filePath,
@@ -56,13 +57,13 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specification.
+    /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
-    /// <param name="pluginName">Plugin name.</param>
-    /// <param name="uri">A local or remote URI referencing the OpenAPI Plugin.</param>
-    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="pluginName">The plugin name.</param>
+    /// <param name="uri">A URI referencing the OpenAPI specification.</param>
+    /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Uri uri,
@@ -93,13 +94,13 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specification.
+    /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
-    /// <param name="pluginName">Plugin name.</param>
-    /// <param name="stream">A stream representing the OpenAPI Plugin.</param>
-    /// <param name="executionParameters">Plugin execution parameters.</param>
+    /// <param name="pluginName">The plugin name.</param>
+    /// <param name="stream">A stream representing the OpenAPI specification.</param>
+    /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Stream stream,
@@ -123,6 +124,32 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
+    /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
+    /// </summary>
+    /// <param name="pluginName">The plugin name.</param>
+    /// <param name="specification">The specification model.</param>
+    /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
+    /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
+    [Experimental("SKEXP0040")]
+    public static KernelPlugin CreateFromOpenApi(
+        string pluginName,
+        RestApiSpecification specification,
+        OpenApiFunctionExecutionParameters? executionParameters = null)
+    {
+        Verify.ValidPluginName(pluginName);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
+#pragma warning restore CA2000
+
+        return CreateOpenApiPlugin(
+            pluginName: pluginName,
+            executionParameters: executionParameters,
+            httpClient: httpClient,
+            specification: specification);
+    }
+
+    /// <summary>
     /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     internal static async Task<KernelPlugin> CreateOpenApiPluginAsync(
@@ -141,10 +168,38 @@ public static partial class OpenApiKernelPluginFactory
         var parser = new OpenApiDocumentParser(loggerFactory);
 
         var restApi = await parser.ParseAsync(
-            documentStream,
-            executionParameters?.IgnoreNonCompliantErrors ?? false,
-            executionParameters?.OperationsToExclude,
-            cancellationToken).ConfigureAwait(false);
+            stream: documentStream,
+            options: new OpenApiDocumentParserOptions
+            {
+                IgnoreNonCompliantErrors = executionParameters?.IgnoreNonCompliantErrors ?? false,
+                OperationSelectionPredicate = (context) =>
+                {
+                    return !executionParameters?.OperationsToExclude.Contains(context.Id ?? string.Empty) ?? true;
+                }
+            },
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return CreateOpenApiPlugin(
+            pluginName: pluginName,
+            executionParameters: executionParameters,
+            httpClient: httpClient,
+            specification: restApi,
+            documentUri: documentUri,
+            loggerFactory: loggerFactory);
+    }
+
+    /// <summary>
+    /// Creates a plugin from an OpenAPI specification.
+    /// </summary>
+    internal static KernelPlugin CreateOpenApiPlugin(
+        string pluginName,
+        OpenApiFunctionExecutionParameters? executionParameters,
+        HttpClient httpClient,
+        RestApiSpecification specification,
+        Uri? documentUri = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        loggerFactory ??= NullLoggerFactory.Instance;
 
         var runner = new RestApiOperationRunner(
             httpClient,
@@ -156,12 +211,13 @@ public static partial class OpenApiKernelPluginFactory
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
-        foreach (var operation in restApi.Operations)
+        foreach (var operation in specification.Operations)
         {
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, restApi.Info, restApi.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
+                functions.Add(CreateRestApiFunction(pluginName, runner, specification.Info, specification.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
+                operation.Freeze();
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -171,7 +227,7 @@ public static partial class OpenApiKernelPluginFactory
             }
         }
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, restApi.Info.Description, functions);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, specification.Info.Description, functions);
     }
 
     /// <summary>
@@ -207,44 +263,16 @@ public static partial class OpenApiKernelPluginFactory
         {
             try
             {
-                // Extract function arguments from context
-                var arguments = new KernelArguments();
-                foreach (var parameter in restOperationParameters)
-                {
-                    // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) &&
-                        variables.TryGetValue(parameter.AlternativeName!, out object? value) &&
-                        value is not null)
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    // A try to resolve argument by original parameter name
-                    if (variables.TryGetValue(parameter.Name, out value) &&
-                        value is not null)
-                    {
-                        arguments.Add(parameter.Name, value);
-                        continue;
-                    }
-
-                    if (parameter.IsRequired)
-                    {
-                        throw new KeyNotFoundException(
-                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{pluginName}.{operation.Id}' Rest function.");
-                    }
-                }
-
                 var options = new RestApiOperationRunOptions
                 {
                     Kernel = kernel,
                     KernelFunction = function,
-                    KernelArguments = arguments,
+                    KernelArguments = variables,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
+                return await runner.RunAsync(operation, variables, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -254,7 +282,7 @@ public static partial class OpenApiKernelPluginFactory
         }
 
         var parameters = restOperationParameters
-            .Select(p => new KernelParameterMetadata(p.AlternativeName ?? p.Name)
+            .Select(p => new KernelParameterMetadata(p.ArgumentName ?? p.Name)
             {
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,

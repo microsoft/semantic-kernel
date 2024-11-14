@@ -18,7 +18,7 @@ python -m pip install --upgrade semantic-kernel[all]
 ## OpenAI / Azure OpenAI API keys
 
 Make sure you have an
-[OpenAI API Key](https://platform.openai.com) or
+[OpenAI API Key](https://platform.openai.com/) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 There are two methods to manage keys, secrets, and endpoints:
