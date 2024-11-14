@@ -60,7 +60,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0040 | Markdown functions |
 | SKEXP0040 | OpenAPI functions |
 | SKEXP0040 | OpenAPI function extensions - API Manifest |
-| SKEXP0040 | OpenAPI function extensions - Microsoft Manifest |
+| SKEXP0040 | OpenAPI function extensions - Copilot Agent Plugin |
 | SKEXP0040 | Prompty Format support |
 | | | | | | | |
 | SKEXP0050 | Core plugins |

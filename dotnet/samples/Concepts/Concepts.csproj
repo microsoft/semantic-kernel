@@ -106,10 +106,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Plugins\MicrosoftManifestPlugins\**\*.json">
+    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\Plugins\MicrosoftManifestPlugins\**\*.yml">
+    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">

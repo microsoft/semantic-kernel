@@ -5,9 +5,9 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>
-/// Microsoft manifest plugin parameters.
+/// Copilot Agent Plugin plugin parameters.
 /// </summary>
-public sealed class MicrosoftManifestPluginParameters
+public sealed class CopilotAgentPluginParameters
 {
     /// <summary>
     /// Gets the HTTP client to be used in plugin initialization phase.

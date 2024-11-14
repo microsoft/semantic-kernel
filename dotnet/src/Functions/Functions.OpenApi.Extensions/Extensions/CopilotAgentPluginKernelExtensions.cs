@@ -21,43 +21,43 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
 /// </summary>
-public static class MicrosoftManifestKernelExtensions
+public static class CopilotAgentPluginKernelExtensions
 {
     /// <summary>
-    /// Imports a plugin from an Microsoft manifest asynchronously.
+    /// Imports a plugin from an Copilot Agent Plugin asynchronously.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
-    /// <param name="filePath">The file path of the Microsoft manifest.</param>
+    /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
-    public static async Task<KernelPlugin> ImportPluginFromMicrosoftManifestAsync(
+    public static async Task<KernelPlugin> ImportPluginFromCopilotAgentPluginAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        MicrosoftManifestPluginParameters? pluginParameters = null,
+        CopilotAgentPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromMicrosoftManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
 
     /// <summary>
-    /// Creates a kernel plugin from an Microsoft manifest file asynchronously.
+    /// Creates a kernel plugin from an Copilot Agent Plugin file asynchronously.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
-    /// <param name="filePath">The file path of the Microsoft manifest.</param>
+    /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
-    public static async Task<KernelPlugin> CreatePluginFromMicrosoftManifestAsync(
+    public static async Task<KernelPlugin> CreatePluginFromCopilotAgentPluginAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        MicrosoftManifestPluginParameters? pluginParameters = null,
+        CopilotAgentPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -69,15 +69,15 @@ public static class MicrosoftManifestKernelExtensions
 
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"MicrosoftManifest file not found: {filePath}");
+            throw new FileNotFoundException($"CopilotAgent file not found: {filePath}");
         }
 
         var loggerFactory = kernel.LoggerFactory;
-        var logger = loggerFactory.CreateLogger(typeof(MicrosoftManifestKernelExtensions)) ?? NullLogger.Instance;
-        using var microsoftManifestFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
+        var logger = loggerFactory.CreateLogger(typeof(CopilotAgentPluginKernelExtensions)) ?? NullLogger.Instance;
+        using var CopilotAgentFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
             logger);
 
-        var results = await PluginManifestDocument.LoadAsync(microsoftManifestFileJsonContents, new ReaderOptions
+        var results = await PluginManifestDocument.LoadAsync(CopilotAgentFileJsonContents, new ReaderOptions
         {
             ValidationRules = new() // Disable validation rules
         }).ConfigureAwait(false);

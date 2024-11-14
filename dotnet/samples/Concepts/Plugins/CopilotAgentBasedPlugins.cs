@@ -8,13 +8,13 @@ using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Plugins;
 /// <summary>
-/// These examples demonstrate how to use MicrosoftManifest plugins to call Microsoft Graph and NASA APIs.
-/// Microsoft Manifest plugins are created from the OpenAPI document and the manifest file.
+/// These examples demonstrate how to use CopilotAgent plugins to call Microsoft Graph and NASA APIs.
+/// Copilot Agent Plugin plugins are created from the OpenAPI document and the manifest file.
 /// The manifest file contains the API dependencies and their execution parameters.
 /// The manifest file also contains the authentication information for the APIs, however this is not used by the extension method and MUST be setup separately at the moment, which the example demonstrates.
 ///
 /// Important stages being demonstrated:
-/// 1. Load MicrosoftManifest plugins
+/// 1. Load CopilotAgent plugins
 /// 2. Configure authentication for the APIs
 /// 3. Call functions from the loaded plugins
 ///
@@ -50,7 +50,7 @@ namespace Plugins;
 ///
 /// </summary>
 /// <param name="output">The output helper to use to the test can emit status information</param>
-public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)
+public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     public static readonly IEnumerable<object[]> s_parameters =
     [
@@ -67,11 +67,11 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
     ];
     [Theory, MemberData(nameof(s_parameters))]
-    public async Task RunMicrosoftManifestPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public async Task RunCopilotAgentPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
         var kernel = new Kernel();
-        await AddMicrosoftManifestPluginsAsync(kernel, pluginsToLoad);
+        await AddCopilotAgentPluginsAsync(kernel, pluginsToLoad);
 
         var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
         Console.WriteLine("--------------------");
@@ -82,12 +82,12 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
     private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         Console.WriteLine();
-        Console.WriteLine("======== [MicrosoftManifest Plugins Sample] ========");
+        Console.WriteLine("======== [CopilotAgent Plugins Sample] ========");
         Console.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
         Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         Console.WriteLine();
     }
-    private async Task AddMicrosoftManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
+    private async Task AddCopilotAgentPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
 #pragma warning disable SKEXP0050
         if (TestConfiguration.MSGraph.Scopes is null)
@@ -123,7 +123,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 request.RequestUri = uriBuilder.Uri;
             });
 
-        var apiManifestPluginParameters = new MicrosoftManifestPluginParameters
+        var apiManifestPluginParameters = new CopilotAgentPluginParameters
         {
             FunctionExecutionParameters = new()
             {
@@ -131,14 +131,14 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 { "https://api.nasa.gov/planetary", nasaOpenApiFunctionExecutionParameters }
             }
         };
-        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MicrosoftManifestPlugins");
+        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "CopilotAgentPlugins");
 
         foreach (var pluginName in pluginNames)
         {
             try
             {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                await kernel.ImportPluginFromMicrosoftManifestAsync(
+                await kernel.ImportPluginFromCopilotAgentPluginAsync(
                     pluginName,
                     Path.Combine(manifestLookupDirectory, pluginName, $"{pluginName[..^6].ToLowerInvariant()}-apiplugin.json"),
                     apiManifestPluginParameters)
