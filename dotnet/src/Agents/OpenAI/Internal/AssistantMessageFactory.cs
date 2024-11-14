@@ -60,7 +60,7 @@ internal static class AssistantMessageFactory
             {
                 yield return MessageContent.FromImageFileId(fileContent.FileId);
             }
-            if (message.Items.Count > 1 && content is FunctionResultContent resultContent && resultContent.Result != null)
+            if (message.Items.Count == 1 && content is FunctionResultContent resultContent && resultContent.Result != null)
             {
                 yield return MessageContent.FromText(FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result));
             }
