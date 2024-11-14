@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -58,6 +59,10 @@ internal static class AssistantMessageFactory
             else if (content is FileReferenceContent fileContent)
             {
                 yield return MessageContent.FromImageFileId(fileContent.FileId);
+            }
+            if (message.Items.Count > 1 && content is FunctionResultContent resultContent && resultContent.Result != null)
+            {
+                yield return MessageContent.FromText(FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result));
             }
         }
     }
