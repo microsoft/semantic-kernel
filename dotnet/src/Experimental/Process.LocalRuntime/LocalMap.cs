@@ -38,8 +38,8 @@ internal sealed class LocalMap : LocalStep
         IEnumerable values = message.GetMapInput(this._logger);
 
         // Access the map operation
-        KernelProcess mapOperation = this.CreateProxyOperation(message);
-        string operationStartId = this.DefineOperationEventId(message);
+        KernelProcess mapOperation = this._map.CreateProxyOperation(message);
+        string operationStartId = this._map.DefineOperationEventId(message);
 
         // Prepare state for map execution
         int index = 0;
@@ -55,7 +55,6 @@ internal sealed class LocalMap : LocalStep
                 KernelProcess process = mapOperation.CloneProcess(this._logger);
                 MapOperationContext context = new(this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                //LocalKernelProcessContext processContext = new(process, this._kernel, this.ParentProcessId, context.Filter);
                 LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);
                 Task processTask =
                     processContext.StartWithEventAsync(
@@ -114,40 +113,6 @@ internal sealed class LocalMap : LocalStep
         // The map does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
-    }
-
-    private KernelProcess CreateProxyOperation(ProcessMessage message)
-    {
-        if (this._map.Operation is KernelProcess kernelProcess)
-        {
-            return kernelProcess;
-        }
-
-        string? parameterName = message.Values.SingleOrDefault(kvp => kvp.Value == message.TargetEventData).Key;
-        string proxyId = Guid.NewGuid().ToString("N");
-        return
-            new KernelProcess(
-                new KernelProcessState($"Map{this._map.Operation.State.Name}", this._map.Operation.State.Version, proxyId),
-                [this._map.Operation],
-                new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(this._map.Operation.State.Id!, message.FunctionName, parameterName))] } });
-    }
-
-    private string DefineOperationEventId(ProcessMessage message)
-    {
-        if (this._map.Operation is KernelProcess kernelProcess)
-        {
-            foreach (var edge in kernelProcess.Edges)
-            {
-                if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ???
-                {
-                    return edge.Key;
-                }
-            }
-
-            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {this.Name}/{this.Id}.");
-        }
-
-        return ProcessConstants.MapEventId;
     }
 
     private sealed record MapOperationContext(in HashSet<string> EventTargets, in IDictionary<string, Type> CapturedEvents)

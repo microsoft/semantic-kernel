@@ -224,13 +224,10 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
         ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
+
         process
             .OnInputEvent("Start")
-            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep, ComputeStep.ComputeFunction));
-
-        //process // %%% INVALID
-        //    .OnInputEvent("Start")
-        //    .SendEventTo(mapProcess.WhereInputEventIs("StartMap"));
+            .SendEventTo(mapStep.WhereInputEventIs("Anything"));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -307,7 +304,7 @@ public class LocalMapTests
         ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
         process
             .OnInputEvent("Start")
-            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep, ComputeStep.ComputeFunction));
+            .SendEventTo(mapStep.WhereInputEventIs("Anything"));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -354,7 +351,7 @@ public class LocalMapTests
 
         process
             .OnInputEvent("Start")
-            .SendEventTo(new ProcessFunctionTargetBuilder(mapStepOuter));
+            .SendEventTo(mapStepOuter.WhereInputEventIs("Anything"));
 
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();

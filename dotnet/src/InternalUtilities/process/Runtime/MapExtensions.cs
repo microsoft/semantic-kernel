@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Process.Internal;
 
@@ -22,5 +23,39 @@ internal static class MapExtensions
         }
 
         return (IEnumerable)message.TargetEventData;
+    }
+
+    public static KernelProcess CreateProxyOperation(this KernelProcessMap map, ProcessMessage message)
+    {
+        if (map.Operation is KernelProcess kernelProcess)
+        {
+            return kernelProcess;
+        }
+
+        string? parameterName = message.Values.SingleOrDefault(kvp => kvp.Value == message.TargetEventData).Key;
+        string proxyId = Guid.NewGuid().ToString("N");
+        return
+            new KernelProcess(
+                new KernelProcessState($"Map{map.Operation.State.Name}", map.Operation.State.Version, proxyId),
+                [map.Operation],
+                new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName))] } });
+    }
+
+    public static string DefineOperationEventId(this KernelProcessMap map, ProcessMessage message)
+    {
+        if (map.Operation is KernelProcess kernelProcess)
+        {
+            foreach (var edge in kernelProcess.Edges)
+            {
+                if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ???
+                {
+                    return edge.Key;
+                }
+            }
+
+            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {map.State.Name}/{map.State.Id}.");
+        }
+
+        return ProcessConstants.MapEventId;
     }
 }
