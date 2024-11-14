@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Models;
 using Step03.Processes;
 using Utilities;
@@ -36,6 +37,12 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
     public async Task UsePrepareFishSandwichProcessAsync()
     {
         var process = FishSandwichProcess.CreateProcess();
+
+        string mermaidGraph = process.ToMermaid(2);
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine(mermaidGraph);
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+
         await UsePrepareSpecificProductAsync(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
     }
 

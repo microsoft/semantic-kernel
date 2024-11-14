@@ -15,26 +15,27 @@ public static class ProcessVisualizationExtensions
     /// Generates a Mermaid diagram from a process builder.
     /// </summary>
     /// <param name="processBuilder"></param>
+    /// <param name="maxLevel"></param>
     /// <returns></returns>
-    public static string ToMermaid(this ProcessBuilder processBuilder)
+    public static string ToMermaid(this ProcessBuilder processBuilder, int maxLevel = 2)
     {
         var process = processBuilder.Build();
-        return process.ToMermaid();
+        return process.ToMermaid(maxLevel);
     }
 
     /// <summary>
     /// Generates a Mermaid diagram from a kernel process.
     /// </summary>
     /// <param name="process"></param>
+    /// <param name="maxLevel"></param>
     /// <returns></returns>
-    public static string ToMermaid(this KernelProcess process)
+    public static string ToMermaid(this KernelProcess process, int maxLevel = 2)
     {
         StringBuilder sb = new();
         sb.AppendLine("flowchart LR");
-        //sb.AppendLine("graph LR");
 
         // Generate the Mermaid flowchart content with indentation
-        string flowchartContent = GenerateMermaidFlowchart(process);
+        string flowchartContent = RenderProcess(process, 1, isSubProcess: false, maxLevel);
 
         // Append the formatted content to the main StringBuilder
         sb.Append(flowchartContent);
@@ -43,14 +44,17 @@ public static class ProcessVisualizationExtensions
     }
 
     /// <summary>
-    /// Generates the Mermaid graph for a given process.
+    /// Renders a process and its nested processes recursively as a Mermaid flowchart.
     /// </summary>
-    /// <param name="process"></param>
-    /// <returns></returns>
-    private static string GenerateMermaidFlowchart(KernelProcess process)
+    /// <param name="process">The process to render.</param>
+    /// <param name="level">The indentation level for nested processes.</param>
+    /// <param name="isSubProcess">Indicates if the current process is a sub-process.</param>
+    /// <param name="maxLevel"></param>
+    /// <returns>A string representation of the process in Mermaid syntax.</returns>
+    private static string RenderProcess(KernelProcess process, int level, bool isSubProcess, int maxLevel = 2)
     {
         StringBuilder sb = new();
-        string indentation = new(' ', 4);
+        string indentation = new(' ', 4 * level);
 
         // Dictionary to map step IDs to step names
         var stepNames = process.Steps
@@ -58,28 +62,13 @@ public static class ProcessVisualizationExtensions
             .ToDictionary(
                 step => step.State.Id!,
                 step => step.State.Name!
-                );
+            );
 
-        // Add Start and End nodes with proper Mermaid styling
-        sb.AppendLine($"{indentation}Start[Start]");
-        sb.AppendLine($"{indentation}End[End]");
-
-        // Handle all edges without a predefined "Start"
-        foreach (var kvp in process.Edges)
+        // Add Start and End nodes only if this is not a sub-process
+        if (!isSubProcess)
         {
-            var stepId = kvp.Key;
-            var edges = kvp.Value;
-
-            foreach (var edge in edges)
-            {
-                string targetStepName = stepNames[edge.OutputTarget.StepId];
-
-                // Link edges without a specific preceding step to the Start node
-                if (!process.Steps.Any(s => s.Edges.ContainsKey(stepId)))
-                {
-                    sb.AppendLine($"{indentation}Start[Start] --> {targetStepName}[{targetStepName}]");
-                }
-            }
+            sb.AppendLine($"{indentation}Start[\"Start\"]");
+            sb.AppendLine($"{indentation}End[\"End\"]");
         }
 
         // Process each step
@@ -87,6 +76,29 @@ public static class ProcessVisualizationExtensions
         {
             var stepId = step.State.Id;
             var stepName = step.State.Name;
+
+            // Check if the step is a nested process (sub-process)
+            if (step is KernelProcess nestedProcess && level < maxLevel)
+            {
+                sb.AppendLine($"{indentation}subgraph {stepName.Replace(" ", "")}[\"{stepName}\"]");
+                sb.AppendLine($"{indentation}    direction LR");
+
+                // Render the nested process content without its own Start/End nodes
+                string nestedFlowchart = RenderProcess(nestedProcess, level + 1, isSubProcess: true, maxLevel);
+
+                sb.Append(nestedFlowchart);
+                sb.AppendLine($"{indentation}end");
+            }
+            else if (step is KernelProcess nestedProcess2 && level >= maxLevel)
+            {
+                // Render a subprocess step
+                sb.AppendLine($"{indentation}{stepName}[[\"{stepName}\"]]");
+            }
+            else
+            {
+                // Render the regular step
+                sb.AppendLine($"{indentation}{stepName}[\"{stepName}\"]");
+            }
 
             // Handle edges from this step
             if (step.Edges != null)
@@ -96,29 +108,50 @@ public static class ProcessVisualizationExtensions
                     var eventId = kvp.Key;
                     var stepEdges = kvp.Value;
 
+                    // Skip drawing edges that point to a nested process as an entry point
+                    if (stepNames.ContainsKey(eventId) && process.Steps.Any(s => s.State.Name == eventId && s is KernelProcess))
+                    {
+                        continue;
+                    }
+
                     foreach (var edge in stepEdges)
                     {
-                        string source = $"{stepName}[{stepName}]";
+                        string source = $"{stepName}[\"{stepName}\"]";
                         string target;
 
                         // Check if the target step is the end node by function name
-                        if (edge.OutputTarget.FunctionName.Equals(
-                            "end",
-                            StringComparison.OrdinalIgnoreCase))
+                        if (edge.OutputTarget.FunctionName.Equals("end", StringComparison.OrdinalIgnoreCase) && !isSubProcess)
                         {
-                            target = "End[End]";
+                            target = "End[\"End\"]";
+                        }
+                        else if (stepNames.TryGetValue(edge.OutputTarget.StepId, out string? targetStepName))
+                        {
+                            target = $"{targetStepName}[\"{targetStepName}\"]";
                         }
                         else
                         {
-                            string targetStepName = stepNames[edge.OutputTarget.StepId];
-                            target = $"{targetStepName}[{targetStepName}]";
+                            // Handle cases where the target step is not in the current dictionary, possibly a nested step or placeholder
+                            // As we have events from the step that, when it is a subprocess, that go to a step in the subprocess
+                            // Those are triggered by events and do not have an origin step, also they are not connected to the Start node
+                            // So we need to handle them separately - we ignore them for now
+                            continue;
                         }
 
-                        // Append the connection without showing IDs
+                        // Append the connection
                         sb.AppendLine($"{indentation}{source} --> {target}");
                     }
                 }
             }
+        }
+
+        // Connect Start to the first step and the last step to End (only for the main process)
+        if (!isSubProcess && process.Steps.Count > 0)
+        {
+            var firstStepName = process.Steps.First().State.Name;
+            var lastStepName = process.Steps.Last().State.Name;
+
+            sb.AppendLine($"{indentation}Start --> {firstStepName}[\"{firstStepName}\"]");
+            sb.AppendLine($"{indentation}{lastStepName}[\"{lastStepName}\"] --> End");
         }
 
         return sb.ToString();
