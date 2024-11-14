@@ -1,18 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from azure.ai.inference.aio import ChatCompletionsClient
-from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 
 from samples.demos.telemetry.demo_plugins import LocationPlugin, WeatherPlugin
 from samples.demos.telemetry.repo_utils import get_sample_plugin_path
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -27,22 +21,13 @@ def set_up_kernel() -> Kernel:
 
     # All built-in AI services are instrumented with telemetry.
     # Select any AI service to see the telemetry in action.
-    # kernel.add_service(OpenAIChatCompletion(service_id="open_ai"))
-    azure_openai_settings = AzureOpenAISettings.create()
-    deployment_name = azure_openai_settings.chat_deployment_name
-    endpoint = azure_openai_settings.endpoint
-    kernel.add_service(
-        AzureAIInferenceChatCompletion(
-            service_id="open_ai",
-            ai_model_id=deployment_name,
-            client=ChatCompletionsClient(
-                endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
-                credential=DefaultAzureCredential(),
-                credential_scopes=["https://cognitiveservices.azure.com/.default"],
-                api_version=DEFAULT_AZURE_API_VERSION,
-            ),
-        )
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id="open_ai"))
+    # kernel.add_service(
+    #     AzureAIInferenceChatCompletion(
+    #         ai_model_id="serverless-deployment",
+    #         service_id="azure-ai-inference",
+    #     )
+    # )
     # kernel.add_service(GoogleAIChatCompletion(service_id="google_ai"))
 
     if (sample_plugin_path := get_sample_plugin_path()) is None:

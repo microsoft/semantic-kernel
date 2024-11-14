@@ -8,13 +8,14 @@ from typing import Any
 
 from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.core.credentials import AzureKeyCredential
-from azure.identity import DefaultAzureCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
+    AsyncDefaultAzureCredentialWrapper,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -95,9 +96,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                 # Try to create the client with a DefaultAzureCredential
                 client = AzureAIInferenceClientType.get_client_class(client_type)(
                     endpoint=endpoint,
-                    credential=DefaultAzureCredential(),
-                    credential_scopes=["https://cognitiveservices.azure.com/.default"],
-                    api_version=DEFAULT_AZURE_API_VERSION,
+                    credential=AsyncDefaultAzureCredentialWrapper(),
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
                 )
 
