@@ -65,8 +65,8 @@ def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunct
                 is_full_text_searchable=True,
             ),
         ] = "content1"
-        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title1"
-        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag1"
+        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
+        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
 
     return DataModelArray
 
@@ -95,8 +95,8 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
                 is_full_text_searchable=True,
             ),
         ] = "content1"
-        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title1"
-        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag1"
+        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
+        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
 
     return DataModelList
 

@@ -467,18 +467,14 @@ class RedisJsonCollection(RedisCollection):
     def _deserialize_store_models_to_dicts(
         self,
         records: Sequence[dict[str, Any]],
-        keys: Sequence[str] | None = None,
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
-        key_field_name = self.data_model_definition.key_field_name
-        if keys is None:
-            if key_field_name in records[0]:
-                return records
-            raise MemoryConnectorException("Key field not found in records, and not supplied.")
         results = []
-        for key, record in zip(keys, records):
-            record[self.data_model_definition.key_field_name] = self._unget_redis_key(key)
-            results.append(record)
+        key_field_name = self.data_model_definition.key_field_name
+        for record in records:
+            rec = record.copy()
+            rec[key_field_name] = self._unget_redis_key(record[key_field_name])
+            results.append(rec)
         return results
 
     def _add_return_fields(self, query: TQuery, include_vectors: bool) -> TQuery:

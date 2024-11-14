@@ -148,18 +148,21 @@ def data_model_definition_to_azure_ai_search_index(
             try:
                 algo_class, algo_params = INDEX_ALGORITHM_MAP[field.index_kind or "default"]
             except KeyError as e:
-                raise ServiceInitializationError(f"Error: {e} not found in INDEX_ALGORITHM_MAP.") from e
+                raise ServiceInitializationError(f"Error: {field.index_kind} not found in INDEX_ALGORITHM_MAP.") from e
             try:
-                search_algos.append(
-                    algo_class(
-                        name=algo_name,
-                        parameters=algo_params(
-                            metric=DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
-                        ),
-                    )
-                )
+                distance_metric = DISTANCE_FUNCTION_MAP[field.distance_function or "default"]
             except KeyError as e:
-                raise ServiceInitializationError(f"Error: {e} not found in DISTANCE_FUNCTION_MAP.") from e
+                raise ServiceInitializationError(
+                    f"Error: {field.distance_function} not found in DISTANCE_FUNCTION_MAP."
+                ) from e
+            search_algos.append(
+                algo_class(
+                    name=algo_name,
+                    parameters=algo_params(
+                        metric=distance_metric,
+                    ),
+                )
+            )
     return SearchIndex(
         name=collection_name,
         fields=fields,
