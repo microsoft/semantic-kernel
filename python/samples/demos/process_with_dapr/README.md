@@ -8,12 +8,22 @@ For more information about Semantic Kernel Processes and Dapr, see the following
 
 - [Overview of the Process Framework (docs)](https://learn.microsoft.com/semantic-kernel/frameworks/process/process-framework)
 - [Getting Started with Processes (samples)](../../getting_started_with_processes/)
+- [Semantic Kernel Dapr Runtime](../../../semantic_kernel/processes/dapr_runtime/)
 
 #### Dapr
 
 - [Dapr documentation](https://docs.dapr.io/)
 - [Dapr Actor documentation](https://v1-10.docs.dapr.io/developing-applications/building-blocks/actors/)
 - [Dapr local development](https://docs.dapr.io/getting-started/install-dapr-selfhost/)
+
+### Supported Dapr Extensions:
+
+| Extension    |  Supported |
+|--------------------|:----:|
+| FastAPI              | ✅ | 
+| Flask                | ✅ | 
+| gRPC                 | ❌ | 
+| Dapr Workflow        | ❌ | 
 
 ## Running the Demo
 
@@ -36,7 +46,7 @@ flowchart LR
 ```
 
 1. Build and run the sample. Running the Dapr service locally can be done using the Dapr Cli or with the Dapr VS Code extension. The VS Code extension is the recommended approach if you want to debug the code as it runs.
-   - If using VSCode to debug, select the `Pythonapp with Dapr` option from the Run and Debug dropdown list.
+   - If using VSCode to debug, select either the `Python FastAPI App with Dapr` or the `Python Flask API App with Dapr` option from the Run and Debug dropdown list.
 1. When the service is up and running, it will expose a single API in localhost port 5001.
 
 #### Invoking the process:
@@ -92,72 +102,79 @@ Below are the key aspects of the code that show how Dapr and Semantic Kernel Pro
 
 **_General Imports and Dapr Packages_**
 
-```python
-# Copyright (c) Microsoft. All rights reserved.
+**_FastAPI App_**
 
-import asyncio
+```python
 import logging
 from contextlib import asynccontextmanager
-from enum import Enum
-from typing import TYPE_CHECKING, ClassVar
 
 import uvicorn
-from dapr.actor import ActorId
-from dapr.actor.runtime.context import ActorRuntimeContext
-from dapr.ext.fastapi import DaprActor, DaprApp
+from dapr.ext.fastapi import DaprActor
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from pydantic import Field
+```
+
+**_Flask API App_**
+
+```python
+import asyncio
+import logging
+
+from flask import Flask, jsonify
+from flask_dapr.actor import DaprActor
 ```
 
 **_Semantic Kernel Process Imports_**
 
 ```python
+from samples.demos.process_with_dapr.process.process import get_process
+from samples.demos.process_with_dapr.process.steps import CommonEvents
 from semantic_kernel import Kernel
-from semantic_kernel.functions import kernel_function
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.processes.dapr_runtime.actors.event_buffer_actor import EventBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.external_event_buffer_actor import ExternalEventBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.message_buffer_actor import MessageBufferActor
-from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
-from semantic_kernel.processes.dapr_runtime.actors.step_actor import StepActor
-from semantic_kernel.processes.dapr_runtime.dapr_kernel_process import start
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.process_builder import ProcessBuilder
+from semantic_kernel.processes.dapr_runtime import (
+    register_fastapi_dapr_actors,
+    start,
+)
 ```
 
 **_Define the FastAPI app, Dapr App, and the DaprActor_**
 
 ```python
+# Define the kernel that is used throughout the process
 kernel = Kernel()
 
 
-def process_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> ProcessActor:
-    """Factory function to create ProcessActor instances with dependencies."""
-    return ProcessActor(ctx, actor_id, kernel)
-
-
-def step_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> StepActor:
-    """Factory function to create StepActor instances with dependencies."""
-    return StepActor(ctx, actor_id, kernel=kernel)
-
-
+# Define a lifespan method that registers the actors with the Dapr runtime
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("## actor startup ##")
-    await actor.register_actor(ProcessActor, actor_factory=process_actor_factory)
-    await actor.register_actor(StepActor, actor_factory=step_actor_factory)
-    await actor.register_actor(EventBufferActor)
-    await actor.register_actor(MessageBufferActor)
-    await actor.register_actor(ExternalEventBufferActor)
+    await register_fastapi_dapr_actors(actor, kernel)
     yield
 
 
+# Define the FastAPI app along with the DaprActor
 app = FastAPI(title="SKProcess", lifespan=lifespan)
-dapr_app = DaprApp(app)
 actor = DaprActor(app)
 ```
 
-- Build and run a Process as you normally would. For this Demo we run a simple example process from with a FastAPI method in response to a GET request. [See the FastAPI app here](./app.py).
+If using Flask, you will define:
+
+```python
+kernel = Kernel()
+
+app = Flask("SKProcess")
+
+# Enable DaprActor Flask extension
+actor = DaprActor(app)
+
+# Synchronously register actors
+print("## actor startup ##")
+register_flask_dapr_actors(actor, kernel)
+
+# Create the global event loop
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+```
+
+- Build and run a Process as you normally would. For this Demo we run a simple example process from with either a FastAPI or a Flask API method in response to a GET request. 
+- [See the FastAPI app here](./fastapi_app.py).
+- [See the Flask API app here](./flask_app.py)

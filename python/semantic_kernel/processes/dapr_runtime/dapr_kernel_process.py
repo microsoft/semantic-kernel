@@ -9,14 +9,12 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
 
 @experimental_function
 async def start(
     process: "KernelProcess",
-    kernel: "Kernel",
     initial_event: KernelProcessEvent | str | Enum,
     process_id: str | None = None,
     **kwargs,
@@ -26,8 +24,6 @@ async def start(
         raise ProcessInvalidConfigurationException("process cannot be None")
     if process.state is None:
         raise ProcessInvalidConfigurationException("process state cannot be empty")
-    if kernel is None:
-        raise ProcessInvalidConfigurationException("kernel cannot be None")
     if initial_event is None:
         raise ProcessInvalidConfigurationException("initial_event cannot be None")
 

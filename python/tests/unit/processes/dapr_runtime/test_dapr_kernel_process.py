@@ -52,18 +52,6 @@ async def test_start_with_invalid_process():
 
 
 @pytest.mark.asyncio
-async def test_start_with_invalid_kernel():
-    state = MagicMock(spec=KernelProcessState)
-    type(state).name = PropertyMock(return_value="valid_state")
-    mock_step = MagicMock(spec=KernelProcessStepInfo)
-    process = KernelProcess(state=state, steps=[mock_step])
-    initial_event = KernelProcessEvent(id="event_1", data="data_1")
-
-    with pytest.raises(ProcessInvalidConfigurationException, match="kernel cannot be None"):
-        await start(process=process, kernel=None, initial_event=initial_event)
-
-
-@pytest.mark.asyncio
 async def test_start_with_invalid_initial_event():
     state = MagicMock(spec=KernelProcessState)
     type(state).name = PropertyMock(return_value="valid_state")
