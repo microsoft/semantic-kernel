@@ -9,8 +9,8 @@ from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFo
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
+from semantic_kernel.connectors.memory.azure_cosmos_db.const import COSMOS_ITEM_ID_PROPERTY_NAME
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
-    COSMOS_ITEM_ID_PROPERTY_NAME,
     CosmosClientWrapper,
     create_default_indexing_policy,
     create_default_vector_embedding_policy,
