@@ -202,6 +202,54 @@ public sealed class FanInStep : KernelProcessStep<StepState>
     }
 }
 
+public sealed class ErrorStep : KernelProcessStep<StepState>
+{
+    private StepState? _state;
+
+    public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+    {
+        this._state = state.State;
+        return default;
+    }
+
+    [KernelFunction]
+    public async Task ErrorWhenTrueAsync(KernelProcessStepContext context, bool shouldError)
+    {
+        this._state!.InvocationCount++;
+
+        if (shouldError)
+        {
+            throw new InvalidOperationException("This is an error");
+        }
+
+        await context.EmitEventAsync(new()
+        {
+            Id = ProcessTestsEvents.ErrorStepSuccess,
+            Data = null,
+            Visibility = KernelProcessEventVisibility.Internal
+        });
+    }
+}
+
+public sealed class ReportStep : KernelProcessStep<StepState>
+{
+    private StepState? _state;
+
+    public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+    {
+        this._state = state.State;
+        return default;
+    }
+
+    [KernelFunction]
+    public Task ReportError(KernelProcessStepContext context, object error)
+    {
+        this._state!.InvocationCount++;
+        Console.WriteLine(error.ToString());
+        return Task.CompletedTask;
+    }
+}
+
 /// <summary>
 /// The state object for the repeat and fanIn step.
 /// </summary>
@@ -210,6 +258,9 @@ public sealed record StepState
 {
     [DataMember]
     public string? LastMessage { get; set; }
+
+    [DataMember]
+    public int InvocationCount { get; set; }
 }
 
 /// <summary>
@@ -222,6 +273,7 @@ public static class ProcessTestsEvents
     public const string StartInnerProcess = "StartInnerProcess";
     public const string OutputReadyPublic = "OutputReadyPublic";
     public const string OutputReadyInternal = "OutputReadyInternal";
+    public const string ErrorStepSuccess = "ErrorStepSuccess";
 }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

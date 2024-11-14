@@ -17,5 +17,5 @@ public record ProcessStartRequest
     /// <summary>
     /// The initial event to send to the process.
     /// </summary>
-    public required KernelProcessEvent InitialEvent { get; set; }
+    public required string InitialEvent { get; set; }
 }

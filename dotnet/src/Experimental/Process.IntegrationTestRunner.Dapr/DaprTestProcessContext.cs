@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace SemanticKernel.Process.IntegrationTests;
 internal sealed class DaprTestProcessContext : KernelProcessContext
@@ -39,7 +40,7 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     internal async Task StartWithEventAsync(KernelProcessEvent initialEvent)
     {
         var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-        var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent };
+        var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent.ToJson() };
 
         var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
