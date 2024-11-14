@@ -219,8 +219,8 @@ public class LocalMapTests
 
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
-        mapProcess // %%% NEEDED ???
-            .OnInputEvent(MapProcessEventId)
+        mapProcess
+            .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
         ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
@@ -294,8 +294,8 @@ public class LocalMapTests
 
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
-        mapProcess // %%% NEEDED ???
-            .OnInputEvent(MapProcessEventId)
+        mapProcess
+            .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
         ProcessStepBuilder countStep = mapProcess.AddStepFromType<CountStep>();
@@ -342,8 +342,8 @@ public class LocalMapTests
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStepInner, UnionStep.SumSquareFunction));
 
-        mapProcess // %%% NEEDED
-            .OnInputEvent(MapProcessEventId)
+        mapProcess
+            .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(mapStepInner));
 
         ProcessMapBuilder mapStepOuter = process.AddMapStepFromProcess(mapProcess);
@@ -393,9 +393,6 @@ public class LocalMapTests
         Assert.NotNull(unionState.State);
         return unionState.State;
     }
-
-    private const string MapProcessEventId = "StartMap"; // %%% HACK
-    //private const string MapProcessEventId = "Map";
 
     /// <summary>
     /// A filler step used that emits the provided value as its output.

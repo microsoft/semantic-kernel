@@ -38,7 +38,8 @@ internal sealed class LocalMap : LocalStep
         IEnumerable values = message.GetMapInput(this._logger);
 
         // Access the map operation
-        KernelProcess mapOperation = this._map.Operation as KernelProcess ?? this.CreateProxyOperation(message);
+        KernelProcess mapOperation = this.CreateProxyOperation(message);
+        string operationStartId = this.DefineOperationEventId(message);
 
         // Prepare state for map execution
         int index = 0;
@@ -60,7 +61,7 @@ internal sealed class LocalMap : LocalStep
                     processContext.StartWithEventAsync(
                         new KernelProcessEvent
                         {
-                            Id = ProcessConstants.MapEventId,
+                            Id = operationStartId,
                             Data = value
                         });
 #pragma warning restore CA2000 // Dispose objects before losing scope
@@ -117,6 +118,11 @@ internal sealed class LocalMap : LocalStep
 
     private KernelProcess CreateProxyOperation(ProcessMessage message)
     {
+        if (this._map.Operation is KernelProcess kernelProcess)
+        {
+            return kernelProcess;
+        }
+
         string? parameterName = message.Values.SingleOrDefault(kvp => kvp.Value == message.TargetEventData).Key;
         string proxyId = Guid.NewGuid().ToString("N");
         return
@@ -124,6 +130,24 @@ internal sealed class LocalMap : LocalStep
                 new KernelProcessState($"Map{this._map.Operation.State.Name}", this._map.Operation.State.Version, proxyId),
                 [this._map.Operation],
                 new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(this._map.Operation.State.Id!, message.FunctionName, parameterName))] } });
+    }
+
+    private string DefineOperationEventId(ProcessMessage message)
+    {
+        if (this._map.Operation is KernelProcess kernelProcess)
+        {
+            foreach (var edge in kernelProcess.Edges)
+            {
+                if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ???
+                {
+                    return edge.Key;
+                }
+            }
+
+            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {this.Name}/{this.Id}.");
+        }
+
+        return ProcessConstants.MapEventId;
     }
 
     private sealed record MapOperationContext(in HashSet<string> EventTargets, in IDictionary<string, Type> CapturedEvents)
