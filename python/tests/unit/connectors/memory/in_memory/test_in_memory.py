@@ -120,7 +120,7 @@ async def test_vectorized_search_similar(collection, distance_function):
     await collection.upsert_batch([record1, record2])
     results = await collection.vectorized_search(
         vector=[0.9, 0.9, 0.9, 0.9, 0.9],
-        options=VectorSearchOptions(vector_field_name="vector", include_total_count=True),
+        options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),
     )
     assert results.total_count == 2
     idx = 0

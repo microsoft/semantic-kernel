@@ -38,7 +38,9 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the completions endpoint."""
 
-    prompt: str | None = None
+    prompt: str | None = Field(
+        None, description="Do not set this manually. It is set by the service based on the text content."
+    )
     best_of: int | None = Field(None, ge=1)
     echo: bool = False
     logprobs: int | None = Field(None, ge=0, le=5)
@@ -66,7 +68,9 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     ) = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
-    messages: list[dict[str, Any]] | None = None
+    messages: list[dict[str, Any]] | None = Field(
+        None, description="Do not set this manually. It is set by the service based on the chat history."
+    )
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
     parallel_tool_calls: bool = True
     tools: list[dict[str, Any]] | None = Field(

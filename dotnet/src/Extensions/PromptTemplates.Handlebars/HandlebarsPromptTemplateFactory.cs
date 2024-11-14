@@ -15,7 +15,6 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// <summary>
     /// Default options for built-in Handlebars helpers.
     /// </summary>
-    /// TODO [@teresaqhoang]: Support override of default options
     private readonly HandlebarsPromptTemplateOptions _options;
 
     /// <summary>
@@ -32,7 +31,6 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
     /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
     /// </remarks>
-    [Experimental("SKEXP0001")]
     public bool AllowDangerouslySetContent { get; init; } = false;
 
     /// <summary>

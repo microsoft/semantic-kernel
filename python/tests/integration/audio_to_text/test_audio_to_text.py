@@ -5,7 +5,7 @@ import os
 import pytest
 
 from semantic_kernel.connectors.ai.audio_to_text_client_base import AudioToTextClientBase
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent
 from tests.integration.audio_to_text.audio_to_text_test_base import AudioToTextTestBase
 
 pytestmark = pytest.mark.parametrize(
