@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,14 +27,17 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
-internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
+[Experimental("SKEXP0040")]
+public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 {
-    /// <inheritdoc/>
-    public async Task<RestApiSpecification> ParseAsync(
-        Stream stream,
-        bool ignoreNonCompliantErrors = false,
-        IList<string>? operationsToExclude = null,
-        CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Parses OpenAPI document.
+    /// </summary>
+    /// <param name="stream">Stream containing OpenAPI document to parse.</param>
+    /// <param name="options">Options for parsing OpenAPI document.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Specification of the REST API.</returns>
+    public async Task<RestApiSpecification> ParseAsync(Stream stream, OpenApiDocumentParserOptions? options = null, CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
@@ -41,12 +45,12 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
-        this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
+        this.AssertReadingSuccessful(result, options?.IgnoreNonCompliantErrors ?? false);
 
         return new(
             ExtractRestApiInfo(result.OpenApiDocument),
             CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements),
-            ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
+            ExtractRestApiOperations(result.OpenApiDocument, options, this._logger));
     }
 
     #region private
@@ -155,16 +159,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Parses an OpenAPI document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
-    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    /// <param name="options">Options for parsing OpenAPI document.</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>List of Rest operations.</returns>
-    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude, ILogger logger)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, OpenApiDocumentParserOptions? options, ILogger logger)
     {
         var result = new List<RestApiOperation>();
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(document, pathPair.Key, pathPair.Value, operationsToExclude, logger);
+            var operations = CreateRestApiOperations(document, pathPair.Key, pathPair.Value, options, logger);
             result.AddRange(operations);
         }
 
@@ -177,43 +181,52 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <param name="document">The OpenAPI document.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
-    /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    /// <param name="options">Options for parsing OpenAPI document.</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, OpenApiDocumentParserOptions? options, ILogger logger)
     {
-        var operations = new List<RestApiOperation>();
-
-        foreach (var operationPair in pathItem.Operations)
+        try
         {
-            var method = operationPair.Key.ToString();
+            var operations = new List<RestApiOperation>();
 
-            var operationItem = operationPair.Value;
-
-            if (operationsToExclude is not null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
+            foreach (var operationPair in pathItem.Operations)
             {
-                continue;
+                var method = operationPair.Key.ToString();
+
+                var operationItem = operationPair.Value;
+
+                // Skip the operation parsing and don't add it to the result operations list if it's explicitly excluded by the predicate.
+                if (!options?.OperationSelectionPredicate?.Invoke(new OperationSelectionPredicateContext(operationItem.OperationId, path, method, operationItem.Description)) ?? false)
+                {
+                    continue;
+                }
+
+                var operation = new RestApiOperation(
+                    id: operationItem.OperationId,
+                    servers: CreateRestApiOperationServers(document.Servers),
+                    path: path,
+                    method: new HttpMethod(method),
+                    description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                    payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                    responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                    securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
+                )
+                {
+                    Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                };
+
+                operations.Add(operation);
             }
 
-            var operation = new RestApiOperation(
-                id: operationItem.OperationId,
-                servers: CreateRestApiOperationServers(document.Servers),
-                path: path,
-                method: new HttpMethod(method),
-                description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
-            )
-            {
-                Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
-            };
-
-            operations.Add(operation);
+            return operations;
         }
-
-        return operations;
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred during REST API operation creation.");
+            throw;
+        }
     }
 
     /// <summary>
@@ -231,25 +244,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Build a dictionary of <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> objects.
-    /// </summary>
-    /// <param name="securitySchemes">Represents the security schemes used by the REST API.</param>
-    private static ReadOnlyDictionary<string, RestApiSecurityScheme> CreateRestApiOperationSecuritySchemes(IDictionary<string, OpenApiSecurityScheme>? securitySchemes)
-    {
-        var result = new Dictionary<string, RestApiSecurityScheme>();
-
-        if (securitySchemes is not null)
-        {
-            foreach (var item in securitySchemes)
-            {
-                result.Add(item.Key, CreateRestApiSecurityScheme(item.Value));
-            }
-        }
-
-        return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
     }
 
     /// <summary>
@@ -537,14 +531,17 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         if (readResult.OpenApiDiagnostic.Errors.Any())
         {
-            var message = $"Parsing of '{readResult.OpenApiDocument.Info?.Title}' OpenAPI document complete with the following errors: {string.Join(";", readResult.OpenApiDiagnostic.Errors)}";
-
-            this._logger.LogWarning("{Message}", message);
+            var title = readResult.OpenApiDocument.Info?.Title;
+            var errors = string.Join(";", readResult.OpenApiDiagnostic.Errors);
 
             if (!ignoreNonCompliantErrors)
             {
-                throw new KernelException(message);
+                var exception = new KernelException($"Parsing of '{title}' OpenAPI document complete with the following errors: {errors}");
+                this._logger.LogError(exception, "Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
+                throw exception;
             }
+
+            this._logger.LogWarning("Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
         }
     }
 
