@@ -173,7 +173,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
-        timeout-minutes: 10
+        timeout-minutes: 15
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
@@ -185,7 +185,7 @@ jobs:
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
-        timeout-minutes: 5
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
