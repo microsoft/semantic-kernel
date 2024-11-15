@@ -1,0 +1,24 @@
+@ProcessWithCloudEvents_HostAddress = http://localhost:5077
+
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSteps/increase
+Accept: application/json
+
+###
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSteps/decrease
+Accept: application/json
+
+###
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSteps/reset
+Accept: application/json
+
+###
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSubscribers/increase
+Accept: application/json
+
+###
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSubscribers/decrease
+Accept: application/json
+
+###
+GET {{ProcessWithCloudEvents_HostAddress}}/CounterWithCloudSubscribers/reset
+Accept: application/json

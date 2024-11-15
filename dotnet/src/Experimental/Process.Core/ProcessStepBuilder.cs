@@ -52,6 +52,7 @@ public abstract class ProcessStepBuilder
     public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
     {
         // TODO: ADD CHECK SO FUNCTION_NAME IS NOT EMPTY OR ADD FUNCTION RESOLVER IN CASE STEP HAS ONLY ONE FUNCTION
+        // TODO: Add check functionName is valid
         return this.OnEvent($"{functionName}.OnResult");
     }
 
