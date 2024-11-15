@@ -72,7 +72,7 @@ internal static partial class FunctionCallsProcessorLoggingExtensions
     /// <summary>
     /// Logs function calls.
     /// </summary>
-    public static void LogFunctionCalls(this ILogger logger, List<FunctionCallContent> functionCalls)
+    public static void LogFunctionCalls(this ILogger logger, FunctionCallContent[] functionCalls)
     {
         if (logger.IsEnabled(LogLevel.Debug))
         {
