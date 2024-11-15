@@ -91,11 +91,16 @@ internal static class AssistantThreadActions
         }
 
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
+        IEnumerable<MessageContent> content = AssistantMessageFactory.GetMessageContents(message);
+        if (!content.Any())
+        {
+            return;
+        }
 
         await client.CreateMessageAsync(
             threadId,
             message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
-            AssistantMessageFactory.GetMessageContents(message),
+            content,
             options,
             cancellationToken).ConfigureAwait(false);
     }
