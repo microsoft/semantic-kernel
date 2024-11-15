@@ -174,9 +174,7 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
         }
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]
-        public string GetItemPrice(
-            [Description("The name of the menu item.")]
-        string menuItem)
+        public string GetItemPrice([Description("The name of the menu item.")] string menuItem)
         {
             return "$9.99";
         }
