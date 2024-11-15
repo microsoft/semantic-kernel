@@ -121,6 +121,8 @@ public sealed class OpenAIAssistantAgentTests
         try
         {
             await agent.AddChatMessageAsync(threadId, functionResultMessage);
+            var messages = await agent.GetThreadMessagesAsync(threadId).ToArrayAsync();
+            Assert.Single(messages);
         }
         finally
         {
