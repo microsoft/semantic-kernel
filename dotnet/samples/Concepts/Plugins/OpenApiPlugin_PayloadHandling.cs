@@ -34,7 +34,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
 
         void RequestPayloadHandler(string requestPayload)
         {
-            this._output.WriteLine("Request payload");
+            this._output.WriteLine("Actual request payload");
             this._output.WriteLine(requestPayload);
         }
 
@@ -303,16 +303,16 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
 
         // Example of how to have the updatePater function invoked by the AI
         AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        Console.WriteLine("Dog { breed=Husky, bark=false }");
-        await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("Dog { breed=Dingo, bark=true }");
-        await this._kernel.InvokePromptAsync("My new dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("Cat { age=15 }");
+        Console.WriteLine("\nExpected payload: Dog { breed=Husky, bark=false }");
+        await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please create my pet information.", new KernelArguments(settings));
+        Console.WriteLine("\nExpected payload: Dog { breed=Dingo, bark=true }");
+        await this._kernel.InvokePromptAsync("My dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("\nExpected payload: Cat { age=15 }");
         await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("Cat { hunts=true }");
+        Console.WriteLine("\nExpected payload: Cat { hunts=true }");
         await this._kernel.InvokePromptAsync("I have a feline pet, she goes out every night hunting mice, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("Cat { age=3, hunts=true }");
-        await this._kernel.InvokePromptAsync("I have a 3 year old cat who chases birds and barks, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("\nExpected payload: Cat { age=3, hunts=true }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("I have a new 3 year old cat who chases birds and barks, please create my pet information.", new KernelArguments(settings)));
     }
 
     /// <summary>
@@ -332,16 +332,17 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
 
         // Example of how to have the updatePater function invoked by the AI
         AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        Console.WriteLine("{ pet_type=dog, breed=Husky, bark=false }");
-        await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=dog, breed=Dingo, bark=true }");
-        await this._kernel.InvokePromptAsync("My new dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=cat, age=15 }");
-        await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=cat, hunts=true }");
-        await this._kernel.InvokePromptAsync("I have a feline pet, she goes out every night hunting mice, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=cat, age=3, hunts=true }");
-        await this._kernel.InvokePromptAsync("I have a 3 year old cat who chases birds and barks, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("\nExpected payload: { pet_type=dog, breed=Husky, bark=false }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=dog, breed=Dingo, bark=true }");
+        // This prompt deliberately tries to confuse the LLM and it succeed, in this scenario the API must provide an error message so the LLM can correct the playload
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My new dog is a Dingo, he is very noisy, he likes to hunt for rabbits, please create my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=cat, age=15 }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=cat, hunts=true }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("I have a feline pet, she goes out every night hunting mice, please update my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=cat, age=3, hunts=true }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("I have a new 3 year old cat who chases birds and barks, please create my pet information.", new KernelArguments(settings)));
     }
 
     /// <summary>
@@ -361,14 +362,14 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
 
         // Example of how to have the updatePater function invoked by the AI
         AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        Console.WriteLine("{ pet_type=Dog, nickname=Fido }");
-        await this._kernel.InvokePromptAsync("My new dog is named Fido, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=Dog, nickname=Spot age=1 }");
-        await this._kernel.InvokePromptAsync("My 1 year old dog is called Spot, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=Cat, age=15 }");
-        await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings));
-        Console.WriteLine("{ pet_type=Cat, nick_name=Fluffy }");
-        await this._kernel.InvokePromptAsync("I have a feline pet called Fluffy, please update my pet information.", new KernelArguments(settings));
+        Console.WriteLine("\nExpected payload: { pet_type=Dog, nickname=Fido }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My new dog is named Fido he is 2 years old, please create my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=Dog, nickname=Spot age=1 hunts=true }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My 1 year old dog is called Spot, he likes to hunt for rabbits, please update my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=Cat, age=15 }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("My cat is 15 years old now, please update my pet information.", new KernelArguments(settings)));
+        Console.WriteLine("\nExpected payload: { pet_type=Cat, nick_name=Fluffy }");
+        Console.WriteLine(await this._kernel.InvokePromptAsync("I have a new feline pet called Fluffy, please create my pet information.", new KernelArguments(settings)));
     }
 
     protected override void Dispose(bool disposing)

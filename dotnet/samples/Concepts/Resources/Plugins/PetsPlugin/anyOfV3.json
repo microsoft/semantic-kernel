@@ -33,6 +33,28 @@
             "description": "Updated"
           }
         }
+      },
+      "put": {
+        "summary": "Create a pet. Call this with either details for a dog or a cat but not both.",
+        "description": "Create a pet. Call this with either details for a dog or a cat but not both.",
+        "operationId": "createPet",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/PetByAge" },
+                  { "$ref": "#/components/schemas/PetByType" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create"
+          }
+        }
       }
     }
   },
