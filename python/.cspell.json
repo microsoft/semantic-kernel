@@ -73,6 +73,7 @@
         "opentelemetry",
         "SEMANTICKERNEL",
         "OTEL",
-        "vectorizable"
+        "vectorizable",
+        "desync"
     ]
 }

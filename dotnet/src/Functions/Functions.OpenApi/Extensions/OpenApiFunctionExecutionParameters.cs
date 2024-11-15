@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -41,22 +43,28 @@ public class OpenApiFunctionExecutionParameters
 
     /// <summary>
     /// Determines whether the REST API operation payload is constructed dynamically based on payload metadata.
-    /// If false, the payload must be provided via the 'payload' argument.
+    /// It's enabled by default and allows to support operations with simple payload structure - no properties with the same name at different levels.
+    /// To support more complex payloads, it should be disabled and the payload should be provided via the 'payload' argument.
+    /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
+    [Experimental("SKEXP0040")]
     public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
-    /// Determines whether payload parameter names are augmented with namespaces.
+    /// Determines whether payload parameter names are augmented with namespaces. It's only applicable when EnableDynamicPayload property is set to true.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.
     /// For instance, without namespaces, the 'email' parameter for both the 'sender' and 'receiver' parent parameters
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
+    /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
+    [Experimental("SKEXP0040")]
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.
     /// </summary>
+    [Experimental("SKEXP0040")]
     public IList<string> OperationsToExclude { get; set; }
 
     /// <summary>
@@ -68,7 +76,13 @@ public class OpenApiFunctionExecutionParameters
     /// as a stream rather than as a string.
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
+    [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
+    /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
+    /// </summary>
+    public ILoggerFactory? LoggerFactory { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
@@ -85,6 +99,7 @@ public class OpenApiFunctionExecutionParameters
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    [Experimental("SKEXP0040")]
     public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,

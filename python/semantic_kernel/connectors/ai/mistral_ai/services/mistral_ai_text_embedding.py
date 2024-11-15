@@ -9,8 +9,8 @@ else:
 
 import logging
 
-from mistralai.async_client import MistralAsyncClient
-from mistralai.models.embeddings import EmbeddingResponse
+from mistralai import Mistral
+from mistralai.models import EmbeddingResponse
 from numpy import array, ndarray
 from pydantic import ValidationError
 
@@ -33,7 +33,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         ai_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
-        async_client: MistralAsyncClient | None = None,
+        async_client: Mistral | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -45,12 +45,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         - MISTRALAI_EMBEDDING_MODEL_ID
 
         Args:
-            ai_model_id: (str | None): A string that is used to identify the model such as the model name.
-            api_key (str | None): The API key for the Mistral AI service deployment.
-            service_id (str | None): Service ID for the embedding completion service.
-            async_client (MistralAsyncClient | None): The Mistral AI client to use.
-            env_file_path (str | None): The path to the environment file.
-            env_file_encoding (str | None): The encoding of the environment file.
+            ai_model_id: : A string that is used to identify the model such as the model name.
+            api_key : The API key for the Mistral AI service deployment.
+            service_id : Service ID for the embedding completion service.
+            async_client : The Mistral AI client to use.
+            env_file_path : The path to the environment file.
+            env_file_encoding : The encoding of the environment file.
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -69,8 +69,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             raise ServiceInitializationError("The MistralAI embedding model ID is required.")
 
         if not async_client:
-            async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
-
+            async_client = Mistral(
+                api_key=mistralai_settings.api_key.get_secret_value(),
+            )
         super().__init__(
             service_id=service_id or mistralai_settings.embedding_model_id,
             ai_model_id=ai_model_id or mistralai_settings.embedding_model_id,
@@ -96,13 +97,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
     ) -> Any:
         """Generate embeddings from the Mistral AI service."""
         try:
-            embedding_response: EmbeddingResponse = await self.async_client.embeddings(
-                model=self.ai_model_id, input=texts
-            )
+            embedding_response = await self.async_client.embeddings.create_async(model=self.ai_model_id, inputs=texts)
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the embedding request.",
                 ex,
             ) from ex
-
-        return [item.embedding for item in embedding_response.data]
+        if isinstance(embedding_response, EmbeddingResponse):
+            return [item.embedding for item in embedding_response.data]
+        return []

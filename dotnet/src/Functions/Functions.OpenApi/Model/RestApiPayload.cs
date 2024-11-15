@@ -45,4 +45,15 @@ public sealed class RestApiPayload
         this.Description = description;
         this.Schema = schema;
     }
+
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        foreach (var property in this.Properties)
+        {
+            property.Freeze();
+        }
+    }
 }

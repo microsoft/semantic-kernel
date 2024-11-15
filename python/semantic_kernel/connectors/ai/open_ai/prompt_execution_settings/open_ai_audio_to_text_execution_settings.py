@@ -14,7 +14,9 @@ class OpenAIAudioToTextExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI audio to text services."""
 
     ai_model_id: str | None = Field(None, serialization_alias="model")
-    filename: str | None = None
+    filename: str | None = Field(
+        None, description="Do not set this manually. It is set by the service based on the audio content."
+    )
     language: str | None = None
     prompt: str | None = None
     response_format: str | None = None

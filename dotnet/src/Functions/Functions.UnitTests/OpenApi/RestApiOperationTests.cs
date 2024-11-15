@@ -114,6 +114,96 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldUseParameterArgumentNameToLookupArgumentsToBuildOperationUrl()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p1" },
+            new(
+                name: "p2",
+                type: "number",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p2" }
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            [new RestApiServer("https://fake-random-test-host")],
+            "/{p1}/{p2}/other_fake_path_section",
+            HttpMethod.Get,
+            "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "alt-p1", "v1" },
+            { "alt-p2", 34 }
+        };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://fake-random-test-host/v1/34/other_fake_path_section", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldUseParameterNameToLookupArgumentsToBuildOperationUrlIfNoArgumentsProvidedForArgumentNames()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p1" },
+            new(
+                name: "p2",
+                type: "number",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p2" }
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            [new RestApiServer("https://fake-random-test-host")],
+            "/{p1}/{p2}/other_fake_path_section",
+            HttpMethod.Get,
+            "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "p1", "v1" },
+            { "p2", 34 }
+        };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://fake-random-test-host/v1/34/other_fake_path_section", url.OriginalString);
+    }
+
+    [Fact]
     public void ItShouldBuildOperationUrlWithEncodedArguments()
     {
         // Arrange
@@ -247,6 +337,92 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldUseParameterArgumentNameToLookupArgumentsToBuildQueryString()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiParameterLocation.Query) { ArgumentName = "alt_p1" },
+            new(
+                name: "p2",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiParameterLocation.Query)  { ArgumentName = "alt_p2" },
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            [new RestApiServer("https://fake-random-test-host")],
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+         );
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "alt_p1", "v1" },
+            { "alt_p2", "v2" },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("p1=v1&p2=v2", queryString, ignoreCase: true);
+    }
+
+    [Fact]
+    public void ItShouldParameterNameToLookupArgumentsToBuildQueryStringIfNoArgumentsProvidedForArgumentNames()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiParameterLocation.Query) { ArgumentName = "alt_p1" },
+            new(
+                name: "p2",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiParameterLocation.Query)  { ArgumentName = "alt_p2" },
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            [new RestApiServer("https://fake-random-test-host")],
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+         );
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "p1", "v1" },
+            { "p2", "v2" },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("p1=v1&p2=v2", queryString, ignoreCase: true);
+    }
+
+    [Fact]
     public void ItShouldBuildQueryStringWithQuotes()
     {
         // Arrange
@@ -369,6 +545,111 @@ public class RestApiOperationTests
 
         var headerTwo = headers["fake_header_two"];
         Assert.Equal("fake_header_two_value", headerTwo);
+    }
+
+    [Fact]
+    public void ItShouldUseParameterArgumentNameToLookupArgumentsToCreateOperationHeaders()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter>
+        {
+            new(
+                name: "h1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Header,
+                style: RestApiParameterStyle.Simple) { ArgumentName = "alt_h1" },
+
+            new(
+                name: "h2",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Header,
+                style: RestApiParameterStyle.Simple) { ArgumentName = "alt_h2" }
+        };
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "alt_h1", "v1" },
+            { "alt_h2", "v2" }
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("http://fake_url")],
+            path: "fake_path",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []);
+
+        // Act
+        var headers = sut.BuildHeaders(arguments);
+
+        // Assert
+        Assert.Equal(2, headers.Count);
+
+        var headerOne = headers["h1"];
+        Assert.Equal("v1", headerOne);
+
+        var headerTwo = headers["h2"];
+        Assert.Equal("v2", headerTwo);
+    }
+
+    [Fact]
+    public void ItShouldUseParameterNameToLookupArgumentsToCreateOperationHeadersIfNoArgumentsProvidedForArgumentNames()
+    {
+        // Arrange
+        var parameters = new List<RestApiParameter>
+        {
+            new(
+                name: "h1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Header,
+                style: RestApiParameterStyle.Simple) { ArgumentName = "alt_h1" },
+
+            new(
+                name: "h2",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Header,
+                style: RestApiParameterStyle.Simple) { ArgumentName = "alt_h2" }
+        };
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "h1", "v1" },
+            { "h2", "v2" }
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("http://fake_url")],
+            path: "fake_path",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+         );
+
+        // Act
+        var headers = sut.BuildHeaders(arguments);
+
+        // Assert
+        Assert.Equal(2, headers.Count);
+
+        var headerOne = headers["h1"];
+        Assert.Equal("v1", headerOne);
+
+        var headerTwo = headers["h2"];
+        Assert.Equal("v2", headerTwo);
     }
 
     [Fact]
@@ -858,5 +1139,101 @@ public class RestApiOperationTests
 
         // Assert
         Assert.Equal("https://example.com/v3/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldUseVariableArgumentNameToLookupArgumentsToBuildServerUrl()
+    {
+        // Arrange
+        var version = new RestApiServerVariable("v1") { ArgumentName = "alt_version" };
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{version}", new Dictionary<string, RestApiServerVariable> { { "version", version } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "alt_version", "v3" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v3/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldUseVariableNameToLookupArgumentsToBuildServerUrlIfNoArgumentsProvidedForArgumentNames()
+    {
+        // Arrange
+        var version = new RestApiServerVariable("v1") { ArgumentName = "alt_version" };
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{version}", new Dictionary<string, RestApiServerVariable> { { "version", version } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "version", "v3" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://example.com/v3/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldFreezeModifiableProperties()
+    {
+        // Arrange
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{p1}", new Dictionary<string, RestApiServerVariable> { { "p1", new RestApiServerVariable("v1") } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [
+                new RestApiParameter(
+                    name: "p2",
+                    type: "string",
+                    isRequired: false,
+                    expand: false,
+                    location: RestApiParameterLocation.Query),
+            ],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            payload: new RestApiPayload(
+                mediaType: "application/json",
+                properties: new List<RestApiPayloadProperty> { { new RestApiPayloadProperty (
+                    name: "p3",
+                    type: "string",
+                    isRequired: false,
+                    properties: []
+                ) } }
+            ),
+            securityRequirements: []
+        );
+
+        // Act
+        sut.Freeze();
+
+        // Assert
+        Assert.Throws<InvalidOperationException>(() => sut.Servers[0].Variables["p1"].ArgumentName = "a value");
+        Assert.Throws<InvalidOperationException>(() => sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value");
+        Assert.Throws<InvalidOperationException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").ArgumentName = "a value");
     }
 }

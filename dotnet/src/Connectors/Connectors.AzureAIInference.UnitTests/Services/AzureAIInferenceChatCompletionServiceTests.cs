@@ -21,6 +21,7 @@ namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Services;
 /// <summary>
 /// Tests for the <see cref="AzureAIInferenceChatCompletionService"/> class.
 /// </summary>
+[Obsolete("Keeping this test until the service is removed from code-base")]
 public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 {
     private readonly Uri _endpoint = new("https://localhost:1234");
@@ -55,11 +56,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 
         // Act & Assert
         // Endpoint constructor
-        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, apiKey: null); // Only the endpoint
-        new AzureAIInferenceChatCompletionService(httpClient: httpClient, apiKey: null); // Only the HttpClient with a BaseClass defined
+        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null); // Only the endpoint
+        new AzureAIInferenceChatCompletionService(modelId: "model", httpClient: httpClient, apiKey: null); // Only the HttpClient with a BaseClass defined
         new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null); // ModelId and endpoint
         new AzureAIInferenceChatCompletionService(modelId: "model", apiKey: "api-key", endpoint: this._endpoint); // ModelId, apiKey, and endpoint
-        new AzureAIInferenceChatCompletionService(endpoint: this._endpoint, apiKey: null, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
+        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
 
         // Breaking Glass constructor
         new AzureAIInferenceChatCompletionService(modelId: null, chatClient: client); // Client without model 
@@ -132,14 +133,14 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public void ItThrowsIfNoEndpointOrNoHttpClientBaseAddressIsProvided()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AzureAIInferenceChatCompletionService(endpoint: null, httpClient: this._httpClient));
+        Assert.Throws<ArgumentNullException>(() => new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: null, httpClient: this._httpClient));
     }
 
     [Fact]
     public async Task ItGetChatMessageContentsShouldHaveModelIdDefinedAsync()
     {
         // Arrange
-        var chatCompletion = new AzureAIInferenceChatCompletionService(apiKey: "NOKEY", httpClient: this._httpClientWithBaseAddress);
+        var chatCompletion = new AzureAIInferenceChatCompletionService(modelId: "model", apiKey: "NOKEY", httpClient: this._httpClientWithBaseAddress);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = this.CreateDefaultStringContent() };
 
@@ -158,7 +159,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
+        var service = new AzureAIInferenceChatCompletionService(modelId: "model", httpClient: this._httpClientWithBaseAddress);
         await using var stream = File.OpenRead("TestData/chat_completion_streaming_response.txt");
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -174,7 +175,9 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         Assert.Equal("Test content", enumerator.Current.Content);
-        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
+        Assert.IsType<StreamingChatCompletionsUpdate>(enumerator.Current.InnerContent);
+        StreamingChatCompletionsUpdate innerContent = (StreamingChatCompletionsUpdate)enumerator.Current.InnerContent;
+        Assert.Equal("stop", innerContent.FinishReason);
     }
 
     [Fact]
@@ -210,7 +213,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
 
         Assert.Equal(3, messages.GetArrayLength());
 
-        Assert.Equal(Prompt, messages[0].GetProperty("content").GetString());
+        Assert.Contains(Prompt, messages[0].GetProperty("content").GetRawText());
         Assert.Equal("user", messages[0].GetProperty("role").GetString());
 
         Assert.Equal(AssistantMessage, messages[1].GetProperty("content").GetString());
@@ -250,7 +253,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
                 break;
         }
 
-        var sut = new AzureAIInferenceChatCompletionService(httpClient: this._httpClientWithBaseAddress);
+        var sut = new AzureAIInferenceChatCompletionService("any", httpClient: this._httpClientWithBaseAddress);
         AzureAIInferencePromptExecutionSettings executionSettings = new() { ResponseFormat = format };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
