@@ -1,20 +1,29 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from weaviate.classes.config import Configure, Property
+from weaviate.classes.query import Filter
 from weaviate.collections.classes.config_named_vectors import _NamedVectorConfigCreate
 from weaviate.collections.classes.config_vector_index import _VectorIndexConfigCreate
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 
 from semantic_kernel.connectors.memory.weaviate.const import TYPE_MAPPER_DATA
 from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelDeserializationException
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    VectorStoreModelDeserializationException,
+)
+
+if TYPE_CHECKING:
+    from weaviate.collections.classes.filters import _Filters
 
 
 def data_model_definition_to_weaviate_properties(
@@ -55,18 +64,16 @@ def data_model_definition_to_weaviate_named_vectors(
     Returns:
         list[_NamedVectorConfigCreate]: The Weaviate named vectors.
     """
-    named_vectors: list[_NamedVectorConfigCreate] = []
+    vector_list: list[_NamedVectorConfigCreate] = []
 
-    for vector in data_model_definition.fields.values():
-        if isinstance(vector, VectorStoreRecordVectorField):
-            named_vectors.append(
-                Configure.NamedVectors.none(
-                    name=vector.name,
-                    vector_index_config=to_weaviate_vector_index_config(vector),
-                )
+    for vector_field in data_model_definition.vector_fields:
+        vector_list.append(
+            Configure.NamedVectors.none(
+                name=vector_field.name,  # type: ignore
+                vector_index_config=to_weaviate_vector_index_config(vector_field),
             )
-
-    return named_vectors
+        )
+    return vector_list
 
 
 def to_weaviate_vector_index_config(vector: VectorStoreRecordVectorField) -> _VectorIndexConfigCreate:
@@ -120,7 +127,7 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> V
 def extract_properties_from_dict_record_based_on_data_model_definition(
     record: dict[str, Any],
     data_model_definition: VectorStoreRecordDefinition,
-) -> dict[str, Any]:
+) -> dict[str, list[float]] | list[float]:
     """Extract Weaviate object properties from a dictionary record based on the data model definition.
 
     Expecting the record to have all the  data fields defined in the data model definition.
@@ -165,43 +172,26 @@ def extract_key_from_dict_record_based_on_data_model_definition(
 def extract_vectors_from_dict_record_based_on_data_model_definition(
     record: dict[str, Any],
     data_model_definition: VectorStoreRecordDefinition,
-) -> dict[str, Any]:
+    named_vectors: bool,
+) -> dict[str, Any] | Any | None:
     """Extract Weaviate object vectors from a dictionary record based on the data model definition.
 
-    Named vectors will use the names of the associated data fields when possible. If a vector field does not have
-    an associated data field, the vector will use its own name. If a vector field does not have a name, the vector will
-    not be extracted.
-
-    Expecting the record to have all the vector fields defined in the data model definition.
+    By default a collection is set to use named vectors, this means that the name of the vector field is
+    added before the value, otherwise it is just the value and there can only be one vector in that case.
 
     The returned object can be used to construct a Weaviate object.
 
     Args:
         record (dict[str, Any]): The record.
         data_model_definition (VectorStoreRecordDefinition): The data model definition.
+        named_vectors (bool): Whether to use named vectors.
 
     Returns:
         dict[str, Any]: The vectors.
     """
-    # Named vectors: key is the data field name, value is the vector field name
-    named_vectors: dict[str, str] = {
-        field.name: field.embedding_property_name
-        for field in data_model_definition.fields.values()
-        if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
-    }
-    # Unnamed vectors: a list of vector fields that are not associated with a data field
-    unnamed_vectors: list[str] = [
-        field.name
-        for field in data_model_definition.fields.values()
-        if isinstance(field, VectorStoreRecordVectorField)
-        and not field.name
-        and field.name not in named_vectors.values()
-    ]
-
-    # Combine named and unnamed vectors: Unnamed vectors will use their own names
-    vectors: dict[str, str] = named_vectors | {vector_name: vector_name for vector_name in unnamed_vectors}
-
-    return {data_field_name: record[vector_field_name] for data_field_name, vector_field_name in vectors.items()}
+    if named_vectors:
+        return {vector.name: record[vector.name] for vector in data_model_definition.vector_fields}
+    return record[data_model_definition.vector_fields[0].name] if data_model_definition.vector_fields else None
 
 
 # endregion
@@ -256,43 +246,47 @@ def extract_key_from_weaviate_object_based_on_data_model_definition(
 def extract_vectors_from_weaviate_object_based_on_data_model_definition(
     weaviate_object,
     data_model_definition: VectorStoreRecordDefinition,
+    named_vectors: bool,
 ) -> dict[str, Any]:
     """Extract vectors from a Weaviate object based on the data model definition.
-
-    Named vectors use the names of the associated data fields.
-    Rest of the vectors use their own names.
-
-    Expecting the Weaviate object to have all the vectors defined in the data model definition.
 
     Args:
         weaviate_object: The Weaviate object.
         data_model_definition (VectorStoreRecordDefinition): The data model definition.
+        named_vectors (bool): Whether the collection uses named vectors.
 
     Returns:
-        dict[str, Any]: The vectors.
+        dict[str, Any]: The vectors, or None.
     """
-    # Named vectors: key is the data field name, value is the vector field name
-    named_vectors: dict[str, str] = {
-        field.name: field.embedding_property_name
-        for field in data_model_definition.fields.values()
-        if isinstance(field, VectorStoreRecordDataField) and field.has_embedding
-    }
-    # Unnamed vectors: a list of vector fields that are not associated with a data field
-    unnamed_vectors: list[str] = [
-        field.name
-        for field in data_model_definition.fields.values()
-        if isinstance(field, VectorStoreRecordVectorField)
-        and not field.name
-        and field.name not in named_vectors.values()
-    ]
-
-    # Combine named and unnamed vectors: Unnamed vectors will use their own names
-    vectors: dict[str, str] = named_vectors | {vector_name: vector_name for vector_name in unnamed_vectors}
-
-    return {
-        vector_field_name: weaviate_object.vector[data_field_name]
-        for data_field_name, vector_field_name in vectors.items()
-    }
+    if not weaviate_object.vector:
+        return {}
+    if named_vectors:
+        return {
+            vector.name: weaviate_object.vector[vector.name]
+            for vector in data_model_definition.vector_fields
+            if vector.name in weaviate_object.vector
+        }
+    vector_field = data_model_definition.vector_fields[0] if data_model_definition.vector_fields else None
+    if not vector_field:
+        return {}
+    return {vector_field.name: weaviate_object.vector["default"]}
 
 
 # endregion
+# region VectorSearch helpers
+
+
+def create_filter_from_vector_search_filters(filters: VectorSearchFilter | None) -> "_Filters | None":
+    """Create a Weaviate filter from a vector search filter."""
+    if not filters:
+        return None
+    weaviate_filters: list["_Filters"] = []
+    for filter in filters.filters:
+        match filter:
+            case EqualTo():
+                weaviate_filters.append(Filter.by_property(filter.field_name).equal(filter.value))
+            case AnyTagsEqualTo():
+                weaviate_filters.append(Filter.by_property(filter.field_name).like(filter.value))
+            case _:
+                raise ValueError(f"Unsupported filter type: {filter}")
+    return Filter.all_of(weaviate_filters) if weaviate_filters else None
