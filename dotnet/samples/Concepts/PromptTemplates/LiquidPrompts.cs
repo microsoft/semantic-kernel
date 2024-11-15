@@ -17,7 +17,7 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        // Prompt template using Handlebars syntax
+        // Prompt template using Liquid syntax
         string template = """
             <message role="system">
                 You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 
@@ -90,11 +90,11 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
             .Build();
 
         // Load prompt from resource
-        var handlebarsPromptYaml = EmbeddedResource.Read("LiquidPrompt.yaml");
+        var liquidPromptYaml = EmbeddedResource.Read("LiquidPrompt.yaml");
 
         // Create the prompt function from the YAML resource
         var templateFactory = new LiquidPromptTemplateFactory();
-        var function = kernel.CreateFunctionFromPromptYaml(handlebarsPromptYaml, templateFactory);
+        var function = kernel.CreateFunctionFromPromptYaml(liquidPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution
         var arguments = new KernelArguments()
