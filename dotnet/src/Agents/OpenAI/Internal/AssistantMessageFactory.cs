@@ -64,7 +64,7 @@ internal static class AssistantMessageFactory
             }
             else if (content is FunctionResultContent resultContent && resultContent.Result != null && !hasTextContent)
             {
-                // Only convert a funciton result when text-content is not already present
+                // Only convert a function result when text-content is not already present
                 yield return MessageContent.FromText(FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result));
             }
         }
