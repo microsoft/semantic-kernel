@@ -19,16 +19,16 @@ class CutFoodStep(KernelProcessStep):
     def get_action_string(self, food: str, action: str) -> str:
         return f"{food}_{action}"
 
-    @kernel_function(name=Functions.ChopFood.value)
+    @kernel_function(name=Functions.ChopFood)
     async def chop_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         food_to_be_cut = food_actions[0]
         food_actions.append(self.get_action_string(food_to_be_cut, "chopped"))
         print(f"CUTTING_STEP: Ingredient {food_to_be_cut} has been chopped!")
-        await context.emit_event(process_event=CutFoodStep.OutputEvents.ChoppingReady.value, data=food_actions)
+        await context.emit_event(process_event=CutFoodStep.OutputEvents.ChoppingReady, data=food_actions)
 
-    @kernel_function(name=Functions.SliceFood.value)
+    @kernel_function(name=Functions.SliceFood)
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         food_to_be_cut = food_actions[0]
         food_actions.append(self.get_action_string(food_to_be_cut, "sliced"))
         print(f"CUTTING_STEP: Ingredient {food_to_be_cut} has been sliced!")
-        await context.emit_event(process_event=CutFoodStep.OutputEvents.SlicingReady.value, data=food_actions)
+        await context.emit_event(process_event=CutFoodStep.OutputEvents.SlicingReady, data=food_actions)
