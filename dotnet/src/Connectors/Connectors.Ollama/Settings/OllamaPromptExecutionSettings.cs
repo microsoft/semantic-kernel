@@ -30,14 +30,16 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
         var ollamaExecutionSettings = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (ollamaExecutionSettings is not null)
+        if (ollamaExecutionSettings is null)
         {
-            return ollamaExecutionSettings;
-        }
-
-        throw new ArgumentException(
+            throw new ArgumentException(
             $"Invalid execution settings, cannot convert to {nameof(OllamaPromptExecutionSettings)}",
             nameof(executionSettings));
+        }
+
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        //ollamaExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+        return ollamaExecutionSettings;
     }
 
     /// <summary>
