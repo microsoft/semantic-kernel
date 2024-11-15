@@ -105,7 +105,7 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
 collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_DISTANCE)
+DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILARITY)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -159,7 +159,6 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     ),
     "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection(
         data_model_type=DataModel,
-        database_name="sample_database",
         collection_name=collection_name,
         create_database=True,
     ),
