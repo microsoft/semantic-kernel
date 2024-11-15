@@ -4,19 +4,19 @@ import re
 from typing import Any, Final
 from urllib.parse import ParseResult, urlencode, urljoin, urlparse, urlunparse
 
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
-    RestApiOperationExpectedResponse,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
+    RestApiExpectedResponse,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter import RestApiOperationParameter
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter_location import (
-    RestApiOperationParameterLocation,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter_style import (
-    RestApiOperationParameterStyle,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_style import (
+    RestApiParameterStyle,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload_property import (
-    RestApiOperationPayloadProperty,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload_property import (
+    RestApiPayloadProperty,
 )
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
@@ -56,22 +56,140 @@ class RestApiOperation:
         path: str,
         summary: str | None = None,
         description: str | None = None,
-        params: list["RestApiOperationParameter"] | None = None,
-        request_body: "RestApiOperationPayload | None" = None,
-        responses: dict[str, "RestApiOperationExpectedResponse"] | None = None,
+        params: list["RestApiParameter"] | None = None,
+        request_body: "RestApiPayload | None" = None,
+        responses: dict[str, "RestApiExpectedResponse"] | None = None,
         security_requirements: list[RestApiSecurityRequirement] | None = None,
     ):
         """Initialize the RestApiOperation."""
-        self.id = id
-        self.method = method.upper()
-        self.servers = [urlparse(s) if isinstance(s, str) else s for s in servers]
-        self.path = path
-        self.summary = summary
-        self.description = description
-        self.parameters = params if params else []
-        self.request_body = request_body
-        self.responses = responses
-        self.security_requirements = security_requirements
+        self._id = id
+        self._method = method.upper()
+        self._servers = [urlparse(s) if isinstance(s, str) else s for s in servers]
+        self._path = path
+        self._summary = summary
+        self._description = description
+        self._parameters = params if params else []
+        self._request_body = request_body
+        self._responses = responses
+        self._security_requirements = security_requirements
+        self._is_frozen = False
+
+    def freeze(self):
+        """Make the instance and its components immutable."""
+        self._is_frozen = True
+
+        if self.request_body:
+            self.request_body.freeze()
+
+        for param in self.parameters:
+            param.freeze()
+
+    def _throw_if_frozen(self):
+        """Raise an exception if the object is frozen."""
+        if self._is_frozen:
+            raise FunctionExecutionException(
+                f"The `RestApiOperation` instance with id {self.id} is frozen and cannot be modified."
+            )
+
+    @property
+    def id(self):
+        """Get the ID of the operation."""
+        return self._id
+
+    @id.setter
+    def id(self, value: str):
+        self._throw_if_frozen()
+        self._id = value
+
+    @property
+    def method(self):
+        """Get the method of the operation."""
+        return self._method
+
+    @method.setter
+    def method(self, value: str):
+        self._throw_if_frozen()
+        self._method = value
+
+    @property
+    def servers(self):
+        """Get the servers of the operation."""
+        return self._servers
+
+    @servers.setter
+    def servers(self, value: list[str | ParseResult]):
+        self._throw_if_frozen()
+        self._servers = value
+
+    @property
+    def path(self):
+        """Get the path of the operation."""
+        return self._path
+
+    @path.setter
+    def path(self, value: str):
+        self._throw_if_frozen()
+        self._path = value
+
+    @property
+    def summary(self):
+        """Get the summary of the operation."""
+        return self._summary
+
+    @summary.setter
+    def summary(self, value: str | None):
+        self._throw_if_frozen()
+        self._summary = value
+
+    @property
+    def description(self):
+        """Get the description of the operation."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str | None):
+        self._throw_if_frozen()
+        self._description = value
+
+    @property
+    def parameters(self):
+        """Get the parameters of the operation."""
+        return self._parameters
+
+    @parameters.setter
+    def parameters(self, value: list["RestApiParameter"]):
+        self._throw_if_frozen()
+        self._parameters = value
+
+    @property
+    def request_body(self):
+        """Get the request body of the operation."""
+        return self._request_body
+
+    @request_body.setter
+    def request_body(self, value: "RestApiPayload | None"):
+        self._throw_if_frozen()
+        self._request_body = value
+
+    @property
+    def responses(self):
+        """Get the responses of the operation."""
+        return self._responses
+
+    @responses.setter
+    def responses(self, value: dict[str, "RestApiExpectedResponse"] | None):
+        self._throw_if_frozen()
+        self._responses = value
+
+    @property
+    def security_requirements(self):
+        """Get the security requirements of the operation."""
+        return self._security_requirements
+
+    @security_requirements.setter
+    def security_requirements(self, value: list[RestApiSecurityRequirement] | None):
+        self._throw_if_frozen()
+        self._security_requirements = value
 
     def url_join(self, base_url: str, path: str):
         """Join a base URL and a path, correcting for any missing slashes."""
@@ -84,7 +202,7 @@ class RestApiOperation:
         """Build the headers for the operation."""
         headers = {}
 
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
+        parameters = [p for p in self.parameters if p.location == RestApiParameterLocation.HEADER]
 
         for parameter in parameters:
             argument = arguments.get(parameter.name)
@@ -128,7 +246,7 @@ class RestApiOperation:
 
     def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
         """Build the path for the operation."""
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
+        parameters = [p for p in self.parameters if p.location == RestApiParameterLocation.PATH]
         for parameter in parameters:
             argument = arguments.get(parameter.name)
             if argument is None:
@@ -144,7 +262,7 @@ class RestApiOperation:
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
         segments = []
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
+        parameters = [p for p in self.parameters if p.location == RestApiParameterLocation.QUERY]
         for parameter in parameters:
             argument = arguments.get(parameter.name)
             if argument is None:
@@ -166,7 +284,7 @@ class RestApiOperation:
         operation: "RestApiOperation",
         add_payload_params_from_metadata: bool = True,
         enable_payload_spacing: bool = False,
-    ) -> list["RestApiOperationParameter"]:
+    ) -> list["RestApiParameter"]:
         """Get the parameters for the operation."""
         params = list(operation.parameters) if operation.parameters is not None else []
         if operation.request_body is not None:
@@ -183,9 +301,9 @@ class RestApiOperation:
 
         return params
 
-    def create_payload_artificial_parameter(self, operation: "RestApiOperation") -> "RestApiOperationParameter":
+    def create_payload_artificial_parameter(self, operation: "RestApiOperation") -> "RestApiParameter":
         """Create an artificial parameter for the REST API request body."""
-        return RestApiOperationParameter(
+        return RestApiParameter(
             name=self.PAYLOAD_ARGUMENT_NAME,
             type=(
                 "string"
@@ -194,54 +312,52 @@ class RestApiOperation:
                 else "object"
             ),
             is_required=True,
-            location=RestApiOperationParameterLocation.BODY,
-            style=RestApiOperationParameterStyle.SIMPLE,
+            location=RestApiParameterLocation.BODY,
+            style=RestApiParameterStyle.SIMPLE,
             description=operation.request_body.description if operation.request_body else "REST API request body.",
             schema=operation.request_body.schema if operation.request_body else None,
         )
 
-    def create_content_type_artificial_parameter(self) -> "RestApiOperationParameter":
+    def create_content_type_artificial_parameter(self) -> "RestApiParameter":
         """Create an artificial parameter for the content type of the REST API request body."""
-        return RestApiOperationParameter(
+        return RestApiParameter(
             name=self.CONTENT_TYPE_ARGUMENT_NAME,
             type="string",
             is_required=False,
-            location=RestApiOperationParameterLocation.BODY,
-            style=RestApiOperationParameterStyle.SIMPLE,
+            location=RestApiParameterLocation.BODY,
+            style=RestApiParameterStyle.SIMPLE,
             description="Content type of REST API request body.",
         )
 
-    def _get_property_name(
-        self, property: RestApiOperationPayloadProperty, root_property_name: bool, enable_namespacing: bool
-    ):
+    def _get_property_name(self, property: RestApiPayloadProperty, root_property_name: bool, enable_namespacing: bool):
         if enable_namespacing and root_property_name:
             return f"{root_property_name}.{property.name}"
         return property.name
 
     def _get_parameters_from_payload_metadata(
         self,
-        properties: list["RestApiOperationPayloadProperty"],
+        properties: list["RestApiPayloadProperty"],
         enable_namespacing: bool = False,
         root_property_name: bool | None = None,
-    ) -> list["RestApiOperationParameter"]:
-        parameters: list[RestApiOperationParameter] = []
+    ) -> list["RestApiParameter"]:
+        parameters: list[RestApiParameter] = []
         for property in properties:
             parameter_name = self._get_property_name(property, root_property_name or False, enable_namespacing)
             if not hasattr(property, "properties") or not property.properties:
                 parameters.append(
-                    RestApiOperationParameter(
+                    RestApiParameter(
                         name=parameter_name,
                         type=property.type,
                         is_required=property.is_required,
-                        location=RestApiOperationParameterLocation.BODY,
-                        style=RestApiOperationParameterStyle.SIMPLE,
+                        location=RestApiParameterLocation.BODY,
+                        style=RestApiParameterStyle.SIMPLE,
                         description=property.description,
                         schema=property.schema,
                     )
                 )
             else:
                 # Handle property.properties as a single instance or a list
-                if isinstance(property.properties, RestApiOperationPayloadProperty):
+                if isinstance(property.properties, RestApiPayloadProperty):
                     nested_properties = [property.properties]
                 else:
                     nested_properties = property.properties
@@ -272,8 +388,8 @@ class RestApiOperation:
         ]
 
     def get_default_response(
-        self, responses: dict[str, RestApiOperationExpectedResponse], preferred_responses: list[str]
-    ) -> RestApiOperationExpectedResponse | None:
+        self, responses: dict[str, RestApiExpectedResponse], preferred_responses: list[str]
+    ) -> RestApiExpectedResponse | None:
         """Get the default response for the operation.
 
         If no appropriate response is found, returns None.

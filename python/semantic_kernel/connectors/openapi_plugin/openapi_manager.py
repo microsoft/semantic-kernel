@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter import RestApiOperationParameter
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import RestApiOperationRunOptions
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_run_options import RestApiRunOptions
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_uri import Uri
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
@@ -46,22 +46,36 @@ class OperationExtensions(Enum):
 @experimental_function
 def create_functions_from_openapi(
     plugin_name: str,
-    openapi_document_path: str,
+    openapi_document_path: str | None = None,
+    openapi_parsed_spec: dict[str, Any] | None = None,
     execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
 ) -> list[KernelFunctionFromMethod]:
     """Creates the functions from OpenAPI document.
 
     Args:
         plugin_name: The name of the plugin
-        openapi_document_path: The OpenAPI document path, it must be a file path to the spec.
+        openapi_document_path: The OpenAPI document path, it must be a file path to the spec (optional)
+        openapi_parsed_spec: The parsed OpenAPI spec (optional)
         execution_settings: The execution settings
 
     Returns:
         list[KernelFunctionFromMethod]: the operations as functions
     """
+    if openapi_parsed_spec is not None:
+        parsed_doc = openapi_parsed_spec
+    else:
+        if openapi_document_path is None:
+            raise FunctionExecutionException(
+                "Either `openapi_document_path` or `openapi_parsed_spec` must be provided."
+            )
+
+        # Parse the document from the given path
+        parser = OpenApiParser()
+        parsed_doc = parser.parse(openapi_document_path)
+        if parsed_doc is None:
+            raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
+
     parser = OpenApiParser()
-    if (parsed_doc := parser.parse(openapi_document_path)) is None:
-        raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
     operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 
     global_security_requirements = parsed_doc.get("security", [])
@@ -78,16 +92,24 @@ def create_functions_from_openapi(
         enable_payload_namespacing=execution_settings.enable_payload_namespacing if execution_settings else False,
     )
 
-    return [
-        _create_function_from_operation(
-            openapi_runner,
-            operation,
-            plugin_name,
-            execution_parameters=execution_settings,
-            security=global_security_requirements,
-        )
-        for operation in operations.values()
-    ]
+    functions = []
+    for operation in operations.values():
+        try:
+            kernel_function = _create_function_from_operation(
+                openapi_runner,
+                operation,
+                plugin_name,
+                execution_parameters=execution_settings,
+                security=global_security_requirements,
+            )
+            functions.append(kernel_function)
+            operation.freeze()
+        except Exception as ex:
+            error_msg = f"Error while registering Rest function {plugin_name}.{operation.id}: {ex}"
+            logger.error(error_msg)
+            raise FunctionExecutionException(error_msg) from ex
+
+    return functions
 
 
 @experimental_function
@@ -101,7 +123,7 @@ def _create_function_from_operation(
 ) -> KernelFunctionFromMethod:
     logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation.id}")
 
-    rest_operation_params: list[RestApiOperationParameter] = operation.get_parameters(
+    rest_operation_params: list[RestApiParameter] = operation.get_parameters(
         operation=operation,
         add_payload_params_from_metadata=getattr(execution_parameters, "enable_dynamic_payload", True),
         enable_payload_spacing=getattr(execution_parameters, "enable_payload_namespacing", False),
@@ -136,7 +158,7 @@ def _create_function_from_operation(
                         f"`{parameter.name}` parameter of the `{plugin_name}.{operation.id}` REST function."
                     )
 
-            options = RestApiOperationRunOptions(
+            options = RestApiRunOptions(
                 server_url_override=(
                     urlparse(execution_parameters.server_url_override) if execution_parameters else None
                 ),

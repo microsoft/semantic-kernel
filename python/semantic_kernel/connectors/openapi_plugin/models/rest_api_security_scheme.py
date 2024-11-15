@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_oauth_flows import RestApiOAuthFlows
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter_location import (
-    RestApiOperationParameterLocation,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -15,7 +15,7 @@ class RestApiSecurityScheme:
         self,
         security_scheme_type: str,
         name: str,
-        in_: RestApiOperationParameterLocation,
+        in_: RestApiParameterLocation,
         scheme: str,
         open_id_connect_url: str,
         description: str | None = None,

@@ -7,22 +7,21 @@ from typing import TYPE_CHECKING, Any, Final
 
 from prance import ResolvingParser
 
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
+    RestApiExpectedResponse,
+)
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
-    RestApiOperationExpectedResponse,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter import RestApiOperationParameter
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter_location import (
-    RestApiOperationParameterLocation,
-)
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload_property import (
-    RestApiOperationPayloadProperty,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload_property import (
+    RestApiPayloadProperty,
 )
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme import RestApiSecurityScheme
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -35,7 +34,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
 class OpenApiParser:
     """NOTE: SK Python only supports the OpenAPI Spec >=3.0.
 
@@ -62,7 +60,7 @@ class OpenApiParser:
 
     def _parse_parameters(self, parameters: list[dict[str, Any]]):
         """Parse the parameters from the OpenAPI document."""
-        result: list[RestApiOperationParameter] = []
+        result: list[RestApiParameter] = []
         for param in parameters:
             name: str = param["name"]
             if not param.get("in"):
@@ -70,14 +68,14 @@ class OpenApiParser:
             if param.get("content", None) is not None:
                 # The schema and content fields are mutually exclusive.
                 raise PluginInitializationError(f"Parameter {name} cannot have a 'content' field. Expected: schema.")
-            location = RestApiOperationParameterLocation(param["in"])
+            location = RestApiParameterLocation(param["in"])
             description: str = param.get("description", None)
             is_required: bool = param.get("required", False)
             default_value = param.get("default", None)
             schema: dict[str, Any] | None = param.get("schema", None)
 
             result.append(
-                RestApiOperationParameter(
+                RestApiParameter(
                     name=name,
                     type=schema.get("type", "string") if schema else "string",
                     location=location,
@@ -104,7 +102,7 @@ class OpenApiParser:
         for property_name, property_schema in schema.get("properties", {}).items():
             default_value = property_schema.get("default", None)
 
-            property = RestApiOperationPayloadProperty(
+            property = RestApiPayloadProperty(
                 name=property_name,
                 type=property_schema.get("type", None),
                 is_required=property_name in required_properties,
@@ -120,7 +118,7 @@ class OpenApiParser:
 
     def _create_rest_api_operation_payload(
         self, operation_id: str, request_body: dict[str, Any]
-    ) -> RestApiOperationPayload | None:
+    ) -> RestApiPayload | None:
         if request_body is None or request_body.get("content") is None:
             return None
 
@@ -136,16 +134,14 @@ class OpenApiParser:
         payload_properties = self._get_payload_properties(
             operation_id, media_type_metadata["schema"], media_type_metadata["schema"].get("required", set())
         )
-        return RestApiOperationPayload(
+        return RestApiPayload(
             media_type,
             payload_properties,
             request_body.get("description"),
             schema=media_type_metadata.get("schema", None),
         )
 
-    def _create_response(
-        self, responses: dict[str, Any]
-    ) -> Generator[tuple[str, RestApiOperationExpectedResponse], None, None]:
+    def _create_response(self, responses: dict[str, Any]) -> Generator[tuple[str, RestApiExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
                 (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
@@ -155,7 +151,7 @@ class OpenApiParser:
                 description = response_value.get("description") or matching_schema.get("description", "")
                 yield (
                     response_key,
-                    RestApiOperationExpectedResponse(
+                    RestApiExpectedResponse(
                         description=description,
                         media_type=media_type,
                         schema=matching_schema if matching_schema else None,
@@ -212,6 +208,8 @@ class OpenApiParser:
         Returns:
             A dictionary of RestApiOperation instances.
         """
+        from semantic_kernel.connectors.openapi_plugin import OperationSelectionPredicateContext
+
         components = parsed_document.get("components", {})
         security_schemes = self._parse_security_schemes(components)
 
@@ -229,12 +227,21 @@ class OpenApiParser:
                 request_method = method.lower()
                 operationId = details.get("operationId", path + "_" + request_method)
 
+                summary = details.get("summary", None)
+                description = details.get("description", None)
+
+                context = OperationSelectionPredicateContext(operationId, path, method, description)
+                if (
+                    execution_settings
+                    and execution_settings.operation_selection_predicate
+                    and not execution_settings.operation_selection_predicate(context)
+                ):
+                    logger.info(f"Skipping operation {operationId} based on custom predicate.")
+                    continue
+
                 if execution_settings and operationId in execution_settings.operations_to_exclude:
                     logger.info(f"Skipping operation {operationId} as it is excluded.")
                     continue
-
-                summary = details.get("summary", None)
-                description = details.get("description", None)
 
                 parameters = details.get("parameters", [])
                 parsed_params = self._parse_parameters(parameters)

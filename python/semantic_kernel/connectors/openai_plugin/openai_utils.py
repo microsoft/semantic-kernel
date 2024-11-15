@@ -11,7 +11,7 @@ from semantic_kernel.exceptions.function_exceptions import PluginInitializationE
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@deprecated("The `OpenAIUtils` class is deprecated; use OpenAPI Plugins instead.", category=None)
+@deprecated("The `OpenAIUtils` class is deprecated; use the `OpenAPI` plugin instead.", category=None)
 class OpenAIUtils:
     """Utility functions for OpenAI plugins."""
 

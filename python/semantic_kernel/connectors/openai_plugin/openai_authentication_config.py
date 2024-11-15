@@ -9,7 +9,7 @@ from typing_extensions import deprecated
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-@deprecated("The `OpenAIAuthenticationType` class is deprecated; use OpenAPI Plugins instead.", category=None)
+@deprecated("The `OpenAIAuthenticationType` class is deprecated; use the `OpenAPI` plugin instead.", category=None)
 class OpenAIAuthenticationType(str, Enum):
     """OpenAI authentication types."""
 
@@ -17,7 +17,7 @@ class OpenAIAuthenticationType(str, Enum):
     NoneType = "none"
 
 
-@deprecated("The `OpenAIAuthenticationType` class is deprecated; use OpenAPI Plugins instead.", category=None)
+@deprecated("The `OpenAIAuthenticationType` class is deprecated; use the `OpenAPI` plugin instead.", category=None)
 class OpenAIAuthorizationType(str, Enum):
     """OpenAI authorization types."""
 
@@ -25,7 +25,7 @@ class OpenAIAuthorizationType(str, Enum):
     Basic = "Basic"
 
 
-@deprecated("The `OpenAIAuthenticationConfig` class is deprecated; use OpenAPI Plugins instead.", category=None)
+@deprecated("The `OpenAIAuthenticationConfig` class is deprecated; use the `OpenAPI` plugin instead.", category=None)
 class OpenAIAuthenticationConfig(KernelBaseModel):
     """OpenAI authentication configuration."""
 
