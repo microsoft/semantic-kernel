@@ -476,6 +476,47 @@ public sealed class OpenApiKernelPluginFactoryTests
         }
     }
 
+    [Fact]
+    public void ItCreatesPluginFromOpenApiSpecificationModel()
+    {
+        // Arrange
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
+
+        var securityRequirements = new List<RestApiSecurityRequirement>
+        {
+            new(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(), new List<string>() } })
+        };
+
+        var operations = new List<RestApiOperation>
+        {
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
+        };
+
+        var specification = new RestApiSpecification(info, securityRequirements, operations);
+
+        // Act
+        var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("fakePlugin", specification, this._executionParameters);
+
+        // Assert
+        Assert.Single(plugin);
+        Assert.Equal("api-description", plugin.Description);
+        Assert.Equal("fakePlugin", plugin.Name);
+
+        var function = plugin["operation1"];
+        Assert.Equal("operation1", function.Name);
+        Assert.Equal("operation-description", function.Description);
+        Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
+    }
+
     /// <summary>
     /// Generate theory data for ItAddSecurityMetadataToOperationAsync
     /// </summary>

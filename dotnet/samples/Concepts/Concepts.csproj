@@ -106,12 +106,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Plugins\EventPlugin\openapiV1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Plugins\EventPlugin\openapiV2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -127,5 +127,10 @@
   <ItemGroup>
     <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
     <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
