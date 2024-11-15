@@ -26,12 +26,23 @@ class AzureAIInferenceTracing(KernelBaseModel):
         super().__init__(diagnostics_settings=diagnostics_settings or ModelDiagnosticSettings.create())
 
     def __enter__(self) -> None:
-        """Enable tracing."""
-        if self.diagnostics_settings.enable_otel_diagnostics:
+        """Enable tracing.
+
+        Both enable_otel_diagnostics and enable_otel_diagnostics_sensitive will enable tracing.
+        enable_otel_diagnostics_sensitive will also enable content recording.
+        """
+        if (
+            self.diagnostics_settings.enable_otel_diagnostics
+            or self.diagnostics_settings.enable_otel_diagnostics_sensitive
+        ):
             AIInferenceInstrumentor().instrument(
                 enable_content_recording=self.diagnostics_settings.enable_otel_diagnostics_sensitive
             )
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Disable tracing."""
-        AIInferenceInstrumentor().uninstrument()
+        if (
+            self.diagnostics_settings.enable_otel_diagnostics
+            or self.diagnostics_settings.enable_otel_diagnostics_sensitive
+        ):
+            AIInferenceInstrumentor().uninstrument()
