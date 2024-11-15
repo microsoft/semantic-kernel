@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Process.Internal;
 
@@ -51,15 +53,10 @@ internal static class MapExtensions
 
     private static string DefineOperationEventId(KernelProcess mapOperation, ProcessMessage message)
     {
-        foreach (var edge in mapOperation.Edges)
-        {
-            if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ??? (MATCHES FIRST WHEN MULTIPLE)
-            {
-                return edge.Key;
-            }
-        }
-
-        throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.Name}/{mapOperation.State.Id}.");
+        // Fails when zero or multiple candidate edges exist.  No reason a map-operation should be irrational.
+        return
+            mapOperation.Edges.SingleOrDefault(kvp => kvp.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)).Key ??
+            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.Name}/{mapOperation.State.Id}.");
     }
 
     private static bool IsEqual(IEnumerable targetData, object? possibleValue)
@@ -93,8 +90,17 @@ internal static class MapExtensions
             return false;
         }
 
-        return
-            targetType.GetElementType() == candidateType.GetElementType() &&
-            Enumerable.Equals(targetData, (IEnumerable)possibleValue);
+        if (targetType.GetElementType() == candidateType.GetElementType())
+        {
+            // Data has already been serialized to make get this far.
+            // Let's use serialization for equality check.
+            // Note: We aren't looking for equivalency.  We are testing
+            // for a clone of the exact same data instances.
+            string targetDataJson = JsonSerializer.Serialize(targetData);
+            string possibleValueJson = JsonSerializer.Serialize(possibleValue);
+            return string.Equals(targetDataJson, possibleValueJson, StringComparison.Ordinal);
+        }
+
+        return false;
     }
 }
