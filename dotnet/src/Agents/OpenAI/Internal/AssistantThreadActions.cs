@@ -179,7 +179,7 @@ internal static class AssistantThreadActions
         logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
 
         FunctionCallsProcessor functionProcessor = new(logger);
-        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795)
+        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
 
         // Evaluate status and process steps and messages, as encountered.
@@ -413,7 +413,7 @@ internal static class AssistantThreadActions
         ThreadRun? run = null;
 
         FunctionCallsProcessor functionProcessor = new(logger);
-        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795)
+        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
 
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
