@@ -55,7 +55,7 @@ internal static class DocumentLoader
             await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
-        logger.LogTrace("Importing document from {0}", uri);
+        logger.LogTrace("Importing document from '{Uri}'", uri);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
@@ -67,9 +67,9 @@ internal static class DocumentLoader
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        CheckIfFileExists(filePath);
+        CheckIfFileExists(filePath, logger);
 
-        logger.LogTrace("Importing document from {0}", filePath);
+        logger.LogTrace("Importing document from '{FilePath}'", filePath);
 
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
@@ -79,11 +79,13 @@ internal static class DocumentLoader
             ).ConfigureAwait(false);
     }
 
-    private static void CheckIfFileExists(string filePath)
+    private static void CheckIfFileExists(string filePath, ILogger logger)
     {
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
+            var exception = new FileNotFoundException($"Invalid file path. The specified path '{filePath}' does not exist.");
+            logger.LogError(exception, "Invalid file path. The specified path '{FilePath}' does not exist.", filePath);
+            throw exception;
         }
     }
 
@@ -91,7 +93,7 @@ internal static class DocumentLoader
         string filePath,
         ILogger logger)
     {
-        CheckIfFileExists(filePath);
+        CheckIfFileExists(filePath, logger);
 
         logger.LogTrace("Importing document from {0}", filePath);
 
