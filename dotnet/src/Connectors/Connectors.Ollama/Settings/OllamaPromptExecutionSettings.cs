@@ -38,7 +38,8 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
 
         // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
-        //ollamaExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+        ollamaExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
         return ollamaExecutionSettings;
     }
 
