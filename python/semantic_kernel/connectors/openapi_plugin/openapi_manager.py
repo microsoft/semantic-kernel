@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from enum import Enum
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
+from semantic_kernel.connectors.openapi_plugin.const import OperationExtensions
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_run_options import RestApiRunOptions
@@ -18,7 +18,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.schema.kernel_json_schema_builder import TYPE_MAPPING
-from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -29,18 +29,6 @@ if TYPE_CHECKING:
     )
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-@experimental_class
-class OperationExtensions(Enum):
-    """The operation extensions."""
-
-    METHOD_KEY = "method"
-    OPERATION_KEY = "operation"
-    INFO_KEY = "info"
-    SECURITY_KEY = "security"
-    SERVER_URLS_KEY = "server-urls"
-    METADATA_KEY = "operation-extensions"
 
 
 @experimental_function

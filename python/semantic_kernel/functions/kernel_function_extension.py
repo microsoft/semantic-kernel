@@ -207,17 +207,19 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
     def add_plugin_from_openapi(
         self,
         plugin_name: str,
-        openapi_document_path: str,
+        openapi_document_path: str | None = None,
+        openapi_parsed_spec: dict[str, Any] | None = None,
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> KernelPlugin:
         """Add a plugin from the OpenAPI manifest.
 
         Args:
-            plugin_name (str): The name of the plugin
-            openapi_document_path (str): The path to the OpenAPI document
-            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
+            plugin_name: The name of the plugin
+            openapi_document_path: The path to the OpenAPI document
+            openapi_parsed_spec: The parsed OpenAPI spec
+            execution_settings: The execution parameters
+            description: The description of the plugin
 
         Returns:
             KernelPlugin: The imported plugin
@@ -229,6 +231,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             KernelPlugin.from_openapi(
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
+                openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
                 description=description,
             )
