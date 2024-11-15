@@ -86,7 +86,7 @@ internal sealed class MapActor : StepActor, IMap
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         // Initialize the current operation
-        (IEnumerable inputValues, KernelProcess mapOperation, string startEventId) = map.Initialize(message, this._logger);
+        (IEnumerable inputValues, KernelProcess mapOperation, string startEventId) = this._map!.Initialize(message, this._logger);
 
         List<Task> mapOperations = [];
         foreach (var value in inputValues)
