@@ -61,9 +61,9 @@ class VectorStoreRecordDefinition:
         return [name for name, value in self.fields.items() if isinstance(value, VectorStoreRecordVectorField)]
 
     @property
-    def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
-        """Get the names of the vector fields."""
-        return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]
+    def non_vector_field_names(self) -> list[str]:
+        """Get the names of all the non-vector fields."""
+        return [name for name, value in self.fields.items() if not isinstance(value, VectorStoreRecordVectorField)]
 
     def try_get_vector_field(self, field_name: str | None = None) -> VectorStoreRecordVectorField | None:
         """Try to get the vector field.
@@ -104,6 +104,11 @@ class VectorStoreRecordDefinition:
         if not include_key_field:
             field_names = [name for name in field_names if name != self.key_field_name]
         return field_names
+
+    @property
+    def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
+        """Get the names of the vector fields."""
+        return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]
 
     def __post_init__(self):
         """Validate the fields.
