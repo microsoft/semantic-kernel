@@ -40,7 +40,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
 
         if (this.MapOperation is not ProcessBuilder process)
         {
-            throw new KernelException($"Map operation is not a process.");
+            throw new KernelException("Map operation is not a process.");
         }
 
         ProcessFunctionTargetBuilder operationTarget = process.WhereInputEventIs(eventId);
