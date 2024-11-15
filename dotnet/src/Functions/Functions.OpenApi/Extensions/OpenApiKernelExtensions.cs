@@ -125,9 +125,11 @@ public static class OpenApiKernelExtensions
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
+        ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
+
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+            loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -162,9 +164,11 @@ public static class OpenApiKernelExtensions
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
+        ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
+
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+            loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -257,7 +261,7 @@ public static class OpenApiKernelExtensions
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
-        ILoggerFactory loggerFactory = kernel.LoggerFactory;
+        ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
 
         return await OpenApiKernelPluginFactory.CreateOpenApiPluginAsync(pluginName, executionParameters, httpClient, pluginJson, documentUri, loggerFactory, cancellationToken).ConfigureAwait(false); ;
     }

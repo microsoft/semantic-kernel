@@ -4,6 +4,7 @@ using System.Text.Json;
 using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace SemanticKernel.Process.IntegrationTests.Controllers;
 
@@ -41,14 +42,10 @@ public class ProcessTestController : Controller
             return this.BadRequest("Process already started");
         }
 
-        if (request.InitialEvent?.Data is JsonElement jsonElement)
-        {
-            object? data = jsonElement.Deserialize<string>();
-            request.InitialEvent = request.InitialEvent with { Data = data };
-        }
+        var initialEvent = KernelProcessEventSerializer.ToKernelProcessEvent(request.InitialEvent);
 
         var kernelProcess = request.Process.ToKernelProcess();
-        var context = await kernelProcess.StartAsync(request.InitialEvent!);
+        var context = await kernelProcess.StartAsync(initialEvent);
         s_processes.Add(processId, context);
 
         return this.Ok();

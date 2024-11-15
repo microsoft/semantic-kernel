@@ -29,7 +29,7 @@ internal static class DocumentLoader
             await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
-        logger.LogTrace("Importing document from {0}", uri);
+        logger.LogTrace("Importing document from '{Uri}'", uri);
 
         using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -46,10 +46,12 @@ internal static class DocumentLoader
 
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
+            var exception = new FileNotFoundException($"Invalid file path. The specified path '{filePath}' does not exist.");
+            logger.LogError(exception, "Invalid file path. The specified path '{FilePath}' does not exist.", filePath);
+            throw exception;
         }
 
-        logger.LogTrace("Importing document from {0}", filePath);
+        logger.LogTrace("Importing document from '{FilePath}'", filePath);
 
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
