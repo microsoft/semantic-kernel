@@ -47,20 +47,30 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the specified function has been successfully invoked.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnResult");
     }
 
     /// <summary>
     /// Define the behavior of the step when the specified function has thrown an exception.
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionError(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnError");
     }
 
@@ -84,6 +94,25 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
     internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+
+    /// <summary>
+    /// Resolves the function name for the step.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    private string ResolveFunctionName()
+    {
+        if (this.FunctionsDict.Count == 0)
+        {
+            throw new KernelException($"The step {this.Name} has no functions.");
+        }
+        else if (this.FunctionsDict.Count > 1)
+        {
+            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+        }
+
+        return this.FunctionsDict.Keys.First();
+    }
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.

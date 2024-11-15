@@ -23,7 +23,7 @@ class GatherIngredientsStep(KernelProcessStep):
     def __init__(self, ingredient: FoodIngredients):
         super().__init__(ingredient=ingredient)
 
-    @kernel_function(name=Functions.GatherIngredients.value)
+    @kernel_function(name=Functions.GatherIngredients)
     async def gather_ingredients(self, context: KernelProcessStepContext, food_actions: list[str]):
         ingredient = self.ingredient.to_friendly_string()
         updated_food_actions = []
@@ -34,7 +34,7 @@ class GatherIngredientsStep(KernelProcessStep):
 
         print(f"GATHER_INGREDIENT: Gathered ingredient {ingredient}")
         await context.emit_event(
-            process_event=GatherIngredientsStep.OutputEvents.IngredientsGathered.value, data=updated_food_actions
+            process_event=GatherIngredientsStep.OutputEvents.IngredientsGathered, data=updated_food_actions
         )
 
 
@@ -59,7 +59,7 @@ class GatherIngredientsWithStockStep(KernelProcessStep[GatherIngredientsState]):
     async def activate(self, state: KernelProcessStepState[GatherIngredientsState]) -> None:
         self.state = state.state
 
-    @kernel_function(name=Functions.GatherIngredients.value)
+    @kernel_function(name=Functions.GatherIngredients)
     async def gather_ingredients(self, context: KernelProcessStepContext, food_actions: list[str]):
         ingredient = self.ingredient.to_friendly_string()
         updated_food_actions = []
@@ -68,7 +68,7 @@ class GatherIngredientsWithStockStep(KernelProcessStep[GatherIngredientsState]):
         if self.state.ingredients_stock == 0:
             print(f"GATHER_INGREDIENT: Could not gather {ingredient} - OUT OF STOCK!")
             await context.emit_event(
-                process_event=GatherIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock.value,
+                process_event=GatherIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock,
                 data=updated_food_actions,
             )
             return
@@ -80,6 +80,6 @@ class GatherIngredientsWithStockStep(KernelProcessStep[GatherIngredientsState]):
         self.state.ingredients_stock -= 1
         print(f"GATHER_INGREDIENT: Gathered ingredient {ingredient} - remaining: {self.state.ingredients_stock}")
         await context.emit_event(
-            process_event=GatherIngredientsWithStockStep.OutputEvents.IngredientsGathered.value,
+            process_event=GatherIngredientsWithStockStep.OutputEvents.IngredientsGathered,
             data=updated_food_actions,
         )

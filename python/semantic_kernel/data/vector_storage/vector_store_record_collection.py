@@ -303,7 +303,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return None
 
         try:
-            model_records = self.deserialize(records[0], keys=[key], **kwargs)
+            model_records = self.deserialize(records[0], **kwargs)
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
