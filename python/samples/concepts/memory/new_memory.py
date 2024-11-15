@@ -25,6 +25,7 @@ from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
     DistanceFunction,
     IndexKind,
+    VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,

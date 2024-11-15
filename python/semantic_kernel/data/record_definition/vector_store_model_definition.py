@@ -110,46 +110,6 @@ class VectorStoreRecordDefinition:
         """Get the names of the vector fields."""
         return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]
 
-    def try_get_vector_field(self, field_name: str | None = None) -> VectorStoreRecordVectorField | None:
-        """Try to get the vector field.
-
-        If the field_name is None, then the first vector field is returned.
-        If no vector fields are present None is returned.
-
-        Args:
-            field_name: The field name.
-
-        Returns:
-            VectorStoreRecordVectorField | None: The vector field or None.
-        """
-        if field_name is None:
-            if len(self.vector_fields) == 0:
-                return None
-            return self.vector_fields[0]
-        field = self.fields.get(field_name, None)
-        if not field:
-            raise VectorStoreModelException(f"Field {field_name} not found.")
-        if not isinstance(field, VectorStoreRecordVectorField):
-            raise VectorStoreModelException(f"Field {field_name} is not a vector field.")
-        return field
-
-    def get_field_names(self, include_vector_fields: bool = True, include_key_field: bool = True) -> list[str]:
-        """Get the names of the fields.
-
-        Args:
-            include_vector_fields: Whether to include vector fields.
-            include_key_field: Whether to include the key field.
-
-        Returns:
-            list[str]: The names of the fields.
-        """
-        field_names = self.field_names
-        if not include_vector_fields:
-            field_names = [name for name in field_names if name not in self.vector_field_names]
-        if not include_key_field:
-            field_names = [name for name in field_names if name != self.key_field_name]
-        return field_names
-
     def __post_init__(self):
         """Validate the fields.
 
