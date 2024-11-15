@@ -7,8 +7,19 @@ namespace Microsoft.SemanticKernel.Process;
 /// Attribute to set Process related steps to link Process Events to specific functions to execute when the event is emitted outside the Process
 /// </summary>
 /// <typeparam name="TEvents">Enum that contains all process events that could be subscribed to</typeparam>
-public abstract class KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
+public class KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
 {
+    protected readonly IServiceProvider? ServiceProvider;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessEventsSubscriber{TEvents}"/> class.
+    /// </summary>
+    /// <param name="serviceProvider">Optional service provider for resolving dependencies</param>
+    public KernelProcessEventsSubscriber(IServiceProvider? serviceProvider = null)
+    {
+        this.ServiceProvider = serviceProvider;
+    }
+
     /// <summary>
     /// Attribute to set Process related steps to link Process Events to specific functions to execute when the event is emitted outside the Process
     /// </summary>

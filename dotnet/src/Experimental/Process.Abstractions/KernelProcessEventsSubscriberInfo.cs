@@ -14,6 +14,8 @@ public class KernelProcessEventsSubscriberInfo
     private readonly Dictionary<string, string> _stepEventProcessEventMap = [];
     private Type? _processEventSubscriberType = null;
 
+    private IServiceProvider? _subscriberServiceProvider = null;
+
     protected void Subscribe(string eventName, MethodInfo method)
     {
         if (this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? eventHandlers) && eventHandlers != null)
@@ -46,22 +48,27 @@ public class KernelProcessEventsSubscriberInfo
             foreach (var method in linkedMethods)
             {
                 // TODO-estenori: Avoid creating a new instance every time a function is invoked - create instance once only?
-                var instance = Activator.CreateInstance(this._processEventSubscriberType, []);
+                var instance = Activator.CreateInstance(this._processEventSubscriberType, [this._subscriberServiceProvider]);
                 method.Invoke(instance, [data]);
             }
         }
     }
 
     /// <summary>
-    /// Extracts the event properties and function details of the functions with the annotator <see cref="KernelProcessEventsSubscriber{TEvents}.ProcessEventSubscriberAttribute"/>
+    /// Extracts the event properties and function details of the functions with the annotator
+    /// <see cref="KernelProcessEventsSubscriber{TEvents}.ProcessEventSubscriberAttribute"/>
     /// </summary>
-    /// <typeparam name="TEventListeners"></typeparam>
-    /// <typeparam name="TEvents"></typeparam>
+    /// <typeparam name="TEventListeners">Type of the class that make uses of the annotators and contains the functionality to be executed</typeparam>
+    /// <typeparam name="TEvents">Enum that contains the process subscribable events</typeparam>
     /// <exception cref="InvalidOperationException"></exception>
-    public void SubscribeToEventsFromClass<TEventListeners, TEvents>() where TEventListeners : KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
+    public void SubscribeToEventsFromClass<TEventListeners, TEvents>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
     {
-        var methods = typeof(TEventListeners).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+        if (this._subscriberServiceProvider != null)
+        {
+            throw new KernelException("Already linked process to a specific service provider class");
+        }
 
+        var methods = typeof(TEventListeners).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
         foreach (var method in methods)
         {
             if (method.GetCustomAttributes(typeof(KernelProcessEventsSubscriber<>.ProcessEventSubscriberAttribute), false).FirstOrDefault() is KernelProcessEventsSubscriber<TEvents>.ProcessEventSubscriberAttribute attribute)
@@ -75,6 +82,7 @@ public class KernelProcessEventsSubscriberInfo
             }
         }
 
+        this._subscriberServiceProvider = serviceProvider;
         this._processEventSubscriberType = typeof(TEventListeners);
     }
 

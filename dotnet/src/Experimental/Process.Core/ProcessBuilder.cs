@@ -291,9 +291,9 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
 
     #region Public Interface
 
-    public void LinkEventSubscribersFromType<TEventListeners>() where TEventListeners : KernelProcessEventsSubscriber<TEvents>
+    public void LinkEventSubscribersFromType<TEventListeners>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents>
     {
-        this._eventsSubscriber.SubscribeToEventsFromClass<TEventListeners, TEvents>();
+        this._eventsSubscriber.SubscribeToEventsFromClass<TEventListeners, TEvents>(serviceProvider);
     }
 
     public ProcessEdgeBuilder OnInputEvent(TEvents eventId)

@@ -16,6 +16,9 @@ public enum FishProcessEvents
 
 public class FriedFishEventSubscribers : KernelProcessEventsSubscriber<FishProcessEvents>
 {
+    // TODO-estenori: figure out how to disallow and not need constructor on when using KernelProcessEventsSubscriber as base class
+    public FriedFishEventSubscribers(IServiceProvider? serviceProvider = null) : base(serviceProvider) { }
+
     [ProcessEventSubscriber(FishProcessEvents.MiddleStep)]
     public void OnMiddleStep(List<string> data)
     {
