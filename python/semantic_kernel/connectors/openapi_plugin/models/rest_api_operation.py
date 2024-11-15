@@ -119,7 +119,7 @@ class RestApiOperation:
     @servers.setter
     def servers(self, value: list[str | ParseResult]):
         self._throw_if_frozen()
-        self._servers = value
+        self._servers = [urlparse(s) if isinstance(s, str) else s for s in value]
 
     @property
     def path(self):

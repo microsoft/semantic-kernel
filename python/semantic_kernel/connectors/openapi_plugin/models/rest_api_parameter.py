@@ -80,7 +80,7 @@ class RestApiParameter:
         return self._location
 
     @location.setter
-    def location(self, value: str):
+    def location(self, value: RestApiParameterLocation):
         self._throw_if_frozen()
         self._location = value
 
@@ -90,7 +90,7 @@ class RestApiParameter:
         return self._style
 
     @style.setter
-    def style(self, value: str | None):
+    def style(self, value: RestApiParameterStyle | None):
         self._throw_if_frozen()
         self._style = value
 

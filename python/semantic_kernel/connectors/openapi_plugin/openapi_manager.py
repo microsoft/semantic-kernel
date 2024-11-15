@@ -61,6 +61,7 @@ def create_functions_from_openapi(
     Returns:
         list[KernelFunctionFromMethod]: the operations as functions
     """
+    parsed_doc: dict[str, Any] | Any = None
     if openapi_parsed_spec is not None:
         parsed_doc = openapi_parsed_spec
     else:
