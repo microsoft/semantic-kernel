@@ -251,6 +251,7 @@ internal sealed class FunctionCallsProcessor
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         FunctionCallContent[] functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToArray();
+        ChatHistory history = [chatMessageContent];
 
         this._logger.LogFunctionCalls(functionCalls);
 
@@ -261,11 +262,6 @@ internal sealed class FunctionCallsProcessor
         for (int functionCallIndex = 0; functionCallIndex < functionCalls.Length; functionCallIndex++)
         {
             FunctionCallContent functionCall = functionCalls[functionCallIndex];
-            ChatMessageContent functionCallMessage =
-                new()
-                {
-                    Items = [.. functionCalls]
-                };
 
             // Check if the function call is valid to execute.
             if (!TryValidateFunctionCall(functionCall, checkIfFunctionAdvertised, kernel, out KernelFunction? function, out string? errorMessage))
@@ -279,8 +275,8 @@ internal sealed class FunctionCallsProcessor
                 new(kernel!,  // Kernel cannot be null if function-call is valid
                     function,
                     result: new(function) { Culture = kernel!.Culture },
-                    [],
-                    functionCallMessage)
+                    history,
+                    chatMessageContent)
                 {
                     Arguments = functionCall.Arguments,
                     FunctionSequenceIndex = functionCallIndex,
