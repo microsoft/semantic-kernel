@@ -42,8 +42,8 @@ class KickOffStep(KernelProcessStep):
 
     @kernel_function(name=KICK_OFF_FUNCTION)
     async def print_welcome_message(self, context: KernelProcessStepContext):
-        await context.emit_event(process_event=CommonEvents.StartARequested.value, data="Get Going A")
-        await context.emit_event(process_event=CommonEvents.StartBRequested.value, data="Get Going B")
+        await context.emit_event(process_event=CommonEvents.StartARequested, data="Get Going A")
+        await context.emit_event(process_event=CommonEvents.StartBRequested, data="Get Going B")
 
 
 # Define a sample `AStep` step that will emit an event after 1 second.
@@ -52,7 +52,7 @@ class AStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
         await asyncio.sleep(1)
-        await context.emit_event(process_event=CommonEvents.AStepDone.value, data="I did A")
+        await context.emit_event(process_event=CommonEvents.AStepDone, data="I did A")
 
 
 # Define a sample `BStep` step that will emit an event after 2 seconds.
@@ -61,7 +61,7 @@ class BStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
         await asyncio.sleep(2)
-        await context.emit_event(process_event=CommonEvents.BStepDone.value, data="I did B")
+        await context.emit_event(process_event=CommonEvents.BStepDone, data="I did B")
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
@@ -84,9 +84,9 @@ class CStep(KernelProcessStep[CStepState]):
         print(f"CStep Current Cycle: {self.state.current_cycle}")
         if self.state.current_cycle == 3:
             print("CStep Exit Requested")
-            await context.emit_event(process_event=CommonEvents.ExitRequested.value)
+            await context.emit_event(process_event=CommonEvents.ExitRequested)
             return
-        await context.emit_event(process_event=CommonEvents.CStepDone.value)
+        await context.emit_event(process_event=CommonEvents.CStepDone)
 
 
 kernel = Kernel()
@@ -105,17 +105,17 @@ async def cycles_with_fan_in():
     myCStep = process.add_step(step_type=CStep)
 
     # Define the input event and where to send it to
-    process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(target=kickoff_step)
+    process.on_input_event(event_id=CommonEvents.StartProcess).send_event_to(target=kickoff_step)
 
     # Define the process flow
-    kickoff_step.on_event(event_id=CommonEvents.StartARequested.value).send_event_to(target=myAStep)
-    kickoff_step.on_event(event_id=CommonEvents.StartBRequested.value).send_event_to(target=myBStep)
-    myAStep.on_event(event_id=CommonEvents.AStepDone.value).send_event_to(target=myCStep, parameter_name="astepdata")
+    kickoff_step.on_event(event_id=CommonEvents.StartARequested).send_event_to(target=myAStep)
+    kickoff_step.on_event(event_id=CommonEvents.StartBRequested).send_event_to(target=myBStep)
+    myAStep.on_event(event_id=CommonEvents.AStepDone).send_event_to(target=myCStep, parameter_name="astepdata")
 
     # Define the fan in behavior once both AStep and BStep are done
-    myBStep.on_event(event_id=CommonEvents.BStepDone.value).send_event_to(target=myCStep, parameter_name="bstepdata")
-    myCStep.on_event(event_id=CommonEvents.CStepDone.value).send_event_to(target=kickoff_step)
-    myCStep.on_event(event_id=CommonEvents.ExitRequested.value).stop_process()
+    myBStep.on_event(event_id=CommonEvents.BStepDone).send_event_to(target=myCStep, parameter_name="bstepdata")
+    myCStep.on_event(event_id=CommonEvents.CStepDone).send_event_to(target=kickoff_step)
+    myCStep.on_event(event_id=CommonEvents.ExitRequested).stop_process()
 
     # Build the process
     kernel_process = process.build()
@@ -123,7 +123,7 @@ async def cycles_with_fan_in():
     async with await start(
         process=kernel_process,
         kernel=kernel,
-        initial_event=KernelProcessEvent(id=CommonEvents.StartProcess.value, data="foo"),
+        initial_event=KernelProcessEvent(id=CommonEvents.StartProcess, data="foo"),
     ) as process_context:
         process_state = await process_context.get_state()
         c_step_state: KernelProcessStepState[CStepState] = next(

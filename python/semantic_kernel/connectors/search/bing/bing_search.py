@@ -9,13 +9,13 @@ from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse
+from semantic_kernel.connectors.search.bing.bing_search_settings import BingSettings
 from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
 from semantic_kernel.connectors.search.bing.const import (
     DEFAULT_CUSTOM_URL,
     DEFAULT_URL,
     QUERY_PARAMETERS,
 )
-from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
@@ -47,7 +47,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the BingConnector class.
+        """Initializes a new instance of the Bing Search class.
 
         Args:
             api_key: The Bing Search API key. If provided, will override
@@ -155,7 +155,7 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         logger.info(
             f"Received request for bing web search with \
-                params:\nquery: {query}\nnum_results: {options.top}\noffset: {options.skip}"
+                params:\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
         url = self._get_url()

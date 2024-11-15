@@ -20,12 +20,12 @@ from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import LocalEvent
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.process_types import get_generic_state_type
+from semantic_kernel.processes.step_utils import find_input_channels
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -197,7 +197,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             self.functions[name] = f
 
         # Initialize the input channels
-        self.initial_inputs = self.find_input_channels()
+        self.initial_inputs = find_input_channels(channel=self, functions=self.functions)
         self.inputs = {k: {kk: vv for kk, vv in v.items()} if v else {} for k, v in self.initial_inputs.items()}
 
         # Use the existing state or create a new one if not provided
@@ -247,27 +247,6 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         # Set the step state and activate the step with the state object
         self.step_state = state_object
         await step_instance.activate(state_object)
-
-    def find_input_channels(self) -> dict[str, dict[str, Any | None]]:
-        """Finds and creates input channels."""
-        if not self.functions:
-            raise ValueError("The step has not been initialized.")
-
-        inputs: dict[str, Any] = {}
-        for name, function in self.functions.items():
-            inputs[name] = {}
-            for param in function.metadata.parameters:
-                # Check for Kernel, and skip if necessary, since it is populated later on
-                if param.type_ == "Kernel":
-                    continue
-                if not param.is_required:
-                    continue
-                if param.type_ == "KernelProcessStepContext":
-                    inputs[name][param.name] = KernelProcessStepContext(self)
-                else:
-                    inputs[name][param.name] = None
-
-        return inputs
 
     def get_all_events(self) -> list["LocalEvent"]:
         """Retrieves all events that have been emitted by this step in the previous superstep."""

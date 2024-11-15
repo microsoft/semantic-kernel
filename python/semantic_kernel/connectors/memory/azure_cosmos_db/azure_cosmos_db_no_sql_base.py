@@ -91,7 +91,9 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
         except CosmosResourceNotFoundError:
             return False
         except Exception as e:
-            raise MemoryConnectorResourceNotFound(f"Failed to check if database '{self.database_name}' exists.") from e
+            raise MemoryConnectorResourceNotFound(
+                f"Failed to check if database '{self.database_name}' exists, with message {e}"
+            ) from e
 
     async def _get_database_proxy(self, **kwargs) -> DatabaseProxy:
         """Gets the database proxy."""

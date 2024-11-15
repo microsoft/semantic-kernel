@@ -13,7 +13,7 @@ class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
     """Azure CosmosDB NoSQL settings.
 
     The settings are first loaded from environment variables with
-    the prefix 'COSMOS_DB_NOSQL_'.
+    the prefix 'AZURE_COSMOS_DB_NO_SQL_'.
     If the environment variables are not found, the settings can
     be loaded from a .env file with the encoding 'utf-8'.
     If the settings are not found in the .env file, the settings
