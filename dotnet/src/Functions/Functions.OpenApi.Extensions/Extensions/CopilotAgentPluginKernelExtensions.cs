@@ -5,15 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.OpenApi.ApiManifest;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
+using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
@@ -22,43 +21,43 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
 /// </summary>
-public static class ApiManifestKernelExtensions
+public static class CopilotAgentPluginKernelExtensions
 {
     /// <summary>
-    /// Imports a plugin from an API manifest asynchronously.
+    /// Imports a plugin from an Copilot Agent Plugin asynchronously.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
-    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
-    public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
+    public static async Task<KernelPlugin> ImportPluginFromCopilotAgentPluginAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        ApiManifestPluginParameters? pluginParameters = null,
+        CopilotAgentPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
 
     /// <summary>
-    /// Creates a kernel plugin from an API manifest file asynchronously.
+    /// Creates a kernel plugin from an Copilot Agent Plugin file asynchronously.
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
-    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
-    public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
+    public static async Task<KernelPlugin> CreatePluginFromCopilotAgentPluginAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        ApiManifestPluginParameters? pluginParameters = null,
+        CopilotAgentPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -70,28 +69,48 @@ public static class ApiManifestKernelExtensions
 
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"ApiManifest file not found: {filePath}");
+            throw new FileNotFoundException($"CopilotAgent file not found: {filePath}");
         }
 
         var loggerFactory = kernel.LoggerFactory;
-        var logger = loggerFactory.CreateLogger(typeof(ApiManifestKernelExtensions)) ?? NullLogger.Instance;
-        using var apiManifestFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
+        var logger = loggerFactory.CreateLogger(typeof(CopilotAgentPluginKernelExtensions)) ?? NullLogger.Instance;
+        using var CopilotAgentFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
             logger);
-        JsonDocument jsonDocument = await JsonDocument.ParseAsync(apiManifestFileJsonContents, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
+        var results = await PluginManifestDocument.LoadAsync(CopilotAgentFileJsonContents, new ReaderOptions
+        {
+            ValidationRules = new() // Disable validation rules
+        }).ConfigureAwait(false);
+
+        if (!results.IsValid)
+        {
+            var messages = results.Problems.Select(p => p.Message).Aggregate((a, b) => $"{a}, {b}");
+            throw new InvalidOperationException($"Error loading the manifest: {messages}");
+        }
+
+        var document = results.Document;
+        var openAPIRuntimes = document?.Runtimes?.Where(runtime => runtime.Type == RuntimeType.OpenApi).ToList();
+        if (openAPIRuntimes is null || openAPIRuntimes.Count == 0)
+        {
+            throw new InvalidOperationException("No OpenAPI runtimes found in the manifest.");
+        }
 
         var functions = new List<KernelFunction>();
         var documentWalker = new OpenApiWalker(new OperationIdNormalizationOpenApiVisitor());
-        foreach (var apiDependency in document.ApiDependencies)
+        foreach (var runtime in openAPIRuntimes)
         {
-            var apiName = apiDependency.Key;
-            var apiDependencyDetails = apiDependency.Value;
-
-            var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
-            if (apiDescriptionUrl is null)
+            var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
+            if (manifestFunctions is null || manifestFunctions.Count == 0)
             {
-                logger.LogWarning("ApiDescriptionUrl is missing for API dependency: {ApiName}", apiName);
+                logger.LogWarning("No functions found in the runtime object.");
+                continue;
+            }
+
+            var openApiRuntime = runtime as OpenApiRuntime;
+            var apiDescriptionUrl = openApiRuntime?.Spec?.Url ?? string.Empty;
+            if (apiDescriptionUrl.Length == 0)
+            {
+                logger.LogWarning("No API description URL found in the runtime object.");
                 continue;
             }
 
@@ -100,7 +119,7 @@ public static class ApiManifestKernelExtensions
                 (new Uri(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, apiDescriptionUrl)), false);
 
             using var openApiDocumentStream = isOnlineDescription ?
-                await DocumentLoader.LoadDocumentFromUriAsStreamAsync(new Uri(apiDescriptionUrl),
+                await DocumentLoader.LoadDocumentFromUriAsStreamAsync(parsedDescriptionUrl,
                     logger,
                     httpClient,
                     authCallback: null,
@@ -111,7 +130,7 @@ public static class ApiManifestKernelExtensions
 
             var documentReadResult = await new OpenApiStreamReader(new()
             {
-                BaseUrl = new(apiDescriptionUrl)
+                BaseUrl = parsedDescriptionUrl
             }
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;
@@ -119,28 +138,17 @@ public static class ApiManifestKernelExtensions
 
             documentWalker.Walk(openApiDocument);
 
-            var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
-            foreach (var (UriTemplate, Method) in pathMethodPairs)
-            {
-                if (UriTemplate is null || Method is null)
-                {
-                    continue;
-                }
-
-                if (requestUrls.TryGetValue(UriTemplate, out List<string>? value))
-                {
-                    value.Add(Method);
-                    continue;
-                }
-
-                requestUrls.Add(UriTemplate, [Method]);
-            }
-
-            var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
+            var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(static f => f.Name)), null, null, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
-            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(apiName, out var parameters) == true
+            var server = filteredOpenApiDocument.Servers.FirstOrDefault();
+            if (server?.Url is null)
+            {
+                logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
+                continue;
+            }
+
+            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(server.Url, out var parameters) == true
                 ? parameters
                 : null;
 
@@ -155,12 +163,6 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
-            var server = filteredOpenApiDocument.Servers.FirstOrDefault();
-            if (server?.Url is null)
-            {
-                logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
-                continue;
-            }
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
             foreach (var path in filteredOpenApiDocument.Paths)
@@ -182,7 +184,6 @@ public static class ApiManifestKernelExtensions
                 }
             }
         }
-
         return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
 }
