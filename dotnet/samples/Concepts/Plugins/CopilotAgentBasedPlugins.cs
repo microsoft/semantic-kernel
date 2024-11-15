@@ -1,23 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http.Headers;
 using System.Web;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Plugins;
-
 /// <summary>
-/// These examples demonstrate how to use API Manifest plugins to call Microsoft Graph and NASA APIs.
-/// API Manifest plugins are created from the OpenAPI document and the manifest file.
+/// These examples demonstrate how to use Copilot Agent plugins to call Microsoft Graph and NASA APIs.
+/// Copilot Agent Plugins are created from the OpenAPI document and the manifest file.
 /// The manifest file contains the API dependencies and their execution parameters.
 /// The manifest file also contains the authentication information for the APIs, however this is not used by the extension method and MUST be setup separately at the moment, which the example demonstrates.
 ///
 /// Important stages being demonstrated:
-/// 1. Load APIManifest plugins
+/// 1. Load Copilot Agent Plugins
 /// 2. Configure authentication for the APIs
 /// 3. Call functions from the loaded plugins
 ///
@@ -53,7 +50,7 @@ namespace Plugins;
 ///
 /// </summary>
 /// <param name="output">The output helper to use to the test can emit status information</param>
-public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)
+public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     public static readonly IEnumerable<object[]> s_parameters =
     [
@@ -63,20 +60,18 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         ["ContactsPlugin", "me_ListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
         ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
-        #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
+        // Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
         ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
-        #endregion
     ];
-
     [Theory, MemberData(nameof(s_parameters))]
-    public async Task RunApiManifestPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public async Task RunCopilotAgentPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
-        var kernel = Kernel.CreateBuilder().Build();
-        await AddApiManifestPluginsAsync(kernel, pluginsToLoad);
+        var kernel = new Kernel();
+        await AddCopilotAgentPluginsAsync(kernel, pluginsToLoad);
 
         var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
         Console.WriteLine("--------------------");
@@ -87,13 +82,12 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
     private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
         Console.WriteLine();
-        Console.WriteLine("======== [ApiManifest Plugins Sample] ========");
+        Console.WriteLine("======== [CopilotAgent Plugins Sample] ========");
         Console.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
         Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         Console.WriteLine();
     }
-
-    private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
+    private async Task AddCopilotAgentPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
 #pragma warning disable SKEXP0050
         if (TestConfiguration.MSGraph.Scopes is null)
@@ -129,52 +123,35 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                 request.RequestUri = uriBuilder.Uri;
             });
 
-        var apiManifestPluginParameters = new ApiManifestPluginParameters(
-            functionExecutionParameters: new()
+        var apiManifestPluginParameters = new CopilotAgentPluginParameters
+        {
+            FunctionExecutionParameters = new()
             {
-                { "microsoft.graph", graphOpenApiFunctionExecutionParameters },
-                { "nasa", nasaOpenApiFunctionExecutionParameters }
-            });
-        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "ApiManifestPlugins");
+                { "https://graph.microsoft.com/v1.0", graphOpenApiFunctionExecutionParameters },
+                { "https://api.nasa.gov/planetary", nasaOpenApiFunctionExecutionParameters }
+            }
+        };
+        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "CopilotAgentPlugins");
 
         foreach (var pluginName in pluginNames)
         {
             try
             {
-                KernelPlugin plugin =
-                await kernel.ImportPluginFromApiManifestAsync(
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                await kernel.ImportPluginFromCopilotAgentPluginAsync(
                     pluginName,
-                    Path.Combine(manifestLookupDirectory, pluginName, "apimanifest.json"),
+                    Path.Combine(manifestLookupDirectory, pluginName, $"{pluginName[..^6].ToLowerInvariant()}-apiplugin.json"),
                     apiManifestPluginParameters)
                     .ConfigureAwait(false);
+#pragma warning restore CA1308 // Normalize strings to uppercase
                 Console.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
             }
             catch (Exception ex)
             {
-                kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+                Console.WriteLine("Plugin creation failed. Message: {0}", ex.Message);
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
-    }
-}
-
-/// <summary>
-/// Retrieves a token via the provided delegate and applies it to HTTP requests using the
-/// "bearer" authentication scheme.
-/// </summary>
-public class BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
-{
-    private readonly Func<Task<string>> _bearerToken = bearerToken;
-
-    /// <summary>
-    /// Applies the token to the provided HTTP request message.
-    /// </summary>
-    /// <param name="request">The HTTP request message.</param>
-    /// <param name="cancellationToken"></param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
-    {
-        var token = await this._bearerToken().ConfigureAwait(false);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 }
