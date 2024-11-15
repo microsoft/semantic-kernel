@@ -9,7 +9,33 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 
 internal static class MapExtensions
 {
-    public static IEnumerable GetMapInput(this ProcessMessage message, ILogger? logger)
+    public static (IEnumerable, KernelProcess, string) Initialize(this KernelProcessMap map, ProcessMessage message, ILogger? logger)
+    {
+        IEnumerable inputValues = message.GetMapInput(logger);
+        KernelProcess mapOperation;
+        string startEventId;
+
+        if (map.Operation is KernelProcess kernelProcess)
+        {
+            startEventId = DefineOperationEventId(kernelProcess, message);
+            mapOperation = kernelProcess;
+        }
+        else
+        {
+            startEventId = ProcessConstants.MapEventId;
+            string? parameterName = message.Values.SingleOrDefault(kvp => IsEqual(inputValues, kvp.Value)).Key;
+            string proxyId = Guid.NewGuid().ToString("N");
+            mapOperation =
+                new KernelProcess(
+                    new KernelProcessState($"Map{map.Operation.State.Name}", map.Operation.State.Version, proxyId),
+                    [map.Operation],
+                    new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName))] } });
+        }
+
+        return (inputValues, mapOperation, startEventId);
+    }
+
+    private static IEnumerable GetMapInput(this ProcessMessage message, ILogger? logger)
     {
         if (message.TargetEventData == null)
         {
@@ -17,45 +43,58 @@ internal static class MapExtensions
         }
 
         Type valueType = message.TargetEventData.GetType();
-        if (!typeof(IEnumerable).IsAssignableFrom(valueType) || !valueType.HasElementType)
-        {
+
+        return typeof(IEnumerable).IsAssignableFrom(valueType) && valueType.HasElementType ?
+            (IEnumerable)message.TargetEventData :
             throw new KernelException($"Internal Map Error: Input parameter is not enumerable - {message.SourceId}/{message.DestinationId} [{valueType.FullName}].").Log(logger);
-        }
-
-        return (IEnumerable)message.TargetEventData;
     }
 
-    public static KernelProcess CreateProxyOperation(this KernelProcessMap map, ProcessMessage message)
+    private static string DefineOperationEventId(KernelProcess mapOperation, ProcessMessage message)
     {
-        if (map.Operation is KernelProcess kernelProcess)
+        foreach (var edge in mapOperation.Edges)
         {
-            return kernelProcess;
-        }
-
-        string? parameterName = message.Values.SingleOrDefault(kvp => kvp.Value == message.TargetEventData).Key;
-        string proxyId = Guid.NewGuid().ToString("N");
-        return
-            new KernelProcess(
-                new KernelProcessState($"Map{map.Operation.State.Name}", map.Operation.State.Version, proxyId),
-                [map.Operation],
-                new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName))] } });
-    }
-
-    public static string DefineOperationEventId(this KernelProcessMap map, ProcessMessage message)
-    {
-        if (map.Operation is KernelProcess kernelProcess)
-        {
-            foreach (var edge in kernelProcess.Edges)
+            if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ??? (MATCHES FIRST WHEN MULTIPLE)
             {
-                if (edge.Value.Any(e => e.OutputTarget.FunctionName == message.FunctionName)) // %%% SUFFICIENT ???
-                {
-                    return edge.Key;
-                }
+                return edge.Key;
             }
-
-            throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {map.State.Name}/{map.State.Id}.");
         }
 
-        return ProcessConstants.MapEventId;
+        throw new InvalidOperationException($"The map operation does not have an input edge that matches the message destination: {mapOperation.State.Name}/{mapOperation.State.Id}.");
+    }
+
+    private static bool IsEqual(IEnumerable targetData, object? possibleValue)
+    {
+        // Short circuit for null candidate
+        if (possibleValue == null)
+        {
+            return false;
+        }
+
+        // Object equality is valid for LocalRuntime
+        if (targetData == possibleValue)
+        {
+            return true;
+        }
+
+        // DAPR runtime requires a deeper comparision
+        Type candidateType = possibleValue.GetType();
+
+        // Candidate must be enumerable with element type
+        if (!typeof(IEnumerable).IsAssignableFrom(candidateType) ||
+            !candidateType.HasElementType)
+        {
+            return false;
+        }
+
+        // Types much match
+        Type targetType = targetData.GetType();
+        if (candidateType != targetData.GetType())
+        {
+            return false;
+        }
+
+        return
+            targetType.GetElementType() == candidateType.GetElementType() &&
+            Enumerable.Equals(targetData, (IEnumerable)possibleValue);
     }
 }
