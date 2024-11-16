@@ -186,7 +186,10 @@ public class KernelProcessSerializationTests
         if (step is KernelProcessMap mapStep)
         {
             Assert.IsType<KernelProcessMapStateMetadata>(savedStep);
-            //AssertStepState(mapStep.Operation, ((KernelProcessMapStateMetadata)savedStep).OperationState); %%% HONESTLY
+            KernelProcessMapStateMetadata mapState = (KernelProcessMapStateMetadata)savedStep;
+            Assert.NotNull(mapState.OperationState);
+            Assert.NotNull(mapState.OperationState.Name);
+            AssertStepState(mapStep.Operation, new() { { mapState.OperationState.Name, mapState.OperationState } });
         }
         else if (step is KernelProcess subProcess)
         {
