@@ -18,6 +18,10 @@ public sealed class OpenAIThreadCreationOptions
     /// <summary>
     /// Optional messages to initialize thread with..
     /// </summary>
+    /// <remarks>
+    /// Only supports messages with role = User or Assistant:
+    /// https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+    /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ChatMessageContent>? Messages { get; init; }
 

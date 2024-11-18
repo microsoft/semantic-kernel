@@ -28,13 +28,6 @@ internal static class AssistantThreadActions
         RunStatus.Cancelling,
     ];
 
-    private static readonly HashSet<RunStatus> s_terminalStatuses =
-    [
-        RunStatus.Expired,
-        RunStatus.Failed,
-        RunStatus.Cancelled,
-    ];
-
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
@@ -199,7 +192,7 @@ internal static class AssistantThreadActions
             await PollRunStatusAsync().ConfigureAwait(false);
 
             // Is in terminal state?
-            if (s_terminalStatuses.Contains(run.Status))
+            if (run.Status.IsTerminal && run.Status != RunStatus.Completed)
             {
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
@@ -487,7 +480,7 @@ internal static class AssistantThreadActions
             }
 
             // Is in terminal state?
-            if (s_terminalStatuses.Contains(run.Status))
+            if (run.Status.IsTerminal && run.Status != RunStatus.Completed)
             {
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
