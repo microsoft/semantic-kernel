@@ -57,11 +57,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have, based on <see cref="VectorDataType"/> enumeration.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
-        // Float16
-#if NET5_0_OR_GREATER
-        typeof(ReadOnlyMemory<Half>),
-        typeof(ReadOnlyMemory<Half>?),
-#endif
         // Float32
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?),
@@ -485,7 +480,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             var embedding = new Embedding
             {
                 DataType = GetDataType(property.PropertyType, vectorPropertyName),
-                Dimensions = (ulong)property.Dimensions,
+                Dimensions = (int)property.Dimensions,
                 DistanceFunction = GetDistanceFunction(property.DistanceFunction, vectorPropertyName),
                 Path = path
             };
@@ -576,9 +571,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     {
         return vectorDataType switch
         {
-#if NET5_0_OR_GREATER
-            Type type when type == typeof(ReadOnlyMemory<Half>) || type == typeof(ReadOnlyMemory<Half>?) => VectorDataType.Float16,
-#endif
             Type type when type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?) => VectorDataType.Float32,
             Type type when type == typeof(ReadOnlyMemory<byte>) || type == typeof(ReadOnlyMemory<byte>?) => VectorDataType.Uint8,
             Type type when type == typeof(ReadOnlyMemory<sbyte>) || type == typeof(ReadOnlyMemory<sbyte>?) => VectorDataType.Int8,
