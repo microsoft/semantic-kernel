@@ -53,10 +53,10 @@ internal sealed class RestApiOperationRunner
     /// </remarks>
     private static readonly Dictionary<string, HttpResponseContentReader> s_contentReaderByContentType = new()
     {
-        { "image", async (context, _) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
-        { "text", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
-        { "application/xml", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+        { "image", async (context, cancellationToken) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
+        { "text", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
+        { "application/json", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)},
+        { "application/xml", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)}
     };
 
     /// <summary>

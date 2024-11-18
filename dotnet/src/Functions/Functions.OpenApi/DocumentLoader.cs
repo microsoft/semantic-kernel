@@ -22,7 +22,7 @@ internal static class DocumentLoader
         CancellationToken cancellationToken)
     {
         using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task<Stream> LoadDocumentFromUriAsStreamAsync(
@@ -35,7 +35,7 @@ internal static class DocumentLoader
     {
         //disposing the response disposes the stream
         var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
-        var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         return new HttpResponseStream(stream, response);
     }
 

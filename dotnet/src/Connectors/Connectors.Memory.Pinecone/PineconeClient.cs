@@ -544,7 +544,7 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        string responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         return (response, responseContent);
     }
