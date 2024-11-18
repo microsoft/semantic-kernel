@@ -25,8 +25,12 @@ public sealed class OpenAIAssistantInvocationOptions
     public string? AdditionalInstructions { get; init; }
 
     /// <summary>
-    /// Additional messages to add to the the thread.
+    /// Additional messages to add to the thread.
     /// </summary>
+    /// <remarks>
+    /// Only supports messages with role = User or Assistant:
+    /// https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+    /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ChatMessageContent>? AdditionalMessages { get; init; }
 
