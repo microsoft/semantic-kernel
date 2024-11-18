@@ -133,7 +133,6 @@ public sealed class OpenAIAssistantAgentTests
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
                 new Kernel());
 
-
         // Upload file - Using a table of fictional employees.
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
         await using Stream stream = File.OpenRead("TestData/employees.pdf")!;
