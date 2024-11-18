@@ -458,7 +458,7 @@ internal static class AssistantThreadActions
                     {
                         yield return toolContent;
                     }
-                    else
+                    else if (detailsUpdate.FunctionOutput != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
