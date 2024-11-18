@@ -1,0 +1,86 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API with Multipart Form Data",
+    "version": "1.0.0",
+    "description": "API with Multipart Form Data"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com"
+    }
+  ],
+  "paths": {
+    "/api/mensatest/ExcelImport/QuickImport": {
+      "post": {
+        "tags": [
+          "ExcelImport"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "File": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "File": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ImportResultModelGenericResult": {
+        "type": "object",
+        "required": [ "type" ],
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "type"
+        }
+      }
+    }
+  }
+}  
