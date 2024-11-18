@@ -121,7 +121,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Open AI services.
     /// </summary>
     [Fact]
-    public async Task AzureOpenAIAssistantAgentStreamingFileSearchsAsync()
+    public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
