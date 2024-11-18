@@ -50,10 +50,6 @@ public static class FriedFishProcess
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
-        fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
-            .StopProcess();
-
         return processBuilder;
     }
 
