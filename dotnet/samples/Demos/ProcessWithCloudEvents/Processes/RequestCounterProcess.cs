@@ -114,10 +114,6 @@ public static class RequestCounterProcess
 
     public class CounterProcessSubscriber : KernelProcessEventsSubscriber<CounterProcessEvents>
     {
-        public CounterProcessSubscriber(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-        }
-
         private SendMailPostRequestBody GenerateEmailRequest(int counter, string emailAddress, string subject)
         {
             var message = GraphRequestFactory.CreateEmailBody(
@@ -139,7 +135,7 @@ public static class RequestCounterProcess
             try
             {
                 var graphClient = this.ServiceProvider?.GetRequiredService<GraphServiceClient>();
-                var user = await graphClient.Me.GetAsync();
+                var user = await graphClient?.Me.GetAsync();
                 var graphEmailMessage = this.GenerateEmailRequest(counterResult.Value, user!.Mail!, subject: "The counter has changed");
                 await graphClient?.Me.SendMail.PostAsync(graphEmailMessage);
             }

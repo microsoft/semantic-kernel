@@ -3,28 +3,30 @@
 using System;
 
 namespace Microsoft.SemanticKernel.Process;
+
+public class KernelProcessEventsSubscriber
+{
+    public IServiceProvider? ServiceProvider { get; init; }
+
+    protected KernelProcessEventsSubscriber() { }
+}
+
 /// <summary>
 /// Attribute to set Process related steps to link Process Events to specific functions to execute when the event is emitted outside the Process
 /// </summary>
 /// <typeparam name="TEvents">Enum that contains all process events that could be subscribed to</typeparam>
-public class KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
+public class KernelProcessEventsSubscriber<TEvents> : KernelProcessEventsSubscriber where TEvents : Enum
 {
-    protected readonly IServiceProvider? ServiceProvider;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessEventsSubscriber{TEvents}"/> class.
     /// </summary>
-    /// <param name="serviceProvider">Optional service provider for resolving dependencies</param>
-    public KernelProcessEventsSubscriber(IServiceProvider? serviceProvider = null)
-    {
-        this.ServiceProvider = serviceProvider;
-    }
+    public KernelProcessEventsSubscriber() { }
 
     /// <summary>
     /// Attribute to set Process related steps to link Process Events to specific functions to execute when the event is emitted outside the Process
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class ProcessEventSubscriberAttribute : Attribute
+    public sealed class ProcessEventSubscriberAttribute : Attribute
     {
         /// <summary>
         /// Gets the enum of the event that the function is linked to

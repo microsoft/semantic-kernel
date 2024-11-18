@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System;
 using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
@@ -12,9 +12,12 @@ public class KernelProcessEventsSubscriberInfo
 {
     private readonly Dictionary<string, List<MethodInfo>> _eventHandlers = [];
     private readonly Dictionary<string, string> _stepEventProcessEventMap = [];
-    private Type? _processEventSubscriberType = null;
 
+    // potentially _processEventSubscriberType, _subscriberServiceProvider, _processEventSubscriber can be converted to a dictionary to support
+    // many unique subscriber classes that could be linked to different ServiceProviders
+    private Type? _processEventSubscriberType = null;
     private IServiceProvider? _subscriberServiceProvider = null;
+    private KernelProcessEventsSubscriber? _processEventSubscriber = null;
 
     protected void Subscribe(string eventName, MethodInfo method)
     {
@@ -45,11 +48,22 @@ public class KernelProcessEventsSubscriberInfo
     {
         if (this._processEventSubscriberType != null && this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? linkedMethods) && linkedMethods != null)
         {
+            if (this._processEventSubscriber == null)
+            {
+                try
+                {
+                    this._processEventSubscriber = (KernelProcessEventsSubscriber?)Activator.CreateInstance(this._processEventSubscriberType, []);
+                    this._processEventSubscriberType.GetProperty(nameof(KernelProcessEventsSubscriber.ServiceProvider))?.SetValue(this._processEventSubscriber, this._subscriberServiceProvider);
+                }
+                catch (Exception)
+                {
+                    throw new KernelException($"Could not create an instance of {this._processEventSubscriberType.Name} to be used in KernelProcessSubscriberInfo");
+                }
+            }
+
             foreach (var method in linkedMethods)
             {
-                // TODO-estenori: Avoid creating a new instance every time a function is invoked - create instance once only?
-                var instance = Activator.CreateInstance(this._processEventSubscriberType, [this._subscriberServiceProvider]);
-                method.Invoke(instance, [data]);
+                method.Invoke(this._processEventSubscriber, [data]);
             }
         }
     }
@@ -86,7 +100,5 @@ public class KernelProcessEventsSubscriberInfo
         this._processEventSubscriberType = typeof(TEventListeners);
     }
 
-    public KernelProcessEventsSubscriberInfo()
-    {
-    }
+    public KernelProcessEventsSubscriberInfo() { }
 }
