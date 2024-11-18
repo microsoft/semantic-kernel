@@ -18,9 +18,9 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
 /// </summary>
-internal sealed class RestApiOperationRunner
+internal sealed class RestApiOperationRunner : IRestApiOperationRunner
 {
-    private const string MediaTypeApplicationJson = "application/json";
+    internal const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
@@ -78,7 +78,7 @@ internal sealed class RestApiOperationRunner
     /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
     /// If false, the operation payload must be provided via the 'payload' property.
     /// </summary>
-    private readonly bool _enableDynamicPayload;
+    internal bool EnableDynamicPayload { get; private set; }
 
     /// <summary>
     /// Determines whether payload parameters are resolved from the arguments by
@@ -113,7 +113,7 @@ internal sealed class RestApiOperationRunner
     {
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
-        this._enableDynamicPayload = enableDynamicPayload;
+        this.EnableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
         this._httpResponseContentReader = httpResponseContentReader;
 
@@ -127,21 +127,14 @@ internal sealed class RestApiOperationRunner
             this._authCallback = authCallback;
         }
 
-        this._payloadFactoryByMediaType = new()
+        this._payloadFactoryByMediaType = new(StringComparer.OrdinalIgnoreCase)
         {
             { MediaTypeApplicationJson, this.BuildJsonPayload },
             { MediaTypeTextPlain, this.BuildPlainTextPayload }
         };
     }
 
-    /// <summary>
-    /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
-    /// </summary>
-    /// <param name="operation">The REST API operation to execute.</param>
-    /// <param name="arguments">The dictionary of arguments to be passed to the operation.</param>
-    /// <param name="options">Options for REST API operation run.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The task execution result.</returns>
+    /// <inheritdoc />
     public Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         KernelArguments arguments,
@@ -171,7 +164,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
-    private async Task<RestApiOperationResponse> SendAsync(
+    internal async Task<RestApiOperationResponse> SendAsync(
         Uri url,
         HttpMethod method,
         IDictionary<string, string>? headers = null,
@@ -346,7 +339,7 @@ internal sealed class RestApiOperationRunner
     private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         // Build operation payload dynamically
-        if (this._enableDynamicPayload)
+        if (this.EnableDynamicPayload)
         {
             if (payloadMetadata is null)
             {
@@ -477,7 +470,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    internal Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
