@@ -224,7 +224,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 }
                 catch (KernelException ke)
                 {
-                    logger.LogWarning(ke, "Error occurred creating REST API operation for {0}. Operation will be ignored.", operationItem.OperationId);
+                    logger.LogWarning(ke, "Error occurred creating REST API operation for {OperationId}. Operation will be ignored.", operationItem.OperationId);
                 }
             }
 
