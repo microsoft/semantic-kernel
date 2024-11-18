@@ -22,15 +22,15 @@ class PackOrderStep(KernelProcessStep):
     class OutputEvents(Enum):
         FoodPacked = "FoodPacked"
 
-    @kernel_function(name=Functions.PackFood.value)
+    @kernel_function(name=Functions.PackFood)
     async def pack_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"PACKING_FOOD: Food {food_actions[0]} Packed! - {food_actions}")
-        await context.emit_event(process_event=PackOrderStep.OutputEvents.FoodPacked.value)
+        await context.emit_event(process_event=PackOrderStep.OutputEvents.FoodPacked)
 
 
 class ExternalSingleOrderStep(ExternalStep):
     def __init__(self):
-        super().__init__(SingleFoodItemProcess.ProcessEvents.SingleOrderReady.value)
+        super().__init__(SingleFoodItemProcess.ProcessEvents.SingleOrderReady)
 
 
 class DispatchSingleOrderStep(KernelProcessStep):
@@ -43,30 +43,28 @@ class DispatchSingleOrderStep(KernelProcessStep):
         PrepareFishSandwich = "PrepareFishSandwich"
         PrepareFishAndChips = "PrepareFishAndChips"
 
-    @kernel_function(name=Functions.PrepareSingleOrder.value)
+    @kernel_function(name=Functions.PrepareSingleOrder)
     async def dispatch_single_order(self, context: KernelProcessStepContext, food_item: FoodItem):
         food_name = food_item.to_friendly_string()
         print(f"DISPATCH_SINGLE_ORDER: Dispatching '{food_name}'!")
         food_actions = []
 
         if food_item == FoodItem.POTATO_FRIES:
-            await context.emit_event(
-                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFries.value, data=food_actions
-            )
+            await context.emit_event(process_event=DispatchSingleOrderStep.OutputEvents.PrepareFries, data=food_actions)
 
         elif food_item == FoodItem.FRIED_FISH:
             await context.emit_event(
-                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFriedFish.value, data=food_actions
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFriedFish, data=food_actions
             )
 
         elif food_item == FoodItem.FISH_SANDWICH:
             await context.emit_event(
-                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich.value, data=food_actions
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich, data=food_actions
             )
 
         elif food_item == FoodItem.FISH_AND_CHIPS:
             await context.emit_event(
-                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips.value, data=food_actions
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips, data=food_actions
             )
 
 
@@ -91,39 +89,39 @@ class SingleFoodItemProcess:
             ProcessFunctionTargetBuilder(dispatch_order_step)
         )
 
-        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFriedFish.value).send_event_to(
-            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish.value)
+        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFriedFish).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFries.value).send_event_to(
-            make_potato_fries_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value)
+        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFries).send_event_to(
+            make_potato_fries_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries)
         )
 
-        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich.value).send_event_to(
-            make_fish_sandwich_step.where_input_event_is(FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value)
+        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich).send_event_to(
+            make_fish_sandwich_step.where_input_event_is(FishSandwichProcess.ProcessEvents.PrepareFishSandwich)
         )
 
-        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips.value).send_event_to(
-            make_fish_and_chips_step.where_input_event_is(FishAndChipsProcess.ProcessEvents.PrepareFishAndChips.value)
+        dispatch_order_step.on_event(DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips).send_event_to(
+            make_fish_and_chips_step.where_input_event_is(FishAndChipsProcess.ProcessEvents.PrepareFishAndChips)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady.value).send_event_to(
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
             ProcessFunctionTargetBuilder(pack_order_step)
         )
 
-        make_potato_fries_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady.value).send_event_to(
+        make_potato_fries_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady).send_event_to(
             ProcessFunctionTargetBuilder(pack_order_step)
         )
 
-        make_fish_sandwich_step.on_event(FishSandwichProcess.ProcessEvents.FishSandwichReady.value).send_event_to(
+        make_fish_sandwich_step.on_event(FishSandwichProcess.ProcessEvents.FishSandwichReady).send_event_to(
             ProcessFunctionTargetBuilder(pack_order_step)
         )
 
-        make_fish_and_chips_step.on_event(FishAndChipsProcess.ProcessEvents.FishAndChipsReady.value).send_event_to(
+        make_fish_and_chips_step.on_event(FishAndChipsProcess.ProcessEvents.FishAndChipsReady).send_event_to(
             ProcessFunctionTargetBuilder(pack_order_step)
         )
 
-        pack_order_step.on_event(PackOrderStep.OutputEvents.FoodPacked.value).send_event_to(
+        pack_order_step.on_event(PackOrderStep.OutputEvents.FoodPacked).send_event_to(
             ProcessFunctionTargetBuilder(external_step)
         )
 

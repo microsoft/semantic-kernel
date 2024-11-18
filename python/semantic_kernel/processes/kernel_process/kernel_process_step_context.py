@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 
 from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -18,7 +19,7 @@ class KernelProcessStepContext(KernelBaseModel):
         """Initialize the step context."""
         super().__init__(step_message_channel=channel)
 
-    async def emit_event(self, process_event: "KernelProcessEvent | str", **kwargs) -> None:
+    async def emit_event(self, process_event: "KernelProcessEvent | str | Enum", **kwargs) -> None:
         """Emit an event from the current step.
 
         It is possible to either specify a `KernelProcessEvent` object or the ID of the event
@@ -32,6 +33,9 @@ class KernelProcessStepContext(KernelBaseModel):
 
         if process_event is None:
             raise ProcessEventUndefinedException("Process event cannot be None")
+
+        if isinstance(process_event, Enum):
+            process_event = process_event.value
 
         if not isinstance(process_event, KernelProcessEvent):
             process_event = KernelProcessEvent(id=process_event, **kwargs)

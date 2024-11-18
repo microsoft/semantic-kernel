@@ -19,18 +19,10 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorInitializationError,
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.list_handler import desync_list
 
 BASE_PATH_SEARCH_CLIENT = "azure.search.documents.aio.SearchClient"
 BASE_PATH_INDEX_CLIENT = "azure.search.documents.indexes.aio.SearchIndexClient"
-
-
-class AsyncIter:
-    def __init__(self, items):
-        self.items = items
-
-    async def __aiter__(self):
-        for item in self.items:
-            yield item
 
 
 @fixture
@@ -58,7 +50,7 @@ def mock_list_collection_names():
     """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
     with patch(f"{BASE_PATH_INDEX_CLIENT}.list_index_names") as mock_list_index_names:
         # Setup the mock to return a specific SearchIndex instance when called
-        mock_list_index_names.return_value = AsyncIter(["test"])
+        mock_list_index_names.return_value = desync_list(["test"])
         yield mock_list_index_names
 
 
@@ -253,6 +245,7 @@ async def test_create_index_from_index_fail(collection, mock_create_collection):
         await collection.create_collection(index=index)
 
 
+@mark.parametrize("distance_function", [("cosine_distance")])
 def test_data_model_definition_to_azure_ai_search_index(data_model_definition):
     index = data_model_definition_to_azure_ai_search_index("test", data_model_definition)
     assert index is not None
