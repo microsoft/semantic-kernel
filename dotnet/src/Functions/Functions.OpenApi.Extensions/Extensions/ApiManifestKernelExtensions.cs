@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -31,6 +32,7 @@ public static class ApiManifestKernelExtensions
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="chatClient">Optional chat client to use for request payload generation.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
     public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
@@ -38,9 +40,10 @@ public static class ApiManifestKernelExtensions
         string pluginName,
         string filePath,
         ApiManifestPluginParameters? pluginParameters = null,
+        IChatClient? chatClient = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, chatClient, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -52,6 +55,7 @@ public static class ApiManifestKernelExtensions
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="chatClient">Optional chat client to use for request payload generation.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
     public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
@@ -59,6 +63,7 @@ public static class ApiManifestKernelExtensions
         string pluginName,
         string filePath,
         ApiManifestPluginParameters? pluginParameters = null,
+        IChatClient? chatClient = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -148,12 +153,17 @@ public static class ApiManifestKernelExtensions
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
-            var runner = new RestApiOperationRunner(
+            IRestApiOperationRunner runner = new RestApiOperationRunner(
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? chatClient is null,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+
+            if (chatClient is not null)
+            {
+                runner = new RestApiOperationRunnerPayloadProxy((RestApiOperationRunner)runner, chatClient);
+            }
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
             if (server?.Url is null)
