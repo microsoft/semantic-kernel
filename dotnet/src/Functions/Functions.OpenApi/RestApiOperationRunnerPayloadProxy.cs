@@ -53,6 +53,7 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
     /// </summary>
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The operation payload arguments.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The raw operation payload and the corresponding HttpContent.</returns>
     private Task<(object? Payload, HttpContent? Content)> BuildOperationPayloadAsync(RestApiOperation operation, IDictionary<string, object?> arguments, CancellationToken cancellationToken)
     {
@@ -84,6 +85,7 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
     /// </summary>
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The JSON payload the corresponding HttpContent.</returns>
     private async Task<(object? Payload, HttpContent? Content)> BuildJsonPayloadAsync(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments, CancellationToken cancellationToken)
     {
@@ -95,6 +97,10 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
 
         var completion = await this._chatClient.CompleteAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
         var content = completion.Message.Text;
-        return (content, new StringContent(content, Encoding.UTF8, RestApiOperationRunner.MediaTypeApplicationJson));
+        if (string.IsNullOrEmpty(content))
+        {
+            throw new KernelException("The chat client did not provide a JSON payload.");
+        }
+        return (content!, new StringContent(content!, Encoding.UTF8, RestApiOperationRunner.MediaTypeApplicationJson));
     }
 }
