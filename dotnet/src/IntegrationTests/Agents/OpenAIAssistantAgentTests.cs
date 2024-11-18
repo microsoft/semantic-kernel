@@ -69,6 +69,24 @@ public sealed class OpenAIAssistantAgentTests
 
     /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Open AI services.
+    /// </summary>
+    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [InlineData("What is the special soup?", "Clam Chowder")]
+    public async Task OpenAIAssistantAgentStreamingAsync(string input, string expectedAnswerContains)
+    {
+        OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        Assert.NotNull(openAISettings);
+
+        await this.ExecuteStreamingAgentAsync(
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+            openAISettings.ModelId,
+            input,
+            expectedAnswerContains);
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
