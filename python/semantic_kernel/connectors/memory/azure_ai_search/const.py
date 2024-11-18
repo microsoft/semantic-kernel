@@ -18,9 +18,10 @@ INDEX_ALGORITHM_MAP = {
 }
 
 DISTANCE_FUNCTION_MAP = {
-    DistanceFunction.COSINE_SIMILARITY: VectorSearchAlgorithmMetric.COSINE,
+    DistanceFunction.COSINE_DISTANCE: VectorSearchAlgorithmMetric.COSINE,
     DistanceFunction.DOT_PROD: VectorSearchAlgorithmMetric.DOT_PRODUCT,
     DistanceFunction.EUCLIDEAN_DISTANCE: VectorSearchAlgorithmMetric.EUCLIDEAN,
+    DistanceFunction.HAMMING: VectorSearchAlgorithmMetric.HAMMING,
     "default": VectorSearchAlgorithmMetric.COSINE,
 }
 

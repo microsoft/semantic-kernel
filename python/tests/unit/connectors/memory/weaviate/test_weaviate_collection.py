@@ -3,9 +3,9 @@
 from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
-import weaviate
 from weaviate import WeaviateAsyncClient
 from weaviate.classes.config import Configure, DataType, Property
+from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
@@ -16,9 +16,8 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_weaviate_cloud",
+@patch(
+    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_weaviate_cloud(
@@ -47,13 +46,12 @@ def test_weaviate_collection_init_with_weaviate_cloud(
     )
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_local",
+@patch(
+    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_local",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_local(
-    mock_use_weaviate_cloud,
+    mock_use_weaviate_local,
     clear_weaviate_env,
     data_model_type,
     data_model_definition,
@@ -71,16 +69,15 @@ def test_weaviate_collection_init_with_local(
 
     assert collection.collection_name == collection_name
     assert collection.async_client is not None
-    mock_use_weaviate_cloud.assert_called_once_with(host="localhost")
+    mock_use_weaviate_local.assert_called_once_with(host="localhost")
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_embedded",
+@patch(
+    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_embedded",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_embedded(
-    mock_use_weaviate_cloud,
+    mock_use_weaviate_embedded,
     clear_weaviate_env,
     data_model_type,
     data_model_definition,
@@ -98,7 +95,7 @@ def test_weaviate_collection_init_with_embedded(
 
     assert collection.collection_name == collection_name
     assert collection.async_client is not None
-    mock_use_weaviate_cloud.assert_called_once()
+    mock_use_weaviate_embedded.assert_called_once()
 
 
 def test_weaviate_collection_init_with_invalid_settings_more_than_one_backends(
@@ -155,9 +152,8 @@ def test_weaviate_collection_init_with_custom_client(
     assert collection.async_client is not None
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_local",
+@patch(
+    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_local",
     side_effect=Exception,
 )
 def test_weaviate_collection_init_fail_to_create_client(
@@ -178,9 +174,8 @@ def test_weaviate_collection_init_fail_to_create_client(
         )
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_weaviate_cloud",
+@patch(
+    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_lower_case_collection_name(
@@ -206,6 +201,7 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_distance")])
 async def test_weaviate_collection_create_collection(
     clear_weaviate_env,
     data_model_type,
@@ -226,17 +222,18 @@ async def test_weaviate_collection_create_collection(
     await collection.create_collection()
 
     mock_async_client.collections.create.assert_called_once_with(
-        collection_name,
+        name=collection_name,
         properties=[
             Property(
                 name="content",
                 data_type=DataType.TEXT,
             )
         ],
+        vector_index_config=None,
         vectorizer_config=[
             Configure.NamedVectors.none(
                 name="vector",
-                vector_index_config=Configure.VectorIndex.none(),
+                vector_index_config=Configure.VectorIndex.hnsw(distance_metric=VectorDistances.COSINE),
             )
         ],
     )
@@ -402,7 +399,7 @@ async def test_weaviate_collection_serialize_data(
             DataObject(
                 properties={"content": "content1"},
                 uuid=data.id,
-                vector={"content": data.vector},
+                vector={"vector": data.vector},
                 references=None,
             )
         ])
@@ -431,7 +428,7 @@ async def test_weaviate_collection_deserialize_data(
     weaviate_data_object = DataObject(
         properties={"content": "content1"},
         uuid=data.id,
-        vector={"content": data.vector or [1, 2, 3]},
+        vector={"vector": data.vector or [1, 2, 3]},
     )
 
     with patch.object(collection, "_inner_get", return_value=[weaviate_data_object]) as mock_inner_get:

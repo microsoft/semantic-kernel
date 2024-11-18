@@ -43,7 +43,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // When the intro is complete, notify the userInput step
         introStep
-            .OnFunctionResult(nameof(IntroStep.PrintIntroMessage))
+            .OnFunctionResult()
             .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep));
 
         // When the userInput step emits an exit event, send it to the end step

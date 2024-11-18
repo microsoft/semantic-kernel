@@ -197,12 +197,10 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         this._executionParameters.HttpClient = httpClient;
 
-        var fakePlugin = new FakePlugin();
-
         using var registerCancellationToken = new System.Threading.CancellationTokenSource();
         using var executeCancellationToken = new System.Threading.CancellationTokenSource();
 
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
+        var openApiPlugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
 
         var kernel = new Kernel();
 
@@ -214,7 +212,7 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         // Act
         registerCancellationToken.Cancel();
-        var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
+        var result = await kernel.InvokeAsync(openApiPlugin["GetSecret"], arguments, executeCancellationToken.Token);
 
         // Assert
         Assert.NotNull(result);
@@ -313,6 +311,90 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.Contains("x-object-extension", nonNullOperationExtensions.Keys);
     }
 
+    [Fact]
+    public void ItCreatesPluginFromOpenApiSpecificationModel()
+    {
+        // Arrange
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
+
+        var securityRequirements = new List<RestApiSecurityRequirement>
+        {
+            new(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(), new List<string>() } })
+        };
+
+        var operations = new List<RestApiOperation>
+        {
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
+        };
+
+        var specification = new RestApiSpecification(info, securityRequirements, operations);
+
+        // Act
+        var plugin = this._kernel.CreatePluginFromOpenApi("fakePlugin", specification, this._executionParameters);
+
+        // Assert
+        Assert.Single(plugin);
+        Assert.Equal("api-description", plugin.Description);
+        Assert.Equal("fakePlugin", plugin.Name);
+
+        var function = plugin["operation1"];
+        Assert.Equal("operation1", function.Name);
+        Assert.Equal("operation-description", function.Description);
+        Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
+    }
+
+    [Fact]
+    public void ItImportPluginFromOpenApiSpecificationModel()
+    {
+        // Arrange
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
+
+        var securityRequirements = new List<RestApiSecurityRequirement>
+        {
+            new(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(), new List<string>() } })
+        };
+
+        var operations = new List<RestApiOperation>
+        {
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
+        };
+
+        var specification = new RestApiSpecification(info, securityRequirements, operations);
+
+        // Act
+        this._kernel.ImportPluginFromOpenApi("fakePlugin", specification, this._executionParameters);
+
+        // Assert
+        var plugin = Assert.Single(this._kernel.Plugins);
+
+        Assert.Single(plugin);
+        Assert.Equal("api-description", plugin.Description);
+        Assert.Equal("fakePlugin", plugin.Name);
+
+        var function = plugin["operation1"];
+        Assert.Equal("operation1", function.Name);
+        Assert.Equal("operation-description", function.Description);
+        Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
+    }
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
@@ -338,17 +420,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
             ["X-API-Version"] = 6,
             ["payload"] = "fake-payload"
         };
-    }
-
-    private sealed class FakePlugin
-    {
-        public string? ParameterValueFakeMethodCalledWith { get; private set; }
-
-        [KernelFunction]
-        public void DoFakeAction(string parameter)
-        {
-            this.ParameterValueFakeMethodCalledWith = parameter;
-        }
     }
 
     #endregion

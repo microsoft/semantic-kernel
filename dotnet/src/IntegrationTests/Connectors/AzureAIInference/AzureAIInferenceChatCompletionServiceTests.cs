@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Azure.AI.Inference;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -42,16 +43,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = (config.ApiKey is not null)
-                ? new AzureAIInferenceChatCompletionService(
-                    endpoint: config.Endpoint,
-                    apiKey: config.ApiKey,
-                    loggerFactory: this._loggerFactory)
-                : new AzureAIInferenceChatCompletionService(
-                    modelId: null,
-                    endpoint: config.Endpoint,
-                    credential: new AzureCliCredential(),
-                    loggerFactory: this._loggerFactory);
+        IChatCompletionService sut = this.CreateChatService(config);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -73,16 +65,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = (config.ApiKey is not null)
-                ? new AzureAIInferenceChatCompletionService(
-                    endpoint: config.Endpoint,
-                    apiKey: config.ApiKey,
-                    loggerFactory: this._loggerFactory)
-                : new AzureAIInferenceChatCompletionService(
-                    modelId: null,
-                    endpoint: config.Endpoint,
-                    credential: new AzureCliCredential(),
-                    loggerFactory: this._loggerFactory);
+        IChatCompletionService sut = this.CreateChatService(config);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
@@ -150,10 +133,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
         Assert.NotNull(config.Endpoint);
+        Assert.NotNull(config.ChatModelId);
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint, apiKey: null);
+        kernelBuilder.AddAzureAIInferenceChatCompletion(modelId: config.ChatModelId, endpoint: config.Endpoint, apiKey: null);
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -176,11 +160,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
 
         // Assert
         Assert.All(statusCodes, s => Assert.Equal(HttpStatusCode.Unauthorized, s));
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)exception).StatusCode);
+        Assert.Equal((int)HttpStatusCode.Unauthorized, ((RequestFailedException)exception).Status);
     }
 
     [Fact]
@@ -235,16 +219,45 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.NotNull(config);
         Assert.NotNull(config.ApiKey);
         Assert.NotNull(config.Endpoint);
+        Assert.NotNull(config.ChatModelId);
 
         var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureAIInferenceChatCompletion(
+            config.ChatModelId,
             endpoint: config.Endpoint,
             apiKey: config.ApiKey,
             serviceId: config.ServiceId,
             httpClient: httpClient);
 
         return kernelBuilder.Build();
+    }
+
+    private IChatCompletionService CreateChatService(AzureAIInferenceConfiguration config)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(this._loggerFactory);
+
+        Assert.NotNull(config.ChatModelId);
+
+        if (config.ApiKey is not null)
+        {
+            serviceCollection.AddAzureAIInferenceChatCompletion(
+                modelId: config.ChatModelId,
+                endpoint: config.Endpoint,
+                apiKey: config.ApiKey);
+        }
+        else
+        {
+            serviceCollection.AddAzureAIInferenceChatCompletion(
+                modelId: config.ChatModelId,
+                endpoint: config.Endpoint,
+                credential: new AzureCliCredential());
+        }
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        return serviceProvider.GetRequiredService<IChatCompletionService>();
     }
 
     public void Dispose()

@@ -8,8 +8,8 @@ from openai import AsyncAzureOpenAI
 from openai.resources.audio.transcriptions import AsyncTranscriptions
 from openai.types.audio import Transcription
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.connectors.ai.open_ai import AzureAudioToText
+from semantic_kernel.contents import AudioContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 

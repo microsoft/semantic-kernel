@@ -46,6 +46,7 @@
         "mongocluster",
         "ndarray",
         "nopep",
+        "NOSQL",
         "ollama",
         "onyourdatatest",
         "OPENAI",
@@ -72,6 +73,7 @@
         "opentelemetry",
         "SEMANTICKERNEL",
         "OTEL",
-        "vectorizable"
+        "vectorizable",
+        "desync"
     ]
 }

@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 /// <summary>
 /// API manifest plugin parameters.
 /// </summary>
-public class ApiManifestPluginParameters
+public sealed class ApiManifestPluginParameters
 {
     /// <summary>
     /// Gets the HTTP client to be used in plugin initialization phase.

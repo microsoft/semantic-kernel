@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Azure.AI.Inference;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 namespace ChatCompletion;
 
@@ -20,9 +21,11 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
     {
         Console.WriteLine("======== Azure AI Inference - Chat Completion Streaming ========");
 
-        var chatService = new AzureAIInferenceChatCompletionService(
-            endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
-            apiKey: TestConfiguration.AzureAIInference.ApiKey);
+        var chatService = new ChatCompletionsClient(
+                endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
+                credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey!))
+            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsChatCompletionService();
 
         return this.StartStreamingChatAsync(chatService);
     }
@@ -42,6 +45,7 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureAIInferenceChatCompletion(
+                modelId: TestConfiguration.AzureAIInference.ChatModelId,
                 endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
                 apiKey: TestConfiguration.AzureAIInference.ApiKey)
             .Build();
@@ -67,9 +71,11 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
         Console.WriteLine("======== Stream Text from Chat Content ========");
 
         // Create chat completion service
-        var chatService = new AzureAIInferenceChatCompletionService(
-            endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
-            apiKey: TestConfiguration.AzureAIInference.ApiKey);
+        var chatService = new ChatCompletionsClient(
+                endpoint: new Uri(TestConfiguration.AzureAIInference.Endpoint),
+                credential: new Azure.AzureKeyCredential(TestConfiguration.AzureAIInference.ApiKey!))
+            .AsChatClient(TestConfiguration.AzureAIInference.ChatModelId)
+            .AsChatCompletionService();
 
         // Create chat history with initial system and user messages
         ChatHistory chatHistory = new("You are a librarian, an expert on books.");

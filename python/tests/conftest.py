@@ -1,10 +1,26 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Annotated
 from unittest.mock import MagicMock
+from uuid import uuid4
 
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel
 from pytest import fixture
+
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -231,6 +247,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "test_embedding_deployment",
         "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
         "AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME": "test_audio_to_text_deployment",
+        "AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME": "test_text_to_audio_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -266,6 +283,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
         "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
         "OPENAI_AUDIO_TO_TEXT_MODEL_ID": "test_audio_to_text_model_id",
+        "OPENAI_TEXT_TO_AUDIO_MODEL_ID": "test_text_to_audio_model_id",
     }
 
     env_vars.update(override_env_param_dict)
@@ -491,3 +509,170 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
             monkeypatch.delenv(key, raising=False)
 
     return env_vars
+
+
+@fixture
+def index_kind(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "hnsw"
+
+
+@fixture
+def distance_function(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "cosine_similarity"
+
+
+@fixture
+def vector_property_type(request) -> str:
+    if hasattr(request, "param"):
+        return request.param
+    return "float"
+
+
+@fixture
+def dimensions(request) -> int:
+    if hasattr(request, "param"):
+        return request.param
+    return 5
+
+
+@fixture
+def dataclass_vector_data_model(
+    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
+) -> object:
+    @vectorstoremodel
+    @dataclass
+    class MyDataModel:
+        vector: Annotated[
+            list[float] | None,
+            VectorStoreRecordVectorField(
+                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                index_kind=index_kind,
+                dimensions=dimensions,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
+        ] = None
+        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        content: Annotated[
+            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+        ] = "content1"
+
+    return MyDataModel
+
+
+@fixture
+def dataclass_vector_data_model_array(
+    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
+) -> object:
+    @vectorstoremodel
+    @dataclass
+    class MyDataModel:
+        vector: Annotated[
+            list[float] | None,
+            VectorStoreRecordVectorField(
+                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                index_kind=index_kind,
+                dimensions=dimensions,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+                serialize_function=np.ndarray.tolist,
+                deserialize_function=np.array,
+            ),
+        ] = None
+        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        content: Annotated[
+            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+        ] = "content1"
+
+    return MyDataModel
+
+
+@fixture
+def data_model_definition(
+    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
+) -> object:
+    return VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+            ),
+            "vector": VectorStoreRecordVectorField(
+                dimensions=dimensions,
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
+        }
+    )
+
+
+@fixture
+def data_model_definition_pandas(
+    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
+) -> object:
+    return VectorStoreRecordDefinition(
+        fields={
+            "vector": VectorStoreRecordVectorField(
+                name="vector",
+                index_kind=index_kind,
+                dimensions=dimensions,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+            ),
+            "id": VectorStoreRecordKeyField(name="id"),
+            "content": VectorStoreRecordDataField(
+                name="content", has_embedding=True, embedding_property_name="vector", property_type="str"
+            ),
+        },
+        container_mode=True,
+        to_dict=lambda x: x.to_dict(orient="records"),
+        from_dict=lambda x, **_: pd.DataFrame(x),
+    )
+
+
+@fixture
+def data_model_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        vector: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+                dimensions=dimensions,
+            ),
+        ]
+        id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_with_key_as_key_field(
+    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
+) -> object:
+    """Data model type with key as key field."""
+
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        vector: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                index_kind=index_kind,
+                distance_function=distance_function,
+                property_type=vector_property_type,
+                dimensions=dimensions,
+            ),
+        ]
+        key: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass

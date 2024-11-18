@@ -6,7 +6,6 @@ using Azure.AI.Inference;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Extensions;
@@ -37,7 +36,7 @@ public sealed class AzureAIInferenceKernelBuilderExtensionsTests
 
         // Assert
         var chatCompletionService = builder.Build().GetRequiredService<IChatCompletionService>();
-        Assert.True(chatCompletionService is AzureAIInferenceChatCompletionService);
+        Assert.Equal("ChatClientChatCompletionService", chatCompletionService.GetType().Name);
     }
 
     public enum InitializationType
