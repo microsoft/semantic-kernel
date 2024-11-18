@@ -22,6 +22,7 @@ internal sealed class RestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";
+    private const string MediaTypeMultipartFormData = "multipart/form-data";
 
     private const string DefaultResponseKey = "default";
 
@@ -56,7 +57,8 @@ internal sealed class RestApiOperationRunner
         { "image", async (context, _) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
         { "text", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
         { "application/json", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
-        { "application/xml", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+        { "application/xml", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
+        { "multipart/form-data", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
     };
 
     /// <summary>
@@ -130,7 +132,8 @@ internal sealed class RestApiOperationRunner
         this._payloadFactoryByMediaType = new()
         {
             { MediaTypeApplicationJson, this.BuildJsonPayload },
-            { MediaTypeTextPlain, this.BuildPlainTextPayload }
+            { MediaTypeTextPlain, this.BuildPlainTextPayload },
+            { MediaTypeMultipartFormData, this.BuildMultipartFormDataPayload }
         };
     }
 
@@ -451,6 +454,39 @@ internal sealed class RestApiOperationRunner
         }
 
         return (payload, new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain));
+    }
+
+    /// <summary>
+    /// Builds "multipart/form-data" payload.
+    /// </summary>
+    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="arguments">The payload arguments.</param>
+    /// <returns>The text payload and corresponding HttpContent.</returns>
+    private (object? Payload, HttpContent Content) BuildMultipartFormDataPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    {
+        // Building operation payload dynamically is not supported
+        if (this._enableDynamicPayload)
+        {
+            throw new KernelException("Dynamic multipart/form-data payloads are not supported.");
+        }
+
+        // Get operation payload content from the 'payload' argument
+        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument))
+        {
+            throw new KernelException($"No payload is provided by the argument '{RestApiOperation.PayloadArgumentName}'.");
+        }
+
+        if (argument is string content)
+        {
+            return (content, new StringContent(content, Encoding.UTF8, MediaTypeMultipartFormData));
+        }
+
+        if (argument is MultipartContent multipartContent)
+        {
+            return (multipartContent, multipartContent);
+        }
+
+        throw new KernelException($"Invalid payload was provided by the argument '{RestApiOperation.PayloadArgumentName}', it must be either `string` or `multipart` content.");
     }
 
     /// <summary>

@@ -11,25 +11,22 @@
     }
   ],
   "paths": {
-    "/api/mensatest/ExcelImport/QuickImport": {
+    "/api/items": {
       "post": {
-        "tags": [
-          "ExcelImport"
-        ],
+        "operationId": "createItem",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "File": {
-                    "type": "string",
-                    "format": "binary"
+                  "Value": {
+                    "type": "string"
                   }
                 }
               },
               "encoding": {
-                "File": {
+                "Value": {
                   "style": "form"
                 }
               }
@@ -42,17 +39,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                  "$ref": "#/components/schemas/GenericResult"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                  "$ref": "#/components/schemas/GenericResult"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportResultModelGenericResult"
+                  "$ref": "#/components/schemas/GenericResult"
                 }
               }
             }
@@ -69,7 +66,7 @@
   },
   "components": {
     "schemas": {
-      "ImportResultModelGenericResult": {
+      "GenericResult": {
         "type": "object",
         "required": [ "type" ],
         "properties": {

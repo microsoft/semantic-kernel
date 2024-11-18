@@ -544,7 +544,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         };
 
     [Fact]
-    public async Task ItShouldCreatePluginWithMultipartFormDataAsync()
+    public async Task ItShouldCreateFunctionWithMultipartFormDataAsync()
     {
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("multipart-form-data.json");
@@ -553,7 +553,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Assert
-        Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
+        Assert.True(plugin.TryGetFunction("createItem", out var _));
     }
 
     [Fact]

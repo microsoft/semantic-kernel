@@ -76,7 +76,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     private static readonly List<string> s_supportedMediaTypes =
     [
         "application/json",
-        "text/plain"
+        "text/plain",
+        "multipart/form-data"
     ];
 
     private readonly OpenApiStreamReader _openApiReader = new();

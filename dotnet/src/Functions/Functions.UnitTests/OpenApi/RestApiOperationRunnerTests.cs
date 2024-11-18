@@ -1587,6 +1587,67 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    [InlineData("GET")]
+    public async Task ItCanRunCreateAndUpdateOperationsWithMultipartFormDataPayloadSuccessfullyAsync(string method)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var httpMethod = new HttpMethod(method);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: httpMethod,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var payload = "-----------------------------\nContent-Disposition: form-data; name=\"text\"\n\ntext default\n";
+        var arguments = new KernelArguments
+        {
+            { "payload", payload },
+            { "content-type", "multipart/form-data"}
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+
+        Assert.Equal(httpMethod, this._httpMessageHandlerStub.Method);
+
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("multipart/form-data; charset=utf-8"));
+
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+        Assert.NotEmpty(messageContent);
+
+        var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
+        Assert.Equal(payload, payloadText);
+
+        Assert.NotNull(result);
+
+        Assert.Equal("fake-content", result.Content);
+
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
+
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
