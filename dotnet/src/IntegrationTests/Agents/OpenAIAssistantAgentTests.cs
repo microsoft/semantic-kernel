@@ -100,6 +100,36 @@ public sealed class OpenAIAssistantAgentTests
             expectedAnswerContains);
     }
 
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                new(azureOpenAIConfiguration.ChatDeploymentName!),
+                new Kernel());
+
+        string threadId = await agent.CreateThreadAsync();
+        ChatMessageContent functionResultMessage = new(AuthorRole.Assistant, [new FunctionResultContent("mock-function", result: "A result value")]);
+        try
+        {
+            await agent.AddChatMessageAsync(threadId, functionResultMessage);
+            var messages = await agent.GetThreadMessagesAsync(threadId).ToArrayAsync();
+            Assert.Single(messages);
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
+        }
+    }
+
     private async Task ExecuteAgentAsync(
         OpenAIClientProvider config,
         string modelName,

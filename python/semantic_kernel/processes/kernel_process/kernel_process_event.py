@@ -3,6 +3,8 @@
 from enum import Enum
 from typing import Any
 
+from pydantic import ConfigDict
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -26,3 +28,5 @@ class KernelProcessEvent(KernelBaseModel):
     id: str
     data: Any | None = None
     visibility: KernelProcessEventVisibility = KernelProcessEventVisibility.Internal
+
+    model_config = ConfigDict(use_enum_values=True)
