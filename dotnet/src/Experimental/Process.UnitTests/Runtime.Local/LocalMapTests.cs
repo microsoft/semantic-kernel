@@ -24,11 +24,10 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultAsFirstAsync));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -55,11 +54,10 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultFilterEventAsync));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -87,11 +85,10 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultWithTransformAsync));
 
-        ProcessStepBuilder formatStep = process.AddStepFromType<FormatStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(formatStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<FormatStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -119,12 +116,10 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultOperationTargetAsync));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComplexStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep, ComplexStep.ComputeFunction));
-
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComplexStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep, ComplexStep.ComputeFunction));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -157,11 +152,10 @@ public class LocalMapTests
             .OnInputEvent("Start")
             .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         initStep
             .OnEvent(InitialStep.EventId)
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -189,11 +183,10 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultMultiEventAsync));
 
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -227,13 +220,14 @@ public class LocalMapTests
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
         mapProcess
-            .OnInputEvent("StartMap")
+            .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
-        ProcessMapBuilder mapStep = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
+        ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
+
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(mapStep.WhereInputEventIs("Anything"));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -261,17 +255,15 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultWithTargetInvalidAsync));
 
-        //ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
-        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStep = process.AddMapStepFromType<ComputeStep>();
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
         CountStep.Index = 0; // Reset static state (test hack)
         ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
-        computeStep
+        mapStep.MapOperation
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
 
@@ -288,7 +280,7 @@ public class LocalMapTests
     }
 
     /// <summary>
-    /// Validates the <see cref="LocalMap"/> result even when an invalid edge is
+    /// Validates the <see cref="LocalMap"/> result an extra edge is
     /// introduced to the map-operation.
     /// </summary>
     [Fact]
@@ -300,7 +292,7 @@ public class LocalMapTests
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
         mapProcess
-            .OnInputEvent("Map")
+            .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
         ProcessStepBuilder countStep = mapProcess.AddStepFromType<CountStep>();
@@ -308,10 +300,11 @@ public class LocalMapTests
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
 
-        ProcessMapBuilder mapStep = process.AddMapForTarget(mapProcess.WhereInputEventIs("Map"));
+
+        ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep);
+            .SendEventTo(mapStep.WhereInputEventIs("Anything"));
 
         ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>("Union");
         mapStep
@@ -340,18 +333,17 @@ public class LocalMapTests
         ProcessBuilder process = new(nameof(ProcessMapResultForNestedMapAsync));
 
         ProcessBuilder mapProcess = new("MapOperation");
-        ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStepInner = mapProcess.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessMapBuilder mapStepInner = mapProcess.AddMapStepFromType<ComputeStep>();
         ProcessStepBuilder unionStepInner = mapProcess.AddStepFromType<UnionStep>();
         mapStepInner
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStepInner, UnionStep.SumSquareFunction));
 
         mapProcess
-            .OnInputEvent("StartMap")
-            .SendEventTo(mapStepInner);
+            .OnInputEvent("Anything")
+            .SendEventTo(new ProcessFunctionTargetBuilder(mapStepInner));
 
-        ProcessMapBuilder mapStepOuter = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
+        ProcessMapBuilder mapStepOuter = process.AddMapStepFromProcess(mapProcess);
         ProcessStepBuilder unionStepOuter = process.AddStepFromType<UnionStep>("Union");
         mapStepOuter
             .OnEvent(UnionStep.EventId)
@@ -359,7 +351,7 @@ public class LocalMapTests
 
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStepOuter);
+            .SendEventTo(mapStepOuter.WhereInputEventIs("Anything"));
 
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();
@@ -393,10 +385,25 @@ public class LocalMapTests
     private static async Task<UnionState> GetUnionStateAsync(LocalKernelProcessContext processContext)
     {
         KernelProcess processState = await processContext.GetStateAsync();
-        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.Name == "Union").Single().State;
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Single(s => s.State.Name == "Union").State;
         Assert.NotNull(unionState);
         Assert.NotNull(unionState.State);
         return unionState.State;
+    }
+
+    /// <summary>
+    /// A filler step used that emits the provided value as its output.
+    /// </summary>
+    private sealed class IncrementStep : KernelProcessStep
+    {
+        public const string EventId = "Bump";
+        public const string IncrementFunction = "Increment";
+
+        [KernelFunction(IncrementFunction)]
+        public async ValueTask IncrementAsync(KernelProcessStepContext context, int count)
+        {
+            await context.EmitEventAsync(new() { Id = EventId, Data = count + 1, Visibility = KernelProcessEventVisibility.Public });
+        }
     }
 
     /// <summary>
@@ -410,7 +417,7 @@ public class LocalMapTests
         [KernelFunction(InitFunction)]
         public async ValueTask InitAsync(KernelProcessStepContext context, object values)
         {
-            await context.EmitEventAsync(new() { Id = EventId, Data = values });
+            await context.EmitEventAsync(new() { Id = EventId, Data = values, Visibility = KernelProcessEventVisibility.Public });
         }
     }
 
@@ -427,8 +434,8 @@ public class LocalMapTests
         public async ValueTask ComputeAsync(KernelProcessStepContext context, long value)
         {
             long square = value * value;
-            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square });
-            await context.EmitEventAsync(new() { Id = CubicEventId, Data = square * value });
+            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square, Visibility = KernelProcessEventVisibility.Public });
+            await context.EmitEventAsync(new() { Id = CubicEventId, Data = square * value, Visibility = KernelProcessEventVisibility.Public });
         }
     }
 

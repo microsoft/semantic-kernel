@@ -15,7 +15,7 @@ public sealed record DaprMapInfo : DaprStepInfo
     /// <summary>
     /// The map operation
     /// </summary>
-    public required DaprProcessInfo MapStep { get; init; }
+    public required DaprStepInfo Operation { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessMap"/> class from this instance of <see cref="DaprMapInfo"/>.
@@ -24,15 +24,18 @@ public sealed record DaprMapInfo : DaprStepInfo
     /// <exception cref="KernelException"></exception>
     public KernelProcessMap ToKernelProcessMap()
     {
-        var processStepInfo = this.ToKernelProcessStepInfo();
+        KernelProcessStepInfo processStepInfo = this.ToKernelProcessStepInfo();
         if (this.State is not KernelProcessMapState state)
         {
             throw new KernelException($"Unable to read state from map with name '{this.State.Name}' and Id '{this.State.Id}'.");
         }
 
-        KernelProcess mapOperation = this.MapStep.ToKernelProcess();
+        KernelProcessStepInfo operationStep =
+            this.Operation is DaprProcessInfo processInfo
+                ? processInfo.ToKernelProcess()
+                : this.Operation.ToKernelProcessStepInfo();
 
-        return new KernelProcessMap(state, mapOperation, this.Edges);
+        return new KernelProcessMap(state, operationStep, this.Edges);
     }
 
     /// <summary>
@@ -44,16 +47,18 @@ public sealed record DaprMapInfo : DaprStepInfo
     {
         Verify.NotNull(processMap);
 
-        DaprStepInfo daprStepInfo = DaprStepInfo.FromKernelStepInfo(processMap);
-
-        DaprProcessInfo daprProcess = DaprProcessInfo.FromKernelProcess(processMap.Operation);
+        DaprStepInfo operationInfo =
+            processMap.Operation is KernelProcess processOperation
+                ? DaprProcessInfo.FromKernelProcess(processOperation)
+                : DaprStepInfo.FromKernelStepInfo(processMap.Operation);
+        DaprStepInfo mapStepInfo = DaprStepInfo.FromKernelStepInfo(processMap);
 
         return new DaprMapInfo
         {
-            InnerStepDotnetType = daprStepInfo.InnerStepDotnetType,
-            State = daprStepInfo.State,
-            Edges = daprStepInfo.Edges,
-            MapStep = daprProcess,
+            InnerStepDotnetType = mapStepInfo.InnerStepDotnetType,
+            State = mapStepInfo.State,
+            Edges = mapStepInfo.Edges,
+            Operation = operationInfo,
         };
     }
 }

@@ -43,14 +43,17 @@ internal static class ProcessStateMetadataFactory
         return StepInfoToProcessStateMetadata(stepInfo);
     }
 
-    private static KernelProcessMapStateMetadata KernelProcessMapToProcessStateMetadata(KernelProcessMap stepMap) =>
-        new()
-        {
-            Name = stepMap.State.Name,
-            Id = stepMap.State.Id,
-            VersionInfo = stepMap.State.Version,
-            OperationState = KernelProcessToProcessStateMetadata(stepMap.Operation),
-        };
+    private static KernelProcessMapStateMetadata KernelProcessMapToProcessStateMetadata(KernelProcessMap stepMap)
+    {
+        return
+            new()
+            {
+                Name = stepMap.State.Name,
+                Id = stepMap.State.Id,
+                VersionInfo = stepMap.State.Version,
+                OperationState = ToProcessStateMetadata(stepMap.Operation),
+            };
+    }
 
     /// <summary>
     /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>

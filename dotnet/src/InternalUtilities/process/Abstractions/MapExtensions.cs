@@ -13,7 +13,7 @@ internal static class MapExtensions
         KernelProcessMap copy =
             new(
                 newState,
-                map.Operation.CloneProcess(logger),
+                map.Operation.Clone(logger),
                 map.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList()));
 
         return copy;

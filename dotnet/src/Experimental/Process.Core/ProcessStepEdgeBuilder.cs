@@ -71,24 +71,6 @@ public sealed class ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
-    /// </summary>
-    /// <param name="target">The output target.</param>
-    /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventTo(ProcessMapBuilder target)
-    {
-        if (this.Target is not null)
-        {
-            throw new InvalidOperationException("An output target has already been set.");
-        }
-
-        this.Target = new ProcessFunctionTargetBuilder(target);
-        this.Source.LinkTo(this.EventId, this);
-
-        return new ProcessStepEdgeBuilder(this.Source, this.EventId);
-    }
-
-    /// <summary>
     /// Signals that the process should be stopped.
     /// </summary>
     public void StopProcess()

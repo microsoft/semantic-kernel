@@ -11,7 +11,7 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// <summary>
     /// The map operation.
     /// </summary>
-    public KernelProcess Operation { get; }
+    public KernelProcessStepInfo Operation { get; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
@@ -19,7 +19,7 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// <param name="state">The process state.</param>
     /// <param name="operation">The map operation.</param>
     /// <param name="edges">The edges for the map.</param>
-    public KernelProcessMap(KernelProcessMapState state, KernelProcess operation, Dictionary<string, List<KernelProcessEdge>> edges)
+    public KernelProcessMap(KernelProcessMapState state, KernelProcessStepInfo operation, Dictionary<string, List<KernelProcessEdge>> edges)
         : base(typeof(KernelProcessMap), state, edges)
     {
         Verify.NotNull(operation, nameof(operation));

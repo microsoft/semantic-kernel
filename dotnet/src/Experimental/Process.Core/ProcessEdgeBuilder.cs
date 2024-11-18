@@ -51,14 +51,4 @@ public sealed class ProcessEdgeBuilder
 
         return new ProcessEdgeBuilder(this.Source, this.EventId);
     }
-
-    /// <summary>
-    /// Sends the output of the source step to the specified map when the associated event fires.
-    /// </summary>
-    /// <param name="mapTarget">The output target.</param>
-    /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessEdgeBuilder SendEventTo(ProcessMapBuilder mapTarget)
-    {
-        return this.SendEventTo(new ProcessFunctionTargetBuilder(mapTarget));
-    }
 }

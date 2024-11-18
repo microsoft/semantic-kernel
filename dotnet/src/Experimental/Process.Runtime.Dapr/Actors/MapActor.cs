@@ -20,6 +20,7 @@ internal sealed class MapActor : StepActor, IMap
     private bool _isInitialized;
     private HashSet<string> _mapEvents = [];
     private ILogger? _logger;
+    private KernelProcessMap? _map;
 
     internal DaprMapInfo? _mapInfo;
 
@@ -37,9 +38,6 @@ internal sealed class MapActor : StepActor, IMap
 
     public async Task InitializeMapAsync(DaprMapInfo mapInfo, string? parentProcessId)
     {
-        Verify.NotNull(mapInfo);
-        Verify.NotNull(mapInfo.MapStep);
-
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
         if (this._isInitialized)
@@ -87,19 +85,19 @@ internal sealed class MapActor : StepActor, IMap
     /// <param name="message">The message to map.</param>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        IEnumerable values = message.GetMapInput(this._logger);
+        // Initialize the current operation
+        (IEnumerable inputValues, KernelProcess mapOperation, string startEventId) = this._map!.Initialize(message, this._logger);
 
-        KernelProcess process = this._mapInfo!.MapStep.ToKernelProcess();
         List<Task> mapOperations = [];
-        foreach (var value in values)
+        foreach (var value in inputValues)
         {
-            KernelProcess mapProcess = process with { State = process.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
+            KernelProcess mapProcess = mapOperation with { State = mapOperation.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
             DaprKernelProcessContext processContext = new(mapProcess);
             Task processTask =
                 processContext.StartWithEventAsync(
                     new KernelProcessEvent
                     {
-                        Id = ProcessConstants.MapEventId,
+                        Id = startEventId,
                         Data = value
                     },
                     eventProxyStepId: this.Id);
@@ -162,9 +160,10 @@ internal sealed class MapActor : StepActor, IMap
     private void InitializeMapActor(DaprMapInfo mapInfo, string? parentProcessId)
     {
         Verify.NotNull(mapInfo);
-        Verify.NotNull(mapInfo.MapStep);
+        Verify.NotNull(mapInfo.Operation);
 
         this._mapInfo = mapInfo;
+        this._map = mapInfo.ToKernelProcessMap();
         this.ParentProcessId = parentProcessId;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
         this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
