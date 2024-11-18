@@ -300,7 +300,6 @@ public class LocalMapTests
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
 
-
         ProcessMapBuilder mapStep = process.AddMapStepFromProcess(mapProcess);
         process
             .OnInputEvent("Start")
