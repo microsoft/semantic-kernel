@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -42,6 +43,18 @@ internal static class AssistantRunOptionsFactory
             foreach (var metadata in invocationOptions.Metadata)
             {
                 options.Metadata.Add(metadata.Key, metadata.Value ?? string.Empty);
+            }
+        }
+
+        if (invocationOptions?.AdditionalMessages != null)
+        {
+            foreach (ChatMessageContent message in invocationOptions.AdditionalMessages)
+            {
+                ThreadInitializationMessage threadMessage = new(
+                    role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
+                    content: AssistantMessageFactory.GetMessageContents(message));
+
+                options.AdditionalMessages.Add(threadMessage);
             }
         }
 

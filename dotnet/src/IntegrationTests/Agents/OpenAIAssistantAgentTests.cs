@@ -101,8 +101,8 @@ public sealed class OpenAIAssistantAgentTests
     }
 
     /// <summary>
-    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
-    /// and targeting Azure OpenAI services.
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding a message with
+    /// function result contents.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
     public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
@@ -165,6 +165,57 @@ public sealed class OpenAIAssistantAgentTests
         {
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding additional message to a thread.
+    /// function result contents.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentAdditionalMessagesAsync()
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                new(azureOpenAIConfiguration.ChatDeploymentName!),
+                new Kernel());
+
+        OpenAIThreadCreationOptions threadOptions = new()
+        {
+            Messages = [
+                new ChatMessageContent(AuthorRole.User, "Hello"),
+                new ChatMessageContent(AuthorRole.Assistant, "How may I help you?"),
+            ]
+        };
+        string threadId = await agent.CreateThreadAsync(threadOptions);
+        try
+        {
+            var messages = await agent.GetThreadMessagesAsync(threadId).ToArrayAsync();
+            Assert.Equal(2, messages.Length);
+
+            OpenAIAssistantInvocationOptions invocationOptions = new()
+            {
+                AdditionalMessages = [
+                    new ChatMessageContent(AuthorRole.User, "This is my real question...in three parts:"),
+                    new ChatMessageContent(AuthorRole.User, "Part 1"),
+                    new ChatMessageContent(AuthorRole.User, "Part 2"),
+                    new ChatMessageContent(AuthorRole.User, "Part 3"),
+                ]
+            };
+
+            messages = await agent.InvokeAsync(threadId, invocationOptions).ToArrayAsync();
+            Assert.Single(messages);
+
+            messages = await agent.GetThreadMessagesAsync(threadId).ToArrayAsync();
+            Assert.Equal(7, messages.Length);
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
         }
     }
 

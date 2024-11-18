@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -35,6 +37,7 @@ public class AssistantRunOptionsFactoryTests
 
         // Assert
         Assert.NotNull(options);
+        Assert.Empty(options.AdditionalMessages);
         Assert.Null(options.InstructionsOverride);
         Assert.Null(options.NucleusSamplingFactor);
         Assert.Equal("test", options.AdditionalInstructions);
@@ -146,6 +149,30 @@ public class AssistantRunOptionsFactoryTests
         Assert.Equal(2, options.Metadata.Count);
         Assert.Equal("value", options.Metadata["key1"]);
         Assert.Equal(string.Empty, options.Metadata["key2"]);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> metadata.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsMessagesTest()
+    {
+        // Arrange
+        OpenAIAssistantDefinition definition = new("gpt-anything");
+
+        OpenAIAssistantInvocationOptions invocationOptions =
+            new()
+            {
+                AdditionalMessages = [
+                    new ChatMessageContent(AuthorRole.User, "test message")
+                ]
+            };
+
+        // Act
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
+
+        // Assert
+        Assert.Single(options.AdditionalMessages);
     }
 
     /// <summary>
