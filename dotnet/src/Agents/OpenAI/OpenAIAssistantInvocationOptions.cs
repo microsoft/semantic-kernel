@@ -25,6 +25,12 @@ public sealed class OpenAIAssistantInvocationOptions
     public string? AdditionalInstructions { get; init; }
 
     /// <summary>
+    /// Additional messages to add to the the thread.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<ChatMessageContent>? AdditionalMessages { get; init; }
+
+    /// <summary>
     /// Set if code_interpreter tool is enabled.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
