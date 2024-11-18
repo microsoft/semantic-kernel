@@ -277,6 +277,11 @@ class TestVectorStore(VectorStoreTestBase):
                 None,
                 5,
                 RAW_RECORD_ARRAY,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Linux",
+                    reason="The Weaviate docker image is only available on Linux"
+                    " but some GitHubs job runs in a Windows container.",
+                ),
                 id="weaviate_local_array_data_model",
             ),
             pytest.param(
@@ -290,6 +295,11 @@ class TestVectorStore(VectorStoreTestBase):
                 None,
                 5,
                 RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Linux",
+                    reason="The Weaviate docker image is only available on Linux"
+                    " but some GitHubs job runs in a Windows container.",
+                ),
                 id="weaviate_local_list_data_model",
             ),
             pytest.param(
@@ -303,6 +313,11 @@ class TestVectorStore(VectorStoreTestBase):
                 None,
                 5,
                 RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Linux",
+                    reason="The Weaviate docker image is only available on Linux"
+                    " but some GitHubs job runs in a Windows container.",
+                ),
                 id="weaviate_local_pandas_data_model",
             ),
             # endregion

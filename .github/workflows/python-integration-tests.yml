@@ -156,6 +156,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
+        if: matrix.os == 'ubuntu-latest'
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Start Azure Cosmos DB emulator
         if: matrix.os == 'windows-latest'
@@ -281,6 +282,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
+        if: matrix.os == 'ubuntu-latest'
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Start Azure Cosmos DB emulator
         if: matrix.os == 'windows-latest'
