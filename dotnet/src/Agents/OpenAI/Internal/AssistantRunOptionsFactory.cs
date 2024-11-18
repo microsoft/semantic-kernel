@@ -52,5 +52,5 @@ internal static class AssistantRunOptionsFactory
         =>
             setting.HasValue && (!agentSetting.HasValue || !EqualityComparer<TValue>.Default.Equals(setting.Value, agentSetting.Value)) ?
                 setting.Value :
-                null;
+                agentSetting;
 }
