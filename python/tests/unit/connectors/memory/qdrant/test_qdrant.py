@@ -257,14 +257,14 @@ async def test_delete_collection(collection):
             "collection",
             {
                 "collection_name": "test",
-                "vectors_config": {"vector": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32)},
+                "vectors_config": {"vector": VectorParams(size=5, distance=Distance.COSINE, datatype=Datatype.FLOAT32)},
             },
         ),
         (
             "collection_without_named_vectors",
             {
                 "collection_name": "test",
-                "vectors_config": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32),
+                "vectors_config": VectorParams(size=5, distance=Distance.COSINE, datatype=Datatype.FLOAT32),
             },
         ),
     ],

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -72,7 +71,7 @@ internal static partial class FunctionCallsProcessorLoggingExtensions
     /// <summary>
     /// Logs function calls.
     /// </summary>
-    public static void LogFunctionCalls(this ILogger logger, List<FunctionCallContent> functionCalls)
+    public static void LogFunctionCalls(this ILogger logger, FunctionCallContent[] functionCalls)
     {
         if (logger.IsEnabled(LogLevel.Debug))
         {
