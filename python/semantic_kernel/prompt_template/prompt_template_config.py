@@ -52,7 +52,7 @@ class PromptTemplateConfig(KernelBaseModel):
     @classmethod
     def rewrite_execution_settings(
         cls,
-        settings: None | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]),
+        settings: PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None,
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary."""
         if not settings:
