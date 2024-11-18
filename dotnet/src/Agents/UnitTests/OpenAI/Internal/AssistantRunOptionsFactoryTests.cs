@@ -39,9 +39,9 @@ public class AssistantRunOptionsFactoryTests
         Assert.NotNull(options);
         Assert.Empty(options.AdditionalMessages);
         Assert.Null(options.InstructionsOverride);
-        Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
         Assert.Equal("test", options.AdditionalInstructions);
+        Assert.Equal(0.5F, options.Temperature);
         Assert.Empty(options.Metadata);
     }
 
@@ -69,9 +69,9 @@ public class AssistantRunOptionsFactoryTests
 
         // Assert
         Assert.NotNull(options);
-        Assert.Equal("test", options.InstructionsOverride);
-        Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
+        Assert.Equal("test", options.InstructionsOverride);
+        Assert.Equal(0.5F, options.Temperature);
     }
 
     /// <summary>
@@ -173,5 +173,32 @@ public class AssistantRunOptionsFactoryTests
 
         // Assert
         Assert.Single(options.AdditionalMessages);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> metadata.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsMaxTokensTest()
+    {
+        // Arrange
+        OpenAIAssistantDefinition definition =
+            new("gpt-anything")
+            {
+                Temperature = 0.5F,
+                ExecutionOptions =
+                    new()
+                    {
+                        MaxCompletionTokens = 4096,
+                        MaxPromptTokens = 1024,
+                    },
+            };
+
+        // Act
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
+
+        // Assert
+        Assert.Equal(1024, options.MaxInputTokenCount);
+        Assert.Equal(4096, options.MaxOutputTokenCount);
     }
 }
