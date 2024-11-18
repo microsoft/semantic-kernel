@@ -22,6 +22,7 @@ public class CounterWithCloudSubscribersController : CounterBaseController
         this.Process = this.InitializeProcess(RequestCounterProcess.CreateProcessWithProcessSubscriber(serviceProvider));
     }
 
+    /// <inheritdoc/>
     [HttpGet("increase", Name = "IncreaseCounterWithCloudSubscribers")]
     public override async Task<int> IncreaseCounterAsync()
     {
@@ -32,6 +33,7 @@ public class CounterWithCloudSubscribersController : CounterBaseController
         return counterState?.State?.Counter ?? -1;
     }
 
+    /// <inheritdoc/>
     [HttpGet("decrease", Name = "DecreaseCounterWithCloudSubscribers")]
     public override async Task<int> DecreaseCounterAsync()
     {
@@ -42,8 +44,9 @@ public class CounterWithCloudSubscribersController : CounterBaseController
         return counterState?.State?.Counter ?? -1;
     }
 
+    /// <inheritdoc/>
     [HttpGet("reset", Name = "ResetCounterWithCloudSubscribers")]
-    public async Task<int> ResetCounterAsync()
+    public override async Task<int> ResetCounterAsync()
     {
         var eventName = RequestCounterProcess.GetEventName(RequestCounterProcess.CounterProcessEvents.ResetCounterRequest);
         var runningProcess = await this.StartProcessWithEventAsync(eventName);

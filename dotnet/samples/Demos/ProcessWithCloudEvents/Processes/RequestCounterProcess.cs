@@ -42,31 +42,31 @@ public static class RequestCounterProcess
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.IncreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.IncreaseCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.IncreaseCounter));
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.DecreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.DecreaseCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.DecreaseCounter));
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.ResetCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.ResetCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.ResetCounter));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.IncreaseCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.IncreaseCounter)
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.DecreaseCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.DecreaseCounter)
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.ResetCounter)
-            .SendEventTo(new ProcessFunctionTargetBuilder(emailSenderStep, SendEmailStep.Functions.SendCounterResetEmail));
+            .OnFunctionResult(CounterStep.StepFunctions.ResetCounter)
+            .SendEventTo(new ProcessFunctionTargetBuilder(emailSenderStep, SendEmailStep.StepFunctions.SendCounterResetEmail));
 
         counterInterceptorStep
-            .OnFunctionResult(CounterInterceptorStep.Functions.InterceptCounter)
-            .SendEventTo(new ProcessFunctionTargetBuilder(emailSenderStep, SendEmailStep.Functions.SendCounterChangeEmail));
+            .OnFunctionResult(CounterInterceptorStep.StepFunctions.InterceptCounter)
+            .SendEventTo(new ProcessFunctionTargetBuilder(emailSenderStep, SendEmailStep.StepFunctions.SendCounterChangeEmail));
 
         return processBuilder;
     }
@@ -80,31 +80,31 @@ public static class RequestCounterProcess
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.IncreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.IncreaseCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.IncreaseCounter));
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.DecreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.DecreaseCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.DecreaseCounter));
 
         processBuilder
             .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.ResetCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.ResetCounter));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.ResetCounter));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.IncreaseCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.IncreaseCounter)
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.DecreaseCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.DecreaseCounter)
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.ResetCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.ResetCounter)
             .EmitAsProcessEvent(processBuilder.GetProcessEvent(CounterProcessEvents.OnCounterReset))
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterInterceptorStep
-            .OnFunctionResult(CounterInterceptorStep.Functions.InterceptCounter)
+            .OnFunctionResult(CounterInterceptorStep.StepFunctions.InterceptCounter)
             .EmitAsProcessEvent(processBuilder.GetProcessEvent(CounterProcessEvents.OnCounterResult));
 
         processBuilder.LinkEventSubscribersFromType<CounterProcessSubscriber>(serviceProvider);

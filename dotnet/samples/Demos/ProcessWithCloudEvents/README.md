@@ -186,10 +186,6 @@ flowchart LR
         ```C#
         public class CounterProcessSubscriber : KernelProcessEventsSubscriber<CounterProcessEvents>
         {
-            public CounterProcessSubscriber(IServiceProvider serviceProvider) : base(serviceProvider)
-            {
-            }
-
             [ProcessEventSubscriber(CounterProcessEvents.OnCounterResult)]
             public async Task OnCounterResultReceivedAsync(int? counterResult)
             {

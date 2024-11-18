@@ -6,12 +6,12 @@ namespace ProcessWithCloudEvents.Processes.Steps;
 
 public class CounterInterceptorStep : KernelProcessStep
 {
-    public static class Functions
+    public static class StepFunctions
     {
         public const string InterceptCounter = nameof(InterceptCounter);
     }
 
-    [KernelFunction(Functions.InterceptCounter)]
+    [KernelFunction(StepFunctions.InterceptCounter)]
     public int? InterceptCounter(int counterStatus)
     {
         var multipleOf = 3;

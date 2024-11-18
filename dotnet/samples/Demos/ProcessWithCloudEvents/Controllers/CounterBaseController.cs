@@ -9,9 +9,19 @@ using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Processes.Steps;
 
 namespace ProcessWithCloudEvents.Controllers;
+/// <summary>
+/// Base class that contains common methods to be used when using SK Processes and Counter common api entrypoints
+/// </summary>
 public abstract class CounterBaseController : ControllerBase
 {
+    /// <summary>
+    /// Kernel to be used to run the SK Process
+    /// </summary>
     internal Kernel Kernel { get; init; }
+
+    /// <summary>
+    /// SK Process to be used to hold the counter logic
+    /// </summary>
     internal KernelProcess Process { get; init; }
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
@@ -96,12 +106,29 @@ public abstract class CounterBaseController : ControllerBase
         return processState;
     }
 
+    /// <summary>
+    /// API entry point to increase the counter
+    /// </summary>
+    /// <returns>current counter value</returns>
     public virtual async Task<int> IncreaseCounterAsync()
     {
         return await Task.FromResult(0);
     }
 
+    /// <summary>
+    /// API entry point to decrease the counter
+    /// </summary>
+    /// <returns>current counter value</returns>
     public virtual async Task<int> DecreaseCounterAsync()
+    {
+        return await Task.FromResult(0);
+    }
+
+    /// <summary>
+    /// API entry point to reset counter value to 0
+    /// </summary>
+    /// <returns>current counter value</returns>
+    public virtual async Task<int> ResetCounterAsync()
     {
         return await Task.FromResult(0);
     }

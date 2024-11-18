@@ -6,7 +6,7 @@ namespace ProcessWithCloudEvents.Processes.Steps;
 
 public class CounterStep : KernelProcessStep<CounterStepState>
 {
-    public static class Functions
+    public static class StepFunctions
     {
         public const string IncreaseCounter = nameof(IncreaseCounter);
         public const string DecreaseCounter = nameof(DecreaseCounter);
@@ -26,7 +26,7 @@ public class CounterStep : KernelProcessStep<CounterStepState>
         return ValueTask.CompletedTask;
     }
 
-    [KernelFunction(Functions.IncreaseCounter)]
+    [KernelFunction(StepFunctions.IncreaseCounter)]
     public async Task<int> IncreaseCounterAsync(KernelProcessStepContext context)
     {
         this._state!.Counter += this._state.CounterIncrements;
@@ -40,7 +40,7 @@ public class CounterStep : KernelProcessStep<CounterStepState>
         return this._state.Counter;
     }
 
-    [KernelFunction(Functions.DecreaseCounter)]
+    [KernelFunction(StepFunctions.DecreaseCounter)]
     public async Task<int> DecreaseCounterAsync(KernelProcessStepContext context)
     {
         this._state!.Counter -= this._state.CounterIncrements;
@@ -54,7 +54,7 @@ public class CounterStep : KernelProcessStep<CounterStepState>
         return this._state.Counter;
     }
 
-    [KernelFunction(Functions.ResetCounter)]
+    [KernelFunction(StepFunctions.ResetCounter)]
     public async Task<int> ResetCounterAsync(KernelProcessStepContext context)
     {
         this._state!.Counter = 0;

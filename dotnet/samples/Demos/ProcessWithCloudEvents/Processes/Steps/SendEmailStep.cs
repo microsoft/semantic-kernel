@@ -15,7 +15,7 @@ public class SendEmailStep : KernelProcessStep
         public const string SendEmailFailure = nameof(SendEmailFailure);
     }
 
-    public static class Functions
+    public static class StepFunctions
     {
         public const string SendCounterChangeEmail = nameof(SendCounterChangeEmail);
         public const string SendCounterResetEmail = nameof(SendCounterResetEmail);
@@ -33,7 +33,7 @@ public class SendEmailStep : KernelProcessStep
         return message;
     }
 
-    [KernelFunction(Functions.SendCounterChangeEmail)]
+    [KernelFunction(StepFunctions.SendCounterChangeEmail)]
     public async Task PublishCounterChangedEmailMessageAsync(KernelProcessStepContext context, Kernel kernel, object inputData)
     {
         if (inputData == null)
@@ -57,7 +57,7 @@ public class SendEmailStep : KernelProcessStep
         }
     }
 
-    [KernelFunction(Functions.SendCounterResetEmail)]
+    [KernelFunction(StepFunctions.SendCounterResetEmail)]
     public async Task PublishCounterResetEmailMessageAsync(KernelProcessStepContext context, Kernel kernel, object inputData)
     {
         if (inputData == null)
