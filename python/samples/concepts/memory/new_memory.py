@@ -10,28 +10,34 @@ from uuid import uuid4
 import numpy as np
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
-    AzureCosmosDBNoSQLCollection,
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureTextEmbedding,
+    OpenAIEmbeddingPromptExecutionSettings,
+    OpenAITextEmbedding,
 )
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
-from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
+from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
+from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
+    DistanceFunction,
+    IndexKind,
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    VectorTextSearchMixin,
     vectorstoremodel,
 )
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
 
 def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
@@ -50,11 +56,18 @@ def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunct
                 deserialize_function=np.array,
             ),
         ] = None
-        other: str | None = None
         id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str,
+            VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
+                is_full_text_searchable=True,
+            ),
         ] = "content1"
+        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
+        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
 
     return DataModelArray
 
@@ -73,11 +86,18 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
                 property_type="float",
             ),
         ] = None
-        other: str | None = None
         id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str,
+            VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
+                is_full_text_searchable=True,
+            ),
         ] = "content1"
+        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
+        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
 
     return DataModelList
 
@@ -121,7 +141,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "redis_hashset": lambda: RedisHashsetCollection[DataModel](
+    "redis_hash": lambda: RedisHashsetCollection[DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
@@ -133,17 +153,25 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
-    "weaviate": lambda: WeaviateCollection[DataModel](
+    "weaviate": lambda: WeaviateCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
     "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection(
         data_model_type=DataModel,
-        database_name="sample_database",
         collection_name=collection_name,
         create_database=True,
     ),
 }
+
+
+def print_record(result: VectorSearchResult | None = None, record: DataModel | None = None):
+    if result:
+        record = result.record
+    print(f"  Found id: {record.id}")
+    print(f"    Content: {record.content}")
+    if record.vector is not None:
+        print(f"    Vector (first five): {record.vector[:5]}")
 
 
 async def main(collection: str, use_azure_openai: bool, embedding_model: str):
@@ -157,46 +185,79 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
         print(f"Creating {collection} collection!")
+        await record_collection.delete_collection()
         await record_collection.create_collection_if_not_exists()
 
-        record1 = DataModel(content="Semantic Kernel is awesome", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
+        record1 = DataModel(
+            content="Semantic Kernel is awesome",
+            id="e6103c03-487f-4d7d-9c23-4723651c17f4",
+            title="Overview",
+            tag="general",
+        )
         record2 = DataModel(
             content="Semantic Kernel is available in dotnet, python and Java.",
             id="09caec77-f7e1-466a-bcec-f1d51c5b15be",
+            title="Semantic Kernel Languages",
+            tag="general",
         )
 
         print("Adding records!")
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
             [record1, record2], data_model_type=DataModel
         )
+
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
         print("Getting records!")
         results = await record_collection.get_batch([record1.id, record2.id])
         if results:
-            for result in results:
-                print(f"  Found id: {result.id}")
-                print(f"    Content: {result.content}")
-                if result.vector is not None:
-                    print(f"    Vector (first five): {result.vector[:5]}")
+            [print_record(record=result) for result in results]
         else:
             print("Nothing found...")
+        options = VectorSearchOptions(
+            vector_field_name="vector",
+            include_vectors=True,
+            filter=VectorSearchFilter.equal_to("tag", "general"),
+        )
+        if isinstance(record_collection, VectorTextSearchMixin):
+            print("-" * 30)
+            print("Using text search")
+            try:
+                search_results = await record_collection.text_search("python", options)
+                if search_results.total_count == 0:
+                    print("\nNothing found...\n")
+                else:
+                    [print_record(result) async for result in search_results.results]
+            except Exception:
+                print("Text search could not execute.")
         if isinstance(record_collection, VectorizedSearchMixin):
             print("-" * 30)
-            print("Using vectorized search, the distance function is set to cosine_similarity.")
-            print("This means that the higher the score the more similar.")
-            search_results = await record_collection.vectorized_search(
-                vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                options=VectorSearchOptions(vector_field_name="vector", include_vectors=True),
+            print(
+                "Using vectorized search, depending on the distance function, "
+                "the better score might be higher or lower."
             )
-            results = [record async for record in search_results.results]
-            for result in results:
-                print(f"  Found id: {result.record.id}")
-                print(f"    Content: {result.record.content}")
-                if result.record.vector is not None:
-                    print(f"    Vector (first five): {result.record.vector[:5]}")
-                print(f"  Score: {result.score:.4f}")
-                print("")
+            try:
+                search_results = await record_collection.vectorized_search(
+                    vector=(await embedder.generate_raw_embeddings(["python"]))[0],
+                    options=VectorSearchOptions(vector_field_name="vector", include_vectors=True),
+                )
+                if search_results.total_count == 0:
+                    print("\nNothing found...\n")
+                else:
+                    [print_record(result) async for result in search_results.results]
+            except Exception:
+                print("Vectorized search could not execute.")
+        if isinstance(record_collection, VectorizableTextSearchMixin):
+            print("-" * 30)
+            print("Using vectorizable text search")
+            try:
+                search_results = await record_collection.vectorizable_text_search("python", options)
+                if search_results.total_count == 0:
+                    print("\nNothing found...\n")
+                else:
+                    [print_record(result) async for result in search_results.results]
+            except Exception:
+                print("Vectorizable text search could not execute.")
         print("-" * 30)
         print("Deleting collection!")
         await record_collection.delete_collection()

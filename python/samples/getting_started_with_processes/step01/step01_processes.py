@@ -70,13 +70,13 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         print(f"USER: {user_message}")
 
         if "exit" in user_message:
-            await context.emit_event(process_event=ChatBotEvents.Exit.value, data=None)
+            await context.emit_event(process_event=ChatBotEvents.Exit, data=None)
             return
 
         self.state.current_input_index += 1
 
         # Emit the user input event
-        await context.emit_event(process_event=CommonEvents.UserInputReceived.value, data=user_message)
+        await context.emit_event(process_event=CommonEvents.UserInputReceived, data=user_message)
 
 
 class ChatUserInputStep(ScriptedUserInputStep):
@@ -140,7 +140,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
         self.state.chat_messages.append(answer)
 
         # Emit an event: assistantResponse
-        await context.emit_event(process_event=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
+        await context.emit_event(process_event=ChatBotEvents.AssistantResponseGenerated, data=answer)
 
 
 kernel = Kernel()
@@ -157,7 +157,7 @@ async def step01_processes():
     response_step = process.add_step(ChatBotResponseStep)
 
     # Define the input event that starts the process and where to send it
-    process.on_input_event(event_id=ChatBotEvents.StartProcess.value).send_event_to(target=intro_step)
+    process.on_input_event(event_id=ChatBotEvents.StartProcess).send_event_to(target=intro_step)
 
     # Define the event that triggers the next step in the process
     intro_step.on_function_result(function_name=IntroStep.print_intro_message.__name__).send_event_to(
@@ -165,16 +165,14 @@ async def step01_processes():
     )
 
     # Define the event that triggers the process to stop
-    user_input_step.on_event(event_id=ChatBotEvents.Exit.value).stop_process()
+    user_input_step.on_event(event_id=ChatBotEvents.Exit).stop_process()
     # For the user step, send the user input to the response step
-    user_input_step.on_event(event_id=CommonEvents.UserInputReceived.value).send_event_to(
+    user_input_step.on_event(event_id=CommonEvents.UserInputReceived).send_event_to(
         target=response_step, parameter_name="user_message"
     )
 
     # For the response step, send the response back to the user input step
-    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated.value).send_event_to(
-        target=user_input_step
-    )
+    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated).send_event_to(target=user_input_step)
 
     # Build the kernel process
     kernel_process = process.build()
@@ -183,7 +181,7 @@ async def step01_processes():
     await start(
         process=kernel_process,
         kernel=kernel,
-        initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess.value, data=None),
+        initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess, data=None),
     )
 
 
