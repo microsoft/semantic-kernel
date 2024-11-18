@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Npgsql" />
     <PackageReference Include="Pgvector" />
   </ItemGroup>
 
