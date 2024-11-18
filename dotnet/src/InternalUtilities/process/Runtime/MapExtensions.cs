@@ -73,7 +73,7 @@ internal static class MapExtensions
             return true;
         }
 
-        // DAPR runtime requires a deeper comparision
+        // DAPR runtime requires a deeper comparison
         Type candidateType = possibleValue.GetType();
 
         // Candidate must be enumerable with element type
