@@ -79,7 +79,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.10.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="[8.0.0, 9.0.0)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="[8.0.0, 9.0.0)" />
     <!-- Test -->
