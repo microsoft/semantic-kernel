@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -54,22 +55,22 @@ public sealed class RestApiOperation
     /// <summary>
     /// The server.
     /// </summary>
-    public IReadOnlyList<RestApiServer> Servers { get; }
+    public IList<RestApiServer> Servers { get; private set; }
 
     /// <summary>
     /// The security requirements.
     /// </summary>
-    public IReadOnlyList<RestApiSecurityRequirement> SecurityRequirements { get; }
+    public IList<RestApiSecurityRequirement> SecurityRequirements { get; private set; }
 
     /// <summary>
     /// The operation parameters.
     /// </summary>
-    public IReadOnlyList<RestApiParameter> Parameters { get; }
+    public IList<RestApiParameter> Parameters { get; private set; }
 
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IReadOnlyDictionary<string, RestApiExpectedResponse> Responses { get; }
+    public IDictionary<string, RestApiExpectedResponse> Responses { get; private set; }
 
     /// <summary>
     /// The operation payload.
@@ -79,8 +80,11 @@ public sealed class RestApiOperation
     /// <summary>
     /// Additional unstructured metadata about the operation.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> Extensions { get; init; } = s_emptyDictionary;
-
+    public IDictionary<string, object?> Extensions
+    {
+        get => this._extensions;
+        init => this._extensions = value;
+    }
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
@@ -95,13 +99,13 @@ public sealed class RestApiOperation
     /// <param name="payload">The operation payload.</param>
     internal RestApiOperation(
         string? id,
-        IReadOnlyList<RestApiServer> servers,
+        IList<RestApiServer> servers,
         string path,
         HttpMethod method,
         string? description,
-        IReadOnlyList<RestApiParameter> parameters,
-        IReadOnlyDictionary<string, RestApiExpectedResponse> responses,
-        IReadOnlyList<RestApiSecurityRequirement> securityRequirements,
+        IList<RestApiParameter> parameters,
+        IDictionary<string, RestApiExpectedResponse> responses,
+        IList<RestApiSecurityRequirement> securityRequirements,
         RestApiPayload? payload = null)
     {
         this.Id = id;
@@ -110,11 +114,9 @@ public sealed class RestApiOperation
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
-        this.Responses = responses;
-        this.SecurityRequirements = securityRequirements;
-        this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
         this.SecurityRequirements = securityRequirements;
+        this.Payload = payload;
     }
 
     /// <summary>
@@ -212,15 +214,27 @@ public sealed class RestApiOperation
     {
         this.Payload?.Freeze();
 
+        this.Parameters = new ReadOnlyCollection<RestApiParameter>(this.Parameters);
         foreach (var parameter in this.Parameters)
         {
             parameter.Freeze();
         }
 
+        this.Servers = new ReadOnlyCollection<RestApiServer>(this.Servers);
         foreach (var server in this.Servers)
         {
             server.Freeze();
         }
+
+        this.SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(this.SecurityRequirements);
+        foreach (var securityRequirement in this.SecurityRequirements)
+        {
+            securityRequirement.Freeze();
+        }
+
+        this.Responses = new ReadOnlyDictionary<string, RestApiExpectedResponse>(this.Responses);
+
+        this._extensions = new ReadOnlyDictionary<string, object?>(this._extensions);
     }
 
     #region private
@@ -358,5 +372,7 @@ public sealed class RestApiOperation
         { RestApiParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
-    # endregion
+    private IDictionary<string, object?> _extensions = s_emptyDictionary;
+
+    #endregion
 }

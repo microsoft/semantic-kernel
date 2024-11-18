@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -27,7 +27,7 @@ public sealed class RestApiPayloadProperty
         get => this._argumentName;
         set
         {
-            this.ThrowIfFrozen();
+            this._freezable.ThrowIfFrozen();
             this._argumentName = value;
         }
     }
@@ -56,8 +56,7 @@ public sealed class RestApiPayloadProperty
     /// <summary>
     /// The properties.
     /// </summary>
-    public IReadOnlyList<RestApiPayloadProperty> Properties { get; }
-
+    public IList<RestApiPayloadProperty> Properties { get; private set; }
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
@@ -85,7 +84,7 @@ public sealed class RestApiPayloadProperty
         string name,
         string type,
         bool isRequired,
-        IReadOnlyList<RestApiPayloadProperty> properties,
+        IList<RestApiPayloadProperty> properties,
         string? description = null,
         string? format = null,
         KernelJsonSchema? schema = null,
@@ -106,26 +105,13 @@ public sealed class RestApiPayloadProperty
     /// </summary>
     internal void Freeze()
     {
-        if (this._isFrozen)
+        this._freezable.Freeze();
+        this.Properties = new ReadOnlyCollection<RestApiPayloadProperty>(this.Properties);
+        foreach (var property in this.Properties)
         {
-            return;
-        }
-
-        this._isFrozen = true;
-    }
-
-    /// <summary>
-    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiPayloadProperty"/> is frozen.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    private void ThrowIfFrozen()
-    {
-        if (this._isFrozen)
-        {
-            throw new InvalidOperationException("RestApiOperationPayloadProperty is frozen and cannot be modified.");
+            property.Freeze();
         }
     }
-
+    private readonly Freezable _freezable = new();
     private string? _argumentName;
-    private bool _isFrozen = false;
 }

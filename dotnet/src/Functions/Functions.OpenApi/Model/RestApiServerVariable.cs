@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -23,7 +22,7 @@ public sealed class RestApiServerVariable
         get => this._argumentName;
         set
         {
-            this.ThrowIfFrozen();
+            this._freezable.ThrowIfFrozen();
             this._argumentName = value;
         }
     }
@@ -42,7 +41,7 @@ public sealed class RestApiServerVariable
     /// <summary>
     /// An enumeration of string values to be used if the substitution options are from a limited set.
     /// </summary>
-    public IReadOnlyList<string>? Enum { get; }
+    public IList<string>? Enum { get; private set; }
 
     /// <summary>
     /// Construct a new <see cref="RestApiServerVariable"/> object.
@@ -50,7 +49,7 @@ public sealed class RestApiServerVariable
     /// <param name="defaultValue">The default value to use for substitution.</param>
     /// <param name="description">An optional description for the server variable.</param>
     /// <param name="enumValues">An enumeration of string values to be used if the substitution options are from a limited set.</param>
-    internal RestApiServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
+    internal RestApiServerVariable(string defaultValue, string? description = null, IList<string>? enumValues = null)
     {
         this.Default = defaultValue;
         this.Description = description;
@@ -66,31 +65,12 @@ public sealed class RestApiServerVariable
         return this.Enum?.Contains(value!) ?? true;
     }
 
-    /// <summary>
-    /// Makes the current instance unmodifiable.
-    /// </summary>
     internal void Freeze()
     {
-        if (this._isFrozen)
-        {
-            return;
-        }
-
-        this._isFrozen = true;
-    }
-
-    /// <summary>
-    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiServerVariable"/> is frozen.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    private void ThrowIfFrozen()
-    {
-        if (this._isFrozen)
-        {
-            throw new InvalidOperationException("RestApiOperationServerVariable is frozen and cannot be modified.");
-        }
+        this._freezable.Freeze();
+        this.Enum = this.Enum is not null ? new ReadOnlyCollection<string>(this.Enum) : null;
     }
 
     private string? _argumentName;
-    private bool _isFrozen = false;
+    private readonly Freezable _freezable = new();
 }
