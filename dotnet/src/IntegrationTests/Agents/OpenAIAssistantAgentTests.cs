@@ -127,6 +127,44 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Azure OpenAI services.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentTokensAsync()
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                new(azureOpenAIConfiguration.ChatDeploymentName!)
+                {
+                    Instructions = "Repeat the user all of the user messages",
+                    ExecutionOptions = new()
+                    {
+                        MaxCompletionTokens = 16,
+                    }
+                },
+                new Kernel());
+
+        string threadId = await agent.CreateThreadAsync();
+        ChatMessageContent functionResultMessage = new(AuthorRole.User, "A long time ago there lived a king who was famed for his wisdom through all the land. Nothing was hidden from him, and it seemed as if news of the most secret things was brought to him through the air. But he had a strange custom; every day after dinner, when the table was cleared, and no one else was present, a trusty servant had to bring him one more dish. It was covered, however, and even the servant did not know what was in it, neither did anyone know, for the king never took off the cover to eat of it until he was quite alone.");
+        try
+        {
+            await agent.AddChatMessageAsync(threadId, functionResultMessage);
+            await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync(threadId).ToArrayAsync().AsTask());
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
         }
     }
 
