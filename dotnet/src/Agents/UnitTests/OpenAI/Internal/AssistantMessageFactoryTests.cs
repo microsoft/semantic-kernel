@@ -150,11 +150,11 @@ public class AssistantMessageFactoryTests
     /// <summary>
     /// Verify options creation.
     /// </summary>
-    [Fact(Skip = "API bug with data Uri construction")]
+    [Fact]
     public void VerifyAssistantMessageAdapterGetMessageWithImageData()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png")]);
+        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
 
         // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
