@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -16,15 +17,20 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunner
 {
     private readonly RestApiOperationRunner _concrete;
+    private readonly IChatClient _chatClient;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationRunnerPayloadProxy"/> class.
     /// </summary>
     /// <param name="concrete">Operation runner to call with the generated payload</param>
+    /// <param name="chatClient">Chat client to generate the payload</param>
     /// <exception cref="ArgumentNullException">If the provided Operation runner argument is null</exception>
-    public RestApiOperationRunnerPayloadProxy(RestApiOperationRunner concrete)
+    public RestApiOperationRunnerPayloadProxy(RestApiOperationRunner concrete, IChatClient chatClient)
     {
         Verify.NotNull(concrete);
+        Verify.NotNull(chatClient);
         this._concrete = concrete;
+        this._chatClient = chatClient;
         if (concrete.EnableDynamicPayload)
         {
             throw new InvalidOperationException("The concrete operation runner must not support dynamic payloads.");
@@ -32,15 +38,15 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
     }
 
     /// <inheritdoc />
-    public Task<RestApiOperationResponse> RunAsync(RestApiOperation operation, KernelArguments arguments, RestApiOperationRunOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<RestApiOperationResponse> RunAsync(RestApiOperation operation, KernelArguments arguments, RestApiOperationRunOptions? options = null, CancellationToken cancellationToken = default)
     {
         var url = this._concrete.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
         var headers = operation.BuildHeaders(arguments);
 
-        var operationPayload = this.BuildOperationPayload(operation, arguments);
+        var operationPayload = await this.BuildOperationPayloadAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
 
-        return this._concrete.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(static item => item.Key, static item => item.Value.Schema), options, cancellationToken);
+        return await this._concrete.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(static item => item.Key, static item => item.Value.Schema), options, cancellationToken).ConfigureAwait(false);
     }
     /// <summary>
     /// Builds operation payload.
@@ -48,11 +54,11 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The operation payload arguments.</param>
     /// <returns>The raw operation payload and the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent? Content) BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
+    private Task<(object? Payload, HttpContent? Content)> BuildOperationPayloadAsync(RestApiOperation operation, IDictionary<string, object?> arguments, CancellationToken cancellationToken)
     {
         if (operation.Payload is null && !arguments.ContainsKey(RestApiOperation.PayloadArgumentName))
         {
-            return (null, null);
+            return Task.FromResult<(object?, HttpContent?)>((null, null));
         }
 
         var mediaType = operation.Payload?.MediaType;
@@ -71,7 +77,7 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
             throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunnerPayloadProxy)}.");
         }
 
-        return this.BuildJsonPayload(operation.Payload, arguments);
+        return this.BuildJsonPayloadAsync(operation.Payload, arguments, cancellationToken);
     }
     /// <summary>
     /// Builds "application/json" payload.
@@ -79,10 +85,16 @@ internal sealed class RestApiOperationRunnerPayloadProxy : IRestApiOperationRunn
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The JSON payload the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private async Task<(object? Payload, HttpContent? Content)> BuildJsonPayloadAsync(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments, CancellationToken cancellationToken)
     {
-        string content = "";
-        //TODO call the LLM
+        string message =
+        """
+        Given the following JSON schema, and the following context, generate the JSON payload:
+        """;
+        //TODO get the schema from the arguments, and the context
+
+        var completion = await this._chatClient.CompleteAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var content = completion.Message.Text;
         return (content, new StringContent(content, Encoding.UTF8, RestApiOperationRunner.MediaTypeApplicationJson));
     }
 }
