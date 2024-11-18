@@ -149,7 +149,7 @@ public sealed class OpenAIAssistantAgentTests
         OpenAIThreadCreationOptions threadOptions = new()
         {
             Messages = [
-                new ChatMessageContent(AuthorRole.User, "Hellow"),
+                new ChatMessageContent(AuthorRole.User, "Hello"),
                 new ChatMessageContent(AuthorRole.Assistant, "How may I help you?"),
             ]
         };
