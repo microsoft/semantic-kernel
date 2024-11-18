@@ -24,7 +24,7 @@ A simple counter has 3 main functionalities:
 - Decrease count
 - Reset count (set counter to 0)
 
-To achive this behavior the SK Stateful Step `Processes/Steps/CounterStep.cs` was created. 
+To achieve this behavior the SK Stateful Step `Processes/Steps/CounterStep.cs` was created. 
 On every request it stores that state that can be used to restore the state on the next request.
 
 ##### Counter Interceptor Step
@@ -42,7 +42,7 @@ This step sends an email if receiving a not nullable int value to the same email
 ```mermaid
 flowchart LR
     subgraph API  
-        ApiIncrease["/increse"]  
+        ApiIncrease["/increase"]  
         ApiDecrease["/decrease"]  
         ApiReset["/reset"]  
     end 
@@ -107,7 +107,7 @@ Cloud events related logic is encapsulated in SK Event Subscribers.
 ```mermaid
 flowchart LR
     subgraph API  
-        ApiIncrease["/increse"]  
+        ApiIncrease["/increase"]  
         ApiDecrease["/decrease"]  
         ApiReset["/reset"]  
     end 
