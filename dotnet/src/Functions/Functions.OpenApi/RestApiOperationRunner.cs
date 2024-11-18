@@ -48,9 +48,6 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// A dictionary containing the content type as the key and the corresponding content reader as the value.
     /// </summary>
-    /// <remarks>
-    /// TODO: Pass cancelation tokes to the content readers.
-    /// </remarks>
     private static readonly Dictionary<string, HttpResponseContentReader> s_contentReaderByContentType = new()
     {
         { "image", async (context, cancellationToken) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
