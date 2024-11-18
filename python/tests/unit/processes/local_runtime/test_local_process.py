@@ -321,7 +321,7 @@ async def test_handle_message_with_valid_event_id(mock_process_with_output_edges
         assert isinstance(event, KernelProcessEvent)
         assert event.id == "valid_event_id"
         assert event.data == message.target_event_data
-        assert event.visibility == KernelProcessEventVisibility.Internal
+        assert event.visibility == KernelProcessEventVisibility.Internal.value
 
 
 END_PROCESS_ID = "END"

@@ -20,7 +20,7 @@ class AddFishAndChipsCondimentsStep(KernelProcessStep):
     class OutputEvents(Enum):
         CondimentsAdded = "CondimentsAdded"
 
-    @kernel_function(name=Functions.AddCondiments.value)
+    @kernel_function(name=Functions.AddCondiments)
     async def add_condiments(
         self, context: KernelProcessStepContext, fish_actions: list[str], potato_actions: list[str]
     ):
@@ -30,7 +30,7 @@ class AddFishAndChipsCondimentsStep(KernelProcessStep):
         fish_actions.extend(potato_actions)
         fish_actions.append("Condiments")
         await context.emit_event(
-            process_event=AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded.value, data=fish_actions
+            process_event=AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded, data=fish_actions
         )
 
 
@@ -41,7 +41,7 @@ class FishAndChipsProcess:
 
     class ExternalFishAndChipsStep(ExternalStep):
         def __init__(self):
-            super().__init__(FishAndChipsProcess.ProcessEvents.FishAndChipsReady.value)
+            super().__init__(FishAndChipsProcess.ProcessEvents.FishAndChipsReady)
 
     @staticmethod
     def create_process(process_name: str = "FishAndChipsProcess"):
@@ -51,21 +51,21 @@ class FishAndChipsProcess:
         add_condiments_step = process_builder.add_step(AddFishAndChipsCondimentsStep)
         external_step = process_builder.add_step(FishAndChipsProcess.ExternalFishAndChipsStep)
 
-        process_builder.on_input_event(FishAndChipsProcess.ProcessEvents.PrepareFishAndChips.value).send_event_to(
-            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish.value)
+        process_builder.on_input_event(FishAndChipsProcess.ProcessEvents.PrepareFishAndChips).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         ).send_event_to(
-            make_potato_fries_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value)
+            make_potato_fries_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady.value).send_event_to(
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
             ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="fishActions")
         )
 
-        make_potato_fries_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady.value).send_event_to(
+        make_potato_fries_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady).send_event_to(
             ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="potatoActions")
         )
 
-        add_condiments_step.on_event(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded.value).send_event_to(
+        add_condiments_step.on_event(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded).send_event_to(
             ProcessFunctionTargetBuilder(external_step, parameter_name="fishActions")
         )
 

@@ -66,7 +66,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(new(AuthorRole.User, input));
+            chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);
 
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
