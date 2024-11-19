@@ -35,7 +35,6 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
-    /// <param name="eventId">The Id of the event of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
     public ProcessStepEdgeBuilder OnEvent(string eventName)
     {

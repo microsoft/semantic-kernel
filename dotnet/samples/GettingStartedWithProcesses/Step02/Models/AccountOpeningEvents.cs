@@ -3,7 +3,7 @@ namespace Step02.Models;
 
 /// <summary>
 /// Processes Events related to Account Opening scenarios.<br/>
-/// Class used in <see cref="Step02_AccountOpening"/> samples
+/// Class used in <see cref="Step02a_AccountOpening"/> samples
 /// </summary>
 public static class AccountOpeningEvents
 {

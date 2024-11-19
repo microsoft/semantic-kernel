@@ -49,6 +49,27 @@ flowchart LR
 
 ### Step02_AccountOpening
 
+The account opening sample has 3 different implementations covering the same scenario, it just uses different SK components to achieve the same goal.
+
+In addition, the sample introduces the concept of using smaller process as steps to maintain the main process readable and manageble for future improvements and unit testing.
+Also introduces the use of SK Event Subscribers.
+
+A process for opening an account for this sample has the following steps:
+- Fill New User Account Application Form
+- Verify Applicant Credit Score
+- Apply Fraud Detection Analysis to the Application Form
+- Create New Entry in Core System Records
+- Add new account to Marketing Records
+- CRM Record Creation
+- Mail user a user a notification about:
+    - Failure to open a new account due to Credit Score Check
+    - Failure to open a new account due to Fraud Detection Alert
+    - Welcome package including new account details
+
+A SK process that only connects the steps listed above as is (no use of subprocesses as steps) for opening an account look like this:
+
+#### Step02a_AccountOpening
+
 ```mermaid
 flowchart LR  
     User(User) -->|Provides user details| FillForm(Fill New <br/> Customer <br/> Form)  
@@ -78,6 +99,121 @@ flowchart LR
     Welcome -->|Success: Notify User about Account Creation| Mailer  
     Mailer -->|End of Interaction| User
 ```
+
+#### Step02b_AccountOpening
+
+After grouping steps that have a common theme/dependencies, and creating smaller subprocesses and using them as steps, 
+the root process looks like this:
+
+```mermaid
+flowchart LR
+    User(User)
+    FillForm(Chat With User <br/> to Fill New <br/> Customer Form)
+    NewAccountVerification[[New Account Verification<br/> Process]]
+    NewAccountCreation[[New Account Creation<br/> Process]]
+    Mailer(Mail <br/> Service)
+
+    User<-->|Provides user details|FillForm
+    FillForm-->|New User Form|NewAccountVerification
+    NewAccountVerification-->|Account Verification Failed|Mailer
+    NewAccountVerification-->|Account Verification Succeded|NewAccountCreation
+    NewAccountCreation-->|Account Creation Succeded|Mailer
+```
+
+Where processes used as steps, which are reusing the same steps used [`Step02a_AccountOpening`](#step02a_accountopening), are:
+
+```mermaid
+graph LR
+    NewUserForm([New User Form])
+    NewUserFormConv([Form Filling Interaction])
+    
+    subgraph AccountCreation[Account Creation Process]
+        direction LR
+        AccountValidation([Account Verification Passed])
+        NewUser1([New User Form])
+        NewUserFormConv1([Form Filling Interaction])
+
+        CoreSystem(Core System <br/> Record <br/> Creation)
+        Marketing(New Marketing <br/> Record Creation) 
+        CRM(CRM Record <br/> Creation)
+        Welcome(Welcome <br/> Packet)
+        NewAccountCreation([New Account Success])
+
+        NewUser1-->CoreSystem
+        NewUserFormConv1-->CoreSystem
+
+        AccountValidation-->CoreSystem
+        CoreSystem-->CRM-->|Success|Welcome
+        CoreSystem-->Marketing-->|Success|Welcome
+        CoreSystem-->|Account Details|Welcome
+
+        Welcome-->NewAccountCreation
+    end
+
+    subgraph AccountVerification[Account Verification Process]
+        direction LR
+        NewUser2([New User Form])
+        CreditScoreCheck[Credit Check <br/> Step]
+        FraudCheck[Fraud Detection <br/> Step]
+        AccountVerificationPass([Account Verification Passed])
+        AccountCreditCheckFail([Credit Check Failed])
+        AccoutFraudCheckFail([Fraud Check Failed])
+
+        
+        NewUser2-->CreditScoreCheck-->|Credit Score <br/> Check Passed|FraudCheck
+        FraudCheck-->AccountVerificationPass
+
+        CreditScoreCheck-->AccountCreditCheckFail
+        FraudCheck-->AccoutFraudCheckFail
+    end
+
+    AccountVerificationPass-->AccountValidation
+    NewUserForm-->NewUser1
+    NewUserForm-->NewUser2
+    NewUserFormConv-->NewUserFormConv1
+
+```
+
+#### Step02c_AccountOpeningWithCloudEvents
+
+An additional optimization that could be made to the Account Creation sample, is to make use of SK Event subscriber to isolate logic that has to do with cloud events. 
+In this sample, the cloud event logic is mocked by the Mail Service functionality, which mocks sending an email to the user in different circumstances:
+
+- When new user credit score check fails
+- When new user fraud detection fails
+- When a new account was created successfully after passing all checks and creation steps
+
+When using SK Event subscribers, specific process events when trigged will emit the event data externally to
+any subscribers linked to specific events.
+
+```mermaid
+graph LR
+    subgraph EventSubscribers[SK Event Subscribers]
+        OnSendMailDueCreditCheckFailure
+        OnSendMailDueFraudCheckFailure
+        OnSendMailWithNewAccountInfo
+    end
+
+    subgraph Process[SK Process]
+        direction LR
+        User(User)
+        FillForm(Chat With User <br/> to Fill New <br/> Customer Form)
+        NewAccountVerification[[New Account Verification<br/> Process]]
+        NewAccountCreation[[New Account Creation<br/> Process]]
+
+        User<-->|Provides user details|FillForm
+        FillForm-->|New User Form|NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
+    end
+
+    NewAccountVerification-->|Account Credit Check Failed|OnSendMailDueCreditCheckFailure
+    NewAccountVerification-->|Account Fraud Detection Failed|OnSendMailDueFraudCheckFailure
+    NewAccountCreation-->|Account Creation Succeded|OnSendMailWithNewAccountInfo
+
+```
+Creating a separation with SK Process when using cloud events (even though in this sample it's a mock of a Mailer), it is useful since 
+it can help to isolate additional logic related to authentication, use of additional frameworks, etc.
+
+For a more realistic sample of SK Process emitting real cloud events check out the [`ProcessWithCloudEvents` Demo](../Demos/ProcessWithCloudEvents/README.md).
 
 ### Step03a_FoodPreparation
 
