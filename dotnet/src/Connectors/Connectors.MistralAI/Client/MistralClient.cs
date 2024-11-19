@@ -566,7 +566,7 @@ internal sealed class MistralClient
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).ToList();
+        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding!])).ToList();
     }
 
     #region private
