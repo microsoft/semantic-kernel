@@ -32,19 +32,17 @@ class FriedFishProcess:
         chopStep = process_builder.add_step(CutFoodStep, name="chopStep")
         fryStep = process_builder.add_step(FryFoodStep)
 
-        process_builder.on_input_event(FriedFishProcess.ProcessEvents.PrepareFriedFish.value).send_event_to(
+        process_builder.on_input_event(FriedFishProcess.ProcessEvents.PrepareFriedFish).send_event_to(
             gatherIngredientsStep
         )
 
-        gatherIngredientsStep.on_event(
-            GatherFriedFishIngredientsStep.OutputEvents.IngredientsGathered.value
-        ).send_event_to(ProcessFunctionTargetBuilder(chopStep, function_name=CutFoodStep.Functions.ChopFood.value))
-
-        chopStep.on_event(CutFoodStep.OutputEvents.ChoppingReady.value).send_event_to(
-            ProcessFunctionTargetBuilder(fryStep)
+        gatherIngredientsStep.on_event(GatherFriedFishIngredientsStep.OutputEvents.IngredientsGathered).send_event_to(
+            ProcessFunctionTargetBuilder(chopStep, function_name=CutFoodStep.Functions.ChopFood)
         )
 
-        fryStep.on_event(FryFoodStep.OutputEvents.FoodRuined.value).send_event_to(
+        chopStep.on_event(CutFoodStep.OutputEvents.ChoppingReady).send_event_to(ProcessFunctionTargetBuilder(fryStep))
+
+        fryStep.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
             ProcessFunctionTargetBuilder(gatherIngredientsStep)
         )
 
@@ -58,35 +56,33 @@ class FriedFishProcess:
         chop_step = process_builder.add_step(CutFoodWithSharpeningStep, name="chopStep")
         fry_step = process_builder.add_step(FryFoodStep)
 
-        process_builder.on_input_event(FriedFishProcess.ProcessEvents.PrepareFriedFish.value).send_event_to(
+        process_builder.on_input_event(FriedFishProcess.ProcessEvents.PrepareFriedFish).send_event_to(
             gather_ingredients_step
         )
 
         gather_ingredients_step.on_event(
-            GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsGathered.value
+            GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsGathered
         ).send_event_to(
-            ProcessFunctionTargetBuilder(chop_step, function_name=CutFoodWithSharpeningStep.Functions.ChopFood.value)
+            ProcessFunctionTargetBuilder(chop_step, function_name=CutFoodWithSharpeningStep.Functions.ChopFood)
         )
 
         gather_ingredients_step.on_event(
-            GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock.value
+            GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock
         ).stop_process()
 
-        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.ChoppingReady.value).send_event_to(
+        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.ChoppingReady).send_event_to(
             ProcessFunctionTargetBuilder(fry_step)
         )
 
-        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value).send_event_to(
-            ProcessFunctionTargetBuilder(
-                chop_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife.value
-            )
+        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening).send_event_to(
+            ProcessFunctionTargetBuilder(chop_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife)
         )
 
-        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened.value).send_event_to(
-            ProcessFunctionTargetBuilder(chop_step, function_name=CutFoodWithSharpeningStep.Functions.ChopFood.value)
+        chop_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened).send_event_to(
+            ProcessFunctionTargetBuilder(chop_step, function_name=CutFoodWithSharpeningStep.Functions.ChopFood)
         )
 
-        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined.value).send_event_to(
+        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
             ProcessFunctionTargetBuilder(gather_ingredients_step)
         )
 

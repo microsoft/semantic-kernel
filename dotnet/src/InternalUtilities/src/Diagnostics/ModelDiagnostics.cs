@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -21,8 +20,8 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS`
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE`
 /// </summary>
-[Experimental("SKEXP0001")]
-[ExcludeFromCodeCoverage]
+[System.Diagnostics.CodeAnalysis.Experimental("SKEXP0001")]
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;

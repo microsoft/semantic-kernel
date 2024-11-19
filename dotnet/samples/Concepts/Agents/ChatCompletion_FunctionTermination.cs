@@ -233,19 +233,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        if (this.UseOpenAIConfig)
-        {
-            builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey);
-        }
-        else
-        {
-            builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
-        }
+        base.AddChatCompletionToKernel(builder);
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
 
