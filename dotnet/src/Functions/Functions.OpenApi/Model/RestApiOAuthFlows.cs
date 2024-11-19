@@ -36,4 +36,12 @@ public sealed class RestApiOAuthFlows
     internal RestApiOAuthFlows()
     {
     }
+
+    internal void Freeze()
+    {
+        this.Implicit?.Freeze();
+        this.Password?.Freeze();
+        this.ClientCredentials?.Freeze();
+        this.AuthorizationCode?.Freeze();
+    }
 }
