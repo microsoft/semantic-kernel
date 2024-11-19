@@ -4653,7 +4653,7 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.14.0"
+version = "1.15.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4826,7 +4826,7 @@ dev = [
     { name = "pytest-asyncio", specifier = "~=0.23" },
     { name = "pytest-cov", specifier = ">=5.0" },
     { name = "pytest-xdist", extras = ["psutil"], specifier = "~=3.6" },
-    { name = "ruff", specifier = "~=0.5" },
+    { name = "ruff", specifier = "~=0.7" },
     { name = "snoop", specifier = "~=0.4" },
     { name = "types-pyyaml", specifier = "~=6.0.12.20240311" },
 ]

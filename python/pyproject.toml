@@ -136,7 +136,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.5"
+    "ruff ~= 0.7"
 ]
 environments = [
     "sys_platform == 'darwin'",
