@@ -79,14 +79,14 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
+        await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
         {
-            Console.Write(word);
+            Console.Write(update);
+
+            var streamingCitations = GetCitations(update);
+
+            OutputCitations(streamingCitations);
         }
-
-        citations = GetCitations(chatMessage);
-
-        OutputCitations(citations);
 
         Console.WriteLine(Environment.NewLine);
     }
@@ -133,34 +133,6 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine();
     }
 
-    [RetryFact(typeof(HttpOperationException))]
-    public async Task ExampleWithStreamingAsync()
-    {
-        Console.WriteLine("=== Example with Streaming ===");
-
-        var ask = "How did Emily and David meet?";
-
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
-
-        var dataSource = GetAzureSearchDataSource();
-        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
-
-        Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine("Response:");
-
-        await foreach (var update in kernel.InvokePromptStreamingAsync(ask, new(promptExecutionSettings)))
-        {
-            Console.Write(update.ToString());
-
-            var citations = GetCitations(update);
-        }
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
@@ -189,12 +161,12 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Returns a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private static IReadOnlyList<ChatCitation> GetCitations(StreamingKernelContent streamingContent)
+    private static IReadOnlyList<ChatCitation>? GetCitations(StreamingChatMessageContent streamingContent)
     {
         var message = streamingContent.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
-        var messageContext = message.GetMessageContext();
+        var messageContext = message?.GetMessageContext();
 
-        return messageContext.Citations;
+        return messageContext?.Citations;
     }
 
     /// <summary>
