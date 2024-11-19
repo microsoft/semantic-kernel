@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 
 namespace Microsoft.SemanticKernel;
 
@@ -15,7 +16,8 @@ public sealed record ProcessFunctionTargetBuilder
     /// <param name="parameterName">The parameter to target.</param>
     public ProcessFunctionTargetBuilder(ProcessStepBuilder step, string? functionName = null, string? parameterName = null)
     {
-        Verify.NotNull(step);
+        Verify.NotNull(step, nameof(step));
+
         this.Step = step;
 
         // If the step is an EndStep, we don't need to resolve the function target.
@@ -28,7 +30,10 @@ public sealed record ProcessFunctionTargetBuilder
 
         // Make sure the function target is valid.
         var target = step.ResolveFunctionTarget(functionName, parameterName);
-        Verify.NotNull(target);
+        if (target == null)
+        {
+            throw new InvalidOperationException($"Failed to resolve function target for {step.GetType().Name}, {step.Name}: Function - {functionName ?? "any"} / Parameter - {parameterName ?? "any"}");
+        }
 
         this.FunctionName = target.FunctionName!;
         this.ParameterName = target.ParameterName;

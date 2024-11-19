@@ -42,7 +42,7 @@ public class ProcessTestController : Controller
             return this.BadRequest("Process already started");
         }
 
-        var initialEvent = KernelProcessEventSerializer.ToKernelProcessEvent(request.InitialEvent);
+        KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
 
         var kernelProcess = request.Process.ToKernelProcess();
         var context = await kernelProcess.StartAsync(initialEvent);
