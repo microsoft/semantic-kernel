@@ -133,6 +133,34 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine();
     }
 
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task ExampleWithStreamingAsync()
+    {
+        Console.WriteLine("=== Example with Streaming ===");
+
+        var ask = "How did Emily and David meet?";
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
+
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine("Response:");
+
+        await foreach (var update in kernel.InvokePromptStreamingAsync(ask, new(promptExecutionSettings)))
+        {
+            Console.Write(update.ToString());
+
+            var citations = GetCitations(update);
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
@@ -159,19 +187,33 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
+    /// Returns a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private static IReadOnlyList<ChatCitation> GetCitations(StreamingKernelContent streamingContent)
+    {
+        var message = streamingContent.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
+        var messageContext = message.GetMessageContext();
+
+        return messageContext.Citations;
+    }
+
+    /// <summary>
     /// Outputs a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private void OutputCitations(IReadOnlyList<ChatCitation> citations)
+    private void OutputCitations(IReadOnlyList<ChatCitation>? citations)
     {
-        Console.WriteLine("Citations:");
-
-        foreach (var citation in citations)
+        if (citations is not null)
         {
-            Console.WriteLine($"Chunk ID: {citation.ChunkId}");
-            Console.WriteLine($"Title: {citation.Title}");
-            Console.WriteLine($"File path: {citation.FilePath}");
-            Console.WriteLine($"URL: {citation.Url}");
-            Console.WriteLine($"Content: {citation.Content}");
+            Console.WriteLine("Citations:");
+
+            foreach (var citation in citations)
+            {
+                Console.WriteLine($"Chunk ID: {citation.ChunkId}");
+                Console.WriteLine($"Title: {citation.Title}");
+                Console.WriteLine($"File path: {citation.FilePath}");
+                Console.WriteLine($"URL: {citation.Url}");
+                Console.WriteLine($"Content: {citation.Content}");
+            }
         }
     }
 
