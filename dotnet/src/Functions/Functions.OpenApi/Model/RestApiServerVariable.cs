@@ -67,8 +67,8 @@ public sealed class RestApiServerVariable
 
     internal void Freeze()
     {
-        this._freezable.Freeze();
         this.Enum = this.Enum is not null ? new ReadOnlyCollection<string>(this.Enum) : null;
+        this._freezable.Freeze();
     }
 
     private string? _argumentName;

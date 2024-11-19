@@ -105,12 +105,13 @@ public sealed class RestApiPayloadProperty
     /// </summary>
     internal void Freeze()
     {
-        this._freezable.Freeze();
         this.Properties = new ReadOnlyCollection<RestApiPayloadProperty>(this.Properties);
         foreach (var property in this.Properties)
         {
             property.Freeze();
         }
+
+        this._freezable.Freeze();
     }
     private readonly Freezable _freezable = new();
     private string? _argumentName;
