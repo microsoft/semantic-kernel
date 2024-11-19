@@ -62,4 +62,20 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(0.9f, ollamaExecutionSettings.TopP!.Value, 0.1f);
         Assert.Equal(100, ollamaExecutionSettings.TopK);
     }
+
+    [Fact]
+    public void FromExecutionSettingsShouldRestoreFunctionChoiceBehavior()
+    {
+        // Arrange
+        var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+        var originalExecutionSettings = new PromptExecutionSettings();
+        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+
+        // Act
+        var result = OllamaPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
+
+        // Assert
+        Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
+    }
 }
