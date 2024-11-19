@@ -2,6 +2,7 @@
 using System;
 using System.ClientModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Files;
+using OpenAI.VectorStores;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
@@ -216,6 +219,56 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
+    /// and targeting Open AI services.
+    /// </summary>
+    [Fact]
+    public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint));
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                provider,
+                new(azureOpenAIConfiguration.ChatDeploymentName!),
+                new Kernel());
+
+        // Upload file - Using a table of fictional employees.
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+        await using Stream stream = File.OpenRead("TestData/employees.pdf")!;
+        OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream, "employees.pdf", FileUploadPurpose.Assistants);
+
+        // Create a vector-store
+        VectorStoreClient vectorStoreClient = provider.Client.GetVectorStoreClient();
+        CreateVectorStoreOperation result =
+            await vectorStoreClient.CreateVectorStoreAsync(waitUntilCompleted: false,
+                new VectorStoreCreationOptions()
+                {
+                    FileIds = { fileInfo.Id }
+                });
+
+        string threadId = await agent.CreateThreadAsync();
+        try
+        {
+            await agent.AddChatMessageAsync(threadId, new(AuthorRole.User, "Who works in sales?"));
+            ChatHistory messages = [];
+            var chunks = await agent.InvokeStreamingAsync(threadId, messages: messages).ToArrayAsync();
+            Assert.NotEmpty(chunks);
+            Assert.Single(messages);
+        }
+        finally
+        {
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
+            await vectorStoreClient.DeleteVectorStoreAsync(result.VectorStoreId);
+            await fileClient.DeleteFileAsync(fileInfo.Id);
         }
     }
 

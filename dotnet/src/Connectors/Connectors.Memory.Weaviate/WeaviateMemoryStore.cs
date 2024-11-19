@@ -537,7 +537,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
         {
             HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancel).ConfigureAwait(false);
 
-            string? responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+            string? responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancel).ConfigureAwait(false);
 
             this._logger.LogDebug("Weaviate responded with {StatusCode}", response.StatusCode);
 
