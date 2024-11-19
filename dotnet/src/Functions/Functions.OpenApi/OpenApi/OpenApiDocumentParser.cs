@@ -189,6 +189,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         try
         {
             var operations = new List<RestApiOperation>();
+            var operationServers = CreateRestApiOperationServers(document.Servers);
 
             foreach (var operationPair in pathItem.Operations)
             {
@@ -202,29 +203,36 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     continue;
                 }
 
-                var operation = new RestApiOperation(
+                try
+                {
+                    var operation = new RestApiOperation(
                     id: operationItem.OperationId,
-                    servers: CreateRestApiOperationServers(document.Servers),
+                    servers: operationServers,
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                     parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                    responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                    responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
                 )
-                {
-                    Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
-                };
+                    {
+                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                    };
 
-                operations.Add(operation);
+                    operations.Add(operation);
+                }
+                catch (KernelException ke)
+                {
+                    logger.LogWarning(ke, "Error occurred creating REST API operation for {OperationId}. Operation will be ignored.", operationItem.OperationId);
+                }
             }
 
             return operations;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occurred during REST API operation creation.");
+            logger.LogError(ex, "Fatal error occurred during REST API operation creation.");
             throw;
         }
     }

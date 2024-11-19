@@ -108,7 +108,7 @@ def mock_upsert_json():
 def mock_get_hash():
     with patch(f"{BASE_PATH}.hgetall", new=AsyncMock()) as mock_get:
         mock_get.return_value = {
-            b"metadata": b'{"content": "content"}',
+            b"content": b"content",
             b"vector": np.array([1.0, 2.0, 3.0]).tobytes(),
         }
         yield mock_get

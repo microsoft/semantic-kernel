@@ -79,7 +79,7 @@ class BingConnector(ConnectorBase):
             headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
 
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=5) as client:
                 response = await client.get(request_url, headers=headers)
                 response.raise_for_status()
                 data = response.json()

@@ -20,7 +20,7 @@ public sealed class ProcessStepEdgeBuilder
     /// <summary>
     /// The source step of the edge.
     /// </summary>
-    internal ProcessStepBuilder Source { get; init; }
+    internal ProcessStepBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
@@ -29,8 +29,8 @@ public sealed class ProcessStepEdgeBuilder
     /// <param name="eventId">The Id of the event.</param>
     internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId)
     {
-        Verify.NotNull(source);
-        Verify.NotNullOrWhiteSpace(eventId);
+        Verify.NotNull(source, nameof(source));
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
         this.Source = source;
         this.EventId = eventId;
@@ -57,6 +57,11 @@ public sealed class ProcessStepEdgeBuilder
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
+        }
+
+        if (this.Source is ProcessMapBuilder && target.Step is ProcessMapBuilder)
+        {
+            throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
         }
 
         this.Target = target;

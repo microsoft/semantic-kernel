@@ -18,11 +18,11 @@ class AddBunStep(KernelProcessStep):
     class OutputEvents(Enum):
         BunsAdded = "BunsAdded"
 
-    @kernel_function(name=Functions.AddBuns.value)
+    @kernel_function(name=Functions.AddBuns)
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"BUNS_ADDED_STEP: Buns added to ingredient {food_actions[0]}")
         food_actions.append("Buns")
-        await context.emit_event(process_event=self.OutputEvents.BunsAdded.value, data=food_actions)
+        await context.emit_event(process_event=self.OutputEvents.BunsAdded, data=food_actions)
 
 
 class AddSpecialSauceStep(KernelProcessStep):
@@ -32,16 +32,16 @@ class AddSpecialSauceStep(KernelProcessStep):
     class OutputEvents(Enum):
         SpecialSauceAdded = "SpecialSauceAdded"
 
-    @kernel_function(name=Functions.AddSpecialSauce.value)
+    @kernel_function(name=Functions.AddSpecialSauce)
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {food_actions[0]}")
         food_actions.append("Sauce")
-        await context.emit_event(process_event=self.OutputEvents.SpecialSauceAdded.value, data=food_actions)
+        await context.emit_event(process_event=self.OutputEvents.SpecialSauceAdded, data=food_actions)
 
 
 class ExternalFriedFishStep(ExternalStep):
     def __init__(self):
-        super().__init__(FishSandwichProcess.ProcessEvents.FishSandwichReady.value)
+        super().__init__(FishSandwichProcess.ProcessEvents.FishSandwichReady)
 
 
 class FishSandwichProcess:
@@ -57,19 +57,19 @@ class FishSandwichProcess:
         add_special_sauce_step = process_builder.add_step(AddSpecialSauceStep)
         external_step = process_builder.add_step(ExternalFriedFishStep)
 
-        process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value).send_event_to(
-            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish.value)
+        process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady.value).send_event_to(
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
             ProcessFunctionTargetBuilder(add_buns_step)
         )
 
-        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded.value).send_event_to(
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
             ProcessFunctionTargetBuilder(add_special_sauce_step)
         )
 
-        add_special_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded.value).send_event_to(
+        add_special_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
             ProcessFunctionTargetBuilder(external_step)
         )
 

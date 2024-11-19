@@ -36,19 +36,17 @@ class PotatoFriesProcess:
         slice_step = process_builder.add_step(CutFoodStep, name="sliceStep")
         fry_step = process_builder.add_step(FryFoodStep)
 
-        process_builder.on_input_event(PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value).send_event_to(
+        process_builder.on_input_event(PotatoFriesProcess.ProcessEvents.PreparePotatoFries).send_event_to(
             gather_ingredients_step
         )
 
         gather_ingredients_step.on_event(
-            GatherPotatoFriesIngredientsStep.OutputEvents.IngredientsGathered.value
-        ).send_event_to(ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodStep.Functions.SliceFood.value))
+            GatherPotatoFriesIngredientsStep.OutputEvents.IngredientsGathered
+        ).send_event_to(ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodStep.Functions.SliceFood))
 
-        slice_step.on_event(CutFoodStep.OutputEvents.SlicingReady.value).send_event_to(
-            ProcessFunctionTargetBuilder(fry_step)
-        )
+        slice_step.on_event(CutFoodStep.OutputEvents.SlicingReady).send_event_to(ProcessFunctionTargetBuilder(fry_step))
 
-        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined.value).send_event_to(
+        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
             ProcessFunctionTargetBuilder(gather_ingredients_step)
         )
 
@@ -61,35 +59,33 @@ class PotatoFriesProcess:
         slice_step = process_builder.add_step(CutFoodWithSharpeningStep, name="sliceStep")
         fry_step = process_builder.add_step(FryFoodStep)
 
-        process_builder.on_input_event(PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value).send_event_to(
+        process_builder.on_input_event(PotatoFriesProcess.ProcessEvents.PreparePotatoFries).send_event_to(
             gather_ingredients_step
         )
 
         gather_ingredients_step.on_event(
-            GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsGathered.value
+            GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsGathered
         ).send_event_to(
-            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood.value)
+            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood)
         )
 
         gather_ingredients_step.on_event(
-            GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock.value
+            GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock
         ).stop_process()
 
-        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.SlicingReady.value).send_event_to(
+        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.SlicingReady).send_event_to(
             ProcessFunctionTargetBuilder(fry_step)
         )
 
-        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value).send_event_to(
-            ProcessFunctionTargetBuilder(
-                slice_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife.value
-            )
+        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening).send_event_to(
+            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife)
         )
 
-        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened.value).send_event_to(
-            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood.value)
+        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened).send_event_to(
+            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood)
         )
 
-        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined.value).send_event_to(
+        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
             ProcessFunctionTargetBuilder(gather_ingredients_step)
         )
 

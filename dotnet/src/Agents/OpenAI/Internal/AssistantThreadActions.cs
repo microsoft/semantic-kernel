@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -25,13 +26,6 @@ internal static class AssistantThreadActions
         RunStatus.Queued,
         RunStatus.InProgress,
         RunStatus.Cancelling,
-    ];
-
-    private static readonly HashSet<RunStatus> s_terminalStatuses =
-    [
-        RunStatus.Expired,
-        RunStatus.Failed,
-        RunStatus.Cancelled,
     ];
 
     /// <summary>
@@ -90,11 +84,16 @@ internal static class AssistantThreadActions
         }
 
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
+        IEnumerable<MessageContent> content = AssistantMessageFactory.GetMessageContents(message);
+        if (!content.Any())
+        {
+            return;
+        }
 
         await client.CreateMessageAsync(
             threadId,
             message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
-            AssistantMessageFactory.GetMessageContents(message),
+            content,
             options,
             cancellationToken).ConfigureAwait(false);
     }
@@ -177,6 +176,10 @@ internal static class AssistantThreadActions
 
         logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
 
+        FunctionCallsProcessor functionProcessor = new(logger);
+        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
+        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
+
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
@@ -189,7 +192,7 @@ internal static class AssistantThreadActions
             await PollRunStatusAsync().ConfigureAwait(false);
 
             // Is in terminal state?
-            if (s_terminalStatuses.Contains(run.Status))
+            if (run.Status.IsTerminal && run.Status != RunStatus.Completed)
             {
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
@@ -206,13 +209,18 @@ internal static class AssistantThreadActions
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), functionCalls));
+                    ChatMessageContent functionCallMessage = GenerateFunctionCallContent(agent.GetName(), functionCalls);
+                    yield return (IsVisible: false, Message: functionCallMessage);
 
                     // Invoke functions for each tool-step
-                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
-
-                    // Block for function results
-                    FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+                    FunctionResultContent[] functionResults =
+                        await functionProcessor.InvokeFunctionCallsAsync(
+                            functionCallMessage,
+                            (_) => true,
+                            functionOptions,
+                            kernel,
+                            isStreaming: false,
+                            cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                     // Capture function-call for message processing
                     foreach (FunctionResultContent functionCall in functionResults)
@@ -402,6 +410,10 @@ internal static class AssistantThreadActions
         List<RunStep> stepsToProcess = [];
         ThreadRun? run = null;
 
+        FunctionCallsProcessor functionProcessor = new(logger);
+        // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
+        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
+
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
         do
         {
@@ -439,7 +451,7 @@ internal static class AssistantThreadActions
                     {
                         yield return toolContent;
                     }
-                    else
+                    else if (detailsUpdate.FunctionOutput != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
@@ -468,7 +480,7 @@ internal static class AssistantThreadActions
             }
 
             // Is in terminal state?
-            if (s_terminalStatuses.Contains(run.Status))
+            if (run.Status.IsTerminal && run.Status != RunStatus.Completed)
             {
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
@@ -495,13 +507,17 @@ internal static class AssistantThreadActions
                 if (functionCalls.Length > 0)
                 {
                     // Emit function-call content
-                    messages?.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
+                    ChatMessageContent functionCallMessage = GenerateFunctionCallContent(agent.GetName(), functionCalls);
+                    messages?.Add(functionCallMessage);
 
-                    // Invoke functions for each tool-step
-                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
-
-                    // Block for function results
-                    FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+                    FunctionResultContent[] functionResults =
+                        await functionProcessor.InvokeFunctionCallsAsync(
+                            functionCallMessage,
+                            (_) => true,
+                            functionOptions,
+                            kernel,
+                            isStreaming: true,
+                            cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);

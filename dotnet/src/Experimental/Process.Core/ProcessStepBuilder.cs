@@ -20,7 +20,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The unique identifier for the step. This may be null until the step is run within a process.
     /// </summary>
-    public string? Id { get; }
+    public string Id { get; }
 
     /// <summary>
     /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
@@ -30,7 +30,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Alternative names that have been used to previous versions of the step
     /// </summary>
-    public List<string> Aliases { get; set; } = [];
+    public IReadOnlyList<string> Aliases { get; internal set; } = [];
 
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
@@ -47,20 +47,30 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the specified function has been successfully invoked.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnResult");
     }
 
     /// <summary>
     /// Define the behavior of the step when the specified function has thrown an exception.
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionError(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnError");
     }
 
@@ -84,6 +94,25 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
     internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+
+    /// <summary>
+    /// Resolves the function name for the step.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    private string ResolveFunctionName()
+    {
+        if (this.FunctionsDict.Count == 0)
+        {
+            throw new KernelException($"The step {this.Name} has no functions.");
+        }
+        else if (this.FunctionsDict.Count > 1)
+        {
+            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+        }
+
+        return this.FunctionsDict.Keys.First();
+    }
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.

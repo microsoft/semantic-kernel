@@ -4,6 +4,7 @@
 from enum import Enum
 
 from redis.commands.search.indexDefinition import IndexType
+from redisvl.schema import StorageType
 
 from semantic_kernel.data.const import DistanceFunction
 
@@ -16,6 +17,11 @@ class RedisCollectionTypes(str, Enum):
 INDEX_TYPE_MAP = {
     RedisCollectionTypes.JSON: IndexType.JSON,
     RedisCollectionTypes.HASHSET: IndexType.HASH,
+}
+
+STORAGE_TYPE_MAP = {
+    RedisCollectionTypes.JSON: StorageType.JSON,
+    RedisCollectionTypes.HASHSET: StorageType.HASH,
 }
 
 DISTANCE_FUNCTION_MAP = {

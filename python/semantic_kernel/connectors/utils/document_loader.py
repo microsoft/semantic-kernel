@@ -19,7 +19,7 @@ class DocumentLoader:
     async def from_uri(
         url: str,
         http_client: AsyncClient,
-        auth_callback: Callable[..., None | Awaitable[dict[str, str]]] | None,
+        auth_callback: Callable[..., Awaitable[dict[str, str]] | None] | None,
         user_agent: str | None = HTTP_USER_AGENT,
     ):
         """Load the manifest from the given URL."""

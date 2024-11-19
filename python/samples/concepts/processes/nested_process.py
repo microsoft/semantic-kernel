@@ -58,12 +58,12 @@ class RepeatStep(KernelProcessStep[StepState]):
         print(f"[REPEAT] {output}")
 
         await context.emit_event(
-            process_event=ProcessEvents.OutputReadyPublic.value,
+            process_event=ProcessEvents.OutputReadyPublic,
             data=output,
             visibility=KernelProcessEventVisibility.Public,
         )
         await context.emit_event(
-            process_event=ProcessEvents.OutputReadyInternal.value,
+            process_event=ProcessEvents.OutputReadyInternal,
             data=output,
             visibility=KernelProcessEventVisibility.Internal,
         )
@@ -74,7 +74,7 @@ def create_linear_process(name: str):
     echo_step = process_builder.add_step(step_type=EchoStep)
     repeat_step = process_builder.add_step(step_type=RepeatStep)
 
-    process_builder.on_input_event(event_id=ProcessEvents.StartProcess.value).send_event_to(target=echo_step)
+    process_builder.on_input_event(event_id=ProcessEvents.StartProcess).send_event_to(target=echo_step)
 
     echo_step.on_function_result(function_name=EchoStep.ECHO).send_event_to(
         target=repeat_step, parameter_name="message"
@@ -93,8 +93,8 @@ async def nested_process():
 
     nested_process_step = process_builder.add_step_from_process(create_linear_process("Inner"))
 
-    process_builder.steps[1].on_event(ProcessEvents.OutputReadyInternal.value).send_event_to(
-        nested_process_step.where_input_event_is(ProcessEvents.StartProcess.value)
+    process_builder.steps[1].on_event(ProcessEvents.OutputReadyInternal).send_event_to(
+        nested_process_step.where_input_event_is(ProcessEvents.StartProcess)
     )
 
     process = process_builder.build()
@@ -102,7 +102,7 @@ async def nested_process():
     test_input = "Test"
 
     process_handle = await start(
-        process=process, kernel=kernel, initial_event=ProcessEvents.StartProcess.value, data=test_input
+        process=process, kernel=kernel, initial_event=ProcessEvents.StartProcess, data=test_input
     )
     process_info = await process_handle.get_state()
 
