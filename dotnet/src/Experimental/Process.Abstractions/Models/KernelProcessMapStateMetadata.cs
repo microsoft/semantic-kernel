@@ -13,6 +13,6 @@ public sealed record class KernelProcessMapStateMetadata : KernelProcessStepStat
     /// Process State of Steps if provided
     /// </summary>
     [DataMember]
-    [JsonPropertyName("mapState")]
+    [JsonPropertyName("operationState")]
     public KernelProcessStepStateMetadata? OperationState { get; set; }
 }
