@@ -28,7 +28,6 @@ from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding impor
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
@@ -78,7 +77,6 @@ class EmbeddingServiceTestBase:
                 endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
-                api_version=DEFAULT_AZURE_API_VERSION,
             ),
         )
 

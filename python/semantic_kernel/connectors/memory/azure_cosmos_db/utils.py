@@ -5,7 +5,6 @@ import contextlib
 from typing import Any
 
 from azure.cosmos.aio import CosmosClient
-from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
@@ -177,14 +176,5 @@ class CosmosClientWrapper(CosmosClient):
 
     def __del__(self) -> None:
         """Close the CosmosClient."""
-        with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
-
-
-class DefaultAzureCredentialWrapper(DefaultAzureCredential):
-    """Wrapper to make sure the DefaultAzureCredential is closed properly."""
-
-    def __del__(self) -> None:
-        """Close the DefaultAzureCredential."""
         with contextlib.suppress(Exception):
             asyncio.get_running_loop().create_task(self.close())

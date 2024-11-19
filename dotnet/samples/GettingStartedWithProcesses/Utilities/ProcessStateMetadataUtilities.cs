@@ -62,7 +62,7 @@ public static class ProcessStateMetadataUtilities
             throw new KernelException($"Filepath for process {processStateInfo.Name} does not have .json extension");
         }
 
-        var content = JsonSerializer.Serialize<KernelProcessStepStateMetadata>(processStateInfo, s_jsonOptions);
+        string content = JsonSerializer.Serialize(processStateInfo, s_jsonOptions);
         Console.WriteLine($"Process State: \n{content}");
         Console.WriteLine($"Saving Process State Locally: \n{Path.GetFullPath(fullFilepath)}");
         File.WriteAllText(fullFilepath, content);

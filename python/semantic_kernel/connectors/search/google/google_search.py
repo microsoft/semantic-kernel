@@ -159,7 +159,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         full_url = f"{CUSTOM_SEARCH_URL}{self._build_query(query, options)}"
         headers = {"user_agent": SEMANTIC_KERNEL_USER_AGENT}
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=5) as client:
                 response = await client.get(full_url, headers=headers)
                 response.raise_for_status()
                 return GoogleSearchResponse.model_validate_json(response.text)

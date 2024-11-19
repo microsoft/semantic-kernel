@@ -15,8 +15,9 @@ public interface IProcess : IActor, IStep
     /// </summary>
     /// <param name="processInfo">Used to initialize the process.</param>
     /// <param name="parentProcessId">The parent Id of the process if one exists.</param>
+    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     /// <returns>A<see cref="Task"/></returns>
-    Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId);
+    Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId);
 
     /// <summary>
     /// Starts an initialized process.
