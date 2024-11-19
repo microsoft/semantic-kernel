@@ -6,7 +6,7 @@ using Resources;
 namespace Step05;
 
 /// <summary>
-/// DEV HARNESS
+/// Demonstrate usage of <see cref="KernelProcessMap"/> for a map-reduce operation.
 /// </summary>
 public class Step05_MapReduce : BaseTest
 {
