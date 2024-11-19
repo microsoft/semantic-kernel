@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -23,6 +25,7 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Null(options.ModelName);
         Assert.Null(options.AdditionalInstructions);
+        Assert.Null(options.AdditionalMessages);
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
         Assert.Null(options.TopP);
@@ -50,6 +53,9 @@ public class OpenAIAssistantInvocationOptionsTests
             {
                 ModelName = "testmodel",
                 AdditionalInstructions = "test instructions",
+                AdditionalMessages = [
+                    new ChatMessageContent(AuthorRole.User, "test message")
+                ],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 MaxCompletionTokens = 1000,
                 MaxPromptTokens = 1000,
@@ -65,6 +71,7 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Equal("testmodel", options.ModelName);
         Assert.Equal("test instructions", options.AdditionalInstructions);
+        Assert.Single(options.AdditionalMessages);
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);
         Assert.Equal(1000, options.MaxCompletionTokens);
@@ -89,6 +96,8 @@ public class OpenAIAssistantInvocationOptionsTests
 
         // Assert
         Assert.NotNull(target);
+        Assert.Equal(source.AdditionalInstructions, target.AdditionalInstructions);
+        Assert.Equivalent(source.AdditionalMessages, target.AdditionalMessages);
         Assert.Equal(source.ModelName, target.ModelName);
         Assert.Equal(source.Temperature, target.Temperature);
         Assert.Equal(source.TopP, target.TopP);
