@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using Microsoft.SemanticKernel;
+using Resources;
 
 namespace Step05;
 
@@ -26,9 +27,9 @@ public class Step05_MapReduce : BaseTest
 
         for (int count = 0; count < ScaleFactor; ++count)
         {
-            content.AppendLine(File.ReadAllText("Grimms-The-King-of-the-Golden-Mountain.txt"));
-            content.AppendLine(File.ReadAllText("Grimms-The-Water-of-Life.txt"));
-            content.AppendLine(File.ReadAllText("Grimms-The-White-Snake.txt"));
+            content.AppendLine(EmbeddedResource.Read("Grimms-The-King-of-the-Golden-Mountain.txt"));
+            content.AppendLine(EmbeddedResource.Read("Grimms-The-Water-of-Life.txt"));
+            content.AppendLine(EmbeddedResource.Read("Grimms-The-White-Snake.txt"));
         }
 
         this._sourceContent = content.ToString().ToUpperInvariant();
