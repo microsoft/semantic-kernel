@@ -23,6 +23,7 @@ public class Step05_MapReduce : BaseTest
     public Step05_MapReduce(ITestOutputHelper output)
          : base(output, redirectSystemConsoleOutput: true)
     {
+        // Initialize the test content
         StringBuilder content = new();
 
         for (int count = 0; count < ScaleFactor; ++count)
@@ -38,7 +39,10 @@ public class Step05_MapReduce : BaseTest
     [Fact]
     public async Task RunMapReduceAsync()
     {
+        // Define the process
         KernelProcess process = SetupMapReduceProcess(nameof(RunMapReduceAsync), "Start");
+
+        // Execute the process
         Kernel kernel = new();
         using LocalKernelProcessContext localProcess =
             await process.StartAsync(
@@ -49,6 +53,7 @@ public class Step05_MapReduce : BaseTest
                     Data = this._sourceContent,
                 });
 
+        // Display the results
         Dictionary<string, int> results = (Dictionary<string, int>?)kernel.Data[ResultStep.ResultKey] ?? [];
         foreach (var result in results)
         {
@@ -78,6 +83,7 @@ public class Step05_MapReduce : BaseTest
         return process.Build();
     }
 
+    // Step for breaking the content into chunks
     private sealed class ChunkStep : KernelProcessStep
     {
         public const string EventId = "ChunkComplete";
@@ -100,6 +106,7 @@ public class Step05_MapReduce : BaseTest
         }
     }
 
+    // Step for counting the words in a chunk
     private sealed class CountStep : KernelProcessStep
     {
         public const string EventId = "CountComplete";
@@ -125,6 +132,7 @@ public class Step05_MapReduce : BaseTest
         }
     }
 
+    // Step for combining the results
     private sealed class ResultStep : KernelProcessStep
     {
         public const string ResultKey = "WordCount";
@@ -152,6 +160,7 @@ public class Step05_MapReduce : BaseTest
         }
     }
 
+    // Uninteresting words to remove from content
     private static readonly HashSet<string> s_notInteresting =
         [
             "A",
