@@ -102,7 +102,7 @@ class GitHubPlugin:
             "Authorization": f"Bearer {self.settings.token}",
             "X-GitHub-Api-Version": "2022-11-28",
         }
-        return httpx.AsyncClient(base_url=self.settings.base_url, headers=headers)
+        return httpx.AsyncClient(base_url=self.settings.base_url, headers=headers, timeout=5)
 
     @staticmethod
     def build_query(path: str, key: str, value: str) -> str:
