@@ -13,7 +13,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? filter = null)
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
@@ -24,7 +24,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
             process,
             kernel)
         {
-            EventProxy = filter
+            EventProxy = eventProxy
         };
     }
 
