@@ -1196,13 +1196,15 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShouldFreezeModifiableProperties()
+    public void ItShouldAllowModifyProperties()
     {
         // Arrange
+        var securityScheme = new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() };
+
         var sut = new RestApiOperation(
             id: "fake_id",
             servers: [
-                new RestApiServer("https://example.com/{p1}", new Dictionary<string, RestApiServerVariable> { { "p1", new RestApiServerVariable("v1") } }),
+                new RestApiServer("https://example.com/{p1}", new Dictionary<string, RestApiServerVariable> { { "p1", new RestApiServerVariable("v1", "d1", ["ev1"]) } }),
             ],
             path: "/items",
             method: HttpMethod.Get,
@@ -1225,15 +1227,92 @@ public class RestApiOperationTests
                     properties: []
                 ) } }
             ),
-            securityRequirements: []
+            securityRequirements: [new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>>() { [securityScheme] = ["scope"] })]
+        );
+
+        // Act & Assert
+        sut.Servers[0].Variables.Add("p2", new RestApiServerVariable("v2"));
+        sut.Servers[0].Variables["p1"].ArgumentName = "a value";
+        sut.Servers[0].Variables["p1"].Enum!.Add("ev2");
+
+        sut.Payload!.Properties.Single(p => p.Name == "p3").ArgumentName = "a value";
+        sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", "string", false, []));
+
+        sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value";
+
+        sut.SecurityRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>>()
+        {
+            [new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() }] = ["scope2"]
+        }));
+
+        sut.SecurityRequirements[0].Add(new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() }, ["scope3"]);
+        sut.SecurityRequirements[0][securityScheme] = ["scope4"];
+        sut.SecurityRequirements[0][securityScheme][0] = "scope5";
+
+        sut.Responses.Add("200", new RestApiExpectedResponse("fake_description", "fake_media_type"));
+
+        sut.Extensions.Add("x-fake", "fake_value");
+    }
+
+    [Fact]
+    public void ItShouldFreezeModifiableProperties()
+    {
+        // Arrange
+        var securityScheme = new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{p1}", new Dictionary<string, RestApiServerVariable> { { "p1", new RestApiServerVariable("v1", "d1", ["ev1"]) } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [
+                new RestApiParameter(
+                    name: "p2",
+                    type: "string",
+                    isRequired: false,
+                    expand: false,
+                    location: RestApiParameterLocation.Query),
+            ],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            payload: new RestApiPayload(
+                mediaType: "application/json",
+                properties: new List<RestApiPayloadProperty> { { new RestApiPayloadProperty (
+                    name: "p3",
+                    type: "string",
+                    isRequired: false,
+                    properties: []
+                ) } }
+            ),
+            securityRequirements: [new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>>() { [securityScheme] = ["scope"] })]
         );
 
         // Act
         sut.Freeze();
 
-        // Assert
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => sut.Servers[0].Variables.Add("p2", new RestApiServerVariable("v2")));
         Assert.Throws<InvalidOperationException>(() => sut.Servers[0].Variables["p1"].ArgumentName = "a value");
-        Assert.Throws<InvalidOperationException>(() => sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value");
+        Assert.Throws<NotSupportedException>(() => sut.Servers[0].Variables["p1"].Enum!.Add("ev2"));
+
         Assert.Throws<InvalidOperationException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").ArgumentName = "a value");
+        Assert.Throws<NotSupportedException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", "string", false, [])));
+
+        Assert.Throws<InvalidOperationException>(() => sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value");
+
+        Assert.Throws<NotSupportedException>(() => sut.SecurityRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>>()
+        {
+            [new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() }] = ["scope2"]
+        })));
+
+        Assert.Throws<InvalidOperationException>(() => sut.SecurityRequirements[0].Add(new RestApiSecurityScheme() { Flows = new RestApiOAuthFlows() }, ["scope3"]));
+        Assert.Throws<InvalidOperationException>(() => sut.SecurityRequirements[0][securityScheme] = ["scope4"]);
+        Assert.Throws<NotSupportedException>(() => sut.SecurityRequirements[0][securityScheme][0] = "scope5");
+
+        Assert.Throws<NotSupportedException>(() => sut.Responses.Add("200", new RestApiExpectedResponse("fake_description", "fake_media_type")));
+
+        Assert.Throws<NotSupportedException>(() => sut.Extensions.Add("x-fake", "fake_value"));
     }
 }

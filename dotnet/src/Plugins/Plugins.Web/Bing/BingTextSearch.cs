@@ -104,7 +104,7 @@ public sealed class BingTextSearch : ITextSearch
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
-        string json = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);

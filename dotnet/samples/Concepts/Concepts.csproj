@@ -107,6 +107,21 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\EventPlugin\openapiV2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\PetsPlugin\allOfV3.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\PetsPlugin\anyOfV3.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plugins\PetsPlugin\oneOfV3.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -128,6 +143,9 @@
   <ItemGroup>
     <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
     <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
+    <None Remove="Resources\Plugins\PetsPlugin\allOfV3.json" />
+    <None Remove="Resources\Plugins\PetsPlugin\anyOfV3.json" />
+    <None Remove="Resources\Plugins\PetsPlugin\oneOfV3.json" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
