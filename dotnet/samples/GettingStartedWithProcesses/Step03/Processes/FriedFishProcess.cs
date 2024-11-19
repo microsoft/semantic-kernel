@@ -81,13 +81,13 @@ public static class FriedFishProcess
         return processBuilder;
     }
 
-	/// <summary>
-	/// For a visual reference of the FriedFishProcess with stateful steps check this
-	/// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
-	/// </summary>
-	/// <param name="processName">name of the process</param>
-	/// <returns><see cref="ProcessBuilder"/></returns>
-	public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
+    /// <summary>
+    /// For a visual reference of the FriedFishProcess with stateful steps check this
+    /// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
+    /// </summary>
+    /// <param name="processName">name of the process</param>
+    /// <returns><see cref="ProcessBuilder"/></returns>
+    public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
     {
         // It is recommended to specify process version in case this process is used as a step by another process
         var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v2" };
