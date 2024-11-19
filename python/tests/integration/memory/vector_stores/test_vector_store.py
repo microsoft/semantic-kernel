@@ -1,17 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import platform
 from typing import Any
 
 import pandas as pd
 import pytest
-from mistralai_gcp import Type
 
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
 from semantic_kernel.data import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorConnectionException
 from tests.integration.memory.vector_stores.data_records import RAW_RECORD_ARRAY, RAW_RECORD_LIST
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TestVectorStore(VectorStoreTestBase):
@@ -382,7 +384,7 @@ class TestVectorStore(VectorStoreTestBase):
         store_id: str,
         collection_name: str,
         collection_options: dict[str, Any],
-        data_model_type: str | Type,
+        data_model_type: str | type,
         data_model_definition: str | None,
         distance_function,
         index_kind,
@@ -405,6 +407,10 @@ class TestVectorStore(VectorStoreTestBase):
             ):
                 try:
                     await collection.delete_collection()
+                except Exception as exc:
+                    logger.warning(f"Failed to delete collection: {exc}")
+
+                try:
                     await collection.create_collection()
                 except Exception as exc:
                     pytest.fail(f"Failed to create collection: {exc}")
