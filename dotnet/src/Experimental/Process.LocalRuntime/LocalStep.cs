@@ -76,7 +76,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     internal string Id => this._stepInfo.State.Id!;
 
     /// <summary>
-    /// An event filter that can be used to intercept events emitted by the step.
+    /// An event proxy that can be used to intercept events emitted by the step.
     /// </summary>
     internal ProcessEventProxy? EventProxy { get; init; }
 
