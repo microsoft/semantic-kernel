@@ -74,7 +74,7 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
 )  # We don't have a MistralAI deployment
 # There is no single model in Ollama that supports both image and tool call in chat completion
 # We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
-# can be any model that supports chat completion. Also, Ollama is only available on Linus runners in our pipeline.
+# can be any model that supports chat completion. Also, Ollama is only available on Linux runners in our pipeline.
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"]) and is_test_running_on_supported_platforms([
     "Linux"
 ])
