@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -841,6 +843,27 @@ public class KernelFunctionFromPromptTests
             Assert.Equal(expectedChatMessageContents[i].Content, actualChatMessageContents[i].Content);
             Assert.Equal(expectedChatMessageContents[i].Metadata, actualChatMessageContents[i].Metadata);
         }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionPropagatesTooManyRequestsAsync()
+    {
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+        messageHandlerStub.ResponseToReturn = response;
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "any", httpClient: httpClient);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => chatCompletion);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(async () => await kernel.InvokePromptAsync("Prompt"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
 
     [Fact]
