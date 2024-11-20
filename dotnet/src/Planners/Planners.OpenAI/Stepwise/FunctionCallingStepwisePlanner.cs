@@ -88,7 +88,7 @@ public sealed class FunctionCallingStepwisePlanner
         for (int i = 0; i < this._options.MaxIterations; i++)
         {
             // sleep for a bit to avoid rate limiting
-            if (i > 0)
+            if (i > 0 && this._options.MinIterationTimeMs > 0)
             {
                 await Task.Delay(this._options.MinIterationTimeMs, cancellationToken).ConfigureAwait(false);
             }
