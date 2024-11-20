@@ -111,5 +111,7 @@ public class OpenApiTypeConverterTests
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", new Collection() { 1, 2, 3 }).ToJsonString());
 
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", "[1, 2, 3]").ToJsonString());
+
+        Assert.Equal("[\"createdDate desc\"]", OpenApiTypeConverter.Convert("id", "array", "createdDate desc").ToJsonString());
     }
 }

@@ -30,7 +30,8 @@ internal static class OpenApiTypeConverter
                 "string" => JsonValue.Create(argument),
                 "array" => argument switch
                 {
-                    string s => JsonArray.Parse(s) as JsonArray,
+                    string s when s.Trim().StartsWith('[') => JsonArray.Parse(s) as JsonArray,
+                    string s => new JsonArray(JsonValue.Create(s)),
                     _ => JsonSerializer.SerializeToNode(argument) as JsonArray
                 },
                 "integer" => argument switch
