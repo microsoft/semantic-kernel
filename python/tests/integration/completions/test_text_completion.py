@@ -41,9 +41,11 @@ else:
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.utils import is_service_setup_for_testing, retry
+from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
-ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
+    "Linux"
+])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
