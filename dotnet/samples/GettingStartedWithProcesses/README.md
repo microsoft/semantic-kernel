@@ -189,9 +189,9 @@ any subscribers linked to specific events.
 ```mermaid
 graph LR
     subgraph EventSubscribers[SK Event Subscribers]
-        OnSendMailDueCreditCheckFailure
-        OnSendMailDueFraudCheckFailure
-        OnSendMailWithNewAccountInfo
+        OnSendMailDueCreditCheckFailure[OnSendMailDueCredit<br/>CheckFailure]
+        OnSendMailDueFraudCheckFailure[OnSendMailDueFraud<br/>CheckFailure]
+        OnSendMailWithNewAccountInfo[OnSendMailWith<br/>NewAccountInfo]
     end
 
     subgraph Process[SK Process]
