@@ -426,7 +426,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     {
         var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
 

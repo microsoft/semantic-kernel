@@ -262,6 +262,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier</param>
     /// <param name="message">A non-system message with which to append to the conversation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <remarks>
+    /// Only supports messages with role = User or Assistant:
+    /// https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+    /// </remarks>
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();

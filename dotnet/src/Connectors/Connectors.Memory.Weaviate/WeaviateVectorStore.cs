@@ -78,7 +78,7 @@ public sealed class WeaviateVectorStore : IVectorStore
         using var request = new WeaviateGetCollectionsRequest().Build();
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
         var collectionResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(responseContent);
 
         if (collectionResponse?.Collections is not null)

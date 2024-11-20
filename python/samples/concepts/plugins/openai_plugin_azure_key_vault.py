@@ -241,7 +241,7 @@ async def main() -> None:
 
     openai_spec = load_and_update_openai_spec()
 
-    http_client = httpx.AsyncClient()
+    http_client = httpx.AsyncClient(timeout=5)
 
     await kernel.add_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",

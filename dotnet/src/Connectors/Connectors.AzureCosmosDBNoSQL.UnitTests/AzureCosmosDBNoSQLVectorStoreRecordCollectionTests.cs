@@ -125,13 +125,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [
             new Embedding
             {
-                DataType = VectorDataType.Float16,
-                Dimensions = 1,
-                DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Cosine,
-                Path = "/DescriptionEmbedding1"
-            },
-            new Embedding
-            {
                 DataType = VectorDataType.Float32,
                 Dimensions = 2,
                 DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Cosine,
@@ -157,7 +150,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         {
             VectorIndexes =
             [
-                new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/DescriptionEmbedding1" },
                 new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/DescriptionEmbedding2" },
                 new VectorIndexPath { Type = VectorIndexType.QuantizedFlat, Path = "/DescriptionEmbedding3" },
                 new VectorIndexPath { Type = VectorIndexType.DiskANN, Path = "/DescriptionEmbedding4" },
@@ -172,7 +164,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             expectedIndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/IndexableData2/?" });
             expectedIndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/" });
 
-            expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding1/*" });
             expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding2/*" });
             expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding3/*" });
             expectedIndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DescriptionEmbedding4/*" });
@@ -703,9 +694,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     {
         [VectorStoreRecordKey]
         public string? Id { get; set; }
-
-        [VectorStoreRecordVector(Dimensions: 1, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
-        public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
 
         [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }

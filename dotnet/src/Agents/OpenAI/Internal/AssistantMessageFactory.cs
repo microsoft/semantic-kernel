@@ -53,7 +53,7 @@ internal static class AssistantMessageFactory
                 {
                     yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
-                else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
+                else if (!string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
                 }

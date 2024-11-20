@@ -18,12 +18,9 @@ public static class LocalKernelProcessFactory
     /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interrogate or stop the running process.</returns>
     public static async Task<LocalKernelProcessContext> StartAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent)
     {
-        Verify.NotNull(process);
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
-        Verify.NotNull(kernel);
-        Verify.NotNull(initialEvent);
+        Verify.NotNull(initialEvent, nameof(initialEvent));
 
-        var processContext = new LocalKernelProcessContext(process, kernel);
+        LocalKernelProcessContext processContext = new(process, kernel);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

@@ -88,7 +88,7 @@ class GoogleConnector(ConnectorBase):
         logger.info("Sending GET request to Google Search API.")
 
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=5) as client:
                 response = await client.get(request_url)
                 response.raise_for_status()
                 data = response.json()

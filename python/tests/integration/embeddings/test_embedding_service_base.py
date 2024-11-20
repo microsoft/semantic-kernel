@@ -28,7 +28,6 @@ from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding impor
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
@@ -37,7 +36,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
-from tests.integration.utils import is_service_setup_for_testing
+from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
@@ -50,7 +49,9 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
 )  # We don't have a MistralAI deployment
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
-ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_EMBEDDING_MODEL_ID"])
+ollama_setup: bool = is_service_setup_for_testing([
+    "OLLAMA_EMBEDDING_MODEL_ID"
+]) and is_test_running_on_supported_platforms(["Linux"])
 
 
 class EmbeddingServiceTestBase:
@@ -76,7 +77,6 @@ class EmbeddingServiceTestBase:
                 endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
-                api_version=DEFAULT_AZURE_API_VERSION,
             ),
         )
 
