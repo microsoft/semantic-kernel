@@ -115,9 +115,9 @@ flowchart LR
 
     User<-->|Provides user details|FillForm
     FillForm-->|New User Form|NewAccountVerification
-    NewAccountVerification-->|Account Verification Failed|Mailer
-    NewAccountVerification-->|Account Verification Succeded|NewAccountCreation
-    NewAccountCreation-->|Account Creation Succeded|Mailer
+    NewAccountVerification-->|Account Verification <br/> Failed|Mailer
+    NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
+    NewAccountCreation-->|Account Creation <br/> Succeded|Mailer
 ```
 
 Where processes used as steps, which are reusing the same steps used [`Step02a_AccountOpening`](#step02a_accountopening), are:
@@ -205,9 +205,9 @@ graph LR
         FillForm-->|New User Form|NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
     end
 
-    NewAccountVerification-->|Account Credit Check Failed|OnSendMailDueCreditCheckFailure
-    NewAccountVerification-->|Account Fraud Detection Failed|OnSendMailDueFraudCheckFailure
-    NewAccountCreation-->|Account Creation Succeded|OnSendMailWithNewAccountInfo
+    NewAccountVerification-->|Account Credit Check <br/> Failed|OnSendMailDueCreditCheckFailure
+    NewAccountVerification-->|Account Fraud Detection<br/> Failed|OnSendMailDueFraudCheckFailure
+    NewAccountCreation-->|Account Creation<br/> Succeded|OnSendMailWithNewAccountInfo
 
 ```
 Creating a separation with SK Process when using cloud events (even though in this sample it's a mock of a Mailer), it is useful since 
