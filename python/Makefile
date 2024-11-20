@@ -1,7 +1,9 @@
 SHELL = /bin/bash
 
 .PHONY: help install clean build
+ifndef VERBOSE
 .SILENT:
+endif
 all: install
 
 ifeq ($(PYTHON_VERSION),)
