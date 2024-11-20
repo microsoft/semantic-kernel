@@ -1,61 +1,40 @@
 ## AI Service Settings used across SK:
 
-| Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
+| Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
-OpenAI | [OpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) |  |  |  | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py)
-|  |  |  ai_model_id | OPENAI_CHAT_MODEL_ID | Yes 
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No 
-|  | [OpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_completion.py)
-|  |  |  ai_model_id | OPENAI_TEXT_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-|  | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py)
-|  |  |  ai_model_id | OPENAI_EMBEDDING_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-|  | [OpenAITextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_to_image.py)
-|  |  |  ai_model_id | OPENAI_TEXT_TO_IMAGE_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-|  | [OpenAITextToAudio](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_to_audio.py)
-|  |  |  ai_model_id | OPENAI_TEXT_TO_AUDIO_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-|  | [OpenAIAudioToText](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_audio_to_text.py)
-|  |  |  ai_model_id | OPENAI_AUDIO_TO_TEXT_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-Azure OpenAI | [AzureOpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_chat_completion.py) |  |  |  | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py)
-| | | deployment_name | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | No
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
-|  | [AzureOpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_completion.py)
-| | | deployment_name | AZURE_OPENAI_TEXT_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | No
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
-|  | [AzureOpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_embedding.py)
-| | | deployment_name | AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | No
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
-|  | [AzureTextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_to_image.py)
-|  |  |  deployment_name | AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME | Yes
-|  |  |  api_key | AZURE_OPENAI_API_KEY | No
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
-|  | [AzureTextToAudio](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_to_audio.py)
-|  |  |  deployment_name | AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME | Yes
-|  |  |  api_key | AZURE_OPENAI_API_KEY | No
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
-|  | [AzureAudioToText](../../../semantic_kernel/connectors/ai/open_ai/services/azure_audio_to_text.py)
-|  |  |  deployment_name | AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME | Yes
-|  |  |  api_key | AZURE_OPENAI_API_KEY | No
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
+| OpenAI | [OpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_CHAT_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py) |
+|  | [OpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_completion.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_TEXT_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No |  |
+|  | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_EMBEDDING_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No |  |
+|  | [OpenAITextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_to_image.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_TEXT_TO_IMAGE_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No |  |
+|  | [OpenAITextToAudio](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_to_audio.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_TEXT_TO_AUDIO_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No |  |
+|  | [OpenAIAudioToText](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_audio_to_text.py) | ai_model_id, <br> api_key, <br> org_id | OPENAI_AUDIO_TO_TEXT_MODEL_ID, <br> OPENAI_API_KEY, <br> OPENAI_ORG_ID | Yes, <br> Yes, <br> No |  |
+| Azure OpenAI | [AzureChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_chat_completion.py) | deployment_name, <br> api_key, <br> endpoint, <br> api_version, <br> base_url | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT, <br> AZURE_OPENAI_API_VERSION, <br> AZURE_OPENAI_BASE_URL | Yes, <br> No, <br> Yes, <br> Yes, <br> Yes | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py) |
+|  | [AzureTextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_completion.py) | deployment_name, <br> api_key, <br> endpoint, <br> api_version, <br> base_url | AZURE_OPENAI_TEXT_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT, <br> AZURE_OPENAI_API_VERSION, <br> AZURE_OPENAI_BASE_URL | Yes, <br> No, <br> Yes, <br> Yes, <br> Yes |  |
+|  | [AzureTextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_embedding.py) | deployment_name, <br> api_key, <br> endpoint, <br> api_version, <br> base_url | AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT, <br> AZURE_OPENAI_API_VERSION, <br> AZURE_OPENAI_BASE_URL | Yes, <br> No, <br> Yes, <br> Yes, <br> Yes |  |
+|  | [AzureTextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_to_image.py) | deployment_name, <br> api_key, <br> endpoint | AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT | Yes, <br> No, <br> Yes |  |
+|  | [AzureTextToAudio](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_to_audio.py) | deployment_name, <br> api_key, <br> endpoint | AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT | Yes, <br> No, <br> Yes |  |
+|  | [AzureAudioToText](../../../semantic_kernel/connectors/ai/open_ai/services/azure_audio_to_text.py) | deployment_name, <br> api_key, <br> endpoint | AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME, <br> AZURE_OPENAI_API_KEY, <br> AZURE_OPENAI_ENDPOINT | Yes, <br> No, <br> Yes |  |
+| Azure AI Inference | [AzureAIInferenceChatCompletion](../../../semantic_kernel/connectors/ai/azure_ai_inference/services/azure_ai_inference_chat_completion.py) | ai_model_id, <br> api_key, <br> endpoint | N/A, <br> AZURE_AI_INFERENCE_API_KEY, <br> AZURE_AI_INFERENCE_ENDPOINT | Yes, <br> No, <br> Yes | [AzureAIInferenceSettings](../../../semantic_kernel/connectors/ai/azure_ai_inference/azure_ai_inference_settings.py) |
+|  | [AzureAIInferenceTextEmbedding](../../../semantic_kernel/connectors/ai/azure_ai_inference/services/azure_ai_inference_text_embedding.py) | ai_model_id, <br> api_key, <br> endpoint | N/A, <br> AZURE_AI_INFERENCE_API_KEY, <br> AZURE_AI_INFERENCE_ENDPOINT | Yes, <br> No, <br> Yes |  |
+| Anthropic | [AnthropicChatCompletion](../../../semantic_kernel/connectors/ai/anthropic/services/anthropic_chat_completion.py) | api_key, <br> ai_model_id | ANTHROPIC_API_KEY, <br> ANTHROPIC_CHAT_MODEL_ID | Yes, <br> Yes | [AnthropicSettings](../../../semantic_kernel/connectors/ai/anthropic/settings/anthropic_settings.py) |
+| Bedrock | [BedrockChatCompletion](../../../semantic_kernel/connectors/ai/bedrock/services/bedrock_chat_completion.py) | model_id | BEDROCK_CHAT_MODEL_ID | Yes | [BedrockSettings](../../../semantic_kernel/connectors/ai/bedrock/bedrock_settings.py) |
+|  | [BedrockTextCompletion](../../../semantic_kernel/connectors/ai/bedrock/services/bedrock_text_completion.py) | model_id | BEDROCK_TEXT_MODEL_ID | Yes |  |
+|  | [BedrockTextEmbedding](../../../semantic_kernel/connectors/ai/bedrock/services/bedrock_text_embedding.py) | model_id | BEDROCK_EMBEDDING_MODEL_ID | Yes |  |
+| Google AI | [GoogleAIChatCompletion](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_chat_completion.py) | gemini_model_id, <br> api_key | GOOGLE_AI_GEMINI_MODEL_ID, <br> GOOGLE_AI_API_KEY | Yes, <br> Yes | [GoogleAISettings](../../../semantic_kernel/connectors/ai/google/google_ai/google_ai_settings.py) |
+|  | [GoogleAITextCompletion](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_completion.py) | gemini_model_id, <br> api_key | GOOGLE_AI_GEMINI_MODEL_ID, <br> GOOGLE_AI_API_KEY | Yes, <br> Yes |  |
+|  | [GoogleAITextEmbedding](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_embedding.py) | embedding_model_id, <br> api_key | GOOGLE_AI_EMBEDDING_MODEL_ID, <br> GOOGLE_AI_API_KEY | Yes, <br> Yes |  |
+| Vertex AI | [VertexAIChatCompletion](../../../semantic_kernel/connectors/ai/google/vertex_ai/services/vertex_ai_chat_completion.py) | project_id, <br> region, <br> gemini_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_GEMINI_MODEL_ID | Yes, <br> No, <br> Yes | [VertexAISettings](../../../semantic_kernel/connectors/ai/google/vertex_ai/vertex_ai_settings.py) |
+|  | [VertexAITextCompletion](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_completion.py) | project_id, <br> region, <br> gemini_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_GEMINI_MODEL_ID | Yes, <br> No, <br> Yes |  |
+|  | [VertexAITextEmbedding](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_embedding.py) | project_id, <br> region, <br> embedding_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_EMBEDDING_MODEL_ID | Yes, <br> No, <br> Yes |  |
+| HuggingFace | [HuggingFaceTextCompletion](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_completion.py) | ai_model_id | N/A | Yes | |
+|  | [HuggingFaceTextEmbedding](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_embedding.py) | ai_model_id | N/A | Yes | |
+| Mistral AI | [MistralAIChatCompletion](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_chat_completion.py) | ai_model_id, <br> api_key | MISTRALAI_CHAT_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes | [MistralAISettings](../../../semantic_kernel/connectors/ai/mistral_ai/settings/mistral_ai_settings.py) |
+|  | [MistralAITextEmbedding](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_text_embedding.py) | ai_model_id, <br> api_key | MISTRALAI_EMBEDDING_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes |  |
+| Ollama | [OllamaChatCompletion](../../../semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py) | ai_model_id, <br> host | OLLAMA_CHAT_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No | [OllamaSettings](../../../semantic_kernel/connectors/ai/ollama/ollama_settings.py) |
+|  | [OllamaTextCompletion](../../../semantic_kernel/connectors/ai/ollama/services/ollama_text_completion.py) | ai_model_id, <br> host | OLLAMA_TEXT_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No |  |
+|  | [OllamaTextEmbedding](../../../semantic_kernel/connectors/ai/ollama/services/ollama_text_embedding.py) | ai_model_id, <br> host | OLLAMA_EMBEDDING_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No |  |
+| Onnx | [OnnxGenAIChatCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) | template, <br> ai_model_path | N/A, <br> ONNX_GEN_AI_CHAT_MODEL_FOLDER | Yes, <br> Yes | [OnnxGenAISettings](../../../semantic_kernel/connectors/ai/onnx/onnx_gen_ai_settings.py) |
+|  | [OnnxGenAITextCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_text_completion.py) | ai_model_path | ONNX_GEN_AI_TEXT_MODEL_FOLDER | Yes |  |
 
 ## Memory Service Settings used across SK:
 
