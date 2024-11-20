@@ -524,6 +524,11 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
         var result = new List<RestApiPayloadProperty>();
 
+        foreach(var allOfEntry in schema.AllOf)
+        {
+            result.AddRange(GetPayloadProperties(operationId, allOfEntry, level + 1));
+        }
+
         foreach (var propertyPair in schema.Properties)
         {
             var propertyName = propertyPair.Key;
