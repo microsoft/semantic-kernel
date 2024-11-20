@@ -4,8 +4,8 @@ using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using SharedSteps;
 using Microsoft.SemanticKernel.Process;
+using SharedSteps;
 using Utilities;
 
 namespace Step01;
