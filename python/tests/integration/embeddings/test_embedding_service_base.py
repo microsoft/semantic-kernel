@@ -5,36 +5,30 @@ from azure.ai.inference.aio import EmbeddingsClient
 from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_text_embedding import (
     AzureAIInferenceTextEmbedding,
 )
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
-    BedrockEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_embedding import BedrockTextEmbedding
+from semantic_kernel.connectors.ai.bedrock import BedrockEmbeddingPromptExecutionSettings, BedrockTextEmbedding
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.google.google_ai import (
     GoogleAIEmbeddingPromptExecutionSettings,
+    GoogleAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_embedding import GoogleAITextEmbedding
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_embedding import VertexAITextEmbedding
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.google.vertex_ai import (
     VertexAIEmbeddingPromptExecutionSettings,
+    VertexAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding import HuggingFaceTextEmbedding
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.hugging_face import HuggingFaceTextEmbedding
+from semantic_kernel.connectors.ai.mistral_ai import MistralAITextEmbedding
+from semantic_kernel.connectors.ai.ollama import OllamaEmbeddingPromptExecutionSettings, OllamaTextEmbedding
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureOpenAISettings,
+    AzureTextEmbedding,
     OpenAIEmbeddingPromptExecutionSettings,
+    OpenAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.utils import is_service_setup_for_testing
