@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -26,7 +25,7 @@ public sealed class RestApiParameter
         get => this._argumentName;
         set
         {
-            this.ThrowIfFrozen();
+            this._freezable.ThrowIfFrozen();
             this._argumentName = value;
         }
     }
@@ -122,32 +121,11 @@ public sealed class RestApiParameter
         this.Format = format;
         this.Schema = schema;
     }
-
-    /// <summary>
-    /// Makes the current instance unmodifiable.
-    /// </summary>
     internal void Freeze()
     {
-        if (this._isFrozen)
-        {
-            return;
-        }
-
-        this._isFrozen = true;
+        this._freezable.Freeze();
     }
 
-    /// <summary>
-    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="RestApiParameter"/> is frozen.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    private void ThrowIfFrozen()
-    {
-        if (this._isFrozen)
-        {
-            throw new InvalidOperationException("RestApiOperationParameter is frozen and cannot be modified.");
-        }
-    }
-
+    private readonly Freezable _freezable = new();
     private string? _argumentName;
-    private bool _isFrozen = false;
 }

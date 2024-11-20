@@ -420,7 +420,9 @@ class KernelPlugin(KernelBaseModel):
             openai_manifest = plugin_str
         elif plugin_url is not None:
             # Load plugin from the URL
-            http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+            http_client = (
+                execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient(timeout=5)
+            )
             openai_manifest = await DocumentLoader.from_uri(
                 url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
             )

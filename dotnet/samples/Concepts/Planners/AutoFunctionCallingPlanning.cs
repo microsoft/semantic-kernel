@@ -291,7 +291,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 
             byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(goal));
 
-            return BitConverter.ToString(bytes).Replace("-", "").ToUpperInvariant();
+            return Convert.ToHexString(bytes).Replace("-", "").ToUpperInvariant();
         }
     }
 

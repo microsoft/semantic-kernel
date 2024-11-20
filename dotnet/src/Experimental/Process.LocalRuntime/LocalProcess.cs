@@ -14,6 +14,8 @@ using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
+internal delegate bool ProcessEventProxy(ProcessEvent processEvent);
+
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
     private readonly JoinableTaskFactory _joinableTaskFactory;
@@ -26,6 +28,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly KernelProcess _process;
 
     private readonly ILogger _logger;
+
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
 
@@ -34,9 +37,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
-    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null)
-        : base(process, kernel, parentProcessId)
+    internal LocalProcess(KernelProcess process, Kernel kernel)
+        : base(process, kernel)
     {
         Verify.NotNull(process.Steps);
 
@@ -72,9 +74,10 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
+    internal async Task RunOnceAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
         Verify.NotNull(processEvent, nameof(processEvent));
+        Verify.NotNullOrWhiteSpace(processEvent.Id, $"{nameof(processEvent)}.{nameof(KernelProcessEvent.Id)}");
 
         await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
@@ -175,30 +178,40 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             // The current step should already have a name.
             Verify.NotNull(step.State?.Name);
 
-            if (step is KernelProcess kernelStep)
+            if (step is KernelProcess processStep)
             {
                 // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(kernelStep.State.Id))
+                if (string.IsNullOrWhiteSpace(processStep.State.Id))
                 {
-                    kernelStep = kernelStep with { State = kernelStep.State with { Id = Guid.NewGuid().ToString() } };
+                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
                 }
 
-                var process = new LocalProcess(
-                    process: kernelStep,
-                    kernel: this._kernel,
-                    parentProcessId: this.Id);
-
-                localStep = process;
+                localStep =
+                    new LocalProcess(processStep, this._kernel)
+                    {
+                        ParentProcessId = this.Id,
+                        EventProxy = this.EventProxy,
+                    };
+            }
+            else if (step is KernelProcessMap mapStep)
+            {
+                localStep =
+                    new LocalMap(mapStep, this._kernel)
+                    {
+                        ParentProcessId = this.Id,
+                    };
             }
             else
             {
                 // The current step should already have an Id.
                 Verify.NotNull(step.State?.Id);
 
-                localStep = new LocalStep(
-                    stepInfo: step,
-                    kernel: this._kernel,
-                    parentProcessId: this.Id);
+                localStep =
+                    new LocalStep(step, this._kernel)
+                    {
+                        ParentProcessId = this.Id,
+                        EventProxy = this.EventProxy,
+                    };
             }
 
             this._steps.Add(localStep);

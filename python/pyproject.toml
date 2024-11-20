@@ -50,7 +50,8 @@ dependencies = [
 ### Optional dependencies
 [project.optional-dependencies]
 azure = [
-    "azure-ai-inference >= 1.0.0b4",
+    "azure-ai-inference >= 1.0.0b6",
+    "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
@@ -136,7 +137,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.5"
+    "ruff ~= 0.7"
 ]
 environments = [
     "sys_platform == 'darwin'",

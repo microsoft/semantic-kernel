@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +63,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// The Id of the parent process if one exists.
     /// </summary>
-    protected string? ParentProcessId { get; }
+    internal string? ParentProcessId { get; init; }
 
     /// <summary>
     /// The name of the step.
@@ -75,6 +74,11 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// The Id of the step.
     /// </summary>
     internal string Id => this._stepInfo.State.Id!;
+
+    /// <summary>
+    /// An event proxy that can be used to intercept events emitted by the step.
+    /// </summary>
+    internal ProcessEventProxy? EventProxy { get; init; }
 
     /// <summary>
     /// Retrieves all events that have been emitted by this step in the previous superstep.
@@ -114,7 +118,14 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        this.EmitEvent(ProcessEvent.Create(processEvent, this._eventNamespace));
+        Verify.NotNullOrWhiteSpace(processEvent.Id, $"{nameof(processEvent)}.{nameof(KernelProcessEvent.Id)}");
+
+        ProcessEvent emitEvent = ProcessEvent.Create(processEvent, this._eventNamespace);
+        if (this.EventProxy?.Invoke(emitEvent) ?? true)
+        {
+            this.EmitEvent(emitEvent);
+        }
+
         return default;
     }
 

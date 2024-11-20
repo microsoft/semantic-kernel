@@ -5,12 +5,15 @@ from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
-from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper, DefaultAzureCredentialWrapper
+from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorInitializationError,
     MemoryConnectorResourceNotFound,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
+    AsyncDefaultAzureCredentialWrapper,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
@@ -72,7 +75,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
                 )
             else:
                 cosmos_client = CosmosClientWrapper(
-                    str(cosmos_db_nosql_settings.url), credential=DefaultAzureCredentialWrapper()
+                    str(cosmos_db_nosql_settings.url), credential=AsyncDefaultAzureCredentialWrapper()
                 )
 
         super().__init__(

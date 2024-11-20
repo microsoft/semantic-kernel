@@ -28,7 +28,6 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAITextEmbedding,
 )
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.utils import is_service_setup_for_testing
@@ -70,7 +69,6 @@ class EmbeddingServiceTestBase:
                 endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
-                api_version=DEFAULT_AZURE_API_VERSION,
             ),
         )
 
