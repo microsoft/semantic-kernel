@@ -38,41 +38,20 @@
 
 ## Memory Service Settings used across SK:
 
-| Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
+| Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
-AstraDB | [AstraDBMemoryService](../../../semantic_kernel/connectors/memory/astradb/astradb_memory_store.py) |  |  |  | [AstraDBSettings](../../../semantic_kernel/connectors/memory/astradb/astradb_settings.py)
-|  |  |  app_token | ASTRADB_APP_TOKEN | Yes
-| | | db_id | ASTRADB_DB_ID | Yes
-|  |  |  region | ASTRADB_REGION | Yes
-|  |  |  keyspace | ASTRADB_KEYSPACE | Yes
-Azure AI Search | [AzureAISearchMemoryService](../../../semantic_kernel/connectors/memory/azure_cognitive_search/azure_cognitive_search_memory_store.py) |  |  |  | [AzureAISearchSettings](../../../semantic_kernel/connectors/memory/azure_cognitive_search/azure_ai_search_settings.py)
-|  |  |  api_key | AZURE_AI_SEARCH_API_KEY | No
-|  |  |  endpoint | AZURE_AI_SEARCH_ENDPOINT | Yes
-|  |  |  index_name | AZURE_AI_SEARCH_INDEX_NAME | No
-Azure Cosmos DB | [AzureCosmosDBMemoryService](../../../semantic_kernel/connectors/memory/azure_cosmosdb/azure_cosmos_db_memory_store.py) |  |  |  | [AzureCosmosDBSettings](../../../semantic_kernel/connectors/memory/azure_cosmosdb/azure_cosmosdb_settings.py)
-|  |  |  api | AZURE_COSMOS_DB_API | No
-|  |  |  connection_string | AZURE_COSMOS_DB_CONNECTION_STRING or AZCOSMOS_CONNSTR | No
-Mongo DB Atlas | [MongoDBAtlasMemoryService](../../../semantic_kernel/connectors/memory/mongodb_atlas/mongodb_atlas_memory_store.py) |  |  |  | [MongoDBAtlasSettings](../../../semantic_kernel/connectors/memory/mongodb_atlas/mongodb_atlas_settings.py)
-|  |  |  connection_string | MONGODB_ATLAS_CONNECTION_STRING | Yes
-|  |  |  database_name | MONGODB_ATLAS_DATABASE_NAME | No
-|  |  |  index_name | MONGODB_ATLAS_INDEX_NAME | No
-Pinecone | [PineconeMemoryService](../../../semantic_kernel/connectors/memory/pinecone/pinecone_memory_store.py) |  |  |  | [PineconeSettings](../../../semantic_kernel/connectors/memory/pinecone/pinecone_settings.py)
-|  |  |  api_key | PINECONE_API_KEY | Yes
-Postgres | [PostgresMemoryService](../../../semantic_kernel/connectors/memory/postgres/postgres_memory_store.py) |  |  |  | [PostgresSettings](../../../semantic_kernel/connectors/memory/postgres/postgres_settings.py)
-|  |  |  connection_string | POSTGRES_CONNECTION_STRING | Yes
-Redis | [RedisMemoryService](../../../semantic_kernel/connectors/memory/redis/redis_memory_store.py) |  |  |  | [RedisSettings](../../../semantic_kernel/connectors/memory/redis/redis_settings.py)
-| | | connection_string | REDIS_CONNECTION_STRING | Yes
-Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py) |  |  |  | [WeaviateSettings](../../../semantic_kernel/connectors/memory/weaviate/weaviate_settings.py)
-|  |  |  url | WEAVIATE_URL | No
-|  |  |  api_key | WEAVIATE_API_KEY | No
-| | | use_embed | WEAVIATE_USE_EMBED | No
+| AstraDB | [AstraDBMemoryService](../../../semantic_kernel/connectors/memory/astradb/astradb_memory_store.py) | app_token, <br> db_id, <br> region, <br> keyspace | ASTRADB_APP_TOKEN, <br> ASTRADB_DB_ID, <br> ASTRADB_REGION, <br> ASTRADB_KEYSPACE | Yes, <br> Yes, <br> Yes, <br> Yes | [AstraDBSettings](../../../semantic_kernel/connectors/memory/astradb/astradb_settings.py) |
+| Azure AI Search | [AzureAISearchMemoryService](../../../semantic_kernel/connectors/memory/azure_cognitive_search/azure_cognitive_search_memory_store.py) | api_key, <br> endpoint, <br> index_name | AZURE_AI_SEARCH_API_KEY, <br> AZURE_AI_SEARCH_ENDPOINT, <br> AZURE_AI_SEARCH_INDEX_NAME | No, <br> Yes, <br> No | [AzureAISearchSettings](../../../semantic_kernel/connectors/memory/azure_cognitive_search/azure_ai_search_settings.py) |
+| Azure Cosmos DB | [AzureCosmosDBMemoryService](../../../semantic_kernel/connectors/memory/azure_cosmosdb/azure_cosmos_db_memory_store.py) | api, <br> connection_string | AZURE_COSMOS_DB_API, <br> AZURE_COSMOS_DB_CONNECTION_STRING or AZCOSMOS_CONNSTR | No, <br> No | [AzureCosmosDBSettings](../../../semantic_kernel/connectors/memory/azure_cosmosdb/azure_cosmosdb_settings.py) |
+| Mongo DB Atlas | [MongoDBAtlasMemoryService](../../../semantic_kernel/connectors/memory/mongodb_atlas/mongodb_atlas_memory_store.py) | connection_string, <br> database_name, <br> index_name | MONGODB_ATLAS_CONNECTION_STRING, <br> MONGODB_ATLAS_DATABASE_NAME, <br> MONGODB_ATLAS_INDEX_NAME | Yes, <br> No, <br> No | [MongoDBAtlasSettings](../../../semantic_kernel/connectors/memory/mongodb_atlas/mongodb_atlas_settings.py) |
+| Pinecone | [PineconeMemoryService](../../../semantic_kernel/connectors/memory/pinecone/pinecone_memory_store.py) | api_key | PINECONE_API_KEY | Yes | [PineconeSettings](../../../semantic_kernel/connectors/memory/pinecone/pinecone_settings.py) |
+| Postgres | [PostgresMemoryService](../../../semantic_kernel/connectors/memory/postgres/postgres_memory_store.py) | connection_string | POSTGRES_CONNECTION_STRING | Yes | [PostgresSettings](../../../semantic_kernel/connectors/memory/postgres/postgres_settings.py) |
+| Redis | [RedisMemoryService](../../../semantic_kernel/connectors/memory/redis/redis_memory_store.py) | connection_string | REDIS_CONNECTION_STRING | Yes | [RedisSettings](../../../semantic_kernel/connectors/memory/redis/redis_settings.py) |
+| Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py) | url, <br> api_key, <br> use_embed | WEAVIATE_URL, <br> WEAVIATE_API_KEY, <br> WEAVIATE_USE_EMBED | No, <br> No, <br> No | [WeaviateSettings](../../../semantic_kernel/connectors/memory/weaviate/weaviate_settings.py) |
 
 ## Other settings used:
 
-| Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
+| Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
-Bing | [BingSearch](../../../semantic_kernel/connectors/search_engine/bing_connector.py) |  |  |  | [BingSettings](../../../semantic_kernel/connectors/search_engine/bing_connector_settings.py)
-| | | api_key | BING_API_KEY | No
-| | | custom_config | BING_CUSTOM_CONFIG | No
-Azure Container Apps Sessions | [ACASessionsPlugin](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_plugin.py) |  |  |  | [ACASessionsSettings](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_settings.py)
-| | | pool_management_endpoint | ACA_POOL_MANAGEMENT_ENDPOINT | Yes
+| Bing | [BingSearch](../../../semantic_kernel/connectors/search_engine/bing_connector.py) | api_key, <br> custom_config | BING_API_KEY, <br> BING_CUSTOM_CONFIG | No, <br> No | [BingSettings](../../../semantic_kernel/connectors/search_engine/bing_connector_settings.py) |
+| Azure Container Apps Sessions | [ACASessionsPlugin](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_plugin.py) | pool_management_endpoint | ACA_POOL_MANAGEMENT_ENDPOINT | Yes | [ACASessionsSettings](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_settings.py) |
