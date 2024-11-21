@@ -526,7 +526,7 @@ public class ServiceConversionExtensionsTests
         Assert.Equal(0.5f, actualOptions.FrequencyPenalty);
         Assert.Equal(0.75f, actualOptions.TopP);
         Assert.Equal(["hello"], actualOptions.StopSequences);
-        Assert.Equal(42, actualOptions.AdditionalProperties?.TryGetValue("Seed", out int seed) is true ? seed : 0);
+        Assert.Equal(42, actualOptions.Seed);
         Assert.Equal("user123", actualOptions.AdditionalProperties?["User"]);
     }
 
@@ -621,7 +621,7 @@ public class ServiceConversionExtensionsTests
         Assert.Equal(0.5f, actualOptions.FrequencyPenalty);
         Assert.Equal(0.75f, actualOptions.TopP);
         Assert.Equal(["hello"], actualOptions.StopSequences);
-        Assert.Equal(42, actualOptions.AdditionalProperties?.TryGetValue("Seed", out int seed) is true ? seed : 0);
+        Assert.Equal(42, actualOptions.Seed);
         Assert.Equal("user123", actualOptions.AdditionalProperties?["User"]);
     }
 

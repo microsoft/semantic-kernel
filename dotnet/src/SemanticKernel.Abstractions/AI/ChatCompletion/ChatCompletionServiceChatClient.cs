@@ -138,6 +138,11 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             settings.ExtensionData["top_k"] = options.TopK.Value;
         }
 
+        if (options.Seed is not null)
+        {
+            settings.ExtensionData["seed"] = options.Seed.Value;
+        }
+
         if (options.ResponseFormat is not null)
         {
             if (options.ResponseFormat is ChatResponseFormatText)
