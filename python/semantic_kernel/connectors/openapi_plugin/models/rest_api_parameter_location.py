@@ -6,8 +6,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class RestApiOperationParameterLocation(Enum):
-    """The location of the REST API operation parameter."""
+class RestApiParameterLocation(Enum):
+    """The location of the REST API parameter."""
 
     PATH = "path"
     QUERY = "query"
