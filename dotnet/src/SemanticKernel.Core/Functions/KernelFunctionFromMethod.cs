@@ -726,40 +726,32 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
             object? Process(object? value)
             {
-                if (!type.IsAssignableFrom(value?.GetType()))
+                if (type.IsAssignableFrom(value?.GetType()))
                 {
-                    if (parameter?.ParameterType is null)
-                    {
-                        return value;
-                    }
+                    return value;
+                }
 
-                    if (value is not JsonElement or JsonDocument or JsonNode)
+                if (converter is not null && value is not JsonElement or JsonDocument or JsonNode)
+                {
+                    try
                     {
-                        if (converter is not null)
-                        {
-                            try
-                            {
-                                return converter(value, kernel.Culture);
-                            }
-                            catch (Exception e) when (!e.IsCriticalException())
-                            {
-                                throw new ArgumentOutOfRangeException(name, value, e.Message);
-                            }
-                        }
+                        return converter(value, kernel.Culture);
                     }
+                    catch (Exception e) when (!e.IsCriticalException())
+                    {
+                        throw new ArgumentOutOfRangeException(name, value, e.Message);
+                    }
+                }
 
-                    if (value is JsonElement element && element.ValueKind == JsonValueKind.String)
-                    {
-                        if (jsonStringParsers.TryGetValue(type, out var jsonStringParser))
-                        {
-                            return jsonStringParser(element.GetString()!);
-                        }
-                    }
+                if (value is JsonElement element && element.ValueKind == JsonValueKind.String
+                    && jsonStringParsers.TryGetValue(type, out var jsonStringParser))
+                {
+                    return jsonStringParser(element.GetString()!);
+                }
 
-                    if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
-                    {
-                        return deserializedValue;
-                    }
+                if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
+                {
+                    return deserializedValue;
                 }
 
                 return value;
