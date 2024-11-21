@@ -12,9 +12,7 @@ from samples.concepts.model_as_a_service.helpers import (
     formatted_question,
     formatted_system_message,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
+from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatCompletion
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments

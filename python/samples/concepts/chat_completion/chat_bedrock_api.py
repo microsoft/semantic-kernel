@@ -3,8 +3,7 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.bedrock.services.bedrock_chat_completion import BedrockChatCompletion
+from semantic_kernel.connectors.ai.bedrock import BedrockChatCompletion, BedrockChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 
 system_message = """
