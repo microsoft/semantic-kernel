@@ -556,8 +556,6 @@ public abstract class KernelFunction
 
         public override AIFunctionMetadata Metadata { get; }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
         protected override async Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
         {

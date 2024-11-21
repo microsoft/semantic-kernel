@@ -22,13 +22,15 @@ var kernel = builder.Build();
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
-Console.WriteLine("Ask questions or give instructions to the copilot such as:\n" +
-                    "- Change the alarm to 8\n" +
-                    "- What is the current alarm set?\n" +
-                    "- Is the light on?\n" +
-                    "- Turn the light off please.\n" +
-                    "- Set an alarm for 6:00 am.\n" +
-                    "- Complete my Todo item 8e7b175e-2451-4521-8a10-6f296d5a1a4f");
+Console.WriteLine("""
+    Ask questions or give instructions to the copilot such as:
+    - Change the alarm to 8
+    - What is the current alarm set?
+    - Is the light on?
+    - Turn the light off please.
+    - Set an alarm for 6:00 am.
+    - Complete my Todo item 8e7b175e-2451-4521-8a10-6f296d5a1a4f
+    """);
 
 Console.Write("> ");
 
