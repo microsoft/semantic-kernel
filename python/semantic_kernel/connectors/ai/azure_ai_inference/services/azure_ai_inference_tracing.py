@@ -35,7 +35,7 @@ class AzureAIInferenceTracing(KernelBaseModel):
             self.diagnostics_settings.enable_otel_diagnostics
             or self.diagnostics_settings.enable_otel_diagnostics_sensitive
         ):
-            AIInferenceInstrumentor().instrument(
+            AIInferenceInstrumentor().instrument(  # type: ignore
                 enable_content_recording=self.diagnostics_settings.enable_otel_diagnostics_sensitive
             )
 

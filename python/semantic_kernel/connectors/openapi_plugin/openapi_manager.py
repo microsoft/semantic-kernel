@@ -183,8 +183,8 @@ def _create_function_from_operation(
         OperationExtensions.METHOD_KEY.value: operation.method.upper(),
         OperationExtensions.OPERATION_KEY.value: operation,
         OperationExtensions.SERVER_URLS_KEY.value: (
-            [operation.servers[0].geturl()]
-            if operation.servers and len(operation.servers) > 0 and operation.servers[0].geturl()
+            [operation.servers[0]["url"]]
+            if operation.servers and len(operation.servers) > 0 and operation.servers[0]["url"]
             else []
         ),
     }

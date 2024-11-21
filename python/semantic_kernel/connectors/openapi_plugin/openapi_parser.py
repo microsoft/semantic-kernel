@@ -217,10 +217,23 @@ class OpenApiParser:
         request_objects = {}
 
         servers = parsed_document.get("servers", [])
-        server_urls = [server.get("url") for server in servers] if servers else ["/"]
 
         if execution_settings and execution_settings.server_url_override:
-            server_urls = [execution_settings.server_url_override]
+            # Override the servers with the provided URL
+            server_urls = [{"url": execution_settings.server_url_override, "variables": {}}]
+        elif servers:
+            # Process servers, ensuring we capture their variables
+            server_urls = []
+            for server in servers:
+                server_entry = {
+                    "url": server.get("url", "/"),
+                    "variables": server.get("variables", {}),
+                    "description": server.get("description", ""),
+                }
+                server_urls.append(server_entry)
+        else:
+            # Default server if none specified
+            server_urls = [{"url": "/", "variables": {}, "description": ""}]
 
         for path, methods in paths.items():
             for method, details in methods.items():

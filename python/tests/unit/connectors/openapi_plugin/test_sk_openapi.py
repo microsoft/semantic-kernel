@@ -279,24 +279,101 @@ def test_build_operation_url_with_override():
 def test_build_operation_url_without_override():
     parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
     operation = RestApiOperation(
-        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/"}],
+        path="/resource/{id}",
+        params=parameters,
     )
     arguments = {"id": "123"}
     expected_url = "https://example.com/resource/123"
     assert operation.build_operation_url(arguments) == expected_url
 
 
-def test_get_server_url_with_override():
-    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com"], path="/resource/{id}")
+def test_get_server_url_with_parse_result_override():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com"}],
+        path="/resource/{id}",
+    )
     server_url_override = urlparse("https://override.com")
     expected_url = "https://override.com/"
-    assert operation.get_server_url(server_url_override=server_url_override).geturl() == expected_url
+    assert operation.get_server_url(server_url_override=server_url_override) == expected_url
+
+
+def test_get_server_url_with_string_override():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com"}],
+        path="/resource/{id}",
+    )
+    server_url_override = "https://override.com"
+    expected_url = "https://override.com/"
+    assert operation.get_server_url(server_url_override=server_url_override) == expected_url
+
+
+def test_get_server_url_with_servers_no_variables():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com"}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_servers_and_variables():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://example.com/{version}",
+                "variables": {"version": {"default": "v1", "argument_name": "api_version"}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"api_version": "v2"}
+    expected_url = "https://example.com/v2/"
+    assert operation.get_server_url(arguments=arguments) == expected_url
+
+
+def test_get_server_url_with_servers_and_default_variable():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/{version}", "variables": {"version": {"default": "v1"}}}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/v1/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_override():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com"}],
+        path="/resource/{id}",
+    )
+    server_url_override = "https://override.com"
+    expected_url = "https://override.com/"
+    assert operation.get_server_url(server_url_override=server_url_override) == expected_url
 
 
 def test_get_server_url_without_override():
-    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com"], path="/resource/{id}")
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com"}],
+        path="/resource/{id}",
+    )
     expected_url = "https://example.com/"
-    assert operation.get_server_url().geturl() == expected_url
+    assert operation.get_server_url() == expected_url
 
 
 def test_build_path_with_required_parameter():

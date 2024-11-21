@@ -2,7 +2,7 @@
 
 import re
 from typing import Any, Final
-from urllib.parse import ParseResult, urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import ParseResult, ParseResultBytes, urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
     RestApiExpectedResponse,
@@ -52,7 +52,7 @@ class RestApiOperation:
         self,
         id: str,
         method: str,
-        servers: list[str | ParseResult],
+        servers: list[dict[str, Any]],
         path: str,
         summary: str | None = None,
         description: str | None = None,
@@ -64,7 +64,7 @@ class RestApiOperation:
         """Initialize the RestApiOperation."""
         self._id = id
         self._method = method.upper()
-        self._servers = [urlparse(s) if isinstance(s, str) else s for s in servers]
+        self._servers = servers
         self._path = path
         self._summary = summary
         self._description = description
@@ -117,9 +117,9 @@ class RestApiOperation:
         return self._servers
 
     @servers.setter
-    def servers(self, value: list[str | ParseResult]):
+    def servers(self, value: list[dict[str, Any]]):
         self._throw_if_frozen()
-        self._servers = [urlparse(s) if isinstance(s, str) else s for s in value]
+        self._servers = value
 
     @property
     def path(self):
@@ -223,26 +223,58 @@ class RestApiOperation:
         """Build the URL for the operation."""
         server_url = self.get_server_url(server_url_override, api_host_url)
         path = self.build_path(self.path, arguments)
-        return urljoin(server_url.geturl(), path.lstrip("/"))
+        try:
+            return urljoin(server_url, path.lstrip("/"))
+        except Exception as e:
+            raise FunctionExecutionException(f"Error building the URL for the operation {self.id}: {e!s}") from e
 
-    def get_server_url(self, server_url_override=None, api_host_url=None):
+    def get_server_url(self, server_url_override=None, api_host_url=None, arguments=None):
         """Get the server URL for the operation."""
-        if server_url_override is not None and server_url_override.geturl() != "":
-            server_url = server_url_override
-        elif self.servers and self.servers[0].geturl() != "":
-            server_url = self.servers[0]
+        if arguments is None:
+            arguments = {}
+
+        # Prioritize server_url_override
+        if (
+            server_url_override is not None
+            and isinstance(server_url_override, (ParseResult, ParseResultBytes))
+            and server_url_override.geturl() != b""
+        ):
+            server_url_string = server_url_override.geturl()
+        elif server_url_override is not None and isinstance(server_url_override, str) and server_url_override != "":
+            server_url_string = server_url_override
+        elif self.servers and len(self.servers) > 0:
+            # Use the first server by default
+            server = self.servers[0]
+            server_url_string = server["url"] if isinstance(server, dict) else server
+            server_variables = server.get("variables", {}) if isinstance(server, dict) else {}
+
+            # Substitute server variables if available
+            for variable_name, variable_def in server_variables.items():
+                argument_name = variable_def.get("argument_name", variable_name)
+                if argument_name in arguments:
+                    value = arguments[argument_name]
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                elif "default" in variable_def and variable_def["default"] is not None:
+                    # Use the default value if no argument is provided
+                    value = variable_def["default"]
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                else:
+                    # Raise an exception if no value is available
+                    raise FunctionExecutionException(
+                        f"No argument provided for the '{variable_name}' server variable of the operation '{self.id}'."
+                    )
+        elif self.server_url:
+            server_url_string = self.server_url
         elif api_host_url is not None:
-            server_url = api_host_url
+            server_url_string = api_host_url
         else:
             raise FunctionExecutionException(f"No valid server URL for operation {self.id}")
 
-        server_url_string = server_url.geturl()
-
-        # make sure the base URL ends with a trailing slash
+        # Ensure the base URL ends with a trailing slash
         if not server_url_string.endswith("/"):
             server_url_string += "/"
 
-        return urlparse(server_url_string)
+        return server_url_string  # Return the URL string directly
 
     def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
         """Build the path for the operation."""
