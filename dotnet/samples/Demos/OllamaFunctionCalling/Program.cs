@@ -15,8 +15,7 @@ builder.Services.AddOllamaChatCompletion(modelId, endpoint);
 builder.Plugins
     .AddFromType<MyTimePlugin>()
     .AddFromObject(new MyLightPlugin(turnedOn: true))
-    .AddFromObject(new MyAlarmPlugin("11"))
-    .AddFromObject(new TodoPlugin());
+    .AddFromObject(new MyAlarmPlugin("11"));
 
 var kernel = builder.Build();
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
@@ -29,7 +28,6 @@ Console.WriteLine("""
     - Is the light on?
     - Turn the light off please.
     - Set an alarm for 6:00 am.
-    - Complete my Todo item 8e7b175e-2451-4521-8a10-6f296d5a1a4f
     """);
 
 Console.Write("> ");
