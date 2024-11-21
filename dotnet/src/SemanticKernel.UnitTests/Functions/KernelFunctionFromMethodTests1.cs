@@ -894,7 +894,7 @@ public sealed class KernelFunctionFromMethodTests1
             ["d"] = JsonSerializer.Deserialize<JsonElement>((float)1.0),             //Passed to parameter of type double
             ["f"] = JsonSerializer.Deserialize<JsonElement>((uint)1.0),              //Passed to parameter of type float
             ["g"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"))),   //Passed to parameter of type string
-            ["dof"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(DayOfWeek.Thursday)),   //Passed to parameter of type string
+            ["dof"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(DayOfWeek.Thursday)),   //Passed to parameter of type int
             ["b"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("true")),   //Passed to parameter of type bool
         };
 
