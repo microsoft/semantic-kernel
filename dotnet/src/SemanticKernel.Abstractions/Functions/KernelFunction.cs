@@ -10,6 +10,8 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -556,6 +558,8 @@ public abstract class KernelFunction
 
         public override AIFunctionMetadata Metadata { get; }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
         protected override async Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
         {
@@ -563,9 +567,68 @@ public abstract class KernelFunction
 
             // Create the KernelArguments from the supplied arguments.
             KernelArguments args = [];
+
+            var parsers = new Dictionary<Type, Func<string, object>>(12)
+            {
+                { typeof(bool), s => bool.Parse(s) },
+                { typeof(int), s => int.Parse(s) },
+                { typeof(uint), s => uint.Parse(s) },
+                { typeof(long), s => long.Parse(s) },
+                { typeof(ulong), s => ulong.Parse(s) },
+                { typeof(float), s => float.Parse(s) },
+                { typeof(double), s => double.Parse(s) },
+                { typeof(decimal), s => decimal.Parse(s) },
+                { typeof(short), s => short.Parse(s) },
+                { typeof(ushort), s => ushort.Parse(s) },
+                { typeof(byte), s => byte.Parse(s) },
+                { typeof(sbyte), s => sbyte.Parse(s) }
+            };
+
             foreach (var argument in arguments)
             {
-                args[argument.Key] = argument.Value;
+                if (argument.Value is null)
+                {
+                    args[argument.Key] = null;
+                    continue;
+                }
+
+                if (argument.Value is not JsonElement or JsonDocument or JsonNode)
+                {
+                    args[argument.Key] = argument.Value;
+                    continue;
+                }
+
+                // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
+                var parameter = this._kernelFunction.Metadata.Parameters.FirstOrDefault(p => p.Name == argument.Key);
+                if (parameter?.ParameterType is null)
+                {
+                    args[argument.Key] = argument.Value;
+                    continue;
+                }
+
+                Type parameterType = parameter.ParameterType;
+                JsonTypeInfo typeInfo = (this._kernelFunction.JsonSerializerOptions ?? JsonSerializerOptions.Default).GetTypeInfo(parameterType);
+
+                object? argumentValue = null;
+                if (argument.Value is JsonElement element && element.ValueKind == JsonValueKind.String)
+                {
+                    if (parsers.TryGetValue(parameterType, out var parser))
+                    {
+                        args[argument.Key] = parser(element.GetString()!);
+                        continue;
+                    }
+                }
+
+                argumentValue = argument.Value switch
+                {
+                    null => null, // Return as-is if null -- if the parameter is a struct this will be handled by MethodInfo.Invoke
+                    JsonElement jsonElement => JsonSerializer.Deserialize(jsonElement, typeInfo),
+                    JsonDocument doc => JsonSerializer.Deserialize(doc, typeInfo),
+                    JsonNode node => JsonSerializer.Deserialize(node, typeInfo),
+                    _ => argument.Value
+                };
+
+                args[argument.Key] = argumentValue;
             }
 
             // Invoke the KernelFunction.

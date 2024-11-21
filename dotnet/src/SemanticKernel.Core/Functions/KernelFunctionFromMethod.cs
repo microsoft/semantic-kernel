@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -690,6 +691,22 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         var converter = GetConverter(type);
 
+        var jsonStringParsers = new Dictionary<Type, Func<string, object>>(12)
+        {
+            { typeof(bool), s => bool.Parse(s) },
+            { typeof(int), s => int.Parse(s) },
+            { typeof(uint), s => uint.Parse(s) },
+            { typeof(long), s => long.Parse(s) },
+            { typeof(ulong), s => ulong.Parse(s) },
+            { typeof(float), s => float.Parse(s) },
+            { typeof(double), s => double.Parse(s) },
+            { typeof(decimal), s => decimal.Parse(s) },
+            { typeof(short), s => short.Parse(s) },
+            { typeof(ushort), s => ushort.Parse(s) },
+            { typeof(byte), s => byte.Parse(s) },
+            { typeof(sbyte), s => sbyte.Parse(s) }
+        };
+
         object? parameterFunc(KernelFunction _, Kernel kernel, KernelArguments arguments, CancellationToken __)
         {
             // 1. Use the value of the variable if it exists.
@@ -712,15 +729,31 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             {
                 if (!type.IsAssignableFrom(value?.GetType()))
                 {
-                    if (converter is not null)
+                    if (parameter?.ParameterType is null)
                     {
-                        try
+                        return value;
+                    }
+
+                    if (value is not JsonElement or JsonDocument or JsonNode)
+                    {
+                        if (converter is not null)
                         {
-                            return converter(value, kernel.Culture);
+                            try
+                            {
+                                return converter(value, kernel.Culture);
+                            }
+                            catch (Exception e) when (!e.IsCriticalException())
+                            {
+                                throw new ArgumentOutOfRangeException(name, value, e.Message);
+                            }
                         }
-                        catch (Exception e) when (!e.IsCriticalException())
+                    }
+
+                    if (value is JsonElement element && element.ValueKind == JsonValueKind.String)
+                    {
+                        if (jsonStringParsers.TryGetValue(type, out var jsonStringParser))
                         {
-                            throw new ArgumentOutOfRangeException(name, value, e.Message);
+                            return jsonStringParser(element.GetString()!);
                         }
                     }
 
