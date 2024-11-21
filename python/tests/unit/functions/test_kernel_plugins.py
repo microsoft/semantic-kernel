@@ -13,6 +13,7 @@ from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
+from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -589,7 +590,25 @@ def test_from_openapi():
     assert plugin.functions.get("SetSecret") is not None
 
 
-def test_from_openapi_missing_document_throws():
+def test_custom_spec_from_openapi():
+    openapi_spec_file = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+
+    parser = OpenApiParser()
+    openapi_spec = parser.parse(openapi_spec_file)
+
+    plugin = KernelPlugin.from_openapi(
+        plugin_name="TestOpenAPIPlugin",
+        openapi_parsed_spec=openapi_spec,
+    )
+    assert plugin is not None
+    assert plugin.name == "TestOpenAPIPlugin"
+    assert plugin.functions.get("GetSecret") is not None
+    assert plugin.functions.get("SetSecret") is not None
+
+
+def test_from_openapi_missing_document_and_parsed_spec_throws():
     with raises(PluginInitializationError):
         KernelPlugin.from_openapi(
             plugin_name="TestOpenAPIPlugin",
