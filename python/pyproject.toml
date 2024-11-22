@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic ~= 2.0",
+    "pydantic >=2.0,<2.10",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
