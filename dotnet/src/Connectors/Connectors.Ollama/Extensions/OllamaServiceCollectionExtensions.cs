@@ -113,13 +113,18 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IChatClient)new OllamaApiClient(endpoint, modelId))
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IChatClient)new OllamaApiClient(endpoint, modelId))
                 .AsBuilder()
-                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsChatCompletionService(serviceProvider);
+                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
         });
     }
 
@@ -142,13 +147,19 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             httpClient ??= HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IChatClient)new OllamaApiClient(httpClient, modelId))
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IChatClient)new OllamaApiClient(httpClient, modelId))
                 .AsBuilder()
-                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsChatCompletionService(serviceProvider);
+                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
         });
     }
 
@@ -168,13 +179,18 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IChatClient)ollamaClient)
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IChatClient)ollamaClient)
                 .AsBuilder()
-                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsChatCompletionService(serviceProvider);
+                .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
         });
     }
 
@@ -200,12 +216,18 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(endpoint, modelId))
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(endpoint, modelId))
                 .AsBuilder()
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsTextEmbeddingGenerationService(serviceProvider);
+                .UseLogging(loggerFactory);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsTextEmbeddingGenerationService(serviceProvider);
         });
     }
 
@@ -228,12 +250,18 @@ public static class OllamaServiceCollectionExtensions
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
             httpClient ??= HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(httpClient, modelId))
-                .AsBuilder()
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsTextEmbeddingGenerationService(serviceProvider);
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(httpClient, modelId))
+                .AsBuilder();
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsTextEmbeddingGenerationService(serviceProvider);
         });
 
         return services;
@@ -255,12 +283,17 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-            return ((IEmbeddingGenerator<string, Embedding<float>>)ollamaClient)
-                .AsBuilder()
-                .UseLogging(loggerFactory)
-                .Build(serviceProvider)
-                .AsTextEmbeddingGenerationService(serviceProvider);
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = ((IEmbeddingGenerator<string, Embedding<float>>)ollamaClient)
+                .AsBuilder();
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsTextEmbeddingGenerationService(serviceProvider);
         });
     }
 

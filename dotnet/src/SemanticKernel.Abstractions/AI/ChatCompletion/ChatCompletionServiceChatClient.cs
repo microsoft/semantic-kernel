@@ -76,10 +76,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
-        if (serviceType is null)
-        {
-            throw new ArgumentNullException(nameof(serviceType));
-        }
+        Verify.NotNull(serviceType);
 
         return
             serviceKey is not null ? null :

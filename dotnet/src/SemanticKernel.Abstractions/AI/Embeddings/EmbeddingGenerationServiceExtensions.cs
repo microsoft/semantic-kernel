@@ -126,10 +126,7 @@ public static class EmbeddingGenerationExtensions
         /// <inheritdoc />
         public object? GetService(Type serviceType, object? serviceKey = null)
         {
-            if (serviceKey is null)
-            {
-                throw new ArgumentNullException(nameof(serviceKey));
-            }
+            Verify.NotNull(serviceType);
 
             return
                 serviceKey is not null ? null :
