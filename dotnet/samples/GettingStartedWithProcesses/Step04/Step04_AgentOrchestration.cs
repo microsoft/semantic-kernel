@@ -21,7 +21,7 @@ namespace Step04;
 public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     // Target Open AI Services
-    //protected override bool ForceOpenAI => true;
+    protected override bool ForceOpenAI => true;
 
     /// <summary>
     /// Orchestrates a single agent gathering user input and then delegating to a group of agents.
