@@ -42,6 +42,8 @@ public sealed class KernelProcessStepContext
         object? data = null,
         KernelProcessEventVisibility visibility = KernelProcessEventVisibility.Internal)
     {
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
+
         return this._stepMessageChannel.EmitEventAsync(
             new KernelProcessEvent
             {

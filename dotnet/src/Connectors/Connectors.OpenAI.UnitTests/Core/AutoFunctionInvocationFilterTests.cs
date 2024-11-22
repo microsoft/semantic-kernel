@@ -79,6 +79,41 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
+    public async Task FunctionSequenceIndexIsCorrectForConcurrentCallsAsync()
+    {
+        // Arrange
+        List<int> functionSequenceNumbers = [];
+        List<int> expectedFunctionSequenceNumbers = [0, 1, 0, 1];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new()
+            {
+                AllowParallelCalls = true,
+                AllowConcurrentInvocation = true
+            })
+        }));
+
+        // Assert
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
+    }
+
+    [Fact]
     public async Task FiltersAreExecutedCorrectlyOnStreamingAsync()
     {
         // Arrange

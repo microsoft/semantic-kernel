@@ -34,4 +34,4 @@ class AzureAIInferenceSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "AZURE_AI_INFERENCE_"
 
     endpoint: HttpsUrl
-    api_key: SecretStr
+    api_key: SecretStr | None = None

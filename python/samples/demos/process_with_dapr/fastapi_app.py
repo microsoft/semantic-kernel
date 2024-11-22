@@ -65,8 +65,8 @@ async def start_process(process_id: str):
             process_id=process_id,
         )
         return JSONResponse(content={"processId": process_id}, status_code=200)
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+    except Exception:
+        return JSONResponse(content={"error": "Error starting process"}, status_code=500)
 
 
 if __name__ == "__main__":

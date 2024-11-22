@@ -27,7 +27,7 @@ public static class DaprKernelProcessFactory
             process = process with { State = process.State with { Id = processId } };
         }
 
-        var processContext = new DaprKernelProcessContext(process);
+        DaprKernelProcessContext processContext = new(process);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

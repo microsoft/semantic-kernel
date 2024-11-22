@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -32,7 +33,11 @@ public sealed class RestApiOAuthFlow
     /// <summary>
     /// REQUIRED. A map between the scope name and a short description for it.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Scopes { get; init; }
+    public IDictionary<string, string> Scopes
+    {
+        get => this._scopes;
+        init => this._scopes = value;
+    }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOAuthFlow"/> class.
@@ -42,4 +47,11 @@ public sealed class RestApiOAuthFlow
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
     }
+
+    internal void Freeze()
+    {
+        this._scopes = new ReadOnlyDictionary<string, string>(this._scopes);
+    }
+
+    private IDictionary<string, string> _scopes;
 }

@@ -8,26 +8,17 @@ from typing import Any
 import pytest
 from openai import AsyncAzureOpenAI
 
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
-    GoogleAITextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
-    VertexAITextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
-from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.bedrock import BedrockTextCompletion, BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
+from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
+from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
+from semantic_kernel.connectors.ai.ollama import OllamaTextCompletion, OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureOpenAISettings,
+    AzureTextCompletion,
+    OpenAITextCompletion,
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -41,9 +32,11 @@ else:
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.utils import is_service_setup_for_testing, retry
+from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
-ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
+    "Linux"
+])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(

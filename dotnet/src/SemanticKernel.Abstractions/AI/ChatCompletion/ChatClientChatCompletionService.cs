@@ -130,6 +130,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                 {
                     options.TopK = topK;
                 }
+                else if (entry.Key.Equals("seed", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out long seed))
+                {
+                    options.Seed = seed;
+                }
                 else if (entry.Key.Equals("max_tokens", StringComparison.OrdinalIgnoreCase) &&
                     TryConvert(entry.Value, out int maxTokens))
                 {
