@@ -2,16 +2,10 @@
 
 import json
 import logging
-import sys
 from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any, TypeVar
 from uuid import uuid4
-
-if sys.version_info >= (3, 12):
-    pass  # pragma: no cover
-else:
-    pass  # pragma: no cover
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
