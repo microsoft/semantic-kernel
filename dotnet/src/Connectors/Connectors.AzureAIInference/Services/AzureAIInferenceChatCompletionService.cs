@@ -9,6 +9,7 @@ using Azure.AI.Inference;
 using Azure.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 
@@ -38,25 +39,16 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            apiKey,
-            endpoint,
-            httpClient,
-            logger);
+        loggerFactory ??= NullLoggerFactory.Instance;
 
-        var builder = new ChatClientBuilder()
-            .UseFunctionInvocation(config =>
-                config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        this._core = new ChatClientCore(modelId, apiKey, endpoint, httpClient);
 
-        if (logger is not null)
-        {
-            builder = builder.UseLogging(logger);
-        }
-
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
+        this._chatService = this._core.Client
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
+            .UseLogging(loggerFactory)
+            .Build()
             .AsChatCompletionService();
     }
 
@@ -75,25 +67,16 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            credential,
-            endpoint,
-            httpClient,
-            logger);
+        loggerFactory ??= NullLoggerFactory.Instance;
 
-        var builder = new ChatClientBuilder()
-           .UseFunctionInvocation(config =>
-               config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        this._core = new ChatClientCore(modelId, credential, endpoint, httpClient);
 
-        if (logger is not null)
-        {
-            builder = builder.UseLogging(logger);
-        }
-
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
+        this._chatService = this._core.Client
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
+            .UseLogging(loggerFactory)
+            .Build()
             .AsChatCompletionService();
     }
 
@@ -108,23 +91,18 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         ChatCompletionsClient chatClient,
         ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            chatClient,
-            logger);
+        Verify.NotNull(chatClient);
 
-        var builder = new ChatClientBuilder()
-         .UseFunctionInvocation(config =>
-             config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        loggerFactory ??= NullLoggerFactory.Instance;
 
-        if (logger is not null)
-        {
-            builder = builder.UseLogging(logger);
-        }
+        this._core = new ChatClientCore(modelId, chatClient);
 
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
+        this._chatService = chatClient
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes)
+            .UseLogging(loggerFactory)
+            .Build()
             .AsChatCompletionService();
     }
 
