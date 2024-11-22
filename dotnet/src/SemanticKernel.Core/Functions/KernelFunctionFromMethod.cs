@@ -29,6 +29,22 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed partial class KernelFunctionFromMethod : KernelFunction
 {
+    private static readonly Dictionary<Type, Func<string, object>> s_jsonStringParsers = new(12)
+    {
+        { typeof(bool), s => bool.Parse(s) },
+        { typeof(int), s => int.Parse(s) },
+        { typeof(uint), s => uint.Parse(s) },
+        { typeof(long), s => long.Parse(s) },
+        { typeof(ulong), s => ulong.Parse(s) },
+        { typeof(float), s => float.Parse(s) },
+        { typeof(double), s => double.Parse(s) },
+        { typeof(decimal), s => decimal.Parse(s) },
+        { typeof(short), s => short.Parse(s) },
+        { typeof(ushort), s => ushort.Parse(s) },
+        { typeof(byte), s => byte.Parse(s) },
+        { typeof(sbyte), s => sbyte.Parse(s) }
+    };
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -690,22 +706,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         var converter = GetConverter(type);
 
-        var jsonStringParsers = new Dictionary<Type, Func<string, object>>(12)
-        {
-            { typeof(bool), s => bool.Parse(s) },
-            { typeof(int), s => int.Parse(s) },
-            { typeof(uint), s => uint.Parse(s) },
-            { typeof(long), s => long.Parse(s) },
-            { typeof(ulong), s => ulong.Parse(s) },
-            { typeof(float), s => float.Parse(s) },
-            { typeof(double), s => double.Parse(s) },
-            { typeof(decimal), s => decimal.Parse(s) },
-            { typeof(short), s => short.Parse(s) },
-            { typeof(ushort), s => ushort.Parse(s) },
-            { typeof(byte), s => byte.Parse(s) },
-            { typeof(sbyte), s => sbyte.Parse(s) }
-        };
-
         object? parameterFunc(KernelFunction _, Kernel kernel, KernelArguments arguments, CancellationToken __)
         {
             // 1. Use the value of the variable if it exists.
@@ -744,7 +744,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 }
 
                 if (value is JsonElement element && element.ValueKind == JsonValueKind.String
-                    && jsonStringParsers.TryGetValue(type, out var jsonStringParser))
+                    && s_jsonStringParsers.TryGetValue(type, out var jsonStringParser))
                 {
                     return jsonStringParser(element.GetString()!);
                 }
