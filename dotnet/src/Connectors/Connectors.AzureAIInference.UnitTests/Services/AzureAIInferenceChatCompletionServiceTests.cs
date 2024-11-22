@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Inference;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
@@ -51,7 +52,6 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
     {
         // Arrange
         using var httpClient = new HttpClient() { BaseAddress = this._endpoint };
-        var loggerFactoryMock = new Mock<ILoggerFactory>();
         ChatCompletionsClient client = new(this._endpoint, new AzureKeyCredential("api-key"));
 
         // Act & Assert
@@ -60,12 +60,12 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         new AzureAIInferenceChatCompletionService(modelId: "model", httpClient: httpClient, apiKey: null); // Only the HttpClient with a BaseClass defined
         new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null); // ModelId and endpoint
         new AzureAIInferenceChatCompletionService(modelId: "model", apiKey: "api-key", endpoint: this._endpoint); // ModelId, apiKey, and endpoint
-        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null, loggerFactory: loggerFactoryMock.Object); // Endpoint and loggerFactory
+        new AzureAIInferenceChatCompletionService(modelId: "model", endpoint: this._endpoint, apiKey: null, loggerFactory: NullLoggerFactory.Instance); // Endpoint and loggerFactory
 
         // Breaking Glass constructor
         new AzureAIInferenceChatCompletionService(modelId: null, chatClient: client); // Client without model 
         new AzureAIInferenceChatCompletionService(modelId: "model", chatClient: client); // Client
-        new AzureAIInferenceChatCompletionService(modelId: "model", chatClient: client, loggerFactory: loggerFactoryMock.Object); // Client
+        new AzureAIInferenceChatCompletionService(modelId: "model", chatClient: client, loggerFactory: NullLoggerFactory.Instance); // Client
     }
 
     [Theory]
