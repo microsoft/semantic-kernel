@@ -5,7 +5,6 @@ using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
@@ -219,8 +218,7 @@ public static class OllamaServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             var builder = ((IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(endpoint, modelId))
-                .AsBuilder()
-                .UseLogging(loggerFactory);
+                .AsBuilder();
 
             if (loggerFactory is not null)
             {
