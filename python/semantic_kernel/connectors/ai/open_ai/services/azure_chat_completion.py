@@ -2,18 +2,12 @@
 
 import json
 import logging
-import sys
-from collections.abc import AsyncGenerator, Mapping
+from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any, TypeVar
 from uuid import uuid4
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-from openai import AsyncAzureOpenAI, AsyncStream
+from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -23,24 +17,19 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -120,42 +109,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             ai_model_type=OpenAIModelTypes.CHAT,
             client=async_client,
         )
-
-    @override
-    @trace_streaming_chat_completion(OpenAIChatCompletionBase.MODEL_PROVIDER_NAME)
-    async def _inner_get_streaming_chat_message_contents(
-        self,
-        chat_history: "ChatHistory",
-        settings: "PromptExecutionSettings",
-    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        """Override the base method.
-
-        This is because the latest Azure OpenAI API GA version doesn't support `stream_option`
-        yet and it will potentially result in errors if the option is included.
-        This method will be called instead of the base method.
-        TODO: Remove this method when the `stream_option` is supported by the Azure OpenAI API.
-        GitHub Issue: https://github.com/microsoft/semantic-kernel/issues/8996
-        """
-        if not isinstance(settings, OpenAIChatPromptExecutionSettings):
-            settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
-
-        settings.stream = True
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
-        settings.ai_model_id = settings.ai_model_id or self.ai_model_id
-
-        response = await self._send_request(settings)
-        if not isinstance(response, AsyncStream):
-            raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
-        async for chunk in response:
-            if len(chunk.choices) == 0:
-                continue
-
-            assert isinstance(chunk, ChatCompletionChunk)  # nosec
-            chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
-            yield [
-                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
-            ]
 
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":

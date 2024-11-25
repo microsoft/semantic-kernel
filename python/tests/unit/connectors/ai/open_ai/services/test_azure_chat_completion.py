@@ -948,4 +948,8 @@ async def test_cmc_streaming(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         stream=True,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+        # NOTE: The `stream_options={"include_usage": True}` is explicitly enforced in
+        # `OpenAIChatCompletionBase._inner_get_streaming_chat_message_contents`.
+        # To ensure consistency, we align the arguments here accordingly.
+        stream_options={"include_usage": True},
     )
