@@ -118,8 +118,8 @@ flowchart LR
     FillForm-->|New User Form|NewAccountVerification
     NewAccountVerification-->|Account Credit Check<br/> Verification Failed|Mailer
     NewAccountVerification-->|Account Fraud<br/> Detection Failed|Mailer
-    NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
-    NewAccountCreation-->|Account Creation <br/> Succeded|Mailer
+    NewAccountVerification-->|Account Verification <br/> Succeeded|NewAccountCreation
+    NewAccountCreation-->|Account Creation <br/> Succeeded|Mailer
 ```
 
 Where processes used as steps, which are reusing the same steps used [`Step02a_AccountOpening`](#step02a_accountopening), are:
@@ -159,14 +159,14 @@ graph LR
         FraudCheck[Fraud Detection <br/> Step]
         AccountVerificationPass([Account Verification Passed])
         AccountCreditCheckFail([Credit Check Failed])
-        AccoutFraudCheckFail([Fraud Check Failed])
+        AccountFraudCheckFail([Fraud Check Failed])
 
         
         NewUser2-->CreditScoreCheck-->|Credit Score <br/> Check Passed|FraudCheck
         FraudCheck-->AccountVerificationPass
 
         CreditScoreCheck-->AccountCreditCheckFail
-        FraudCheck-->AccoutFraudCheckFail
+        FraudCheck-->AccountFraudCheckFail
     end
 
     AccountVerificationPass-->AccountValidation
