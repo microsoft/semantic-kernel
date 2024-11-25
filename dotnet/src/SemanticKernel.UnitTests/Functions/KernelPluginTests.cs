@@ -220,9 +220,9 @@ public class KernelPluginTests
         Assert.NotNull(funcs[1].Metadata.Parameters[0].Schema);
         Assert.NotNull(funcs[1].Metadata.Parameters[1].Schema);
 
-        Assert.Equal(plugin["Function1"].Metadata.Parameters[0].Schema?.ToString(), funcs[0].Metadata.Parameters[0].Schema?.ToString());
-        Assert.Equal(plugin["Function2"].Metadata.Parameters[0].Schema?.ToString(), funcs[1].Metadata.Parameters[0].Schema?.ToString());
-        Assert.Equal(plugin["Function2"].Metadata.Parameters[1].Schema?.ToString(), funcs[1].Metadata.Parameters[1].Schema?.ToString());
+        Assert.Equal(plugin["Function1"].Metadata.Parameters[0].Schema?.ToString(), JsonSerializer.Serialize(funcs[0].Metadata.Parameters[0].Schema));
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[0].Schema?.ToString(), JsonSerializer.Serialize(funcs[1].Metadata.Parameters[0].Schema));
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[1].Schema?.ToString(), JsonSerializer.Serialize(funcs[1].Metadata.Parameters[1].Schema));
 
         using CancellationTokenSource cts = new();
 
