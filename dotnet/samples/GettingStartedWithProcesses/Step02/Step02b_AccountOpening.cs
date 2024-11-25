@@ -111,20 +111,8 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     public async Task UseAccountOpeningProcessSuccessfulInteractionAsync()
     {
         Kernel kernel = CreateKernelWithChatCompletion();
-        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteraction>();
+        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteractionStep>();
         using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-    }
-
-    private sealed class UserInputSuccessfulInteraction : ScriptedUserInputStep
-    {
-        public override void PopulateUserInputs(UserInputState state)
-        {
-            state.UserInputs.Add("I would like to open an account");
-            state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
-            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-            state.UserInputs.Add("My userId is 987-654-3210");
-            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-        }
     }
 
     /// <summary>
@@ -134,20 +122,8 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     public async Task UseAccountOpeningProcessFailureDueToCreditScoreFailureAsync()
     {
         Kernel kernel = CreateKernelWithChatCompletion();
-        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteraction>();
+        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteractionStep>();
         using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-    }
-
-    private sealed class UserInputCreditScoreFailureInteraction : ScriptedUserInputStep
-    {
-        public override void PopulateUserInputs(UserInputState state)
-        {
-            state.UserInputs.Add("I would like to open an account");
-            state.UserInputs.Add("My name is John Contoso, dob 01/01/1990");
-            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-            state.UserInputs.Add("My userId is 987-654-3210");
-            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-        }
     }
 
     /// <summary>
@@ -157,19 +133,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     public async Task UseAccountOpeningProcessFailureDueToFraudFailureAsync()
     {
         Kernel kernel = CreateKernelWithChatCompletion();
-        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteraction>();
+        KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteractionStep>();
         using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-    }
-
-    private sealed class UserInputFraudFailureInteraction : ScriptedUserInputStep
-    {
-        public override void PopulateUserInputs(UserInputState state)
-        {
-            state.UserInputs.Add("I would like to open an account");
-            state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
-            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-            state.UserInputs.Add("My userId is 123-456-7890");
-            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-        }
     }
 }
