@@ -57,7 +57,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
             }
@@ -146,10 +146,16 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
 
         // Create test data common to both named and unnamed vectors.
         var tags = new ListValue();
-        tags.Values.Add("t1");
-        tags.Values.Add("t2");
+        tags.Values.Add("t11.1");
+        tags.Values.Add("t11.2");
         var tagsValue = new Value();
         tagsValue.ListValue = tags;
+
+        var tags2 = new ListValue();
+        tags2.Values.Add("t13.1");
+        tags2.Values.Add("t13.2");
+        var tagsValue2 = new Value();
+        tagsValue2.ListValue = tags2;
 
         // Create some test data using named vectors.
         var embedding = await this.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel.");
@@ -183,7 +189,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             {
                 Id = 13,
                 Vectors = new Vectors { Vectors_ = namedVectors3 },
-                Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
+                Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Tags"] = tagsValue2, ["Description"] = "This is a great hotel." }
             },
             new PointStruct
             {
@@ -214,7 +220,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             {
                 Id = 13,
                 Vectors = embeddingArray,
-                Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
+                Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Tags"] = tagsValue2, ["Description"] = "This is a great hotel." }
             },
         ];
 
@@ -327,7 +333,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "parking_is_included")]
         public bool ParkingIncluded { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public List<string> Tags { get; set; } = new List<string>();
 
         /// <summary>A data field.</summary>
