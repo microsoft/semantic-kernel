@@ -33,6 +33,8 @@ public class NewAccountStep : KernelProcessStep
             AccountType = AccountType.PrimeABC,
         };
 
+        Console.WriteLine($"[ACCOUNT CREATION] New Account {accountId} created");
+
         await context.EmitEventAsync(new()
         {
             Id = AccountOpeningEvents.NewMarketingRecordInfoReady,
