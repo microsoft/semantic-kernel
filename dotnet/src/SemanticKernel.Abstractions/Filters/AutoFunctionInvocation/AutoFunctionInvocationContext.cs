@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class AutoFunctionInvocationContext
 {
     /// <summary>

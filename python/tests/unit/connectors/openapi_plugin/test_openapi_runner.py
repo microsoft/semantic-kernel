@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenApiRunner
 from semantic_kernel.exceptions import FunctionExecutionException
 
@@ -31,15 +31,34 @@ def test_build_operation_url():
 
 def test_build_json_payload_dynamic_payload():
     runner = OpenApiRunner({}, enable_dynamic_payload=True)
-    payload_metadata = RestApiOperationPayload(
+
+    mock_property1 = Mock()
+    mock_property2 = Mock()
+    mock_property1.freeze = MagicMock()
+    mock_property2.freeze = MagicMock()
+
+    payload_metadata = RestApiPayload(
         media_type="application/json",
-        properties=["property1", "property2"],
+        properties=[mock_property1, mock_property2],
         description=None,
         schema=None,
     )
     arguments = {"property1": "value1", "property2": "value2"}
 
     runner.build_json_object = MagicMock(return_value={"property1": "value1", "property2": "value2"})
+
+    payload_metadata.description = "A dynamic payload"
+    assert payload_metadata.description == "A dynamic payload"
+
+    payload_metadata.freeze()
+
+    mock_property1.freeze.assert_called_once()
+    mock_property2.freeze.assert_called_once()
+
+    with pytest.raises(
+        FunctionExecutionException, match="This `RestApiPayload` instance is frozen and cannot be modified."
+    ):
+        payload_metadata.description = "Should raise error"
 
     content, media_type = runner.build_json_payload(payload_metadata, arguments)
 
@@ -206,7 +225,7 @@ def test_get_argument_name_for_payload_with_namespacing():
 def test_build_operation_payload_with_request_body():
     runner = OpenApiRunner({})
 
-    request_body = RestApiOperationPayload(
+    request_body = RestApiPayload(
         media_type="application/json",
         properties=["property1", "property2"],
         description=None,

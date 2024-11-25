@@ -20,8 +20,9 @@ class StreamingFileReferenceContent(KernelContent):
     """Streaming File reference content."""
 
     content_type: Literal[ContentTypes.STREAMING_FILE_REFERENCE_CONTENT] = Field(
-        STREAMING_FILE_REFERENCE_CONTENT_TAG, init=False
-    )  # type: ignore
+        STREAMING_FILE_REFERENCE_CONTENT_TAG,  # type: ignore
+        init=False,
+    )
     tag: ClassVar[str] = STREAMING_FILE_REFERENCE_CONTENT_TAG
     file_id: str | None = None
 
