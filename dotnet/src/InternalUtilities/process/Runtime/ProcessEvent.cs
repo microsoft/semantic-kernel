@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.Process.Internal;
+
 namespace Microsoft.SemanticKernel.Process.Runtime;
 
 /// <summary>
@@ -34,7 +36,7 @@ public record ProcessEvent
     /// <summary>
     /// The Qualified Id of the event.
     /// </summary>
-    internal string QualifiedId => $"{this.Namespace}.{this.SourceId}";
+    internal string QualifiedId => $"{this.Namespace}{ProcessConstants.EventIdSeparator}{this.SourceId}";
 
     /// <summary>
     /// Creates a new <see cref="ProcessEvent"/> from a <see cref="KernelProcessEvent"/>.

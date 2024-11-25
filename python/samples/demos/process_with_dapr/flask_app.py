@@ -55,9 +55,8 @@ def start_process(process_id):
         )
 
         return jsonify({"processId": process_id}), 200
-    except Exception as e:
-        logging.exception("Error starting process")
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return jsonify({"error": "Error starting process"}), 500
 
 
 # Run application

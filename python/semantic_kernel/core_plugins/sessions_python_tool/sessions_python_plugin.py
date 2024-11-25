@@ -63,7 +63,7 @@ class SessionsPythonTool(KernelBaseModel):
             settings = SessionsPythonSettings()
 
         if not http_client:
-            http_client = AsyncClient()
+            http_client = AsyncClient(timeout=5)
 
         if auth_callback is None:
             auth_callback = self._default_auth_callback(aca_settings)

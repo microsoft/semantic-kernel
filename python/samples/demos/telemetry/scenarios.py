@@ -22,6 +22,12 @@ def set_up_kernel() -> Kernel:
     # All built-in AI services are instrumented with telemetry.
     # Select any AI service to see the telemetry in action.
     kernel.add_service(OpenAIChatCompletion(service_id="open_ai"))
+    # kernel.add_service(
+    #     AzureAIInferenceChatCompletion(
+    #         ai_model_id="serverless-deployment",
+    #         service_id="azure-ai-inference",
+    #     )
+    # )
     # kernel.add_service(GoogleAIChatCompletion(service_id="google_ai"))
 
     if (sample_plugin_path := get_sample_plugin_path()) is None:

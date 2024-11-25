@@ -10,6 +10,6 @@ AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClient
 T = TypeVar("T")
 
 OneOrMany = Union[T, Sequence[T]]
-OptionalOneOrMany = Union[None, T, Sequence[T]]
+OptionalOneOrMany = Union[T, Sequence[T], None]
 
 __all__ = ["AI_SERVICE_CLIENT_TYPE", "OneOrMany", "OptionalOneOrMany"]

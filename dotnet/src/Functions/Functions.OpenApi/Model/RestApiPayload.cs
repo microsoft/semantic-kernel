@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -24,7 +25,7 @@ public sealed class RestApiPayload
     /// <summary>
     /// The payload properties.
     /// </summary>
-    public IReadOnlyList<RestApiPayloadProperty> Properties { get; }
+    public IList<RestApiPayloadProperty> Properties { get; private set; }
 
     /// <summary>
     /// The schema of the parameter.
@@ -38,7 +39,7 @@ public sealed class RestApiPayload
     /// <param name="properties">The properties.</param>
     /// <param name="description">The description.</param>
     /// <param name="schema">The JSON Schema.</param>
-    internal RestApiPayload(string mediaType, IReadOnlyList<RestApiPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
+    internal RestApiPayload(string mediaType, IList<RestApiPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
     {
         this.MediaType = mediaType;
         this.Properties = properties;
@@ -51,6 +52,7 @@ public sealed class RestApiPayload
     /// </summary>
     internal void Freeze()
     {
+        this.Properties = new ReadOnlyCollection<RestApiPayloadProperty>(this.Properties);
         foreach (var property in this.Properties)
         {
             property.Freeze();

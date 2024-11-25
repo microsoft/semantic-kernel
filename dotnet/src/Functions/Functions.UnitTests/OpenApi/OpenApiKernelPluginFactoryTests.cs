@@ -544,6 +544,19 @@ public sealed class OpenApiKernelPluginFactoryTests
         };
 
     [Fact]
+    public async Task ItShouldCreateFunctionWithMultipartFormDataAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("multipart-form-data.json");
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.False(plugin.TryGetFunction("createItem", out var _));
+    }
+
+    [Fact]
     public void Dispose()
     {
         this._openApiDocument.Dispose();

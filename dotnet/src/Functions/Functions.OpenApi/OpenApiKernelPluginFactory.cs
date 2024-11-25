@@ -226,7 +226,6 @@ public static partial class OpenApiKernelPluginFactory
             {
                 logger.LogTrace("Registering Rest function {PluginName}.{OperationId}", pluginName, operation.Id);
                 functions.Add(CreateRestApiFunction(pluginName, runner, specification.Info, specification.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
-                operation.Freeze();
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -235,6 +234,8 @@ public static partial class OpenApiKernelPluginFactory
                     pluginName, operation.Id, ex.Message);
             }
         }
+
+        specification.Freeze();
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, specification.Info.Description, functions);
     }
@@ -255,7 +256,7 @@ public static partial class OpenApiKernelPluginFactory
         string pluginName,
         RestApiOperationRunner runner,
         RestApiInfo info,
-        List<RestApiSecurityRequirement>? security,
+        IList<RestApiSecurityRequirement>? security,
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,

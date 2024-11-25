@@ -9,7 +9,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
@@ -38,34 +37,30 @@ public static class AzureAIInferenceServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var chatClientBuilder = new ChatClientBuilder()
-               .UseFunctionInvocation(config =>
-                   config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
-
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<ChatCompletionsClient>();
-            if (logger is not null)
-            {
-                chatClientBuilder.UseLogging(logger);
-            }
-
             var options = new AzureAIInferenceClientOptions();
+
+            httpClient ??= serviceProvider.GetService<HttpClient>();
             if (httpClient is not null)
             {
-                options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+                options.Transport = new HttpClientTransport(httpClient);
             }
 
-            return
-                chatClientBuilder.Use(
-                    new Microsoft.Extensions.AI.AzureAIInferenceChatClient(
-                        modelId: modelId,
-                        chatCompletionsClient: new Azure.AI.Inference.ChatCompletionsClient(endpoint, new Azure.AzureKeyCredential(apiKey ?? SingleSpace), options)
-                    )
-                ).AsChatCompletionService();
-        });
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-        return services;
+            var builder = new Azure.AI.Inference.ChatCompletionsClient(endpoint, new Azure.AzureKeyCredential(apiKey ?? SingleSpace), options)
+                .AsChatClient(modelId)
+                .AsBuilder()
+                .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
+        });
     }
 
     /// <summary>
@@ -88,34 +83,30 @@ public static class AzureAIInferenceServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var chatClientBuilder = new ChatClientBuilder()
-               .UseFunctionInvocation(config =>
-                   config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
-
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<ChatCompletionsClient>();
-            if (logger is not null)
-            {
-                chatClientBuilder.UseLogging(logger);
-            }
-
             var options = new AzureAIInferenceClientOptions();
+
+            httpClient ??= serviceProvider.GetService<HttpClient>();
             if (httpClient is not null)
             {
-                options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+                options.Transport = new HttpClientTransport(httpClient);
             }
 
-            return
-                chatClientBuilder.Use(
-                    new Microsoft.Extensions.AI.AzureAIInferenceChatClient(
-                        modelId: modelId,
-                        chatCompletionsClient: new Azure.AI.Inference.ChatCompletionsClient(endpoint, credential, options)
-                    )
-                ).AsChatCompletionService();
-        });
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-        return services;
+            var builder = new Azure.AI.Inference.ChatCompletionsClient(endpoint, credential, options)
+                .AsChatClient(modelId)
+                .AsBuilder()
+                .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
+        });
     }
 
     /// <summary>
@@ -133,26 +124,24 @@ public static class AzureAIInferenceServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             chatClient ??= serviceProvider.GetRequiredService<ChatCompletionsClient>();
 
-            var chatClientBuilder = new ChatClientBuilder()
-               .UseFunctionInvocation(config =>
-                   config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<ChatCompletionsClient>();
-            if (logger is not null)
+            var builder = chatClient
+                .AsChatClient(modelId)
+                .AsBuilder()
+                .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
             {
-                chatClientBuilder.UseLogging(logger);
+                builder.UseLogging(loggerFactory);
             }
 
-            return chatClientBuilder
-                .Use(new Microsoft.Extensions.AI.AzureAIInferenceChatClient(chatClient, modelId))
-                .AsChatCompletionService();
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
         });
-
-        return services;
     }
 
     /// <summary>
@@ -168,26 +157,23 @@ public static class AzureAIInferenceServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             chatClient ??= serviceProvider.GetRequiredService<AzureAIInferenceChatClient>();
 
-            var chatClientBuilder = new ChatClientBuilder()
-               .UseFunctionInvocation(config =>
-                   config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<ChatCompletionsClient>();
-            if (logger is not null)
+            var builder = chatClient
+                .AsBuilder()
+                .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+            if (loggerFactory is not null)
             {
-                chatClientBuilder.UseLogging(logger);
+                builder.UseLogging(loggerFactory);
             }
 
-            return chatClientBuilder
-                .Use(chatClient)
-                .AsChatCompletionService();
+            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
         });
-
-        return services;
     }
 
     #region Private

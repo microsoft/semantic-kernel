@@ -31,7 +31,7 @@ jobs:
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Download coverage
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           name: python-coverage-${{ env.FILE_ID }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
@@ -39,7 +39,7 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Download pytest
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           name: pytest-${{ env.FILE_ID }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}

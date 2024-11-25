@@ -59,6 +59,31 @@ def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_par
     return env_vars
 
 
+@pytest.fixture()
+def model_diagnostics_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Azure AI Inference Unit Tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS": "true",
+        "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE": "true",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
 @pytest.fixture(scope="function")
 def azure_ai_inference_client(azure_ai_inference_unit_test_env, request) -> ChatCompletionsClient | EmbeddingsClient:
     """Fixture to create Azure AI Inference client for unit tests."""

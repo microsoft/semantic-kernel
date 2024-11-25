@@ -66,7 +66,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) });
+            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -221,8 +221,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.True(getResult?.ParkingIncluded);
         Assert.Equal(4.5f, getResult?.HotelRating);
         Assert.Equal(2, getResult?.Tags.Count);
-        Assert.Equal("t1", getResult?.Tags[0]);
-        Assert.Equal("t2", getResult?.Tags[1]);
+        Assert.Equal("t11.1", getResult?.Tags[0]);
+        Assert.Equal("t11.2", getResult?.Tags[1]);
         Assert.Equal("This is a great hotel.", getResult?.Description);
         if (withEmbeddings)
         {
@@ -389,7 +389,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t1");
+        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 13") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t13.2");
         var actual = await sut.VectorizedSearchAsync(
             vector,
             new()
@@ -402,12 +402,11 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Single(searchResults);
 
         var searchResultRecord = searchResults.First().Record;
-        Assert.Equal(11ul, searchResultRecord?.HotelId);
-        Assert.Equal("My Hotel 11", searchResultRecord?.HotelName);
-        Assert.Equal(11, searchResultRecord?.HotelCode);
-        Assert.Equal(4.5f, searchResultRecord?.HotelRating);
-        Assert.Equal(true, searchResultRecord?.ParkingIncluded);
-        Assert.Equal(new string[] { "t1", "t2" }, searchResultRecord?.Tags.ToArray());
+        Assert.Equal(13ul, searchResultRecord?.HotelId);
+        Assert.Equal("My Hotel 13", searchResultRecord?.HotelName);
+        Assert.Equal(13, searchResultRecord?.HotelCode);
+        Assert.Equal(false, searchResultRecord?.ParkingIncluded);
+        Assert.Equal(new string[] { "t13.1", "t13.2" }, searchResultRecord?.Tags.ToArray());
         Assert.Equal("This is a great hotel.", searchResultRecord?.Description);
     }
 
@@ -448,7 +447,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(11, baseSetGetResult.Data["HotelCode"]);
         Assert.True((bool)baseSetGetResult.Data["ParkingIncluded"]!);
         Assert.Equal(4.5f, baseSetGetResult.Data["HotelRating"]);
-        Assert.Equal(new[] { "t1", "t2" }, ((List<string>)baseSetGetResult.Data["Tags"]!).ToArray());
+        Assert.Equal(new[] { "t11.1", "t11.2" }, ((List<string>)baseSetGetResult.Data["Tags"]!).ToArray());
         Assert.Equal("This is a great hotel.", baseSetGetResult.Data["Description"]);
         Assert.NotNull(baseSetGetResult.Vectors["DescriptionEmbedding"]);
         Assert.IsType<ReadOnlyMemory<float>>(baseSetGetResult.Vectors["DescriptionEmbedding"]);

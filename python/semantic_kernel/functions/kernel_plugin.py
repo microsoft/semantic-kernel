@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 import httpx
 from pydantic import Field, StringConstraints
+from typing_extensions import deprecated
 
 from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -357,17 +358,19 @@ class KernelPlugin(KernelBaseModel):
     def from_openapi(
         cls: type[_T],
         plugin_name: str,
-        openapi_document_path: str,
+        openapi_document_path: str | None = None,
+        openapi_parsed_spec: dict[str, Any] | None = None,
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> _T:
         """Create a plugin from an OpenAPI document.
 
         Args:
-            plugin_name (str): The name of the plugin
-            openapi_document_path (str): The path to the OpenAPI document
-            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
+            plugin_name: The name of the plugin
+            openapi_document_path: The path to the OpenAPI document (optional)
+            openapi_parsed_spec: The parsed OpenAPI spec (optional)
+            execution_settings: The execution parameters
+            description: The description of the plugin
 
         Returns:
             KernelPlugin: The created plugin
@@ -375,8 +378,8 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
         """
-        if not openapi_document_path:
-            raise PluginInitializationError("OpenAPI document path is required.")
+        if not openapi_document_path and not openapi_parsed_spec:
+            raise PluginInitializationError("Either the OpenAPI document path or a parsed OpenAPI spec is required.")
 
         return cls(  # type: ignore
             name=plugin_name,
@@ -384,10 +387,15 @@ class KernelPlugin(KernelBaseModel):
             functions=create_functions_from_openapi(  # type: ignore
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
+                openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
             ),
         )
 
+    @deprecated(
+        "The `OpenAI` plugin is deprecated; use the `from_openapi` method to add an `OpenAPI` plugin instead.",
+        category=None,
+    )
     @classmethod
     async def from_openai(
         cls: type[_T],
@@ -420,7 +428,9 @@ class KernelPlugin(KernelBaseModel):
             openai_manifest = plugin_str
         elif plugin_url is not None:
             # Load plugin from the URL
-            http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+            http_client = (
+                execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient(timeout=5)
+            )
             openai_manifest = await DocumentLoader.from_uri(
                 url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
             )
