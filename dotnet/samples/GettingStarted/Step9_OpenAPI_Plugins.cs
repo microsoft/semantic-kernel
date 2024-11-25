@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
 namespace GettingStarted;
@@ -27,11 +26,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
 
         // Load OpenAPI plugin
         var stream = EmbeddedResource.ReadStream("repair-service.json");
-        using HttpClient httpClient = new();
-        var plugin = await kernel.ImportPluginFromOpenApiAsync(
-            "RepairService",
-            stream!,
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true });
+        var plugin = await kernel.ImportPluginFromOpenApiAsync("RepairService", stream!);
 
         PromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("List all of the repairs .", new(settings)));
@@ -49,11 +44,7 @@ public sealed class Step9_OpenAPI_Plugins(ITestOutputHelper output) : BaseTest(o
 
         // Load OpenAPI plugin
         var stream = EmbeddedResource.ReadStream("repair-service.json");
-        using HttpClient httpClient = new();
-        var plugin = await kernel.CreatePluginFromOpenApiAsync(
-            "RepairService",
-            stream!,
-            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true });
+        var plugin = await kernel.CreatePluginFromOpenApiAsync("RepairService", stream!);
 
         // Transform the plugin to use IMechanicService via dependency injection
         kernel.Plugins.Add(TransformPlugin(plugin));
