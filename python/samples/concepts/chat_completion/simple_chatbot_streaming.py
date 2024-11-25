@@ -38,7 +38,7 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-# Create a chat hisotry object with the system message.
+# Create a chat history object with the system message.
 chat_history = ChatHistory(system_message=system_message)
 
 

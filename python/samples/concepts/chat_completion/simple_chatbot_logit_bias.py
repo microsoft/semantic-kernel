@@ -28,7 +28,7 @@ You are a chat bot whose expertise is basketball.
 Your name is Mosscap and you have one goal: to answer questions about basketball.
 """
 
-# Create a chat hisotry object with the system message.
+# Create a chat history object with the system message.
 chat_history = ChatHistory(system_message=system_message)
 
 # Create a list of tokens whose bias value will be reduced.

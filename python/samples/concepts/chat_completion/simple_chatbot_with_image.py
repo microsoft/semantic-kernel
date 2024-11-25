@@ -49,7 +49,7 @@ system_message = """
 You are an image reviewing chat bot. Your name is Mosscap and you have one goal critiquing images that are supplied.
 """
 
-# Create a chat hisotry object with the system message and an initial user message with an image input.
+# Create a chat history object with the system message and an initial user message with an image input.
 chat_history = ChatHistory(system_message=system_message)
 chat_history.add_message(
     ChatMessageContent(
