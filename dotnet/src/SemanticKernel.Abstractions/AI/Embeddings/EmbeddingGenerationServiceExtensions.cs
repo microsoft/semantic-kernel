@@ -124,11 +124,15 @@ public static class EmbeddingGenerationExtensions
         }
 
         /// <inheritdoc />
-        public TService? GetService<TService>(object? key = null) where TService : class
+        public object? GetService(Type serviceType, object? serviceKey = null)
         {
+            Verify.NotNull(serviceType);
+
             return
-                typeof(TService) == typeof(IEmbeddingGenerator<TValue, Embedding<TEmbedding>>) ? (TService)(object)this :
-                this._service as TService;
+                serviceKey is not null ? null :
+                serviceType.IsInstanceOfType(this) ? this :
+                serviceType.IsInstanceOfType(this._service) ? this._service :
+                null;
         }
     }
 

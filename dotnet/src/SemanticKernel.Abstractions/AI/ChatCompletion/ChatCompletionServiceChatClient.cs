@@ -74,11 +74,15 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null) where TService : class
+    public object? GetService(Type serviceType, object? serviceKey = null)
     {
+        Verify.NotNull(serviceType);
+
         return
-            typeof(TService) == typeof(IChatClient) ? (TService)(object)this :
-            this._chatCompletionService as TService;
+            serviceKey is not null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            serviceType.IsInstanceOfType(this._chatCompletionService) ? this._chatCompletionService :
+            null;
     }
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>

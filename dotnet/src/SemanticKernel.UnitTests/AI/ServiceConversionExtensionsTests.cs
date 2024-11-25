@@ -672,7 +672,7 @@ public class ServiceConversionExtensionsTests
 
         public void Dispose() { }
 
-        public TService? GetService<TService>(object? key = null) where TService : class
+        public object? GetService(Type serviceType, object? serviceKey = null)
         {
             return null;
         }
@@ -707,7 +707,7 @@ public class ServiceConversionExtensionsTests
                 : throw new NotImplementedException();
         }
 
-        public TService? GetService<TService>(object? key = null) where TService : class
+        public object? GetService(Type serviceType, object? serviceKey = null)
         {
             return null;
         }
