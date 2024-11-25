@@ -178,9 +178,11 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
             if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.PropertyType!, out PayloadSchemaType schemaType))
             {
+                // Do nothing since schemaType is already set.
             }
             else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.PropertyType) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.PropertyType) == typeof(string))
             {
+                // For enumerable of strings, use keyword schema type, since this allows tag filtering.
                 schemaType = PayloadSchemaType.Keyword;
             }
             else
