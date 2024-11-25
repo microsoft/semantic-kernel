@@ -374,7 +374,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// Returns base Kusto query.
     /// </summary>
     /// <remarks>
-    /// Kusto is an append-only store. Although deletions are possible, they are highly discourged,
+    /// Kusto is an append-only store. Although deletions are possible, they are highly discouraged,
     /// and should only be used in rare cases (see: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/data-soft-delete#use-cases).
     /// As such, the recommended approach for dealing with row updates is versioning.
     /// An easy way to achieve this is by using the ingestion time of the record (insertion time).
