@@ -175,7 +175,18 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         foreach (var dataProperty in dataProperties)
         {
             var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
-            var schemaType = QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap[dataProperty.PropertyType!];
+
+            if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.PropertyType!, out PayloadSchemaType schemaType))
+            {
+            }
+            else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.PropertyType) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.PropertyType) == typeof(string))
+            {
+                schemaType = PayloadSchemaType.Keyword;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+            }
 
             await this.RunOperationAsync(
                 "CreatePayloadIndex",
