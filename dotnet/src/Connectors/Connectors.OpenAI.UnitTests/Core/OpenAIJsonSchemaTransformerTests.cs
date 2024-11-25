@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
 
 /// <summary>
-/// Unit tests for <see cref="OpenAIJsonSchemaTransformer"/> class.
+/// Unit tests for schema transformations used by OpenAI clients.
 /// </summary>
 public sealed class OpenAIJsonSchemaTransformerTests
 {
