@@ -166,7 +166,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
             {
                 step
                     .OnFunctionError(functionName)
-                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderError, "exception"))
+                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderError, "error"))
                     .StopProcess();
             }
         }
