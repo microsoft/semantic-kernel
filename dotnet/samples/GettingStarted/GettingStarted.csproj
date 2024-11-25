@@ -14,6 +14,12 @@
   <ItemGroup>
     <None Remove="Resources\GenerateStory.yaml" />
     <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+    <None Remove="Resources\repair-service.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\repair-service.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\GenerateStory.yaml" />

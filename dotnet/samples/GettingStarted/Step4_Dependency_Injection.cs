@@ -43,7 +43,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
         var serviceProvider = BuildServiceProvider();
         var kernel = serviceProvider.GetRequiredService<Kernel>();
 
-        // Invoke the prompt which relies on invoking a plugin that depends on a service made avaiable using Dependency Injection.
+        // Invoke the prompt which relies on invoking a plugin that depends on a service made available using Dependency Injection.
         PromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("Greet the current user by name.", new(settings)));
     }
@@ -70,7 +70,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
     /// </summary>
     public class TimeInformation(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger = loggerFactory.CreateLogger(typeof(TimeInformation));
+        private readonly ILogger _logger = loggerFactory.CreateLogger<TimeInformation>();
 
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
@@ -87,7 +87,6 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
     /// </summary>
     public class UserInformation(IUserService userService)
     {
-
         [KernelFunction]
         [Description("Retrieves the current users name.")]
         public string GetUsername()
