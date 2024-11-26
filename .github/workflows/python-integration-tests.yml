@@ -197,7 +197,7 @@ jobs:
       # Label used to access the service container
       redis:
         # Docker Hub image
-        image: redis-stack-server:latest
+        image: redis/redis-stack-server:latest
         ports:
           # Opens tcp port 6379 on the host and service container
           - 6379:6379
