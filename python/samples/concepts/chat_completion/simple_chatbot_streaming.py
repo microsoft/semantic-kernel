@@ -3,7 +3,7 @@
 import asyncio
 from functools import reduce
 
-from samples.concepts.chat_completion.chat_completion_services import (
+from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
