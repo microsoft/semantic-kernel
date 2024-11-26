@@ -273,6 +273,93 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
+    /// ┌───────┐      ┌──────────────┐     ┌──────────────┐    ┌──────┐
+    /// │  1st  ├──┬──►│  2nd-nested  ├──┬─►│  3rd-nested  ├───►│ last │
+    /// └───────┘  │   └──────────────┘  │  └──────────────┘    └──────┘
+    ///            ▼                     ▼
+    ///        ┌───────┐             ┌───────┐
+    ///        │  4th  │             │  5th  │
+    ///        └───────┘             └───────┘
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWith2NestedSubprocessSequentiallyAndMultipleOutputStepsAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        string lastStepName = "lastEmitterStep";
+        ProcessBuilder processBuilder = new(nameof(ProcessWith2NestedSubprocessSequentiallyAndMultipleOutputStepsAsync));
+
+        ProcessStepBuilder firstStep = processBuilder.AddStepFromType<EmitterStep>("firstEmitterStep");
+        ProcessBuilder secondStep = processBuilder.AddStepFromProcess(this.CreateLongSequentialProcessWithFanInAsOutputStep("subprocess1"));
+        ProcessBuilder thirdStep = processBuilder.AddStepFromProcess(this.CreateLongSequentialProcessWithFanInAsOutputStep("subprocess2"));
+        ProcessStepBuilder fourthStep = processBuilder.AddStepFromType<EmitterStep>("fourthStep");
+        ProcessStepBuilder fifthStep = processBuilder.AddStepFromType<EmitterStep>("fifthStep");
+        ProcessStepBuilder lastStep = processBuilder.AddStepFromType<FanInStep>(lastStepName);
+
+        processBuilder
+            .OnInputEvent(EmitterStep.InputEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(firstStep, functionName: EmitterStep.InternalEventFunction));
+        firstStep
+            .OnEvent(EmitterStep.EventId)
+            .SendEventTo(secondStep.WhereInputEventIs(EmitterStep.InputEvent));
+        secondStep
+            .OnEvent(ProcessTestsEvents.OutputReadyPublic)
+            .SendEventTo(new ProcessFunctionTargetBuilder(fourthStep, functionName: EmitterStep.PublicEventFunction))
+            .SendEventTo(thirdStep.WhereInputEventIs(EmitterStep.InputEvent));
+
+        firstStep
+            .OnEvent(EmitterStep.EventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "firstInput"));
+        thirdStep
+            .OnEvent(ProcessTestsEvents.OutputReadyPublic)
+            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "secondInput"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(fifthStep, functionName: EmitterStep.PublicEventFunction));
+
+        KernelProcess process = processBuilder.Build();
+
+        // Act
+        string testInput = "SomeData";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new KernelProcessEvent() { Id = EmitterStep.InputEvent, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        var outputStep = (processInfo.Steps.Where(s => s.State.Name == lastStepName).FirstOrDefault() as KernelProcessStepInfo).State as KernelProcessStepState<StepState>;
+        Assert.NotNull(outputStep?.State);
+        Assert.NotNull(outputStep?.State.LastMessage);
+        Assert.Equal($"{testInput}-{testInput}-{testInput}-{testInput}-{testInput}", outputStep.State.LastMessage);
+    }
+
+    private ProcessBuilder CreateLongSequentialProcessWithFanInAsOutputStep(string name)
+    {
+        ProcessBuilder processBuilder = new(name);
+        ProcessStepBuilder firstNestedStep = processBuilder.AddStepFromType<EmitterStep>("firstNestedStep");
+        ProcessStepBuilder secondNestedStep = processBuilder.AddStepFromType<EmitterStep>("secondNestedStep");
+        ProcessStepBuilder thirdNestedStep = processBuilder.AddStepFromType<EmitterStep>("thirdNestedStep");
+        ProcessStepBuilder fourthNestedStep = processBuilder.AddStepFromType<EmitterStep>("fourthNestedStep");
+        ProcessStepBuilder fifthNestedStep = processBuilder.AddStepFromType<EmitterStep>("fifthNestedStep");
+        ProcessStepBuilder sixthNestedStep = processBuilder.AddStepFromType<EmitterStep>("sixthNestedStep");
+        ProcessStepBuilder seventhNestedStep = processBuilder.AddStepFromType<EmitterStep>("seventhNestedStep");
+        ProcessStepBuilder eighthNestedStep = processBuilder.AddStepFromType<EmitterStep>("eighthNestedStep");
+        ProcessStepBuilder ninthNestedStep = processBuilder.AddStepFromType<EmitterStep>("ninthNestedStep");
+        ProcessStepBuilder tenthNestedStep = processBuilder.AddStepFromType<EmitterStep>("tenthNestedStep");
+
+        processBuilder.OnInputEvent(EmitterStep.InputEvent).SendEventTo(new ProcessFunctionTargetBuilder(firstNestedStep, functionName: EmitterStep.InternalEventFunction));
+        firstNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(secondNestedStep, functionName: EmitterStep.InternalEventFunction));
+        secondNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(thirdNestedStep, functionName: EmitterStep.InternalEventFunction));
+        thirdNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(fourthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        fourthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(fifthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        fifthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(sixthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        sixthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(seventhNestedStep, functionName: EmitterStep.InternalEventFunction));
+        seventhNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(eighthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        eighthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(ninthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        firstNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "firstInput"));
+        ninthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "secondInput"));
+
+        return processBuilder;
+    }
+
+    /// <summary>
     /// Creates a simple linear process with two steps.
     /// </summary>
     private ProcessBuilder CreateLinearProcess(string name)
