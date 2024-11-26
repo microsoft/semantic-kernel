@@ -13,6 +13,7 @@ from samples.concepts.auto_function_calling.functions_defined_in_yaml_prompt imp
     main as function_defined_in_yaml_prompt,
 )
 from samples.concepts.chat_completion.simple_chatbot import main as simple_chatbot
+from samples.concepts.chat_completion.simple_chatbot_kernel_function import main as simple_chatbot_kernel_function
 from samples.concepts.chat_completion.simple_chatbot_logit_bias import main as simple_chatbot_logit_bias
 from samples.concepts.chat_completion.simple_chatbot_streaming import main as simple_chatbot_streaming
 from samples.concepts.chat_completion.simple_chatbot_with_image import main as simple_chatbot_with_image
@@ -57,13 +58,18 @@ from tests.samples.samples_utils import retry
 
 concepts = [
     param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="chat_gpt_api_function_calling"),
-    param(simple_chatbot, ["Why is the sky blue?", "exit"], id="simple_chatbot"),
-    param(simple_chatbot_streaming, ["Why is the sky blue?", "exit"], id="simple_chatbot_streaming"),
+    param(simple_chatbot, ["Why is the sky blue in one sentence?", "exit"], id="simple_chatbot"),
+    param(simple_chatbot_streaming, ["Why is the sky blue in one sentence?", "exit"], id="simple_chatbot_streaming"),
     param(simple_chatbot_with_image, ["exit"], id="simple_chatbot_with_image"),
     param(
         simple_chatbot_logit_bias,
         ["Who has the most career points in NBA history?", "exit"],
         id="simple_chatbot_logit_bias",
+    ),
+    param(
+        simple_chatbot_kernel_function,
+        ["Why is the sky blue in one sentence?", "exit"],
+        id="simple_chatbot_kernel_function",
     ),
     param(auto_function_invoke_filters, ["What is 3+3?", "exit"], id="auto_function_invoke_filters"),
     param(function_invocation_filters, ["What is 3+3?", "exit"], id="function_invocation_filters"),
