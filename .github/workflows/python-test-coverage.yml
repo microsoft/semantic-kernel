@@ -37,17 +37,8 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           path: python/
           merge-multiple: true
-          # workflow: python-unit-tests.yml
-          # if_no_artifact_found: ignore
       - name: Display structure of downloaded files
         run: ls python/
-      # - name: Download pytest
-      #   uses: dawidd6/action-download-artifact@v6
-      #   with:
-      #     name: pytest-${{ env.FILE_ID }}.xml
-      #     github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-      #     workflow: python-unit-tests.yml
-      #     if_no_artifact_found: ignore
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
