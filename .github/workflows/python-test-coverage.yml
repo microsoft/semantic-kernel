@@ -36,19 +36,18 @@ jobs:
           name: python-coverage-${{ env.FILE_ID }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
-          search_artifacts: true
-          if_no_artifact_found: warn
+          if_no_artifact_found: ignore
       - name: Download pytest
         uses: dawidd6/action-download-artifact@v6
         with:
           name: pytest-${{ env.FILE_ID }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
-          search_artifacts: true
-          if_no_artifact_found: warn
+          if_no_artifact_found: ignore
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python-coverage.txt
