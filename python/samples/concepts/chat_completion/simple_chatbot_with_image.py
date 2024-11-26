@@ -2,7 +2,10 @@
 
 import asyncio
 
-from samples.concepts.chat_completion.chat_completion_services import get_chat_completion_service_and_request_settings
+from samples.concepts.chat_completion.chat_completion_services import (
+    Services,
+    get_chat_completion_service_and_request_settings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -16,18 +19,18 @@ from semantic_kernel.contents.text_content import TextContent
 # The chatbot in this sample is called Mosscap.
 
 # You can select from the following chat completion services:
-# - openai
-# - azure_openai
-# - azure_ai_inference
-# - anthropic
-# - bedrock
-# - google_ai
-# - mistral_ai
-# - ollama
-# - onnx
-# - vertex_ai
+# - Services.OPENAI
+# - Services.AZURE_OPENAI
+# - Services.AZURE_AI_INFERENCE
+# - Services.ANTHROPIC
+# - Services.BEDROCK
+# - Services.GOOGLE_AI
+# - Services.MISTRAL_AI
+# - Services.OLLAMA
+# - Services.ONNX
+# - Services.VERTEX_AI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings("azure_openai")
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 IMAGE_URI = "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
 IMAGE_PATH = "samples/concepts/resources/sample_image.jpg"

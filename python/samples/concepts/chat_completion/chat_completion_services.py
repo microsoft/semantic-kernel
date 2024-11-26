@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
+
 from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion, AnthropicChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatCompletion,
@@ -21,21 +23,40 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+class Services(Enum):
+    """Enum for supported chat completion services.
+
+    For service specific settings, refer to this documentation:
+    https://github.com/microsoft/semantic-kernel/blob/main/python/samples/concepts/setup/ALL_SETTINGS.md
+    """
+
+    OPENAI = "openai"
+    AZURE_OPENAI = "azure_openai"
+    AZURE_AI_INFERENCE = "azure_ai_inference"
+    ANTHROPIC = "anthropic"
+    BEDROCK = "bedrock"
+    GOOGLE_AI = "google_ai"
+    MISTRAL_AI = "mistral_ai"
+    OLLAMA = "ollama"
+    ONNX = "onnx"
+    VERTEX_AI = "vertex_ai"
+
+
 def get_chat_completion_service_and_request_settings(
     service_name: str,
 ) -> tuple[ChatCompletionClientBase, PromptExecutionSettings]:
     """Return service and request settings."""
     chat_services = {
-        "openai": get_openai_chat_completion_service_and_request_settings,
-        "azure_openai": get_azure_openai_chat_completion_service_and_request_settings,
-        "azure_ai_inference": get_azure_ai_inference_chat_completion_service_and_request_settings,
-        "anthropic": get_anthropic_chat_completion_service_and_request_settings,
-        "bedrock": get_bedrock_chat_completion_service_and_request_settings,
-        "google_ai": get_google_ai_chat_completion_service_and_request_settings,
-        "mistral_ai": get_mistral_ai_chat_completion_service_and_request_settings,
-        "ollama": get_ollama_chat_completion_service_and_request_settings,
-        "onnx": get_onnx_chat_completion_service_and_request_settings,
-        "vertex_ai": get_vertex_ai_chat_completion_service_and_request_settings,
+        Services.OPENAI: get_openai_chat_completion_service_and_request_settings,
+        Services.AZURE_OPENAI: get_azure_openai_chat_completion_service_and_request_settings,
+        Services.AZURE_AI_INFERENCE: get_azure_ai_inference_chat_completion_service_and_request_settings,
+        Services.ANTHROPIC: get_anthropic_chat_completion_service_and_request_settings,
+        Services.BEDROCK: get_bedrock_chat_completion_service_and_request_settings,
+        Services.GOOGLE_AI: get_google_ai_chat_completion_service_and_request_settings,
+        Services.MISTRAL_AI: get_mistral_ai_chat_completion_service_and_request_settings,
+        Services.OLLAMA: get_ollama_chat_completion_service_and_request_settings,
+        Services.ONNX: get_onnx_chat_completion_service_and_request_settings,
+        Services.VERTEX_AI: get_vertex_ai_chat_completion_service_and_request_settings,
     }
 
     return chat_services[service_name]()

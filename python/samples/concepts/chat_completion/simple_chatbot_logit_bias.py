@@ -2,7 +2,10 @@
 
 import asyncio
 
-from samples.concepts.chat_completion.chat_completion_services import get_chat_completion_service_and_request_settings
+from samples.concepts.chat_completion.chat_completion_services import (
+    Services,
+    get_chat_completion_service_and_request_settings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 
 # This sample shows how to create a chatbot that whose output can be biased using logit bias.
@@ -17,10 +20,10 @@ from semantic_kernel.contents.chat_history import ChatHistory
 
 
 # You can select from the following chat completion services:
-# - openai
-# - azure_openai
+# - Services.OPENAI
+# - Services.AZURE_OPENAI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings("azure_openai")
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 # This is the system message that gives the chatbot its personality.
 system_message = """

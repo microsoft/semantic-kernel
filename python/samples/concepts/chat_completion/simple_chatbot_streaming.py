@@ -3,7 +3,10 @@
 import asyncio
 from functools import reduce
 
-from samples.concepts.chat_completion.chat_completion_services import get_chat_completion_service_and_request_settings
+from samples.concepts.chat_completion.chat_completion_services import (
+    Services,
+    get_chat_completion_service_and_request_settings,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 
 # This sample shows how to create a chatbot that streams responses.
@@ -14,19 +17,19 @@ from semantic_kernel.contents.chat_history import ChatHistory
 
 
 # You can select from the following chat completion services:
-# - openai
-# - azure_openai
-# - azure_ai_inference
-# - anthropic
-# - bedrock
-# - google_ai
-# - mistral_ai
-# - ollama
-# - onnx
-# - vertex_ai
+# - Services.OPENAI
+# - Services.AZURE_OPENAI
+# - Services.AZURE_AI_INFERENCE
+# - Services.ANTHROPIC
+# - Services.BEDROCK
+# - Services.GOOGLE_AI
+# - Services.MISTRAL_AI
+# - Services.OLLAMA
+# - Services.ONNX
+# - Services.VERTEX_AI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 # Please note that not all models support streaming responses. Make sure to select a model that supports streaming.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings("azure_openai")
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 # This is the system message that gives the chatbot its personality.
 system_message = """
