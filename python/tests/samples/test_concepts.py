@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import copy
-import sys
+import os
 
 import pytest
 from pytest import mark, param
@@ -107,7 +107,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="chat_gpt_api_function_calling",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -115,7 +115,7 @@ concepts = [
         ["Why is the sky blue?", "exit"],
         id="azure_chat_gpt_api",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -123,7 +123,7 @@ concepts = [
         ["What is life?", "exit"],
         id="chat_gpt_api",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -131,7 +131,7 @@ concepts = [
         ["Why is the sun hot?", "exit"],
         id="chat_streaming",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -139,7 +139,7 @@ concepts = [
         [],
         id="openai_logit_bias",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -147,7 +147,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="auto_function_invoke_filters",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -155,7 +155,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="function_invocation_filters",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -163,7 +163,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="function_invocation_filters_stream",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -171,7 +171,7 @@ concepts = [
         ["What is the fastest animal?", "exit"],
         id="prompt_filters",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -179,7 +179,7 @@ concepts = [
         [],
         id="kernel_arguments",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -187,7 +187,7 @@ concepts = [
         [],
         id="grounded",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -195,7 +195,7 @@ concepts = [
         [],
         id="azure_openai_function_calling_stepwise_planner",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -203,7 +203,7 @@ concepts = [
         [],
         id="openai_function_calling_stepwise_planner",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -211,7 +211,7 @@ concepts = [
         [],
         id="sequential_planner",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -219,7 +219,7 @@ concepts = [
         [],
         id="openai_function_calling_with_custom_plugin",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -227,7 +227,7 @@ concepts = [
         ["Create a secret with the name 'Foo' and value 'Bar'", "exit"],
         id="openai_plugin_azure_key_vault",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -243,7 +243,7 @@ concepts = [
         [],
         id="plugins_from_dir",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -251,7 +251,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="azure_chat_gpt_api_handlebars",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -259,7 +259,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="azure_chat_gpt_api_jinja2",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -267,7 +267,7 @@ concepts = [
         ["What is my name?", "exit"],
         id="configuring_prompts",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -275,7 +275,7 @@ concepts = [
         [],
         id="load_yaml_prompt",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -283,7 +283,7 @@ concepts = [
         [],
         id="template_language",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -291,7 +291,7 @@ concepts = [
         [],
         id="azure_cognitive_search_memory",
         marks=pytest.mark.skipif(
-            sys.getenv(MEMORY_CONCEPT_SAMPLE, None) is not None, reason="Not running memory samples."
+            os.getenv(MEMORY_CONCEPT_SAMPLE, None) is not None, reason="Not running memory samples."
         ),
     ),
     param(
@@ -299,7 +299,7 @@ concepts = [
         ["What are my investments?", "exit"],
         id="memory",
         marks=pytest.mark.skipif(
-            sys.getenv(MEMORY_CONCEPT_SAMPLE, None) is not None, reason="Not running memory samples."
+            os.getenv(MEMORY_CONCEPT_SAMPLE, None) is not None, reason="Not running memory samples."
         ),
     ),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
@@ -314,7 +314,7 @@ concepts = [
         [],
         id="azure_chat_image_input",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -322,7 +322,7 @@ concepts = [
         [],
         id="custom_service_selector",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -330,7 +330,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="function_defined_in_json_prompt",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -338,7 +338,7 @@ concepts = [
         ["What is 3+3?", "exit"],
         id="function_defined_in_yaml_prompt",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -346,7 +346,7 @@ concepts = [
         [],
         id="step1_agent",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -354,7 +354,7 @@ concepts = [
         [],
         id="step2_agent_plugins",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -362,7 +362,7 @@ concepts = [
         [],
         id="step3_chat",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -370,7 +370,7 @@ concepts = [
         [],
         id="step7_assistant",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
     param(
@@ -396,7 +396,7 @@ concepts = [
         [],
         id="image_generation",
         marks=pytest.mark.skipif(
-            sys.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is not None, reason="Not running completion samples."
         ),
     ),
 ]
