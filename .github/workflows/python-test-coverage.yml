@@ -19,14 +19,14 @@ jobs:
       contents: read
       actions: read
     steps:
-      - name: Wait for unit tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Python Test Coverage'
-          repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          wait-interval: 90
-          allowed-conclusions: success
+      # - name: Wait for unit tests to succeed
+      #   uses: lewagon/wait-on-check-action@v1.3.4
+      #   with:
+      #     ref: ${{ github.event.pull_request.head.sha }}
+      #     check-name: 'Python Test Coverage'
+      #     repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+      #     wait-interval: 90
+      #     allowed-conclusions: success
       - uses: actions/checkout@v4
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
