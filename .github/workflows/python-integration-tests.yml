@@ -517,7 +517,7 @@ jobs:
     strategy:
       max-parallel: 1
       fail-fast: false
-    needs: [python-merge-gate, python-integration-tests]
+    needs: [python-merge-gate-completions, python-merge-gate-memory, python-integration-tests]
     steps:
       - name: Get Date
         shell: bash
