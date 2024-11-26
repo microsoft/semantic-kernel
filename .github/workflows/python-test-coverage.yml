@@ -19,6 +19,7 @@ jobs:
       contents: read
       actions: read
     steps:
+      - uses: actions/checkout@v4
       # - name: Wait for unit tests to succeed
       #   uses: lewagon/wait-on-check-action@v1.3.4
       #   with:
@@ -27,7 +28,6 @@ jobs:
       #     repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
       #     wait-interval: 90
       #     allowed-conclusions: success
-      - uses: actions/checkout@v4
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Download Files
