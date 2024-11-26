@@ -18,8 +18,8 @@ from tests.integration.memory.vector_stores.vector_store_test_base import Vector
 
 
 @pytest.mark.skipif(
-    platform.system() != "Windows",
-    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+    platform.system() == "Darwin",
+    reason="The Azure Cosmos DB Emulator is only available on Windows and Linux.",
 )
 class TestCosmosDBNoSQL(VectorStoreTestBase):
     """Test Cosmos DB NoSQL store functionality."""

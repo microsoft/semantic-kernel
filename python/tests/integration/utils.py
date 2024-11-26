@@ -5,13 +5,14 @@ import logging
 import os
 import platform
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 async def retry(func, retries=20):
     """Retry the function if it raises an exception."""
     for i in range(retries):
+        logger.warning("Try #%s", i + 1)
         try:
             return await func()
         except Exception as e:
@@ -19,7 +20,9 @@ async def retry(func, retries=20):
             if i == retries - 1:  # Last retry
                 raise
             # Binary exponential backoff
-            await asyncio.sleep(2**i)
+            backoff = 2**i
+            logger.warning(f"Sleeping for {backoff} seconds before retrying")
+            await asyncio.sleep(backoff)
     return None
 
 
