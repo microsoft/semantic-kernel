@@ -33,18 +33,21 @@ jobs:
       - name: Download coverage
         uses: actions/download-artifact@v4
         with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           run-id: ${{ github.event.workflow_run.id }}
+          path: python/
+          merge-multiple: true
           # workflow: python-unit-tests.yml
           # if_no_artifact_found: ignore
-      - name: Download pytest
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          name: pytest-${{ env.FILE_ID }}.xml
-          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          workflow: python-unit-tests.yml
-          if_no_artifact_found: ignore
+      - name: Display structure of downloaded files
+        run: ls -R python/
+      # - name: Download pytest
+      #   uses: dawidd6/action-download-artifact@v6
+      #   with:
+      #     name: pytest-${{ env.FILE_ID }}.xml
+      #     github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+      #     workflow: python-unit-tests.yml
+      #     if_no_artifact_found: ignore
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
