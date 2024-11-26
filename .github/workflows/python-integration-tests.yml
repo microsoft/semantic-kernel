@@ -158,7 +158,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
-        timeout-minutes: 15
+        timeout-minutes: 25
         shell: bash
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions .tests/integration/embeddings ./tests/samples ./tests/integration/cross_language -v --junitxml=pytest-completions.xml
