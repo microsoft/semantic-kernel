@@ -143,6 +143,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
+    /// An object specifying the format that the model must output.
+    /// Setting to <c>{ "type": "json_schema", "json_schema": { ...} }</c> enables Structured Outputs which ensures the model will match your supplied JSON schema. Learn more in the Structured Outputs guide.
+    /// Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which ensures the message the model generates is valid JSON.
+    /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if finish_reason= "length", which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
     /// Possible values are:
     /// <para>- <see cref="string"/> values: <c>"json_object"</c>, <c>"text"</c>;</para>
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
