@@ -326,7 +326,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         this.AssertStepStateLastMessage(processInfo, lastStepName, expectedLastMessage: $"{testInput}-{testInput}-{testInput}-{testInput}-{testInput}");
     }
 
-    #region Predefiend ProcessBuilders for testing
+    #region Predefined ProcessBuilders for testing
     /// <summary>
     /// Sample long sequential process, each step has a delay.<br/>
     /// Input Event: <see cref="EmitterStep.InputEvent"/><br/>
