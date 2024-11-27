@@ -164,7 +164,7 @@ public sealed class EmitterStep : KernelProcessStep<StepState>
     public const string PublicEventFunction = "SomePublicFunctionName";
     public const string DualInputPublicEventFunction = "SomeDualInputPublicEventFunctionName";
 
-    private readonly int _sleepDurationMs = 100;
+    private readonly int _sleepDurationMs = 150;
 
     private StepState? _state;
 

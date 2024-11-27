@@ -329,7 +329,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
-
         foreach (ProcessEvent stepEvent in allStepEvents)
         {
             // Emit the event out of the process (this one) if it's visibility is public.
