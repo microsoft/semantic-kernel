@@ -160,7 +160,7 @@ jobs:
         timeout-minutes: 25
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions .tests/integration/embeddings ./tests/samples ./tests/integration/cross_language -v --junitxml=pytest-completions.xml
+          uv run pytest -n logical --dist loadfile --dist worksteal -v --junitxml=pytest-completions.xml ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language 
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
@@ -236,7 +236,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples -v --junitxml=pytest-memory.xml
+          uv run pytest -n logical --dist loadfile --dist worksteal -v --junitxml=pytest-memory.xml ./tests/integration/memory ./tests/samples
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
