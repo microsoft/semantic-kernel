@@ -177,7 +177,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         private const int TopN = 5;
 
         /// <summary>
-        /// Collection name to use in memory store.
+        /// Collection name to use in vector store.
         /// </summary>
         private const string CollectionName = "examples";
 
@@ -194,7 +194,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 // Generate embedding for each example.
                 var embeddings = await textEmbeddingGenerationService.GenerateEmbeddingsAsync(examples);
 
-                // Create memory record instances with example text and embedding.
+                // Create vector store record instances with example text and embedding.
                 for (var i = 0; i < examples.Count; i++)
                 {
                     exampleRecords.Add(new ExampleRecord
@@ -205,19 +205,19 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                     });
                 }
 
-                // Create collection and upsert all memory records for search.
+                // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync();
+                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
 
-                await collection.UpsertBatchAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync();
+                await collection.UpsertBatchAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync(context.CancellationToken);
 
                 // Generate embedding for original request.
-                var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request);
+                var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: context.CancellationToken);
 
                 // Find top N examples which are similar to original request.
-                var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = TopN });
-                var topNExamples = (await searchResults.Results.ToListAsync()).Select(l => l.Record).ToList();
+                var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = TopN }, cancellationToken: context.CancellationToken);
+                var topNExamples = (await searchResults.Results.ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
 
                 // Override arguments to use only top N examples, which will be sent to LLM.
                 context.Arguments["Examples"] = topNExamples.Select(l => l.Example);
