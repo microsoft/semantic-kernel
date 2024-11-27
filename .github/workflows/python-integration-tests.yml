@@ -20,7 +20,6 @@ permissions:
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
-  HNSWLIB_NO_NATIVE: 1
   Python_Integration_Tests: Python_Integration_Tests
   AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
@@ -92,8 +91,8 @@ jobs:
         if: steps.filter.outputs.python != 'true'
         run: echo "NOT python file"
 
-  python-merge-gate-completions:
-    name: Python Pre-Merge Integration Tests - Completions & Embeddings
+  python-merge-gate-ai-services:
+    name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -156,8 +155,8 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Run Integration Tests - Completions
-        id: run_tests_completions
+      - name: Run Integration Tests
+        id: run_tests_ai_services
         timeout-minutes: 25
         shell: bash
         run: |
@@ -175,7 +174,7 @@ jobs:
         run: uv cache prune --ci
 
   python-merge-gate-memory:
-    name: Python Pre-Merge Integration Tests - Memory
+    name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -232,7 +231,7 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Run Integration Tests - Memory
+      - name: Run Integration Tests
         id: run_tests_memory
         timeout-minutes: 10
         shell: bash
@@ -251,6 +250,7 @@ jobs:
         run: uv cache prune --ci
 
   python-integration-tests:
+    name: Python Integration Tests - Scheduled run
     needs: paths-filter
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -265,8 +265,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment: "integration"
     env:
-      HNSWLIB_NO_NATIVE: 1
-      Python_Integration_Tests: Python_Integration_Tests
       UV_PYTHON: ${{ matrix.python-version }}
       MEMORY_CONCEPT_SAMPLE: "true"
       COMPLETIONS_CONCEPT_SAMPLE: "true"
@@ -278,13 +276,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
-      - name: Install dependencies with hnswlib native disabled
-        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
-        run: |
-          export HNSWLIB_NO_NATIVE=1
-          uv sync --all-extras --dev
-      - name: Install dependencies with hnswlib native enabled
-        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+      - name: Install dependencies
         run: |
           uv sync --all-extras --dev
       - name: Install Ollama
@@ -389,7 +381,7 @@ jobs:
     strategy:
       max-parallel: 1
       fail-fast: false
-    needs: [python-merge-gate-completions, python-merge-gate-memory, python-integration-tests]
+    needs: [python-merge-gate-ai-services, python-merge-gate-memory, python-integration-tests]
     steps:
       - name: Get Date
         shell: bash
