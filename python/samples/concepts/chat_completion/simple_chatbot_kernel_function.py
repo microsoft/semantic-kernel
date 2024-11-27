@@ -6,9 +6,9 @@ from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.kernel import Kernel
+from semantic_kernel import Kernel
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
 
 # This sample shows how to create a chatbot using a kernel function.
 # This sample uses the following two main components:
@@ -97,15 +97,15 @@ async def chat() -> bool:
         user_input=user_input,
     )
 
-    answer = await kernel.invoke(chat_function, kernel_arguments)
+    answer = await kernel.invoke(plugin_name="ChatBot", function_name="Chat", arguments=kernel_arguments)
     # Alternatively, you can invoke the function directly with the kernel as an argument:
     # answer = await chat_function.invoke(kernel, kernel_arguments)
-
-    print(f"Mosscap:> {answer}")
-
-    # Add the chat message to the chat history to keep track of the conversation.
-    chat_history.add_user_message(user_input)
-    chat_history.add_assistant_message(str(answer))
+    if answer:
+        print(f"Mosscap:> {answer}")
+        # Since the user_input is rendered by the template, it is not yet part of the chat history, so we add it here.
+        chat_history.add_user_message(user_input)
+        # Add the chat message to the chat history to keep track of the conversation.
+        chat_history.add_message(answer.value)
 
     return True
 

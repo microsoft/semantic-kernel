@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from functools import reduce
 
 from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
 
 # This sample shows how to create a chatbot that streams responses.
 # This sample uses the following two main components:
@@ -70,15 +69,16 @@ async def chat() -> bool:
     )
 
     # Capture the chunks of the response and print them as they come in.
-    chunks = []
+    chunks: list[StreamingChatMessageContent] = []
     print("Mosscap:> ", end="")
     async for chunk in response:
-        chunks.append(chunk)
-        print(chunk, end="")
+        if chunk:
+            chunks.append(chunk)
+            print(chunk, end="")
     print("")
 
     # Combine the chunks into a single message to add to the chat history.
-    full_message = reduce(lambda first, second: first + second, chunks)
+    full_message = sum(chunks[1:], chunks[0])
     # Add the chat message to the chat history to keep track of the conversation.
     chat_history.add_message(full_message)
 
