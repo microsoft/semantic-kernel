@@ -181,7 +181,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
             await collection.CreateCollectionIfNotExistsAsync();
 
-            // Search for similar prompts in cache with provided similarity/relevance score.
+            // Search for similar prompts in cache.
             var searchResults = await collection.VectorizedSearchAsync(promptEmbedding, new() { Top = 1 }, context.CancellationToken);
             var searchResult = (await searchResults.Results.FirstOrDefaultAsync())?.Record;
 
