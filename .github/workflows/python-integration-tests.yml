@@ -205,14 +205,6 @@ jobs:
         ports:
           - 8080:8080
           - 50051:50051
-      cosmosdb:
-        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
-        options: >-
-          --protocol 
-          https
-        ports:
-          - 8081:8081
-          - 1234:1234
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
