@@ -293,12 +293,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
         finally
         {
-            if (this._processCancelSource?.IsCancellationRequested ?? false)
-            {
-                this._processCancelSource.Cancel();
-            }
-
             this._processCancelSource?.Dispose();
+            this._processCancelSource = null;
         }
 
         return;
@@ -325,24 +321,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Process public events to emit them externally at the same time as the internal events
-    /// </summary>
-    /// <param name="events">events to be used to process only the public events</param>
-    /// <returns>boolean with details if there were public events detected</returns>
-    private bool EmitPublicEvents(IEnumerable<ProcessEvent> events)
-    {
-        bool eventsChanged = false;
-        events?.Where(stepEvent => stepEvent.Visibility == KernelProcessEventVisibility.Public).ToList().ForEach(stepEvent =>
-        {
-            // Emit the event out of the process (this one) if it's visibility is public.
-            base.EmitEvent(stepEvent);
-            eventsChanged = true;
-        });
-
-        return eventsChanged;
-    }
-
-    /// <summary>
     /// Processes events emitted by the given step in the last superstep, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
@@ -351,27 +329,14 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
-        // alternative solution start
-        bool eventsChanged = this.EmitPublicEvents(allStepEvents);
-
-        if (eventsChanged)
-        {
-            var unprocessedEvents = allStepEvents.Where(stepEvent => stepEvent.Visibility != KernelProcessEventVisibility.Public).ToList();
-            // Everytime events get retrieved they get cleaned, since there are public events to be emitted + previous internal events, joining them together to process them at once
-            unprocessedEvents.AddRange(step.GetAllEvents());
-            allStepEvents = unprocessedEvents;
-        }
-        // alternative solution end
 
         foreach (ProcessEvent stepEvent in allStepEvents)
         {
-            // original solution start
-            //    // Emit the event out of the process (this one) if it's visibility is public.
-            //    if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
-            //    {
-            //        base.EmitEvent(stepEvent);
-            //    }
-            // original solution end
+            // Emit the event out of the process (this one) if it's visibility is public.
+            if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
+            {
+                base.EmitEvent(stepEvent);
+            }
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
             bool foundEdge = false;
