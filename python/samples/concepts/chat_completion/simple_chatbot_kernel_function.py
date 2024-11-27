@@ -105,7 +105,7 @@ async def chat() -> bool:
         # Since the user_input is rendered by the template, it is not yet part of the chat history, so we add it here.
         chat_history.add_user_message(user_input)
         # Add the chat message to the chat history to keep track of the conversation.
-        chat_history.add_message(answer.value)
+        chat_history.add_message(answer.value[0])
 
     return True
 
