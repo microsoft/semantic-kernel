@@ -147,7 +147,17 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 
                 logger.LogInformation("Function {FunctionName} succeeded.", context.Function.Name);
 
-                await this.LogFunctionResultAsync(context);
+                if (context.IsStreaming)
+                {
+                    // Overriding the result in a streaming scenario enables the filter to stream chunks 
+                    // back to the operation's origin without interrupting the data flow.
+                    var enumerable = context.Result.GetValue<IAsyncEnumerable<StreamingChatMessageContent>>();
+                    context.Result = new FunctionResult(context.Result, ProcessFunctionResultStreamingAsync(enumerable!));
+                }
+                else
+                {
+                    ProcessFunctionResult(context.Result);
+                }
             }
             catch (Exception exception)
             {
@@ -167,34 +177,43 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
             }
         }
 
-        private async Task LogFunctionResultAsync(FunctionInvocationContext context)
+        private void ProcessFunctionResult(FunctionResult functionResult)
         {
-            string? result = null;
+            string? result = functionResult.GetValue<string>();
+            object? usage = functionResult.Metadata?["Usage"];
+
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                logger.LogTrace("Function result: {Result}", result);
+            }
+
+            if (logger.IsEnabled(LogLevel.Information) && usage is not null)
+            {
+                logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
+            }
+        }
+
+        private async IAsyncEnumerable<StreamingChatMessageContent> ProcessFunctionResultStreamingAsync(IAsyncEnumerable<StreamingChatMessageContent> data)
+        {
             object? usage = null;
 
-            if (context.IsStreaming)
+            var stringBuilder = new StringBuilder();
+
+            await foreach (var item in data)
             {
-                var stringBuilder = new StringBuilder();
+                yield return item;
 
-                await foreach (var item in context.Result.GetValue<IAsyncEnumerable<StreamingChatMessageContent>>()!)
+                if (item.Content is not null)
                 {
-                    if (item.Content is not null)
-                    {
-                        stringBuilder.Append(item.Content);
-                    }
-
-                    usage = item.Metadata?["Usage"];
+                    stringBuilder.Append(item.Content);
                 }
 
-                result = stringBuilder.ToString();
-            }
-            else
-            {
-                result = context.Result.GetValue<string>();
-                usage = context.Result.Metadata?["Usage"];
+                usage = item.Metadata?["Usage"];
             }
 
-            if (result is not null)
+            var result = stringBuilder.ToString();
+
+            if (!string.IsNullOrWhiteSpace(result))
             {
                 logger.LogTrace("Function result: {Result}", result);
             }

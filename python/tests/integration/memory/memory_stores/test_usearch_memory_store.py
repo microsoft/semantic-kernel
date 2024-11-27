@@ -30,6 +30,7 @@ pytestmark = [
         not pyarrow_installed,
         reason="`USearch` dependency `pyarrow` is not installed",
     ),
+    pytest.mark.skip(reason="Flaky tests: USearch package produces memory access violation error"),
 ]
 
 
