@@ -116,17 +116,34 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     {
         var builder = Kernel.CreateBuilder();
 
-        // Add Azure OpenAI chat completion service
-        builder.AddAzureOpenAIChatCompletion(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            new AzureCliCredential());
+        if (!string.IsNullOrWhiteSpace(TestConfiguration.AzureOpenAI.ApiKey))
+        {
+            // Add Azure OpenAI chat completion service
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
 
-        // Add Azure OpenAI text embedding generation service
-        builder.AddAzureOpenAITextEmbeddingGeneration(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
+            // Add Azure OpenAI text embedding generation service
+            builder.AddAzureOpenAITextEmbeddingGeneration(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+        else
+        {
+            // Add Azure OpenAI chat completion service
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                new AzureCliCredential());
+
+            // Add Azure OpenAI text embedding generation service
+            builder.AddAzureOpenAITextEmbeddingGeneration(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                new AzureCliCredential());
+        }
 
         // Add vector store for caching purposes (e.g. in-memory, Redis, Azure Cosmos DB)
         configureVectorStore(builder.Services);
