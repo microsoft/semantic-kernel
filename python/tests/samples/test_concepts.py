@@ -12,11 +12,11 @@ from samples.concepts.auto_function_calling.functions_defined_in_json_prompt imp
 from samples.concepts.auto_function_calling.functions_defined_in_yaml_prompt import (
     main as function_defined_in_yaml_prompt,
 )
-from samples.concepts.chat_completion.azure_chat_gpt_api import main as azure_chat_gpt_api
-from samples.concepts.chat_completion.azure_chat_image_input import main as azure_chat_image_input
-from samples.concepts.chat_completion.chat_gpt_api import main as chat_gpt_api
-from samples.concepts.chat_completion.chat_streaming import main as chat_streaming
-from samples.concepts.chat_completion.openai_logit_bias import main as openai_logit_bias
+from samples.concepts.chat_completion.simple_chatbot import main as simple_chatbot
+from samples.concepts.chat_completion.simple_chatbot_kernel_function import main as simple_chatbot_kernel_function
+from samples.concepts.chat_completion.simple_chatbot_logit_bias import main as simple_chatbot_logit_bias
+from samples.concepts.chat_completion.simple_chatbot_streaming import main as simple_chatbot_streaming
+from samples.concepts.chat_completion.simple_chatbot_with_image import main as simple_chatbot_with_image
 from samples.concepts.filtering.auto_function_invoke_filters import main as auto_function_invoke_filters
 from samples.concepts.filtering.function_invocation_filters import main as function_invocation_filters
 from samples.concepts.filtering.function_invocation_filters_stream import main as function_invocation_filters_stream
@@ -58,10 +58,19 @@ from tests.samples.samples_utils import retry
 
 concepts = [
     param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="chat_gpt_api_function_calling"),
-    param(azure_chat_gpt_api, ["Why is the sky blue?", "exit"], id="azure_chat_gpt_api"),
-    param(chat_gpt_api, ["What is life?", "exit"], id="chat_gpt_api"),
-    param(chat_streaming, ["Why is the sun hot?", "exit"], id="chat_streaming"),
-    param(openai_logit_bias, [], id="openai_logit_bias"),
+    param(simple_chatbot, ["Why is the sky blue in one sentence?", "exit"], id="simple_chatbot"),
+    param(simple_chatbot_streaming, ["Why is the sky blue in one sentence?", "exit"], id="simple_chatbot_streaming"),
+    param(simple_chatbot_with_image, ["exit"], id="simple_chatbot_with_image"),
+    param(
+        simple_chatbot_logit_bias,
+        ["Who has the most career points in NBA history?", "exit"],
+        id="simple_chatbot_logit_bias",
+    ),
+    param(
+        simple_chatbot_kernel_function,
+        ["Why is the sky blue in one sentence?", "exit"],
+        id="simple_chatbot_kernel_function",
+    ),
     param(auto_function_invoke_filters, ["What is 3+3?", "exit"], id="auto_function_invoke_filters"),
     param(function_invocation_filters, ["What is 3+3?", "exit"], id="function_invocation_filters"),
     param(function_invocation_filters_stream, ["What is 3+3?", "exit"], id="function_invocation_filters_stream"),
@@ -100,7 +109,6 @@ concepts = [
         id="bing_search_plugin",
         marks=pytest.mark.skip(reason="Flaky test due to Azure OpenAI content policy"),
     ),
-    param(azure_chat_image_input, [], id="azure_chat_image_input"),
     param(custom_service_selector, [], id="custom_service_selector"),
     param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),
     param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
