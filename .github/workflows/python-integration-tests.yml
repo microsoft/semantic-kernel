@@ -428,7 +428,7 @@ jobs:
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          raw: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
         uses: skitionek/notify-microsoft-teams@master
@@ -438,4 +438,4 @@ jobs:
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          raw: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
