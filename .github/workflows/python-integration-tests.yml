@@ -165,7 +165,7 @@ jobs:
         if: always()
         uses: pmeier/pytest-results-action@main
         with:
-          path: python/pytest-*.xml
+          path: python/pytest-completions.xml
           summary: true
           display-options: fEX
           fail-on-empty: true
@@ -233,7 +233,7 @@ jobs:
         if: always()
         uses: pmeier/pytest-results-action@main
         with:
-          path: python/pytest-*.xml
+          path: python/pytest-memory.xml
           summary: true
           display-options: fEX
           fail-on-empty: true

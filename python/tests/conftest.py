@@ -37,6 +37,7 @@ def pytest_configure(config):
     logging.getLogger("openai").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("semantic_kernel").setLevel(logging.INFO)
 
 
 @fixture(scope="function")
