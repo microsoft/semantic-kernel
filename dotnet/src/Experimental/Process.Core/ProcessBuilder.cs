@@ -299,7 +299,7 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
     /// Method that imports a specific KernelProcessEventSubscriber class type
     /// to be used when specific TEvents get triggered inside the SK Process
     /// </summary>
-    /// <typeparam name="TEventListeners">ype of the class that contains the custom event subscriber definition</typeparam>
+    /// <typeparam name="TEventListeners">Type of the class that contains the custom event subscriber definition</typeparam>
     /// <param name="serviceProvider">services that the subscribers in the TEventListeners make use of</param>
     public void LinkEventSubscribersFromType<TEventListeners>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents>
     {
@@ -323,6 +323,13 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
         return this.OnInputEvent(this.GetEventName(processEvent));
     }
 
+    /// <summary>
+    /// Similar to <see cref="ProcessStepBuilder.OnEvent(string)"/> but
+    /// specific to make use of ProcessEvents defined by <typeparamref name="TEvents"/>
+    /// </summary>
+    /// <param name="eventId">process event type</param>
+    /// <returns><see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public ProcessStepEdgeBuilder OnProcessEvent(TEvents eventId)
     {
         var eventName = this.GetEventName(eventId);
