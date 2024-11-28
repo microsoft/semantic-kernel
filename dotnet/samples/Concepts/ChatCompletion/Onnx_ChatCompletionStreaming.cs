@@ -156,6 +156,8 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
 
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
+
+        chatCompletionService.Dispose();
     }
 
     private async Task StreamMessageOutputAsync(OnnxRuntimeGenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
