@@ -753,7 +753,8 @@ internal sealed class MistralClient
                 messages ??= [];
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
-                messages.Add(new MistralChatMessage(content.Role.ToString(), stringResult));
+                var name = $"{resultContent.PluginName}-{resultContent.FunctionName}";
+                messages.Add(new MistralChatMessage(content.Role.ToString(), stringResult, name, resultContent.CallId));
             }
             if (messages is not null)
             {

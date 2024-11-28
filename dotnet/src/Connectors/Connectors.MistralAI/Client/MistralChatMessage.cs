@@ -17,6 +17,14 @@ internal sealed class MistralChatMessage
     [JsonPropertyName("content")]
     public string? Content { get; set; }
 
+    [JsonPropertyName("name")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("tool_call_id")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ToolCallId { get; set; }
+
     [JsonPropertyName("tool_calls")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<MistralToolCall>? ToolCalls { get; set; }
@@ -26,8 +34,10 @@ internal sealed class MistralChatMessage
     /// </summary>
     /// <param name="role">If provided must be one of: system, user, assistant</param>
     /// <param name="content">Content of the chat message</param>
+    /// <param name="name">Optionally the name of the message</param>
+    /// <param name="toolCallid">Optionally the tool cal id</param>
     [JsonConstructor]
-    internal MistralChatMessage(string? role, string? content)
+    internal MistralChatMessage(string? role, string? content, string? name = null, string? toolCallid = null)
     {
         if (role is not null and not "system" and not "user" and not "assistant" and not "tool")
         {
@@ -36,5 +46,7 @@ internal sealed class MistralChatMessage
 
         this.Role = role;
         this.Content = content;
+        this.Name = name;
+        this.ToolCallId = toolCallid;
     }
 }
