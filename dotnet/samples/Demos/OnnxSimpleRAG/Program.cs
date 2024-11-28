@@ -27,8 +27,8 @@ var embeddingModelPath = config["Onnx:EmbeddingModelPath"]!;
 // Path to the vocab file your ONNX BGE-MICRO-V2 model
 var embeddingVocabPath = config["Onnx:EmbeddingVocabPath"]!;
 
-// After Onnx GenAI 0.5.0 before using any Onnx service is necessary to
-// Instantiate the OgaHandle class to track the resources used by the Onnx services
+// If using Onnx GenAI 0.5.0 or later, the OgaHandle class must be used to track
+// resources used by the Onnx services, before using any of the Onnx services.
 using var ogaHandle = new OgaHandle();
 
 // Load the services
