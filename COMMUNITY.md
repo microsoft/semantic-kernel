@@ -6,7 +6,7 @@ Below are some ways that you can get involved in the SK Community.
 
 - [Discussions](https://github.com/microsoft/semantic-kernel/discussions): Ask questions, provide feedback and ideas to what you'd like to see from the Semantic Kernel.
 - [Issues](https://github.com/microsoft/semantic-kernel/issues) - If you find a bug, unexpected behavior or have a feature request, please open an issue.
-- [Pull Requests](https://github.com/microsoft/semantic-kernel/PRs) - We welcome contributions! Please see our [Contributing Guide](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md)
+- [Pull Requests](https://github.com/microsoft/semantic-kernel/pulls) - We welcome contributions! Please see our [Contributing Guide](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md)
 
 We do our best to respond to each submission.
 
