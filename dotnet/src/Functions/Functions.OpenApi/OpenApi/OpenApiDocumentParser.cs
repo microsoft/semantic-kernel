@@ -205,12 +205,13 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
                 try
                 {
+                    var description = string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description;
                     var operation = new RestApiOperation(
                     id: operationItem.OperationId,
                     servers: operationServers,
                     path: path,
                     method: new HttpMethod(method),
-                    description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
+                    description: description[..Math.Min(description.Length, 1000)],
                     parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
