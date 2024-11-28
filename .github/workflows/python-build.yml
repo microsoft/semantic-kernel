@@ -23,7 +23,7 @@ jobs:
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Check version
         run: |
-            echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
+          echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
       - name: Build the package
         run: cd python && make build
       - name: Release

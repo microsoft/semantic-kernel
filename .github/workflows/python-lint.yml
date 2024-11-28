@@ -2,13 +2,13 @@ name: Python Code Quality Checks
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main", "feature*" ]
+    branches: ["main", "feature*"]
     paths:
-      - 'python/**'
+      - "python/**"
 
 jobs:
   pre-commit:
-    if: '!cancelled()'
+    if: "!cancelled()"
     strategy:
       fail-fast: false
       matrix:
@@ -38,5 +38,3 @@ jobs:
           extra_args: --config python/.pre-commit-config.yaml --all-files
       - name: Run Mypy
         run: uv run mypy -p semantic_kernel --config-file mypy.ini
-      - name: Minimize uv cache
-        run: uv cache prune --ci
