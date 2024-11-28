@@ -300,6 +300,7 @@ public static partial class OpenApiKernelPluginFactory
                 ParameterType = ConvertParameterDataType(p),
                 Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
             })
+            .DistinctBy(static p => p.Name, StringComparer.Ordinal)
             .ToList();
 
         var returnParameter = operation.GetDefaultReturnParameter();
