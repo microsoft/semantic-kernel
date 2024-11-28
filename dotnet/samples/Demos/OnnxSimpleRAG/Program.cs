@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable SKEXP0070
-#pragma warning disable SKEXP0050
-#pragma warning disable SKEXP0001
-#pragma warning disable SKEXP0020
-
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -72,9 +68,12 @@ while (true)
     Console.Write("User > ");
     var question = Console.ReadLine()!;
 
+    // Clean resources and exit the demo if the user input is null or empty
     if (question is null || string.IsNullOrWhiteSpace(question))
     {
-        // Exit the demo if the user input is null or empty
+        // To avoid any potential memory leak all disposable
+        // services created by the kernel are disposed
+        DisposeServices(kernel);
         return;
     }
 
@@ -106,6 +105,19 @@ while (true)
     Console.WriteLine();
 }
 
+static void DisposeServices(Kernel kernel)
+{
+    foreach (var target in kernel
+        .GetAllServices<IChatCompletionService>()
+        .OfType<IDisposable>())
+    {
+        target.Dispose();
+    }
+}
+
+/// <summary>
+/// Information item to represent the embedding data stored in the memory
+/// </summary>
 internal sealed class InformationItem
 {
     [VectorStoreRecordKey]

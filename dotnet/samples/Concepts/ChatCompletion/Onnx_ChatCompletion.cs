@@ -106,6 +106,20 @@ public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine(reply);
 
-        (kernel.GetRequiredService<IChatCompletionService>() as IDisposable)?.Dispose();
+        DisposeServices(kernel);
+    }
+
+    /// <summary>
+    /// To avoid any potential memory leak all disposable services created by the kernel are disposed.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    private static void DisposeServices(Kernel kernel)
+    {
+        foreach (var target in kernel
+            .GetAllServices<IChatCompletionService>()
+            .OfType<IDisposable>())
+        {
+            target.Dispose();
+        }
     }
 }
