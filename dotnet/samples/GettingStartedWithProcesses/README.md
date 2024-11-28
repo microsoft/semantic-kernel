@@ -23,7 +23,9 @@ Example|Description
 ---|---
 [Step00_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step00/Step00_Processes.cs)|How to create the simplest process with minimal code and event wiring
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
-[Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
+[Step02a_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02a_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
+[Step02b_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02b_AccountOpening.cs)|How to refactor processes and make use of smaller processes as steps in larger processes.
+[Step02c_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02c_AccountOpening.cs)|How to refactor processes and make use of SK Event Subscribers.
 [Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events, use of stateful steps with food preparation samples.
 [Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
 [Step04_AgentOrchestration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step04/Step04_AgentOrchestration.cs)|Showcasing use of process steps in conjunction with the _Agent Framework_. 
@@ -115,9 +117,10 @@ flowchart LR
 
     User<-->|Provides user details|FillForm
     FillForm-->|New User Form|NewAccountVerification
-    NewAccountVerification-->|Account Verification <br/> Failed|Mailer
-    NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
-    NewAccountCreation-->|Account Creation <br/> Succeded|Mailer
+    NewAccountVerification-->|Account Credit Check<br/> Verification Failed|Mailer
+    NewAccountVerification-->|Account Fraud<br/> Detection Failed|Mailer
+    NewAccountVerification-->|Account Verification <br/> Succeeded|NewAccountCreation
+    NewAccountCreation-->|Account Creation <br/> Succeeded|Mailer
 ```
 
 Where processes used as steps, which are reusing the same steps used [`Step02a_AccountOpening`](#step02a_accountopening), are:
@@ -157,14 +160,14 @@ graph LR
         FraudCheck[Fraud Detection <br/> Step]
         AccountVerificationPass([Account Verification Passed])
         AccountCreditCheckFail([Credit Check Failed])
-        AccoutFraudCheckFail([Fraud Check Failed])
+        AccountFraudCheckFail([Fraud Check Failed])
 
         
         NewUser2-->CreditScoreCheck-->|Credit Score <br/> Check Passed|FraudCheck
         FraudCheck-->AccountVerificationPass
 
         CreditScoreCheck-->AccountCreditCheckFail
-        FraudCheck-->AccoutFraudCheckFail
+        FraudCheck-->AccountFraudCheckFail
     end
 
     AccountVerificationPass-->AccountValidation
