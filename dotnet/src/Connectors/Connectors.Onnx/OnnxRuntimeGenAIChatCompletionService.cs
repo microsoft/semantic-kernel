@@ -88,7 +88,6 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
         var prompt = this.GetPrompt(chatHistory, onnxPromptExecutionSettings);
 
-        using var ogaHandle = new OgaHandle();
         using var model = new Model(this._modelPath);
         using var tokenizer = new Tokenizer(model);
 
