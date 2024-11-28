@@ -17,7 +17,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task AddPluginsAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -35,7 +35,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
 
         // Example 4. Invoke the kernel with a prompt and allow the AI to automatically invoke functions that use enumerations

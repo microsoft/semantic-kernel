@@ -13,11 +13,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class DocumentLoader:
+    """Utility class to load a document from a URL."""
+
     @staticmethod
     async def from_uri(
         url: str,
         http_client: AsyncClient,
-        auth_callback: Callable[..., None | Awaitable[dict[str, str]]] | None,
+        auth_callback: Callable[..., Awaitable[dict[str, str]] | None] | None,
         user_agent: str | None = HTTP_USER_AGENT,
     ):
         """Load the manifest from the given URL."""

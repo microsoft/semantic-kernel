@@ -10,13 +10,18 @@ from semantic_kernel.exceptions import ServiceContentFilterException
 
 
 class ContentFilterResultSeverity(Enum):
+    """The severity of the content filter result."""
+
     HIGH = "high"
     MEDIUM = "medium"
     SAFE = "safe"
+    LOW = "low"
 
 
 @dataclass
 class ContentFilterResult:
+    """The result of a content filter check."""
+
     filtered: bool = False
     detected: bool = False
     severity: ContentFilterResultSeverity = ContentFilterResultSeverity.SAFE
@@ -42,6 +47,8 @@ class ContentFilterResult:
 
 
 class ContentFilterCodes(Enum):
+    """Content filter codes."""
+
     RESPONSIBLE_AI_POLICY_VIOLATION = "ResponsibleAIPolicyViolation"
 
 

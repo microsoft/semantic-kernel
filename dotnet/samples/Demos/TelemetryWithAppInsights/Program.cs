@@ -323,7 +323,7 @@ public sealed class Program
                         AzureOpenAIServiceKey => new OpenAIPromptExecutionSettings()
                         {
                             Temperature = 0,
-                            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                         },
                         GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
                         {

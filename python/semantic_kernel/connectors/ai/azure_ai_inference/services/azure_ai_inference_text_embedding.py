@@ -3,26 +3,24 @@
 import sys
 from typing import TYPE_CHECKING, Any
 
-from azure.ai.inference.aio import EmbeddingsClient
-from azure.ai.inference.models import EmbeddingsResult
-from azure.core.credentials import AzureKeyCredential
-from numpy import array, ndarray
-from pydantic import ValidationError
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
+from azure.ai.inference.aio import EmbeddingsClient
+from azure.ai.inference.models import EmbeddingsResult
+from numpy import array, ndarray
+
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
+    AzureAIInferenceBase,
+    AzureAIInferenceClientType,
+)
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -61,26 +59,14 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
         """
-        if not client:
-            try:
-                azure_ai_inference_settings = AzureAIInferenceSettings.create(
-                    api_key=api_key,
-                    endpoint=endpoint,
-                    env_file_path=env_file_path,
-                    env_file_encoding=env_file_encoding,
-                )
-            except ValidationError as e:
-                raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
-
-            client = EmbeddingsClient(
-                endpoint=str(azure_ai_inference_settings.endpoint),
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-                user_agent=SEMANTIC_KERNEL_USER_AGENT,
-            )
-
         super().__init__(
             ai_model_id=ai_model_id,
             service_id=service_id or ai_model_id,
+            client_type=AzureAIInferenceClientType.Embeddings,
+            api_key=api_key,
+            endpoint=endpoint,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
             client=client,
         )
 

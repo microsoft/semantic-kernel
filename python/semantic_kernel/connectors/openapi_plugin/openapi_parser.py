@@ -4,24 +4,24 @@ import logging
 from collections import OrderedDict
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Final
-from urllib.parse import urlparse
 
 from prance import ResolvingParser
 
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
+    RestApiExpectedResponse,
+)
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
-    RestApiOperationExpectedResponse,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter import RestApiOperationParameter
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_parameter_location import (
-    RestApiOperationParameterLocation,
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload_property import (
+    RestApiPayloadProperty,
 )
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload_property import (
-    RestApiOperationPayloadProperty,
-)
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirement import RestApiSecurityRequirement
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme import RestApiSecurityScheme
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -34,7 +34,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
 class OpenApiParser:
     """NOTE: SK Python only supports the OpenAPI Spec >=3.0.
 
@@ -61,28 +60,29 @@ class OpenApiParser:
 
     def _parse_parameters(self, parameters: list[dict[str, Any]]):
         """Parse the parameters from the OpenAPI document."""
-        result: list[RestApiOperationParameter] = []
+        result: list[RestApiParameter] = []
         for param in parameters:
-            name = param["name"]
-            type = param["schema"]["type"]
+            name: str = param["name"]
             if not param.get("in"):
                 raise PluginInitializationError(f"Parameter {name} is missing 'in' field")
-            location = RestApiOperationParameterLocation(param["in"])
-            description = param.get("description", None)
-            is_required = param.get("required", False)
+            if param.get("content", None) is not None:
+                # The schema and content fields are mutually exclusive.
+                raise PluginInitializationError(f"Parameter {name} cannot have a 'content' field. Expected: schema.")
+            location = RestApiParameterLocation(param["in"])
+            description: str = param.get("description", None)
+            is_required: bool = param.get("required", False)
             default_value = param.get("default", None)
-            schema = param.get("schema", None)
-            schema_type = schema.get("type", None) if schema else "string"
+            schema: dict[str, Any] | None = param.get("schema", None)
 
             result.append(
-                RestApiOperationParameter(
+                RestApiParameter(
                     name=name,
-                    type=type,
+                    type=schema.get("type", "string") if schema else "string",
                     location=location,
                     description=description,
                     is_required=is_required,
                     default_value=default_value,
-                    schema=schema_type,
+                    schema=schema if schema else {"type": "string"},
                 )
             )
         return result
@@ -102,7 +102,7 @@ class OpenApiParser:
         for property_name, property_schema in schema.get("properties", {}).items():
             default_value = property_schema.get("default", None)
 
-            property = RestApiOperationPayloadProperty(
+            property = RestApiPayloadProperty(
                 name=property_name,
                 type=property_schema.get("type", None),
                 is_required=property_name in required_properties,
@@ -118,7 +118,7 @@ class OpenApiParser:
 
     def _create_rest_api_operation_payload(
         self, operation_id: str, request_body: dict[str, Any]
-    ) -> RestApiOperationPayload | None:
+    ) -> RestApiPayload | None:
         if request_body is None or request_body.get("content") is None:
             return None
 
@@ -134,16 +134,14 @@ class OpenApiParser:
         payload_properties = self._get_payload_properties(
             operation_id, media_type_metadata["schema"], media_type_metadata["schema"].get("required", set())
         )
-        return RestApiOperationPayload(
+        return RestApiPayload(
             media_type,
             payload_properties,
             request_body.get("description"),
             schema=media_type_metadata.get("schema", None),
         )
 
-    def _create_response(
-        self, responses: dict[str, Any]
-    ) -> Generator[tuple[str, RestApiOperationExpectedResponse], None, None]:
+    def _create_response(self, responses: dict[str, Any]) -> Generator[tuple[str, RestApiExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
                 (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
@@ -153,60 +151,130 @@ class OpenApiParser:
                 description = response_value.get("description") or matching_schema.get("description", "")
                 yield (
                     response_key,
-                    RestApiOperationExpectedResponse(
+                    RestApiExpectedResponse(
                         description=description,
                         media_type=media_type,
                         schema=matching_schema if matching_schema else None,
                     ),
                 )
 
+    def _parse_security_schemes(self, components: dict) -> dict[str, dict]:
+        security_schemes = {}
+        schemes = components.get("securitySchemes", {})
+        for scheme_name, scheme_data in schemes.items():
+            security_schemes[scheme_name] = scheme_data
+        return security_schemes
+
+    def _create_rest_api_security_scheme(self, security_scheme_data: dict) -> RestApiSecurityScheme:
+        return RestApiSecurityScheme(
+            security_scheme_type=security_scheme_data.get("type", ""),
+            description=security_scheme_data.get("description"),
+            name=security_scheme_data.get("name", ""),
+            in_=security_scheme_data.get("in", ""),
+            scheme=security_scheme_data.get("scheme", ""),
+            bearer_format=security_scheme_data.get("bearerFormat"),
+            flows=security_scheme_data.get("flows"),
+            open_id_connect_url=security_scheme_data.get("openIdConnectUrl", ""),
+        )
+
+    def _create_security_requirements(
+        self,
+        security: list[dict[str, list[str]]],
+        security_schemes: dict[str, dict],
+    ) -> list[RestApiSecurityRequirement]:
+        security_requirements: list[RestApiSecurityRequirement] = []
+
+        for requirement in security:
+            for scheme_name, scopes in requirement.items():
+                scheme_data = security_schemes.get(scheme_name)
+                if not scheme_data:
+                    raise PluginInitializationError(f"Security scheme '{scheme_name}' is not defined in components.")
+                scheme = self._create_rest_api_security_scheme(scheme_data)
+                security_requirements.append(RestApiSecurityRequirement({scheme: scopes}))
+
+        return security_requirements
+
     def create_rest_api_operations(
         self,
         parsed_document: Any,
         execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
     ) -> dict[str, RestApiOperation]:
-        """Create the REST API Operations from the parsed OpenAPI document.
+        """Create REST API operations from the parsed OpenAPI document.
 
         Args:
-            parsed_document: The parsed OpenAPI document
-            execution_settings: The execution settings
+            parsed_document: The parsed OpenAPI document.
+            execution_settings: The execution settings.
 
         Returns:
-            A dictionary of RestApiOperation objects keyed by operationId
+            A dictionary of RestApiOperation instances.
         """
+        from semantic_kernel.connectors.openapi_plugin import OperationSelectionPredicateContext
+
+        components = parsed_document.get("components", {})
+        security_schemes = self._parse_security_schemes(components)
+
         paths = parsed_document.get("paths", {})
         request_objects = {}
 
-        base_url = "/"
         servers = parsed_document.get("servers", [])
-        base_url = servers[0].get("url") if servers else "/"
 
         if execution_settings and execution_settings.server_url_override:
-            base_url = execution_settings.server_url_override
+            # Override the servers with the provided URL
+            server_urls = [{"url": execution_settings.server_url_override, "variables": {}}]
+        elif servers:
+            # Process servers, ensuring we capture their variables
+            server_urls = []
+            for server in servers:
+                server_entry = {
+                    "url": server.get("url", "/"),
+                    "variables": server.get("variables", {}),
+                    "description": server.get("description", ""),
+                }
+                server_urls.append(server_entry)
+        else:
+            # Default server if none specified
+            server_urls = [{"url": "/", "variables": {}, "description": ""}]
 
         for path, methods in paths.items():
             for method, details in methods.items():
                 request_method = method.lower()
-
-                parameters = details.get("parameters", [])
                 operationId = details.get("operationId", path + "_" + request_method)
+
                 summary = details.get("summary", None)
                 description = details.get("description", None)
 
+                context = OperationSelectionPredicateContext(operationId, path, method, description)
+                if (
+                    execution_settings
+                    and execution_settings.operation_selection_predicate
+                    and not execution_settings.operation_selection_predicate(context)
+                ):
+                    logger.info(f"Skipping operation {operationId} based on custom predicate.")
+                    continue
+
+                if execution_settings and operationId in execution_settings.operations_to_exclude:
+                    logger.info(f"Skipping operation {operationId} as it is excluded.")
+                    continue
+
+                parameters = details.get("parameters", [])
                 parsed_params = self._parse_parameters(parameters)
                 request_body = self._create_rest_api_operation_payload(operationId, details.get("requestBody", None))
                 responses = dict(self._create_response(details.get("responses", {})))
 
+                operation_security = details.get("security", [])
+                security_requirements = self._create_security_requirements(operation_security, security_schemes)
+
                 rest_api_operation = RestApiOperation(
                     id=operationId,
                     method=request_method,
-                    server_url=urlparse(base_url),
+                    servers=server_urls,
                     path=path,
                     params=parsed_params,
                     request_body=request_body,
                     summary=summary,
                     description=description,
                     responses=OrderedDict(responses),
+                    security_requirements=security_requirements,
                 )
 
                 request_objects[operationId] = rest_api_operation

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,8 +18,10 @@ namespace Filtering;
 /// </summary>
 public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
-    [Fact]
-    public async Task LoggingAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LoggingAsync(bool isStreaming)
     {
         // Initialize kernel with chat completion service.
         var builder = Kernel
@@ -57,7 +60,7 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         // Enable automatic function calling.
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             ModelId = "gpt-4"
         };
 
@@ -69,9 +72,25 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         {
             // Invoke prompt with arguments.
             const string Prompt = "Given the current time of day and weather, what is the likely color of the sky in {{$city}}?";
-            var result = await kernel.InvokePromptAsync(Prompt, new(executionSettings) { ["city"] = "Boston" });
 
-            Console.WriteLine(result);
+            var arguments = new KernelArguments(executionSettings) { ["city"] = "Boston" };
+
+            if (isStreaming)
+            {
+                await foreach (var item in kernel.InvokePromptStreamingAsync<StreamingChatMessageContent>(Prompt, arguments))
+                {
+                    if (item.Content is not null)
+                    {
+                        Console.Write(item.Content);
+                    }
+                }
+            }
+            else
+            {
+                var result = await kernel.InvokePromptAsync(Prompt, arguments);
+
+                Console.WriteLine(result);
+            }
         }
 
         // Output:
@@ -127,16 +146,17 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 await next(context);
 
                 logger.LogInformation("Function {FunctionName} succeeded.", context.Function.Name);
-                logger.LogTrace("Function result: {Result}", context.Result.ToString());
 
-                if (logger.IsEnabled(LogLevel.Information))
+                if (context.IsStreaming)
                 {
-                    var usage = context.Result.Metadata?["Usage"];
-
-                    if (usage is not null)
-                    {
-                        logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
-                    }
+                    // Overriding the result in a streaming scenario enables the filter to stream chunks 
+                    // back to the operation's origin without interrupting the data flow.
+                    var enumerable = context.Result.GetValue<IAsyncEnumerable<StreamingChatMessageContent>>();
+                    context.Result = new FunctionResult(context.Result, ProcessFunctionResultStreamingAsync(enumerable!));
+                }
+                else
+                {
+                    ProcessFunctionResult(context.Result);
                 }
             }
             catch (Exception exception)
@@ -154,6 +174,53 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                     // More information here: https://opentelemetry.io/docs/specs/semconv/general/metrics/#instrument-units
                     logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
                 }
+            }
+        }
+
+        private void ProcessFunctionResult(FunctionResult functionResult)
+        {
+            string? result = functionResult.GetValue<string>();
+            object? usage = functionResult.Metadata?["Usage"];
+
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                logger.LogTrace("Function result: {Result}", result);
+            }
+
+            if (logger.IsEnabled(LogLevel.Information) && usage is not null)
+            {
+                logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
+            }
+        }
+
+        private async IAsyncEnumerable<StreamingChatMessageContent> ProcessFunctionResultStreamingAsync(IAsyncEnumerable<StreamingChatMessageContent> data)
+        {
+            object? usage = null;
+
+            var stringBuilder = new StringBuilder();
+
+            await foreach (var item in data)
+            {
+                yield return item;
+
+                if (item.Content is not null)
+                {
+                    stringBuilder.Append(item.Content);
+                }
+
+                usage = item.Metadata?["Usage"];
+            }
+
+            var result = stringBuilder.ToString();
+
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                logger.LogTrace("Function result: {Result}", result);
+            }
+
+            if (logger.IsEnabled(LogLevel.Information) && usage is not null)
+            {
+                logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
             }
         }
     }

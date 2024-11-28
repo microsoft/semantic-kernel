@@ -3,6 +3,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -28,10 +29,14 @@ public class KernelReturnParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")), JsonSerializer.Serialize(new KernelReturnParameterMetadata { ParameterType = typeof(string) }.Schema));
     }
 
-    [Fact]
-    public void ItIncludesDescriptionInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelReturnParameterMetadata { Description = "d", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelReturnParameterMetadata(jsos) { Description = "d", ParameterType = typeof(int) } :
+            new KernelReturnParameterMetadata() { Description = "d", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"d" }""")), JsonSerializer.Serialize(m.Schema));
     }
 

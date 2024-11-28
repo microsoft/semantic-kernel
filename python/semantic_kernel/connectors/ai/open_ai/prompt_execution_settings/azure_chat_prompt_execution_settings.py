@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class AzureChatRequestBase(KernelBaseModel):
+    """Base class for Azure Chat requests."""
+
     model_config = ConfigDict(
         alias_generator=AliasGenerator(validation_alias=to_camel, serialization_alias=to_snake),
         use_enum_values=True,
@@ -27,21 +29,53 @@ class AzureChatRequestBase(KernelBaseModel):
 
 
 class ConnectionStringAuthentication(AzureChatRequestBase):
+    """Connection string authentication."""
+
     type: Annotated[Literal["ConnectionString", "connection_string"], AfterValidator(to_snake)] = "connection_string"
     connection_string: str | None = None
 
 
 class ApiKeyAuthentication(AzureChatRequestBase):
+    """API key authentication."""
+
     type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
     key: str | None = None
 
 
+class SystemAssignedManagedIdentityAuthentication(AzureChatRequestBase):
+    """System assigned managed identity authentication."""
+
+    type: Annotated[
+        Literal["SystemAssignedManagedIdentity", "system_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "system_assigned_managed_identity"
+
+
+class UserAssignedManagedIdentityAuthentication(AzureChatRequestBase):
+    """User assigned managed identity authentication."""
+
+    type: Annotated[
+        Literal["UserAssignedManagedIdentity", "user_assigned_managed_identity"], AfterValidator(to_snake)
+    ] = "user_assigned_managed_identity"
+    managed_identity_resource_id: str | None
+
+
+class AccessTokenAuthentication(AzureChatRequestBase):
+    """Access token authentication."""
+
+    type: Annotated[Literal["AccessToken", "access_token"], AfterValidator(to_snake)] = "access_token"
+    access_token: str | None
+
+
 class AzureEmbeddingDependency(AzureChatRequestBase):
+    """Azure embedding dependency."""
+
     type: Annotated[Literal["DeploymentName", "deployment_name"], AfterValidator(to_snake)] = "deployment_name"
     deployment_name: str | None = None
 
 
 class DataSourceFieldsMapping(AzureChatRequestBase):
+    """Data source fields mapping."""
+
     title_field: str | None = None
     url_field: str | None = None
     filepath_field: str | None = None
@@ -51,6 +85,8 @@ class DataSourceFieldsMapping(AzureChatRequestBase):
 
 
 class AzureDataSourceParameters(AzureChatRequestBase):
+    """Azure data source parameters."""
+
     index_name: str
     index_language: str | None = None
     fields_mapping: DataSourceFieldsMapping | None = None
@@ -64,6 +100,8 @@ class AzureDataSourceParameters(AzureChatRequestBase):
 
 
 class AzureCosmosDBDataSourceParameters(AzureDataSourceParameters):
+    """Azure Cosmos DB data source parameters."""
+
     authentication: ConnectionStringAuthentication | None = None
     database_name: str | None = None
     container_name: str | None = None
@@ -71,19 +109,31 @@ class AzureCosmosDBDataSourceParameters(AzureDataSourceParameters):
 
 
 class AzureCosmosDBDataSource(AzureChatRequestBase):
+    """Azure Cosmos DB data source."""
+
     type: Literal["azure_cosmos_db"] = "azure_cosmos_db"
     parameters: AzureCosmosDBDataSourceParameters
 
 
 class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
+    """Azure AI Search data source parameters."""
+
     endpoint: str | None = None
     query_type: Annotated[
         Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"], AfterValidator(to_snake)
     ] = "simple"
-    authentication: ApiKeyAuthentication | None = None
+    authentication: (
+        ApiKeyAuthentication
+        | SystemAssignedManagedIdentityAuthentication
+        | UserAssignedManagedIdentityAuthentication
+        | AccessTokenAuthentication
+        | None
+    ) = None
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):
+    """Azure AI Search data source."""
+
     type: Literal["azure_search"] = "azure_search"
     parameters: Annotated[dict, AzureAISearchDataSourceParameters]
 
@@ -104,6 +154,8 @@ DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], 
 
 
 class ExtraBody(KernelBaseModel):
+    """Extra body for the Azure Chat Completion endpoint."""
+
     data_sources: list[DataSource] | None = None
     input_language: str | None = Field(None, serialization_alias="inputLanguage")
     output_language: str | None = Field(None, serialization_alias="outputLanguage")

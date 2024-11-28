@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import datetime
-
-from azure.core.credentials import AccessToken
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -15,36 +10,8 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-
-auth_token: AccessToken | None = None
-
-ACA_TOKEN_ENDPOINT: str = "https://acasessions.io/.default"  # nosec
-
-
-async def auth_callback() -> str:
-    """Auth callback for the SessionsPythonTool.
-    This is a sample auth callback that shows how to use Azure's DefaultAzureCredential
-    to get an access token.
-    """
-    global auth_token
-    current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-
-    if not auth_token or auth_token.expires_on < current_utc_timestamp:
-        credential = DefaultAzureCredential()
-
-        try:
-            auth_token = credential.get_token(ACA_TOKEN_ENDPOINT)
-        except ClientAuthenticationError as cae:
-            err_messages = getattr(cae, "messages", [])
-            raise FunctionExecutionException(
-                f"Failed to retrieve the client auth token with messages: {' '.join(err_messages)}"
-            ) from cae
-
-    return auth_token.token
-
 
 kernel = Kernel()
 
@@ -54,9 +21,7 @@ chat_service = AzureChatCompletion(
 )
 kernel.add_service(chat_service)
 
-sessions_tool = SessionsPythonTool(
-    auth_callback=auth_callback,
-)
+sessions_tool = SessionsPythonTool()
 
 kernel.add_plugin(sessions_tool, "SessionsTool")
 kernel.add_plugin(TimePlugin(), "Time")

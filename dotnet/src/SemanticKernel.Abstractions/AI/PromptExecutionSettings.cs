@@ -66,6 +66,42 @@ public class PromptExecutionSettings
     }
 
     /// <summary>
+    /// Gets or sets the behavior defining the way functions are chosen by LLM and how they are invoked by AI connectors.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// <item>
+    /// To force the model to always call one or more functions set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// <item>
+    /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// </list>
+    /// For all the behaviors that presume the model to call functions, auto-invoke can be specified. If LLM
+    /// call a function and auto-invoke enabled, SK will attempt to resolve that function from the functions
+    /// available, and if found, rather than returning the response back to the caller, it will invoke the function automatically.
+    /// The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
+    /// </remarks>
+    [JsonPropertyName("function_choice_behavior")]
+    public FunctionChoiceBehavior? FunctionChoiceBehavior
+    {
+        get => this._functionChoiceBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._functionChoiceBehavior = value;
+        }
+    }
+
+    /// <summary>
     /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
     /// <remarks>
@@ -116,6 +152,7 @@ public class PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ServiceId = this.ServiceId,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
     }
@@ -137,6 +174,7 @@ public class PromptExecutionSettings
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
     private string? _serviceId;
+    private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
 }

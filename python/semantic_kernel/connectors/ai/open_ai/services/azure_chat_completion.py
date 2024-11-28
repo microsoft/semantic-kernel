@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import json
 import logging
 from collections.abc import Mapping
@@ -48,6 +49,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -69,6 +71,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 in the env vars or .env file.
             ad_token (str | None): The Azure Active Directory token. (Optional)
             ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
+            token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
             default_headers (Mapping[str, str]): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
@@ -84,15 +87,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 api_version=api_version,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Failed to validate settings: {exc}") from exc
 
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
-
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
 
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
@@ -103,6 +104,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.CHAT,
             client=async_client,
@@ -180,7 +182,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any] | None:
         """Get the tool message from a choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.model_extra is not None:
+        # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
+        if content and content.model_extra is not None:
             return content.model_extra.get("context", None)
         # openai allows extra content, so model_extra will be a dict, but we need to check anyway, but no way to test.
         return None  # pragma: no cover

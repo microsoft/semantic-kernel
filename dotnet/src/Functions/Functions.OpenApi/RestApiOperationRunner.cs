@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,14 +46,14 @@ internal sealed class RestApiOperationRunner
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
 
     /// <summary>
-    /// A dictionary containing the content type as the key and the corresponding content serializer as the value.
+    /// A dictionary containing the content type as the key and the corresponding content reader as the value.
     /// </summary>
-    private static readonly Dictionary<string, HttpResponseContentSerializer> s_serializerByContentType = new()
+    private static readonly Dictionary<string, HttpResponseContentReader> s_contentReaderByContentType = new()
     {
-        { "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
-        { "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
-        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+        { "image", async (context, cancellationToken) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
+        { "text", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
+        { "application/json", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)},
+        { "application/xml", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)}
     };
 
     /// <summary>
@@ -83,6 +84,11 @@ internal sealed class RestApiOperationRunner
     private readonly bool _enablePayloadNamespacing;
 
     /// <summary>
+    /// Custom HTTP response content reader.
+    /// </summary>
+    private readonly HttpResponseContentReader? _httpResponseContentReader;
+
+    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -93,17 +99,20 @@ internal sealed class RestApiOperationRunner
     /// </param>
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
+    /// <param name="httpResponseContentReader">Custom HTTP response content reader.</param>
     public RestApiOperationRunner(
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
         bool enableDynamicPayload = false,
-        bool enablePayloadNamespacing = false)
+        bool enablePayloadNamespacing = false,
+        HttpResponseContentReader? httpResponseContentReader = null)
     {
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
+        this._httpResponseContentReader = httpResponseContentReader;
 
         // If no auth callback provided, use empty function
         if (authCallback is null)
@@ -197,15 +206,26 @@ internal sealed class RestApiOperationRunner
             }
         }
 
+        RestApiOperationResponse? response = null;
+        HttpResponseMessage? responseMessage = null;
+
         try
         {
-            using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+            responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
+            response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
 
             response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
             return response;
+        }
+        catch (HttpRequestException ex)
+        {
+            var exception = new HttpOperationException(message: ex.Message, innerException: ex);
+            exception.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            exception.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            exception.Data.Add(HttpRequestBody, payload);
+            throw exception;
         }
         catch (HttpOperationException ex)
         {
@@ -237,23 +257,33 @@ internal sealed class RestApiOperationRunner
 
             throw;
         }
+        finally
+        {
+            // Dispose the response message if the content is not a stream.
+            // Otherwise, the caller is responsible for disposing of both the stream content and the response message.
+            if (response?.Content is not HttpResponseStream)
+            {
+                responseMessage?.Dispose();
+            }
+        }
     }
 
     /// <summary>
-    /// Serializes the response content of an HTTP request.
+    /// Reads the response content of an HTTP request and creates an operation response.
     /// </summary>
-    /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    /// <param name="responseMessage">The HTTP response message.</param>
     /// <param name="payload">The payload sent in the HTTP request.</param>
-    /// <param name="responseMessage">The HttpResponseMessage object containing the response content to be serialized.</param>
-    /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpResponseMessage responseMessage)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The operation response.</returns>
+    private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
         if (responseMessage.StatusCode == HttpStatusCode.NoContent)
         {
             return new RestApiOperationResponse(null, null)
             {
-                RequestMethod = request.Method.Method,
-                RequestUri = request.RequestUri,
+                RequestMethod = requestMessage.Method.Method,
+                RequestUri = requestMessage.RequestUri,
                 RequestPayload = payload,
             };
         }
@@ -262,32 +292,12 @@ internal sealed class RestApiOperationRunner
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
-        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
-        if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
+        var content = await this.ReadHttpContentAsync(requestMessage, responseMessage, mediaType, cancellationToken).ConfigureAwait(false);
+
+        return new RestApiOperationResponse(content, contentType.ToString())
         {
-            // Split the media type into a primary-type and a sub-type
-            var mediaTypeParts = mediaType.Split('/');
-            if (mediaTypeParts.Length != 2)
-            {
-                throw new KernelException($"The string `{mediaType}` is not a valid media type.");
-            }
-
-            var primaryMediaType = mediaTypeParts.First();
-
-            // Try to obtain the content serializer by the primary type (e.g., text, application, image)
-            if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
-            {
-                throw new KernelException($"The content type `{mediaType}` is not supported.");
-            }
-        }
-
-        // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(responseMessage.Content).ConfigureAwait(false);
-
-        return new RestApiOperationResponse(serializedContent, contentType!.ToString())
-        {
-            RequestMethod = request.Method.Method,
-            RequestUri = request.RequestUri,
+            RequestMethod = requestMessage.Method.Method,
+            RequestUri = requestMessage.RequestUri,
             RequestPayload = payload,
         };
     }
@@ -330,7 +340,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The JSON payload the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         // Build operation payload dynamically
         if (this._enableDynamicPayload)
@@ -361,7 +371,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="arguments">The arguments.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name.</param>
     /// <returns>The JSON object.</returns>
-    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
+    private JsonObject BuildJsonObject(IList<RestApiPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
     {
         var result = new JsonObject();
 
@@ -376,9 +386,16 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (arguments.TryGetValue(argumentName, out object? propertyValue) && propertyValue is not null)
+            // Use property argument name to look up the property value
+            if (!string.IsNullOrEmpty(propertyMetadata.ArgumentName) && arguments.TryGetValue(propertyMetadata.ArgumentName!, out object? argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, propertyValue));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
+                continue;
+            }
+            // Use property name to look up the property value
+            else if (arguments.TryGetValue(argumentName, out argument) && argument is not null)
+            {
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
                 continue;
             }
 
@@ -423,7 +440,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The text payload and corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object? Payload, HttpContent Content) BuildPlainTextPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string payload)
         {
@@ -462,6 +479,61 @@ internal sealed class RestApiOperationRunner
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
         return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
+    }
+
+    /// <summary>
+    /// Reads the HTTP content.
+    /// </summary>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    /// <param name="responseMessage">The HTTP response message.</param>
+    /// <param name="mediaType">The media type of the content.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The HTTP content.</returns>
+    private async Task<object?> ReadHttpContentAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, string mediaType, CancellationToken cancellationToken)
+    {
+        object? content = null;
+
+        // Read content using the custom reader if provided.
+        if (this._httpResponseContentReader is not null)
+        {
+            content = await this._httpResponseContentReader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
+        }
+
+        // If no custom reader is provided or the custom reader did not return any content, read the content using the default readers.
+        if (content is null)
+        {
+            // Obtain the content reader by media type (e.g., text/plain, application/json, image/jpg)
+            if (!s_contentReaderByContentType.TryGetValue(mediaType, out var reader))
+            {
+                // Split the media type into a primary-type and a sub-type
+                var mediaTypeParts = mediaType.Split('/');
+                if (mediaTypeParts.Length != 2)
+                {
+                    throw new KernelException($"The string `{mediaType}` is not a valid media type.");
+                }
+
+                var primaryMediaType = mediaTypeParts.First();
+
+                // Try to obtain the content reader by the primary type (e.g., text, application, image)
+                if (!s_contentReaderByContentType.TryGetValue(primaryMediaType, out reader))
+                {
+                    throw new KernelException($"The content type `{mediaType}` is not supported.");
+                }
+            }
+
+            content = await reader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
+        }
+
+        // Handling the case when the content is a stream
+        if (content is Stream stream)
+        {
+#pragma warning disable CA2000 // Dispose objects before losing scope.
+            // Wrap the stream content to capture the HTTP response message, delegating its disposal to the caller.
+            content = new HttpResponseStream(stream, responseMessage);
+#pragma warning restore CA2000 // Dispose objects before losing scope.
+        }
+
+        return content;
     }
 
     #endregion

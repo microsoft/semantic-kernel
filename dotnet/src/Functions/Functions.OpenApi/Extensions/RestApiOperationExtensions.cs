@@ -25,12 +25,12 @@ internal static partial class RestApiOperationExtensions
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(
+    public static IReadOnlyList<RestApiParameter> GetParameters(
         this RestApiOperation operation,
         bool addPayloadParamsFromMetadata = true,
         bool enablePayloadNamespacing = false)
     {
-        var parameters = new List<RestApiOperationParameter>(operation.Parameters);
+        var parameters = new List<RestApiParameter>(operation.Parameters);
 
         // Add payload parameters
         if (operation.Payload is not null)
@@ -38,10 +38,14 @@ internal static partial class RestApiOperationExtensions
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
 
-        // Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = InvalidSymbolsRegex().Replace(parameter.Name, "_");
+            // The functionality of replacing invalid symbols and setting the argument name   
+            // was introduced to handle dashes allowed in OpenAPI parameter names and   
+            // not supported by SK at that time. More context -   
+            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780   
+            // It's kept for backward compatibility only.  
+            parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
@@ -55,7 +59,7 @@ internal static partial class RestApiOperationExtensions
     /// <returns>The default return parameter metadata, if any.</returns>
     public static KernelReturnParameterMetadata? GetDefaultReturnParameter(this RestApiOperation operation, string[]? preferredResponses = null)
     {
-        RestApiOperationExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
+        RestApiExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
             restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
@@ -64,12 +68,12 @@ internal static partial class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Retrieves the default response for a given REST API operation.
+    /// Retrieves the default response.
     /// </summary>
-    /// <param name="responses">The REST API operation responses to parse.</param>
+    /// <param name="responses">Possible REST API responses.</param>
     /// <param name="preferredResponses">The preferred response codes to use when selecting the default response.</param>
     /// <returns>The default response, if any.</returns>
-    private static RestApiOperationExpectedResponse? GetDefaultResponse(IDictionary<string, RestApiOperationExpectedResponse> responses, string[] preferredResponses)
+    private static RestApiExpectedResponse? GetDefaultResponse(IDictionary<string, RestApiExpectedResponse> responses, string[] preferredResponses)
     {
         foreach (var code in preferredResponses)
         {
@@ -90,8 +94,8 @@ internal static partial class RestApiOperationExtensions
     /// <param name="useParametersFromMetadata">Flag indicating whether to include parameters from metadata.
     /// If false or not specified, the 'payload' and 'content-type' parameters are added instead.</param>
     /// <param name="enableNamespacing">Flag indicating whether to namespace payload parameter names.</param>
-    /// <returns>A list of <see cref="RestApiOperationParameter"/> representing the payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
+    /// <returns>A list of <see cref="RestApiParameter"/> representing the payload parameters.</returns>
+    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
     {
         if (useParametersFromMetadata)
         {
@@ -122,15 +126,15 @@ internal static partial class RestApiOperationExtensions
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <returns>The 'content-type' artificial parameter.</returns>
-    private static RestApiOperationParameter CreateContentTypeArtificialParameter(RestApiOperation operation)
+    private static RestApiParameter CreateContentTypeArtificialParameter(RestApiOperation operation)
     {
-        return new RestApiOperationParameter(
+        return new RestApiParameter(
             RestApiOperation.ContentTypeArgumentName,
             "string",
             isRequired: false,
             expand: false,
-            RestApiOperationParameterLocation.Body,
-            RestApiOperationParameterStyle.Simple,
+            RestApiParameterLocation.Body,
+            RestApiParameterStyle.Simple,
             description: "Content type of REST API request body.");
     }
 
@@ -139,31 +143,31 @@ internal static partial class RestApiOperationExtensions
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <returns>The 'payload' artificial parameter.</returns>
-    private static RestApiOperationParameter CreatePayloadArtificialParameter(RestApiOperation operation)
+    private static RestApiParameter CreatePayloadArtificialParameter(RestApiOperation operation)
     {
-        return new RestApiOperationParameter(
+        return new RestApiParameter(
             RestApiOperation.PayloadArgumentName,
             operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
             isRequired: true,
             expand: false,
-            RestApiOperationParameterLocation.Body,
-            RestApiOperationParameterStyle.Simple,
+            RestApiParameterLocation.Body,
+            RestApiParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.",
             schema: operation.Payload?.Schema);
     }
 
     /// <summary>
-    /// Retrieves parameters from REST API operation payload metadata.
+    /// Retrieves parameters from REST API payload metadata.
     /// </summary>
-    /// <param name="properties">The REST API operation payload properties.</param>
+    /// <param name="properties">The REST API payload properties.</param>
     /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
     /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(IList<RestApiOperationPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
+    private static List<RestApiParameter> GetParametersFromPayloadMetadata(IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
     {
-        var parameters = new List<RestApiOperationParameter>();
+        var parameters = new List<RestApiParameter>();
 
         foreach (var property in properties)
         {
@@ -171,16 +175,20 @@ internal static partial class RestApiOperationExtensions
 
             if (!property.Properties.Any())
             {
-                parameters.Add(new RestApiOperationParameter(
-                    parameterName,
-                    property.Type,
-                    property.IsRequired,
+                parameters.Add(new RestApiParameter(
+                    name: parameterName,
+                    type: property.Type,
+                    isRequired: property.IsRequired,
                     expand: false,
-                    RestApiOperationParameterLocation.Body,
-                    RestApiOperationParameterStyle.Simple,
+                    location: RestApiParameterLocation.Body,
+                    style: RestApiParameterStyle.Simple,
                     defaultValue: property.DefaultValue,
                     description: property.Description,
-                    schema: property.Schema));
+                    format: property.Format,
+                    schema: property.Schema)
+                {
+                    ArgumentName = property.ArgumentName
+                });
             }
 
             parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
@@ -196,7 +204,7 @@ internal static partial class RestApiOperationExtensions
     /// <param name="rootPropertyName">The root property name to be used for constructing the full property name.</param>
     /// <param name="enableNamespacing">Determines whether to add namespace to property name or not.</param>
     /// <returns>The property name.</returns>
-    private static string GetPropertyName(RestApiOperationPayloadProperty property, string? rootPropertyName, bool enableNamespacing = false)
+    private static string GetPropertyName(RestApiPayloadProperty property, string? rootPropertyName, bool enableNamespacing = false)
     {
         if (enableNamespacing)
         {

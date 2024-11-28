@@ -16,6 +16,8 @@ ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}" if SEMANTIC
 
 @experimental_class
 class AstraClient:
+    """AstraClient."""
+
     def __init__(
         self,
         astra_id: str,

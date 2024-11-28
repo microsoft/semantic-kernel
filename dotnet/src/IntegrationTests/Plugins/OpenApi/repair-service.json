@@ -6,9 +6,9 @@
         "version": "1.0.0"
     },
     "servers": [
-        {
-            "url": "https://piercerepairsapi.azurewebsites.net/"
-        }
+      {
+        "url": "https://piercerepairsapi.azurewebsites.net"
+      }
     ],
     "paths": {
         "/repairs": {

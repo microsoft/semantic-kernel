@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -32,6 +33,11 @@ public sealed class PromptRenderContext
     /// The default is <see cref="CancellationToken.None"/>.
     /// </summary>
     public CancellationToken CancellationToken { get; init; }
+
+    /// <summary>
+    /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
+    /// </summary>
+    public bool IsStreaming { get; init; }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.

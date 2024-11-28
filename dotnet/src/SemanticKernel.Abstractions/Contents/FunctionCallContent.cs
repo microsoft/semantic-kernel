@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -11,9 +10,8 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents a function call requested by LLM.
+/// Represents a function call requested by AI model.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionCallContent : KernelContent
 {
     /// <summary>
@@ -40,7 +38,7 @@ public sealed class FunctionCallContent : KernelContent
     public KernelArguments? Arguments { get; }
 
     /// <summary>
-    /// The exception that occurred while mapping original LLM function call to the model class.
+    /// The exception that occurred while mapping original AI model function call to the model class.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
@@ -75,7 +73,7 @@ public sealed class FunctionCallContent : KernelContent
 
         if (this.Exception is not null)
         {
-            return new FunctionResultContent(this, this.Exception.Message);
+            throw this.Exception;
         }
 
         if (kernel.Plugins.TryGetFunction(this.PluginName, this.FunctionName, out KernelFunction? function))

@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-public abstract class BaseTest
+public abstract class BaseTest : TextWriter
 {
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
@@ -25,7 +28,7 @@ public abstract class BaseTest
 
     protected bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
-    protected string ApiKey =>
+    protected string? ApiKey =>
         this.UseOpenAIConfig ?
             TestConfiguration.OpenAI.ApiKey :
             TestConfiguration.AzureOpenAI.ApiKey;
@@ -37,28 +40,45 @@ public abstract class BaseTest
             TestConfiguration.OpenAI.ChatModelId :
             TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
+    /// <summary>
+    /// Returns true if the test configuration has a valid Bing API key.
+    /// </summary>
+    protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
+
     protected Kernel CreateKernelWithChatCompletion()
     {
         var builder = Kernel.CreateBuilder();
 
+        AddChatCompletionToKernel(builder);
+
+        return builder.Build();
+    }
+
+    protected void AddChatCompletionToKernel(IKernelBuilder builder)
+    {
         if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
                 TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
-        else
+        else if (!string.IsNullOrEmpty(this.ApiKey))
         {
             builder.AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
         }
-
-        return builder.Build();
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                new AzureCliCredential());
+        }
     }
 
-    protected BaseTest(ITestOutputHelper output)
+    protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
     {
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
@@ -70,36 +90,62 @@ public abstract class BaseTest
             .Build();
 
         TestConfiguration.Initialize(configRoot);
+
+        // Redirect System.Console output to the test output if requested
+        if (redirectSystemConsoleOutput)
+        {
+            System.Console.SetOut(this);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override void WriteLine(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    public override void WriteLine(string? format, params object?[] arg)
+        => this.Output.WriteLine(format ?? string.Empty, arg);
+
+    /// <inheritdoc/>
+    public override void WriteLine(string? value)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
+    public override void Write(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
+    public override void Write(char[]? buffer)
+        => this.Output.WriteLine(new string(buffer));
+
+    /// <inheritdoc/>
+    public override Encoding Encoding => Encoding.UTF8;
+
+    /// <summary>
+    /// Outputs the last message in the chat history.
+    /// </summary>
+    /// <param name="chatHistory">Chat history</param>
+    protected void OutputLastMessage(ChatHistory chatHistory)
+    {
+        var message = chatHistory.Last();
+
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
     }
 
     /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// Utility method to write a horizontal rule to the console.
     /// </summary>
-    /// <param name="target">Target object to write</param>
-    public void WriteLine(object? target = null)
-        => this.Output.WriteLine(target ?? string.Empty);
-
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="format">Format string</param>
-    /// <param name="args">Arguments</param>
-    public void WriteLine(string? format, params object?[] args)
-        => this.Output.WriteLine(format ?? string.Empty, args);
-
-    /// <summary>
-    /// This method can be substituted by Console.WriteLine when used in Console apps.
-    /// </summary>
-    /// <param name="message">The message</param>
-    public void WriteLine(string? message)
-        => this.Output.WriteLine(message ?? string.Empty);
-
-    /// <summary>
-    /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
-    /// </summary>
-    /// <param name="target">Target object to write</param>
-    public void Write(object? target = null)
-        => this.Output.WriteLine(target ?? string.Empty);
+    protected void WriteHorizontalRule()
+        => Console.WriteLine(new string('-', HorizontalRuleLength));
 
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
@@ -141,4 +187,8 @@ public abstract class BaseTest
             return response;
         }
     }
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
 }

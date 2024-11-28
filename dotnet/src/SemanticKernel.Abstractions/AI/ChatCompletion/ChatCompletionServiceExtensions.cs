@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -48,7 +50,7 @@ public static class ChatCompletionServiceExtensions
     /// <summary>
     /// Get a single chat message content for the prompt and settings.
     /// </summary>
-    /// <param name="chatCompletionService">The target IChatCompletionSErvice interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="prompt">The standardized prompt input.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -66,7 +68,7 @@ public static class ChatCompletionServiceExtensions
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
     /// </summary>
-    /// <param name="chatCompletionService">The target IChatCompletionService interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="chatHistory">The chat history to complete.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -85,7 +87,7 @@ public static class ChatCompletionServiceExtensions
     /// Get streaming chat message contents for the chat history provided using the specified settings.
     /// </summary>
     /// <exception cref="NotSupportedException">Throws if the specified type is not the same or fail to cast</exception>
-    /// <param name="chatCompletionService">The target IChatCompletionService interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="prompt">The standardized prompt input.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -110,4 +112,164 @@ public static class ChatCompletionServiceExtensions
 
         return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
+
+    /// <summary>Creates an <see cref="IChatClient"/> for the specified <see cref="IChatCompletionService"/>.</summary>
+    /// <param name="service">The chat completion service to be represented as a chat client.</param>
+    /// <returns>
+    /// The <see cref="IChatClient"/>. If the <paramref name="service"/> is an <see cref="IChatClient"/>, the <paramref name="service"/>
+    /// will be returned. Otherwise, a new <see cref="IChatClient"/> will be created that wraps <paramref name="service"/>.
+    /// </returns>
+    [Experimental("SKEXP0001")]
+    public static IChatClient AsChatClient(this IChatCompletionService service)
+    {
+        Verify.NotNull(service);
+
+        return service is IChatClient chatClient ?
+            chatClient :
+            new ChatCompletionServiceChatClient(service);
+    }
+
+    /// <summary>Creates an <see cref="IChatCompletionService"/> for the specified <see cref="IChatClient"/>.</summary>
+    /// <param name="client">The chat client to be represented as a chat completion service.</param>
+    /// <param name="serviceProvider">An optional <see cref="IServiceProvider"/> that can be used to resolve services to use in the instance.</param>
+    /// <returns>
+    /// The <see cref="IChatCompletionService"/>. If <paramref name="client"/> is an <see cref="IChatCompletionService"/>, <paramref name="client"/> will
+    /// be returned. Otherwise, a new <see cref="IChatCompletionService"/> will be created that wraps <paramref name="client"/>.
+    /// </returns>
+    [Experimental("SKEXP0001")]
+    public static IChatCompletionService AsChatCompletionService(this IChatClient client, IServiceProvider? serviceProvider = null)
+    {
+        Verify.NotNull(client);
+
+        return client is IChatCompletionService chatCompletionService ?
+            chatCompletionService :
+            new ChatClientChatCompletionService(client, serviceProvider);
+    }
+
+    /// <summary>Converts a <see cref="ChatMessageContent"/> to a <see cref="ChatMessage"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    internal static ChatMessage ToChatMessage(ChatMessageContent content)
+    {
+        ChatMessage message = new()
+        {
+            AdditionalProperties = content.Metadata is not null ? new(content.Metadata) : null,
+            AuthorName = content.AuthorName,
+            RawRepresentation = content.InnerContent,
+            Role = content.Role.Label is string label ? new ChatRole(label) : ChatRole.User,
+        };
+
+        foreach (var item in content.Items)
+        {
+            AIContent? aiContent = null;
+            switch (item)
+            {
+                case Microsoft.SemanticKernel.TextContent tc:
+                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.SemanticKernel.ImageContent ic:
+                    aiContent =
+                        ic.DataUri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.DataUri, ic.MimeType) :
+                        ic.Uri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.Uri, ic.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.AudioContent ac:
+                    aiContent =
+                        ac.DataUri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.DataUri, ac.MimeType) :
+                        ac.Uri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.Uri, ac.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.BinaryContent bc:
+                    aiContent =
+                        bc.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(bc.DataUri, bc.MimeType) :
+                        bc.Uri is not null ? new Microsoft.Extensions.AI.DataContent(bc.Uri, bc.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.FunctionCallContent fcc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
+                    break;
+
+                case Microsoft.SemanticKernel.FunctionResultContent frc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result);
+                    break;
+            }
+
+            if (aiContent is not null)
+            {
+                aiContent.RawRepresentation = item.InnerContent;
+                aiContent.AdditionalProperties = item.Metadata is not null ? new(item.Metadata) : null;
+
+                message.Contents.Add(aiContent);
+            }
+        }
+
+        return message;
+    }
+
+    /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Microsoft.Extensions.AI.ChatCompletion? completion = null)
+    {
+        ChatMessageContent result = new()
+        {
+            ModelId = completion?.ModelId,
+            AuthorName = message.AuthorName,
+            InnerContent = completion?.RawRepresentation ?? message.RawRepresentation,
+            Metadata = message.AdditionalProperties,
+            Role = new AuthorRole(message.Role.Value),
+        };
+
+        foreach (AIContent content in message.Contents)
+        {
+            KernelContent? resultContent = null;
+            switch (content)
+            {
+                case Microsoft.Extensions.AI.TextContent tc:
+                    resultContent = new Microsoft.SemanticKernel.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.Extensions.AI.ImageContent ic:
+                    resultContent = ic.ContainsData ?
+                        new Microsoft.SemanticKernel.ImageContent(ic.Uri) :
+                        new Microsoft.SemanticKernel.ImageContent(new Uri(ic.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.AudioContent ac:
+                    resultContent = ac.ContainsData ?
+                        new Microsoft.SemanticKernel.AudioContent(ac.Uri) :
+                        new Microsoft.SemanticKernel.AudioContent(new Uri(ac.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.DataContent dc:
+                    resultContent = dc.ContainsData ?
+                        new Microsoft.SemanticKernel.BinaryContent(dc.Uri) :
+                        new Microsoft.SemanticKernel.BinaryContent(new Uri(dc.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.FunctionCallContent fcc:
+                    resultContent = new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null);
+                    break;
+
+                case Microsoft.Extensions.AI.FunctionResultContent frc:
+                    resultContent = new Microsoft.SemanticKernel.FunctionResultContent(frc.Name, null, frc.CallId, frc.Result);
+                    break;
+            }
+
+            if (resultContent is not null)
+            {
+                resultContent.Metadata = content.AdditionalProperties;
+                resultContent.InnerContent = content.RawRepresentation;
+                resultContent.ModelId = completion?.ModelId;
+                result.Items.Add(resultContent);
+            }
+        }
+
+        return result;
+    }
+
+    internal static List<ChatMessage> ToChatMessageList(ChatHistory chatHistory)
+        => chatHistory.Select(ToChatMessage).ToList();
 }

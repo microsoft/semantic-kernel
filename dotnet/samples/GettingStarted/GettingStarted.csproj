@@ -14,6 +14,12 @@
   <ItemGroup>
     <None Remove="Resources\GenerateStory.yaml" />
     <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+    <None Remove="Resources\repair-service.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\repair-service.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\GenerateStory.yaml" />
@@ -50,7 +56,7 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
@@ -60,6 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions"/>
+    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 </Project>

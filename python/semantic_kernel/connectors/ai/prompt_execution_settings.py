@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -9,6 +9,8 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
+
+_T = TypeVar("_T", bound="PromptExecutionSettings")
 
 
 class PromptExecutionSettings(KernelBaseModel):
@@ -36,7 +38,7 @@ class PromptExecutionSettings(KernelBaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any]:
+    def parse_function_choice_behavior(cls: type[_T], data: dict[str, Any]) -> dict[str, Any]:
         """Parse the function choice behavior data."""
         function_choice_behavior_data = data.get("function_choice_behavior")
         if function_choice_behavior_data:
@@ -77,12 +79,13 @@ class PromptExecutionSettings(KernelBaseModel):
             exclude={
                 "service_id",
                 "extension_data",
+                "structured_json_response",
             },
             exclude_none=True,
             by_alias=True,
         )
 
-    def update_from_prompt_execution_settings(self, config: "PromptExecutionSettings") -> None:
+    def update_from_prompt_execution_settings(self, config: _T) -> None:
         """Update the prompt execution settings from a completion config."""
         if config.service_id is not None:
             self.service_id = config.service_id
@@ -91,7 +94,7 @@ class PromptExecutionSettings(KernelBaseModel):
         self.unpack_extension_data()
 
     @classmethod
-    def from_prompt_execution_settings(cls, config: "PromptExecutionSettings") -> "PromptExecutionSettings":
+    def from_prompt_execution_settings(cls: type[_T], config: _T) -> _T:
         """Create a prompt execution settings from a completion config."""
         config.pack_extension_data()
         return cls(

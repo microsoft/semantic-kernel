@@ -3,11 +3,11 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 
 namespace Optimization;
 
@@ -40,8 +40,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
         builder.Services.AddSingleton<ILogger>(logger);
 
-        // Add memory store to keep functions and search for the most relevant ones for specific request.
-        builder.Services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+        // Add vector store to keep functions and search for the most relevant ones for specific request.
+        builder.Services.AddInMemoryVectorStore();
 
         // Add helper components defined in this example.
         builder.Services.AddSingleton<IFunctionProvider, FunctionProvider>();
@@ -66,7 +66,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         await pluginStore.SaveAsync(CollectionName, kernel.Plugins);
 
         // Enable automatic function calling by default.
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Define kernel arguments with specific request.
         var kernelArguments = new KernelArguments(executionSettings) { ["Request"] = "Provide latest headlines" };
@@ -91,9 +91,9 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         // Invoke the request with plugin selection filter.
         Console.WriteLine("\nRun with filter:");
 
-        // ToolCallBehavior.AutoInvokeKernelFunctions is used here as well as defined above.
-        // In case there will be related functions found for specific request, the ToolCallBehavior will be updated in filter to
-        // ToolCallBehavior.EnableFunctions(functions, autoInvoke: true) - this will allow to share only related set of functions with AI.
+        // FunctionChoiceBehavior.Auto() is used here as well as defined above.
+        // In case there will be related functions found for specific request, the FunctionChoiceBehavior will be updated in filter to
+        // FunctionChoiceBehavior.Auto(functions) - this will allow to share only related set of functions with AI.
         result = await kernel.InvokePromptAsync("{{$Request}}", kernelArguments);
 
         Console.WriteLine(result);
@@ -114,8 +114,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
         builder.Services.AddSingleton<ILogger>(logger);
 
-        // Add memory store to keep functions and search for the most relevant ones for specific request.
-        builder.Services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+        // Add vector store to keep functions and search for the most relevant ones for specific request.
+        builder.Services.AddInMemoryVectorStore();
 
         // Add helper components defined in this example.
         builder.Services.AddSingleton<IFunctionProvider, FunctionProvider>();
@@ -140,7 +140,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         await pluginStore.SaveAsync(CollectionName, kernel.Plugins);
 
         // Enable automatic function calling by default.
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Get function provider and find best functions for specified prompt.
         var functionProvider = kernel.GetRequiredService<IFunctionProvider>();
@@ -155,11 +155,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             bestFunctions.ForEach(function
                 => logger.LogInformation("Best function found: {PluginName}-{FunctionName}", function.PluginName, function.Name));
 
-            // Convert selected functions to OpenAI functions.
-            var openAIFunctions = bestFunctions.Select(function => function.Metadata.ToOpenAIFunction());
-
             // Share only selected functions with AI.
-            executionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
+            executionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(bestFunctions);
         }
 
         // Get chat completion service and execute a request.
@@ -228,11 +225,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
             if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
             {
-                // Convert selected functions to OpenAI functions.
-                var openAIFunctions = functions.Select(function => function.Metadata.ToOpenAIFunction());
-
                 // Share only selected functions with AI.
-                openAIPromptExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
+                openAIPromptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions);
 
                 return new() { [PromptExecutionSettings.DefaultServiceId] = openAIPromptExecutionSettings };
             }
@@ -263,7 +257,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             string collectionName,
             string request,
             KernelPluginCollection plugins,
-            int numberOfBestFunctions);
+            int numberOfBestFunctions,
+            CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -271,7 +266,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     /// </summary>
     public interface IPluginStore
     {
-        Task SaveAsync(string collectionName, KernelPluginCollection plugins);
+        Task SaveAsync(string collectionName, KernelPluginCollection plugins, CancellationToken cancellationToken = default);
     }
 
     public class FunctionKeyProvider : IFunctionKeyProvider
@@ -286,62 +281,67 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     public class FunctionProvider(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IMemoryStore memoryStore,
+        IVectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IFunctionProvider
     {
         public async Task<List<KernelFunction>> GetBestFunctionsAsync(
             string collectionName,
             string request,
             KernelPluginCollection plugins,
-            int numberOfBestFunctions)
+            int numberOfBestFunctions,
+            CancellationToken cancellationToken = default)
         {
             // Generate embedding for original request.
-            var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request);
+            var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: cancellationToken);
+
+            var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
+            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
-            var memoryRecordKeys = await memoryStore
-                .GetNearestMatchesAsync(collectionName, requestEmbedding, limit: numberOfBestFunctions)
-                .Select(l => l.Item1.Key)
-                .ToListAsync();
+            var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = numberOfBestFunctions }, cancellationToken);
+            var recordKeys = (await searchResults.Results.ToListAsync(cancellationToken)).Select(l => l.Record.Id);
 
             return plugins
                 .SelectMany(plugin => plugin)
-                .Where(function => memoryRecordKeys.Contains(functionKeyProvider.GetFunctionKey(function)))
+                .Where(function => recordKeys.Contains(functionKeyProvider.GetFunctionKey(function)))
                 .ToList();
         }
     }
 
     public class PluginStore(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IMemoryStore memoryStore,
+        IVectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IPluginStore
     {
-        public async Task SaveAsync(string collectionName, KernelPluginCollection plugins)
+        public async Task SaveAsync(string collectionName, KernelPluginCollection plugins, CancellationToken cancellationToken = default)
         {
             // Collect data about imported functions in kernel.
-            var memoryRecords = new List<MemoryRecord>();
+            var functionRecords = new List<FunctionRecord>();
             var functionsData = GetFunctionsData(plugins);
 
             // Generate embedding for each function.
             var embeddings = await textEmbeddingGenerationService
-                .GenerateEmbeddingsAsync(functionsData.Select(l => l.TextToVectorize).ToArray());
+                .GenerateEmbeddingsAsync(functionsData.Select(l => l.TextToVectorize).ToArray(), cancellationToken: cancellationToken);
 
-            // Create memory record instances with function information and embedding.
+            // Create vector store record instances with function information and embedding.
             for (var i = 0; i < functionsData.Count; i++)
             {
-                var (function, textToVectorize) = functionsData[i];
+                var (function, functionInfo) = functionsData[i];
 
-                memoryRecords.Add(MemoryRecord.LocalRecord(
-                    id: functionKeyProvider.GetFunctionKey(function),
-                    text: textToVectorize,
-                    description: null,
-                    embedding: embeddings[i]));
+                functionRecords.Add(new FunctionRecord
+                {
+                    Id = functionKeyProvider.GetFunctionKey(function),
+                    FunctionInfo = functionInfo,
+                    FunctionInfoEmbedding = embeddings[i]
+                });
             }
 
-            // Create collection and upsert all memory records for search.
+            // Create collection and upsert all vector store records for search.
             // It's possible to do it only once and re-use the same functions for future requests.
-            await memoryStore.CreateCollectionAsync(collectionName);
-            await memoryStore.UpsertBatchAsync(collectionName, memoryRecords).ToListAsync();
+            var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
+            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+
+            await collection.UpsertBatchAsync(functionRecords, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
         }
 
         private static List<(KernelFunction Function, string TextToVectorize)> GetFunctionsData(KernelPluginCollection plugins)
@@ -408,6 +408,22 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             "Dentist appointment on July 5",
             "Vacation starts on July 12"
         };
+    }
+
+    #endregion
+
+    #region Vector Store Record
+
+    private sealed class FunctionRecord
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; }
+
+        [VectorStoreRecordData]
+        public string FunctionInfo { get; set; }
+
+        [VectorStoreRecordVector]
+        public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 
     #endregion

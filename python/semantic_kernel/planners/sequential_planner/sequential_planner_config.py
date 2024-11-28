@@ -4,6 +4,8 @@ from collections.abc import Callable
 
 
 class SequentialPlannerConfig:
+    """Configuration for the SequentialPlanner."""
+
     def __init__(
         self,
         relevancy_threshold: float | None = None,

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using xRetry;
 
 namespace ChatCompletion;
@@ -47,8 +47,8 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
 
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -61,6 +61,11 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine($"Response: {response}");
+
+        var citations = GetCitations(chatMessage);
+
+        OutputCitations(citations);
+
         Console.WriteLine();
 
         // Chat history maintenance
@@ -74,9 +79,13 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
+        await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
         {
-            Console.Write(word);
+            Console.Write(update);
+
+            var streamingCitations = GetCitations(update);
+
+            OutputCitations(streamingCitations);
         }
 
         Console.WriteLine(Environment.NewLine);
@@ -98,8 +107,8 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
-        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
 
         // First question without previous context based on uploaded content.
         var response = await kernel.InvokeAsync(function, new(promptExecutionSettings) { ["input"] = ask });
@@ -125,20 +134,60 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
+    /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
-    private static AzureChatExtensionsOptions GetAzureChatExtensionsOptions()
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    private static AzureSearchChatDataSource GetAzureSearchDataSource()
     {
-        var azureSearchExtensionConfiguration = new AzureSearchChatExtensionConfiguration
+        return new AzureSearchChatDataSource
         {
-            SearchEndpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
-            Authentication = new OnYourDataApiKeyAuthenticationOptions(TestConfiguration.AzureAISearch.ApiKey),
+            Endpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
+            Authentication = DataSourceAuthentication.FromApiKey(TestConfiguration.AzureAISearch.ApiKey),
             IndexName = TestConfiguration.AzureAISearch.IndexName
         };
-
-        return new AzureChatExtensionsOptions
-        {
-            Extensions = { azureSearchExtensionConfiguration }
-        };
     }
+
+    /// <summary>
+    /// Returns a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private static IReadOnlyList<ChatCitation> GetCitations(ChatMessageContent chatMessageContent)
+    {
+        var message = chatMessageContent.InnerContent as OpenAI.Chat.ChatCompletion;
+        var messageContext = message.GetMessageContext();
+
+        return messageContext.Citations;
+    }
+
+    /// <summary>
+    /// Returns a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private static IReadOnlyList<ChatCitation>? GetCitations(StreamingChatMessageContent streamingContent)
+    {
+        var message = streamingContent.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
+        var messageContext = message?.GetMessageContext();
+
+        return messageContext?.Citations;
+    }
+
+    /// <summary>
+    /// Outputs a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private void OutputCitations(IReadOnlyList<ChatCitation>? citations)
+    {
+        if (citations is not null)
+        {
+            Console.WriteLine("Citations:");
+
+            foreach (var citation in citations)
+            {
+                Console.WriteLine($"Chunk ID: {citation.ChunkId}");
+                Console.WriteLine($"Title: {citation.Title}");
+                Console.WriteLine($"File path: {citation.FilePath}");
+                Console.WriteLine($"URL: {citation.Url}");
+                Console.WriteLine($"Content: {citation.Content}");
+            }
+        }
+    }
+
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }

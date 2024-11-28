@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import logging
 import sys
-from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
@@ -11,37 +11,59 @@ from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
-    filter_system_message,
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
+    format_tool_message,
     format_user_message,
+    update_settings_from_function_choice_configuration,
 )
+from semantic_kernel.connectors.ai.google.shared_utils import (
+    filter_system_message,
+    format_gemini_function_name_to_kernel_function_fully_qualified_name,
+)
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
+)
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_chat_completion,
+    trace_streaming_chat_completion,
+)
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     """Google AI Chat Completion Client."""
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -86,23 +108,24 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             service_settings=google_ai_settings,
         )
 
-    # region Non-streaming
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
     @override
-    async def get_chat_message_contents(
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return GoogleAIChatPromptExecutionSettings
+
+    @override
+    @trace_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_chat_message_contents(
         self,
-        chat_history: ChatHistory,
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> list[ChatMessageContent]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+    ) -> list["ChatMessageContent"]:
+        if not isinstance(settings, GoogleAIChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        return await self._send_chat_request(chat_history, settings)
-
-    async def _send_chat_request(
-        self, chat_history: ChatHistory, settings: GoogleAIChatPromptExecutionSettings
-    ) -> list[ChatMessageContent]:
-        """Send a chat request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
@@ -112,9 +135,89 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            tools=settings.tools,
+            tool_config=settings.tool_config,
         )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
+
+    @override
+    @trace_streaming_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        if not isinstance(settings, GoogleAIChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+
+        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        model = GenerativeModel(
+            self.service_settings.gemini_model_id,
+            system_instruction=filter_system_message(chat_history),
+        )
+
+        response: AsyncGenerateContentResponse = await model.generate_content_async(
+            contents=self._prepare_chat_history_for_request(chat_history),
+            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            tools=settings.tools,
+            tool_config=settings.tool_config,
+            stream=True,
+        )
+
+        async for chunk in response:
+            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
+
+    @override
+    def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if not isinstance(settings, GoogleAIChatPromptExecutionSettings):
+            raise ServiceInvalidExecutionSettingsError("The settings must be an GoogleAIChatPromptExecutionSettings.")
+        if settings.candidate_count is not None and settings.candidate_count > 1:
+            raise ServiceInvalidExecutionSettingsError(
+                "Auto-invocation of tool calls may only be used with a "
+                "GoogleAIChatPromptExecutionSettings.candidate_count of 1."
+            )
+
+    @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return update_settings_from_function_choice_configuration
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_config"):
+            settings.tool_config = None
+        if hasattr(settings, "tools"):
+            settings.tools = None
+
+    @override
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> list[Content]:
+        chat_request_messages: list[Content] = []
+
+        for message in chat_history.messages:
+            if message.role == AuthorRole.SYSTEM:
+                # Skip system messages since they are not part of the chat request.
+                # System message will be provided as system_instruction in the model.
+                continue
+            if message.role == AuthorRole.USER:
+                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
+            elif message.role == AuthorRole.ASSISTANT:
+                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
+            elif message.role == AuthorRole.TOOL:
+                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
+
+        return chat_request_messages
+
+    # endregion
+
+    # region Non-streaming
 
     def _create_chat_message_content(
         self, response: AsyncGenerateContentResponse, candidate: Candidate
@@ -133,10 +236,25 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
+        items: list[ITEM_TYPES] = []
+        for idx, part in enumerate(candidate.content.parts):
+            if part.text:
+                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+            elif part.function_call:
+                items.append(
+                    FunctionCallContent(
+                        id=f"{part.function_call.name}_{idx!s}",
+                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                            part.function_call.name
+                        ),
+                        arguments={k: v for k, v in part.function_call.args.items()},
+                    )
+                )
+
         return ChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
-            content=candidate.content.parts[0].text,
+            items=items,
             inner_content=response,
             finish_reason=finish_reason,
             metadata=response_metadata,
@@ -145,41 +263,6 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     # endregion
 
     # region Streaming
-    @override
-    async def get_streaming_chat_message_contents(
-        self,
-        chat_history: ChatHistory,
-        settings: "PromptExecutionSettings",
-        **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
-
-        async_generator = self._send_chat_streaming_request(chat_history, settings)
-
-        async for messages in async_generator:
-            yield messages
-
-    async def _send_chat_streaming_request(
-        self,
-        chat_history: ChatHistory,
-        settings: GoogleAIChatPromptExecutionSettings,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Send a streaming chat request to the Google AI service."""
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
-        model = GenerativeModel(
-            self.service_settings.gemini_model_id,
-            system_instruction=filter_system_message(chat_history),
-        )
-
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
-            contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
-            stream=True,
-        )
-
-        async for chunk in response:
-            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
 
     def _create_streaming_chat_message_content(
         self,
@@ -200,40 +283,39 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
+        items: list[STREAMING_ITEM_TYPES] = []
+        for idx, part in enumerate(candidate.content.parts):
+            if part.text:
+                items.append(
+                    StreamingTextContent(
+                        choice_index=candidate.index,
+                        text=part.text,
+                        inner_content=chunk,
+                        metadata=response_metadata,
+                    )
+                )
+            elif part.function_call:
+                items.append(
+                    FunctionCallContent(
+                        id=f"{part.function_call.name}_{idx!s}",
+                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                            part.function_call.name
+                        ),
+                        arguments={k: v for k, v in part.function_call.args.items()},
+                    )
+                )
+
         return StreamingChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
             choice_index=candidate.index,
-            content=candidate.content.parts[0].text,
+            items=items,
             inner_content=chunk,
             finish_reason=finish_reason,
             metadata=response_metadata,
         )
 
     # endregion
-
-    @override
-    def _prepare_chat_history_for_request(
-        self,
-        chat_history: ChatHistory,
-        role_key: str = "role",
-        content_key: str = "content",
-    ) -> list[Content]:
-        chat_request_messages: list[Content] = []
-
-        for message in chat_history.messages:
-            if message.role == AuthorRole.SYSTEM:
-                # Skip system messages since they are not part of the chat request.
-                # System message will be provided as system_instruction in the model.
-                continue
-            if message.role == AuthorRole.USER:
-                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
-            elif message.role == AuthorRole.ASSISTANT:
-                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
-            else:
-                raise ValueError(f"Unsupported role: {message.role}")
-
-        return chat_request_messages
 
     def _get_metadata_from_response(
         self, response: AsyncGenerateContentResponse | GenerateContentResponse
@@ -248,7 +330,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         """
         return {
             "prompt_feedback": response.prompt_feedback,
-            "usage": response.usage_metadata,
+            "usage": CompletionUsage(
+                prompt_tokens=response.usage_metadata.prompt_token_count,
+                completion_tokens=response.usage_metadata.candidates_token_count,
+            ),
         }
 
     def _get_metadata_from_candidate(self, candidate: Candidate) -> dict[str, Any]:
@@ -266,10 +351,3 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             "safety_ratings": candidate.safety_ratings,
             "token_count": candidate.token_count,
         }
-
-    @override
-    def get_prompt_execution_settings_class(
-        self,
-    ) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return GoogleAIChatPromptExecutionSettings

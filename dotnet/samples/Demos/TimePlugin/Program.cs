@@ -31,7 +31,7 @@ var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 // Enable auto function calling
 OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
 {
-    ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 };
 
 Console.WriteLine("Ask questions to use the Time Plugin such as:\n" +

@@ -1,0 +1,33 @@
+name: Python Build Assets
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  python-build-assets:
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'python-')
+    name: Python Build Assets and add to Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      UV_PYTHON: "3.10"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.30"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Check version
+        run: |
+            echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
+      - name: Build the package
+        run: cd python && make build
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            python/dist/*

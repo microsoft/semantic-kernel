@@ -6,6 +6,7 @@ from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
+from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
@@ -31,6 +32,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelFunctionExtension(KernelBaseModel, ABC):
+    """Kernel function extension."""
+
     plugins: dict[str, KernelPlugin] = Field(default_factory=dict)
 
     @field_validator("plugins", mode="before")
@@ -61,18 +64,18 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         See KernelPlugin.from_directory for more details on how the directory is parsed.
 
         Args:
-            plugin (KernelPlugin | Any | dict[str, Any]): The plugin to add.
+            plugin: The plugin to add.
                 This can be a KernelPlugin, in which case it is added straightaway and other parameters are ignored,
                 a custom class that contains methods with the kernel_function decorator
                 or a dictionary of functions with the kernel_function decorator for one or
                 several methods.
-            plugin_name (str | None): The name of the plugin, used if the plugin is not a KernelPlugin,
+            plugin_name: The name of the plugin, used if the plugin is not a KernelPlugin,
                 if the plugin is None and the parent_directory is set,
                 KernelPlugin.from_directory is called with those parameters,
                 see `KernelPlugin.from_directory` for details.
-            parent_directory (str | None): The parent directory path where the plugin directory resides
-            description (str | None): The description of the plugin, used if the plugin is not a KernelPlugin.
-            class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
+            parent_directory: The parent directory path where the plugin directory resides
+            description: The description of the plugin, used if the plugin is not a KernelPlugin.
+            class_init_arguments: The class initialization arguments
 
         Returns:
             KernelPlugin: The plugin that was added.
@@ -204,17 +207,19 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
     def add_plugin_from_openapi(
         self,
         plugin_name: str,
-        openapi_document_path: str,
+        openapi_document_path: str | None = None,
+        openapi_parsed_spec: dict[str, Any] | None = None,
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> KernelPlugin:
         """Add a plugin from the OpenAPI manifest.
 
         Args:
-            plugin_name (str): The name of the plugin
-            openapi_document_path (str): The path to the OpenAPI document
-            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
+            plugin_name: The name of the plugin
+            openapi_document_path: The path to the OpenAPI document
+            openapi_parsed_spec: The parsed OpenAPI spec
+            execution_settings: The execution parameters
+            description: The description of the plugin
 
         Returns:
             KernelPlugin: The imported plugin
@@ -226,11 +231,16 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             KernelPlugin.from_openapi(
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
+                openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
                 description=description,
             )
         )
 
+    @deprecated(
+        "The `add_plugin_from_openai` method is deprecated; use the `add_plugin_from_openapi` method instead.",
+        category=None,
+    )
     async def add_plugin_from_openai(
         self,
         plugin_name: str,

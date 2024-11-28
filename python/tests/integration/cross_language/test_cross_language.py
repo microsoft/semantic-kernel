@@ -12,7 +12,6 @@ from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -222,6 +221,7 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -281,6 +281,7 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -351,6 +352,7 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -410,6 +412,7 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -468,6 +471,7 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -523,6 +527,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
     if is_streaming:
         expected_object["stream"] = True
+        expected_object["stream_options"] = {"include_usage": True}
 
     assert obtained_object == expected_object
 
@@ -533,6 +538,8 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
 
 async def setup_openapi_function_call(kernel, function_name, arguments):
+    from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
+
     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
 
     request_details = None

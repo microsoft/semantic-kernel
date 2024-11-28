@@ -4,7 +4,8 @@
     <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenApi</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>$(NoWarn);SKEXP0040</NoWarn>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
@@ -19,6 +20,7 @@
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Plugins.OpenApi.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.OpenApi.Readers" />

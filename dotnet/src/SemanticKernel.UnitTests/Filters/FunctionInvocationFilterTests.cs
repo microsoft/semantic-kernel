@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -1051,5 +1052,35 @@ public class FunctionInvocationFilterTests : FilterBaseTest
 
         Assert.NotNull(exception.FunctionResult);
         Assert.Equal("Result", exception.FunctionResult.ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokeStreamingAsync(function).ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokeAsync(function);
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 }

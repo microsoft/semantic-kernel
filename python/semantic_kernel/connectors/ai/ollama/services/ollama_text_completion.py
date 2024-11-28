@@ -10,6 +10,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+import httpx
 from ollama import AsyncClient
 from pydantic import ValidationError
 
@@ -20,6 +21,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -55,7 +60,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         """
         try:
             ollama_settings = OllamaSettings.create(
-                model=ai_model_id,
+                text_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -63,27 +68,40 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
+        if not ollama_settings.text_model_id:
+            raise ServiceInitializationError("Ollama text model ID is required.")
+
         super().__init__(
-            service_id=service_id or ollama_settings.model,
-            ai_model_id=ollama_settings.model,
+            service_id=service_id or ollama_settings.text_model_id,
+            ai_model_id=ollama_settings.text_model_id,
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
-    async def get_text_contents(
+    # region Overriding base class methods
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return OllamaTextPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        if hasattr(self.client, "_client") and isinstance(self.client._client, httpx.AsyncClient):
+            # Best effort to get the endpoint
+            return str(self.client._client.base_url)
+        return None
+
+    @override
+    @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
-        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
-
-        Args:
-            prompt (str): The prompt to send to the LLM.
-            settings (OllamaTextPromptExecutionSettings): Settings for the request.
-
-        Returns:
-            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, OllamaTextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await self.client.generate(
             model=self.ai_model_id,
@@ -94,32 +112,23 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
 
         if not isinstance(response_object, Mapping):
             raise ServiceInvalidResponseError(
-                "Invalid response type from Ollama chat completion. "
-                f"Expected Mapping but got {type(response_object)}."
+                f"Invalid response type from Ollama chat completion. Expected Mapping but got {type(response_object)}."
             )
 
         inner_content = response_object
         text = inner_content["response"]
         return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
-    async def get_streaming_text_contents(
+    @override
+    @trace_streaming_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
+    async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Streams a text completion using an Ollama model.
-
-        Note that this method does not support multiple responses,
-        but the result will be a list anyway.
-
-        Args:
-            prompt (str): Prompt to complete.
-            settings (OllamaTextPromptExecutionSettings): Request settings.
-
-        Yields:
-            List[StreamingTextContent]: Completion result.
-        """
-        settings = self.get_prompt_execution_settings_from_settings(settings)
+        if not isinstance(settings, OllamaTextPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await self.client.generate(
             model=self.ai_model_id,
@@ -141,7 +150,4 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                 )
             ]
 
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
-        return OllamaTextPromptExecutionSettings
+    # endregion

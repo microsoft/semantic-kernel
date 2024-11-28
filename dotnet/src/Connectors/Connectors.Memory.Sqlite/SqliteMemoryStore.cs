@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics.Tensors;
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
+[Experimental("SKEXP0020")]
 public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
@@ -87,21 +89,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
-        foreach (var key in keys)
-        {
-            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result is not null)
-            {
-                yield return result;
-            }
-            else
-            {
-                yield break;
-            }
-        }
+        return this.InternalGetBatchAsync(this._dbConnection, collectionName, keys.ToArray(), withEmbeddings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -130,7 +120,6 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        var collectionMemories = new List<MemoryRecord>();
         List<(MemoryRecord Record, double Score)> embeddings = [];
 
         await foreach (var record in this.GetAllAsync(collectionName, cancellationToken).ConfigureAwait(false))
@@ -282,6 +271,19 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private async IAsyncEnumerable<MemoryRecord> InternalGetBatchAsync(
+        SqliteConnection connection,
+        string collectionName,
+        string[] keys, bool withEmbedding,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadBatchAsync(connection, collectionName, keys, withEmbedding, cancellationToken).ConfigureAwait(false))
+        {
+            ReadOnlyMemory<float> vector = withEmbedding ? JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default) : ReadOnlyMemory<float>.Empty;
+            yield return MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp)); ;
+        }
     }
 
     #endregion

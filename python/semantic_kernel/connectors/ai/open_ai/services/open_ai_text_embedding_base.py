@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 @experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
+    """Base class for OpenAI text embedding services."""
+
     @override
     async def generate_embeddings(
         self,
@@ -65,10 +67,11 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         for i in range(0, len(texts), batch_size):
             batch = texts[i : i + batch_size]
             settings.input = batch
-            raw_embedding = await self._send_embedding_request(settings=settings)
+            raw_embedding = await self._send_request(settings=settings)
+            assert isinstance(raw_embedding, list)  # nosec
             raw_embeddings.extend(raw_embedding)
         return raw_embeddings
 
-    @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
         return OpenAIEmbeddingPromptExecutionSettings

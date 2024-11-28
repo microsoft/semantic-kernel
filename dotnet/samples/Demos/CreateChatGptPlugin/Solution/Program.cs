@@ -3,7 +3,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 // Create kernel
 var builder = Kernel.CreateBuilder();
@@ -34,7 +33,7 @@ while (true)
     // Enable auto function calling
     OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
     {
-        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
     };
 
     // Get the response from the AI

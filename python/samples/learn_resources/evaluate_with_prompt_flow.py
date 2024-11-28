@@ -11,11 +11,11 @@ pf_client = PFClient()
 
 # Load the configuration from the .env file
 config = dotenv_values(".env")
-deployment_type = config.get("AZURE_OPEN_AI_DEPLOYMENT_TYPE", None)
+deployment_type = config.get("AZURE_OPENAI_DEPLOYMENT_TYPE", None)
 if deployment_type == "chat-completion":
-    deployment_name = config.get("AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME", None)
+    deployment_name = config.get("AZURE_OPENAI_CHAT_COMPLETION_DEPLOYMENT_NAME", None)
 elif deployment_type == "text-completion":
-    deployment_name = config.get("AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME", None)
+    deployment_name = config.get("AZURE_OPENAI_TEXT_COMPLETION_DEPLOYMENT_NAME", None)
 
 # Define the inputs of the flow
 inputs = {
@@ -28,8 +28,8 @@ inputs = {
 connection = AzureOpenAIConnection(
     name="AzureOpenAIConnection",
     type="Custom",
-    api_key=config.get("AZURE_OPEN_AI__API_KEY", None),
-    api_base=config.get("AZURE_OPEN_AI__ENDPOINT", None),
+    api_key=config.get("AZURE_OPENAI_API_KEY", None),
+    api_base=config.get("AZURE_OPENAI_ENDPOINT", None),
     api_version="2023-03-15-preview",
 )
 

@@ -82,13 +82,23 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var enabledProperty = attributesProperty.Properties.FirstOrDefault(p => p.Name == "enabled");
         Assert.NotNull(enabledProperty);
-        Assert.False(enabledProperty.IsRequired);
+        Assert.True(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
         Assert.Equal("boolean", enabledProperty.Type);
         Assert.False(enabledProperty.Properties?.Any());
         Assert.NotNull(enabledProperty.Schema);
         Assert.Equal("boolean", enabledProperty.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Schema.RootElement.GetProperty("description").GetString());
+
+        var encryptedProperty = attributesProperty.Properties.FirstOrDefault(p => p.Name == "encrypted");
+        Assert.NotNull(encryptedProperty);
+        Assert.False(encryptedProperty.IsRequired);
+        Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Description);
+        Assert.Equal("boolean", encryptedProperty.Type);
+        Assert.False(encryptedProperty.Properties?.Any());
+        Assert.NotNull(encryptedProperty.Schema);
+        Assert.Equal("boolean", encryptedProperty.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Schema.RootElement.GetProperty("description").GetString());
     }
 
     [Fact]
@@ -104,7 +114,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
-        Assert.Equal("https://my-key-vault.vault.azure.net/", putOperation.ServerUrl?.AbsoluteUri);
+        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Servers[0].Url);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
@@ -114,14 +124,14 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var pathParameter = parameters.Single(p => p.Name == "secret-name"); //'secret-name' path parameter.
         Assert.True(pathParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Path, pathParameter.Location);
+        Assert.Equal(RestApiParameterLocation.Path, pathParameter.Location);
         Assert.Null(pathParameter.DefaultValue);
         Assert.NotNull(pathParameter.Schema);
         Assert.Equal("string", pathParameter.Schema.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = parameters.Single(p => p.Name == "api-version"); //'api-version' query string parameter.
         Assert.True(apiVersionParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Query, apiVersionParameter.Location);
+        Assert.Equal(RestApiParameterLocation.Query, apiVersionParameter.Location);
         Assert.Equal("7.0", apiVersionParameter.DefaultValue);
         Assert.NotNull(apiVersionParameter.Schema);
         Assert.Equal("string", apiVersionParameter.Schema.RootElement.GetProperty("type").GetString());
@@ -129,7 +139,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var payloadParameter = parameters.Single(p => p.Name == "payload"); //'payload' artificial parameter.
         Assert.True(payloadParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Body, payloadParameter.Location);
+        Assert.Equal(RestApiParameterLocation.Body, payloadParameter.Location);
         Assert.Null(payloadParameter.DefaultValue);
         Assert.Equal("REST API request body.", payloadParameter.Description);
         Assert.NotNull(payloadParameter.Schema);
@@ -137,7 +147,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var contentTypeParameter = parameters.Single(p => p.Name == "content-type"); //'content-type' artificial parameter.
         Assert.False(contentTypeParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Body, contentTypeParameter.Location);
+        Assert.Equal(RestApiParameterLocation.Body, contentTypeParameter.Location);
         Assert.Null(contentTypeParameter.DefaultValue);
         Assert.Equal("Content type of REST API request body.", contentTypeParameter.Description);
         Assert.Null(contentTypeParameter.Schema);
@@ -165,7 +175,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert string header parameter metadata
-        var accept = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
+        var accept = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "Accept");
 
         Assert.Equal("string", accept.Type);
         Assert.Equal("application/json", accept.DefaultValue);
@@ -173,7 +183,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.False(accept.IsRequired);
 
         //Assert integer header parameter metadata
-        var apiVersion = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-API-Version");
+        var apiVersion = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "X-API-Version");
 
         Assert.Equal("integer", apiVersion.Type);
         Assert.Equal(10, apiVersion.DefaultValue);
@@ -188,12 +198,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert header parameters metadata
-        var acceptParameter = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
+        var acceptParameter = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "X-Operation-Csv-Ids");
 
         Assert.Null(acceptParameter.DefaultValue);
         Assert.False(acceptParameter.IsRequired);
         Assert.Equal("array", acceptParameter.Type);
-        Assert.Equal(RestApiOperationParameterStyle.Simple, acceptParameter.Style);
+        Assert.Equal(RestApiParameterStyle.Simple, acceptParameter.Style);
         Assert.Equal("The comma separated list of operation ids.", acceptParameter.Description);
         Assert.Equal("string", acceptParameter.ArrayItemType);
     }
@@ -209,7 +219,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var operation = restApi.Operations.Single(o => o.Id == "SetSecret");
 
-        var headerParameters = operation.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+        var headerParameters = operation.Parameters.Where(p => p.Location == RestApiParameterLocation.Header);
 
         Assert.NotNull(headerParameters);
         Assert.Equal(3, headerParameters.Count());
@@ -226,7 +236,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(5, restApi.Operations.Count);
+        Assert.Equal(6, restApi.Operations.Count);
     }
 
     [Fact]
@@ -266,7 +276,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Null(op.ServerUrl));
+        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
     }
 
     [Fact]
@@ -282,7 +292,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Null(op.ServerUrl));
+        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
     }
 
     [Theory]
@@ -416,6 +426,57 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotEmpty(restApi.Info.Description);
     }
 
+    [Theory]
+    [InlineData("string-parameter", "string", null)]
+    [InlineData("boolean-parameter", "boolean", null)]
+    [InlineData("number-parameter", "number", null)]
+    [InlineData("float-parameter", "number", "float")]
+    [InlineData("double-parameter", "number", "double")]
+    [InlineData("integer-parameter", "integer", null)]
+    [InlineData("int32-parameter", "integer", "int32")]
+    [InlineData("int64-parameter", "integer", "int64")]
+    public async Task ItCanParseParametersOfPrimitiveDataTypeAsync(string name, string type, string? format)
+    {
+        // Arrange & Act
+        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        var parameters = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").GetParameters();
+
+        var parameter = parameters.FirstOrDefault(p => p.Name == name);
+        Assert.NotNull(parameter);
+
+        Assert.Equal(type, parameter.Type);
+        Assert.Equal(format, parameter.Format);
+    }
+
+    [Fact]
+    public async Task ItCanParsePropertiesOfObjectDataTypeAsync()
+    {
+        // Arrange & Act
+        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        var properties = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").Payload!.Properties;
+
+        var property = properties.Single(p => p.Name == "attributes");
+        Assert.Equal("object", property.Type);
+        Assert.Null(property.Format);
+    }
+
+    [Fact]
+    public async Task ItCanParseDocumentWithMultipleServersAsync()
+    {
+        // Act
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.All(restApi.Operations, (operation) => Assert.Equal(2, operation.Servers.Count));
+
+        Assert.Equal("https://my-key-vault.vault.azure.net", restApi.Operations[0].Servers[0].Url);
+        Assert.Equal("https://ppe.my-key-vault.vault.azure.net", restApi.Operations[0].Servers[1].Url);
+    }
+
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
         var serializer = new SharpYaml.Serialization.Serializer();
@@ -436,7 +497,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         return stream;
     }
 
-    private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)
+    private static RestApiParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiParameterLocation location, string name)
     {
         Assert.True(operations.Any());
 

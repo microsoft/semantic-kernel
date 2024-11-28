@@ -110,10 +110,6 @@ public sealed class Kernel
     public Kernel Clone() =>
         new(this.Services, this._plugins is { Count: > 0 } ? new KernelPluginCollection(this._plugins) : null)
         {
-            FunctionInvoking = this.FunctionInvoking,
-            FunctionInvoked = this.FunctionInvoked,
-            PromptRendering = this.PromptRendering,
-            PromptRendered = this.PromptRendered,
             _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
             _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
             _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
@@ -148,7 +144,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of auto function invocation filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IAutoFunctionInvocationFilter> AutoFunctionInvocationFilters =>
         this._autoFunctionInvocationFilters ??
         Interlocked.CompareExchange(ref this._autoFunctionInvocationFilters, [], null) ??
@@ -311,12 +306,14 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         FunctionResult functionResult,
+        bool isStreaming,
         Func<FunctionInvocationContext, Task> functionCallback,
         CancellationToken cancellationToken)
     {
         FunctionInvocationContext context = new(this, function, arguments, functionResult)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            IsStreaming = isStreaming
         };
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
@@ -351,12 +348,14 @@ public sealed class Kernel
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
+        bool isStreaming,
         Func<PromptRenderContext, Task> renderCallback,
         CancellationToken cancellationToken)
     {
         PromptRenderContext context = new(this, function, arguments)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            IsStreaming = isStreaming
         };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
@@ -605,6 +604,7 @@ public sealed class Kernel
 
     #region Obsolete
 
+#pragma warning disable CS0067 // The event is never used
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
@@ -632,58 +632,7 @@ public sealed class Kernel
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
-    {
-        FunctionInvokingEventArgs? eventArgs = null;
-        if (this.FunctionInvoking is { } functionInvoking)
-        {
-            eventArgs = new(function, arguments);
-            functionInvoking.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
-    {
-        FunctionInvokedEventArgs? eventArgs = null;
-        if (this.FunctionInvoked is { } functionInvoked)
-        {
-            eventArgs = new(function, arguments, result);
-            functionInvoked.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
-    {
-        PromptRenderingEventArgs? eventArgs = null;
-        if (this.PromptRendering is { } promptRendering)
-        {
-            eventArgs = new(function, arguments);
-            promptRendering.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
-    {
-        PromptRenderedEventArgs? eventArgs = null;
-        if (this.PromptRendered is { } promptRendered)
-        {
-            eventArgs = new(function, arguments, renderedPrompt);
-            promptRendered.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
+#pragma warning disable CS0067 // The event is never used
 
     #endregion
 }

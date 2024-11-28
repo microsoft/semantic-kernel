@@ -14,6 +14,8 @@ SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBa
 
 @experimental_class
 class SemanticTextMemoryBase(KernelBaseModel):
+    """Base class for semantic text memory."""
+
     @abstractmethod
     async def save_information(
         self,

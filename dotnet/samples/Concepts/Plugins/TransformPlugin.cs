@@ -92,11 +92,13 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite color?", new(settings)));
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine(await kernel.InvokePromptAsync("What color should I paint the fence?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("I am going diving what animals would I like to see?", new(settings)));
 
-        // Example response
-        // I'd be happy to help with that! Could you please provide your email address so I can look up your favorite color?
+        // Example responses
+        // If you would like a suggestion based on your preferences, I can find out your favorite color if you provide your email address.
+        // To help you with that, I would need to know your favorite type of aquatic animals.If you provide your email, I can check your preferences, if available, for your favorite type of fish or other marine creatures.
     }
 
     /// <summary>
@@ -108,9 +110,9 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         // Create a new Plugin which hides parameters that require PII
         var plugin = KernelPluginFactory.CreateFromType<UserFavorites>();
         var transformedPlugin = CreatePluginWithParameters(
-            plugin,
-            (KernelParameterMetadata parameter) => parameter.Name != "email",
-            (KernelArguments arguments) => arguments.Add("email", "bob@contoso.com"));
+        plugin,
+        (KernelParameterMetadata parameter) => parameter.Name != "email",
+            (KernelFunctionMetadata function, KernelArguments arguments) => arguments.Add("email", "bob@contoso.com"));
 
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -121,11 +123,14 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite color?", new(settings)));
-        Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite cold-blooded animal?", new(settings)));
-        Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite marine animal?", new(settings)));
-        Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite creepy crawly?", new(settings)));
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        Console.WriteLine(await kernel.InvokePromptAsync("What color should my new car be?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What color should I paint the fence?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is my favorite cold-blooded animal?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is my favorite marine animal?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is my favorite creepy crawly?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is my favorite four legged friend?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("I am going diving what animals would I like to see?", new(settings)));
 
         // Example response
         // Your favorite color is Green. 🌿
@@ -136,7 +141,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
 
     public delegate bool IncludeKernelParameter(KernelParameterMetadata parameter);
 
-    public delegate void UpdateKernelArguments(KernelArguments arguments);
+    public delegate void UpdateKernelArguments(KernelFunctionMetadata function, KernelArguments arguments);
 
     /// <summary>
     /// Create a <see cref="KernelPlugin"/> instance from the provided instance where each function only includes
@@ -164,7 +169,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
     {
         var method = (Kernel kernel, KernelFunction currentFunction, KernelArguments arguments, CancellationToken cancellationToken) =>
         {
-            updateKernelArguments(arguments);
+            updateKernelArguments(currentFunction.Metadata, arguments);
             return function.InvokeAsync(kernel, arguments, cancellationToken);
         };
 

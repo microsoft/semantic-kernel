@@ -9,7 +9,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -38,7 +38,9 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the completions endpoint."""
 
-    prompt: str | None = None
+    prompt: str | None = Field(
+        None, description="Do not set this manually. It is set by the service based on the text content."
+    )
     best_of: int | None = Field(None, ge=1)
     echo: bool = False
     logprobs: int | None = Field(None, ge=0, le=5)
@@ -61,13 +63,30 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
 class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
+    response_format: (
+        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
+    ) = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
-    messages: list[dict[str, Any]] | None = None
+    messages: list[dict[str, Any]] | None = Field(
+        None, description="Do not set this manually. It is set by the service based on the chat history."
+    )
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    parallel_tool_calls: bool = True
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
+    stream_options: dict[str, Any] | None = Field(
+        None,
+        description="Additional options to pass when streaming is used. Do not set this manually.",
+    )
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -78,6 +97,37 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
             )
         return v
+
+    @model_validator(mode="before")
+    def validate_response_format_and_set_flag(cls, values) -> Any:
+        """Validate the response_format and set structured_json_response accordingly."""
+        response_format = values.get("response_format", None)
+
+        if response_format is None:
+            return values
+
+        if isinstance(response_format, dict):
+            if response_format.get("type") == "json_object":
+                return values
+            if response_format.get("type") == "json_schema":
+                json_schema = response_format.get("json_schema")
+                if isinstance(json_schema, dict):
+                    values["structured_json_response"] = True
+                    return values
+                raise ServiceInvalidExecutionSettingsError(
+                    "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+                )
+        if isinstance(response_format, type):
+            if issubclass(response_format, BaseModel):
+                values["structured_json_response"] = True
+            else:
+                values["structured_json_response"] = True
+        else:
+            raise ServiceInvalidExecutionSettingsError(
+                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
+            )
+
+        return values
 
     @model_validator(mode="before")
     @classmethod
@@ -107,6 +157,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
+    """Specific settings for the text embedding endpoint."""
+
     input: str | list[str] | list[int] | list[list[int]] | None = None
     ai_model_id: str | None = Field(None, serialization_alias="model")
     encoding_format: Literal["float", "base64"] | None = None

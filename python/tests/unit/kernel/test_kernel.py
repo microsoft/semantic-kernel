@@ -167,6 +167,16 @@ async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
+async def test_invoke_function_cancelled(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    mock_function._invoke_internal = AsyncMock(side_effect=OperationCancelledException("Operation cancelled"))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
+
+    result = await kernel.invoke(mock_function, arguments=KernelArguments())
+    assert result is None
+
+
+@pytest.mark.asyncio
 async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     mock_function = kernel.add_function(plugin_name="test", function=mock_function)

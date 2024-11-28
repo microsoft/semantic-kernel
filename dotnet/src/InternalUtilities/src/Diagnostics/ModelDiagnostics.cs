@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -21,7 +20,8 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS`
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE`
 /// </summary>
-[ExcludeFromCodeCoverage]
+[System.Diagnostics.CodeAnalysis.Experimental("SKEXP0001")]
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
@@ -39,7 +39,7 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+    internal static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
@@ -52,7 +52,7 @@ internal static class ModelDiagnostics
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+    internal static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
@@ -65,20 +65,20 @@ internal static class ModelDiagnostics
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    public static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens = null, int? completionTokens = null)
+    internal static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens = null, int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}]");
 
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
+    internal static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
-    public static void EndStreaming(
+    internal static void EndStreaming(
         this Activity activity,
         IEnumerable<StreamingKernelContent>? contents,
         IEnumerable<FunctionCallContent>? toolCalls = null,
@@ -98,7 +98,7 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the response id</param>
     /// <param name="responseId">The response id</param>
     /// <returns>The activity with the response id set for chaining</returns>
-    public static Activity SetResponseId(this Activity activity, string responseId) => activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
+    internal static Activity SetResponseId(this Activity activity, string responseId) => activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
 
     /// <summary>
     /// Set the prompt token usage for a given activity.
@@ -106,7 +106,7 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the prompt token usage</param>
     /// <param name="promptTokens">The number of prompt tokens used</param>
     /// <returns>The activity with the prompt token usage set for chaining</returns>
-    public static Activity SetPromptTokenUsage(this Activity activity, int promptTokens) => activity.SetTag(ModelDiagnosticsTags.PromptToken, promptTokens);
+    internal static Activity SetPromptTokenUsage(this Activity activity, int promptTokens) => activity.SetTag(ModelDiagnosticsTags.PromptToken, promptTokens);
 
     /// <summary>
     /// Set the completion token usage for a given activity.
@@ -114,13 +114,13 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the completion token usage</param>
     /// <param name="completionTokens">The number of completion tokens used</param>
     /// <returns>The activity with the completion token usage set for chaining</returns>
-    public static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
+    internal static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
 
     /// <summary>
     /// Check if model diagnostics is enabled
     /// Model diagnostics is enabled if either EnableModelDiagnostics or EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
-    public static bool IsModelDiagnosticsEnabled()
+    internal static bool IsModelDiagnosticsEnabled()
     {
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
@@ -129,7 +129,9 @@ internal static class ModelDiagnostics
     /// Check if sensitive events are enabled.
     /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
-    public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
+    internal static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
+
+    internal static bool HasListeners() => s_activitySource.HasListeners();
 
     #region Private
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)

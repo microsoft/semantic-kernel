@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// A MongoDB memory record.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     /// <summary>

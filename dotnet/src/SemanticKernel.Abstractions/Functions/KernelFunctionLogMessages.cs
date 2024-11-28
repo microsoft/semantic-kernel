@@ -3,7 +3,9 @@
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -21,33 +23,68 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Function {FunctionName} invoking.")]
+        Message = "Function {PluginName}-{FunctionName} invoking.")]
     public static partial void LogFunctionInvoking(
         this ILogger logger,
+        string? pluginName,
         string functionName);
 
     /// <summary>
-    /// Logs arguments to a <see cref="KernelFunction"/>.
+    /// Logs arguments of a <see cref="KernelFunction"/>.
     /// The action provides the benefit of caching the template parsing result for better performance.
     /// And the public method is a helper to serialize the arguments.
     /// </summary>
-    private static readonly Action<ILogger, string, Exception?> s_logFunctionArguments =
-        LoggerMessage.Define<string>(
+    private static readonly Action<ILogger, string?, string, string, Exception?> s_logFunctionArguments =
+        LoggerMessage.Define<string?, string, string>(
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
-            "Function arguments: {Arguments}");
-    public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
+            "Function {PluginName}-{FunctionName} arguments: {Arguments}");
+
+    [RequiresUnreferencedCode("Uses reflection to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to serialize the function arguments, making it incompatible with AOT scenarios.")]
+    public static void LogFunctionArguments(this ILogger logger, string? pluginName, string functionName, KernelArguments arguments)
+    {
+        LogFunctionArgumentsInternal(logger, pluginName, functionName, arguments);
+    }
+
+    /// <summary>
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    public static void LogFunctionArguments(this ILogger logger, string? pluginName, string functionName, KernelArguments arguments, JsonSerializerOptions jsonSerializerOptions)
+    {
+        LogFunctionArgumentsInternal(logger, pluginName, functionName, arguments, jsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    private static void LogFunctionArgumentsInternal(this ILogger logger, string? pluginName, string functionName, KernelArguments arguments, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
             try
             {
-                var jsonString = JsonSerializer.Serialize(arguments);
-                s_logFunctionArguments(logger, jsonString, null);
+                string jsonString;
+
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<KernelArguments> typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                    jsonString = JsonSerializer.Serialize(arguments, typeInfo);
+                }
+                else
+                {
+                    jsonString = JsonSerializer.Serialize(arguments);
+                }
+
+                s_logFunctionArguments(logger, pluginName, functionName, jsonString, null);
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionArguments(logger, "Failed to serialize arguments to Json", ex);
+                s_logFunctionArguments(logger, pluginName, functionName, "Failed to serialize arguments to Json", ex);
             }
         }
     }
@@ -58,28 +95,49 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Function {FunctionName} succeeded.")]
-    public static partial void LogFunctionInvokedSuccess(this ILogger logger, string functionName);
+        Message = "Function {PluginName}-{FunctionName} succeeded.")]
+    public static partial void LogFunctionInvokedSuccess(this ILogger logger, string? pluginName, string functionName);
 
     /// <summary>
     /// Logs result of a <see cref="KernelFunction"/>.
     /// The action provides the benefit of caching the template parsing result for better performance.
     /// And the public method is a helper to serialize the result.
     /// </summary>
-    private static readonly Action<ILogger, string, Exception?> s_logFunctionResultValue =
-        LoggerMessage.Define<string>(
+    private static readonly Action<ILogger, string?, string, string, Exception?> s_logFunctionResultValue =
+        LoggerMessage.Define<string?, string, string>(
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
-            "Function result: {ResultValue}");
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
-    public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
+            "Function {PluginName}-{FunctionName} result: {ResultValue}");
+    [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to serialize the function result, making it incompatible with AOT scenarios.")]
+    public static void LogFunctionResultValue(this ILogger logger, string? pluginName, string functionName, FunctionResult? resultValue)
+    {
+        LogFunctionResultValueInternal(logger, pluginName, functionName, resultValue);
+    }
+
+    /// <summary>
+    /// Logs result of a <see cref="KernelFunction"/>.
+    /// The action provides the benefit of caching the template parsing result for better performance.
+    /// And the public method is a helper to serialize the result.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    public static void LogFunctionResultValue(this ILogger logger, string? pluginName, string functionName, FunctionResult? resultValue, JsonSerializerOptions jsonSerializerOptions)
+    {
+        LogFunctionResultValueInternal(logger, pluginName, functionName, resultValue, jsonSerializerOptions);
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    [RequiresUnreferencedCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    private static void LogFunctionResultValueInternal(this ILogger logger, string? pluginName, string functionName, FunctionResult? resultValue, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
             // Attempt to convert the result value to string using the GetValue heuristic
             try
             {
-                s_logFunctionResultValue(logger, resultValue?.GetValue<string>() ?? string.Empty, null);
+                s_logFunctionResultValue(logger, pluginName, functionName, resultValue?.GetValue<string>() ?? string.Empty, null);
                 return;
             }
             catch { }
@@ -87,11 +145,23 @@ internal static partial class KernelFunctionLogMessages
             // Falling back to Json serialization
             try
             {
-                s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
+                string jsonString;
+
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<object?> typeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                    jsonString = JsonSerializer.Serialize(resultValue?.Value, typeInfo);
+                }
+                else
+                {
+                    jsonString = JsonSerializer.Serialize(resultValue?.Value);
+                }
+
+                s_logFunctionResultValue(logger, pluginName, functionName, jsonString, null);
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionResultValue(logger, "Failed to log function result value", ex);
+                s_logFunctionResultValue(logger, pluginName, functionName, "Failed to log function result value", ex);
             }
         }
     }
@@ -102,9 +172,11 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Function failed. Error: {Message}")]
+        Message = "Function {PluginName}-{FunctionName} failed. Error: {Message}")]
     public static partial void LogFunctionError(
         this ILogger logger,
+        string? pluginName,
+        string functionName,
         Exception exception,
         string message);
 
@@ -114,9 +186,11 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Function completed. Duration: {Duration}s")]
+        Message = "Function {PluginName}-{FunctionName} completed. Duration: {Duration}s")]
     public static partial void LogFunctionComplete(
         this ILogger logger,
+        string? pluginName,
+        string functionName,
         double duration);
 
     /// <summary>
@@ -125,9 +199,10 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Function {FunctionName} streaming.")]
+        Message = "Function {PluginName}-{FunctionName} streaming.")]
     public static partial void LogFunctionStreamingInvoking(
         this ILogger logger,
+        string? pluginName,
         string functionName);
 
     /// <summary>
@@ -136,8 +211,10 @@ internal static partial class KernelFunctionLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Function streaming completed. Duration: {Duration}s.")]
+        Message = "Function {PluginName}-{FunctionName} streaming completed. Duration: {Duration}s.")]
     public static partial void LogFunctionStreamingComplete(
         this ILogger logger,
+        string? pluginName,
+        string functionName,
         double duration);
 }

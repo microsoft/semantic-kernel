@@ -63,8 +63,10 @@ async def chat() -> bool:
         return False
 
     answer = await kernel.invoke(
-        function=chat_function, arguments=KernelArguments(
-            request=user_input, chat_history=chat_history,
+        function=chat_function,
+        arguments=KernelArguments(
+            request=user_input,
+            chat_history=chat_history,
         ),
     )
     chat_history.add_user_message(user_input)

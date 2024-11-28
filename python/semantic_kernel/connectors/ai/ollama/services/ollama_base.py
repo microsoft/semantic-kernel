@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
+from typing import ClassVar
 
 from ollama import AsyncClient
 
@@ -13,5 +14,7 @@ class OllamaBase(KernelBaseModel, ABC):
     Args:
         client [AsyncClient]: An Ollama client to use for the service.
     """
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "ollama"
 
     client: AsyncClient

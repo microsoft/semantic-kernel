@@ -2,14 +2,20 @@
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
+    "ChatModelId": "gpt-4o",
     "ApiKey": ""
   },
-  "AzureOpenAI": {
-    "ServiceId": "azure-gpt-35-turbo-instruct",
-    "DeploymentName": "gpt-35-turbo-instruct",
-    "ChatDeploymentName": "gpt-4",
+  "AzureAIInference": {
+    "ServiceId": "azure-ai-inference",
     "Endpoint": "",
-    "ApiKey": ""
+    "ApiKey": "",
+    "ChatModelId ": "phi3"
+  },
+  "AzureOpenAI": {
+    "ServiceId": "azure-gpt",
+    "DeploymentName": "gpt-35-turbo-instruct",
+    "ChatDeploymentName": "gpt-4o",
+    "Endpoint": ""
   },
   "OpenAIEmbeddings": {
     "ServiceId": "text-embedding-ada-002",
@@ -19,8 +25,7 @@
   "AzureOpenAIEmbeddings": {
     "ServiceId": "azure-text-embedding-ada-002",
     "DeploymentName": "ada-002",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAITextToAudio": {
     "ServiceId": "tts-1",
@@ -30,8 +35,7 @@
   "AzureOpenAITextToAudio": {
     "ServiceId": "azure-tts",
     "DeploymentName": "tts",
-    "Endpoint": "",
-    "ApiKey": ""
+    "Endpoint": ""
   },
   "OpenAIAudioToText": {
     "ServiceId": "whisper-1",
@@ -41,8 +45,17 @@
   "AzureOpenAIAudioToText": {
     "ServiceId": "azure-whisper",
     "DeploymentName": "whisper",
-    "Endpoint": "",
+    "Endpoint": ""
+  },
+  "OpenAITextToImage": {
+    "ServiceId": "dall-e-2",
+    "ModelId": "dall-e-2",
     "ApiKey": ""
+  },
+  "AzureOpenAITextToImage": {
+    "ServiceId": "azure-dalle3",
+    "DeploymentName": "Dalle3",
+    "Endpoint": ""
   },
   "HuggingFace": {
     "ApiKey": ""
@@ -75,7 +88,10 @@
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
   },
-  "AzureCosmosDB": {
+  "AzureCosmosDBNoSQL": {
+    "ConnectionString": ""
+  },
+  "AzureCosmosDBMongoDB": {
     "ConnectionString": ""
   },
   "SqlServer": {

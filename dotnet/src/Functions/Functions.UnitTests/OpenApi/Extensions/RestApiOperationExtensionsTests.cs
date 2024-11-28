@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -227,13 +228,13 @@ public class RestApiOperationExtensionsTests
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
-    public void ItShouldSetAlternativeNameToParametersForPutAndPostOperation(string method)
+    public void ItShouldSetArgumentNameToPayloadParameters(string method)
     {
         //Arrange
-        var latitude = new RestApiOperationPayloadProperty("location.latitude", "number", false, []);
-        var place = new RestApiOperationPayloadProperty("place", "string", true, []);
+        var latitude = new RestApiPayloadProperty("location.latitude", "number", false, []);
+        var place = new RestApiPayloadProperty("place", "string", true, []);
 
-        var payload = new RestApiOperationPayload("application/json", [place, latitude]);
+        var payload = new RestApiPayload("application/json", [place, latitude]);
 
         var operation = CreateTestOperation(method, payload);
 
@@ -245,80 +246,172 @@ public class RestApiOperationExtensionsTests
 
         var placeProp = parameters.FirstOrDefault(p => p.Name == "place");
         Assert.NotNull(placeProp);
-        Assert.Equal("place", placeProp.AlternativeName);
+        Assert.Equal("place", placeProp.ArgumentName);
 
         var personNameProp = parameters.FirstOrDefault(p => p.Name == "location.latitude");
         Assert.NotNull(personNameProp);
-        Assert.Equal("location_latitude", personNameProp.AlternativeName);
+        Assert.Equal("location_latitude", personNameProp.ArgumentName);
     }
 
-    private static RestApiOperation CreateTestOperation(string method, RestApiOperationPayload? payload = null, Uri? url = null)
+    [Theory]
+    [InlineData("PUT")]
+    [InlineData("POST")]
+    public void ItShouldNotSetArgumentNameToPayloadParametersIfItIsAlreadyProvided(string method)
+    {
+        //Arrange
+        var latitude = new RestApiPayloadProperty("location.latitude", "number", false, []) { ArgumentName = "alt.location.latitude" };
+        var place = new RestApiPayloadProperty("place", "string", true, []) { ArgumentName = "alt+place" };
+
+        var payload = new RestApiPayload("application/json", [place, latitude]);
+
+        var operation = CreateTestOperation(method, payload);
+
+        //Act
+        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
+
+        //Assert
+        Assert.NotNull(parameters);
+
+        var placeProp = parameters.FirstOrDefault(p => p.Name == "place");
+        Assert.NotNull(placeProp);
+        Assert.Equal("alt+place", placeProp.ArgumentName);
+
+        var personNameProp = parameters.FirstOrDefault(p => p.Name == "location.latitude");
+        Assert.NotNull(personNameProp);
+        Assert.Equal("alt.location.latitude", personNameProp.ArgumentName);
+    }
+
+    [Fact]
+    public void ItShouldSetArgumentNameToNonPayloadParameters()
+    {
+        //Arrange
+        List<RestApiParameter> parameters = [
+            new RestApiParameter("p-1", "number", false, false, RestApiParameterLocation.Path),
+            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query),
+            new RestApiParameter("p3", "number", false, false, RestApiParameterLocation.Header)
+        ];
+
+        var operation = CreateTestOperation("GET", parameters: parameters);
+
+        //Act
+        var processedParameters = operation.GetParameters();
+
+        //Assert
+        Assert.NotNull(processedParameters);
+
+        var pathParameter = processedParameters.Single(p => p.Name == "p-1");
+        Assert.NotNull(pathParameter);
+        Assert.Equal("p_1", pathParameter.ArgumentName);
+
+        var queryStringParameter = processedParameters.Single(p => p.Name == "p$2");
+        Assert.NotNull(queryStringParameter);
+        Assert.Equal("p_2", queryStringParameter.ArgumentName);
+
+        var headerParameter = processedParameters.Single(p => p.Name == "p3");
+        Assert.NotNull(headerParameter);
+        Assert.Equal("p3", headerParameter.ArgumentName);
+    }
+
+    [Fact]
+    public void ItShouldNotSetArgumentNameToNonPayloadParametersIfItIsAlreadyProvided()
+    {
+        //Arrange
+        List<RestApiParameter> parameters = [
+            new RestApiParameter("p-1", "number", false, false, RestApiParameterLocation.Path) { ArgumentName = "alt.p1" },
+            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query) { ArgumentName = "alt.p2" },
+            new RestApiParameter("p3", "number", false, false, RestApiParameterLocation.Header) { ArgumentName = "alt.p3" }
+        ];
+
+        var operation = CreateTestOperation("GET", parameters: parameters);
+
+        //Act
+        var processedParameters = operation.GetParameters();
+
+        //Assert
+        Assert.NotNull(processedParameters);
+
+        var pathParameter = processedParameters.Single(p => p.Name == "p-1");
+        Assert.NotNull(pathParameter);
+        Assert.Equal("alt.p1", pathParameter.ArgumentName);
+
+        var queryStringParameter = processedParameters.Single(p => p.Name == "p$2");
+        Assert.NotNull(queryStringParameter);
+        Assert.Equal("alt.p2", queryStringParameter.ArgumentName);
+
+        var headerParameter = processedParameters.Single(p => p.Name == "p3");
+        Assert.NotNull(headerParameter);
+        Assert.Equal("alt.p3", headerParameter.ArgumentName);
+    }
+
+    private static RestApiOperation CreateTestOperation(string method, RestApiPayload? payload = null, Uri? url = null, List<RestApiParameter>? parameters = null)
     {
         return new RestApiOperation(
-                    id: "fake-id",
-                    serverUrl: url,
-                    path: "fake-path",
-                    method: new HttpMethod(method),
-                    description: "fake-description",
-                    parameters: [],
-                    payload: payload);
+            id: "fake-id",
+            servers: [new(url?.AbsoluteUri)],
+            path: "fake-path",
+            method: new HttpMethod(method),
+            description: "fake-description",
+            parameters: parameters ?? [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: payload);
     }
 
-    private static RestApiOperationPayload CreateTestJsonPayload()
+    private static RestApiPayload CreateTestJsonPayload()
     {
-        var name = new RestApiOperationPayloadProperty(
+        var name = new RestApiPayloadProperty(
             name: "name",
             type: "string",
             isRequired: true,
             properties: [],
             description: "The name.");
 
-        var leader = new RestApiOperationPayloadProperty(
+        var leader = new RestApiPayloadProperty(
             name: "leader",
             type: "string",
             isRequired: true,
             properties: [],
             description: "The leader.");
 
-        var landmarks = new RestApiOperationPayloadProperty(
+        var landmarks = new RestApiPayloadProperty(
             name: "landmarks",
             type: "array",
             isRequired: false,
             properties: [],
             description: "The landmarks.");
 
-        var location = new RestApiOperationPayloadProperty(
+        var location = new RestApiPayloadProperty(
             name: "location",
             type: "object",
             isRequired: true,
             properties: [landmarks],
             description: "The location.");
 
-        var rulingCouncil = new RestApiOperationPayloadProperty(
+        var rulingCouncil = new RestApiPayloadProperty(
             name: "rulingCouncil",
             type: "object",
             isRequired: true,
             properties: [leader],
             description: "The ruling council.");
 
-        var population = new RestApiOperationPayloadProperty(
+        var population = new RestApiPayloadProperty(
             name: "population",
             type: "integer",
             isRequired: true,
             properties: [],
             description: "The population.");
 
-        var hasMagicWards = new RestApiOperationPayloadProperty(
+        var hasMagicWards = new RestApiPayloadProperty(
             name: "hasMagicWards",
             type: "boolean",
             isRequired: false,
             properties: []);
 
-        return new RestApiOperationPayload("application/json", [name, location, rulingCouncil, population, hasMagicWards]);
+        return new RestApiPayload("application/json", [name, location, rulingCouncil, population, hasMagicWards]);
     }
 
-    private static RestApiOperationPayload CreateTestTextPayload()
+    private static RestApiPayload CreateTestTextPayload()
     {
-        return new RestApiOperationPayload("text/plain", []);
+        return new RestApiPayload("text/plain", []);
     }
 }

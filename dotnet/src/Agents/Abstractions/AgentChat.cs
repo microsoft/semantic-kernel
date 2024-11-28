@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.Internal;
+using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -27,6 +29,11 @@ public abstract class AgentChat
 
     private int _isActive;
     private ILogger? _logger;
+
+    /// <summary>
+    /// The agents participating in the chat.
+    /// </summary>
+    public abstract IReadOnlyList<Agent> Agents { get; }
 
     /// <summary>
     /// Indicates if a chat operation is active.  Activity is defined as
@@ -55,6 +62,13 @@ public abstract class AgentChat
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Process a series of interactions between the agents participating in this chat.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieve the chat history.
@@ -205,7 +219,7 @@ public abstract class AgentChat
         {
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
-            AgentChannel channel = await GetOrCreateChannelAsync().ConfigureAwait(false);
+            AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
@@ -240,31 +254,136 @@ public abstract class AgentChat
         {
             this.ClearActivitySignal(); // Signal activity hash completed
         }
+    }
 
-        async Task<AgentChannel> GetOrCreateChannelAsync()
+    /// <summary>
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
+    /// </remarks>
+    protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAgentAsync(
+        Agent agent,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat history
+
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
+        try
         {
-            string channelKey = this.GetAgentHash(agent);
-            AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
-            if (channel is null)
+            // Get or create the required channel and block until channel is synchronized.
+            // Will throw exception when propagating a processing failure.
+            AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
+
+            // Invoke agent & process response
+            ChatHistory messages = [];
+
+            await foreach (StreamingChatMessageContent streamingContent in channel.InvokeStreamingAsync(agent, messages, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
-
-                channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-
-                this._agentChannels.Add(channelKey, channel);
-
-                if (this.History.Count > 0)
-                {
-                    // Sync channel with existing history
-                    await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
-                }
-
-                this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                yield return streamingContent;
             }
 
-            return channel;
+            this.History.AddRange(messages);
+
+            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
+
+            // Broadcast message to other channels (in parallel)
+            // Note: Able to queue messages without synchronizing channels.
+            var channelRefs =
+                this._agentChannels
+                    .Where(kvp => kvp.Value != channel)
+                    .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+            this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        }
+        finally
+        {
+            this.ClearActivitySignal(); // Signal activity hash completed
         }
     }
+
+    /// <summary>
+    /// Reset the chat, clearing all history and persisted state.
+    /// All agents will remain present.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat
+
+        try
+        {
+            Task[] resetTasks = this._agentChannels.Values.Select(c => c.ResetAsync(cancellationToken)).ToArray();
+            await Task.WhenAll(resetTasks).ConfigureAwait(false);
+            this._agentChannels.Clear();
+            this._channelMap.Clear();
+            this.History.Clear();
+        }
+        finally
+        {
+            this.ClearActivitySignal();
+        }
+    }
+
+    internal async Task DeserializeAsync(AgentChatState state)
+    {
+        if (this._agentChannels.Count > 0 || this.History.Count > 0)
+        {
+            throw new KernelException($"Unable to restore chat to instance of {this.GetType().Name}: Already in use.");
+        }
+
+        try
+        {
+            Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
+            foreach (Agent agent in this.Agents)
+            {
+                string channelKey = this.GetAgentHash(agent);
+
+                if (this._agentChannels.ContainsKey(channelKey))
+                {
+                    continue;
+                }
+
+                AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].ChannelState, CancellationToken.None).ConfigureAwait(false);
+                this._agentChannels.Add(channelKey, channel);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+            }
+
+            IEnumerable<ChatMessageContent>? history = JsonSerializer.Deserialize<IEnumerable<ChatMessageContent>>(state.History);
+            if (history != null)
+            {
+                this.History.AddRange(history);
+            }
+        }
+        catch
+        {
+            this._agentChannels.Clear();
+            this.History.Clear();
+            throw;
+        }
+    }
+
+    internal AgentChatState Serialize() =>
+        new()
+        {
+            Participants = this.Agents.Select(a => new AgentParticipant(a)),
+            History = JsonSerializer.Serialize(ChatMessageReference.Prepare(this.History)),
+            Channels =
+                this._agentChannels.Select(
+                    kvp =>
+                        new AgentChannelState
+                        {
+                            ChannelKey = kvp.Key,
+                            ChannelType = kvp.Value.GetType().FullName!,
+                            ChannelState = kvp.Value.Serialize()
+                        })
+        };
 
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
@@ -285,7 +404,7 @@ public abstract class AgentChat
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
-    private void SetActivityOrThrow()
+    protected void SetActivityOrThrow()
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
@@ -306,6 +425,30 @@ public abstract class AgentChat
         }
 
         return hash;
+    }
+
+    private async Task<AgentChannel> GetOrCreateChannelAsync(Agent agent, CancellationToken cancellationToken)
+    {
+        string channelKey = this.GetAgentHash(agent);
+        AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
+        if (channel is null)
+        {
+            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
+            channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+
+            this._agentChannels.Add(channelKey, channel);
+
+            if (this.History.Count > 0)
+            {
+                // Sync channel with existing history
+                await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
+            }
+
+            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        }
+
+        return channel;
     }
 
     private async Task<AgentChannel?> SynchronizeChannelAsync(string channelKey, CancellationToken cancellationToken)

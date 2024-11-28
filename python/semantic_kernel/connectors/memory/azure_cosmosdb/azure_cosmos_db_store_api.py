@@ -11,6 +11,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 # Abstract class similar to the original data store that allows API level abstraction
 @experimental_class
 class AzureCosmosDBStoreApi(ABC):
+    """AzureCosmosDBStoreApi."""
+
     @abstractmethod
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.

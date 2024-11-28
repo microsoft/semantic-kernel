@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -12,6 +14,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>
@@ -32,12 +35,12 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation identifier.
     /// </summary>
-    public string Id { get; }
+    public string? Id { get; }
 
     /// <summary>
     /// The operation description.
     /// </summary>
-    public string Description { get; }
+    public string? Description { get; }
 
     /// <summary>
     /// The operation path.
@@ -50,59 +53,70 @@ public sealed class RestApiOperation
     public HttpMethod Method { get; }
 
     /// <summary>
-    /// The server URL.
+    /// The server.
     /// </summary>
-    public Uri? ServerUrl { get; }
+    public IList<RestApiServer> Servers { get; private set; }
+
+    /// <summary>
+    /// The security requirements.
+    /// </summary>
+    public IList<RestApiSecurityRequirement> SecurityRequirements { get; private set; }
 
     /// <summary>
     /// The operation parameters.
     /// </summary>
-    public IList<RestApiOperationParameter> Parameters { get; }
+    public IList<RestApiParameter> Parameters { get; private set; }
 
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
+    public IDictionary<string, RestApiExpectedResponse> Responses { get; private set; }
 
     /// <summary>
     /// The operation payload.
     /// </summary>
-    public RestApiOperationPayload? Payload { get; }
+    public RestApiPayload? Payload { get; }
 
     /// <summary>
     /// Additional unstructured metadata about the operation.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> Extensions { get; init; } = s_emptyDictionary;
-
+    public IDictionary<string, object?> Extensions
+    {
+        get => this._extensions;
+        init => this._extensions = value;
+    }
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
-    /// <param name="serverUrl">The server URL.</param>
+    /// <param name="servers">The servers.</param>
     /// <param name="path">The operation path.</param>
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
-    /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
-    public RestApiOperation(
-        string id,
-        Uri? serverUrl,
+    /// <param name="securityRequirements">The operation security requirements.</param>
+    /// <param name="payload">The operation payload.</param>
+    internal RestApiOperation(
+        string? id,
+        IList<RestApiServer> servers,
         string path,
         HttpMethod method,
-        string description,
-        IList<RestApiOperationParameter> parameters,
-        RestApiOperationPayload? payload = null,
-        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
+        string? description,
+        IList<RestApiParameter> parameters,
+        IDictionary<string, RestApiExpectedResponse> responses,
+        IList<RestApiSecurityRequirement> securityRequirements,
+        RestApiPayload? payload = null)
     {
         this.Id = id;
-        this.ServerUrl = serverUrl;
+        this.Servers = servers;
         this.Path = path;
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
+        this.Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
+        this.SecurityRequirements = securityRequirements;
         this.Payload = payload;
-        this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
 
     /// <summary>
@@ -112,9 +126,9 @@ public sealed class RestApiOperation
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    internal Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
-        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
+        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl, arguments);
 
         var path = this.BuildPath(this.Path, arguments);
 
@@ -126,27 +140,22 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The request headers.</returns>
-    public IDictionary<string, string> BuildHeaders(IDictionary<string, object?> arguments)
+    internal IDictionary<string, string> BuildHeaders(IDictionary<string, object?> arguments)
     {
         var headers = new Dictionary<string, string>();
 
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Header);
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Simple;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -167,27 +176,22 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The query string.</returns>
-    public string BuildQueryString(IDictionary<string, object?> arguments)
+    internal string BuildQueryString(IDictionary<string, object?> arguments)
     {
         var segments = new List<string>();
 
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Query);
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Form;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -203,6 +207,36 @@ public sealed class RestApiOperation
         return string.Join("&", segments);
     }
 
+    /// <summary>
+    /// Makes the current instance unmodifiable.
+    /// </summary>
+    internal void Freeze()
+    {
+        this.Payload?.Freeze();
+
+        this.Parameters = new ReadOnlyCollection<RestApiParameter>(this.Parameters);
+        foreach (var parameter in this.Parameters)
+        {
+            parameter.Freeze();
+        }
+
+        this.Servers = new ReadOnlyCollection<RestApiServer>(this.Servers);
+        foreach (var server in this.Servers)
+        {
+            server.Freeze();
+        }
+
+        this.SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(this.SecurityRequirements);
+        foreach (var securityRequirement in this.SecurityRequirements)
+        {
+            securityRequirement.Freeze();
+        }
+
+        this.Responses = new ReadOnlyDictionary<string, RestApiExpectedResponse>(this.Responses);
+
+        this._extensions = new ReadOnlyDictionary<string, object?>(this._extensions);
+    }
+
     #region private
 
     /// <summary>
@@ -213,23 +247,18 @@ public sealed class RestApiOperation
     /// <returns>The path.</returns>
     private string BuildPath(string pathTemplate, IDictionary<string, object?> arguments)
     {
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Path);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Path);
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            var argument = this.GetArgumentForParameter(arguments, parameter);
+            if (argument == null)
             {
-                // Throw an exception if the parameter is a required one but no value is provided.
-                if (parameter.IsRequired)
-                {
-                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
-                }
-
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.    
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Simple;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -245,13 +274,39 @@ public sealed class RestApiOperation
         return pathTemplate;
     }
 
+    private object? GetArgumentForParameter(IDictionary<string, object?> arguments, RestApiParameter parameter)
+    {
+        // Try to get the parameter value by the argument name.
+        if (!string.IsNullOrEmpty(parameter.ArgumentName) &&
+            arguments.TryGetValue(parameter.ArgumentName!, out object? argument) &&
+            argument is not null)
+        {
+            return argument;
+        }
+
+        // Try to get the parameter value by the parameter name.
+        if (arguments.TryGetValue(parameter.Name, out argument) &&
+            argument is not null)
+        {
+            return argument;
+        }
+
+        if (parameter.IsRequired)
+        {
+            throw new KernelException($"No argument '{parameter.ArgumentName ?? parameter.Name}' is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Returns operation server Url.
     /// </summary>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
+    /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation server url.</returns>
-    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl)
+    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl, IDictionary<string, object?> arguments)
     {
         string serverUrlString;
 
@@ -259,10 +314,43 @@ public sealed class RestApiOperation
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
         }
+        else if (this.Servers is { Count: > 0 } servers && servers[0].Url is { } url)
+        {
+            serverUrlString = url;
+
+            foreach (var variable in servers[0].Variables)
+            {
+                var variableName = variable.Key;
+
+                // Try to get the variable value by the argument name.
+                if (!string.IsNullOrEmpty(variable.Value.ArgumentName) &&
+                    arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
+                    value is string { } argStrValue && variable.Value.IsValid(argStrValue))
+                {
+                    serverUrlString = url.Replace($"{{{variableName}}}", argStrValue);
+                }
+                // Try to get the variable value by the variable name.
+                else if (arguments.TryGetValue(variableName, out value) &&
+                    value is string { } strValue &&
+                    variable.Value.IsValid(strValue))
+                {
+                    serverUrlString = url.Replace($"{{{variableName}}}", strValue);
+                }
+                // Use the default value if no argument is provided.
+                else if (variable.Value.Default is not null)
+                {
+                    serverUrlString = url.Replace($"{{{variableName}}}", variable.Value.Default);
+                }
+                // Throw an exception if there's no value for the variable.
+                else
+                {
+                    throw new KernelException($"No argument '{variable.Value.ArgumentName ?? variableName}' provided for the '{variableName}' server variable of the operation - '{this.Id}'.");
+                }
+            }
+        }
         else
         {
             serverUrlString =
-                this.ServerUrl?.AbsoluteUri ??
                 apiHostUrl?.AbsoluteUri ??
                 throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
@@ -276,13 +364,15 @@ public sealed class RestApiOperation
         return new Uri(serverUrlString);
     }
 
-    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, JsonNode, string>> s_parameterSerializers = new()
+    private static readonly Dictionary<RestApiParameterStyle, Func<RestApiParameter, JsonNode, string>> s_parameterSerializers = new()
     {
-        { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
+        { RestApiParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.Form, FormStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
-    # endregion
+    private IDictionary<string, object?> _extensions = s_emptyDictionary;
+
+    #endregion
 }

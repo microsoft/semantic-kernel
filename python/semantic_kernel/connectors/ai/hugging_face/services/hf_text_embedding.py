@@ -27,6 +27,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
+    """Hugging Face text embedding service."""
+
     device: str
     generator: Any
 
@@ -49,7 +51,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
-            service_id=service_id,
+            service_id=service_id or ai_model_id,
             device=resolved_device,
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )

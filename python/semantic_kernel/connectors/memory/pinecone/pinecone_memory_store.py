@@ -4,7 +4,7 @@ import logging
 from typing import NamedTuple
 
 from numpy import ndarray
-from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
+from pinecone import FetchResponse, IndexList, IndexModel, Pinecone, ServerlessSpec
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
@@ -60,8 +60,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
-                f"Dimensionality of {default_dimensionality} exceeds "
-                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {default_dimensionality} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         try:
             pinecone_settings = PineconeSettings.create(
@@ -111,7 +110,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             )
             self.collection_names_cache.add(collection_name)
 
-    async def describe_collection(self, collection_name: str) -> IndexDescription | None:
+    async def describe_collection(self, collection_name: str) -> IndexModel | None:
         """Gets the description of the index.
 
         Args:

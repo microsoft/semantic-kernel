@@ -57,3 +57,7 @@ class TextContent(KernelContent):
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""
         return {"type": "text", "text": self.text}
+
+    def __hash__(self) -> int:
+        """Return the hash of the text content."""
+        return hash((self.tag, self.text, self.encoding))
