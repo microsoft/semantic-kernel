@@ -322,6 +322,7 @@ jobs:
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/memory
+      - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
         timeout-minutes: 5
         shell: bash
