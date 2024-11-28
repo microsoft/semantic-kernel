@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
+using Microsoft.ML.OnnxRuntimeGenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -25,6 +26,10 @@ var embeddingModelPath = config["Onnx:EmbeddingModelPath"]!;
 
 // Path to the vocab file your ONNX BGE-MICRO-V2 model
 var embeddingVocabPath = config["Onnx:EmbeddingVocabPath"]!;
+
+// After Onnx GenAI 0.5.0 before using any Onnx service is necessary to
+// Instantiate the OgaHandle class to track the resources used by the Onnx services
+using var ogaHandle = new OgaHandle();
 
 // Load the services
 var builder = Kernel.CreateBuilder()
