@@ -13,7 +13,7 @@ cd dotnet/samples/Concepts/Resources/Plugins/CopilotAgentPlugins
 Microsoft Graph calendar events listing API for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/calendar/events#GET -o CopilotAgentPlugins/CalendarPlugin
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/calendar/events#GET -o CopilotAgentPlugins/CalendarPlugin --pn Calendar
 ```
 
 ### Contacts plugin
@@ -21,7 +21,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/c
 Microsoft Graph contacts listing API for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/contacts#GET -o CopilotAgentPlugins/ContactsPlugin
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/contacts#GET -o CopilotAgentPlugins/ContactsPlugin --pn Contacts
 ```
 
 ### DriveItem plugin
@@ -29,7 +29,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/c
 Microsoft Graph download a drive item for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /drive/root/children/{driveItem-id}/content#GET -o CopilotAgentPlugins/DriveItemPlugin
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /drive/root/children/{driveItem-id}/content#GET -o CopilotAgentPlugins/DriveItemPlugin --pn DriveItem
 ```
 
 ### Messages plugin
@@ -37,7 +37,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /driv
 Microsoft Graph list message and create a draft message for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/messages#GET -i /me/messages#POST -o CopilotAgentPlugins/MessagesPlugin
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/messages#GET -i /me/messages#POST -o CopilotAgentPlugins/MessagesPlugin --pn Messages
 ```
 
 ### Astronomy plugin
@@ -45,7 +45,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/m
 NASA Astronomy Picture of the day endpoint mixed with Microsoft Graph messages to demonstrate a plugin with multiple APIs.
 
 ```shell
-kiota plugin add -t APIPlugin -d ../OpenAPI/NASA/apod.yaml -i /apod#GET -o CopilotAgentPlugins/AstronomyPlugin
+kiota plugin add -t APIPlugin -d ../OpenAPI/NASA/apod.yaml -i /apod#GET -o CopilotAgentPlugins/AstronomyPlugin --pn Astronomy
 cp CopilotAgentPlugins/MessagesPlugin/messages-openapi.yml CopilotAgentPlugins/AstronomyPlugin
 ```
 
