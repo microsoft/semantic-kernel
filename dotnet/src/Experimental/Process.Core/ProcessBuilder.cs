@@ -288,27 +288,52 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
             this._eventNames.Add(processEvent, Enum.GetName(typeof(TEvents), processEvent)!);
         }
     }
+    private string GetEventName(TEvents processEvent)
+    {
+        return this._eventNames[processEvent];
+    }
 
     #region Public Interface
 
+    /// <summary>
+    /// Method that imports a specific KernelProcessEventSubscriber class type
+    /// to be used when specific TEvents get triggered inside the SK Process
+    /// </summary>
+    /// <typeparam name="TEventListeners">ype of the class that contains the custom event subscriber definition</typeparam>
+    /// <param name="serviceProvider">services that the subscribers in the TEventListeners make use of</param>
     public void LinkEventSubscribersFromType<TEventListeners>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents>
     {
         this._eventsSubscriber.SubscribeToEventsFromClass<TEventListeners, TEvents>(serviceProvider);
     }
 
+    /// <inheritdoc cref="ProcessBuilder.OnInputEvent(string)"/>
     public ProcessEdgeBuilder OnInputEvent(TEvents eventId)
     {
         return this.OnInputEvent(this.GetEventName(eventId));
     }
 
-    public string GetEventName(TEvents processEvent)
+    /// <inheritdoc cref="ProcessBuilder.WhereInputEventIs(string)"/>
+    public ProcessFunctionTargetBuilder WhereInputEventIs(TEvents eventId)
     {
-        return this._eventNames[processEvent];
+        return this.WhereInputEventIs(this.GetEventName(eventId));
     }
 
     public ProcessEdgeBuilder GetProcessEvent(TEvents processEvent)
     {
         return this.OnInputEvent(this.GetEventName(processEvent));
+    }
+
+    public ProcessStepEdgeBuilder OnProcessEvent(TEvents eventId)
+    {
+        var eventName = this.GetEventName(eventId);
+        var linkedEventIds = this._eventsSubscriber.GetLinkedStepIdsToProcessEventName(eventName);
+
+        if (linkedEventIds == null || linkedEventIds?.Count() == 0)
+        {
+            throw new InvalidOperationException($"Could not find linked steps to process event {eventName}");
+        }
+
+        return base.OnEvent(eventName);
     }
 
     public ProcessBuilder(string name) : base(name)

@@ -42,7 +42,8 @@ public class WelcomePacketStep : KernelProcessStep
         {
             Id = AccountOpeningEvents.WelcomePacketCreated,
             Data = mailMessage,
-            Visibility = KernelProcessEventVisibility.Public,
+            // When using ProcessBuilder<> with EmitAsProcessEvent there is no need of marking the event as public
+            //Visibility = KernelProcessEventVisibility.Public,
         });
     }
 }

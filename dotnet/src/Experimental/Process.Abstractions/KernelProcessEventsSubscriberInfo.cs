@@ -19,32 +19,7 @@ public class KernelProcessEventsSubscriberInfo
     private IServiceProvider? _subscriberServiceProvider = null;
     private KernelProcessEventsSubscriber? _processEventSubscriber = null;
 
-    protected void Subscribe(string eventName, MethodInfo method)
-    {
-        if (this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? eventHandlers) && eventHandlers != null)
-        {
-            eventHandlers.Add(method);
-        }
-    }
-
-    public void LinkStepEventToProcessEvent(string stepEventId, string processEventId)
-    {
-        this._stepEventProcessEventMap.Add(stepEventId, processEventId);
-        if (!this._eventHandlers.ContainsKey(processEventId))
-        {
-            this._eventHandlers.Add(processEventId, []);
-        }
-    }
-
-    public void TryInvokeProcessEventFromStepMessage(string stepEventId, object? data)
-    {
-        if (this._stepEventProcessEventMap.TryGetValue(stepEventId, out var processEvent) && processEvent != null)
-        {
-            this.InvokeProcessEvent(processEvent, data);
-        }
-    }
-
-    public void InvokeProcessEvent(string eventName, object? data)
+    private void InvokeProcessEvent(string eventName, object? data)
     {
         if (this._processEventSubscriberType != null && this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? linkedMethods) && linkedMethods != null)
         {
@@ -65,6 +40,36 @@ public class KernelProcessEventsSubscriberInfo
             {
                 method.Invoke(this._processEventSubscriber, [data]);
             }
+        }
+    }
+
+    private void Subscribe(string eventName, MethodInfo method)
+    {
+        if (this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? eventHandlers) && eventHandlers != null)
+        {
+            eventHandlers.Add(method);
+        }
+    }
+
+    public void LinkStepEventToProcessEvent(string stepEventId, string processEventId)
+    {
+        this._stepEventProcessEventMap.Add(stepEventId, processEventId);
+        if (!this._eventHandlers.ContainsKey(processEventId))
+        {
+            this._eventHandlers.Add(processEventId, []);
+        }
+    }
+
+    public bool TryGetLinkedProcessEvent(string stepEventId, out string? processEvent)
+    {
+        return this._stepEventProcessEventMap.TryGetValue(stepEventId, out processEvent);
+    }
+
+    public void TryInvokeProcessEventFromStepMessage(string stepEventId, object? data)
+    {
+        if (this.TryGetLinkedProcessEvent(stepEventId, out string? processEvent) && !string.IsNullOrEmpty(processEvent))
+        {
+            this.InvokeProcessEvent(processEvent!, data);
         }
     }
 
@@ -98,6 +103,13 @@ public class KernelProcessEventsSubscriberInfo
 
         this._subscriberServiceProvider = serviceProvider;
         this._processEventSubscriberType = typeof(TEventListeners);
+    }
+
+    public IEnumerable<string> GetLinkedStepIdsToProcessEventName(string processEventId)
+    {
+        return this._stepEventProcessEventMap
+            .Where(kv => kv.Value == processEventId)
+            .Select(kv => kv.Key);
     }
 
     public KernelProcessEventsSubscriberInfo() { }

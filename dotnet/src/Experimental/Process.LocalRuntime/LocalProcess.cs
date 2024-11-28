@@ -290,9 +290,18 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         return;
     }
 
+    //private string? TryGetLinkedExternalProcessEvent()
+    //{
+    //	this._process.EventsSubscriber.
+    //}
+
     private void TryEmitMessageToExternalSubscribers(string processEventId, object? processEventData)
     {
+        string? processEventName = null;
         this._process.EventsSubscriber?.TryInvokeProcessEventFromStepMessage(processEventId, processEventData);
+        if (string.IsNullOrEmpty(processEventName))
+        {
+        }
     }
 
     private void TryEmitMessageToExternalSubscribers(ProcessMessage message)
@@ -331,6 +340,13 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         var allStepEvents = step.GetAllEvents();
         foreach (ProcessEvent stepEvent in allStepEvents)
         {
+            if (this._process.EventsSubscriber != null && this._process.EventsSubscriber.TryGetLinkedProcessEvent(stepEvent.QualifiedId, out var processEventName) && !string.IsNullOrEmpty(processEventName))
+			{
+				// Since it is a subscribed to event making public in case it wasn't and renaming event name to match process name
+				var processEvent = stepEvent with { SourceId = processEventName!, Visibility = KernelProcessEventVisibility.Public };
+				base.EmitEvent(processEvent);
+			}
+
             // Emit the event out of the process (this one) if it's visibility is public.
             if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
             {

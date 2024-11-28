@@ -14,9 +14,33 @@ namespace Step02.Processes;
 /// </summary>
 public static class NewAccountCreationProcess
 {
-    public static ProcessBuilder CreateProcess()
+    /// <summary>
+    /// Process events allow to only expose the relevant events that have interactions with external components to this process as input or output events.<br/>
+    /// This way when using the process as a step in another process it can be seen as:
+    /// <code>
+    ///         PROCESS INPUTS                                PROCESS OUTPUTS
+    ///                                  ┌─────────┐
+    /// OnNewCusotmerFormCompleted ─────►│         │
+    ///                                  │         │
+    /// OnCustomerTranscriptReady ──────►│ Process │───► AccountCreatedSuccessfully
+    ///                                  │         │
+    /// OnNewAccountVerificationPassed ─►│         │
+    ///                                  └─────────┘
+    /// </code>
+    /// </summary>
+    public enum ProcessEvents
     {
-        ProcessBuilder process = new("AccountCreationProcess");
+        // Process Input Events
+        OnNewCustomerFormCompleted,
+        OnCustomerTranscriptReady,
+        OnNewAccountVerificationPassed,
+        // Process Output Events
+        AccountCreatedSuccessfully
+    }
+
+    public static ProcessBuilder<ProcessEvents> CreateProcess()
+    {
+        var process = new ProcessBuilder<ProcessEvents>("AccountCreationProcess");
 
         var coreSystemRecordCreationStep = process.AddStepFromType<NewAccountStep>();
         var marketingRecordCreationStep = process.AddStepFromType<NewMarketingEntryStep>();
@@ -25,18 +49,18 @@ public static class NewAccountCreationProcess
 
         // When the newCustomerForm is completed...
         process
-            .OnInputEvent(AccountOpeningEvents.NewCustomerFormCompleted)
+            .OnInputEvent(ProcessEvents.OnNewCustomerFormCompleted)
             // The information gets passed to the core system record creation step
             .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "customerDetails"));
 
         // When the newCustomerForm is completed, the user interaction transcript with the user is passed to the core system record creation step
         process
-            .OnInputEvent(AccountOpeningEvents.CustomerInteractionTranscriptReady)
+            .OnInputEvent(ProcessEvents.OnCustomerTranscriptReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "interactionTranscript"));
 
         // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
         process
-            .OnInputEvent(AccountOpeningEvents.NewAccountVerificationCheckPassed)
+            .OnInputEvent(ProcessEvents.OnNewAccountVerificationPassed)
             .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "previousCheckSucceeded"));
 
         // When the coreSystemRecordCreation step successfully creates a new accountId, it will trigger the creation of a new marketing entry through the marketingRecordCreation step
@@ -64,6 +88,10 @@ public static class NewAccountCreationProcess
         crmRecordStep
             .OnEvent(AccountOpeningEvents.CRMRecordInfoEntryCreated)
             .SendEventTo(new ProcessFunctionTargetBuilder(welcomePacketStep, parameterName: "crmRecordCreated"));
+
+        welcomePacketStep
+            .OnEvent(AccountOpeningEvents.WelcomePacketCreated)
+            .EmitAsProcessEvent(process.GetProcessEvent(ProcessEvents.AccountCreatedSuccessfully));
 
         return process;
     }

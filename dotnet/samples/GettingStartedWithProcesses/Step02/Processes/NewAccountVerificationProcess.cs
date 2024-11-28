@@ -14,16 +14,40 @@ namespace Step02.Processes;
 /// </summary>
 public static class NewAccountVerificationProcess
 {
-    public static ProcessBuilder CreateProcess()
+    /// <summary>
+    /// Process events allow to only expose the relevant events that have interactions with external components to this process as input or output events.<br/>
+    /// This way when using the process as a step in another process it can be seen as:
+    /// <code>
+    ///         PROCESS INPUTS                                PROCESS OUTPUTS
+    ///                               ┌─────────┐
+    ///                               │         │───► OnNewUserFraudCheckFailed
+    ///                               │         │
+    /// OnNewCusotmerFormCompleted ──►│ Process │───► OnNewAccountVerificationSucceeded
+    ///                               │         │
+    ///                               │         │───► OnNewUserCreditCheckFailed
+    ///                               └─────────┘
+    /// </code>
+    /// </summary>
+    public enum ProcessEvents
     {
-        ProcessBuilder process = new("AccountVerificationProcess");
+        // Process Input Events
+        OnNewCustomerFormCompleted,
+        // Process Output Events
+        OnNewAccountVerificationSucceeded,
+        OnNewUserFraudCheckFailed,
+        OnNewUserCreditCheckFailed
+    }
+
+    public static ProcessBuilder<ProcessEvents> CreateProcess()
+    {
+        var process = new ProcessBuilder<ProcessEvents>("AccountVerificationProcess");
 
         var customerCreditCheckStep = process.AddStepFromType<CreditScoreCheckStep>();
         var fraudDetectionCheckStep = process.AddStepFromType<FraudDetectionStep>();
 
         // When the newCustomerForm is completed...
         process
-            .OnInputEvent(AccountOpeningEvents.NewCustomerFormCompleted)
+            .OnInputEvent(ProcessEvents.OnNewCustomerFormCompleted)
             // The information gets passed to the core system record creation step
             .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.Functions.DetermineCreditScore, parameterName: "customerDetails"))
             // The information gets passed to the fraud detection step for validation
@@ -33,6 +57,18 @@ public static class NewAccountVerificationProcess
         customerCreditCheckStep
             .OnEvent(AccountOpeningEvents.CreditScoreCheckApproved)
             .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.Functions.FraudDetectionCheck, parameterName: "previousCheckSucceeded"));
+
+        customerCreditCheckStep
+            .OnEvent(AccountOpeningEvents.CreditScoreCheckRejected)
+            .EmitAsProcessEvent(process.GetProcessEvent(ProcessEvents.OnNewUserCreditCheckFailed));
+
+        fraudDetectionCheckStep
+            .OnEvent(AccountOpeningEvents.FraudDetectionCheckPassed)
+            .EmitAsProcessEvent(process.GetProcessEvent(ProcessEvents.OnNewAccountVerificationSucceeded));
+
+        fraudDetectionCheckStep
+            .OnEvent(AccountOpeningEvents.FraudDetectionCheckFailed)
+            .EmitAsProcessEvent(process.GetProcessEvent(ProcessEvents.OnNewUserFraudCheckFailed));
 
         return process;
     }

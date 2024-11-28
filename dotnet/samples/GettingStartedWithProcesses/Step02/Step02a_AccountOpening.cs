@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using SharedSteps;
 using Step02.Models;
 using Step02.Steps;
+using Step02.Utils;
 
 namespace Step02;
 
@@ -143,9 +144,14 @@ public class Step02a_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     [Fact]
     public async Task UseAccountOpeningProcessSuccessfulInteractionAsync()
     {
+        // Arrange
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Act
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Assert
+        var processInfo = await runningProcess.GetStateAsync();
+        AccountOpeningAsserts.AssertAccountOpeningSuccessMailMessage(processInfo, nameof(MailServiceStep));
     }
 
     /// <summary>
@@ -154,9 +160,14 @@ public class Step02a_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     [Fact]
     public async Task UseAccountOpeningProcessFailureDueToCreditScoreFailureAsync()
     {
+        // Arrange
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Act
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Assert
+        var processInfo = await runningProcess.GetStateAsync();
+        AccountOpeningAsserts.AssertAccountOpeningFailDueCreditScoreMailMessage(processInfo, nameof(MailServiceStep));
     }
 
     /// <summary>
@@ -165,8 +176,13 @@ public class Step02a_AccountOpening(ITestOutputHelper output) : BaseTest(output,
     [Fact]
     public async Task UseAccountOpeningProcessFailureDueToFraudFailureAsync()
     {
+        // Arrange
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteractionStep>();
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Act
+        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        // Assert
+        var processInfo = await runningProcess.GetStateAsync();
+        AccountOpeningAsserts.AssertAccountOpeningFailDueFraudMailMessage(processInfo, nameof(MailServiceStep));
     }
 }
