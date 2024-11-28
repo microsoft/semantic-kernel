@@ -4,7 +4,7 @@ import asyncio
 
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
+from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory

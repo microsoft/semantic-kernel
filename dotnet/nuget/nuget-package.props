@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
-    <VersionPrefix>1.29.0</VersionPrefix>
+    <VersionPrefix>1.31.0</VersionPrefix>
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
 
@@ -15,6 +15,15 @@
     <!-- Do not validate reference assemblies -->
     <NoWarn>$(NoWarn);CP1002</NoWarn>
 
+    <!-- Enable NuGet package auditing -->
+    <NuGetAudit>true</NuGetAudit>
+
+    <!-- Audit direct and transitive packages -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+
+    <!-- Report low, moderate, high and critical advisories -->
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>

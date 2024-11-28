@@ -80,12 +80,12 @@ class OpenAIAssistantBase(Agent):
     enable_code_interpreter: bool | None = Field(False)
     enable_file_search: bool | None = Field(False)
     enable_json_response: bool | None = Field(False)
-    code_interpreter_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
-    file_search_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    code_interpreter_file_ids: list[str] | None = Field(default_factory=list, max_length=20)  # type: ignore
+    file_search_file_ids: list[str] | None = Field(default_factory=list, max_length=20)  # type: ignore
     temperature: float | None = Field(None)
     top_p: float | None = Field(None)
     vector_store_id: str | None = None
-    metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)
+    metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)  # type: ignore
     max_completion_tokens: int | None = Field(None)
     max_prompt_tokens: int | None = Field(None)
     parallel_tool_calls_enabled: bool | None = Field(True)

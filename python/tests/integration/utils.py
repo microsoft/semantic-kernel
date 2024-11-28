@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+import platform
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -42,3 +43,13 @@ def is_service_setup_for_testing(env_var_names: list[str], raise_if_not_set: boo
         return exist
 
     return all([does_env_var_exist(name) for name in env_var_names])
+
+
+def is_test_running_on_supported_platforms(platforms: list[str]) -> bool:
+    """Check if the test is running on supported platforms.
+
+    Args:
+        platforms (list[str]): List of supported platforms.
+    """
+
+    return platform.system() in platforms

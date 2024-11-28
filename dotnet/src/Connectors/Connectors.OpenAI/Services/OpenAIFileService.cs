@@ -209,7 +209,7 @@ public sealed class OpenAIFileService
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         var model = JsonSerializer.Deserialize<TModel>(body);
 
@@ -230,7 +230,7 @@ public sealed class OpenAIFileService
         {
             return
                 (new HttpResponseStream(
-                    await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
+                    await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false),
                     response),
                     response.Content.Headers.ContentType?.MediaType);
         }
@@ -247,7 +247,7 @@ public sealed class OpenAIFileService
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         var model = JsonSerializer.Deserialize<TModel>(body);
 

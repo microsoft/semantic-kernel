@@ -77,7 +77,7 @@ internal sealed class HuggingFaceClient
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken)
             .ConfigureAwait(false);
 
         return body;
@@ -185,7 +185,7 @@ internal sealed class HuggingFaceClient
         {
             using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
             httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

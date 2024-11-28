@@ -29,6 +29,22 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed partial class KernelFunctionFromMethod : KernelFunction
 {
+    private static readonly Dictionary<Type, Func<string, object>> s_jsonStringParsers = new(12)
+    {
+        { typeof(bool), s => bool.Parse(s) },
+        { typeof(int), s => int.Parse(s) },
+        { typeof(uint), s => uint.Parse(s) },
+        { typeof(long), s => long.Parse(s) },
+        { typeof(ulong), s => ulong.Parse(s) },
+        { typeof(float), s => float.Parse(s) },
+        { typeof(double), s => double.Parse(s) },
+        { typeof(decimal), s => decimal.Parse(s) },
+        { typeof(short), s => short.Parse(s) },
+        { typeof(ushort), s => ushort.Parse(s) },
+        { typeof(byte), s => byte.Parse(s) },
+        { typeof(sbyte), s => sbyte.Parse(s) }
+    };
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -710,24 +726,32 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
             object? Process(object? value)
             {
-                if (!type.IsAssignableFrom(value?.GetType()))
+                if (type.IsAssignableFrom(value?.GetType()))
                 {
-                    if (converter is not null)
-                    {
-                        try
-                        {
-                            return converter(value, kernel.Culture);
-                        }
-                        catch (Exception e) when (!e.IsCriticalException())
-                        {
-                            throw new ArgumentOutOfRangeException(name, value, e.Message);
-                        }
-                    }
+                    return value;
+                }
 
-                    if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
+                if (converter is not null && value is not JsonElement or JsonDocument or JsonNode)
+                {
+                    try
                     {
-                        return deserializedValue;
+                        return converter(value, kernel.Culture);
                     }
+                    catch (Exception e) when (!e.IsCriticalException())
+                    {
+                        throw new ArgumentOutOfRangeException(name, value, e.Message);
+                    }
+                }
+
+                if (value is JsonElement element && element.ValueKind == JsonValueKind.String
+                    && s_jsonStringParsers.TryGetValue(type, out var jsonStringParser))
+                {
+                    return jsonStringParser(element.GetString()!);
+                }
+
+                if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
+                {
+                    return deserializedValue;
                 }
 
                 return value;
