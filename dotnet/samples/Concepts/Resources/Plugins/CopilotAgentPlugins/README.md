@@ -29,7 +29,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/c
 Microsoft Graph download a drive item for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /drive/root/children/{driveItem-id}/content#GET -o CopilotAgentPlugins/DriveItemPlugin --pn DriveItem
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /drives/{drive-id}/items/{driveItem-id}/content#GET -o CopilotAgentPlugins/DriveItemPlugin --pn DriveItem
 ```
 
 ### Messages plugin
