@@ -18,6 +18,16 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class DeclarativeAgentExtensions
 {
+    /// <summary>
+    /// Creates a chat completion agent from a declarative agent manifest asynchronously.
+    /// </summary>
+    /// <typeparam name="T">The type of the agent to create.</typeparam>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="filePath">The file path of the declarative agent manifest.</param>
+    /// <param name="pluginParameters">Optional parameters for the Copilot Agent Plugin setup.</param>
+    /// <param name="promptExecutionSettings">Optional prompt execution settings. Ensure you enable function calling.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created chat completion agent.</returns>
     public static async Task<T> CreateChatCompletionAgentFromDeclarativeAgentManifestAsync<T>(
         this Kernel kernel,
         string filePath,
