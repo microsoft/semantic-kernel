@@ -30,25 +30,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
-      - name: Download coverage
-        uses: dawidd6/action-download-artifact@v6
+      - name: Download Files
+        uses: actions/download-artifact@v4
         with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
-          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          workflow: python-unit-tests.yml
-          search_artifacts: true
-          if_no_artifact_found: warn
-      - name: Download pytest
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          name: pytest-${{ env.FILE_ID }}.xml
-          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          workflow: python-unit-tests.yml
-          search_artifacts: true
-          if_no_artifact_found: warn
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: python/
+          merge-multiple: true
+      - name: Display structure of downloaded files
+        run: ls python/
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python-coverage.txt

@@ -38,7 +38,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
+from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
