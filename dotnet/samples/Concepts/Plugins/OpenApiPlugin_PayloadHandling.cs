@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Plugins;
@@ -140,7 +140,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         await this._kernel.InvokeAsync(createMeetingFunction, arguments);
 
         // Example of how to have the createEvent function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         await this._kernel.InvokePromptAsync("Schedule one hour IT Meeting for October 1st, 2023, at 10:00 AM UTC.", new KernelArguments(settings));
     }
 
@@ -201,7 +201,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         await this._kernel.InvokeAsync(createMeetingFunction, arguments);
 
         // Example of how to have the createEvent function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         await this._kernel.InvokePromptAsync("Schedule one hour IT Meeting for October 1st, 2023, at 10:00 AM UTC.", new KernelArguments(settings));
     }
 
@@ -282,7 +282,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         await this._kernel.InvokeAsync(createMeetingFunction, arguments);
 
         // Example of how to have the createEvent function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         await this._kernel.InvokePromptAsync("Schedule one hour IT Meeting for October 1st, 2023, at 10:00 AM UTC.", new KernelArguments(settings));
     }
 
@@ -302,7 +302,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         });
 
         // Example of how to have the updatePater function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine("\nExpected payload: Dog { breed=Husky, bark=false }");
         await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please create my pet information.", new KernelArguments(settings));
         Console.WriteLine("\nExpected payload: Dog { breed=Dingo, bark=true }");
@@ -331,7 +331,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         });
 
         // Example of how to have the updatePater function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine("\nExpected payload: { pet_type=dog, breed=Husky, bark=false }");
         Console.WriteLine(await this._kernel.InvokePromptAsync("My new dog is a Husky, he is very quiet, please update my pet information.", new KernelArguments(settings)));
         Console.WriteLine("\nExpected payload: { pet_type=dog, breed=Dingo, bark=true }");
@@ -361,7 +361,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         });
 
         // Example of how to have the updatePater function invoked by the AI
-        AzureOpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine("\nExpected payload: { pet_type=Dog, nickname=Fido }");
         Console.WriteLine(await this._kernel.InvokePromptAsync("My new dog is named Fido he is 2 years old, please create my pet information.", new KernelArguments(settings)));
         Console.WriteLine("\nExpected payload: { pet_type=Dog, nickname=Spot age=1 hunts=true }");

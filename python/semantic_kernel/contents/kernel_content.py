@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar
+from typing import Annotated, Any, TypeVar
 
 from pydantic import Field
 
@@ -15,7 +15,7 @@ class KernelContent(KernelBaseModel, ABC):
 
     # NOTE: if you wish to hold on to the inner content, you are responsible
     # for saving it before serializing the content/chat history as it won't be included.
-    inner_content: Any | None = Field(None, exclude=True)
+    inner_content: Annotated[Any | None, Field(exclude=True)] = None
     ai_model_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
