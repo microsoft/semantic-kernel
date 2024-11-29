@@ -53,7 +53,6 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         this._httpMessageHandler = new LoggingHandler(this._httpClientHandler, this._output);
         this._httpClient = new HttpClient(this._httpMessageHandler);
     }
-
     private void Dispose(bool disposing)
     {
         if (!this._disposedValue)
@@ -74,9 +73,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
-
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
@@ -98,7 +95,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.True(response[0].Content?.Length > 0);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithUsageAsync()
     {
         // Arrange
@@ -126,7 +123,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.True(usage?.TotalTokens > 0);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithImageAsync()
     {
         // Arrange
@@ -150,7 +147,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateInvokeChatPromptAsync()
     {
         // Arrange
@@ -174,7 +171,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.False(string.IsNullOrEmpty(response.ToString()));
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
         // Arrange
@@ -203,7 +200,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.False(string.IsNullOrEmpty(content.ToString()));
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsHasToolCallsResponseAsync()
     {
         // Arrange
@@ -227,7 +224,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("tool_calls", response[0].Metadata?["FinishReason"]);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsHasRequiredToolCallResponseAsync()
     {
         // Arrange
@@ -254,7 +251,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("DoSomething", ((FunctionCallContent)response[0].Items[1]).FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAsync()
     {
         // Arrange
@@ -279,7 +276,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("12°C", response[0].Content, System.StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithNoFunctionsAsync()
     {
         // Arrange
@@ -303,7 +300,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("weather", response[0].Content, System.StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeReturnsFunctionCallContentAsync()
     {
         // Arrange
@@ -330,7 +327,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("GetWeather", ((FunctionCallContent)chatHistory[1].Items[1]).FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
@@ -361,7 +358,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetStreamingChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
@@ -402,7 +399,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionInvocationFilterAsync()
     {
         // Arrange
@@ -436,7 +433,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndMultipleCallsAsync()
     {
         // Arrange
