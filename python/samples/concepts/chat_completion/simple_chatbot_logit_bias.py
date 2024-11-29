@@ -6,7 +6,7 @@ from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 
 # This sample shows how to create a chatbot that whose output can be biased using logit bias.
 # This sample uses the following three main components:
@@ -33,7 +33,6 @@ Your name is Mosscap and you have one goal: to answer questions about basketball
 
 # Create a chat history object with the system message.
 chat_history = ChatHistory(system_message=system_message)
-
 # Create a list of tokens whose bias value will be reduced.
 # The token ids of these words can be obtained using the GPT Tokenizer: https://platform.openai.com/tokenizer
 # the targeted model series is GPT-4o & GPT-4o mini
@@ -61,7 +60,7 @@ banned_tokens = [
 ]
 # Configure the logit bias settings to minimize the likelihood of the
 # tokens in the banned_tokens list appearing in the output.
-request_settings.logit_bias = {k: -100 for k in banned_tokens}
+request_settings.logit_bias = {k: -100 for k in banned_tokens}  # type: ignore
 
 
 async def chat() -> bool:
@@ -86,10 +85,11 @@ async def chat() -> bool:
         chat_history=chat_history,
         settings=request_settings,
     )
-    print(f"Mosscap:> {response}")
+    if response:
+        print(f"Mosscap:> {response}")
 
-    # Add the chat message to the chat history to keep track of the conversation.
-    chat_history.add_assistant_message(str(response))
+        # Add the chat message to the chat history to keep track of the conversation.
+        chat_history.add_message(response)
 
     return True
 

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
@@ -29,11 +29,14 @@ class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
 class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
     """Settings for Ollama chat prompt execution."""
 
-    tools: list[dict[str, Any]] | None = Field(
-        None,
-        max_length=64,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
+    tools: Annotated[
+        list[dict[str, Any]] | None,
+        Field(
+            max_length=64,
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
 
 
 class OllamaEmbeddingPromptExecutionSettings(OllamaPromptExecutionSettings):
