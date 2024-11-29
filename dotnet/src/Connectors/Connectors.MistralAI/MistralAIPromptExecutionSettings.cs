@@ -195,7 +195,6 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
     /// based on whether they appear in the text so far, increasing the
@@ -223,6 +222,10 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     /// based on their existing frequency in the text so far, decreasing
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
+    /// <remarks>
+    /// frequency_penalty penalizes the repetition of words based on their frequency in the generated text.
+    /// A higher frequency penalty discourages the model from repeating words that have already appeared frequently in the output, promoting diversity and reducing repetition.
+    /// </remarks>
     [JsonPropertyName("frequency_penalty")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? FrequencyPenalty

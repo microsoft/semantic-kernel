@@ -534,7 +534,7 @@ public sealed class MistralClientTests : MistralTestBase
             Items =
                 [
                 new TextContent("What is the weather like in Paris?"),
-                new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))
+                    new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))
                 ],
         };
 

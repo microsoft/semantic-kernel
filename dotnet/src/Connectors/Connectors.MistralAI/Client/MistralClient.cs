@@ -505,7 +505,7 @@ internal sealed class MistralClient
         var endpoint = this.GetEndpoint(executionSettings, path: "chat/completions");
         using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: true);
         using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
+        var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingChatContent;
@@ -774,10 +774,10 @@ internal sealed class MistralClient
 
         if (chatMessage.Items.Count == 1 && chatMessage.Items[0] is TextContent text)
         {
-            return [new MistralChatMessage(chatMessage.Role.ToString(), text.Text!)];
+            return [new MistralChatMessage(chatMessage.Role.ToString(), text.Text)];
         }
 
-        List<ContentChunk> content = new();
+        List<ContentChunk> content = [];
         foreach (var item in chatMessage.Items)
         {
             if (item is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
