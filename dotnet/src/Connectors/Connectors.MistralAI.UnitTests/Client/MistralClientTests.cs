@@ -38,6 +38,24 @@ public sealed class MistralClientTests : MistralTestBase
     }
 
     [Fact]
+    public void ValidateDeserializeChatCompletionMistralChatMessage()
+    {
+        var json = "{\"role\":\"assistant\",\"content\":\"Some response.\",\"tool_calls\":null}";
+
+        MistralChatMessage? deserializedResponse = JsonSerializer.Deserialize<MistralChatMessage>(json);
+        Assert.NotNull(deserializedResponse);
+    }
+
+    [Fact]
+    public void ValidateDeserializeChatCompletionResponse()
+    {
+        var json = "{\"id\":\"aee5e73a5ef241be89cd7d3e9c45089a\",\"object\":\"chat.completion\",\"created\":1732882368,\"model\":\"mistral-large-latest\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"Some response.\",\"tool_calls\":null},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":17,\"total_tokens\":124,\"completion_tokens\":107}}";
+
+        ChatCompletionResponse? deserializedResponse = JsonSerializer.Deserialize<ChatCompletionResponse>(json);
+        Assert.NotNull(deserializedResponse);
+    }
+
+    [Fact]
     public async Task ValidateChatMessageRequestAsync()
     {
         // Arrange

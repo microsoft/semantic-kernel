@@ -74,7 +74,9 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+
+
+    [Fact]
     public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
@@ -96,7 +98,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.True(response[0].Content?.Length > 0);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithUsageAsync()
     {
         // Arrange
@@ -124,7 +126,31 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.True(usage?.TotalTokens > 0);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    public async Task ValidateGetChatMessageContentsWithImageAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ImageModelId"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "Describe the image"),
+            new ChatMessageContent(AuthorRole.User, [new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))])
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Eiffel Tower", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
     public async Task ValidateInvokeChatPromptAsync()
     {
         // Arrange
@@ -148,7 +174,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.False(string.IsNullOrEmpty(response.ToString()));
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
         // Arrange
@@ -177,7 +203,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.False(string.IsNullOrEmpty(content.ToString()));
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsHasToolCallsResponseAsync()
     {
         // Arrange
@@ -201,7 +227,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("tool_calls", response[0].Metadata?["FinishReason"]);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsHasRequiredToolCallResponseAsync()
     {
         // Arrange
@@ -228,7 +254,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("DoSomething", ((FunctionCallContent)response[0].Items[1]).FunctionName);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAsync()
     {
         // Arrange
@@ -249,10 +275,11 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", response[0].Content, System.StringComparison.Ordinal);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithNoFunctionsAsync()
     {
         // Arrange
@@ -276,7 +303,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("weather", response[0].Content, System.StringComparison.Ordinal);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeReturnsFunctionCallContentAsync()
     {
         // Arrange
@@ -303,7 +330,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Equal("GetWeather", ((FunctionCallContent)chatHistory[1].Items[1]).FunctionName);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
@@ -331,11 +358,10 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetStreamingChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
@@ -376,7 +402,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionInvocationFilterAsync()
     {
         // Arrange
@@ -405,12 +431,12 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.StartsWith("Weather in Paris", response[0].Content);
-        Assert.EndsWith("is sunny and 18 Celsius", response[0].Content);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", response[0].Content, System.StringComparison.Ordinal);
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndMultipleCallsAsync()
     {
         // Arrange
@@ -434,8 +460,8 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(result2);
         Assert.Single(result2);
-        Assert.Contains("Marseille", result2[0].Content);
-        Assert.Contains("sunny", result2[0].Content);
+        Assert.Contains("Marseille", result2[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", result2[0].Content, System.StringComparison.Ordinal);
     }
 
     public sealed class WeatherPlugin
@@ -444,7 +470,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => $"Weather in {location} is sunny and 18 Celsius";
+            ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
     }
 
     public sealed class AnonymousPlugin
