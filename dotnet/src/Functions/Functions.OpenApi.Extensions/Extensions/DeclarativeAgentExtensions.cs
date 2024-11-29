@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Plugins.Manifest;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
 using System.Linq;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Microsoft.SemanticKernel;
 
