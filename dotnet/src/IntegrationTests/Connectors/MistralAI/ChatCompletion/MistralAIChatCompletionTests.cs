@@ -147,6 +147,40 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
     }
 
+    [Fact]
+    public async Task ValidateGetChatMessageContentsWithImageAndJsonFormatAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ImageModelId"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
+
+        // Act
+        var systemMessage = "Return the answer in a JSON object with the next structure: " +
+                   "{\"elements\": [{\"element\": \"some name of element1\", " +
+                   "\"description\": \"some description of element 1\"}, " +
+                   "{\"element\": \"some name of element2\", \"description\": " +
+                   "\"some description of element 2\"}]}";
+        var chatHistory = new ChatHistory(systemMessage)
+        {
+            new ChatMessageContent(AuthorRole.User, "Describe the image"),
+            new ChatMessageContent(AuthorRole.User, [new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))])
+        };
+        var executionSettings = new MistralAIPromptExecutionSettings
+        {
+            MaxTokens = 500,
+            ResponseFormat = new { type = "json_object" },
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Eiffel Tower", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+    }
+
     [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateInvokeChatPromptAsync()
     {

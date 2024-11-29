@@ -80,7 +80,7 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(0.9, chatRequest.Temperature);
         Assert.Single(chatRequest.Messages);
         Assert.Equal("user", chatRequest.Messages[0].Role);
-        Assert.Equal("What is the best French cheese?", chatRequest.Messages[0].Content);
+        Assert.Equal("What is the best French cheese?", chatRequest.Messages[0].Content?.ToString());
     }
 
     [Fact]
@@ -523,6 +523,31 @@ public sealed class MistralClientTests : MistralTestBase
     }
 
     [Fact]
+    public void ValidateToMistralChatMessagesWithMultipleContents()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+                [
+                new TextContent("What is the weather like in Paris?"),
+                new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))
+                ],
+        };
+
+        // Act
+        var messages = client.ToMistralChatMessages(chatMessage, default);
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Single(messages);
+        Assert.IsType<List<ContentChunk>>(messages[0].Content);
+    }
+
+    [Fact]
     public void ValidateToMistralChatMessagesWithFunctionCallContent()
     {
         // Arrange
@@ -560,6 +585,41 @@ public sealed class MistralClientTests : MistralTestBase
         // Assert
         Assert.NotNull(messages);
         Assert.Equal(2, messages.Count);
+    }
+
+    [Fact]
+    public void ValidateCloneMistralAIPromptExecutionSettings()
+    {
+        // Arrange
+        var settings = new MistralAIPromptExecutionSettings
+        {
+            MaxTokens = 1024,
+            Temperature = 0.9,
+            TopP = 0.9,
+            FrequencyPenalty = 0.9,
+            PresencePenalty = 0.9,
+            Stop = ["stop"],
+            SafePrompt = true,
+            RandomSeed = 123,
+            ResponseFormat = new { format = "json" },
+        };
+
+        // Act
+        var clonedSettings = settings.Clone();
+
+        // Assert
+        Assert.NotNull(clonedSettings);
+        Assert.IsType<MistralAIPromptExecutionSettings>(clonedSettings);
+        var clonedMistralAISettings = clonedSettings as MistralAIPromptExecutionSettings;
+        Assert.Equal(settings.MaxTokens, clonedMistralAISettings!.MaxTokens);
+        Assert.Equal(settings.Temperature, clonedMistralAISettings.Temperature);
+        Assert.Equal(settings.TopP, clonedMistralAISettings.TopP);
+        Assert.Equal(settings.FrequencyPenalty, clonedMistralAISettings.FrequencyPenalty);
+        Assert.Equal(settings.PresencePenalty, clonedMistralAISettings.PresencePenalty);
+        Assert.Equal(settings.Stop, clonedMistralAISettings.Stop);
+        Assert.Equal(settings.SafePrompt, clonedMistralAISettings.SafePrompt);
+        Assert.Equal(settings.RandomSeed, clonedMistralAISettings.RandomSeed);
+        Assert.Equal(settings.ResponseFormat, clonedMistralAISettings.ResponseFormat);
     }
 
     public sealed class WeatherPlugin

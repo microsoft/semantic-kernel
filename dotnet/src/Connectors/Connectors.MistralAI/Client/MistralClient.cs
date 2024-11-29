@@ -693,7 +693,11 @@ internal sealed class MistralClient
             TopP = executionSettings.TopP,
             MaxTokens = executionSettings.MaxTokens,
             SafePrompt = executionSettings.SafePrompt,
-            RandomSeed = executionSettings.RandomSeed
+            RandomSeed = executionSettings.RandomSeed,
+            ResponseFormat = executionSettings.ResponseFormat,
+            FrequencyPenalty = executionSettings.FrequencyPenalty,
+            PresencePenalty = executionSettings.PresencePenalty,
+            Stop = executionSettings.Stop,
         };
 
         executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
@@ -1016,8 +1020,8 @@ internal sealed class MistralClient
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent chatMessage directly
-        // without unnecessary serialization of the whole message chatMessage class.
+        // This is an optimization to use ChatMessageContent content directly
+        // without unnecessary serialization of the whole message content class.
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
