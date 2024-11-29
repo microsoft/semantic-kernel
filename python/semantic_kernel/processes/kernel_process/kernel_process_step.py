@@ -21,7 +21,3 @@ class KernelProcessStep(ABC, KernelBaseModel, Generic[TState]):
     async def activate(self, state: "KernelProcessStepState[TState]"):
         """Activates the step and sets the state."""
         pass  # pragma: no cover
-
-    async def on_activate(self):
-        """To be overridden by subclasses if needed."""
-        pass  # pragma: no cover
