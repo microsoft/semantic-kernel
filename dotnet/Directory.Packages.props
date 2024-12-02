@@ -17,7 +17,7 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.34.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.2]" />
