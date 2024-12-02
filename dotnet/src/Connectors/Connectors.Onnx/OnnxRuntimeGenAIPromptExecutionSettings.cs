@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// <summary>
 /// OnnxRuntimeGenAI Execution Settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
