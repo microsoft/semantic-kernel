@@ -2,7 +2,7 @@
   "$schema": "https://aka.ms/json-schemas/copilot/declarative-agent/v1.0/schema.json",
   "version": "v1.0",
   "instructions": "$[file('scheduling-assistant-instructions.txt')]",
-  "name": "Scheduling Assistant",
+  "name": "SchedulingAssistant",
   "description": "This agent helps you schedule meetings and send messages.",
   "actions": [
     {
