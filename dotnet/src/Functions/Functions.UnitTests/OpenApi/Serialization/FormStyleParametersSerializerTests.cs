@@ -15,12 +15,12 @@ public class FormStyleParametersSerializerTests
         // Arrange
         var parameter = new RestApiParameter(
                 name: "id",
-                type: "array",
+                type: RestApiParameterType.Array,
                 isRequired: true,
                 expand: true, //Specify generating a separate parameter for each array item.
                 location: RestApiParameterLocation.Query,
                 style: RestApiParameterStyle.Form,
-                arrayItemType: "integer");
+                arrayItemType: RestApiParameterType.Integer);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -37,12 +37,12 @@ public class FormStyleParametersSerializerTests
         // Arrange
         var parameter = new RestApiParameter(
                 name: "id",
-                type: "array",
+                type: RestApiParameterType.Array,
                 isRequired: true,
                 expand: false, //Specify generating a parameter with comma-separated values for each array item.
                 location: RestApiParameterLocation.Query,
                 style: RestApiParameterStyle.Form,
-                arrayItemType: "integer");
+                arrayItemType: RestApiParameterType.Integer);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -59,7 +59,7 @@ public class FormStyleParametersSerializerTests
         // Arrange
         var parameter = new RestApiParameter(
                 name: "id",
-                type: "integer",
+                type: RestApiParameterType.Integer,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Query,
@@ -80,7 +80,7 @@ public class FormStyleParametersSerializerTests
         // Arrange
         var parameter = new RestApiParameter(
                 name: "id",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Query,
@@ -102,7 +102,7 @@ public class FormStyleParametersSerializerTests
         // Arrange
         var parameter = new RestApiParameter(
                 name: "id",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Query,
@@ -125,7 +125,7 @@ public class FormStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInPrimitiveParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiParameter("id", "string", false, false, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
+        var parameter = new RestApiParameter("id", RestApiParameterType.String, false, false, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
@@ -144,7 +144,7 @@ public class FormStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInAmpersandSeparatedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiParameter("id", "array", false, true, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
+        var parameter = new RestApiParameter("id", RestApiParameterType.Array, false, true, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, new JsonArray($"{specialSymbol}"));
@@ -163,7 +163,7 @@ public class FormStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInCommaSeparatedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiParameter("id", "array", false, false, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
+        var parameter = new RestApiParameter("id", RestApiParameterType.Array, false, false, RestApiParameterLocation.Query, RestApiParameterStyle.Form);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, new JsonArray($"{specialSymbol}"));

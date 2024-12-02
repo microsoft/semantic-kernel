@@ -196,18 +196,18 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new(name: "X-HS-1", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HA-1", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HA-2", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HB-1", type: "boolean", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HB-2", type: "boolean", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HI-1", type: "integer", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HI-2", type: "integer", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HN-1", type: "number", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HN-2", type: "number", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HD-1", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HD-2", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "X-HD-3", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HS-1", type: RestApiParameterType.String, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HA-1", type: RestApiParameterType.Array, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HA-2", type: RestApiParameterType.Array, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HB-1", type: RestApiParameterType.Boolean, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HB-2", type: RestApiParameterType.Boolean, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HI-1", type: RestApiParameterType.Integer, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HI-2", type: RestApiParameterType.Integer, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HN-1", type: RestApiParameterType.Number, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HN-2", type: RestApiParameterType.Number, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HD-1", type: RestApiParameterType.String, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HD-2", type: RestApiParameterType.String, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "X-HD-3", type: RestApiParameterType.String, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
         };
 
         var operation = new RestApiOperation(
@@ -270,7 +270,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         {
             new(
             name: "fake-header",
-            type: "string",
+            type: RestApiParameterType.String,
             isRequired: true,
             expand: false,
             location: RestApiParameterLocation.Header,
@@ -315,10 +315,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []),
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []),
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []),
+                new("enabled", RestApiParameterType.Boolean, false, []),
             ])
         ];
 
@@ -377,14 +377,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []),
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []),
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []),
-                new("cardinality", "number", false, []),
-                new("coefficient", "number", false, []),
-                new("count", "integer", false, []),
-                new("params", "array", false, []),
+                new("enabled", RestApiParameterType.Boolean, false, []),
+                new("cardinality", RestApiParameterType.Number, false, []),
+                new("coefficient", RestApiParameterType.Number, false, []),
+                new("count", RestApiParameterType.Integer, false, []),
+                new("params", RestApiParameterType.Array, false, []),
             ])
         ];
 
@@ -464,18 +464,18 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("upn", "string", true, []),
-            new("receiver", "object", false,
+            new("upn", RestApiParameterType.String, true, []),
+            new("receiver", RestApiParameterType.Object, false,
             [
-                new("upn", "string", false, []),
-                new("alternative", "object", false,
+                new("upn", RestApiParameterType.String, false, []),
+                new("alternative", RestApiParameterType.Object, false,
                 [
-                    new("upn", "string", false, []),
+                    new("upn", RestApiParameterType.String, false, []),
                 ]),
             ]),
-            new("cc", "object", false,
+            new("cc", RestApiParameterType.Object, false,
             [
-                new("upn", "string", false, []),
+                new("upn", RestApiParameterType.String, false, []),
             ])
         ];
 
@@ -700,7 +700,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("upn", "string", false, []),
+            new("upn", RestApiParameterType.String, false, []),
         ];
 
         var payload = new RestApiPayload(MediaTypeNames.Application.Json, payloadProperties);
@@ -748,7 +748,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("upn", "string", false, []),
+            new("upn", RestApiParameterType.String, false, []),
         ];
 
         var payload = new RestApiPayload(MediaTypeNames.Application.Json, payloadProperties);
@@ -796,7 +796,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var firstParameter = new RestApiParameter(
             "p1",
-            "string",
+            RestApiParameterType.String,
             isRequired: true, //Marking the parameter as required
             false,
             RestApiParameterLocation.Query,
@@ -804,7 +804,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var secondParameter = new RestApiParameter(
             "p2",
-            "integer",
+            RestApiParameterType.Integer,
             isRequired: true, //Marking the parameter as required
             false,
             RestApiParameterLocation.Query,
@@ -845,7 +845,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var firstParameter = new RestApiParameter(
             "p1",
-            "string",
+            RestApiParameterType.String,
             isRequired: false, //Marking the parameter as not required
             false,
             RestApiParameterLocation.Query,
@@ -853,7 +853,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var secondParameter = new RestApiParameter(
             "p2",
-            "string",
+            RestApiParameterType.String,
             isRequired: false, //Marking the parameter as not required
             false,
             RestApiParameterLocation.Query,
@@ -894,7 +894,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var firstParameter = new RestApiParameter(
             "p1",
-            "string",
+            RestApiParameterType.String,
             isRequired: false, //Marking the parameter as not required
             false,
             RestApiParameterLocation.Query,
@@ -902,7 +902,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var secondParameter = new RestApiParameter(
             "p2",
-            "string",
+            RestApiParameterType.String,
             isRequired: true, //Marking the parameter as required
             false,
             RestApiParameterLocation.Query,
@@ -942,7 +942,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var parameter = new RestApiParameter(
             "p1",
-            "string",
+            RestApiParameterType.String,
             isRequired: true, //Marking the parameter as required
             false,
             RestApiParameterLocation.Query,
@@ -1094,10 +1094,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []),
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []),
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []),
+                new("enabled", RestApiParameterType.Boolean, false, []),
             ])
         ];
 
@@ -1144,10 +1144,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []),
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []),
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []),
+                new("enabled", RestApiParameterType.Boolean, false, []),
             ])
         ];
 
@@ -1194,10 +1194,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []),
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []),
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []),
+                new("enabled", RestApiParameterType.Boolean, false, []),
             ])
         ];
 
@@ -1395,10 +1395,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []) { ArgumentName = "alt-name" },
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []) { ArgumentName = "alt-name" },
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []) { ArgumentName = "alt-enabled" },
+                new("enabled", RestApiParameterType.Boolean, false, []) { ArgumentName = "alt-enabled" },
             ])
         ];
 
@@ -1460,10 +1460,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         List<RestApiPayloadProperty> payloadProperties =
         [
-            new("name", "string", true, []) { ArgumentName = "alt-name" },
-            new("attributes", "object", false,
+            new("name", RestApiParameterType.String, true, []) { ArgumentName = "alt-name" },
+            new("attributes", RestApiParameterType.Object, false,
             [
-                new("enabled", "boolean", false, []) { ArgumentName = "alt-enabled" },
+                new("enabled", RestApiParameterType.Boolean, false, []) { ArgumentName = "alt-enabled" },
             ])
         ];
 

@@ -19,8 +19,6 @@ internal static class FormStyleParameterSerializer
     /// <returns>The serialized parameter.</returns>
     public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
-        const string ArrayType = "array";
-
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
@@ -31,7 +29,7 @@ internal static class FormStyleParameterSerializer
         }
 
         // Handling parameters of array type.
-        if (parameter.Type == ArrayType)
+        if (parameter.Type == RestApiParameterType.Array)
         {
             return SerializeArrayParameter(parameter, argument);
         }

@@ -75,14 +75,14 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
                 style: RestApiParameterStyle.Simple),
             new(
                 name: "p2",
-                type: "number",
+                type: RestApiParameterType.Number,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
@@ -120,14 +120,14 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
                 style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p1" },
             new(
                 name: "p2",
-                type: "number",
+                type: RestApiParameterType.Number,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
@@ -165,14 +165,14 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
                 style: RestApiParameterStyle.Simple){ ArgumentName = "alt-p1" },
             new(
                 name: "p2",
-                type: "number",
+                type: RestApiParameterType.Number,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
@@ -210,14 +210,14 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
                 style: RestApiParameterStyle.Simple),
             new(
                 name: "p2",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Path,
@@ -255,14 +255,14 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query,
                 defaultValue: "dv1"),
             new(
                 name: "fake-path",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Path)
@@ -300,13 +300,13 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "since_create_time",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query),
             new(
                 name: "before_create_time",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query),
@@ -343,13 +343,13 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query) { ArgumentName = "alt_p1" },
             new(
                 name: "p2",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query)  { ArgumentName = "alt_p2" },
@@ -386,13 +386,13 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "p1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query) { ArgumentName = "alt_p1" },
             new(
                 name: "p2",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query)  { ArgumentName = "alt_p2" },
@@ -429,7 +429,7 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "has_quotes",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query)
@@ -465,7 +465,7 @@ public class RestApiOperationTests
         var parameters = new List<RestApiParameter> {
             new(
                 name: "times",
-                type: "array",
+                type: RestApiParameterType.Array,
                 isRequired: false,
                 expand: false,
                 location: RestApiParameterLocation.Query),
@@ -502,7 +502,7 @@ public class RestApiOperationTests
         {
             new(
                 name: "fake_header_one",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -510,7 +510,7 @@ public class RestApiOperationTests
 
             new(
                 name: "fake_header_two",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -555,7 +555,7 @@ public class RestApiOperationTests
         {
             new(
                 name: "h1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -563,7 +563,7 @@ public class RestApiOperationTests
 
             new(
                 name: "h2",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -607,7 +607,7 @@ public class RestApiOperationTests
         {
             new(
                 name: "h1",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -615,7 +615,7 @@ public class RestApiOperationTests
 
             new(
                 name: "h2",
-                type: "string",
+                type: RestApiParameterType.String,
                 isRequired: true,
                 expand: false,
                 location: RestApiParameterLocation.Header,
@@ -658,8 +658,8 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple)
+            new(name: "fake_header_one", type: RestApiParameterType.String, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "fake_header_two", type : RestApiParameterType.String, isRequired : false, expand : false, location : RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple)
         };
 
         var sut = new RestApiOperation(
@@ -686,8 +686,8 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiParameterLocation.Header, style : RestApiParameterStyle.Simple)
+            new(name: "fake_header_one", type : RestApiParameterType.String, isRequired : true, expand : false, location : RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "fake_header_two", type : RestApiParameterType.String, isRequired : false, expand : false, location : RestApiParameterLocation.Header, style : RestApiParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, object?>
@@ -722,8 +722,8 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new( name: "h1", type: "array", isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: "string"),
-            new( name: "h2", type: "array", isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: "integer")
+            new( name: "h1", type: RestApiParameterType.Array, isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: RestApiParameterType.String),
+            new( name: "h2", type: RestApiParameterType.Array, isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple, arrayItemType: RestApiParameterType.Integer)
         };
 
         var arguments = new Dictionary<string, object?>
@@ -760,8 +760,8 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new( name: "h1", type: "string", isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new( name: "h2", type: "boolean", isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple)
+            new( name: "h1", type: RestApiParameterType.String, isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new( name: "h2", type: RestApiParameterType.Boolean, isRequired: false, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, object?>
@@ -798,8 +798,8 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiParameter>
         {
-            new(name: "h1", type: "array", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
-            new(name: "h2", type: "boolean", isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "h1", type: RestApiParameterType.Array, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
+            new(name: "h2", type: RestApiParameterType.Boolean, isRequired: true, expand: false, location: RestApiParameterLocation.Header, style: RestApiParameterStyle.Simple),
         };
 
         var arguments = new Dictionary<string, object?>
@@ -1212,7 +1212,7 @@ public class RestApiOperationTests
             parameters: [
                 new RestApiParameter(
                     name: "p2",
-                    type: "string",
+                    type: RestApiParameterType.String,
                     isRequired: false,
                     expand: false,
                     location: RestApiParameterLocation.Query),
@@ -1222,7 +1222,7 @@ public class RestApiOperationTests
                 mediaType: "application/json",
                 properties: new List<RestApiPayloadProperty> { { new RestApiPayloadProperty (
                     name: "p3",
-                    type: "string",
+                    type: RestApiParameterType.String,
                     isRequired: false,
                     properties: []
                 ) } }
@@ -1236,7 +1236,7 @@ public class RestApiOperationTests
         sut.Servers[0].Variables["p1"].Enum!.Add("ev2");
 
         sut.Payload!.Properties.Single(p => p.Name == "p3").ArgumentName = "a value";
-        sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", "string", false, []));
+        sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", RestApiParameterType.String, false, []));
 
         sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value";
 
@@ -1271,7 +1271,7 @@ public class RestApiOperationTests
             parameters: [
                 new RestApiParameter(
                     name: "p2",
-                    type: "string",
+                    type: RestApiParameterType.String,
                     isRequired: false,
                     expand: false,
                     location: RestApiParameterLocation.Query),
@@ -1281,7 +1281,7 @@ public class RestApiOperationTests
                 mediaType: "application/json",
                 properties: new List<RestApiPayloadProperty> { { new RestApiPayloadProperty (
                     name: "p3",
-                    type: "string",
+                    type: RestApiParameterType.String,
                     isRequired: false,
                     properties: []
                 ) } }
@@ -1298,7 +1298,7 @@ public class RestApiOperationTests
         Assert.Throws<NotSupportedException>(() => sut.Servers[0].Variables["p1"].Enum!.Add("ev2"));
 
         Assert.Throws<InvalidOperationException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").ArgumentName = "a value");
-        Assert.Throws<NotSupportedException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", "string", false, [])));
+        Assert.Throws<NotSupportedException>(() => sut.Payload!.Properties.Single(p => p.Name == "p3").Properties.Add(new RestApiPayloadProperty("p4", RestApiParameterType.String, false, [])));
 
         Assert.Throws<InvalidOperationException>(() => sut.Parameters.Single(p => p.Name == "p2").ArgumentName = "a value");
 

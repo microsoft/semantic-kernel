@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Reader;
 using Microsoft.OpenApi.Services;
 using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Http;
@@ -128,11 +128,16 @@ public static class CopilotAgentPluginKernelExtensions
                 DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
                     logger);
 
-            var documentReadResult = await new OpenApiStreamReader(new()
-            {
-                BaseUrl = parsedDescriptionUrl
-            }
-            ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
+            // TODO: Refactor the code to the new readers available in the OpenAPI.NET V2
+            ReadResult documentReadResult = await OpenApiModelFactory.LoadAsync(
+                input: openApiDocumentStream,
+                format: "TBD",
+                settings: new OpenApiReaderSettings()
+                {
+                    BaseUrl = new(apiDescriptionUrl)
+                },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
             var openApiDocument = documentReadResult.OpenApiDocument;
             var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
 
@@ -141,7 +146,7 @@ public static class CopilotAgentPluginKernelExtensions
             var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(static f => f.Name)), null, null, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
-            var server = filteredOpenApiDocument.Servers.FirstOrDefault();
+            var server = filteredOpenApiDocument.Servers?.FirstOrDefault();
             if (server?.Url is null)
             {
                 logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
