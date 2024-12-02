@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,8 @@ public static class DeclarativeAgentExtensions
         }
 
         var document = results.Document ?? throw new InvalidOperationException("Error loading the manifest");
-        document.Instructions = await GetEffectiveInstructionsAsync(document.Instructions, logger, cancellationToken).ConfigureAwait(false);
+        var manifestDirectory = Path.GetDirectoryName(filePath);
+        document.Instructions = await GetEffectiveInstructionsAsync(manifestDirectory, document.Instructions, logger, cancellationToken).ConfigureAwait(false);
 
         var agent = new T
         {
@@ -72,13 +74,13 @@ public static class DeclarativeAgentExtensions
             Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id,
         };
 
-        await Task.WhenAll(document.Actions.Select(action => kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, action.File, pluginParameters, cancellationToken))).ConfigureAwait(false);
+        await Task.WhenAll(document.Actions.Select(action => kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, GetFullPath(manifestDirectory, action.File), pluginParameters, cancellationToken))).ConfigureAwait(false);
         return agent;
     }
-    private static async Task<string?> GetEffectiveInstructionsAsync(string? source, ILogger logger, CancellationToken cancellationToken)
+    private static async Task<string?> GetEffectiveInstructionsAsync(string? manifestFilePath, string? source, ILogger logger, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(source) ||
-            !source.StartsWith("[$file('", StringComparison.OrdinalIgnoreCase) ||
+            !source.StartsWith("$[file('", StringComparison.OrdinalIgnoreCase) ||
             !source.EndsWith("')]", StringComparison.OrdinalIgnoreCase))
         {
             return source;
@@ -88,6 +90,15 @@ public static class DeclarativeAgentExtensions
 #else
         var filePath = source.Substring(8, source.Length - 11);
 #endif
+        filePath = GetFullPath(manifestFilePath, filePath);
         return await DocumentLoader.LoadDocumentFromFilePathAsync(filePath, logger, cancellationToken).ConfigureAwait(false);
+    }
+    private static string GetFullPath(string? manifestDirectory, string relativeOrAbsolutePath)
+    {
+        return !Path.IsPathRooted(relativeOrAbsolutePath) && !relativeOrAbsolutePath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? string.IsNullOrEmpty(manifestDirectory)
+                ? throw new InvalidOperationException("Invalid manifest file path.")
+                : Path.Combine(manifestDirectory, relativeOrAbsolutePath)
+            : relativeOrAbsolutePath;
     }
 }
