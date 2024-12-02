@@ -71,7 +71,8 @@ public static class DeclarativeAgentExtensions
             LoggerFactory = loggerFactory,
             Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id!,
         };
-        //TODO call into the CAP extensions to load plugins from the document actions
+
+        await Task.WhenAll(document.Actions.Select(action => kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, action.File, pluginParameters, cancellationToken))).ConfigureAwait(false);
         return agent;
     }
     private static async Task<string?> GetEffectiveInstructionsAsync(string? source, ILogger logger, CancellationToken cancellationToken)
