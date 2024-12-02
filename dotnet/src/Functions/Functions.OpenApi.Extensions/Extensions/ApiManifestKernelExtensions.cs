@@ -117,7 +117,7 @@ public static class ApiManifestKernelExtensions
                 {
                     BaseUrl = new(apiDescriptionUrl)
                 },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             var openApiDocument = documentReadResult.OpenApiDocument;
             var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
