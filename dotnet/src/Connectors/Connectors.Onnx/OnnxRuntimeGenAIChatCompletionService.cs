@@ -25,7 +25,6 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private Model? _model;
     private Tokenizer? _tokenizer;
-
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
     /// <summary>

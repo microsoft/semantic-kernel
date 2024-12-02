@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable SKEXP0070
-#pragma warning disable SKEXP0050
-#pragma warning disable SKEXP0001
-#pragma warning disable SKEXP0020
-
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
+using Microsoft.ML.OnnxRuntimeGenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -29,6 +27,10 @@ var embeddingModelPath = config["Onnx:EmbeddingModelPath"]!;
 // Path to the vocab file your ONNX BGE-MICRO-V2 model
 var embeddingVocabPath = config["Onnx:EmbeddingVocabPath"]!;
 
+// If using Onnx GenAI 0.5.0 or later, the OgaHandle class must be used to track
+// resources used by the Onnx services, before using any of the Onnx services.
+using var ogaHandle = new OgaHandle();
+
 // Load the services
 var builder = Kernel.CreateBuilder()
     .AddOnnxRuntimeGenAIChatCompletion(chatModelId, chatModelPath)
@@ -38,7 +40,7 @@ var builder = Kernel.CreateBuilder()
 var kernel = builder.Build();
 
 // Get the instances of the services
-var chatService = kernel.GetRequiredService<IChatCompletionService>();
+using var chatService = kernel.GetRequiredService<IChatCompletionService>() as OnnxRuntimeGenAIChatCompletionService;
 var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
 // Create a vector store and a collection to store information
@@ -71,9 +73,12 @@ while (true)
     Console.Write("User > ");
     var question = Console.ReadLine()!;
 
+    // Clean resources and exit the demo if the user input is null or empty
     if (question is null || string.IsNullOrWhiteSpace(question))
     {
-        // Exit the demo if the user input is null or empty
+        // To avoid any potential memory leak all disposable
+        // services created by the kernel are disposed
+        DisposeServices(kernel);
         return;
     }
 
@@ -105,6 +110,19 @@ while (true)
     Console.WriteLine();
 }
 
+static void DisposeServices(Kernel kernel)
+{
+    foreach (var target in kernel
+        .GetAllServices<IChatCompletionService>()
+        .OfType<IDisposable>())
+    {
+        target.Dispose();
+    }
+}
+
+/// <summary>
+/// Information item to represent the embedding data stored in the memory
+/// </summary>
 internal sealed class InformationItem
 {
     [VectorStoreRecordKey]

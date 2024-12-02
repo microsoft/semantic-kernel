@@ -29,18 +29,36 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
     /// </list>
     /// </remarks>
     [Fact]
-    public Task StreamChatAsync()
+    public async Task StreamChatAsync()
     {
         Assert.NotNull(TestConfiguration.Onnx.ModelId);   // dotnet user-secrets set "Onnx:ModelId" "<model-id>"
         Assert.NotNull(TestConfiguration.Onnx.ModelPath); // dotnet user-secrets set "Onnx:ModelPath" "<model-folder-path>"
 
         Console.WriteLine("======== Onnx - Chat Completion Streaming ========");
 
-        var chatService = new OnnxRuntimeGenAIChatCompletionService(
+        using var chatService = new OnnxRuntimeGenAIChatCompletionService(
             modelId: TestConfiguration.Onnx.ModelId,
             modelPath: TestConfiguration.Onnx.ModelPath);
 
-        return this.StartStreamingChatAsync(chatService);
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
+        OutputLastMessage(chatHistory);
+
+        // First user message
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        OutputLastMessage(chatHistory);
+
+        // First assistant message
+        await StreamMessageOutputAsync(chatService, chatHistory, AuthorRole.Assistant);
+
+        // Second user message
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        OutputLastMessage(chatHistory);
+
+        // Second assistant message
+        await StreamMessageOutputAsync(chatService, chatHistory, AuthorRole.Assistant);
     }
 
     /// <summary>
@@ -86,6 +104,8 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         reply = await StreamMessageOutputFromKernelAsync(kernel, chatPrompt.ToString());
 
         Console.WriteLine(reply);
+
+        DisposeServices(kernel);
     }
 
     /// <summary>
@@ -115,7 +135,7 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         Console.WriteLine("======== Stream Text from Chat Content ========");
 
         // Create chat completion service
-        var chatService = new OnnxRuntimeGenAIChatCompletionService(
+        using var chatService = new OnnxRuntimeGenAIChatCompletionService(
             modelId: TestConfiguration.Onnx.ModelId,
             modelPath: TestConfiguration.Onnx.ModelPath);
 
@@ -135,30 +155,7 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
         }
     }
 
-    private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
-    {
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-
-        var chatHistory = new ChatHistory("You are a librarian, expert about books");
-        OutputLastMessage(chatHistory);
-
-        // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        OutputLastMessage(chatHistory);
-
-        // First assistant message
-        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
-
-        // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        OutputLastMessage(chatHistory);
-
-        // Second assistant message
-        await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
-    }
-
-    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
+    private async Task StreamMessageOutputAsync(OnnxRuntimeGenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
         string fullMessage = string.Empty;
@@ -204,5 +201,19 @@ public class Onnx_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(o
 
         Console.WriteLine("\n------------------------");
         return fullMessage;
+    }
+
+    /// <summary>
+    /// To avoid any potential memory leak all disposable services created by the kernel are disposed.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    private static void DisposeServices(Kernel kernel)
+    {
+        foreach (var target in kernel
+            .GetAllServices<IChatCompletionService>()
+            .OfType<IDisposable>())
+        {
+            target.Dispose();
+        }
     }
 }
