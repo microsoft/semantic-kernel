@@ -38,26 +38,19 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            apiKey,
-            endpoint,
-            httpClient,
-            logger);
+        this._core = new ChatClientCore(modelId, apiKey, endpoint, httpClient);
 
-        var builder = new ChatClientBuilder()
-            .UseFunctionInvocation(config =>
-                config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        var builder = this._core.Client
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
-        if (logger is not null)
+        if (loggerFactory is not null)
         {
-            builder = builder.UseLogging(logger);
+            builder.UseLogging(loggerFactory);
         }
 
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
-            .AsChatCompletionService();
+        this._chatService = builder.Build().AsChatCompletionService();
     }
 
     /// <summary>
@@ -75,26 +68,19 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            credential,
-            endpoint,
-            httpClient,
-            logger);
+        this._core = new ChatClientCore(modelId, credential, endpoint, httpClient);
 
-        var builder = new ChatClientBuilder()
-           .UseFunctionInvocation(config =>
-               config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        var builder = this._core.Client
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
-        if (logger is not null)
+        if (loggerFactory is not null)
         {
-            builder = builder.UseLogging(logger);
+            builder.UseLogging(loggerFactory);
         }
 
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
-            .AsChatCompletionService();
+        this._chatService = builder.Build().AsChatCompletionService();
     }
 
     /// <summary>
@@ -108,24 +94,21 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         ChatCompletionsClient chatClient,
         ILoggerFactory? loggerFactory = null)
     {
-        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
-        this._core = new(
-            modelId,
-            chatClient,
-            logger);
+        Verify.NotNull(chatClient);
 
-        var builder = new ChatClientBuilder()
-         .UseFunctionInvocation(config =>
-             config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+        this._core = new ChatClientCore(modelId, chatClient);
 
-        if (logger is not null)
+        var builder = chatClient
+            .AsChatClient(modelId)
+            .AsBuilder()
+            .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+        if (loggerFactory is not null)
         {
-            builder = builder.UseLogging(logger);
+            builder.UseLogging(loggerFactory);
         }
 
-        this._chatService = builder
-            .Use(this._core.Client.AsChatClient(modelId))
-            .AsChatCompletionService();
+        this._chatService = builder.Build().AsChatCompletionService();
     }
 
     /// <inheritdoc/>

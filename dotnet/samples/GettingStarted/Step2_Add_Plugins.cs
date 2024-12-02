@@ -17,7 +17,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task AddPluginsAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();

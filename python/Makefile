@@ -34,17 +34,20 @@ install:
 	make install-sk
 	make install-pre-commit
 
-UV_VERSION = $(shell uv --version 2> /dev/null)
+UV_VERSION := $(shell command -v uv 2> /dev/null)
 install-uv:
 # Check if uv is installed
-ifdef UV_VERSION
-	echo "uv found $(UV_VERSION)"
-	echo "running uv update"
-	uv self update 
-else
+ifndef UV_VERSION
 	echo "uv could not be found"
 	echo "Installing uv"
 	curl -LsSf https://astral.sh/uv/install.sh | sh
+	echo "uv installed"
+	echo "Please restart your shell."
+	exit 1
+else
+	echo "uv found $(UV_VERSION)"
+	echo "running uv update"
+	uv self update 
 endif
 
 .ONESHELL:

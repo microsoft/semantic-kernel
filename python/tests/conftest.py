@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated
@@ -28,6 +29,15 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+
+def pytest_configure(config):
+    logging.basicConfig(level=logging.ERROR)
+    logging.getLogger("tests.utils").setLevel(logging.INFO)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("semantic_kernel").setLevel(logging.INFO)
 
 
 @fixture(scope="function")
