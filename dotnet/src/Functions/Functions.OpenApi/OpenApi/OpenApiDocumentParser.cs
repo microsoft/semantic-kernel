@@ -18,9 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Writers;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.OpenApi.Reader;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -41,9 +39,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, JsonOptionsCache.WriteIndented));
-
-        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+        var result = await this._openApiReader.ReadAsync(jsonObject.Root, new OpenApiReaderSettings(), format: null, cancellationToken).ConfigureAwait(false);
 
         this.AssertReadingSuccessful(result, options?.IgnoreNonCompliantErrors ?? false);
 
@@ -79,7 +75,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         "text/plain"
     ];
 
-    private readonly OpenApiStreamReader _openApiReader = new();
+    private readonly OpenApiJsonReader _openApiReader = new();
     private readonly ILogger _logger = loggerFactory?.CreateLogger(typeof(OpenApiDocumentParser)) ?? NullLogger.Instance;
 
     /// <summary>
@@ -203,6 +199,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     continue;
                 }
 
+                var loggingOperationId = string.IsNullOrEmpty(operationItem.OperationId) ? $"{method}-{path}" : operationItem.OperationId!;
+
                 try
                 {
                     var operation = new RestApiOperation(
@@ -211,8 +209,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                    payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                    parameters: CreateRestApiOperationParameters(operationItem.Parameters, loggingOperationId),
+                    payload: CreateRestApiOperationPayload(operationItem.RequestBody, loggingOperationId),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
                 )
@@ -224,7 +222,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 }
                 catch (KernelException ke)
                 {
-                    logger.LogWarning(ke, "Error occurred creating REST API operation for {OperationId}. Operation will be ignored.", operationItem.OperationId);
+                    logger.LogWarning(ke, "Error occurred creating REST API operation for {OperationId}. Operation will be ignored.", loggingOperationId);
                 }
             }
 
@@ -241,9 +239,14 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// Build a list of <see cref="RestApiServer"/> objects from the given list of <see cref="OpenApiServer"/> objects.
     /// </summary>
     /// <param name="servers">Represents servers which hosts the REST API.</param>
-    private static List<RestApiServer> CreateRestApiOperationServers(IList<OpenApiServer> servers)
+    private static List<RestApiServer> CreateRestApiOperationServers(IList<OpenApiServer>? servers)
     {
-        var result = new List<RestApiServer>(servers.Count);
+        var result = new List<RestApiServer>(servers?.Count ?? 0);
+
+        if (servers is null)
+        {
+            return result;
+        }
 
         foreach (var server in servers)
         {
@@ -339,32 +342,37 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>The dictionary of extension properties using a simplified model that doesn't use any open api models.</returns>
     /// <exception cref="KernelException">Thrown when any extension data types are encountered that are not supported.</exception>
-    private static Dictionary<string, object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions, ILogger logger)
+    private static Dictionary<string, object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension>? extensions, ILogger logger)
     {
         var result = new Dictionary<string, object?>();
+
+        if (extensions is null)
+        {
+            return result;
+        }
 
         // Map each extension property.
         foreach (var extension in extensions)
         {
-            if (extension.Value is IOpenApiPrimitive primitive)
+            if (extension.Value is OpenApiAny any)
             {
-                // Set primitive values directly into the dictionary.
-                object? extensionValueObj = GetParameterValue(primitive, "extension property", extension.Key);
-                result.Add(extension.Key, extensionValueObj);
-            }
-            else if (extension.Value is IOpenApiAny any)
-            {
-                // Serialize complex objects and set as json strings.
-                // The only remaining type not referenced here is null, but the default value of extensionValueObj
-                // is null, so if we just continue that will handle the null case.
-                if (any.AnyType is AnyType.Array or AnyType.Object)
+                // Convert the node to the appropriate type based on the node value kind and parsing logic because no schema is not available.
+                object? extensionValueObj = any.Node.GetValueKind() switch
                 {
-                    var schemaBuilder = new StringBuilder();
-                    var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
-                    extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
-                    object? extensionValueObj = schemaBuilder.ToString();
-                    result.Add(extension.Key, extensionValueObj);
-                }
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Number when int.TryParse(any.Node.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue) => intValue,
+                    JsonValueKind.Number when long.TryParse(any.Node.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue) => longValue,
+                    JsonValueKind.Number when double.TryParse(any.Node.ToString(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var doubleValue) => doubleValue,
+                    JsonValueKind.String when DateTimeOffset.TryParse(any.Node.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue) =>
+                        dateTimeValue.TimeOfDay == TimeSpan.Zero ? (object?)dateTimeValue.Date : (object?)dateTimeValue,
+                    JsonValueKind.String => any.Node.GetValue<string>(),
+                    JsonValueKind.Object or JsonValueKind.Array => any.Node.ToJsonString(),
+                    JsonValueKind.Null or JsonValueKind.Undefined => null,
+                    _ => null
+                };
+
+                result.Add(extension.Key, extensionValueObj);
             }
             else
             {
@@ -378,12 +386,17 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <summary>
     /// Creates REST API parameters.
     /// </summary>
-    /// <param name="operationId">The operation id.</param>
     /// <param name="parameters">The OpenAPI parameters.</param>
+    /// <param name="operationId">The operation id.</param>
     /// <returns>The parameters.</returns>
-    private static List<RestApiParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
+    private static List<RestApiParameter> CreateRestApiOperationParameters(IList<OpenApiParameter>? parameters, string operationId)
     {
         var result = new List<RestApiParameter>();
+
+        if (parameters == null)
+        {
+            return result;
+        }
 
         foreach (var parameter in parameters)
         {
@@ -399,13 +412,13 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             var restParameter = new RestApiParameter(
                 parameter.Name,
-                parameter.Schema.Type,
+                (RestApiParameterType?)parameter.Schema.Type,
                 parameter.Required,
                 parameter.Explode,
                 (RestApiParameterLocation)Enum.Parse(typeof(RestApiParameterLocation), parameter.In.ToString()!),
                 (RestApiParameterStyle)Enum.Parse(typeof(RestApiParameterStyle), parameter.Style.ToString()!),
-                parameter.Schema.Items?.Type,
-                GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
+                (RestApiParameterType?)parameter.Schema.Items?.Type,
+                GetPrimitiveValue(parameter.Schema.Default, parameter.Schema, "parameter", parameter.Name),
                 parameter.Description,
                 parameter.Schema.Format,
                 parameter.Schema.ToJsonSchema()
@@ -420,10 +433,10 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <summary>
     /// Creates REST API payload.
     /// </summary>
-    /// <param name="operationId">The operation id.</param>
     /// <param name="requestBody">The OpenAPI request body.</param>
+    /// <param name="operationId">The operation id.</param>
     /// <returns>The REST API payload.</returns>
-    private static RestApiPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
+    private static RestApiPayload? CreateRestApiOperationPayload(OpenApiRequestBody? requestBody, string operationId)
     {
         if (requestBody?.Content is null)
         {
@@ -433,13 +446,18 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         var mediaType = s_supportedMediaTypes.FirstOrDefault(requestBody.Content.ContainsKey) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema);
+        var payloadProperties = GetPayloadProperties(mediaTypeMetadata.Schema, operationId);
 
         return new RestApiPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
 
-    private static IEnumerable<(string, RestApiExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
+    private static IEnumerable<(string, RestApiExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses? responses)
     {
+        if (responses is null)
+        {
+            yield break;
+        }
+
         foreach (var response in responses)
         {
             var mediaType = s_supportedMediaTypes.FirstOrDefault(response.Value.Content.ContainsKey);
@@ -456,11 +474,11 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <summary>
     /// Returns REST API payload properties.
     /// </summary>
-    /// <param name="operationId">The operation id.</param>
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
+    /// <param name="operationId">The operation id.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API payload properties.</returns>
-    private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
+    private static List<RestApiPayloadProperty> GetPayloadProperties(OpenApiSchema? schema, string operationId, int level = 0)
     {
         if (schema is null)
         {
@@ -482,13 +500,13 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             var property = new RestApiPayloadProperty(
                 propertyName,
-                propertySchema.Type,
+                (RestApiParameterType?)propertySchema.Type,
                 schema.Required.Contains(propertyName),
-                GetPayloadProperties(operationId, propertySchema, level + 1),
+                GetPayloadProperties(propertySchema, operationId, level + 1),
                 propertySchema.Description,
                 propertySchema.Format,
                 propertySchema.ToJsonSchema(),
-                GetParameterValue(propertySchema.Default, "payload property", propertyName));
+                GetPrimitiveValue(propertySchema.Default, propertySchema, "payload property", propertyName));
 
             result.Add(property);
         }
@@ -497,34 +515,62 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     }
 
     /// <summary>
-    /// Returns parameter value.
+    /// Returns parameter value by converting it to the appropriate type.
     /// </summary>
-    /// <param name="valueMetadata">The value metadata.</param>
-    /// <param name="entityDescription">A description of the type of entity we are trying to get a value for.</param>
-    /// <param name="entityName">The name of the entity that we are trying to get the value for.</param>
+    /// <param name="node">The node containing the parameter value.</param>
+    /// <param name="schema">The schema of the parameter.</param>
+    /// <param name="entityDescription">A description of the type of entity to get a value for.</param>
+    /// <param name="entityName">The name of the entity to get the value for.</param>
     /// <returns>The parameter value.</returns>
-    private static object? GetParameterValue(IOpenApiAny valueMetadata, string entityDescription, string entityName)
+    private static object? GetPrimitiveValue(JsonNode node, OpenApiSchema schema, string entityDescription, string entityName)
     {
-        if (valueMetadata is not IOpenApiPrimitive value)
+        if (node is null)
         {
             return null;
         }
 
-        return value.PrimitiveType switch
+        // Note: Some switch expressions below have explicit type casting to object - (object?). This is necessary to prevent common type inference, which can sometimes
+        // result in incorrect types.For example, the default inferred type for an integer value can be long, causing integer values to be implicitly cast to and returned as long.
+
+        object? result = null;
+
+        // If the schema is specified, convert the node to the appropriate type based on the schema type and format.
+        if ((schema.Type & JsonSchemaType.String) == JsonSchemaType.String)
         {
-            PrimitiveType.Integer => ((OpenApiInteger)value).Value,
-            PrimitiveType.Long => ((OpenApiLong)value).Value,
-            PrimitiveType.Float => ((OpenApiFloat)value).Value,
-            PrimitiveType.Double => ((OpenApiDouble)value).Value,
-            PrimitiveType.String => ((OpenApiString)value).Value,
-            PrimitiveType.Byte => ((OpenApiByte)value).Value,
-            PrimitiveType.Binary => ((OpenApiBinary)value).Value,
-            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value,
-            PrimitiveType.Date => ((OpenApiDate)value).Value,
-            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value,
-            PrimitiveType.Password => ((OpenApiPassword)value).Value,
-            _ => throw new KernelException($"The value type '{value.PrimitiveType}' of {entityDescription} '{entityName}' is not supported."),
-        };
+            result = schema.Format switch
+            {
+                "binary" => Encoding.UTF8.GetBytes(node.GetValue<string>()),
+                "byte" => Convert.FromBase64String(node.GetValue<string>()),
+                "date" when DateTimeOffset.TryParse(node.GetValue<string>(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateValue) => dateValue.Date,
+                "date-time" when DateTimeOffset.TryParse(node.GetValue<string>(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateValue) => dateValue,
+                "password" => node.GetValue<string>(),
+                _ => node.GetValue<string>()
+            };
+        }
+        else if ((schema.Type & JsonSchemaType.Number) == JsonSchemaType.Number)
+        {
+            result = schema.Format switch
+            {
+                "float" => (object?)node.GetValue<float>(),
+                "double" => (object?)node.GetValue<double>(),
+                _ => (object?)node.GetValue<double>(),
+            };
+        }
+        else if ((schema.Type & JsonSchemaType.Integer) == JsonSchemaType.Integer)
+        {
+            result = schema.Format switch
+            {
+                "int32" => (object?)node.GetValue<int>(),
+                "int64" => (object?)node.GetValue<long>(),
+                _ => (object?)node.GetValue<int>(),
+            };
+        }
+        else if ((schema.Type & JsonSchemaType.Boolean) == JsonSchemaType.Boolean)
+        {
+            result = node.GetValue<bool>();
+        }
+
+        return result ?? throw new KernelException($"The value type '{schema.Type}' of {entityDescription} '{entityName}' is not supported.");
     }
 
     /// <summary>

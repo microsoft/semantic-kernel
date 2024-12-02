@@ -35,7 +35,7 @@ public sealed class RestApiPayloadProperty
     /// <summary>
     /// The property type.
     /// </summary>
-    internal string Type { get; }
+    internal RestApiParameterType? Type { get; }
 
     /// <summary>
     /// The property type modifier that refines the generic parameter type to a more specific one.
@@ -82,7 +82,7 @@ public sealed class RestApiPayloadProperty
     /// <returns>Returns a new instance of the <see cref="RestApiPayloadProperty"/> class.</returns>
     internal RestApiPayloadProperty(
         string name,
-        string type,
+        RestApiParameterType? type,
         bool isRequired,
         IList<RestApiPayloadProperty> properties,
         string? description = null,

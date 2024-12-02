@@ -428,21 +428,21 @@ public static partial class OpenApiKernelPluginFactory
     {
         return parameter.Type switch
         {
-            "string" => typeof(string),
-            "boolean" => typeof(bool),
-            "number" => parameter.Format switch
+            RestApiParameterType.String => typeof(string),
+            RestApiParameterType.Boolean => typeof(bool),
+            RestApiParameterType.Number => parameter.Format switch
             {
                 "float" => typeof(float),
                 "double" => typeof(double),
                 _ => typeof(double)
             },
-            "integer" => parameter.Format switch
+            RestApiParameterType.Integer => parameter.Format switch
             {
                 "int32" => typeof(int),
                 "int64" => typeof(long),
                 _ => typeof(long)
             },
-            "object" => typeof(object),
+            RestApiParameterType.Object => typeof(object),
             _ => null
         };
     }

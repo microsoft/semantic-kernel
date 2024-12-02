@@ -31,9 +31,9 @@ public sealed class RestApiParameter
     }
 
     /// <summary>
-    /// The parameter type - string, integer, number, boolean, array and object.
+    /// The parameter type.
     /// </summary>
-    internal string Type { get; }
+    internal RestApiParameterType? Type { get; }
 
     /// <summary>
     /// The parameter type modifier that refines the generic parameter type to a more specific one.
@@ -64,7 +64,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// Type of array item for parameters of "array" type.
     /// </summary>
-    internal string? ArrayItemType { get; }
+    internal RestApiParameterType? ArrayItemType { get; }
 
     /// <summary>
     /// The default value.
@@ -98,12 +98,12 @@ public sealed class RestApiParameter
     /// <param name="schema">The parameter schema.</param>
     internal RestApiParameter(
         string name,
-        string type,
+        RestApiParameterType? type,
         bool isRequired,
         bool expand,
         RestApiParameterLocation location,
         RestApiParameterStyle? style = null,
-        string? arrayItemType = null,
+        RestApiParameterType? arrayItemType = null,
         object? defaultValue = null,
         string? description = null,
         string? format = null,

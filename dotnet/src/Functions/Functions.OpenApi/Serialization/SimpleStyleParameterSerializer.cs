@@ -18,8 +18,6 @@ internal static class SimpleStyleParameterSerializer
     /// <returns>The serialized parameter.</returns>
     public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
-        const string ArrayType = "array";
-
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
@@ -30,7 +28,7 @@ internal static class SimpleStyleParameterSerializer
         }
 
         // Serializing parameters of array type.
-        if (parameter.Type == ArrayType)
+        if (parameter.Type == RestApiParameterType.Array)
         {
             return SerializeArrayParameter(parameter, argument);
         }

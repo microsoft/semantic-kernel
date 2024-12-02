@@ -18,8 +18,6 @@ internal static class PipeDelimitedStyleParameterSerializer
     /// <returns>The serialized parameter.</returns>
     public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
-        const string ArrayType = "array";
-
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
@@ -28,7 +26,7 @@ internal static class PipeDelimitedStyleParameterSerializer
             throw new NotSupportedException($"Unsupported Rest API parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
-        if (parameter.Type != ArrayType)
+        if (parameter.Type != RestApiParameterType.Array)
         {
             throw new NotSupportedException($"Unsupported Rest API parameter type '{parameter.Type}' for parameter '{parameter.Name}'");
         }

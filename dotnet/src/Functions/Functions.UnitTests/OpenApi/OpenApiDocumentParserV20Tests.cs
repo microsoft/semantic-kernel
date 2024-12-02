@@ -61,7 +61,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(valueProperty);
         Assert.True(valueProperty.IsRequired);
         Assert.Equal("The value of the secret.", valueProperty.Description);
-        Assert.Equal("string", valueProperty.Type);
+        Assert.Equal(RestApiParameterType.String, valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
         Assert.NotNull(valueProperty.Schema);
@@ -72,7 +72,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(attributesProperty);
         Assert.False(attributesProperty.IsRequired);
         Assert.Equal("attributes", attributesProperty.Description);
-        Assert.Equal("object", attributesProperty.Type);
+        Assert.Equal(RestApiParameterType.Object, attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
         Assert.NotNull(attributesProperty.Schema);
@@ -83,7 +83,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(enabledProperty);
         Assert.True(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
-        Assert.Equal("boolean", enabledProperty.Type);
+        Assert.Equal(RestApiParameterType.Boolean, enabledProperty.Type);
         Assert.False(enabledProperty.Properties?.Any());
         Assert.NotNull(enabledProperty.Schema);
         Assert.Equal("boolean", enabledProperty.Schema.RootElement.GetProperty("type").GetString());
@@ -93,7 +93,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(encryptedProperty);
         Assert.False(encryptedProperty.IsRequired);
         Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Description);
-        Assert.Equal("boolean", encryptedProperty.Type);
+        Assert.Equal(RestApiParameterType.Boolean, encryptedProperty.Type);
         Assert.False(encryptedProperty.Properties?.Any());
         Assert.NotNull(encryptedProperty.Schema);
         Assert.Equal("boolean", encryptedProperty.Schema.RootElement.GetProperty("type").GetString());
@@ -176,7 +176,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         //Assert string header parameter metadata
         var accept = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "Accept");
 
-        Assert.Equal("string", accept.Type);
+        Assert.Equal(RestApiParameterType.String, accept.Type);
         Assert.Equal("application/json", accept.DefaultValue);
         Assert.Equal("Indicates which content types, expressed as MIME types, the client is able to understand.", accept.Description);
         Assert.False(accept.IsRequired);
@@ -184,7 +184,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         //Assert integer header parameter metadata
         var apiVersion = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "X-API-Version");
 
-        Assert.Equal("integer", apiVersion.Type);
+        Assert.Equal(RestApiParameterType.Integer, apiVersion.Type);
         Assert.Equal(10, apiVersion.DefaultValue);
         Assert.Equal("Requested API version.", apiVersion.Description);
         Assert.True(apiVersion.IsRequired);
@@ -201,10 +201,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
 
         Assert.Null(acceptParameter.DefaultValue);
         Assert.False(acceptParameter.IsRequired);
-        Assert.Equal("array", acceptParameter.Type);
+        Assert.Equal(RestApiParameterType.Array, acceptParameter.Type);
         Assert.Equal(RestApiParameterStyle.Simple, acceptParameter.Style);
         Assert.Equal("The comma separated list of operation ids.", acceptParameter.Description);
-        Assert.Equal("string", acceptParameter.ArrayItemType);
+        Assert.Equal(RestApiParameterType.String, acceptParameter.ArrayItemType);
     }
 
     [Fact]
@@ -377,15 +377,15 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Theory]
-    [InlineData("string-parameter", "string", null)]
-    [InlineData("boolean-parameter", "boolean", null)]
-    [InlineData("number-parameter", "number", null)]
-    [InlineData("float-parameter", "number", "float")]
-    [InlineData("double-parameter", "number", "double")]
-    [InlineData("integer-parameter", "integer", null)]
-    [InlineData("int32-parameter", "integer", "int32")]
-    [InlineData("int64-parameter", "integer", "int64")]
-    public async Task ItCanParseParametersOfPrimitiveDataTypeAsync(string name, string type, string? format)
+    [InlineData("string-parameter", RestApiParameterType.String, null)]
+    [InlineData("boolean-parameter", RestApiParameterType.Boolean, null)]
+    [InlineData("number-parameter", RestApiParameterType.Number, null)]
+    [InlineData("float-parameter", RestApiParameterType.Number, "float")]
+    [InlineData("double-parameter", RestApiParameterType.Number, "double")]
+    [InlineData("integer-parameter", RestApiParameterType.Integer, null)]
+    [InlineData("int32-parameter", RestApiParameterType.Integer, "int32")]
+    [InlineData("int64-parameter", RestApiParameterType.Integer, "int64")]
+    public async Task ItCanParseParametersOfPrimitiveDataTypeAsync(string name, RestApiParameterType type, string? format)
     {
         // Arrange & Act
         var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
@@ -410,7 +410,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var properties = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").Payload!.Properties;
 
         var property = properties.Single(p => p.Name == "attributes");
-        Assert.Equal("object", property.Type);
+        Assert.Equal(RestApiParameterType.Object, property.Type);
         Assert.Null(property.Format);
     }
 
