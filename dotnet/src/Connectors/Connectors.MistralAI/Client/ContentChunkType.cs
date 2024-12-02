@@ -43,7 +43,7 @@ internal readonly struct ContentChunkType : IEquatable<ContentChunkType>
     /// <param name="right"> the second <see cref="ContentChunkType"/> instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(ContentChunkType left, ContentChunkType right)
-        => !(left == right);
+        => !left.Equals(right);
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
@@ -67,5 +68,45 @@ public class MistralAIPromptExecutionSettingsTests
         Assert.Equal(100, MistralExecutionSettings.MaxTokens);
         Assert.True(MistralExecutionSettings.SafePrompt);
         Assert.Equal(123, MistralExecutionSettings.RandomSeed);
+    }
+
+    [Fact]
+    public void FreezeShouldPreventPropertyModification()
+    {
+        // Arrange  
+        var settings = new MistralAIPromptExecutionSettings
+        {
+            Temperature = 0.7,
+            TopP = 1,
+            MaxTokens = 100,
+            SafePrompt = false,
+            Stop = ["foo", "bar"]
+        };
+
+        // Act  
+        settings.Freeze();
+
+        // Assert  
+        // Try to modify a property after freezing  
+        Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.8);
+        Assert.Throws<InvalidOperationException>(() => settings.TopP = 0.9);
+        Assert.Throws<InvalidOperationException>(() => settings.MaxTokens = 50);
+        Assert.Throws<InvalidOperationException>(() => settings.SafePrompt = true);
+        Assert.Throws<NotSupportedException>(() => settings.Stop.Add("baz"));
+    }
+
+    [Fact]
+    public void FreezeShouldNotAllowMultipleFreezes()
+    {
+        // Arrange  
+        var settings = new MistralAIPromptExecutionSettings();
+        settings.Freeze(); // First freeze  
+
+        // Act  
+        settings.Freeze(); // Second freeze (should not throw)  
+
+        // Assert  
+        // No exception should be thrown  
+        Assert.True(settings.IsFrozen); // Assuming IsFrozen is a property indicating the freeze state  
     }
 }

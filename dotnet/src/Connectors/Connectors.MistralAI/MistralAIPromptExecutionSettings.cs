@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -247,6 +248,11 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
             return;
         }
 
+        if (this._stop is not null)
+        {
+            this._stop = new ReadOnlyCollection<string>(this._stop);
+        }
+
         base.Freeze();
     }
 
@@ -267,7 +273,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
             ResponseFormat = this.ResponseFormat,
             FrequencyPenalty = this.FrequencyPenalty,
             PresencePenalty = this.PresencePenalty,
-            Stop = this.Stop,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
         };
     }
 
