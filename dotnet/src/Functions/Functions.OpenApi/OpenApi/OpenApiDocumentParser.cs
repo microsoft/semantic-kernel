@@ -356,7 +356,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         {
             if (extension.Value is OpenApiAny any)
             {
-                // Convert the node to the appropriate type based on the node value kind and parsing logic because no schema is not available.
+                // Convert the node to the appropriate type based on the node value kind and parsing logic because no schema is available.
                 object? extensionValueObj = any.Node.GetValueKind() switch
                 {
                     JsonValueKind.True => true,
