@@ -69,7 +69,7 @@ public static class DeclarativeAgentExtensions
             }),
             Description = document.Description,
             LoggerFactory = loggerFactory,
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id!,
+            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id,
         };
 
         await Task.WhenAll(document.Actions.Select(action => kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, action.File, pluginParameters, cancellationToken))).ConfigureAwait(false);
@@ -78,7 +78,7 @@ public static class DeclarativeAgentExtensions
     private static async Task<string?> GetEffectiveInstructionsAsync(string? source, ILogger logger, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(source) ||
-            !source!.StartsWith("[$file('", StringComparison.OrdinalIgnoreCase) ||
+            !source.StartsWith("[$file('", StringComparison.OrdinalIgnoreCase) ||
             !source.EndsWith("')]", StringComparison.OrdinalIgnoreCase))
         {
             return source;
