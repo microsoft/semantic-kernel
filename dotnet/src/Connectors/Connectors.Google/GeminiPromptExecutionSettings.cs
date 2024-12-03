@@ -24,6 +24,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _candidateCount;
     private IList<string>? _stopSequences;
     private bool? _audioTimestamp;
+    private string? _responseMimeType;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -187,6 +188,24 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// The output response MIME type of the generated candidate text.
+    /// The following MIME types are supported:
+    /// 1. application/json: JSON response in the candidates.
+    /// 2. text/plain (default): Plain text output.
+    /// 3. text/x.enum: For classification tasks, output an enum value as defined in the response schema.
+    /// </summary>
+    [JsonPropertyName("response_mimetype")]
+    public string? ResponseMimeType
+    {
+        get => this._responseMimeType;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseMimeType = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -223,7 +242,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
-            AudioTimestamp = this.AudioTimestamp
+            AudioTimestamp = this.AudioTimestamp,
+            ResponseMimeType = this.ResponseMimeType
         };
     }
 
