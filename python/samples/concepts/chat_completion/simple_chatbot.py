@@ -6,7 +6,7 @@ from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 
 # This sample shows how to create a chatbot. This sample uses the following two main components:
 # - a ChatCompletionService: This component is responsible for generating responses to user messages.
@@ -26,7 +26,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 # - Services.ONNX
 # - Services.VERTEX_AI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
 
 # This is the system message that gives the chatbot its personality.
 system_message = """
@@ -64,10 +64,11 @@ async def chat() -> bool:
         chat_history=chat_history,
         settings=request_settings,
     )
-    print(f"Mosscap:> {response}")
+    if response:
+        print(f"Mosscap:> {response}")
 
-    # Add the chat message to the chat history to keep track of the conversation.
-    chat_history.add_assistant_message(str(response))
+        # Add the chat message to the chat history to keep track of the conversation.
+        chat_history.add_message(response)
 
     return True
 

@@ -34,7 +34,7 @@ public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine("======== Onnx - Chat Completion ========");
 
-        var chatService = new OnnxRuntimeGenAIChatCompletionService(
+        using var chatService = new OnnxRuntimeGenAIChatCompletionService(
             modelId: TestConfiguration.Onnx.ModelId,
             modelPath: TestConfiguration.Onnx.ModelPath);
 
@@ -105,5 +105,21 @@ public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
         Console.WriteLine(reply);
+
+        DisposeServices(kernel);
+    }
+
+    /// <summary>
+    /// To avoid any potential memory leak all disposable services created by the kernel are disposed.
+    /// </summary>
+    /// <param name="kernel">Target kernel</param>
+    private static void DisposeServices(Kernel kernel)
+    {
+        foreach (var target in kernel
+            .GetAllServices<IChatCompletionService>()
+            .OfType<IDisposable>())
+        {
+            target.Dispose();
+        }
     }
 }

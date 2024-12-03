@@ -30,7 +30,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
-from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
+from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:

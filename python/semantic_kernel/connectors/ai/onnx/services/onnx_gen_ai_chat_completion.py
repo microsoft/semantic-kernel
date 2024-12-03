@@ -47,6 +47,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         ai_model_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
@@ -57,6 +58,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             env_file_path : Use the environment settings file as a fallback
                 to environment variables.
             env_file_encoding : The encoding of the environment settings file.
+            kwargs : Additional arguments.
         """
         try:
             settings = OnnxGenAISettings.create(
@@ -76,7 +78,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         if ai_model_id is None:
             ai_model_id = settings.chat_model_folder
 
-        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.chat_model_folder, template=template)
+        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.chat_model_folder, template=template, **kwargs)
 
     @override
     async def _inner_get_chat_message_contents(
