@@ -96,7 +96,7 @@ Cons:
 | Windows Support       | No                                                  | Yes                                                                                     |
 | Linux Support         | Yes                                                 | Yes                                                                                     |
 | MacOS Support         | Yes                                                 | Yes                                                                                     |
-| Number of Models      | [61](https://ollama.ai/library) +Any GGUF converted | [25](https://github.com/lmstudio-ai/model-catalog/tree/main/models) +Any GGUF Converted |
+| Number of Models      | [61](https://ollama.com/search) +Any GGUF converted | [25](https://github.com/lmstudio-ai/model-catalog/tree/main/models) +Any GGUF Converted |
 
 | Model Support   | Ollama | LM Studio |
 | --------------- | ------ | --------- |
