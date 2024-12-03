@@ -147,7 +147,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
         Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithImageAndJsonFormatAsync()
     {
         // Arrange
