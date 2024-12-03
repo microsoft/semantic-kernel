@@ -2,6 +2,7 @@
 from pytest import fixture, mark, raises
 
 from semantic_kernel import Kernel
+from semantic_kernel.exceptions.filter_exceptions import FilterManagementException
 
 
 @fixture
@@ -63,15 +64,15 @@ class TestKernelFilterExtension:
 
 
 def test_unknown_filter_type(kernel: Kernel, custom_filter):
-    with raises(ValueError):
+    with raises(FilterManagementException):
         kernel.add_filter("unknown", custom_filter)
 
 
 def test_remove_filter_fail(kernel: Kernel):
-    with raises(ValueError):
+    with raises(FilterManagementException):
         kernel.remove_filter()
 
 
 def test_remove_filter_fail_position(kernel: Kernel):
-    with raises(ValueError):
+    with raises(FilterManagementException):
         kernel.remove_filter(position=0)

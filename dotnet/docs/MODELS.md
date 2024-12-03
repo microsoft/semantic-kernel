@@ -8,7 +8,7 @@ In the core Semantic Kernel repo, we plan on supporting up to four deployment ty
 
 - Dedicated API endpoints (e.g., OpenAI's APIs, Mistral.AI, and Google Gemini)
 - Azure AI deployments via the [model catalog](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/model-catalog)
-- Local deployments via [Ollama](https://ollama.ai/library)
+- Local deployments via [Ollama](https://ollama.ai/)
 - Hugging face deployment using the [Hugging Face inference API](https://huggingface.co/docs/api-inference/index)
 
 To support these different deployment types, we will follow a similar pattern to the Azure OpenAI and OpenAI connectors. Each connector uses the same underlying model and abstractions, but the connector constructors may take different parameters. For example, the Azure OpenAI connector expects an Azure endpoint and key, whereas the OpenAI connector expects an OpenAI organization ID and API key.
@@ -23,25 +23,25 @@ Please note that not all of the model interfaces are defined yet. As part of con
 
 ### OpenAI
 
-| Priority | Model                   | Status      | Interface                      | Deployment type | GitHub issue | Developer   | Reviewer |
-| -------- | ----------------------- | ----------- | ------------------------------ | --------------- | ------------ | ----------- | -------- |
-| P0       | GPT-3.5-turbo           | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A         | N/A      |
-| P0       | GPT-3.5-turbo           | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A         | N/A      |
-| P0       | GPT-4                   | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A         | N/A      |
-| P0       | GPT-4                   | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A         | N/A      |
-| P0       | GPT-4v                  | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A         | N/A      |
-| P0       | GPT-4v                  | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A         | N/A      |
-| P0       | text-embedding-ada-002  | Preview     | `IEmbeddingGeneration`         | OpenAI API      | N/A          | N/A         | N/A      |
-| P0       | text-embedding-ada-002  | Preview     | `IEmbeddingGeneration`         | Azure AI        | N/A          | N/A         | N/A      |
-| P0       | DALL·E 3                | Preview     | `ITextToImage`                 | OpenAI API      | N/A          | N/A         | N/A      |
-| P0       | DALL·E 3                | Preview     | `ITextToImage`                 | Azure AI        | N/A          | N/A         | N/A      |
-| P0       | Text-to-speech          | Complete    | `ITextToSpeech`                | OpenAI API      | TBD          | dmytrostruk | TBD      |
-| P0       | Speech-to-text          | Complete    | `ISpeechRecognition`           | OpenAI API      | TBD          | dmytrostruk | TBD      |
-| P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Azure AI        | TBD          | TBD         | TBD      |
-| P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Hugging Face    | TBD          | TBD         | TBD      |
+| Priority | Model                   | Status      | Interface                      | Deployment type | GitHub issue | Developer    | Reviewer    |
+| -------- | ----------------------- | ----------- | ------------------------------ | --------------- | ------------ | ------------ | ----------- |
+| P0       | GPT-3.5-turbo           | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A          | N/A         |
+| P0       | GPT-3.5-turbo           | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A          | N/A         |
+| P0       | GPT-4                   | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A          | N/A         |
+| P0       | GPT-4                   | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A          | N/A         |
+| P0       | GPT-4v                  | Complete    | `IChatCompletion`              | OpenAI API      | N/A          | N/A          | N/A         |
+| P0       | GPT-4v                  | Complete    | `IChatCompletion`              | Azure AI        | N/A          | N/A          | N/A         |
+| P0       | text-embedding-ada-002  | Preview     | `IEmbeddingGeneration`         | OpenAI API      | N/A          | N/A          | N/A         |
+| P0       | text-embedding-ada-002  | Preview     | `IEmbeddingGeneration`         | Azure AI        | N/A          | N/A          | N/A         |
+| P0       | DALL·E 3                | Preview     | `ITextToImage`                 | OpenAI API      | N/A          | N/A          | N/A         |
+| P0       | DALL·E 3                | Preview     | `ITextToImage`                 | Azure AI        | N/A          | N/A          | N/A         |
+| P0       | Text-to-speech          | Complete    | `ITextToSpeech`                | OpenAI API      | TBD          | dmytrostruk  | TBD         |
+| P0       | Speech-to-text          | Complete    | `ISpeechRecognition`           | OpenAI API      | TBD          | dmytrostruk  | TBD         |
+| P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Azure AI        | TBD          | TBD          | TBD         |
+| P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Hugging Face    | TBD          | TBD          | TBD         |
 | P2       | Moderation              | In Progress | `ITextClassification`          | OpenAI API      | #5062        | Krzysztof318 | MarkWallace |
-| P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Azure AI        | TBD          | TBD         | TBD      |
-| P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Hugging Face    | TBD          | TBD         | TBD      |
+| P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Azure AI        | TBD          | TBD          | TBD         |
+| P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Hugging Face    | TBD          | TBD          | TBD         |
 
 ### Microsoft
 
