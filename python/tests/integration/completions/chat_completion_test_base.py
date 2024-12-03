@@ -56,21 +56,17 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
 # There is no single model in Ollama that supports both image and tool call in chat completion
 # We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
 # can be any model that supports chat completion. Also, Ollama is only available on Linux runners in our pipeline.
-ollama_setup: bool = is_service_setup_for_testing(
-    ["OLLAMA_CHAT_MODEL_ID"], raise_if_not_set=False
-) and is_test_running_on_supported_platforms(["Linux"])
-ollama_image_setup: bool = is_service_setup_for_testing(
-    ["OLLAMA_CHAT_MODEL_ID_IMAGE"], raise_if_not_set=False
-) and is_test_running_on_supported_platforms(["Linux"])
-ollama_tool_call_setup: bool = is_service_setup_for_testing(
-    ["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"], raise_if_not_set=False
-) and is_test_running_on_supported_platforms(["Linux"])
-google_ai_setup: bool = is_service_setup_for_testing(
-    ["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"], raise_if_not_set=False
-)
-vertex_ai_setup: bool = is_service_setup_for_testing(
-    ["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"], raise_if_not_set=False
-)
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"]) and is_test_running_on_supported_platforms([
+    "Linux"
+])
+ollama_image_setup: bool = is_service_setup_for_testing([
+    "OLLAMA_CHAT_MODEL_ID_IMAGE"
+]) and is_test_running_on_supported_platforms(["Linux"])
+ollama_tool_call_setup: bool = is_service_setup_for_testing([
+    "OLLAMA_CHAT_MODEL_ID_TOOL_CALL"
+]) and is_test_running_on_supported_platforms(["Linux"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX

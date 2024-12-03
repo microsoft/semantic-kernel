@@ -10,7 +10,7 @@ from tests.utils import is_service_setup_for_testing
 
 # TTS model on Azure model is not available in regions at which we have chat completion models.
 # Therefore, we need to use a different endpoint for testing.
-is_service_setup_for_testing(["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"])
+azure_setup = is_service_setup_for_testing(["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"])
 
 
 class TextToAudioTestBase:
@@ -21,5 +21,7 @@ class TextToAudioTestBase:
         """Return text-to-audio services."""
         return {
             "openai": OpenAITextToAudio(),
-            "azure_openai": AzureTextToAudio(endpoint=os.environ["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"]),
+            "azure_openai": AzureTextToAudio(endpoint=os.environ["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"])
+            if azure_setup
+            else None,
         }

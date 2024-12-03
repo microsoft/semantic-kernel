@@ -41,15 +41,11 @@ from tests.utils import is_service_setup_for_testing, is_test_running_on_support
 mistral_ai_setup: bool = is_service_setup_for_testing(
     ["MISTRALAI_API_KEY", "MISTRALAI_EMBEDDING_MODEL_ID"], raise_if_not_set=False
 )  # We don't have a MistralAI deployment
-google_ai_setup: bool = is_service_setup_for_testing(
-    ["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"], raise_if_not_set=False
-)
-vertex_ai_setup: bool = is_service_setup_for_testing(
-    ["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"], raise_if_not_set=False
-)
-ollama_setup: bool = is_service_setup_for_testing(
-    ["OLLAMA_EMBEDDING_MODEL_ID"], raise_if_not_set=False
-) and is_test_running_on_supported_platforms(["Linux"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
+ollama_setup: bool = is_service_setup_for_testing([
+    "OLLAMA_EMBEDDING_MODEL_ID"
+]) and is_test_running_on_supported_platforms(["Linux"])
 
 
 class EmbeddingServiceTestBase:

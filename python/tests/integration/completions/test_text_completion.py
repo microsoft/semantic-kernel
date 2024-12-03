@@ -33,11 +33,11 @@ from semantic_kernel.utils.authentication.entra_id_authentication import get_ent
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
-ollama_setup: bool = is_service_setup_for_testing(
-    ["OLLAMA_TEXT_MODEL_ID"], raise_if_not_set=False
-) and is_test_running_on_supported_platforms(["Linux"])
-google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"], raise_if_not_set=False)
-vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"], raise_if_not_set=False)
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
+    "Linux"
+])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
