@@ -11,7 +11,7 @@ from tests.utils import is_service_setup_for_testing
 # There is only the whisper model available on Azure OpenAI for audio to text. And that model is
 # only available in the North Switzerland region. Therefore, the endpoint is different than the one
 # we use for other services.
-azure_setup = is_service_setup_for_testing(["AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT"], raise_if_not_set=False)
+azure_setup = is_service_setup_for_testing(["AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT"])
 
 
 class AudioToTextTestBase:

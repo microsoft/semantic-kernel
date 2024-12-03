@@ -21,6 +21,7 @@ env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
   Python_Integration_Tests: Python_Integration_Tests
+  INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION: ${{ true }}
   AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
   AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
