@@ -74,8 +74,35 @@ public static class DeclarativeAgentExtensions
             Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id,
         };
 
-        await Task.WhenAll(document.Actions.Select(action => kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, GetFullPath(manifestDirectory, action.File), pluginParameters, cancellationToken))).ConfigureAwait(false);
+        if (document.Capabilities is { Count: > 0 })
+        {
+            logger.LogWarning("Importing capabilities from declarative agent is not supported in semantic kernel.");
+        }
+
+        if (document.Actions is { Count: > 0 })
+        {
+            logger.LogInformation("Importing {ActionsCount} actions from declarative agent.", document.Actions.Count);
+            await Task.WhenAll(document.Actions.Select(action => ImportCAPFromActionAsync(action, manifestDirectory, kernel, pluginParameters, logger, cancellationToken))).ConfigureAwait(false);
+        }
         return agent;
+    }
+    private static async Task ImportCAPFromActionAsync(DCAction action, string? manifestDirectory, Kernel kernel, CopilotAgentPluginParameters? pluginParameters, ILogger logger, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var capManifestPath = GetFullPath(manifestDirectory, action.File);
+            logger.LogInformation("Importing action {ActionName} from declarative agent from path {Path}.", action.Id, capManifestPath);
+            await kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, capManifestPath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException)
+        {
+            logger.LogError(ex, "Error importing action {ActionName} from declarative agent.", action.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error importing action {ActionName} from declarative agent.", action.Id);
+            throw;
+        }
     }
     private static async Task<string?> GetEffectiveInstructionsAsync(string? manifestFilePath, string? source, ILogger logger, CancellationToken cancellationToken)
     {
