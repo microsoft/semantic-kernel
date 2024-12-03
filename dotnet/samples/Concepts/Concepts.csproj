@@ -148,6 +148,12 @@
     <None Remove="Resources\Plugins\PetsPlugin\oneOfV3.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Resources\Plugins\MoviePlugins\MoviePluginSK\TopMovies\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Plugins\MoviePlugins\MoviePluginSK\TopMovies\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

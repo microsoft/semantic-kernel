@@ -237,6 +237,49 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         // ...and more...
     }
 
+    /// <summary>
+    /// This method shows how to enable Structured Outputs feature with Semantic Kernel functions from prompt
+    /// using Semantic Kernel template engine.
+    /// In this scenario, JSON Schema for response is specified in a prompt configuration file.
+    /// </summary>
+    [Fact]
+    public async Task StructuredOutputsWithFunctionsFromPromptAsync()
+    {
+        // Initialize kernel.
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: "gpt-4o-2024-08-06",
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        // Initialize a path to plugin directory: Resources/Plugins/MoviePlugins/MoviePluginSK.
+        var pluginDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MoviePlugins", "MoviePluginSK");
+
+        // Create a function from prompt.
+        kernel.ImportPluginFromPromptDirectory(pluginDirectoryPath, pluginName: "MoviePlugin");
+
+        var result = await kernel.InvokeAsync("MoviePlugin", "TopMovies");
+
+        // Deserialize string response to a strong type to access type properties.
+        // At this point, the deserialization logic won't fail, because MovieResult type was specified as desired response format.
+        // This ensures that response string is a serialized version of MovieResult type.
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
+
+        // Output the result.
+        this.OutputResult(movieResult);
+
+        // Output:
+
+        // Title: The Lord of the Rings: The Fellowship of the Ring
+        // Director: Peter Jackson
+        // Release year: 2001
+        // Rating: 8.8
+        // Is available on streaming: True
+        // Tags: Adventure,Drama,Fantasy
+
+        // ...and more...
+    }
+
     #region private
 
     /// <summary>Movie result struct that will be used as desired chat completion response format (structured output).</summary>
