@@ -49,6 +49,8 @@ class TestAudioToText(AudioToTextTestBase):
         """
 
         service = services[service_id]
+        if not service:
+            pytest.mark.xfail("Azure Audio to Text not setup.")
         result = await service.get_text_content(audio_content)
 
         for word in expected_text:
