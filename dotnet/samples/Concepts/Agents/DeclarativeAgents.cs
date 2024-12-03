@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
-using Resources;
-using static Agents.ChatCompletion_FunctionTermination;
 
 namespace Agents;
 
@@ -18,7 +13,7 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
     [Theory]
     public async Task LoadsAgentFromDeclarativeAgentManifestAsync(string agentFileName, string input)
     {
-        var kernel = CreateKernelWithFilter();
+        var kernel = CreateKernel();
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "DeclarativeAgents");
         var manifestFilePath = Path.Combine(manifestLookupDirectory, agentFileName);
 
@@ -42,14 +37,13 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
             chatHistory.Add(response);
             sb.Append(response.Content);
         }
+        Assert.NotEmpty(chatHistory.Skip(1));
     }
-    private Kernel CreateKernelWithFilter()
+    private Kernel CreateKernel()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         base.AddChatCompletionToKernel(builder);
-
-        // builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
 
         return builder.Build();
     }
