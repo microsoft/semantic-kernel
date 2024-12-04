@@ -293,12 +293,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
         finally
         {
-            if (this._processCancelSource?.IsCancellationRequested ?? false)
-            {
-                this._processCancelSource.Cancel();
-            }
-
             this._processCancelSource?.Dispose();
+            this._processCancelSource = null;
         }
 
         return;

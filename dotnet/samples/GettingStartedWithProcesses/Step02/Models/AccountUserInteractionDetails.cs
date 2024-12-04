@@ -7,7 +7,7 @@ namespace Step02.Models;
 /// <summary>
 /// Represents the details of interactions between a user and service, including a unique identifier for the account,
 /// a transcript of conversation with the user, and the type of user interaction.<br/>
-/// Class used in <see cref="Step02_AccountOpening"/> samples
+/// Class used in <see cref="Step02a_AccountOpening"/>, <see cref="Step02b_AccountOpening"/> samples
 /// </summary>
 public record AccountUserInteractionDetails
 {
