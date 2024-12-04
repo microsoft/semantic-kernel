@@ -2,7 +2,7 @@
 template: |
   What are the top 10 movies of all time?
 template_format: semantic-kernel
-description: Provides an information about movies to the user.
+description: Provides information about movies to the user.
 execution_settings:
   default:
     max_tokens: 1000

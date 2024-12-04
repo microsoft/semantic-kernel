@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Provides an information about movies to the user",
+  "description": "Provides information about movies to the user",
   "execution_settings": {
     "default": {
       "max_tokens": 1000,
