@@ -151,7 +151,7 @@ public static class CopilotAgentPluginKernelExtensions
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(server.Url, out var parameters) == true
                 ? parameters
                 : new OpenApiFunctionExecutionParameters() { PropertiesToExclude = ["@odata.type"], EnablePayloadNamespacing = true };
-            // TODO Ensure that the properties to exclude are passed to the OpenApiFunctionExecutionParameters
+            // TODO Add a custom HttpContentFactory to handle @odata.type properties
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());

@@ -149,7 +149,7 @@ internal sealed class RestApiOperationRunner
 
         var headers = operation.BuildHeaders(arguments);
 
-        var operationPayload = this.BuildOperationPayload(operation, arguments);
+        var operationPayload = this.BuildOperationPayload(operation, arguments, options?.HttpContentFactory);
 
         return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
     }
@@ -307,8 +307,9 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The operation payload arguments.</param>
+    /// <param name="httpContentFactory">Optional custom HttpContentFactory</param>
     /// <returns>The raw operation payload and the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent? Content) BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
+    private (object? Payload, HttpContent? Content) BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments, HttpContentFactory? httpContentFactory)
     {
         if (operation.Payload is null && !arguments.ContainsKey(RestApiOperation.PayloadArgumentName))
         {
@@ -326,12 +327,16 @@ internal sealed class RestApiOperationRunner
             mediaType = mediaTypeFallback;
         }
 
-        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
+        if (httpContentFactory is null)
         {
-            throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
+            if (!this._payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
+            {
+                throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
+            }
+            httpContentFactory = payloadFactory;
         }
 
-        return payloadFactory.Invoke(operation.Payload, arguments);
+        return httpContentFactory.Invoke(operation.Payload, arguments);
     }
 
     /// <summary>

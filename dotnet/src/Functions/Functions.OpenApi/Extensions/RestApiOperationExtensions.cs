@@ -24,7 +24,7 @@ internal static partial class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
-    /// <param name="propertiesToExclude">List of property names to exclude.param>
+    /// <param name="propertiesToExclude">List of property names to exclude.</param>
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<RestApiParameter> GetParameters(
         this RestApiOperation operation,
