@@ -14,6 +14,7 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
     public async Task LoadsAgentFromDeclarativeAgentManifestAsync(string agentFileName, string input)
     {
         var kernel = CreateKernel();
+        kernel.AutoFunctionInvocationFilters.Add(new ExpectedSchemaFunctionFilter());
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "DeclarativeAgents");
         var manifestFilePath = Path.Combine(manifestLookupDirectory, agentFileName);
 
@@ -46,5 +47,21 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
         base.AddChatCompletionToKernel(builder);
 
         return builder.Build();
+    }
+    private sealed class ExpectedSchemaFunctionFilter : IAutoFunctionInvocationFilter
+    {//TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            if (context.Result.ValueType == typeof(RestApiOperationResponse))
+            {
+                var openApiResponse = context.Result.GetValue<RestApiOperationResponse>();
+                if (openApiResponse?.ExpectedSchema is not null)
+                {
+                    openApiResponse.ExpectedSchema = null;
+                }
+            }
+        }
     }
 }
