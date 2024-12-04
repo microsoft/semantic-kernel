@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
@@ -9,13 +11,16 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// <summary>
 /// OnnxRuntimeGenAI Execution Settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Convert PromptExecutionSettings to OnnxRuntimeGenAIPromptExecutionSettings
     /// </summary>
-    /// <param name="executionSettings"></param>
-    /// <returns></returns>
+    /// <param name="executionSettings">The <see cref="PromptExecutionSettings"/> to convert to <see cref="OnnxRuntimeGenAIPromptExecutionSettings"/>.</param>
+    /// <returns>Returns the <see cref="OnnxRuntimeGenAIPromptExecutionSettings"/> object.</returns>
+    [RequiresUnreferencedCode("This method uses reflection to serialize and deserialize the execution settings, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("This method uses reflection to serialize and deserialize the execution settings, making it incompatible with AOT scenarios.")]
     public static OnnxRuntimeGenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
@@ -28,10 +33,34 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
             return settings;
         }
 
-        var json = JsonSerializer.Serialize(executionSettings);
+        var json = JsonSerializer.Serialize(executionSettings, executionSettings.GetType());
 
-        var onnxRuntimeGenAIPromptExecutionSettings = JsonSerializer.Deserialize<OnnxRuntimeGenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        return onnxRuntimeGenAIPromptExecutionSettings!;
+        return JsonSerializer.Deserialize<OnnxRuntimeGenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+    }
+
+    /// <summary>
+    /// Convert PromptExecutionSettings to OnnxRuntimeGenAIPromptExecutionSettings
+    /// </summary>
+    /// <param name="executionSettings">The <see cref="PromptExecutionSettings"/> to convert to <see cref="OnnxRuntimeGenAIPromptExecutionSettings"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization of <see cref="PromptExecutionSettings"/> and deserialize them to <see cref="OnnxRuntimeGenAIPromptExecutionSettings"/>.</param>
+    /// <returns>Returns the <see cref="OnnxRuntimeGenAIPromptExecutionSettings"/> object.</returns>
+    public static OnnxRuntimeGenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, JsonSerializerOptions jsonSerializerOptions)
+    {
+        if (executionSettings is null)
+        {
+            return new OnnxRuntimeGenAIPromptExecutionSettings();
+        }
+
+        if (executionSettings is OnnxRuntimeGenAIPromptExecutionSettings settings)
+        {
+            return settings;
+        }
+
+        JsonTypeInfo typeInfo = jsonSerializerOptions.GetTypeInfo(executionSettings!.GetType());
+
+        var json = JsonSerializer.Serialize(executionSettings, typeInfo);
+
+        return JsonSerializer.Deserialize<OnnxRuntimeGenAIPromptExecutionSettings>(json, OnnxRuntimeGenAIPromptExecutionSettingsJsonSerializerContext.ReadPermissive.OnnxRuntimeGenAIPromptExecutionSettings)!;
     }
 
     /// <summary>

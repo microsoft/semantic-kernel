@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,6 +92,8 @@ internal sealed class FunctionCallsProcessor
 
         var configuration = behavior.GetConfiguration(new(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
 
+        this._logger.LogFunctionChoiceBehaviorConfiguration(configuration);
+
         // Disable auto invocation if no kernel is provided.
         configuration.AutoInvoke = kernel is not null && configuration.AutoInvoke;
 
@@ -99,24 +102,13 @@ internal sealed class FunctionCallsProcessor
         if (requestIndex >= maximumAutoInvokeAttempts)
         {
             configuration.AutoInvoke = false;
-            if (this._logger!.IsEnabled(LogLevel.Debug))
-            {
-                this._logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", maximumAutoInvokeAttempts);
-            }
+            this._logger.LogMaximumNumberOfAutoInvocationsPerUserRequestReached(maximumAutoInvokeAttempts);
         }
         // Disable auto invocation if we've exceeded the allowed limit of in-flight auto-invokes. See XML comment for the "MaxInflightAutoInvokes" const for more details.
         else if (s_inflightAutoInvokes.Value >= MaxInflightAutoInvokes)
         {
             configuration.AutoInvoke = false;
-            if (this._logger!.IsEnabled(LogLevel.Debug))
-            {
-                this._logger.LogDebug("Maximum auto-invoke ({MaxInflightAutoInvoke}) reached.", MaxInflightAutoInvokes);
-            }
-        }
-
-        if (configuration.Functions?.Count == 0)
-        {
-            this._logger.LogDebug("No functions provided to AI model. Function calling is disabled.");
+            this._logger.LogMaximumNumberOfInFlightAutoInvocationsReached(MaxInflightAutoInvokes);
         }
 
         return configuration;
@@ -129,7 +121,9 @@ internal sealed class FunctionCallsProcessor
     /// <param name="chatHistory">The chat history to add function invocation results to.</param>
     /// <param name="requestIndex">AI model function(s) call request sequence index.</param>
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
+    /// <param name="options">Function choice behavior options.</param>
     /// <param name="kernel">The <see cref="Kernel"/>.</param>
+    /// <param name="isStreaming">Boolean flag which indicates whether an operation is invoked within streaming or non-streaming mode.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
@@ -137,114 +131,99 @@ internal sealed class FunctionCallsProcessor
         ChatHistory chatHistory,
         int requestIndex,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
+        FunctionChoiceBehaviorOptions options,
         Kernel? kernel,
+        bool isStreaming,
         CancellationToken cancellationToken)
     {
-        var functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToList();
-
-        if (this._logger.IsEnabled(LogLevel.Debug))
-        {
-            this._logger.LogDebug("Function calls: {Calls}", functionCalls.Count);
-        }
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            var messages = new List<string>(functionCalls.Count);
-            foreach (var call in functionCalls)
-            {
-                var argumentsString = call.Arguments is not null ? $"({string.Join(",", call.Arguments.Select(a => $"{a.Key}={a.Value}"))})" : "()";
-                var pluginName = string.IsNullOrEmpty(call.PluginName) ? string.Empty : $"{call.PluginName}-";
-                messages.Add($"{pluginName}{call.FunctionName}{argumentsString}");
-            }
-            this._logger.LogTrace("Function calls: {Calls}", string.Join(", ", messages));
-        }
-
         // Add the result message to the caller's chat history;
         // this is required for AI model to understand the function results.
         chatHistory.Add(chatMessageContent);
 
+        FunctionCallContent[] functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToArray();
+
+        this._logger.LogFunctionCalls(functionCalls);
+
+        List<Task<FunctionResultContext>>? functionTasks =
+            options.AllowConcurrentInvocation && functionCalls.Length > 1 ?
+                new(functionCalls.Length) :
+                null;
+
         // We must send back a result for every function call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-        for (int functionCallIndex = 0; functionCallIndex < functionCalls.Count; functionCallIndex++)
+        for (int functionCallIndex = 0; functionCallIndex < functionCalls.Length; functionCallIndex++)
         {
             FunctionCallContent functionCall = functionCalls[functionCallIndex];
 
-            // Check if the function call has an exception.
-            if (functionCall.Exception is not null)
+            // Check if the function call is valid to execute.
+            if (!TryValidateFunctionCall(functionCall, checkIfFunctionAdvertised, kernel, out KernelFunction? function, out string? errorMessage))
             {
-                this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result: null, errorMessage: $"Error: Function call processing failed. {functionCall.Exception.Message}");
-                continue;
-            }
-
-            // Make sure the requested function is one of the functions that was advertised to the AI model.
-            if (!checkIfFunctionAdvertised(functionCall))
-            {
-                this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result: null, errorMessage: "Error: Function call request for a function that wasn't defined.");
-                continue;
-            }
-
-            // Look up the function in the kernel
-            if (!kernel!.Plugins.TryGetFunction(functionCall.PluginName, functionCall.FunctionName, out KernelFunction? function))
-            {
-                this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result: null, errorMessage: "Error: Requested function could not be found.");
+                this.AddFunctionCallErrorToChatHistory(chatHistory, functionCall, errorMessage);
                 continue;
             }
 
             // Prepare context for the auto function invocation filter and invoke it.
-            FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-            AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatMessageContent)
-            {
-                Arguments = functionCall.Arguments,
-                RequestSequenceIndex = requestIndex,
-                FunctionSequenceIndex = functionCallIndex,
-                FunctionCount = functionCalls.Count
-            };
+            AutoFunctionInvocationContext invocationContext =
+                new(kernel!,  // Kernel cannot be null if function-call is valid
+                    function,
+                    result: new(function) { Culture = kernel!.Culture },
+                    chatHistory,
+                    chatMessageContent)
+                {
+                    Arguments = functionCall.Arguments,
+                    RequestSequenceIndex = requestIndex,
+                    FunctionSequenceIndex = functionCallIndex,
+                    FunctionCount = functionCalls.Length,
+                    CancellationToken = cancellationToken,
+                    IsStreaming = isStreaming,
+                    ToolCallId = functionCall.Id
+                };
 
             s_inflightAutoInvokes.Value++;
-            try
+
+            Task<FunctionResultContext> functionTask = this.ExecuteFunctionCallAsync(invocationContext, functionCall, function, kernel, cancellationToken);
+
+            // If concurrent invocation is enabled, add the task to the list for later waiting. Otherwise, join with it now.
+            if (functionTasks is not null)
             {
-                invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                functionTasks.Add(functionTask);
+            }
+            else
+            {
+                FunctionResultContext functionResult = await functionTask.ConfigureAwait(false);
+                this.AddFunctionCallResultToChatHistory(chatHistory, functionResult);
+
+                // If filter requested termination, return last chat history message.
+                if (functionResult.Context.Terminate)
                 {
-                    // Check if filter requested termination.
-                    if (context.Terminate)
-                    {
-                        return;
-                    }
-
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }).ConfigureAwait(false);
+                    this._logger.LogAutoFunctionInvocationProcessTermination(functionResult.Context);
+                    return chatHistory.Last();
+                }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
+        }
+
+        // If concurrent invocation is enabled, join with all the tasks now.
+        if (functionTasks is not null)
+        {
+            bool terminationRequested = false;
+
+            // Wait for all of the function invocations to complete, then add the results to the chat, but stop when we hit a
+            // function for which termination was requested.
+            FunctionResultContext[] resultContexts = await Task.WhenAll(functionTasks).ConfigureAwait(false);
+            foreach (FunctionResultContext resultContext in resultContexts)
             {
-                this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result: null, errorMessage: $"Error: Exception while invoking function. {e.Message}");
-                continue;
+                this.AddFunctionCallResultToChatHistory(chatHistory, resultContext);
+
+                if (resultContext.Context.Terminate)
+                {
+                    this._logger.LogAutoFunctionInvocationProcessTermination(resultContext.Context);
+                    terminationRequested = true;
+                }
             }
-            finally
-            {
-                s_inflightAutoInvokes.Value--;
-            }
-
-            // Apply any changes from the auto function invocation filters context to final result.
-            functionResult = invocationContext.Result;
-
-            object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
-
-            var result = ProcessFunctionResult(functionResultValue);
-
-            this.AddFunctionCallResultToChatHistory(chatHistory, functionCall, result);
 
             // If filter requested termination, return last chat history message.
-            if (invocationContext.Terminate)
+            if (terminationRequested)
             {
-                if (this._logger.IsEnabled(LogLevel.Debug))
-                {
-                    this._logger.LogDebug("Filter requested termination of automatic function invocation.");
-                }
-
                 return chatHistory.Last();
             }
         }
@@ -253,26 +232,198 @@ internal sealed class FunctionCallsProcessor
     }
 
     /// <summary>
+    /// Processes function calls specifically for Open AI Assistant API.  In this context, the chat-history is not
+    /// present in local memory.
+    /// </summary>
+    /// <param name="chatMessageContent">The chat message content representing AI model response and containing function calls.</param>
+    /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
+    /// <param name="options">Function choice behavior options.</param>
+    /// <param name="kernel">The <see cref="Kernel"/>.</param>
+    /// <param name="isStreaming">Boolean flag which indicates whether an operation is invoked within streaming or non-streaming mode.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
+    public async IAsyncEnumerable<FunctionResultContent> InvokeFunctionCallsAsync(
+        ChatMessageContent chatMessageContent,
+        Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
+        FunctionChoiceBehaviorOptions options,
+        Kernel kernel,
+        bool isStreaming,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        FunctionCallContent[] functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToArray();
+        ChatHistory history = [chatMessageContent];
+
+        this._logger.LogFunctionCalls(functionCalls);
+
+        List<Task<FunctionResultContext>> functionTasks = new(functionCalls.Length);
+
+        // We must send back a result for every function call, regardless of whether we successfully executed it or not.
+        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
+        for (int functionCallIndex = 0; functionCallIndex < functionCalls.Length; functionCallIndex++)
+        {
+            FunctionCallContent functionCall = functionCalls[functionCallIndex];
+
+            // Check if the function call is valid to execute.
+            if (!TryValidateFunctionCall(functionCall, checkIfFunctionAdvertised, kernel, out KernelFunction? function, out string? errorMessage))
+            {
+                yield return this.GenerateResultContent(functionCall, result: null, errorMessage);
+                continue;
+            }
+
+            // Prepare context for the auto function invocation filter and invoke it.
+            AutoFunctionInvocationContext invocationContext =
+                new(kernel!,  // Kernel cannot be null if function-call is valid
+                    function,
+                    result: new(function) { Culture = kernel!.Culture },
+                    history,
+                    chatMessageContent)
+                {
+                    Arguments = functionCall.Arguments,
+                    FunctionSequenceIndex = functionCallIndex,
+                    FunctionCount = functionCalls.Length,
+                    CancellationToken = cancellationToken,
+                    IsStreaming = isStreaming,
+                    ToolCallId = functionCall.Id
+                };
+
+            s_inflightAutoInvokes.Value++;
+
+            functionTasks.Add(this.ExecuteFunctionCallAsync(invocationContext, functionCall, function, kernel, cancellationToken));
+        }
+
+        // Wait for all of the function invocations to complete, then add the results to the chat, but stop when we hit a
+        // function for which termination was requested.
+        FunctionResultContext[] resultContexts = await Task.WhenAll(functionTasks).ConfigureAwait(false);
+        foreach (FunctionResultContext resultContext in resultContexts)
+        {
+            yield return this.GenerateResultContent(resultContext);
+        }
+    }
+
+    private static bool TryValidateFunctionCall(
+            FunctionCallContent functionCall,
+            Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
+            Kernel? kernel,
+            [NotNullWhen(true)] out KernelFunction? function,
+            out string? errorMessage)
+    {
+        function = null;
+
+        // Check if the function call has an exception.
+        if (functionCall.Exception is not null)
+        {
+            errorMessage = $"Error: Function call processing failed. {functionCall.Exception.Message}";
+            return false;
+        }
+
+        // Make sure the requested function is one of the functions that was advertised to the AI model.
+        if (!checkIfFunctionAdvertised(functionCall))
+        {
+            errorMessage = "Error: Function call request for a function that wasn't defined.";
+            return false;
+        }
+
+        // Look up the function in the kernel
+        if (kernel?.Plugins.TryGetFunction(functionCall.PluginName, functionCall.FunctionName, out function) ?? false)
+        {
+            errorMessage = null;
+            return true;
+        }
+
+        errorMessage = "Error: Requested function could not be found.";
+        return false;
+    }
+
+    private record struct FunctionResultContext(AutoFunctionInvocationContext Context, FunctionCallContent FunctionCall, string? Result, string? ErrorMessage);
+
+    private async Task<FunctionResultContext> ExecuteFunctionCallAsync(
+            AutoFunctionInvocationContext invocationContext,
+            FunctionCallContent functionCall,
+            KernelFunction function,
+            Kernel kernel,
+            CancellationToken cancellationToken)
+    {
+        try
+        {
+            invocationContext =
+                await this.OnAutoFunctionInvocationAsync(
+                    kernel,
+                    invocationContext,
+                    async (context) =>
+                    {
+                        // Check if filter requested termination.
+                        if (context.Terminate)
+                        {
+                            return;
+                        }
+
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+        {
+            return new FunctionResultContext(invocationContext, functionCall, null, $"Error: Exception while invoking function. {e.Message}");
+        }
+
+        // Apply any changes from the auto function invocation filters context to final result.
+        string stringResult = ProcessFunctionResult(invocationContext.Result.GetValue<object>() ?? string.Empty);
+        return new FunctionResultContext(invocationContext, functionCall, stringResult, null);
+    }
+
+    /// <summary>
     /// Adds the function call result or error message to the chat history.
     /// </summary>
     /// <param name="chatHistory">The chat history to add the function call result to.</param>
-    /// <param name="functionCall">The function call.</param>
-    /// <param name="result">The function result to add to the chat history.</param>
-    /// <param name="errorMessage">The error message to add to the chat history.</param>
-    private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionCallContent functionCall, string? result, string? errorMessage = null)
+    /// <param name="resultContext">The function result context.</param>
+    private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionResultContext resultContext)
+    {
+        var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result);
+        message.Items.Add(this.GenerateResultContent(resultContext));
+        chatHistory.Add(message);
+    }
+
+    /// <summary>
+    /// Adds the function call result or error message to the chat history.
+    /// </summary>
+    /// <param name="chatHistory">The chat history to add the function call result to.</param>
+    /// <param name="functionCall">The function call content.</param>
+    /// <param name="errorMessage">An error message.</param>
+    private void AddFunctionCallErrorToChatHistory(ChatHistory chatHistory, FunctionCallContent functionCall, string? errorMessage)
+    {
+        var message = new ChatMessageContent(role: AuthorRole.Tool, content: errorMessage);
+        message.Items.Add(this.GenerateResultContent(functionCall, result: null, errorMessage));
+        chatHistory.Add(message);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="FunctionResultContent"/> instance.
+    /// </summary>
+    /// <param name="resultContext">The function result context.</param>
+    private FunctionResultContent GenerateResultContent(FunctionResultContext resultContext)
+    {
+        return this.GenerateResultContent(resultContext.FunctionCall, resultContext.Result, resultContext.ErrorMessage);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="FunctionResultContent"/> instance.
+    /// </summary>
+    /// <param name="functionCall">The function call content.</param>
+    /// <param name="result">The function result, if available</param>
+    /// <param name="errorMessage">An error message.</param>
+    private FunctionResultContent GenerateResultContent(FunctionCallContent functionCall, string? result, string? errorMessage)
     {
         // Log any error
-        if (errorMessage is not null && this._logger.IsEnabled(LogLevel.Debug))
+        if (errorMessage is not null)
         {
-            this._logger.LogDebug("Failed to handle function request ({Id}). {Error}", functionCall.Id, errorMessage);
+            this._logger.LogFunctionCallRequestFailure(functionCall, errorMessage);
         }
 
-        result ??= errorMessage ?? string.Empty;
-
-        var message = new ChatMessageContent(role: AuthorRole.Tool, content: result);
-        message.Items.Add(new FunctionResultContent(functionCall.FunctionName, functionCall.PluginName, functionCall.Id, result));
-
-        chatHistory.Add(message);
+        return new FunctionResultContent(functionCall.FunctionName, functionCall.PluginName, functionCall.Id, result ?? errorMessage ?? string.Empty);
     }
 
     /// <summary>
@@ -282,12 +433,12 @@ internal sealed class FunctionCallsProcessor
     /// <param name="context">The auto function invocation context.</param>
     /// <param name="functionCallCallback">The function to call after the filters.</param>
     /// <returns>The auto function invocation context.</returns>
-    private static async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
+    private async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
         Kernel kernel,
         AutoFunctionInvocationContext context,
         Func<AutoFunctionInvocationContext, Task> functionCallCallback)
     {
-        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
+        await this.InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
 
         return context;
     }
@@ -299,7 +450,7 @@ internal sealed class FunctionCallsProcessor
     /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function if there are no remaining filters to execute.
     /// Function will be always executed as last step after all filters.
     /// </summary>
-    private static async Task InvokeFilterOrFunctionAsync(
+    private async Task InvokeFilterOrFunctionAsync(
         IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
         Func<AutoFunctionInvocationContext, Task> functionCallCallback,
         AutoFunctionInvocationContext context,
@@ -307,8 +458,12 @@ internal sealed class FunctionCallsProcessor
     {
         if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
         {
-            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
-                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
+            this._logger.LogAutoFunctionInvocationFilterContext(context);
+
+            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(
+                context,
+                (context) => this.InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)
+            ).ConfigureAwait(false);
         }
         else
         {
@@ -321,7 +476,7 @@ internal sealed class FunctionCallsProcessor
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
     /// <returns>A string representation of the function result.</returns>
-    public static string? ProcessFunctionResult(object functionResult)
+    public static string ProcessFunctionResult(object functionResult)
     {
         if (functionResult is string stringResult)
         {

@@ -79,6 +79,7 @@ public sealed class TestConfiguration
         public string ServiceId { get; set; }
         public string Endpoint { get; set; }
         public string? ApiKey { get; set; }
+        public string ChatModelId { get; set; }
     }
 
     public class OnnxConfig
@@ -155,6 +156,7 @@ public sealed class TestConfiguration
 
     public class BingConfig
     {
+        public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";
         public string ApiKey { get; set; }
     }
 

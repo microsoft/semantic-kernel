@@ -6,12 +6,11 @@ import os
 from collections.abc import Callable, Coroutine
 from typing import Any
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.kernel import Kernel
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.exceptions import OperationCancelledException
+from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ async def input_output_filter(
     await next(context)
 
     if context.result:
-        logger.info(f'Usage: {context.result.metadata.get("usage")}')
+        logger.info(f"Usage: {context.result.metadata.get('usage')}")
         context.arguments["chat_history"].add_message(context.result.value[0])
         print(f"Mosscap:> {context.result!s}")
 

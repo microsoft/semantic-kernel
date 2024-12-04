@@ -15,6 +15,10 @@
     <None Remove="OpenApi\TestPlugins\ai-plugin.json" />
     <None Remove="OpenApi\TestPlugins\ai-plugin2.json" />
     <None Remove="OpenApi\TestPlugins\documentV3_1.yaml" />
+    <None Remove="OpenApi\TestPlugins\multipart-form-data.json" />
+    <None Remove="OpenApi\TestPlugins\no-securityV3_0.json" />
+    <None Remove="OpenApi\TestPlugins\apikey-securityV3_0.json" />
+    <None Remove="OpenApi\TestPlugins\oauth-securityV3_0.json" />
     <None Remove="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <None Remove="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenApi\TestPlugins\OpenApi.json" />
@@ -23,6 +27,9 @@
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin2.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\oauth-securityV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\no-securityV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\apikey-securityV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV2_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_1.yaml" />
@@ -60,5 +67,8 @@
     <ProjectReference Include="..\Functions.Markdown\Functions.Markdown.csproj" />
     <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Functions.Yaml\Functions.Yaml.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="OpenApi\TestPlugins\multipart-form-data.json" />
   </ItemGroup>
 </Project>

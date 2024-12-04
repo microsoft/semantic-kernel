@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -15,24 +16,30 @@ internal sealed class Program
     private static async Task Main(string[] args)
     {
         Console.ForegroundColor = ConsoleColor.White;
-
+        List<string> serviceIds = [];
         var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
         ServiceCollection services = new();
 
-        // Adding multiple connectors targeting different providers / models.
-        services
-            .AddKernel()
-            .AddOpenAIChatCompletion(
-                serviceId: "lmstudio",
-                modelId: "N/A", // LMStudio model is pre defined in the UI List box.
-                endpoint: new Uri(config["LMStudio:Endpoint"] ?? "http://localhost:1234"),
-                apiKey: null);
-
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("======== AI Services Added ========");
+
+        services.AddKernel();
+
+        // Adding multiple connectors targeting different providers / models.
+        if (config["LMStudio:Endpoint"] is not null)
+        {
+            services.AddOpenAIChatCompletion(
+                    serviceId: "lmstudio",
+                    modelId: "N/A", // LMStudio model is pre defined in the UI List box.
+                    endpoint: new Uri(config["LMStudio:Endpoint"]!),
+                    apiKey: null);
+
+            serviceIds.Add("lmstudio");
+            Console.WriteLine("• LMStudio - Use \"lmstudio\" in the prompt.");
+        }
+
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("• LMStudio - Use \"lmstudio\" in the prompt.");
 
         if (config["Ollama:ModelId"] is not null)
         {
@@ -41,16 +48,41 @@ internal sealed class Program
                 modelId: config["Ollama:ModelId"]!,
                 endpoint: new Uri(config["Ollama:Endpoint"] ?? "http://localhost:11434"));
 
+            serviceIds.Add("ollama");
             Console.WriteLine("• Ollama - Use \"ollama\" in the prompt.");
+        }
+
+        if (config["AzureOpenAI:Endpoint"] is not null)
+        {
+            if (config["AzureOpenAI:ApiKey"] is not null)
+            {
+                services.AddAzureOpenAIChatCompletion(
+                    serviceId: "azureopenai",
+                    endpoint: config["AzureOpenAI:Endpoint"]!,
+                    deploymentName: config["AzureOpenAI:ChatDeploymentName"]!,
+                    apiKey: config["AzureOpenAI:ApiKey"]!);
+            }
+            else
+            {
+                services.AddAzureOpenAIChatCompletion(
+                    serviceId: "azureopenai",
+                    endpoint: config["AzureOpenAI:Endpoint"]!,
+                    deploymentName: config["AzureOpenAI:ChatDeploymentName"]!,
+                    credentials: new AzureCliCredential());
+            }
+
+            serviceIds.Add("azureopenai");
+            Console.WriteLine("• Azure OpenAI Added - Use \"azureopenai\" in the prompt.");
         }
 
         if (config["OpenAI:ApiKey"] is not null)
         {
             services.AddOpenAIChatCompletion(
                 serviceId: "openai",
-                modelId: config["OpenAI:ModelId"] ?? "gpt-4o",
+                modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o",
                 apiKey: config["OpenAI:ApiKey"]!);
 
+            serviceIds.Add("openai");
             Console.WriteLine("• OpenAI Added - Use \"openai\" in the prompt.");
         }
 
@@ -61,6 +93,7 @@ internal sealed class Program
                 modelId: "phi-3",
                 modelPath: config["Onnx:ModelPath"]!);
 
+            serviceIds.Add("onnx");
             Console.WriteLine("• ONNX Added - Use \"onnx\" in the prompt.");
         }
 
@@ -68,9 +101,11 @@ internal sealed class Program
         {
             services.AddAzureAIInferenceChatCompletion(
                 serviceId: "azureai",
+                modelId: config["AzureAIInference:ChatModelId"]!,
                 endpoint: new Uri(config["AzureAIInference:Endpoint"]!),
                 apiKey: config["AzureAIInference:ApiKey"]);
 
+            serviceIds.Add("azureai");
             Console.WriteLine("• Azure AI Inference Added - Use \"azureai\" in the prompt.");
         }
 
@@ -92,7 +127,7 @@ internal sealed class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "onnx", "azureai"])
+                ServiceId = router.GetService(userMessage, serviceIds)
             });
 
             // Invoke the prompt and print the response

@@ -7,6 +7,9 @@ import logging
 
 from pydantic import BaseModel
 from semantic_kernel import Kernel
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 from guided_conversation.functions.conversation_plan import conversation_plan_function
 from guided_conversation.functions.execution import end_conversation, execution, send_message
@@ -21,9 +24,6 @@ from guided_conversation.utils.openai_tool_calling import (
 )
 from guided_conversation.utils.plugin_helpers import PluginOutput, format_kernel_functions_as_tools
 from guided_conversation.utils.resources import GCResource, ResourceConstraint
-from semantic_kernel.contents import ChatMessageContent, AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions import KernelArguments
 
 MAX_DECISION_RETRIES = 2
 

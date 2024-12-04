@@ -64,10 +64,11 @@
             "command": "uv",
             "args": [
                 "run",
-                "pre-commit",
-                "run",
-                "-a",
-                "mypy"
+                "mypy",
+                "-p",
+                "semantic_kernel",
+                "--config-file",
+                "mypy.ini"
             ],
             "problemMatcher": {
                 "owner": "python",
@@ -163,6 +164,20 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "daprd-debug-python",
+            "type": "daprd",
+            "appId": "dapr-processes",
+            "httpPort": 3500,
+            "appPort": 5001,
+            "grpcPort": 53317,
+            "metricsPort": 9091
+        },
+        {
+            "label": "daprd-down-python",
+            "type": "daprd-down",
+            "appId": "dapr-processes"
         }
     ],
     "inputs": [

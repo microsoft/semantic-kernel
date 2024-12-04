@@ -4,19 +4,12 @@ import asyncio
 import os
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents import ChatHistory, ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
-    AutoFunctionInvocationContext,
-)
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.functions import KernelArguments
-from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes
+from semantic_kernel.functions import FunctionResult, KernelArguments
 
 system_message = """
 You are a chat bot. Your name is Mosscap and

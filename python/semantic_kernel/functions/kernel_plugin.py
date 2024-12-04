@@ -9,10 +9,11 @@ from collections.abc import Generator, ItemsView
 from functools import singledispatchmethod
 from glob import glob
 from types import MethodType
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 import httpx
 from pydantic import Field, StringConstraints
+from typing_extensions import deprecated
 
 from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -21,6 +22,7 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import create_functions_from_openapi
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
+from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -28,6 +30,7 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
@@ -37,6 +40,8 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger = logging.getLogger(__name__)
+
+_T = TypeVar("_T", bound="KernelPlugin")
 
 
 class KernelPlugin(KernelBaseModel):
@@ -95,22 +100,14 @@ class KernelPlugin(KernelBaseModel):
         self,
         name: str,
         description: str | None = None,
-        functions: (
-            KERNEL_FUNCTION_TYPE
-            | "KernelPlugin"
-            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
-            | dict[str, KERNEL_FUNCTION_TYPE]
-            | None
-        ) = None,
+        functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
     ):
         """Create a KernelPlugin.
 
         Args:
-            name: The name of the plugin. The name can be upper/lower
-                case letters and underscores.
+            name: The name of the plugin. The name can be upper/lower case letters and underscores.
             description: The description of the plugin.
-            functions:
-                The functions in the plugin, will be rewritten to a dictionary of functions.
+            functions: The functions in the plugin, will be rewritten to a dictionary of functions.
 
         Raises:
             ValueError: If the functions are not of the correct type.
@@ -234,11 +231,11 @@ class KernelPlugin(KernelBaseModel):
 
     @classmethod
     def from_object(
-        cls,
+        cls: type[_T],
         plugin_name: str,
         plugin_instance: Any | dict[str, Any],
         description: str | None = None,
-    ) -> "KernelPlugin":
+    ) -> _T:
         """Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection.
 
         Args:
@@ -264,16 +261,16 @@ class KernelPlugin(KernelBaseModel):
             for _, candidate in candidates
             if hasattr(candidate, "__kernel_function__")
         ]
-        return cls(name=plugin_name, description=description, functions=functions)  # type: ignore
+        return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod
     def from_directory(
-        cls,
+        cls: type[_T],
         plugin_name: str,
         parent_directory: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
-    ) -> "KernelPlugin":
+    ) -> _T:
         """Create a plugin from a specified directory.
 
         This method does not recurse into subdirectories beyond one level deep from the specified plugin directory.
@@ -355,23 +352,25 @@ class KernelPlugin(KernelBaseModel):
                 logger.warning(f"Unknown file found: {object}")
         if not functions:
             raise PluginInitializationError(f"No functions found in folder: {parent_directory}/{plugin_name}")
-        return cls(name=plugin_name, description=description, functions=functions)  # type: ignore
+        return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod
     def from_openapi(
-        cls,
+        cls: type[_T],
         plugin_name: str,
-        openapi_document_path: str,
+        openapi_document_path: str | None = None,
+        openapi_parsed_spec: dict[str, Any] | None = None,
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
-    ) -> "KernelPlugin":
+    ) -> _T:
         """Create a plugin from an OpenAPI document.
 
         Args:
-            plugin_name (str): The name of the plugin
-            openapi_document_path (str): The path to the OpenAPI document
-            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
+            plugin_name: The name of the plugin
+            openapi_document_path: The path to the OpenAPI document (optional)
+            openapi_parsed_spec: The parsed OpenAPI spec (optional)
+            execution_settings: The execution parameters
+            description: The description of the plugin
 
         Returns:
             KernelPlugin: The created plugin
@@ -379,8 +378,8 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
         """
-        if not openapi_document_path:
-            raise PluginInitializationError("OpenAPI document path is required.")
+        if not openapi_document_path and not openapi_parsed_spec:
+            raise PluginInitializationError("Either the OpenAPI document path or a parsed OpenAPI spec is required.")
 
         return cls(  # type: ignore
             name=plugin_name,
@@ -388,19 +387,24 @@ class KernelPlugin(KernelBaseModel):
             functions=create_functions_from_openapi(  # type: ignore
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
+                openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
             ),
         )
 
+    @deprecated(
+        "The `OpenAI` plugin is deprecated; use the `from_openapi` method to add an `OpenAPI` plugin instead.",
+        category=None,
+    )
     @classmethod
     async def from_openai(
-        cls,
+        cls: type[_T],
         plugin_name: str,
         plugin_url: str | None = None,
         plugin_str: str | None = None,
         execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
         description: str | None = None,
-    ) -> "KernelPlugin":
+    ) -> _T:
         """Create a plugin from the Open AI manifest.
 
         Args:
@@ -424,7 +428,9 @@ class KernelPlugin(KernelBaseModel):
             openai_manifest = plugin_str
         elif plugin_url is not None:
             # Load plugin from the URL
-            http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+            http_client = (
+                execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient(timeout=5)
+            )
             openai_manifest = await DocumentLoader.from_uri(
                 url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
             )
@@ -459,12 +465,12 @@ class KernelPlugin(KernelBaseModel):
 
     @classmethod
     def from_python_file(
-        cls,
+        cls: type[_T],
         plugin_name: str,
         py_file: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
-    ) -> "KernelPlugin":
+    ) -> _T:
         """Create a plugin from a Python file."""
         module_name = os.path.basename(py_file).replace(".py", "")
         spec = importlib.util.spec_from_file_location(module_name, py_file)
@@ -482,18 +488,83 @@ class KernelPlugin(KernelBaseModel):
             return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
 
+    @classmethod
+    def from_text_search_with_search(
+        cls: type[_T],
+        text_search: TextSearch,
+        plugin_name: str,
+        plugin_description: str | None = None,
+        **kwargs: Any,
+    ) -> _T:
+        """Creates a plugin that wraps the text search "search" function.
+
+        Args:
+            text_search: The text search to use.
+            plugin_name: The name of the plugin.
+            plugin_description: The description of the search plugin.
+            **kwargs: The keyword arguments to use to create the search function.
+
+        Returns:
+            a KernelPlugin.
+        """
+        return cls(name=plugin_name, description=plugin_description, functions=[text_search.create_search(**kwargs)])
+
+    @classmethod
+    def from_text_search_with_get_text_search_results(
+        cls: type[_T],
+        text_search: TextSearch,
+        plugin_name: str,
+        plugin_description: str | None = None,
+        **kwargs: Any,
+    ) -> _T:
+        """Creates a plugin that wraps the text search "get_text_search_results" function.
+
+        Args:
+            text_search: The text search to use.
+            plugin_name: The name of the plugin.
+            plugin_description: The description of the search plugin.
+            **kwargs: The keyword arguments to use to create the search function.
+
+        Returns:
+            a KernelPlugin.
+        """
+        return cls(
+            name=plugin_name,
+            description=plugin_description,
+            functions=[text_search.create_get_text_search_results(**kwargs)],
+        )
+
+    @classmethod
+    def from_text_search_with_get_search_results(
+        cls: type[_T],
+        text_search: TextSearch,
+        plugin_name: str,
+        plugin_description: str | None = None,
+        **kwargs: Any,
+    ) -> _T:
+        """Creates a plugin that wraps the text search "get_search_results" function.
+
+        Args:
+            text_search: The text search to use.
+            plugin_name: The name of the plugin.
+            plugin_description: The description of the search plugin.
+            **kwargs: The keyword arguments to use to create the search function.
+
+        Returns:
+            a KernelPlugin.
+        """
+        return cls(
+            name=plugin_name,
+            description=plugin_description,
+            functions=[text_search.create_get_search_results(**kwargs)],
+        )
+
     # endregion
     # region Internal Static Methods
 
     @staticmethod
     def _validate_functions(
-        functions: (
-            KERNEL_FUNCTION_TYPE
-            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
-            | dict[str, KERNEL_FUNCTION_TYPE]
-            | "KernelPlugin"
-            | None
-        ),
+        functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
         plugin_name: str,
     ) -> dict[str, "KernelFunction"]:
         """Validates the functions and returns a dictionary of functions."""
@@ -521,12 +592,10 @@ class KernelPlugin(KernelBaseModel):
                     function = KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
                     functions_dict[function.name] = function
                 elif isinstance(function, KernelPlugin):  # type: ignore
-                    functions_dict.update(
-                        {
-                            name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
-                            for name, function in function.functions.items()
-                        }
-                    )
+                    functions_dict.update({
+                        name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                        for name, function in function.functions.items()
+                    })
                 else:
                     raise ValueError(f"Invalid type for functions in list: {function} (type: {type(function)})")
             return functions_dict

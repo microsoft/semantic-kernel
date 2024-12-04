@@ -45,6 +45,17 @@
       "request": "launch",
       "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
       "launchConfigurationId": "TargetFramework=;GettingStarted"
+    },
+    {
+      "name": "C#: Process with Dapr",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\dotnet\\samples\\Demos\\ProcessWithDapr\\bin\\Debug\\net8.0\\ProcessWithDapr.dll",
+      "preLaunchTask": "daprd-debug",
+      "postDebugTask": "dapr-down",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT" : "Development"
+      }
     }
   ]
 }

@@ -28,6 +28,10 @@ class OpenAISettings(KernelBaseSettings):
         (Env var OPENAI_EMBEDDING_MODEL_ID)
     - text_to_image_model_id: str | None - The OpenAI text to image model ID to use, for example, dall-e-3.
         (Env var OPENAI_TEXT_TO_IMAGE_MODEL_ID)
+    - audio_to_text_model_id: str | None - The OpenAI audio to text model ID to use, for example, whisper-1.
+        (Env var OPENAI_AUDIO_TO_TEXT_MODEL_ID)
+    - text_to_audio_model_id: str | None - The OpenAI text to audio model ID to use, for example, jukebox-1.
+        (Env var OPENAI_TEXT_TO_AUDIO_MODEL_ID)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
@@ -39,3 +43,5 @@ class OpenAISettings(KernelBaseSettings):
     text_model_id: str | None = None
     embedding_model_id: str | None = None
     text_to_image_model_id: str | None = None
+    audio_to_text_model_id: str | None = None
+    text_to_audio_model_id: str | None = None

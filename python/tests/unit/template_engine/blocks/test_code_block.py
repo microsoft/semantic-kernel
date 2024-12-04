@@ -383,15 +383,13 @@ but it is being called in the template with 2 arguments.",
     ],
 )
 def test_block_validation(token0, token1, token2):
-    with raises(
-        (
-            FunctionIdBlockSyntaxError,
-            VarBlockSyntaxError,
-            ValBlockSyntaxError,
-            NamedArgBlockSyntaxError,
-            CodeBlockSyntaxError,
-        )
-    ):
+    with raises((
+        FunctionIdBlockSyntaxError,
+        VarBlockSyntaxError,
+        ValBlockSyntaxError,
+        NamedArgBlockSyntaxError,
+        CodeBlockSyntaxError,
+    )):
         CodeBlock(
             content=f"{token0} {token1} {token2}",
         )

@@ -3,7 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +15,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -635,35 +639,6 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2 Result1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-    [Fact]
-    public async Task InvokeAsyncWithPromptRenderedHooksExecutesModifiedPromptAsync()
-    {
-        // Arrange
-        var mockTextContent = new TextContent("Result");
-        var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
-
-#pragma warning disable CS0618 // Events are deprecated
-        static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
-        {
-            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
-        }
-
-        KernelBuilder builder = new();
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("service", mockTextCompletion.Object);
-        Kernel kernel = builder.Build();
-        kernel.PromptRendered += MyRenderedHandler;
-#pragma warning restore CS0618 // Events are deprecated
-
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
-
-        // Act
-        var result1 = await kernel.InvokeAsync(function);
-
-        // Assert
-        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
     [Theory]
     [InlineData(KernelInvocationType.InvokePrompt)]
     [InlineData(KernelInvocationType.InvokePromptStreaming)]
@@ -871,6 +846,27 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionPropagatesTooManyRequestsAsync()
+    {
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+        messageHandlerStub.ResponseToReturn = response;
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "any", httpClient: httpClient);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => chatCompletion);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(async () => await kernel.InvokePromptAsync("Prompt"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
+    }
+
+    [Fact]
     public async Task InvokePromptAsyncWithPromptFunctionInTemplateAndSingleResultAsync()
     {
         // Arrange
@@ -897,6 +893,58 @@ public class KernelFunctionFromPromptTests
 
         Assert.NotNull(lastInvocationChatHistory);
         Assert.Equal("Data: chat-message", lastInvocationChatHistory[0].Content);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public void ItThrowsExceptionNoTemplateFormatIsProvided(JsonSerializerOptions? jsos)
+    {
+        // Act
+        Assert.Throws<ArgumentException>(
+            () =>
+            jsos is not null ?
+                KernelFunctionFromPrompt.Create("prompt-template", jsonSerializerOptions: jsos, templateFormat: null, promptTemplateFactory: new EchoPromptTemplateFactory()) :
+                KernelFunctionFromPrompt.Create("prompt-template", templateFormat: null, promptTemplateFactory: new EchoPromptTemplateFactory())
+        );
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public async Task ItCanBeCloned(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        var mockService = new Mock<IChatCompletionService>();
+        mockService
+            .Setup(s => s.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings?>(), It.IsAny<Kernel?>(), It.IsAny<CancellationToken>()))
+            .Returns((ChatHistory ch, PromptExecutionSettings? _, Kernel? _, CancellationToken _) => Task.FromResult((IReadOnlyList<ChatMessageContent>)[new(AuthorRole.Assistant, ch.First().Content)]));
+
+        var builder = new KernelBuilder();
+        builder.Services.AddSingleton<IChatCompletionService>(mockService.Object);
+
+        var kernel = builder.Build();
+
+        KernelFunction function = jsos is not null ?
+            function = KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable", jsonSerializerOptions: jsos) :
+            function = KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable");
+
+        // Act
+        function = function.Clone("new-plugin-name");
+
+        // Assert plugin name
+        Assert.Equal("new-plugin-name", function.Metadata.PluginName);
+
+        // Assert schema
+        Assert.NotEmpty(function.Metadata.Parameters);
+        Assert.NotNull(function.Metadata.Parameters[0].Schema);
+        Assert.Equal("{\"type\":\"string\"}", function.Metadata.Parameters[0].Schema!.ToString());
+
+        Assert.NotNull(function.Metadata.ReturnParameter);
+        Assert.Null(function.Metadata.ReturnParameter.Schema);
+
+        // Assert invocation
+        var invokeResult = await function.InvokeAsync(kernel, new() { ["A"] = "a" });
+        var result = invokeResult?.GetValue<string>();
+        Assert.Equal("Prompt with a variable", result);
     }
 
     public enum KernelInvocationType

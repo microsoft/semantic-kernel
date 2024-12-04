@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -16,14 +16,11 @@ using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities.AIConnectors;
+
 public class FunctionCallsProcessorTests
 {
-    private readonly FunctionCallsProcessor _sut;
-
-    public FunctionCallsProcessorTests()
-    {
-        this._sut = new FunctionCallsProcessor();
-    }
+    private readonly FunctionCallsProcessor _sut = new();
+    private readonly FunctionChoiceBehaviorOptions _functionChoiceBehaviorOptions = new();
 
     [Fact]
     public void ItShouldReturnNoConfigurationIfNoBehaviorProvided()
@@ -71,10 +68,14 @@ public class FunctionCallsProcessorTests
         Assert.False(config!.AutoInvoke);
     }
 
-    [Fact]
-    public async Task ItShouldDisableAutoInvocationIfMaximumInflightAutoInvocationLimitReachedAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItShouldDisableAutoInvocationIfMaximumInflightAutoInvocationLimitReachedAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         var kernel = CreateKernel();
 
         var chatMessageContent = new ChatMessageContent();
@@ -96,7 +97,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: [],
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
         }
 
@@ -123,7 +126,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -149,7 +154,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -180,7 +187,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -206,7 +215,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => false, // Return false to simulate that the function is not advertised
+                options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -232,7 +243,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -243,14 +256,18 @@ public class FunctionCallsProcessorTests
         Assert.Equal("Error: Requested function could not be found.", functionResult.Result);
     }
 
-    [Fact]
-    public async Task ItShouldInvokeFunctionsAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItShouldInvokeFunctionsAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         int functionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { Interlocked.Increment(ref functionInvocations); return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { Interlocked.Increment(ref functionInvocations); return parameter; }, "Function2");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = CreateKernel(plugin);
@@ -267,7 +284,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -275,27 +294,32 @@ public class FunctionCallsProcessorTests
 
         Assert.Equal(3, chatHistory.Count);
 
-        var function1Result = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
+        var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+        Assert.Equal(2, functionResults.Count);
+
+        var function1Result = functionResults.Single(x => x.FunctionName == "Function1");
         Assert.Equal("MyPlugin", function1Result.PluginName);
-        Assert.Equal("Function1", function1Result.FunctionName);
         Assert.Equal("function1-result", function1Result.Result);
 
-        var function2Result = chatHistory[2].Items.OfType<FunctionResultContent>().Single();
+        var function2Result = functionResults.Single(x => x.FunctionName == "Function2");
         Assert.Equal("MyPlugin", function2Result.PluginName);
-        Assert.Equal("Function2", function2Result.FunctionName);
         Assert.Equal("function2-result", function2Result.Result);
     }
 
-    [Fact]
-    public async Task ItShouldInvokeFiltersAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItShouldInvokeFiltersAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         int filterInvocations = 0;
         int functionInvocations = 0;
         int[] expectedRequestSequenceNumbers = [0, 0];
         int[] expectedFunctionSequenceNumbers = [0, 1];
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
+        ConcurrentBag<int> requestSequenceNumbers = [];
+        ConcurrentBag<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
@@ -311,7 +335,7 @@ public class FunctionCallsProcessorTests
 
             await next(context);
 
-            filterInvocations++;
+            Interlocked.Increment(ref filterInvocations);
         });
 
         var chatMessageContent = new ChatMessageContent();
@@ -326,32 +350,47 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.Equal(2, filterInvocations);
         Assert.Equal(2, functionInvocations);
-        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
-        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
 
         Assert.Equal(3, chatHistory.Count);
-
         Assert.Same(chatMessageContent, chatHistory[0]);
 
-        var function1Result = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
+
+        if (!invokeConcurrently)
+        {
+            Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers.Reverse());
+        }
+
+        var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+        Assert.Equal(2, functionResults.Count);
+
+        var function1Result = functionResults.Single(x => x.FunctionName == "Function1");
+        Assert.Equal("MyPlugin", function1Result.PluginName);
         Assert.Equal("function1-result", function1Result.Result);
 
-        var function2Result = chatHistory[2].Items.OfType<FunctionResultContent>().Single();
+        var function2Result = functionResults.Single(x => x.FunctionName == "Function2");
+        Assert.Equal("MyPlugin", function2Result.PluginName);
         Assert.Equal("function2-result", function2Result.Result);
     }
 
-    [Fact]
-    public async Task ItShouldInvokeMultipleFiltersInOrderAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItShouldInvokeMultipleFiltersInOrderAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
-        var executionOrder = new List<string>();
+        var filterInvocationLog = new ConcurrentBag<string>();
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
@@ -359,23 +398,23 @@ public class FunctionCallsProcessorTests
 
         var filter1 = new AutoFunctionInvocationFilter(async (context, next) =>
         {
-            executionOrder.Add("Filter1-Invoking");
+            filterInvocationLog.Add("Filter1-Invoking");
             await next(context);
-            executionOrder.Add("Filter1-Invoked");
+            filterInvocationLog.Add("Filter1-Invoked");
         });
 
         var filter2 = new AutoFunctionInvocationFilter(async (context, next) =>
         {
-            executionOrder.Add("Filter2-Invoking");
+            filterInvocationLog.Add("Filter2-Invoking");
             await next(context);
-            executionOrder.Add("Filter2-Invoked");
+            filterInvocationLog.Add("Filter2-Invoked");
         });
 
         var filter3 = new AutoFunctionInvocationFilter(async (context, next) =>
         {
-            executionOrder.Add("Filter3-Invoking");
+            filterInvocationLog.Add("Filter3-Invoking");
             await next(context);
-            executionOrder.Add("Filter3-Invoked");
+            filterInvocationLog.Add("Filter3-Invoked");
         });
 
         var builder = Kernel.CreateBuilder();
@@ -400,23 +439,30 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
-        Assert.Equal("Filter1-Invoking", executionOrder[0]);
-        Assert.Equal("Filter2-Invoking", executionOrder[1]);
-        Assert.Equal("Filter3-Invoking", executionOrder[2]);
-        Assert.Equal("Filter3-Invoked", executionOrder[3]);
-        Assert.Equal("Filter2-Invoked", executionOrder[4]);
-        Assert.Equal("Filter1-Invoked", executionOrder[5]);
+        string[] reversedLog = filterInvocationLog.Reverse().ToArray();
+        Assert.Equal("Filter1-Invoking", reversedLog[0]);
+        Assert.Equal("Filter2-Invoking", reversedLog[1]);
+        Assert.Equal("Filter3-Invoking", reversedLog[2]);
+        Assert.Equal("Filter3-Invoked", reversedLog[3]);
+        Assert.Equal("Filter2-Invoked", reversedLog[4]);
+        Assert.Equal("Filter1-Invoked", reversedLog[5]);
         Assert.Equal(3, chatHistory.Count);
     }
 
-    [Fact]
-    public async Task FilterCanOverrideArgumentsAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterCanOverrideArgumentsAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         const string NewValue = "NewValue";
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
@@ -441,7 +487,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -453,10 +501,14 @@ public class FunctionCallsProcessorTests
         Assert.Equal("NewValue", function2Result.Result);
     }
 
-    [Fact]
-    public async Task FilterCanHandleExceptionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterCanHandleExceptionAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from Function1"); }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => "Result from Function2", "Function2");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
@@ -487,7 +539,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         var firstFunctionResult = chatHistory[^2].Content;
@@ -498,10 +552,14 @@ public class FunctionCallsProcessorTests
         Assert.Equal("Result from Function2", secondFunctionResult);
     }
 
-    [Fact]
-    public async Task FiltersCanSkipFunctionExecutionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FiltersCanSkipFunctionExecutionAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         int filterInvocations = 0;
         int firstFunctionInvocations = 0;
         int secondFunctionInvocations = 0;
@@ -518,7 +576,7 @@ public class FunctionCallsProcessorTests
                 await next(context);
             }
 
-            filterInvocations++;
+            Interlocked.Increment(ref filterInvocations);
         });
 
         var chatMessageContent = new ChatMessageContent();
@@ -533,7 +591,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -542,10 +602,14 @@ public class FunctionCallsProcessorTests
         Assert.Equal(1, secondFunctionInvocations);
     }
 
-    [Fact]
-    public async Task PreFilterCanTerminateOperationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PreFilterCanTerminateOperationAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         int firstFunctionInvocations = 0;
         int secondFunctionInvocations = 0;
 
@@ -573,7 +637,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -581,13 +647,16 @@ public class FunctionCallsProcessorTests
         Assert.Equal(0, secondFunctionInvocations);
     }
 
-    [Fact]
-    public async Task PostFilterCanTerminateOperationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PostFilterCanTerminateOperationAsync(bool invokeConcurrently)
     {
         // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
         int firstFunctionInvocations = 0;
         int secondFunctionInvocations = 0;
-        List<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
@@ -595,11 +664,8 @@ public class FunctionCallsProcessorTests
 
         var kernel = CreateKernel(plugin, async (context, next) =>
         {
-            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
-
             await next(context);
 
-            // Terminating after first function, so second function won't be invoked.
             context.Terminate = true;
         });
 
@@ -615,35 +681,38 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, firstFunctionInvocations);
-        Assert.Equal(0, secondFunctionInvocations);
-        Assert.Equal([0], functionSequenceNumbers);
-
-        Assert.Equal(2, chatHistory.Count);
-
-        var function1Result = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
-        Assert.Equal("function1-result", function1Result.Result);
-    }
-
-    private static Kernel CreateKernel(KernelPlugin? plugin = null, Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation = null)
-    {
-        var builder = Kernel.CreateBuilder();
-
-        if (plugin is not null)
+        if (invokeConcurrently)
         {
-            builder.Plugins.Add(plugin);
-        }
+            Assert.Equal(3, chatHistory.Count); // Result of all functions should be added to chat history
 
-        if (onAutoFunctionInvocation is not null)
+            var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+            Assert.Equal(2, functionResults.Count);
+
+            Assert.Contains(functionResults, x => x.FunctionName == "Function1" && x.Result?.ToString() == "function1-result");
+            Assert.Contains(functionResults, x => x.FunctionName == "Function2" && x.Result?.ToString() == "function2-result");
+
+            Assert.Equal(1, firstFunctionInvocations);
+            Assert.Equal(1, secondFunctionInvocations);
+        }
+        else
         {
-            builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(onAutoFunctionInvocation));
-        }
+            Assert.Equal(2, chatHistory.Count); // Result of only first function should be added to chat history
 
-        return builder.Build();
+            var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+            var functionResult = Assert.Single(functionResults);
+
+            Assert.Equal("Function1", functionResult.FunctionName);
+            Assert.Equal("function1-result", functionResult.Result);
+
+            Assert.Equal(1, firstFunctionInvocations);
+            Assert.Equal(0, secondFunctionInvocations);
+        }
     }
 
     [Fact]
@@ -666,7 +735,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -699,7 +770,9 @@ public class FunctionCallsProcessorTests
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -758,5 +831,22 @@ public class FunctionCallsProcessorTests
 
         public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
             this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
+
+    private static Kernel CreateKernel(KernelPlugin? plugin = null, Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation = null)
+    {
+        var builder = Kernel.CreateBuilder();
+
+        if (plugin is not null)
+        {
+            builder.Plugins.Add(plugin);
+        }
+
+        if (onAutoFunctionInvocation is not null)
+        {
+            builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(onAutoFunctionInvocation));
+        }
+
+        return builder.Build();
     }
 }

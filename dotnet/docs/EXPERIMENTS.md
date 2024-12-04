@@ -24,6 +24,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0080 | Processes |
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
+| SKEXP0120 | Native-AOT |
 
 ## Experimental Features Tracking
 
@@ -58,7 +59,8 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0040 | GRPC functions |
 | SKEXP0040 | Markdown functions |
 | SKEXP0040 | OpenAPI functions |
-| SKEXP0040 | OpenAPI function extensions |
+| SKEXP0040 | OpenAPI function extensions - API Manifest |
+| SKEXP0040 | OpenAPI function extensions - Copilot Agent Plugin |
 | SKEXP0040 | Prompty Format support |
 | | | | | | | |
 | SKEXP0050 | Core plugins |
@@ -71,11 +73,12 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Handlebars planner |
 | SKEXP0060 | OpenAI Stepwise planner |
 | | | | | | | |
-| SKEXP0070 | Ollama AI connector |
-| SKEXP0070 | Gemini AI connector |
-| SKEXP0070 | Mistral AI connector |
-| SKEXP0070 | ONNX AI connector |
-| SKEXP0070 | Hugging Face AI connector |
+| SKEXP0070 | Ollama AI connector | | | | | |
+| SKEXP0070 | Gemini AI connector | | | | | |
+| SKEXP0070 | Mistral AI connector | | | | | |
+| SKEXP0070 | ONNX AI connector | | | | | |
+| SKEXP0070 | Hugging Face AI connector | | | | | |
+| SKEXP0070 | Amazon AI connector | | | | | |
 | | | | | | | |
 | SKEXP0080 | Process Framework |
 | | | | | | | |
@@ -83,3 +86,5 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0101 | Experiment with Flow Orchestration |
 | | | | | | | |
 | SKEXP0110 | Agent Framework |
+| | | | | | | |
+| SKEXP0120 | Native-AOT |

@@ -186,10 +186,8 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:
-        return json.dumps(
-            {
-                "text": record.text,
-                "description": record.description,
-                "additional_metadata": record.additional_metadata,
-            }
-        )
+        return json.dumps({
+            "text": record.text,
+            "description": record.description,
+            "additional_metadata": record.additional_metadata,
+        })

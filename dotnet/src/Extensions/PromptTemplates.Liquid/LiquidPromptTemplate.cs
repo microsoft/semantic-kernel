@@ -139,6 +139,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         return renderedResult;
     }
 
+    #region Private
     private string Encoding(string text)
     {
         text = this.ReplaceReservedStringBackToColonIfNeeded(text);
@@ -286,4 +287,5 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             return memberExpression;
         }
     }
+    #endregion
 }

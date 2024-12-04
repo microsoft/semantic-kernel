@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,29 +54,31 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        int messageCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
+        int initialCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
 
-        if (agent.Mode == AggregatorMode.Flat)
+        await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
         {
-            await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
+            if (agent.Mode == AggregatorMode.Flat)
             {
                 yield return message;
             }
         }
 
         ChatMessageContent[] history = await this._chat.GetChatMessagesAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
-        if (history.Length > messageCount)
+        if (history.Length > initialCount)
         {
             if (agent.Mode == AggregatorMode.Flat)
             {
-                for (int index = messageCount; index < messages.Count; ++index)
+                for (int index = history.Length - 1; index >= initialCount; --index)
                 {
                     messages.Add(history[index]);
                 }
             }
             else if (agent.Mode == AggregatorMode.Nested)
             {
-                messages.Add(history[history.Length - 1]);
+                ChatMessageContent finalMessage = history[0]; // Order descending
+                yield return new StreamingChatMessageContent(finalMessage.Role, finalMessage.Content) { AuthorName = finalMessage.AuthorName };
+                messages.Add(finalMessage);
             }
         }
     }
@@ -92,4 +95,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     /// <inheritdoc/>
     protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._chat.ResetAsync(cancellationToken);
+
+    protected internal override string Serialize() =>
+        JsonSerializer.Serialize(this._chat.Serialize());
 }

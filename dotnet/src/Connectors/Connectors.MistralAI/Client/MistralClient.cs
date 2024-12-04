@@ -178,7 +178,8 @@ internal sealed class MistralClient
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = chatChoice.ToolCalls.Count,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    IsStreaming = false
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -408,7 +409,8 @@ internal sealed class MistralClient
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = toolCalls.Count,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    IsStreaming = true
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -503,7 +505,7 @@ internal sealed class MistralClient
         var endpoint = this.GetEndpoint(executionSettings, path: "chat/completions");
         using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: true);
         using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingChatContent;
@@ -564,7 +566,7 @@ internal sealed class MistralClient
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).ToList();
+        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding!])).ToList();
     }
 
     #region private
@@ -785,7 +787,7 @@ internal sealed class MistralClient
     {
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         return DeserializeResponse<T>(body);
     }
@@ -932,7 +934,7 @@ internal sealed class MistralClient
         // Add the tool response message to the chat history
         var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { nameof(MistralToolCall.Function), toolCall.Function } });
 
-        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
+        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.
         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
         if (toolCall.Function is not null)
         {
@@ -987,16 +989,16 @@ internal sealed class MistralClient
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
+        // This is an optimization to use ChatMessageContent content directly
+        // without unnecessary serialization of the whole message content class.
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.
+        // For more details about the polymorphic serialization, see the article at:
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }

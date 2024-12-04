@@ -3,7 +3,7 @@
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp;
 using OllamaSharp.Models.Chat;
 
 namespace ChatCompletion;
@@ -23,9 +23,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine("======== Ollama - Chat Completion Streaming ========");
 
-        var chatService = new OllamaChatCompletionService(
-            endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
-            modelId: TestConfiguration.Ollama.ModelId);
+        using var ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        var chatService = ollamaClient.AsChatCompletionService();
 
         return this.StartStreamingChatAsync(chatService);
     }
@@ -44,9 +46,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine("======== Ollama - Chat Completion Streaming ========");
 
-        var chatService = new OllamaChatCompletionService(
-            endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
-            modelId: TestConfiguration.Ollama.ModelId);
+        using var ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
+        var chatService = ollamaClient.AsChatCompletionService();
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -141,10 +145,12 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine("======== Stream Text from Chat Content ========");
 
+        using var ollamaClient = new OllamaApiClient(
+            uriString: TestConfiguration.Ollama.Endpoint,
+            defaultModel: TestConfiguration.Ollama.ModelId);
+
         // Create chat completion service
-        var chatService = new OllamaChatCompletionService(
-            endpoint: new Uri(TestConfiguration.Ollama.Endpoint),
-            modelId: TestConfiguration.Ollama.ModelId);
+        var chatService = ollamaClient.AsChatCompletionService();
 
         // Create chat history with initial system and user messages
         ChatHistory chatHistory = new("You are a librarian, an expert on books.");

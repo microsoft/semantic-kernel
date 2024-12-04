@@ -1,0 +1,44 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json",
+  "schema_version": "v2.1",
+  "name_for_human": "OData Service for namespace microsoft.graph",
+  "description_for_human": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "description_for_model": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "contact_email": "publisher-email@example.com",
+  "namespace": "Messages",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "text": "Get open extension"
+      },
+      {
+        "text": "Create open extension"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "me_CreateMessages",
+      "description": "Create an open extension (openTypeExtension object) and add custom properties in a new or existing instance of a resource. You can create an open extension in a resource instance and store custom data to it all in the same operation, except for specific resources. The table in the Permissions section lists the resources that support open extensions."
+    },
+    {
+      "name": "me_ListMessages",
+      "description": "Get an open extension (openTypeExtension object) identified by name or fully qualified name. The table in the Permissions section lists the resources that support open extensions. The following table lists the three scenarios where you can get an open extension from a supported resource instance."
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "None"
+      },
+      "spec": {
+        "url": "messages-openapi.yml"
+      },
+      "run_for_functions": [
+        "me_ListMessages",
+        "me_CreateMessages"
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// Options when creating a <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure AI Search record.

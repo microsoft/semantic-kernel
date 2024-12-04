@@ -86,18 +86,16 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
         helpers: dict[str, Callable[..., Any]] = {}
         for plugin in kernel.plugins.values():
-            helpers.update(
-                {
-                    function.fully_qualified_name: create_template_helper_from_function(
-                        function,
-                        kernel,
-                        arguments,
-                        self.prompt_template_config.template_format,
-                        allow_unsafe_function_output,
-                    )
-                    for function in plugin
-                }
-            )
+            helpers.update({
+                function.fully_qualified_name: create_template_helper_from_function(
+                    function,
+                    kernel,
+                    arguments,
+                    self.prompt_template_config.template_format,
+                    allow_unsafe_function_output,
+                )
+                for function in plugin
+            })
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)
 
         try:

@@ -12,7 +12,6 @@ from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -539,6 +538,8 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
 
 async def setup_openapi_function_call(kernel, function_name, arguments):
+    from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
+
     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
 
     request_details = None

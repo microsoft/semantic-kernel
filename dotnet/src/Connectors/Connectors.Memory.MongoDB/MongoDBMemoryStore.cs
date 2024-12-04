@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a MongoDB database.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class MongoDBMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>

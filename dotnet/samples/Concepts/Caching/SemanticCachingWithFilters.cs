@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Caching;
 
@@ -19,19 +19,16 @@ namespace Caching;
 public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Similarity/relevance score, from 0 to 1, where 1 means exact match.
-    /// It's possible to change this value during testing to see how caching logic will behave.
-    /// </summary>
-    private const double SimilarityScore = 0.9;
-
-    /// <summary>
     /// Executing similar requests two times using in-memory caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
     /// </summary>
     [Fact]
     public async Task InMemoryCacheAsync()
     {
-        var kernel = GetKernelWithCache(_ => new VolatileMemoryStore());
+        var kernel = GetKernelWithCache(services =>
+        {
+            services.AddInMemoryVectorStore();
+        });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
         var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
@@ -53,12 +50,15 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Executing similar requests two times using Redis caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
-    /// How to run Redis on Docker locally: https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/
+    /// How to run Redis on Docker locally: https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/.
     /// </summary>
     [Fact]
     public async Task RedisCacheAsync()
     {
-        var kernel = GetKernelWithCache(_ => new RedisMemoryStore("localhost:6379", vectorSize: 1536));
+        var kernel = GetKernelWithCache(services =>
+        {
+            services.AddRedisVectorStore("localhost:6379");
+        });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
         var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
@@ -84,10 +84,12 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task AzureCosmosDBMongoDBCacheAsync()
     {
-        var kernel = GetKernelWithCache(_ => new AzureCosmosDBMongoDBMemoryStore(
-            TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
-            TestConfiguration.AzureCosmosDbMongoDb.DatabaseName,
-            new(dimensions: 1536)));
+        var kernel = GetKernelWithCache(services =>
+        {
+            services.AddAzureCosmosDBMongoDBVectorStore(
+                TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
+                TestConfiguration.AzureCosmosDbMongoDb.DatabaseName);
+        });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
         var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
@@ -110,27 +112,41 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Returns <see cref="Kernel"/> instance with required registered services.
     /// </summary>
-    private Kernel GetKernelWithCache(Func<IServiceProvider, IMemoryStore> cacheFactory)
+    private Kernel GetKernelWithCache(Action<IServiceCollection> configureVectorStore)
     {
         var builder = Kernel.CreateBuilder();
 
-        // Add Azure OpenAI chat completion service
-        builder.AddAzureOpenAIChatCompletion(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+        if (!string.IsNullOrWhiteSpace(TestConfiguration.AzureOpenAI.ApiKey))
+        {
+            // Add Azure OpenAI chat completion service
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
 
-        // Add Azure OpenAI text embedding generation service
-        builder.AddAzureOpenAITextEmbeddingGeneration(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+            // Add Azure OpenAI text embedding generation service
+            builder.AddAzureOpenAITextEmbeddingGeneration(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+        else
+        {
+            // Add Azure OpenAI chat completion service
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                new AzureCliCredential());
 
-        // Add memory store for caching purposes (e.g. in-memory, Redis, Azure Cosmos DB)
-        builder.Services.AddSingleton<IMemoryStore>(cacheFactory);
+            // Add Azure OpenAI text embedding generation service
+            builder.AddAzureOpenAITextEmbeddingGeneration(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                new AzureCliCredential());
+        }
 
-        // Add text memory service that will be used to generate embeddings and query/store data. 
-        builder.Services.AddSingleton<ISemanticTextMemory, SemanticTextMemory>();
+        // Add vector store for caching purposes (e.g. in-memory, Redis, Azure Cosmos DB)
+        configureVectorStore(builder.Services);
 
         // Add prompt render filter to query cache and check if rendered prompt was already answered.
         builder.Services.AddSingleton<IPromptRenderFilter, PromptCacheFilter>();
@@ -164,7 +180,10 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Filter which is executed during prompt rendering operation.
     /// </summary>
-    public sealed class PromptCacheFilter(ISemanticTextMemory semanticTextMemory) : CacheBaseFilter, IPromptRenderFilter
+    public sealed class PromptCacheFilter(
+        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IVectorStore vectorStore)
+        : CacheBaseFilter, IPromptRenderFilter
     {
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
@@ -174,20 +193,22 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             // Get rendered prompt
             var prompt = context.RenderedPrompt!;
 
-            // Search for similar prompts in cache with provided similarity/relevance score
-            var searchResult = await semanticTextMemory.SearchAsync(
-                CollectionName,
-                prompt,
-                limit: 1,
-                minRelevanceScore: SimilarityScore).FirstOrDefaultAsync();
+            var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(prompt);
+
+            var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            // Search for similar prompts in cache.
+            var searchResults = await collection.VectorizedSearchAsync(promptEmbedding, new() { Top = 1 }, context.CancellationToken);
+            var searchResult = (await searchResults.Results.FirstOrDefaultAsync())?.Record;
 
             // If result exists, return it.
             if (searchResult is not null)
             {
                 // Override function result. This will prevent calling LLM and will return result immediately.
-                context.Result = new FunctionResult(context.Function, searchResult.Metadata.AdditionalMetadata)
+                context.Result = new FunctionResult(context.Function, searchResult.Result)
                 {
-                    Metadata = new Dictionary<string, object?> { [RecordIdKey] = searchResult.Metadata.Id }
+                    Metadata = new Dictionary<string, object?> { [RecordIdKey] = searchResult.Id }
                 };
             }
         }
@@ -196,7 +217,10 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Filter which is executed during function invocation.
     /// </summary>
-    public sealed class FunctionCacheFilter(ISemanticTextMemory semanticTextMemory) : CacheBaseFilter, IFunctionInvocationFilter
+    public sealed class FunctionCacheFilter(
+        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IVectorStore vectorStore)
+        : CacheBaseFilter, IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -212,12 +236,22 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 // Get cache record id if result was cached previously or generate new id.
                 var recordId = context.Result.Metadata?.GetValueOrDefault(RecordIdKey, Guid.NewGuid().ToString()) as string;
 
+                // Generate prompt embedding.
+                var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(context.Result.RenderedPrompt);
+
                 // Cache rendered prompt and LLM result.
-                await semanticTextMemory.SaveInformationAsync(
-                    CollectionName,
-                    context.Result.RenderedPrompt,
-                    recordId!,
-                    additionalMetadata: result.ToString());
+                var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
+                await collection.CreateCollectionIfNotExistsAsync();
+
+                var cacheRecord = new CacheRecord
+                {
+                    Id = recordId!,
+                    Prompt = context.Result.RenderedPrompt,
+                    Result = result.ToString(),
+                    PromptEmbedding = promptEmbedding
+                };
+
+                await collection.UpsertAsync(cacheRecord, cancellationToken: context.CancellationToken);
             }
         }
     }
@@ -242,6 +276,25 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         Console.WriteLine($@"Elapsed Time: {stopwatch.Elapsed:hh\:mm\:ss\.FFF}");
 
         return result;
+    }
+
+    #endregion
+
+    #region Vector Store Record
+
+    private sealed class CacheRecord
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; }
+
+        [VectorStoreRecordData]
+        public string Prompt { get; set; }
+
+        [VectorStoreRecordData]
+        public string Result { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 1536)]
+        public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 
     #endregion
