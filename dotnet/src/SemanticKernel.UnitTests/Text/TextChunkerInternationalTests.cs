@@ -102,7 +102,7 @@ public sealed class TextChunkerInternationalTests
     private static List<string> GetLanguageExpectedResult(string language)
     {
         var fileName = $"TextChunkerInternationalTests.VerifyShortStoryInLanguage_language={language}.txt";
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Text", fileName);
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Text", fileName);
 
         var fileContent = File.ReadAllText(filePath);
 
