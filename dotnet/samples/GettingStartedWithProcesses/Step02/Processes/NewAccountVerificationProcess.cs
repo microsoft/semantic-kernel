@@ -22,7 +22,7 @@ public static class NewAccountVerificationProcess
     ///                               ┌─────────┐
     ///                               │         │───► OnNewUserFraudCheckFailed
     ///                               │         │
-    /// OnNewCusotmerFormCompleted ──►│ Process │───► OnNewAccountVerificationSucceeded
+    /// OnNewCustomerFormCompleted ──►│ Process │───► OnNewAccountVerificationSucceeded
     ///                               │         │
     ///                               │         │───► OnNewUserCreditCheckFailed
     ///                               └─────────┘

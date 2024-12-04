@@ -20,7 +20,7 @@ public static class NewAccountCreationProcess
     /// <code>
     ///         PROCESS INPUTS                                PROCESS OUTPUTS
     ///                                  ┌─────────┐
-    /// OnNewCusotmerFormCompleted ─────►│         │
+    /// OnNewCustomerFormCompleted ─────►│         │
     ///                                  │         │
     /// OnCustomerTranscriptReady ──────►│ Process │───► AccountCreatedSuccessfully
     ///                                  │         │
