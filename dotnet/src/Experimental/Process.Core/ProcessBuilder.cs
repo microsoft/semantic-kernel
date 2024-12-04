@@ -105,14 +105,13 @@ public class ProcessBuilder : ProcessStepBuilder
         return this.Build(stateMetadata as KernelProcessStateMetadata);
     }
 
-	#region Public Interface
-	/// <summary>
-	/// Add the provided step builder to the process.
-	/// </summary>
-	/// <remarks>
-	/// Utilized by <see cref="ProcessMapBuilder"/> only.
-	/// </remarks>
-	internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
+    /// <summary>
+    /// Add the provided step builder to the process.
+    /// </summary>
+    /// <remarks>
+    /// Utilized by <see cref="ProcessMapBuilder"/> only.
+    /// </remarks>
+    internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
     {
         this._steps.Add(stepBuilder);
     }

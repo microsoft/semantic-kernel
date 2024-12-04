@@ -30,7 +30,7 @@ internal static class MapExtensions
                 new KernelProcess(
                     new KernelProcessState($"Map{map.Operation.State.Name}", map.Operation.State.Version, proxyId),
                     [map.Operation],
-                    new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName))] } });
+                    new() { { ProcessConstants.MapEventId, [new KernelProcessEdge(proxyId, new KernelProcessFunctionTarget(map.Operation.State.Id!, message.FunctionName, parameterName), startEventId, startEventId)] } });
         }
 
         return (inputValues, mapOperation, startEventId);
