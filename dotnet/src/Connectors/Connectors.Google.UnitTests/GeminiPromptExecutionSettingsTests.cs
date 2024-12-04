@@ -27,6 +27,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Null(executionSettings.CandidateCount);
         Assert.Null(executionSettings.SafetySettings);
         Assert.Null(executionSettings.AudioTimestamp);
+        Assert.Null(executionSettings.ResponseMimeType);
         Assert.Equal(GeminiPromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
     }
 
@@ -41,6 +42,7 @@ public sealed class GeminiPromptExecutionSettingsTests
             TopK = 20,
             CandidateCount = 3,
             AudioTimestamp = true,
+            ResponseMimeType = "application/json",
             StopSequences = ["foo", "bar"],
             MaxTokens = 128,
             SafetySettings =
@@ -67,7 +69,8 @@ public sealed class GeminiPromptExecutionSettingsTests
             {
                 { "max_tokens", 1000 },
                 { "temperature", 0 },
-                { "audio_timestamp", true }
+                { "audio_timestamp", true },
+                { "response_mimetype", "application/json" }
             }
         };
 
