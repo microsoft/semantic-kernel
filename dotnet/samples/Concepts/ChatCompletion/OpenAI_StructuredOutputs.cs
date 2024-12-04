@@ -253,7 +253,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
             .Build();
 
         // Initialize a path to plugin directory: Resources/Plugins/MoviePlugins/MoviePluginPrompt.
-        var pluginDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MoviePlugins", "MoviePluginPrompt");
+        var pluginDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Plugins", "MoviePlugins", "MoviePluginPrompt");
 
         // Create a function from prompt.
         kernel.ImportPluginFromPromptDirectory(pluginDirectoryPath, pluginName: "MoviePlugin");
@@ -296,7 +296,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
             .Build();
 
         // Initialize a path to YAML function: Resources/Plugins/MoviePlugins/MoviePluginYaml.
-        var functionPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MoviePlugins", "MoviePluginYaml", "TopMovies.yaml");
+        var functionPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Plugins", "MoviePlugins", "MoviePluginYaml", "TopMovies.yaml");
 
         // Load YAML prompt.
         using Stream stream = File.OpenRead(functionPath);
