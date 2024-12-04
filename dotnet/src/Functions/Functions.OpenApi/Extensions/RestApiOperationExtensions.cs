@@ -24,18 +24,20 @@ internal static partial class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
+    /// <param name="propertiesToExclude">List of property names to exclude.param>
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<RestApiParameter> GetParameters(
         this RestApiOperation operation,
         bool addPayloadParamsFromMetadata = true,
-        bool enablePayloadNamespacing = false)
+        bool enablePayloadNamespacing = false,
+        IList<string>? propertiesToExclude = null)
     {
-        var parameters = new List<RestApiParameter>(operation.Parameters);
+        var parameters = new List<RestApiParameter>(propertiesToExclude is null ? operation.Parameters : operation.Parameters.Where(p => !propertiesToExclude.Contains(p.Name)).ToList());
 
         // Add payload parameters
         if (operation.Payload is not null)
         {
-            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
+            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing, propertiesToExclude));
         }
 
         foreach (var parameter in parameters)
@@ -94,8 +96,9 @@ internal static partial class RestApiOperationExtensions
     /// <param name="useParametersFromMetadata">Flag indicating whether to include parameters from metadata.
     /// If false or not specified, the 'payload' and 'content-type' parameters are added instead.</param>
     /// <param name="enableNamespacing">Flag indicating whether to namespace payload parameter names.</param>
+    /// <param name="propertiesToExclude">Names of properties to exclude.</param>
     /// <returns>A list of <see cref="RestApiParameter"/> representing the payload parameters.</returns>
-    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
+    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing, IList<string>? propertiesToExclude)
     {
         if (useParametersFromMetadata)
         {
@@ -111,7 +114,7 @@ internal static partial class RestApiOperationExtensions
                 return [CreatePayloadArtificialParameter(operation)];
             }
 
-            return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing);
+            return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing, propertiesToExclude);
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
@@ -163,14 +166,20 @@ internal static partial class RestApiOperationExtensions
     /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
+    /// <param name="propertiesToExclude">Names of properties to exclude.</param>
     /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiParameter> GetParametersFromPayloadMetadata(IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
+    private static List<RestApiParameter> GetParametersFromPayloadMetadata(IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, IList<string>? propertiesToExclude = null, string? rootPropertyName = null)
     {
         var parameters = new List<RestApiParameter>();
 
         foreach (var property in properties)
         {
+            if (propertiesToExclude?.Contains(property.Name) ?? false)
+            {
+                continue;
+            }
+
             var parameterName = GetPropertyName(property, rootPropertyName, enableNamespacing);
 
             if (!property.Properties.Any())
@@ -191,7 +200,7 @@ internal static partial class RestApiOperationExtensions
                 });
             }
 
-            parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
+            parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, propertiesToExclude, parameterName));
         }
 
         return parameters;

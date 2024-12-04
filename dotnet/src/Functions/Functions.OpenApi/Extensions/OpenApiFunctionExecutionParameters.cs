@@ -68,6 +68,12 @@ public class OpenApiFunctionExecutionParameters
     public IList<string> OperationsToExclude { get; set; }
 
     /// <summary>
+    /// Optional list of properties to skip when importing the OpenAPI document.
+    /// </summary>
+    [Experimental("SKEXP0040")]
+    public IList<string> PropertiesToExclude { get; set; }
+
+    /// <summary>
     /// A custom HTTP response content reader. It can be useful when the internal reader
     /// for a specific content type is either missing, insufficient, or when custom behavior is desired.
     /// For instance, the internal reader for "application/json" HTTP content reads the content as a string.
@@ -78,6 +84,11 @@ public class OpenApiFunctionExecutionParameters
     /// </summary>
     [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
+    /// A delegate for creating HTTP content for a REST API operation.
+    /// </summary>
+    public HttpContentFactory? HttpContentFactory { get; set; }
 
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
@@ -99,6 +110,7 @@ public class OpenApiFunctionExecutionParameters
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    /// <param name="propertiesToExclude">Optional list of property names no to add to functions, e.g.OData annotations</param>
     [Experimental("SKEXP0040")]
     public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
@@ -108,7 +120,8 @@ public class OpenApiFunctionExecutionParameters
         bool ignoreNonCompliantErrors = false,
         bool enableDynamicOperationPayload = true,
         bool enablePayloadNamespacing = false,
-        IList<string>? operationsToExclude = null)
+        IList<string>? operationsToExclude = null,
+        IList<string>? propertiesToExclude = null)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
@@ -118,5 +131,6 @@ public class OpenApiFunctionExecutionParameters
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
         this.OperationsToExclude = operationsToExclude ?? [];
+        this.PropertiesToExclude = propertiesToExclude ?? [];
     }
 }

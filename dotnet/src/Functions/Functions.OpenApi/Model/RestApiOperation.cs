@@ -40,7 +40,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation description.
     /// </summary>
-    public string? Description { get; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// The operation path.

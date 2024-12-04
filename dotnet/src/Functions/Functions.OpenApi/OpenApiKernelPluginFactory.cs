@@ -264,7 +264,8 @@ public static partial class OpenApiKernelPluginFactory
     {
         IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
-            executionParameters?.EnablePayloadNamespacing ?? false
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            executionParameters?.PropertiesToExclude ?? []
         );
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
@@ -279,7 +280,8 @@ public static partial class OpenApiKernelPluginFactory
                     KernelFunction = function,
                     KernelArguments = variables,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
-                    ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
+                    ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null,
+                    HttpContentFactory = executionParameters?.HttpContentFactory,
                 };
 
                 return await runner.RunAsync(operation, variables, options, cancellationToken).ConfigureAwait(false);

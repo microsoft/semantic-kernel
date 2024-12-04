@@ -33,4 +33,9 @@ internal sealed class RestApiOperationRunOptions
     /// The Kernel arguments whose associated with the operation run.
     /// </summary>
     public KernelArguments? KernelArguments { get; set; }
+
+    /// <summary>
+    /// A delegate for creating HTTP content for a REST API operation.
+    /// </summary>
+    public HttpContentFactory? HttpContentFactory { get; set; }
 }
