@@ -11,15 +11,23 @@ from redis.asyncio.client import Redis
 from redis.commands.search.document import Document
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
+from redisvl.query.filter import FilterExpression, Num, Tag, Text
 
-from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
-from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR, RedisCollectionTypes
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.memory.redis.const import (
+    DISTANCE_FUNCTION_MAP,
+    TYPE_MAPPER_VECTOR,
+    RedisCollectionTypes,
+)
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
+from semantic_kernel.exceptions.search_exceptions import VectorSearchOptionsException
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -129,7 +137,7 @@ class RedisWrapper(Redis):
     def __del__(self) -> None:
         """Close connection, done when the object is deleted, used when SK creates a client."""
         with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
+            asyncio.get_running_loop().create_task(self.aclose())
 
 
 def data_model_definition_to_redis_fields(
@@ -186,3 +194,40 @@ def _field_to_redis_field_json(
     if field.is_full_text_searchable:
         return TextField(name=f"$.{name}", as_name=name)
     return TagField(name=f"$.{name}", as_name=name)
+
+
+def _filters_to_redis_filters(
+    filters: VectorSearchFilter, data_model_definition: VectorStoreRecordDefinition
+) -> FilterExpression | None:
+    """Convert filters to Redis filters."""
+    expression: FilterExpression | None = None
+    for filter in filters.filters:
+        new: FilterExpression | None = None
+        field = data_model_definition.fields.get(filter.field_name)
+        text_field = (
+            field.is_full_text_searchable if isinstance(field, VectorStoreRecordDataField) else False
+        ) or False
+        match filter:
+            case EqualTo():
+                match filter.value:
+                    case int() | float():
+                        new = (
+                            Num(filter.field_name) == filter.value  # type: ignore
+                            if text_field
+                            else Tag(filter.field_name) == filter.value
+                        )
+                    case str():
+                        new = (
+                            Text(filter.field_name) == filter.value
+                            if text_field
+                            else Tag(filter.field_name) == filter.value
+                        )
+                    case _:
+                        raise VectorSearchOptionsException(f"Unsupported filter value type: {type(filter.value)}")
+            case AnyTagsEqualTo():
+                new = Text(filter.field_name) == filter.value
+            case _:
+                raise VectorSearchOptionsException(f"Unsupported filter type: {type(filter)}")
+        if new:
+            expression = expression & new if expression else new
+    return expression

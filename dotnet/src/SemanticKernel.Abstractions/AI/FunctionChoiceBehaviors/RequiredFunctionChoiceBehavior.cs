@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones.
 /// This behavior forces the model to always call one or more functions.
 /// </summary>
-internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
+public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
@@ -21,7 +21,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
     [JsonConstructor]
-    public RequiredFunctionChoiceBehavior()
+    internal RequiredFunctionChoiceBehavior()
     {
     }
 
@@ -36,7 +36,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <param name="options">The behavior options.</param>
-    public RequiredFunctionChoiceBehavior(
+    internal RequiredFunctionChoiceBehavior(
         IEnumerable<KernelFunction>? functions = null,
         bool autoInvoke = true,
         FunctionChoiceBehaviorOptions? options = null) : base(functions)
@@ -52,7 +52,9 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// If empty, no functions are provided to the model, which is equivalent to disabling function calling.
     /// </summary>
     [JsonPropertyName("functions")]
+#pragma warning disable CA1721 // Property names should not match get methods. Both Functions property and GetFunctions method are needed.
     public IList<string>? Functions { get; set; }
+#pragma warning restore CA1721 // Property names should not match get methods. Both Functions property and GetFunctions method are needed.
 
     /// <summary>
     /// The behavior options.
@@ -77,12 +79,10 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
         var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
-        IReadOnlyList<KernelFunction>? selectedFunctions = null;
-
         return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
-            Functions = selectedFunctions ?? functions,
+            Functions = functions,
             AutoInvoke = this._autoInvoke,
         };
     }

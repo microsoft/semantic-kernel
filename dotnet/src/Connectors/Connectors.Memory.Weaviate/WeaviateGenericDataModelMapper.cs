@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -70,7 +70,7 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
         // Transform generic data model to Weaviate object model.
         var weaviateObjectModel = new JsonObject
         {
-            { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
             { WeaviateConstants.ReservedKeyPropertyName, dataModel.Key },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },

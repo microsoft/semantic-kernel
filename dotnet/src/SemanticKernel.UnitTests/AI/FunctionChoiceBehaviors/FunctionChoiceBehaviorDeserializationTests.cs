@@ -270,6 +270,54 @@ public class FunctionChoiceBehaviorDeserializationTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+    [Fact]
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithOptions()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "auto",
+            "options": {
+                "allow_parallel_calls": true,
+                "allow_concurrent_invocation": true
+            }
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.True(config.Options.AllowParallelCalls);
+        Assert.True(config.Options.AllowConcurrentInvocation);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithOptions()
+    {
+        // Arrange
+        var json = """
+        {
+            "type": "required",
+            "options": {
+                "allow_parallel_calls": true,
+                "allow_concurrent_invocation": true
+            }
+        }
+        """;
+
+        var sut = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json);
+
+        // Act
+        var config = sut!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.True(config.Options.AllowParallelCalls);
+        Assert.True(config.Options.AllowConcurrentInvocation);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

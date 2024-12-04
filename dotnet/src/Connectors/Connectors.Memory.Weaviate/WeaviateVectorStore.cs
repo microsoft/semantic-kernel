@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -45,19 +45,18 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
-        if (typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
                 this._httpClient,
                 name,
                 vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(Guid))
+        {
+            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
         }
 
         var recordCollection = new WeaviateVectorStoreRecordCollection<TRecord>(
@@ -79,7 +78,7 @@ public sealed class WeaviateVectorStore : IVectorStore
         using var request = new WeaviateGetCollectionsRequest().Build();
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
         var collectionResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(responseContent);
 
         if (collectionResponse?.Collections is not null)

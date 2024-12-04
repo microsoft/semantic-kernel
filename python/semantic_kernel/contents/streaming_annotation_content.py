@@ -20,8 +20,9 @@ class StreamingAnnotationContent(KernelContent):
     """Streaming Annotation content."""
 
     content_type: Literal[ContentTypes.STREAMING_ANNOTATION_CONTENT] = Field(
-        STREAMING_ANNOTATION_CONTENT_TAG, init=False
-    )  # type: ignore
+        STREAMING_ANNOTATION_CONTENT_TAG,  # type: ignore
+        init=False,
+    )
     tag: ClassVar[str] = STREAMING_ANNOTATION_CONTENT_TAG
     file_id: str | None = None
     quote: str | None = None

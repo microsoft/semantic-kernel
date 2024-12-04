@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class AutoFunctionInvocationContext
 {
     /// <summary>
@@ -45,6 +43,11 @@ public class AutoFunctionInvocationContext
     /// The default is <see cref="CancellationToken.None"/>.
     /// </summary>
     public CancellationToken CancellationToken { get; init; }
+
+    /// <summary>
+    /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
+    /// </summary>
+    public bool IsStreaming { get; init; }
 
     /// <summary>
     /// Gets the arguments associated with the operation.
@@ -98,9 +101,17 @@ public class AutoFunctionInvocationContext
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with the filter should be terminated.
-    /// By default it's <see langword="false"/>, in this case all functions will be executed.
-    /// As soon as it's set to <see langword="true"/>, the remaining functions won't be executed and last request to LLM won't be performed.
-    /// Automatic function invocation process will be terminated and result of last executed function will be returned to the caller.
+    ///
+    /// By default, this value is <see langword="false"/>, which means all functions will be invoked.
+    /// If set to <see langword="true"/>, the behavior depends on how functions are invoked:
+    ///
+    /// - If functions are invoked sequentially (the default behavior), the remaining functions will not be invoked,
+    ///   and the last request to the LLM will not be performed.
+    ///
+    /// - If functions are invoked concurrently (controlled by the <see cref="FunctionChoiceBehaviorOptions.AllowConcurrentInvocation"/> option),
+    ///   other functions will still be invoked, and the last request to the LLM will not be performed.
+    ///
+    /// In both cases, the automatic function invocation process will be terminated, and the result of the last executed function will be returned to the caller.
     /// </summary>
     public bool Terminate { get; set; }
 }

@@ -6,18 +6,38 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A builder class for creating <see cref="FunctionCallContent"/> objects from incremental function call updates represented by <see cref="StreamingFunctionCallUpdateContent"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionCallContentBuilder
 {
     private Dictionary<int, string>? _functionCallIdsByIndex = null;
     private Dictionary<int, string>? _functionNamesByIndex = null;
     private Dictionary<int, StringBuilder>? _functionArgumentBuildersByIndex = null;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
+    public FunctionCallContentBuilder()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
+    /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    [Experimental("SKEXP0120")]
+    public FunctionCallContentBuilder(JsonSerializerOptions jsonSerializerOptions)
+    {
+        this._jsonSerializerOptions = jsonSerializerOptions;
+    }
 
     /// <summary>
     /// Extracts function call updates from the content and track them for later building.
@@ -62,7 +82,7 @@ public sealed class FunctionCallContentBuilder
                     functionName = functionFullyQualifiedName.Name;
                 }
 
-                (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key);
+                (KernelArguments? arguments, Exception? exception) = GetFunctionArgumentsSafe(functionCallIndexAndId.Key);
 
                 functionCalls[i] = new FunctionCallContent(
                     functionName: functionName,
@@ -73,6 +93,18 @@ public sealed class FunctionCallContentBuilder
                     Exception = exception
                 };
             }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
+            [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
+            (KernelArguments? Arguments, Exception? Exception) GetFunctionArgumentsSafe(int functionCallIndex)
+            {
+                if (this._jsonSerializerOptions is not null)
+                {
+                    return this.GetFunctionArguments(functionCallIndex, this._jsonSerializerOptions);
+                }
+
+                return this.GetFunctionArguments(functionCallIndex);
+            }
         }
 
         return functionCalls ?? [];
@@ -82,8 +114,11 @@ public sealed class FunctionCallContentBuilder
     /// Gets function arguments for a given function call index.
     /// </summary>
     /// <param name="functionCallIndex">The function call index to get the function arguments for.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
     /// <returns>A tuple containing the KernelArguments and an Exception if any.</returns>
-    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex)
+    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         if (this._functionArgumentBuildersByIndex is null ||
             !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
@@ -101,7 +136,16 @@ public sealed class FunctionCallContentBuilder
         KernelArguments? arguments = null;
         try
         {
-            arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
+            if (jsonSerializerOptions is not null)
+            {
+                var typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString, typeInfo);
+            }
+            else
+            {
+                arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
+            }
+
             if (arguments is { Count: > 0 })
             {
                 var names = arguments.Names.ToArray();
@@ -136,13 +180,13 @@ public sealed class FunctionCallContentBuilder
 
         // If we have an call id, ensure the index is being tracked. Even if it's not a function update,
         // we want to keep track of it so we can send back an error.
-        if (update.CallId is string id)
+        if (update.CallId is string id && !string.IsNullOrEmpty(id))
         {
             (functionCallIdsByIndex ??= [])[update.FunctionCallIndex] = id;
         }
 
         // Ensure we're tracking the function's name.
-        if (update.Name is string name)
+        if (update.Name is string name && !string.IsNullOrEmpty(name))
         {
             (functionNamesByIndex ??= [])[update.FunctionCallIndex] = name;
         }

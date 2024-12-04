@@ -1342,6 +1342,61 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("required", optionsJson.GetProperty("tool_choice").ToString());
     }
 
+    [Theory]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("auto", null)]
+    [InlineData("required", true)]
+    [InlineData("required", false)]
+    [InlineData("required", null)]
+    public async Task ItPassesAllowParallelCallsOptionToLLMAsync(string choice, bool? optionValue)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var functionChoiceBehaviorOptions = new FunctionChoiceBehaviorOptions() { AllowParallelCalls = optionValue };
+
+        var executionSettings = new OpenAIPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = choice switch
+            {
+                "auto" => FunctionChoiceBehavior.Auto(options: functionChoiceBehaviorOptions),
+                "required" => FunctionChoiceBehavior.Required(options: functionChoiceBehaviorOptions),
+                _ => throw new ArgumentException("Invalid choice", nameof(choice))
+            }
+        };
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!));
+
+        if (optionValue is null)
+        {
+            Assert.False(optionsJson.TryGetProperty("parallel_tool_calls", out _));
+        }
+        else
+        {
+            Assert.Equal(optionValue, optionsJson.GetProperty("parallel_tool_calls").GetBoolean());
+        }
+    }
+
     [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
@@ -1372,6 +1427,136 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
+
+    [Fact]
+    public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "User content", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("FunctionName", "PluginName", "CallId", "Function result")]
+            },
+        };
+
+        var executionSettings = new AzureOpenAIPromptExecutionSettings();
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
+        var assistantMessageContent = assistantMessage.GetProperty("content").GetString();
+
+        Assert.Equal(string.Empty, assistantMessageContent);
+    }
+
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        // Act
+
+        await sut.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContents[0]);
+
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAndEmptyArgumentsDoNotThrowAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string addressCode) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]));
+        using var multiHttpClient = new HttpClient(this._messageHandlerStub, false);
+        var service = new OpenAIChatCompletionService("model-id", "api-key", httpClient: multiHttpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_empty_assistance_response.txt"))
+            });
+
+        this._messageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+            });
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+        }
+
+        Assert.Equal(1, functionCallCount);
+    }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_09_01_preview", "2024-09-01-preview" },
+        { "V2024_09_01_PREVIEW", "2024-09-01-preview" },
+        { "2024_09_01_Preview", "2024-09-01-preview" },
+        { "2024-09-01-preview", "2024-09-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
 
     public void Dispose()
     {

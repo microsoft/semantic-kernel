@@ -50,11 +50,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        code_interpreter_file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = {},
+        metadata: dict[str, Any] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -125,11 +125,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "code_interpreter_file_ids": code_interpreter_file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids or [],
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
-            "metadata": metadata,
+            "metadata": metadata or {},
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
             "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
@@ -165,13 +165,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
         code_interpreter_filenames: list[str] | None = None,
+        code_interpreter_file_ids: list[str] | None = None,
         enable_file_search: bool | None = None,
         vector_store_filenames: list[str] | None = None,
+        vector_store_file_ids: list[str] | None = None,
         enable_json_response: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = {},
+        metadata: dict[str, Any] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -195,9 +197,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             instructions: The assistant instructions. (optional)
             name: The assistant name. (optional)
             enable_code_interpreter: Enable code interpreter. (optional)
-            code_interpreter_filenames: The filenames/paths for files to use with file search. (optional)
-            enable_file_search: Enable file search. (optional)
-            vector_store_filenames: The list of file paths to upload and attach to the file search. (optional)
+            code_interpreter_filenames: The filenames/paths for files to use with code interpreter. (optional)
+            code_interpreter_file_ids: The existing file IDs to use with the code interpreter. (optional)
+            enable_file_search: Enable the file search. (optional)
+            vector_store_filenames: The filenames/paths for files to use with file search. (optional)
+            vector_store_file_ids: The existing file IDs to use with file search. (optional)
             enable_json_response: Enable JSON response. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
@@ -232,7 +236,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             temperature=temperature,
             top_p=top_p,
             vector_store_id=vector_store_id,
-            metadata=metadata,
+            metadata=metadata or {},
             max_completion_tokens=max_completion_tokens,
             max_prompt_tokens=max_prompt_tokens,
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
@@ -242,33 +246,44 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 
         assistant_create_kwargs: dict[str, Any] = {}
 
+        code_interpreter_file_ids_combined: list[str] = []
+
+        if code_interpreter_file_ids is not None:
+            code_interpreter_file_ids_combined.extend(code_interpreter_file_ids)
+
         if code_interpreter_filenames is not None:
-            code_interpreter_file_ids: list[str] = []
             for file_path in code_interpreter_filenames:
                 try:
                     file_id = await agent.add_file(file_path=file_path, purpose="assistants")
-                    code_interpreter_file_ids.append(file_id)
+                    code_interpreter_file_ids_combined.append(file_id)
                 except FileNotFoundError as ex:
                     logger.error(
                         f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
                     )
                     raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
-            agent.code_interpreter_file_ids = code_interpreter_file_ids
-            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids
+
+        if code_interpreter_file_ids_combined:
+            agent.code_interpreter_file_ids = code_interpreter_file_ids_combined
+            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids_combined
+
+        vector_store_file_ids_combined: list[str] = []
+
+        if vector_store_file_ids is not None:
+            vector_store_file_ids_combined.extend(vector_store_file_ids)
 
         if vector_store_filenames is not None:
-            file_search_file_ids: list[str] = []
             for file_path in vector_store_filenames:
                 try:
                     file_id = await agent.add_file(file_path=file_path, purpose="assistants")
-                    file_search_file_ids.append(file_id)
+                    vector_store_file_ids_combined.append(file_id)
                 except FileNotFoundError as ex:
-                    logger.error(f"Failed to upload file search file with path: `{file_path}` with exception: {ex}")
-                    raise AgentInitializationException("Failed to upload file search files.", ex) from ex
+                    logger.error(f"Failed to upload vector store file with path: `{file_path}` with exception: {ex}")
+                    raise AgentInitializationException("Failed to upload vector store files.", ex) from ex
 
+        if vector_store_file_ids_combined:
+            agent.file_search_file_ids = vector_store_file_ids_combined
             if enable_file_search or agent.enable_file_search:
-                vector_store_id = await agent.create_vector_store(file_ids=file_search_file_ids)
-                agent.file_search_file_ids = file_search_file_ids
+                vector_store_id = await agent.create_vector_store(file_ids=vector_store_file_ids_combined)
                 agent.vector_store_id = vector_store_id
                 assistant_create_kwargs["vector_store_id"] = vector_store_id
 

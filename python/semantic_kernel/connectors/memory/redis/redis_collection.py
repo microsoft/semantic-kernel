@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import contextlib
 import json
 import logging
 import sys
+from abc import abstractmethod
 from collections.abc import Sequence
 from copy import copy
 from typing import Any, ClassVar, TypeVar
@@ -17,28 +19,51 @@ import numpy as np
 from pydantic import ValidationError
 from redis.asyncio.client import Redis
 from redis.commands.search.indexDefinition import IndexDefinition
+from redisvl.index.index import process_results
+from redisvl.query.filter import FilterExpression
+from redisvl.query.query import BaseQuery, FilterQuery, VectorQuery
+from redisvl.redis.utils import array_to_buffer, buffer_to_array, convert_bytes
 
-from semantic_kernel.connectors.memory.redis.const import INDEX_TYPE_MAP, RedisCollectionTypes
-from semantic_kernel.connectors.memory.redis.utils import RedisWrapper, data_model_definition_to_redis_fields
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.memory.redis.const import (
+    INDEX_TYPE_MAP,
+    STORAGE_TYPE_MAP,
+    TYPE_MAPPER_VECTOR,
+    RedisCollectionTypes,
+)
+from semantic_kernel.connectors.memory.redis.utils import (
+    RedisWrapper,
+    _filters_to_redis_filters,
+    data_model_definition_to_redis_fields,
+)
+from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
+from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException, VectorSearchOptionsException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.list_handler import desync_list
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
+TQuery = TypeVar("TQuery", bound=BaseQuery)
+
 
 @experimental_class
-class RedisCollection(VectorStoreRecordCollection[str, TModel]):
+class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TModel], VectorTextSearchMixin[TModel]):
     """A vector store record collection implementation using Redis."""
 
     redis_database: Redis
@@ -58,6 +83,7 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
         connection_string: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
 
@@ -73,6 +99,7 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
                 redis_database=redis_database,
                 prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
                 collection_type=collection_type,
+                managed_client=False,
             )
             return
         try:
@@ -145,6 +172,95 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
         else:
             logger.debug("Collection does not exist, skipping deletion.")
 
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.redis_database.aclose()
+
+    @override
+    async def _inner_search(
+        self,
+        options: VectorSearchOptions,
+        search_text: str | None = None,
+        vectorizable_text: str | None = None,
+        vector: list[float | int] | None = None,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        if vector is not None:
+            query = self._construct_vector_query(vector, options, **kwargs)
+        elif search_text:
+            query = self._construct_text_query(search_text, options, **kwargs)
+        elif vectorizable_text:
+            raise VectorSearchExecutionException("Vectorizable text search not supported.")
+        results = await self.redis_database.ft(self.collection_name).search(
+            query=query.query, query_params=query.params
+        )
+        processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(desync_list(processed)),
+            total_count=results.total,
+        )
+
+    def _construct_vector_query(
+        self, vector: list[float | int], options: VectorSearchOptions, **kwargs: Any
+    ) -> VectorQuery:
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorSearchOptionsException("Vector field not found.")
+        query = VectorQuery(
+            vector=vector,
+            vector_field_name=vector_field.name,  # type: ignore
+            filter_expression=_filters_to_redis_filters(options.filter, self.data_model_definition),
+            num_results=options.top + options.skip,
+            dialect=2,
+            return_score=True,
+        )
+        query.paging(offset=options.skip, num=options.top + options.skip)
+        query.sort_by(
+            query.DISTANCE_ID,
+            asc=(vector_field.distance_function or "default")
+            in [
+                DistanceFunction.COSINE_SIMILARITY,
+                DistanceFunction.DOT_PROD,
+            ],
+        )
+        return self._add_return_fields(query, options.include_vectors)
+
+    def _construct_text_query(self, search_text: str, options: VectorSearchOptions, **kwargs: Any) -> FilterQuery:
+        query = FilterQuery(
+            FilterExpression(_filter=search_text)
+            & _filters_to_redis_filters(options.filter, self.data_model_definition),
+            num_results=options.top + options.skip,
+            dialect=2,
+        )
+        query.paging(offset=options.skip, num=options.top + options.skip)
+        return self._add_return_fields(query, options.include_vectors)
+
+    @abstractmethod
+    def _add_return_fields(self, query: TQuery, include_vectors: bool) -> TQuery:
+        """Add the return fields to the query.
+
+        There is a difference between the JSON and Hashset collections,
+        this method should be overridden by the subclasses.
+
+        """
+        pass
+
+    @override
+    def _get_record_from_result(self, result: dict[str, Any]) -> Any:
+        """Get a record from a result."""
+        ret = result.copy()
+        ret.pop("vector_distance", None)
+        for key, value in ret.items():
+            with contextlib.suppress(json.JSONDecodeError):
+                ret[key] = json.loads(value) if isinstance(value, str) else value
+        return ret
+
+    @override
+    def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
+        return result.get("vector_distance")
+
 
 @experimental_class
 class RedisHashsetCollection(RedisCollection):
@@ -190,9 +306,16 @@ class RedisHashsetCollection(RedisCollection):
         return self._unget_redis_key(upsert_record["name"])
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        results = await asyncio.gather(*[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys])
+    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[str, Any]] | None:
+        results = await asyncio.gather(*[self._single_get(self._get_redis_key(key)) for key in keys])
         return [result for result in results if result]
+
+    async def _single_get(self, key: str) -> dict[str, Any] | None:
+        result = await self.redis_database.hgetall(key)
+        if result:
+            result = convert_bytes(result)
+            result[self.data_model_definition.key_field_name] = key
+        return result
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
@@ -208,39 +331,55 @@ class RedisHashsetCollection(RedisCollection):
         results = []
         for record in records:
             result = {"mapping": {}}
-            metadata = {}
             for name, field in self.data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordVectorField):
-                    if not isinstance(record[name], np.ndarray):
-                        record[name] = np.array(record[name])
-                    result["mapping"][name] = record[name].tobytes()
+                    dtype = TYPE_MAPPER_VECTOR[field.property_type or "default"].lower()
+                    if isinstance(record[name], np.ndarray):
+                        result["mapping"][name] = record[name].astype(dtype).tobytes()
+                    else:
+                        result["mapping"][name] = array_to_buffer(record[name], dtype)
                     continue
                 if isinstance(field, VectorStoreRecordKeyField):
                     result["name"] = self._get_redis_key(record[name])
                     continue
-                metadata[name] = record[field.name]
-            result["mapping"]["metadata"] = json.dumps(metadata)
+                result["mapping"][name] = record[field.name]
             results.append(result)
         return results
 
     @override
     def _deserialize_store_models_to_dicts(
         self,
-        records: Sequence[dict[bytes, bytes]],
-        keys: Sequence[str],
+        records: Sequence[dict[str, Any]],
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         results = []
-        for key, record in zip(keys, records):
-            if record:
-                flattened = json.loads(record[b"metadata"])
-                for name, field in self.data_model_definition.fields.items():
-                    if isinstance(field, VectorStoreRecordKeyField):
-                        flattened[name] = self._unget_redis_key(key)
-                    if isinstance(field, VectorStoreRecordVectorField):
-                        flattened[name] = np.frombuffer(record[name.encode()]).tolist()
-                results.append(flattened)
+        for record in records:
+            rec = record.copy()
+            for field in self.data_model_definition.fields.values():
+                match field:
+                    case VectorStoreRecordKeyField():
+                        rec[field.name] = self._unget_redis_key(rec[field.name])
+                    case VectorStoreRecordVectorField():
+                        dtype = TYPE_MAPPER_VECTOR[field.property_type or "default"]
+                        rec[field.name] = buffer_to_array(rec[field.name], dtype)
+            results.append(rec)
         return results
+
+    def _add_return_fields(self, query: TQuery, include_vectors: bool) -> TQuery:
+        """Add the return fields to the query.
+
+        For a Hashset index this should not be decoded, that is the only difference
+        between this and the JSON collection.
+
+        """
+        for field in self.data_model_definition.fields.values():
+            match field:
+                case VectorStoreRecordVectorField():
+                    if include_vectors:
+                        query.return_field(field.name, decode_field=False)
+                case _:
+                    query.return_field(field.name)
+        return query
 
 
 @experimental_class
@@ -290,8 +429,13 @@ class RedisJsonCollection(RedisCollection):
     async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
         kwargs_copy = copy(kwargs)
         kwargs_copy.pop("include_vectors", None)
-        results = await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs_copy)
-        return [result[0] for result in results if result]
+        redis_keys = [self._get_redis_key(key) for key in keys]
+        results = await self.redis_database.json().mget(redis_keys, "$", **kwargs_copy)
+        return [self._add_key(key, result[0]) for key, result in zip(redis_keys, results) if result]
+
+    def _add_key(self, key: str, record: dict[str, Any]) -> dict[str, Any]:
+        record[self.data_model_definition.key_field_name] = key
+        return record
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
@@ -323,11 +467,23 @@ class RedisJsonCollection(RedisCollection):
     def _deserialize_store_models_to_dicts(
         self,
         records: Sequence[dict[str, Any]],
-        keys: Sequence[str],
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         results = []
-        for key, record in zip(keys, records):
-            record[self.data_model_definition.key_field_name] = self._unget_redis_key(key)
-            results.append(record)
+        key_field_name = self.data_model_definition.key_field_name
+        for record in records:
+            rec = record.copy()
+            rec[key_field_name] = self._unget_redis_key(record[key_field_name])
+            results.append(rec)
         return results
+
+    def _add_return_fields(self, query: TQuery, include_vectors: bool) -> TQuery:
+        """Add the return fields to the query."""
+        for field in self.data_model_definition.fields.values():
+            match field:
+                case VectorStoreRecordVectorField():
+                    if include_vectors:
+                        query.return_field(field.name)
+                case _:
+                    query.return_field(field.name)
+        return query

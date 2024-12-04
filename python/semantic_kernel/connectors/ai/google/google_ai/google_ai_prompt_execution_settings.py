@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
@@ -16,12 +16,12 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 class GoogleAIPromptExecutionSettings(PromptExecutionSettings):
     """Google AI Prompt Execution Settings."""
 
-    stop_sequences: list[str] | None = Field(None, max_length=5)
+    stop_sequences: Annotated[list[str] | None, Field(max_length=5)] = None
     response_mime_type: Literal["text/plain", "application/json"] | None = None
     response_schema: Any | None = None
-    candidate_count: int | None = Field(None, ge=1)
-    max_output_tokens: int | None = Field(None, ge=1)
-    temperature: float | None = Field(None, ge=0.0, le=2.0)
+    candidate_count: Annotated[int | None, Field(ge=1)] = None
+    max_output_tokens: Annotated[int | None, Field(ge=1)] = None
+    temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     top_p: float | None = None
     top_k: int | None = None
 
@@ -35,15 +35,21 @@ class GoogleAITextPromptExecutionSettings(GoogleAIPromptExecutionSettings):
 class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
     """Google AI Chat Prompt Execution Settings."""
 
-    tools: list[dict[str, Any]] | None = Field(
-        None,
-        max_length=64,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
-    tool_config: dict[str, Any] | None = Field(
-        None,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
+    tools: Annotated[
+        list[dict[str, Any]] | None,
+        Field(
+            max_length=64,
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
+    tool_config: Annotated[
+        dict[str, Any] | None,
+        Field(
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
 
     @override
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
@@ -62,4 +68,4 @@ class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
 class GoogleAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Google AI Embedding Prompt Execution Settings."""
 
-    output_dimensionality: int | None = None
+    output_dimensionality: Annotated[int | None, Field(le=768)] = None

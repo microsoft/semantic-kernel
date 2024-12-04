@@ -4,6 +4,7 @@
 from enum import Enum
 
 from redis.commands.search.indexDefinition import IndexType
+from redisvl.schema import StorageType
 
 from semantic_kernel.data.const import DistanceFunction
 
@@ -18,10 +19,15 @@ INDEX_TYPE_MAP = {
     RedisCollectionTypes.HASHSET: IndexType.HASH,
 }
 
+STORAGE_TYPE_MAP = {
+    RedisCollectionTypes.JSON: StorageType.JSON,
+    RedisCollectionTypes.HASHSET: StorageType.HASH,
+}
+
 DISTANCE_FUNCTION_MAP = {
-    DistanceFunction.COSINE: "COSINE",
+    DistanceFunction.COSINE_SIMILARITY: "COSINE",
     DistanceFunction.DOT_PROD: "IP",
-    DistanceFunction.EUCLIDEAN: "L2",
+    DistanceFunction.EUCLIDEAN_DISTANCE: "L2",
     "default": "COSINE",
 }
 
