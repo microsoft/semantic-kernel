@@ -186,7 +186,7 @@ In this sample, the cloud event logic is mocked by the Mail Service functionalit
 - When new user fraud detection fails
 - When a new account was created successfully after passing all checks and creation steps
 
-When using SK Event subscribers, specific process events when trigged will emit the event data externally to
+When using SK Event subscribers, specific process events when triggered will emit the event data externally to
 any subscribers linked to specific events.
 
 ```mermaid
@@ -205,12 +205,12 @@ graph LR
         NewAccountCreation[[New Account Creation<br/> Process]]
 
         User<-->|Provides user details|FillForm
-        FillForm-->|New User Form|NewAccountVerification-->|Account Verification <br/> Succeded|NewAccountCreation
+        FillForm-->|New User Form|NewAccountVerification-->|Account Verification <br/> Succeeded|NewAccountCreation
     end
 
     NewAccountVerification-->|Account Credit Check <br/> Failed|OnSendMailDueCreditCheckFailure
     NewAccountVerification-->|Account Fraud Detection<br/> Failed|OnSendMailDueFraudCheckFailure
-    NewAccountCreation-->|Account Creation<br/> Succeded|OnSendMailWithNewAccountInfo
+    NewAccountCreation-->|Account Creation<br/> Succeeded|OnSendMailWithNewAccountInfo
 
 ```
 Creating a separation with SK Process when using cloud events (even though in this sample it's a mock of a Mailer), it is useful since 
