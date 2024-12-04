@@ -153,41 +153,41 @@ flowchart LR
             OnCounterResult
         }
         ```
-    2. On the existing process, adding which events can be accessed externally using `EmitAsProcessEvent(<eventName>)`:
+    2. On the existing process, adding which events can be accessed externally using `EmitAsProcessEvent(<eventNameEnum>)` and input events can be subscribed to with `OnInputEvent(<eventNameEnum>)`:
         ```C#
         var processBuilder = new ProcessBuilder<CounterProcessEvents>("CounterWithProcessSubscriber");
     
         ...
 
         processBuilder
-            .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.IncreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.IncreaseCounter));
+            .OnInputEvent(CounterProcessEvents.IncreaseCounterRequest)
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.IncreaseCounter));
 
         processBuilder
-            .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.DecreaseCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.DecreaseCounter));
+            .OnInputEvent(CounterProcessEvents.DecreaseCounterRequest)
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.DecreaseCounter));
 
         processBuilder
-            .OnInputEvent(processBuilder.GetEventName(CounterProcessEvents.ResetCounterRequest))
-            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.Functions.ResetCounter));
+            .OnInputEvent(CounterProcessEvents.ResetCounterRequest)
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep, functionName: CounterStep.StepFunctions.ResetCounter));
 
         ...
 
         counterStep
-            .OnFunctionResult(CounterStep.Functions.ResetCounter)
+            .OnFunctionResult(CounterStep.StepFunctions.ResetCounter)
             .EmitAsProcessEvent(processBuilder.GetProcessEvent(CounterProcessEvents.OnCounterReset))
             .SendEventTo(new ProcessFunctionTargetBuilder(counterInterceptorStep));
 
         counterInterceptorStep
-            .OnFunctionResult(CounterInterceptorStep.Functions.InterceptCounter)
+            .OnFunctionResult(CounterInterceptorStep.StepFunctions.InterceptCounter)
             .EmitAsProcessEvent(processBuilder.GetProcessEvent(CounterProcessEvents.OnCounterResult));
         ```
     3. Create a `KernelProcessEventsSubscriber` based class that with the `ProcessEventSubscriber` attributes to link specific process events to specific methods to execute.
         ```C#
         public class CounterProcessSubscriber : KernelProcessEventsSubscriber<CounterProcessEvents>
         {
-            [ProcessEventSubscriber(CounterProcessEvents.OnCounterResult)]
-            public async Task OnCounterResultReceivedAsync(int? counterResult)
+            [ProcessEventSubscriber(CounterProcessEvents.OnCounterReset)]
+            public async Task OnCounterResetReceivedAsync(int? counterResult)
             {
                 if (!counterResult.HasValue)
                 {
@@ -198,7 +198,7 @@ flowchart LR
                 {
                     var graphClient = this.ServiceProvider?.GetRequiredService<GraphServiceClient>();
                     var user = await graphClient.Me.GetAsync();
-                    var graphEmailMessage = this.GenerateEmailRequest(counterResult.Value, user!.Mail!, subject: "The counter has changed");
+                    var graphEmailMessage = this.GenerateEmailRequest(counterResult.Value, user!.Mail!, subject: "The counter has been reset");
                     await graphClient?.Me.SendMail.PostAsync(graphEmailMessage);
                 }
                 catch (Exception e)
