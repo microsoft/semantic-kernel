@@ -71,7 +71,7 @@ public static class DeclarativeAgentExtensions
             }),
             Description = document.Description,
             LoggerFactory = loggerFactory,
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id,
+            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id!,
         };
 
         if (document.Capabilities is { Count: > 0 })
@@ -107,7 +107,7 @@ public static class DeclarativeAgentExtensions
     private static async Task<string?> GetEffectiveInstructionsAsync(string? manifestFilePath, string? source, ILogger logger, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(source) ||
-            !source.StartsWith("$[file('", StringComparison.OrdinalIgnoreCase) ||
+            !source!.StartsWith("$[file('", StringComparison.OrdinalIgnoreCase) ||
             !source.EndsWith("')]", StringComparison.OrdinalIgnoreCase))
         {
             return source;
