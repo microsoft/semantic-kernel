@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
@@ -14,17 +13,22 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel)
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNullOrWhiteSpace(process.State?.Name);
 
         this._kernel = kernel;
-        this._localProcess = new LocalProcess(process, kernel);
+        this._localProcess = new LocalProcess(
+            process,
+            kernel)
+        {
+            EventProxy = eventProxy
+        };
     }
 
-    internal Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null) =>
+    internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
         this._localProcess.RunOnceAsync(initialEvent, kernel);
 
     /// <summary>

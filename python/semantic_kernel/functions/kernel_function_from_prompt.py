@@ -63,8 +63,10 @@ class KernelFunctionFromPrompt(KernelFunction):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
-        prompt_execution_settings: None
-        | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]) = None,
+        prompt_execution_settings: PromptExecutionSettings
+        | list[PromptExecutionSettings]
+        | dict[str, PromptExecutionSettings]
+        | None = None,
     ) -> None:
         """Initializes a new instance of the KernelFunctionFromPrompt class.
 

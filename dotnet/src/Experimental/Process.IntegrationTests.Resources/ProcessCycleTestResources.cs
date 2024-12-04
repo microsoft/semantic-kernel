@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
@@ -124,7 +125,7 @@ public sealed class EchoStep : KernelProcessStep
 }
 
 /// <summary>
-/// A step that repeats its input.
+/// A step that repeats its input. Emits data internally AND publicly
 /// </summary>
 public sealed class RepeatStep : KernelProcessStep<StepState>
 {
@@ -146,6 +147,62 @@ public sealed class RepeatStep : KernelProcessStep<StepState>
         // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
         await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
         await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyInternal, Data = output, Visibility = KernelProcessEventVisibility.Internal });
+    }
+}
+
+/// <summary>
+/// A step that emits the input received internally OR publicly.
+/// </summary>
+public sealed class EmitterStep : KernelProcessStep<StepState>
+{
+    public const string EventId = "Next";
+    public const string PublicEventId = "PublicNext";
+    public const string InputEvent = "OnInput";
+    public const string Name = nameof(EmitterStep);
+
+    public const string InternalEventFunction = "SomeInternalFunctionName";
+    public const string PublicEventFunction = "SomePublicFunctionName";
+    public const string DualInputPublicEventFunction = "SomeDualInputPublicEventFunctionName";
+
+    private readonly int _sleepDurationMs = 150;
+
+    private StepState? _state;
+
+    public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+    {
+        this._state = state.State;
+        return default;
+    }
+
+    [KernelFunction(InternalEventFunction)]
+    public async Task InternalTestFunctionAsync(KernelProcessStepContext context, string data)
+    {
+        Thread.Sleep(this._sleepDurationMs);
+
+        Console.WriteLine($"[EMIT_INTERNAL] {data}");
+        this._state!.LastMessage = data;
+        await context.EmitEventAsync(new() { Id = EventId, Data = data });
+    }
+
+    [KernelFunction(PublicEventFunction)]
+    public async Task PublicTestFunctionAsync(KernelProcessStepContext context, string data)
+    {
+        Thread.Sleep(this._sleepDurationMs);
+
+        Console.WriteLine($"[EMIT_PUBLIC] {data}");
+        this._state!.LastMessage = data;
+        await context.EmitEventAsync(new() { Id = PublicEventId, Data = data, Visibility = KernelProcessEventVisibility.Public });
+    }
+
+    [KernelFunction(DualInputPublicEventFunction)]
+    public async Task DualInputPublicTestFunctionAsync(KernelProcessStepContext context, string firstInput, string secondInput)
+    {
+        Thread.Sleep(this._sleepDurationMs);
+
+        string outputText = $"{firstInput}-{secondInput}";
+        Console.WriteLine($"[EMIT_PUBLIC_DUAL] {outputText}");
+        this._state!.LastMessage = outputText;
+        await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = outputText, Visibility = KernelProcessEventVisibility.Public });
     }
 }
 

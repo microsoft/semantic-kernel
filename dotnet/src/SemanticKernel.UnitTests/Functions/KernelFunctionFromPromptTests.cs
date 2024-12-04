@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -637,35 +639,6 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2 Result1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-    [Fact]
-    public async Task InvokeAsyncWithPromptRenderedHooksExecutesModifiedPromptAsync()
-    {
-        // Arrange
-        var mockTextContent = new TextContent("Result");
-        var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
-
-#pragma warning disable CS0618 // Events are deprecated
-        static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
-        {
-            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
-        }
-
-        KernelBuilder builder = new();
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("service", mockTextCompletion.Object);
-        Kernel kernel = builder.Build();
-        kernel.PromptRendered += MyRenderedHandler;
-#pragma warning restore CS0618 // Events are deprecated
-
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
-
-        // Act
-        var result1 = await kernel.InvokeAsync(function);
-
-        // Assert
-        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
     [Theory]
     [InlineData(KernelInvocationType.InvokePrompt)]
     [InlineData(KernelInvocationType.InvokePromptStreaming)]
@@ -870,6 +843,27 @@ public class KernelFunctionFromPromptTests
             Assert.Equal(expectedChatMessageContents[i].Content, actualChatMessageContents[i].Content);
             Assert.Equal(expectedChatMessageContents[i].Metadata, actualChatMessageContents[i].Metadata);
         }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionPropagatesTooManyRequestsAsync()
+    {
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+        messageHandlerStub.ResponseToReturn = response;
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "any", httpClient: httpClient);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => chatCompletion);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(async () => await kernel.InvokePromptAsync("Prompt"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
 
     [Fact]

@@ -55,7 +55,7 @@ internal abstract class ClientBase
     {
         using var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken)
             .ConfigureAwait(false);
         return body;
     }

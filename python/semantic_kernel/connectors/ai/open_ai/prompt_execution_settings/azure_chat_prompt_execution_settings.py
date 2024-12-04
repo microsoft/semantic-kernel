@@ -157,8 +157,8 @@ class ExtraBody(KernelBaseModel):
     """Extra body for the Azure Chat Completion endpoint."""
 
     data_sources: list[DataSource] | None = None
-    input_language: str | None = Field(None, serialization_alias="inputLanguage")
-    output_language: str | None = Field(None, serialization_alias="outputLanguage")
+    input_language: Annotated[str | None, Field(serialization_alias="inputLanguage")] = None
+    output_language: Annotated[str | None, Field(serialization_alias="outputLanguage")] = None
 
     def __getitem__(self, item):
         """Get an item from the ExtraBody."""

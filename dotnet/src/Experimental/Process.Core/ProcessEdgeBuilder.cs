@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -26,6 +28,9 @@ public sealed class ProcessEdgeBuilder
     /// <param name="eventId">The Id of the event.</param>
     internal ProcessEdgeBuilder(ProcessBuilder source, string eventId)
     {
+        Verify.NotNull(source, nameof(source));
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
+
         this.Source = source;
         this.EventId = eventId;
     }
@@ -35,6 +40,11 @@ public sealed class ProcessEdgeBuilder
     /// </summary>
     public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
+        if (this.Target is not null)
+        {
+            throw new InvalidOperationException("An output target has already been set.");
+        }
+
         this.Target = target;
         ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId, this.EventId) { Target = this.Target };
         this.Source.LinkTo(this.EventId, edgeBuilder);

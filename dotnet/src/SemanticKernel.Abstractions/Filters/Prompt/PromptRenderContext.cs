@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -37,7 +37,6 @@ public sealed class PromptRenderContext
     /// <summary>
     /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public bool IsStreaming { get; init; }
 
     /// <summary>

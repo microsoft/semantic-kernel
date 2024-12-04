@@ -13,7 +13,12 @@ namespace SemanticKernel.Process.IntegrationTests;
 public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T : KernelProcessStep
 {
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-    private readonly Dictionary<string, Type> _types = new() { { "", typeof(KernelProcessState) } };
+    private readonly Dictionary<string, Type> _types =
+        new()
+        {
+            { "process", typeof(KernelProcessState) },
+            { "map", typeof(KernelProcessMapState) },
+        };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStateTypeResolver{T}"/> class.
@@ -75,7 +80,8 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
                 UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                 DerivedTypes =
                 {
-                    new JsonDerivedType(typeof(DaprProcessInfo), nameof(DaprProcessInfo))
+                    new JsonDerivedType(typeof(DaprProcessInfo), nameof(DaprProcessInfo)),
+                    new JsonDerivedType(typeof(DaprMapInfo), nameof(DaprMapInfo)),
                 }
             };
         }

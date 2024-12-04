@@ -49,7 +49,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
         If no arguments are provided, the service will attempt to load the settings from the environment.
         The following environment variables are used:
-        - GOOGLE_AI_AI_MODEL_ID
+        - GOOGLE_AI_GEMINI_MODEL_ID
         - GOOGLE_AI_API_KEY
 
         Args:

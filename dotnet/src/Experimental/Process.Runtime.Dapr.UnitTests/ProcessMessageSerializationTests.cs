@@ -19,7 +19,7 @@ public class ProcessMessageSerializationTests
     /// with out an explicit type definition for <see cref="ProcessMessage.Values"/>
     /// </summary>
     [Fact]
-    public void VerifySerializeEventSingleTest()
+    public void VerifySerializeMessageSingleTest()
     {
         // Arrange, Act & Assert
         VerifyContainerSerialization([CreateMessage(new() { { "Data", 3 } })]);
@@ -35,7 +35,7 @@ public class ProcessMessageSerializationTests
     /// with out varying types assigned to for <see cref="ProcessMessage.Values"/>
     /// </summary>
     [Fact]
-    public void VerifySerializeEventMixedTest()
+    public void VerifySerializeMessageMixedTest()
     {
         // Arrange, Act & Assert
         VerifyContainerSerialization(
@@ -54,7 +54,7 @@ public class ProcessMessageSerializationTests
     /// with out varying types assigned to for <see cref="ProcessMessage.Values"/>
     /// </summary>
     [Fact]
-    public void VerifySerializeEventManyTest()
+    public void VerifySerializeMessageManyTest()
     {
         // Arrange, Act & Assert
         VerifyContainerSerialization(

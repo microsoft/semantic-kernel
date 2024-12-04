@@ -35,7 +35,7 @@ class ModelWithUnionPrimitives:
     item: int | str
 
 
-class TestEnum(Enum):
+class EnumTest(Enum):
     OPTION_A = "OptionA"
     OPTION_B = "OptionB"
     OPTION_C = "OptionC"
@@ -370,7 +370,7 @@ def test_build_complex_type_list():
 
 
 def test_enum_schema():
-    schema = KernelJsonSchemaBuilder.build(TestEnum, "Test Enum Description")
+    schema = KernelJsonSchemaBuilder.build(EnumTest, "Test Enum Description")
     expected_schema = {
         "type": "string",
         "enum": ["OptionA", "OptionB", "OptionC"],
@@ -380,7 +380,7 @@ def test_enum_schema():
 
 
 def test_enum_schema_without_description():
-    schema = KernelJsonSchemaBuilder.build(TestEnum)
+    schema = KernelJsonSchemaBuilder.build(EnumTest)
     expected_schema = {"type": "string", "enum": ["OptionA", "OptionB", "OptionC"]}
     assert schema == expected_schema
 

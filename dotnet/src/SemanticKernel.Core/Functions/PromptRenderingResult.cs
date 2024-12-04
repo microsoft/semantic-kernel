@@ -17,10 +17,6 @@ internal sealed class PromptRenderingResult
 
     public FunctionResult? FunctionResult { get; set; }
 
-#pragma warning disable CS0618 // Events are deprecated
-    public PromptRenderedEventArgs? RenderedEventArgs { get; set; }
-#pragma warning restore CS0618 // Events are deprecated
-
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {
         this.AIService = aiService;

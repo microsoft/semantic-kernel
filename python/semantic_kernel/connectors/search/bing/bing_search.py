@@ -168,7 +168,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             "user_agent": SEMANTIC_KERNEL_USER_AGENT,
         }
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=5) as client:
                 response = await client.get(url, headers=headers, params=params)
                 response.raise_for_status()
                 return BingSearchResponse.model_validate_json(response.text)

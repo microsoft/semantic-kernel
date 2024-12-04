@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic ~= 2.0",
+    "pydantic >=2.0,<2.10",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -50,7 +50,8 @@ dependencies = [
 ### Optional dependencies
 [project.optional-dependencies]
 azure = [
-    "azure-ai-inference >= 1.0.0b4",
+    "azure-ai-inference >= 1.0.0b6",
+    "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
@@ -136,7 +137,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.5"
+    "ruff ~= 0.7"
 ]
 environments = [
     "sys_platform == 'darwin'",
@@ -145,6 +146,7 @@ environments = [
 ]
 
 [tool.pytest.ini_options]
+testpaths = 'tests'
 addopts = "-ra -q -r fEX"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [

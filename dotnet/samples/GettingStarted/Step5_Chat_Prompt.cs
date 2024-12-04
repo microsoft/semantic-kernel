@@ -10,7 +10,7 @@ public sealed class Step5_Chat_Prompt(ITestOutputHelper output) : BaseTest(outpu
     /// Show how to construct a chat prompt and invoke it.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task InvokeChatPromptAsync()
     {
         // Create a kernel with OpenAI chat completion
         Kernel kernel = Kernel.CreateBuilder()
