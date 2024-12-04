@@ -3,7 +3,7 @@ namespace Step02.Models;
 
 /// <summary>
 /// Processes Events related to Account Opening scenarios.<br/>
-/// Class used in <see cref="Step02_AccountOpening"/> samples
+/// Class used in <see cref="Step02a_AccountOpening"/>, <see cref="Step02b_AccountOpening"/> samples
 /// </summary>
 public static class AccountOpeningEvents
 {
@@ -13,6 +13,8 @@ public static class AccountOpeningEvents
     public static readonly string NewCustomerFormCompleted = nameof(NewCustomerFormCompleted);
     public static readonly string NewCustomerFormNeedsMoreDetails = nameof(NewCustomerFormNeedsMoreDetails);
     public static readonly string CustomerInteractionTranscriptReady = nameof(CustomerInteractionTranscriptReady);
+
+    public static readonly string NewAccountVerificationCheckPassed = nameof(NewAccountVerificationCheckPassed);
 
     public static readonly string CreditScoreCheckApproved = nameof(CreditScoreCheckApproved);
     public static readonly string CreditScoreCheckRejected = nameof(CreditScoreCheckRejected);

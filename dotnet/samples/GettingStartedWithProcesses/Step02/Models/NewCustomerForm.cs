@@ -7,7 +7,7 @@ namespace Step02.Models;
 
 /// <summary>
 /// Represents the data structure for a form capturing details of a new customer, including personal information and contact details.<br/>
-/// Class used in <see cref="Step02_AccountOpening"/> samples
+/// Class used in <see cref="Step02a_AccountOpening"/>, <see cref="Step02b_AccountOpening"/> samples
 /// </summary>
 public class NewCustomerForm
 {
