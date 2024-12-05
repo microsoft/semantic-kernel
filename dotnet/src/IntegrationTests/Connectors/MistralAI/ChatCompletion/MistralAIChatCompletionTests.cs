@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -12,19 +15,27 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MistralAI;
 
 /// <summary>
 /// Integration tests for <see cref="MistralAIChatCompletionService"/>.
 /// </summary>
-public sealed class MistralAIChatCompletionTests
+public sealed class MistralAIChatCompletionTests : IDisposable
 {
+    private readonly ITestOutputHelper _output;
     private readonly IConfigurationRoot _configuration;
     private readonly MistralAIPromptExecutionSettings _executionSettings;
+    private readonly HttpClientHandler _httpClientHandler;
+    private readonly HttpMessageHandler _httpMessageHandler;
+    private readonly HttpClient _httpClient;
+    private bool _disposedValue;
 
-    public MistralAIChatCompletionTests()
+    public MistralAIChatCompletionTests(ITestOutputHelper output)
     {
+        this._output = output;
+
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -37,15 +48,38 @@ public sealed class MistralAIChatCompletionTests
         {
             MaxTokens = 500,
         };
+
+        this._httpClientHandler = new HttpClientHandler();
+        this._httpMessageHandler = new LoggingHandler(this._httpClientHandler, this._output);
+        this._httpClient = new HttpClient(this._httpMessageHandler);
+    }
+    private void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                this._httpClientHandler.Dispose();
+                this._httpMessageHandler.Dispose();
+                this._httpClient.Dispose();
+            }
+            this._disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
 
         // Act
         var chatHistory = new ChatHistory
@@ -65,9 +99,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsWithUsageAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
 
         // Act
         var chatHistory = new ChatHistory
@@ -90,10 +124,68 @@ public sealed class MistralAIChatCompletionTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task ValidateGetChatMessageContentsWithImageAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ImageModelId"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "Describe the image"),
+            new ChatMessageContent(AuthorRole.User, [new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))])
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Eiffel Tower", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task ValidateGetChatMessageContentsWithImageAndJsonFormatAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ImageModelId"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
+
+        // Act
+        var systemMessage = "Return the answer in a JSON object with the next structure: " +
+                   "{\"elements\": [{\"element\": \"some name of element1\", " +
+                   "\"description\": \"some description of element 1\"}, " +
+                   "{\"element\": \"some name of element2\", \"description\": " +
+                   "\"some description of element 2\"}]}";
+        var chatHistory = new ChatHistory(systemMessage)
+        {
+            new ChatMessageContent(AuthorRole.User, "Describe the image"),
+            new ChatMessageContent(AuthorRole.User, [new ImageContent(new Uri("https://tripfixers.com/wp-content/uploads/2019/11/eiffel-tower-with-snow.jpeg"))])
+        };
+        var executionSettings = new MistralAIPromptExecutionSettings
+        {
+            MaxTokens = 500,
+            ResponseFormat = new { type = "json_object" },
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Eiffel Tower", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Snow", response[0].Content, System.StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateInvokeChatPromptAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
         var kernel = Kernel.CreateBuilder()
             .AddMistralChatCompletion(model!, apiKey!)
@@ -117,9 +209,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
 
         // Act
         var chatHistory = new ChatHistory
@@ -146,9 +238,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsHasToolCallsResponseAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
 
@@ -170,9 +262,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsHasRequiredToolCallResponseAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var kernel = new Kernel();
         var plugin = kernel.Plugins.AddFromType<AnonymousPlugin>();
 
@@ -197,9 +289,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
@@ -214,16 +306,17 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", response[0].Content, System.StringComparison.Ordinal);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithNoFunctionsAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.NoKernelFunctions };
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
@@ -238,16 +331,16 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Contains("GetWeather", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("weather", response[0].Content, System.StringComparison.Ordinal);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeReturnsFunctionCallContentAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
@@ -272,9 +365,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
         var invokedFunctions = new List<string>();
@@ -296,7 +389,6 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
@@ -304,9 +396,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetStreamingChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
 
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
@@ -338,7 +430,6 @@ public sealed class MistralAIChatCompletionTests
 
         // Assert
         Assert.NotNull(content);
-        Assert.Contains("sunny", content.ToString());
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
@@ -346,9 +437,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionInvocationFilterAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
         var invokedFunctions = new List<string>();
@@ -371,8 +462,8 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.StartsWith("Weather in Paris", response[0].Content);
-        Assert.EndsWith("is sunny and 18 Celsius", response[0].Content);
+        Assert.Contains("Paris", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", response[0].Content, System.StringComparison.Ordinal);
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
@@ -380,9 +471,9 @@ public sealed class MistralAIChatCompletionTests
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndMultipleCallsAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:ChatModelId"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAIChatCompletionService(model!, apiKey!, httpClient: this._httpClient);
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<WeatherPlugin>();
 
@@ -400,8 +491,8 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(result2);
         Assert.Single(result2);
-        Assert.Contains("Marseille", result2[0].Content);
-        Assert.Contains("sunny", result2[0].Content);
+        Assert.Contains("Marseille", result2[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("12°C", result2[0].Content, System.StringComparison.Ordinal);
     }
 
     public sealed class WeatherPlugin
@@ -410,7 +501,7 @@ public sealed class MistralAIChatCompletionTests
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => $"Weather in {location} is sunny and 18 Celsius";
+            ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
     }
 
     public sealed class AnonymousPlugin
@@ -438,5 +529,54 @@ public sealed class MistralAIChatCompletionTests
 
         public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
             this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
+
+    private sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
+    {
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
+
+        private readonly ITestOutputHelper _output = output;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Log the request details
+            if (request.Content is not null)
+            {
+                var content = await request.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== REQUEST ===");
+                try
+                {
+                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                    this._output.WriteLine(formattedContent);
+                }
+                catch (JsonException)
+                {
+                    this._output.WriteLine(content);
+                }
+                this._output.WriteLine(string.Empty);
+            }
+
+            // Call the next handler in the pipeline
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.Content is not null)
+            {
+                // Log the response details
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== RESPONSE ===");
+                try
+                {
+                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(responseContent), s_jsonSerializerOptions);
+                    this._output.WriteLine(formattedContent);
+                }
+                catch (JsonException)
+                {
+                    this._output.WriteLine(responseContent);
+                }
+                this._output.WriteLine(string.Empty);
+            }
+
+            return response;
+        }
     }
 }
