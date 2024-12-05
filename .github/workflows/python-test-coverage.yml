@@ -54,11 +54,11 @@ jobs:
         uses: MishaKav/pytest-coverage-comment@main
         continue-on-error: true
         with:
-          pytest-coverage-path: python-coverage.txt
+          pytest-coverage-path: python/python-coverage.txt
           coverage-path-prefix: "python/"
           title: "Python Test Coverage Report"
           badge-title: "Python Test Coverage"
           junitxml-title: "Python Unit Test Overview"
-          junitxml-path: pytest.xml
+          junitxml-path: python/pytest.xml
           default-branch: "main"
           unique-id-for-comment: python-test-coverage
