@@ -28,7 +28,7 @@ internal sealed class CopilotAgentPluginOpenApiDocumentVisitor : OpenApiVisitorB
 
     private static void NormalizeOperationId(OpenApiOperation operation)
     {
-        if (operation is null || operation.OperationId is null)
+        if (operation?.OperationId is null)
         {
             return;
         }
@@ -47,10 +47,8 @@ internal sealed class CopilotAgentPluginOpenApiDocumentVisitor : OpenApiVisitorB
     {
         HashSet<string> visitedNames = [];
 
-        var index = 0;
-
         // Lookup for duplicate parameters and remove them
-        while (index < operation.Parameters.Count)
+        for (int index = 0; index < operation.Parameters.Count;)
         {
             var parameter = operation.Parameters[index];
             if (visitedNames.Contains(parameter.Name))
@@ -75,9 +73,7 @@ internal sealed class CopilotAgentPluginOpenApiDocumentVisitor : OpenApiVisitorB
 
     private static void RemoveProperty(OpenApiSchema schema, HashSet<string> visitedNames)
     {
-        var index = 0;
-
-        while (index < schema.Properties.Count)
+        for (int index = 0; index < schema.Properties.Count;)
         {
             var property = schema.Properties.ElementAt(index);
             if (visitedNames.Contains(property.Key))
