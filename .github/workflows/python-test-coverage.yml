@@ -5,11 +5,14 @@ on:
     branches: ["main", "feature*"]
     paths:
       - "python/**"
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
 
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: false
     permissions:
       pull-requests: write
       contents: read
@@ -32,7 +35,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
-        run: uv run --frozen pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
+        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,7 +55,7 @@ jobs:
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
-        continue-on-error: true
+        continue-on-error: false
         with:
           pytest-coverage-path: python/python-coverage.txt
           coverage-path-prefix: "python/"
@@ -61,4 +64,4 @@ jobs:
           junitxml-title: "Python Unit Test Overview"
           junitxml-path: python/pytest.xml
           default-branch: "main"
-          unique-id-for-comment: python-test-coverage
+          report-only-changed-files: true
