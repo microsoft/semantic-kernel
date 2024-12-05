@@ -125,6 +125,6 @@ def update_settings_from_function_choice_configuration(
             for f in function_choice_configuration.available_functions
         ]
         try:
-            settings.tools = tools
+            settings.tools = tools  # type: ignore
         except Exception:
             settings.extension_data["tools"] = tools
