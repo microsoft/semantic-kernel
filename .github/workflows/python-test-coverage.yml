@@ -10,14 +10,15 @@ env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
 
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
     continue-on-error: false
-    permissions:
-      pull-requests: write
-      contents: write
-      checks: write
     defaults:
       run:
         working-directory: python
@@ -58,7 +59,6 @@ jobs:
         uses: MishaKav/pytest-coverage-comment@main
         continue-on-error: false
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python/python-coverage.txt
           coverage-path-prefix: "python/"
           title: "Python Test Coverage Report"
