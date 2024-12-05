@@ -234,22 +234,3 @@ async def test_streaming_chat_completion_wrong_return_type(
             OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
         ):
             pass
-
-
-@pytest.mark.asyncio
-async def test_streaming_chat_completion_with_tools_raise(
-    model_id,
-    service_id,
-    chat_history,
-    default_options,
-):
-    """Test that the chat completion streaming service fails when tool calls are requested."""
-    ollama = OllamaChatCompletion(ai_model_id=model_id)
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        async for _ in ollama.get_streaming_chat_message_contents(
-            chat_history,
-            OllamaChatPromptExecutionSettings(
-                tools=[{"type": "function"}], service_id=service_id, options=default_options
-            ),
-        ):
-            pass

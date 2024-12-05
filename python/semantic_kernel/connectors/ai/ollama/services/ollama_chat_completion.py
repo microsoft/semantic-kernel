@@ -186,11 +186,6 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        if settings.tools:
-            raise ServiceInvalidExecutionSettingsError(
-                "Ollama does not support tool calling in streaming chat completion."
-            )
-
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
