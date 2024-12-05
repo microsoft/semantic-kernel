@@ -48,7 +48,10 @@ public class KernelProcessEventsSubscriberInfo
         if (this._eventHandlers.TryGetValue(eventName, out List<MethodInfo>? eventHandlers) && eventHandlers != null)
         {
             eventHandlers.Add(method);
+            return;
         }
+
+        throw new InvalidOperationException($"Cannot link method {method.Name} to event {eventName}, must make use of EmitAsProcessEvent first or remove unused event from event subscriber.");
     }
 
     public void LinkStepEventToProcessEvent(string stepEventId, string processEventId)
@@ -82,12 +85,18 @@ public class KernelProcessEventsSubscriberInfo
     /// <exception cref="InvalidOperationException"></exception>
     public void SubscribeToEventsFromClass<TEventListeners, TEvents>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents> where TEvents : Enum
     {
-        if (this._subscriberServiceProvider != null)
+        if (this._processEventSubscriberType != null)
         {
-            throw new KernelException("Already linked process to a specific service provider class");
+            throw new InvalidOperationException("Already linked process to another event subscriber class");
         }
 
         var methods = typeof(TEventListeners).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+        if (methods.Length == 0)
+        {
+            throw new InvalidOperationException($"The Event Listener type {typeof(TEventListeners).Name} has no functions to extract subscribe methods");
+        }
+
+        bool annotationsFound = false;
         foreach (var method in methods)
         {
             if (method.GetCustomAttributes(typeof(KernelProcessEventsSubscriber<>.ProcessEventSubscriberAttribute), false).FirstOrDefault() is KernelProcessEventsSubscriber<TEvents>.ProcessEventSubscriberAttribute attribute)
@@ -98,7 +107,13 @@ public class KernelProcessEventsSubscriberInfo
                 }
 
                 this.Subscribe(attribute.EventName, method);
+                annotationsFound = true;
             }
+        }
+
+        if (!annotationsFound)
+        {
+            throw new InvalidOperationException($"The Event Listener type {typeof(TEventListeners).Name} has functions with no ProcessEventSubscriber Annotations");
         }
 
         this._subscriberServiceProvider = serviceProvider;

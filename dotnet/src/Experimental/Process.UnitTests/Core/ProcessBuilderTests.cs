@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -10,6 +11,16 @@ namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
 /// </summary>
 public class ProcessBuilderTests
 {
+    /// <summary>
+    /// Process Events to be used when using <see cref="ProcessBuilder{TEvents}"/>
+    /// </summary>
+    public enum ProcessTestEvents
+    {
+        StartEvent,
+        MidProcessEvent,
+        EndEvent,
+    }
+
     private const string ProcessName = "TestProcess";
     private const string StepName = "TestStep";
     private const string EventId = "TestEvent";
@@ -23,6 +34,20 @@ public class ProcessBuilderTests
     {
         // Arrange & Act
         var processBuilder = new ProcessBuilder(ProcessName);
+
+        // Assert
+        Assert.Equal(ProcessName, processBuilder.Name);
+        Assert.Empty(processBuilder.Steps);
+    }
+
+    /// <summary>
+    /// Tests the initialization of the ProcessBuilder.
+    /// </summary>
+    [Fact]
+    public void ProcessBuilderWithEventsInitialization()
+    {
+        // Arrange & Act
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
 
         // Assert
         Assert.Equal(ProcessName, processBuilder.Name);
@@ -61,6 +86,7 @@ public class ProcessBuilderTests
         try
         {
             processBuilder.AddStepFromType<TestStep>(StepName);
+            Assert.Fail("Expected InvalidOperationException");
         }
         catch (InvalidOperationException ex)
         {
@@ -103,6 +129,7 @@ public class ProcessBuilderTests
         try
         {
             processBuilder.AddStepFromProcess(subProcessBuilder);
+            Assert.Fail("Expected InvalidOperationException");
         }
         catch (InvalidOperationException ex)
         {
@@ -167,6 +194,142 @@ public class ProcessBuilderTests
         Assert.EndsWith("Global.OnError", edgeBuilder.EventId);
     }
 
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndEmptyEventSubscriber()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+
+        // Act
+        try
+        {
+            processBuilder.LinkEventSubscribersFromType<EmptyTestEventSubscriber>();
+            Assert.Fail("Expected InvalidOperationException");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"The Event Listener type {nameof(EmptyTestEventSubscriber)} has no functions to extract subscribe methods", ex.Message);
+        }
+    }
+
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndEventSubscriberWithoutAnnotators()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+
+        // Act
+        try
+        {
+            processBuilder.LinkEventSubscribersFromType<IncompleteTestEventSubscriber>();
+            Assert.Fail("Expected InvalidOperationException");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"The Event Listener type {nameof(IncompleteTestEventSubscriber)} has functions with no ProcessEventSubscriber Annotations", ex.Message);
+        }
+    }
+
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndMissingEventForEventSubscriber()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+        var repeaterA = processBuilder.AddStepFromType<RepeatTestStep>("repeaterA");
+        var repeaterB = processBuilder.AddStepFromType<RepeatTestStep>("repeaterB");
+        var repeaterC = processBuilder.AddStepFromType<RepeatTestStep>("repeaterC");
+
+        processBuilder
+            .OnInputEvent(ProcessTestEvents.StartEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterA));
+
+        repeaterA
+            .OnEvent(RepeatTestStep.OutputEvent)
+            // intentionally not connecting EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.MidProcessEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterB));
+
+        repeaterB
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.EndEvent));
+
+        // Act
+        try
+        {
+            processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
+            Assert.Fail("Expected InvalidOperationException");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"Cannot link method {nameof(CompleteTestEventSubscriber.onMidProcessEventReceived)} to event {Enum.GetName<ProcessTestEvents>(ProcessTestEvents.MidProcessEvent)}, must make use of EmitAsProcessEvent first or remove unused event from event subscriber.", ex.Message);
+        }
+    }
+
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndMatchingEventSubscriber()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+        var repeaterA = processBuilder.AddStepFromType<RepeatTestStep>("repeaterA");
+        var repeaterB = processBuilder.AddStepFromType<RepeatTestStep>("repeaterB");
+        var repeaterC = processBuilder.AddStepFromType<RepeatTestStep>("repeaterC");
+
+        processBuilder
+            .OnInputEvent(ProcessTestEvents.StartEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterA));
+
+        repeaterA
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.MidProcessEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterB));
+
+        repeaterB
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.EndEvent));
+
+        // Act & Assert
+        processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
+    }
+
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndLinkingTwice()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+        var repeaterA = processBuilder.AddStepFromType<RepeatTestStep>("repeaterA");
+        var repeaterB = processBuilder.AddStepFromType<RepeatTestStep>("repeaterB");
+        var repeaterC = processBuilder.AddStepFromType<RepeatTestStep>("repeaterC");
+
+        processBuilder
+            .OnInputEvent(ProcessTestEvents.StartEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterA));
+
+        repeaterA
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.MidProcessEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterB));
+
+        repeaterB
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.EndEvent));
+
+        processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
+
+        // Act
+        try
+        {
+            processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
+            Assert.Fail("Expected InvalidOperationException");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal("Already linked process to another event subscriber class", ex.Message);
+        }
+    }
+
     /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
@@ -189,6 +352,27 @@ public class ProcessBuilderTests
     /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
+    private sealed class RepeatTestStep : KernelProcessStep
+    {
+        /// <summary>
+        /// The name of the step.
+        /// </summary>
+        public static string Name => "RepeatTestStep";
+        public static string OutputEvent => "OutputEvent";
+
+        /// <summary>
+        /// A method that represents a function for testing.
+        /// </summary>
+        [KernelFunction]
+        public async Task TestFunctionAsync(KernelProcessStepContext context, string response)
+        {
+            await context.EmitEventAsync(OutputEvent, response);
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
     private sealed class ErrorStep : KernelProcessStep
     {
         /// <summary>
@@ -205,5 +389,36 @@ public class ProcessBuilderTests
     /// </summary>
     private sealed class TestState
     {
+    }
+
+    private sealed class EmptyTestEventSubscriber : KernelProcessEventsSubscriber<ProcessTestEvents> { }
+
+    private sealed class IncompleteTestEventSubscriber : KernelProcessEventsSubscriber<ProcessTestEvents>
+    {
+        public void onMidProcessEventReceived(string result)
+        {
+        }
+
+        public void onEndEventReceived(string result)
+        {
+        }
+    }
+
+    private sealed class CompleteTestEventSubscriber : KernelProcessEventsSubscriber<ProcessTestEvents>
+    {
+        public string? onMidEventValue = null;
+        public string? onEndEventValue = null;
+
+        [ProcessEventSubscriber(ProcessTestEvents.MidProcessEvent)]
+        public void onMidProcessEventReceived(string result)
+        {
+            this.onMidEventValue = result;
+        }
+
+        [ProcessEventSubscriber(ProcessTestEvents.EndEvent)]
+        public void onEndEventReceived(string result)
+        {
+            this.onEndEventValue = result;
+        }
     }
 }

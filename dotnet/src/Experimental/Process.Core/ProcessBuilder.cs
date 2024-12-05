@@ -322,6 +322,9 @@ public class ProcessBuilder : ProcessStepBuilder
     #endregion
 }
 
+/// <summary>
+/// Provides functionality for incrementally defining a process with specific input/output process events
+/// </summary>
 public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enum, new()
 {
     private readonly Dictionary<TEvents, string> _eventNames = [];
@@ -363,6 +366,7 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
         return this.WhereInputEventIs(this.GetEventName(eventId));
     }
 
+    /// <inheritdoc cref="ProcessBuilder.OnInputEvent(string)"/>
     public ProcessEdgeBuilder GetProcessEvent(TEvents processEvent)
     {
         return this.OnInputEvent(this.GetEventName(processEvent));
@@ -388,6 +392,7 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
         return base.OnEvent(eventName);
     }
 
+    /// <inheritdoc cref="ProcessBuilder.ProcessBuilder(string)"/>
     public ProcessBuilder(string name) : base(name)
     {
         this.PopulateEventNames();

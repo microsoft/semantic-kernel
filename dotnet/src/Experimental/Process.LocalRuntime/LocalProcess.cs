@@ -354,11 +354,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         foreach (ProcessEvent stepEvent in allStepEvents)
         {
             if (this._process.EventsSubscriber != null && this._process.EventsSubscriber.TryGetLinkedProcessEvent(stepEvent.QualifiedId, out var processEventName) && !string.IsNullOrEmpty(processEventName))
-			{
-				// Since it is a subscribed to event making public in case it wasn't and renaming event name to match process name
-				var processEvent = stepEvent with { SourceId = processEventName!, Visibility = KernelProcessEventVisibility.Public };
-				base.EmitEvent(processEvent);
-			}
+            {
+                // Since it is a subscribed to event making public in case it wasn't and renaming event name to match process name
+                var processEvent = stepEvent with { SourceId = processEventName!, Visibility = KernelProcessEventVisibility.Public };
+                base.EmitEvent(processEvent);
+            }
 
             // Emit the event out of the process (this one) if it's visibility is public.
             if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
