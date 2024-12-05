@@ -194,6 +194,9 @@ public class ProcessBuilderTests
         Assert.EndsWith("Global.OnError", edgeBuilder.EventId);
     }
 
+    /// <summary>
+    /// Verify that the <see cref="ProcessBuilder{TEvents}.LinkEventSubscribersFromType{TEventListeners}(IServiceProvider?)"/> fails when linking empty Event Subscriber class
+    /// </summary>
     [Fact]
     public void ProcessBuilderWithProcessEventsAndEmptyEventSubscriber()
     {
@@ -213,6 +216,10 @@ public class ProcessBuilderTests
         }
     }
 
+    /// <summary>
+    /// Verify that the <see cref="ProcessBuilder{TEvents}.LinkEventSubscribersFromType{TEventListeners}(IServiceProvider?)"/> fails when linking Event Subscriber class
+    /// without <see cref="KernelProcessEventsSubscriber{TEvents}.ProcessEventSubscriberAttribute"/>
+    /// </summary>
     [Fact]
     public void ProcessBuilderWithProcessEventsAndEventSubscriberWithoutAnnotators()
     {
@@ -232,6 +239,10 @@ public class ProcessBuilderTests
         }
     }
 
+    /// <summary>
+    /// Verify that the <see cref="ProcessBuilder{TEvents}.LinkEventSubscribersFromType{TEventListeners}(IServiceProvider?)"/> fails when linking Event Subscriber class
+    /// with process events that are not linked with <see cref="ProcessStepEdgeBuilder.EmitAsProcessEvent(ProcessEdgeBuilder)"/>
+    /// </summary>
     [Fact]
     public void ProcessBuilderWithProcessEventsAndMissingEventForEventSubscriber()
     {
@@ -267,32 +278,9 @@ public class ProcessBuilderTests
         }
     }
 
-    [Fact]
-    public void ProcessBuilderWithProcessEventsAndMatchingEventSubscriber()
-    {
-        // Arrange
-        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
-        var repeaterA = processBuilder.AddStepFromType<RepeatTestStep>("repeaterA");
-        var repeaterB = processBuilder.AddStepFromType<RepeatTestStep>("repeaterB");
-        var repeaterC = processBuilder.AddStepFromType<RepeatTestStep>("repeaterC");
-
-        processBuilder
-            .OnInputEvent(ProcessTestEvents.StartEvent)
-            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterA));
-
-        repeaterA
-            .OnEvent(RepeatTestStep.OutputEvent)
-            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.MidProcessEvent))
-            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterB));
-
-        repeaterB
-            .OnEvent(RepeatTestStep.OutputEvent)
-            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.EndEvent));
-
-        // Act & Assert
-        processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
-    }
-
+    /// <summary>
+    /// Verify that the <see cref="ProcessBuilder{TEvents}.LinkEventSubscribersFromType{TEventListeners}(IServiceProvider?)"/> fails when linking Event Subscriber class twice
+    /// </summary>
     [Fact]
     public void ProcessBuilderWithProcessEventsAndLinkingTwice()
     {
@@ -328,6 +316,35 @@ public class ProcessBuilderTests
             // Assert
             Assert.Equal("Already linked process to another event subscriber class", ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Verify that the <see cref="ProcessBuilder{TEvents}.LinkEventSubscribersFromType{TEventListeners}(IServiceProvider?)"/> succeeds when linking an event subscriber with matching events
+    /// </summary>
+    [Fact]
+    public void ProcessBuilderWithProcessEventsAndMatchingEventSubscriber()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder<ProcessTestEvents>(ProcessName);
+        var repeaterA = processBuilder.AddStepFromType<RepeatTestStep>("repeaterA");
+        var repeaterB = processBuilder.AddStepFromType<RepeatTestStep>("repeaterB");
+        var repeaterC = processBuilder.AddStepFromType<RepeatTestStep>("repeaterC");
+
+        processBuilder
+            .OnInputEvent(ProcessTestEvents.StartEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterA));
+
+        repeaterA
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.MidProcessEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeaterB));
+
+        repeaterB
+            .OnEvent(RepeatTestStep.OutputEvent)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessTestEvents.EndEvent));
+
+        // Act & Assert
+        processBuilder.LinkEventSubscribersFromType<CompleteTestEventSubscriber>();
     }
 
     /// <summary>
