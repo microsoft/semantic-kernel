@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: ["main", "feature*"]
     paths:
-      - "python/**"
+      - "python/semantic_kernel/**"
+      - "python/tests/unit/**"
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
@@ -57,6 +58,7 @@ jobs:
         uses: MishaKav/pytest-coverage-comment@main
         continue-on-error: false
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python/python-coverage.txt
           coverage-path-prefix: "python/"
           title: "Python Test Coverage Report"
