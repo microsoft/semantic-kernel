@@ -15,8 +15,7 @@ jobs:
     continue-on-error: false
     permissions:
       pull-requests: write
-      contents: read
-      actions: read
+      contents: write
     defaults:
       run:
         working-directory: python
