@@ -96,7 +96,7 @@ public static class CopilotAgentPluginKernelExtensions
         }
 
         var functions = new List<KernelFunction>();
-        var documentWalker = new OpenApiWalker(new OperationIdNormalizationOpenApiVisitor());
+        var documentWalker = new OpenApiWalker(new CopilotAgentPluginOpenApiDocumentVisitor());
         foreach (var runtime in openAPIRuntimes)
         {
             var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
