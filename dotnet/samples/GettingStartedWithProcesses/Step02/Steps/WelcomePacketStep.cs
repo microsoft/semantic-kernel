@@ -18,6 +18,8 @@ public class WelcomePacketStep : KernelProcessStep
     [KernelFunction(Functions.CreateWelcomePacket)]
     public async Task CreateWelcomePacketAsync(KernelProcessStepContext context, bool marketingEntryCreated, bool crmRecordCreated, AccountDetails accountDetails, Kernel _kernel)
     {
+        Console.WriteLine($"[WELCOME PACKET] New Account {accountDetails.AccountId} created");
+
         var mailMessage = $"""
             Dear {accountDetails.UserFirstName} {accountDetails.UserLastName}
             We are thrilled to inform you that you have successfully created a new PRIME ABC Account with us!
@@ -40,6 +42,7 @@ public class WelcomePacketStep : KernelProcessStep
         {
             Id = AccountOpeningEvents.WelcomePacketCreated,
             Data = mailMessage,
+            Visibility = KernelProcessEventVisibility.Public,
         });
     }
 }

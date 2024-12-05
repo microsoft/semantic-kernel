@@ -59,9 +59,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(repeatStepState?.State);
-        Assert.Equal(string.Join(" ", Enumerable.Repeat(testInput, 2)), repeatStepState.State.LastMessage);
+        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 2)));
     }
 
     /// <summary>
@@ -101,9 +99,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         // Assert
         var innerProcess = processInfo.Steps.Where(s => s.State.Name == "Inner").Single() as KernelProcess;
         Assert.NotNull(innerProcess);
-        var repeatStepState = innerProcess.Steps.Where(s => s.State.Name == nameof(RepeatStep)).Single().State as KernelProcessStepState<StepState>;
-        Assert.NotNull(repeatStepState?.State);
-        Assert.Equal(string.Join(" ", Enumerable.Repeat(testInput, 4)), repeatStepState.State.LastMessage);
+        this.AssertStepStateLastMessage(innerProcess, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 4)));
     }
 
     /// <summary>
@@ -145,9 +141,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(repeatStepState?.State);
-        Assert.Equal(string.Join(" ", Enumerable.Repeat(testInput, 4)), repeatStepState.State.LastMessage);
+        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 4)));
     }
 
     /// <summary>
@@ -189,9 +183,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var repeatStepState = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(repeatStepState);
-        Assert.Null(repeatStepState.State?.LastMessage);
+        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: null);
     }
 
     /// <summary>
@@ -212,9 +204,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var outputStep = processInfo.Steps.Where(s => s.State.Name == nameof(FanInStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(outputStep?.State);
-        Assert.Equal($"{testInput}-{testInput} {testInput}", outputStep.State.LastMessage);
+        this.AssertStepStateLastMessage(processInfo, nameof(FanInStep), expectedLastMessage: $"{testInput}-{testInput} {testInput}");
     }
 
     /// <summary>
@@ -234,13 +224,8 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var reportStep = processInfo.Steps.Where(s => s.State.Name == nameof(ReportStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(reportStep?.State);
-        Assert.Equal(1, reportStep.State.InvocationCount);
-
-        var repeatStep = processInfo.Steps.Where(s => s.State.Name == nameof(RepeatStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(repeatStep?.State);
-        Assert.Null(repeatStep.State.LastMessage);
+        this.AssertStepStateLastMessage(processInfo, nameof(ReportStep), expectedLastMessage: null, expectedInvocationCount: 1);
+        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: null);
     }
 
     /// <summary>
@@ -267,13 +252,134 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
-        var outputStep = (processInfo.Steps.Where(s => s.State.Name == fanInStepName).FirstOrDefault() as KernelProcess)?.Steps.Where(s => s.State.Name == nameof(FanInStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
-        Assert.NotNull(outputStep?.State);
-        Assert.Equal($"{testInput}-{testInput} {testInput}", outputStep.State.LastMessage);
+        var subprocessStepInfo = processInfo.Steps.Where(s => s.State.Name == fanInStepName)?.FirstOrDefault() as KernelProcess;
+        Assert.NotNull(subprocessStepInfo);
+        this.AssertStepStateLastMessage(subprocessStepInfo, nameof(FanInStep), expectedLastMessage: $"{testInput}-{testInput} {testInput}");
     }
 
     /// <summary>
-    /// Creates a simple linear process with two steps.
+    /// Process with multiple "long" nested sequential subprocesses and with multiple single step
+    /// output fan out only steps
+    /// <code>
+    ///            ┌───────────────────────────────────────────────┐
+    ///            │                                               ▼
+    /// ┌───────┐  │   ┌──────────────┐     ┌──────────────┐    ┌──────┐
+    /// │  1st  ├──┼──►│  2nd-nested  ├──┬─►│  3rd-nested  ├─┬─►│ last │
+    /// └───────┘  │   └──────────────┘  │  └──────────────┘ │  └──────┘
+    ///            ▼                     ▼                   ▼
+    ///       ┌─────────┐           ┌─────────┐         ┌─────────┐
+    ///       │ output1 │           │ output2 │         │ output3 │
+    ///       └─────────┘           └─────────┘         └─────────┘
+    /// </code>
+    /// </summary>
+    /// <returns><see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWith2NestedSubprocessSequentiallyAndMultipleOutputStepsAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        string lastStepName = "lastEmitterStep";
+        string outputStepName1 = "outputStep1";
+        string outputStepName2 = "outputStep2";
+        string outputStepName3 = "outputStep3";
+        ProcessBuilder processBuilder = new(nameof(ProcessWith2NestedSubprocessSequentiallyAndMultipleOutputStepsAsync));
+
+        ProcessStepBuilder firstStep = processBuilder.AddStepFromType<EmitterStep>("firstEmitterStep");
+        ProcessBuilder secondStep = processBuilder.AddStepFromProcess(this.CreateLongSequentialProcessWithFanInAsOutputStep("subprocess1"));
+        ProcessBuilder thirdStep = processBuilder.AddStepFromProcess(this.CreateLongSequentialProcessWithFanInAsOutputStep("subprocess2"));
+        ProcessStepBuilder outputStep1 = processBuilder.AddStepFromType<EmitterStep>(outputStepName1);
+        ProcessStepBuilder outputStep2 = processBuilder.AddStepFromType<EmitterStep>(outputStepName2);
+        ProcessStepBuilder outputStep3 = processBuilder.AddStepFromType<EmitterStep>(outputStepName3);
+        ProcessStepBuilder lastStep = processBuilder.AddStepFromType<FanInStep>(lastStepName);
+
+        processBuilder
+            .OnInputEvent(EmitterStep.InputEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(firstStep, functionName: EmitterStep.InternalEventFunction));
+        firstStep
+            .OnEvent(EmitterStep.EventId)
+            .SendEventTo(secondStep.WhereInputEventIs(EmitterStep.InputEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(outputStep1, functionName: EmitterStep.PublicEventFunction));
+        secondStep
+            .OnEvent(ProcessTestsEvents.OutputReadyPublic)
+            .SendEventTo(thirdStep.WhereInputEventIs(EmitterStep.InputEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(outputStep2, functionName: EmitterStep.PublicEventFunction));
+        thirdStep
+            .OnEvent(ProcessTestsEvents.OutputReadyPublic)
+            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "secondInput"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(outputStep3, functionName: EmitterStep.PublicEventFunction));
+
+        firstStep
+            .OnEvent(EmitterStep.EventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep, parameterName: "firstInput"));
+
+        KernelProcess process = processBuilder.Build();
+
+        // Act
+        string testInput = "SomeData";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new KernelProcessEvent() { Id = EmitterStep.InputEvent, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        this.AssertStepStateLastMessage(processInfo, outputStepName1, expectedLastMessage: testInput);
+        this.AssertStepStateLastMessage(processInfo, outputStepName2, expectedLastMessage: $"{testInput}-{testInput}");
+        this.AssertStepStateLastMessage(processInfo, outputStepName3, expectedLastMessage: $"{testInput}-{testInput}-{testInput}-{testInput}");
+        this.AssertStepStateLastMessage(processInfo, lastStepName, expectedLastMessage: $"{testInput}-{testInput}-{testInput}-{testInput}-{testInput}");
+    }
+
+    #region Predefined ProcessBuilders for testing
+    /// <summary>
+    /// Sample long sequential process, each step has a delay.<br/>
+    /// Input Event: <see cref="EmitterStep.InputEvent"/><br/>
+    /// Output Event: <see cref="ProcessTestsEvents.OutputReadyPublic"/><br/>
+    /// <code>
+    ///            ┌───────────────────────────────────────────────┐
+    ///            │                                               ▼
+    /// ┌───────┐  │   ┌───────┐    ┌───────┐    ┌────────┐    ┌──────┐
+    /// │  1st  ├──┴──►│  2nd  ├───►│  ...  ├───►│  10th  ├───►│ last │
+    /// └───────┘      └───────┘    └───────┘    └────────┘    └──────┘
+    /// </code>
+    /// </summary>
+    /// <param name="name">name of the process</param>
+    /// <returns><see cref="ProcessBuilder"/></returns>
+    private ProcessBuilder CreateLongSequentialProcessWithFanInAsOutputStep(string name)
+    {
+        ProcessBuilder processBuilder = new(name);
+        ProcessStepBuilder firstNestedStep = processBuilder.AddStepFromType<EmitterStep>("firstNestedStep");
+        ProcessStepBuilder secondNestedStep = processBuilder.AddStepFromType<EmitterStep>("secondNestedStep");
+        ProcessStepBuilder thirdNestedStep = processBuilder.AddStepFromType<EmitterStep>("thirdNestedStep");
+        ProcessStepBuilder fourthNestedStep = processBuilder.AddStepFromType<EmitterStep>("fourthNestedStep");
+        ProcessStepBuilder fifthNestedStep = processBuilder.AddStepFromType<EmitterStep>("fifthNestedStep");
+        ProcessStepBuilder sixthNestedStep = processBuilder.AddStepFromType<EmitterStep>("sixthNestedStep");
+        ProcessStepBuilder seventhNestedStep = processBuilder.AddStepFromType<EmitterStep>("seventhNestedStep");
+        ProcessStepBuilder eighthNestedStep = processBuilder.AddStepFromType<EmitterStep>("eighthNestedStep");
+        ProcessStepBuilder ninthNestedStep = processBuilder.AddStepFromType<EmitterStep>("ninthNestedStep");
+        ProcessStepBuilder tenthNestedStep = processBuilder.AddStepFromType<EmitterStep>("tenthNestedStep");
+
+        processBuilder.OnInputEvent(EmitterStep.InputEvent).SendEventTo(new ProcessFunctionTargetBuilder(firstNestedStep, functionName: EmitterStep.InternalEventFunction));
+        firstNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(secondNestedStep, functionName: EmitterStep.InternalEventFunction));
+        secondNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(thirdNestedStep, functionName: EmitterStep.InternalEventFunction));
+        thirdNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(fourthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        fourthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(fifthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        fifthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(sixthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        sixthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(seventhNestedStep, functionName: EmitterStep.InternalEventFunction));
+        seventhNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(eighthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        eighthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(ninthNestedStep, functionName: EmitterStep.InternalEventFunction));
+        ninthNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "secondInput"));
+
+        firstNestedStep.OnEvent(EmitterStep.EventId).SendEventTo(new ProcessFunctionTargetBuilder(tenthNestedStep, functionName: EmitterStep.DualInputPublicEventFunction, parameterName: "firstInput"));
+
+        return processBuilder;
+    }
+
+    /// <summary>
+    /// Creates a simple linear process with two steps.<br/>
+    /// Input Event: <see cref="ProcessTestsEvents.StartProcess"/><br/>
+    /// Output Events: [<see cref="ProcessTestsEvents.OutputReadyInternal"/>, <see cref="ProcessTestsEvents.OutputReadyPublic"/>]<br/>
+    /// <code>
+    /// ┌────────┐    ┌────────┐
+    /// │  echo  ├───►│ repeat │
+    /// └────────┘    └────────┘
+    /// </code>
     /// </summary>
     private ProcessBuilder CreateLinearProcess(string name)
     {
@@ -290,13 +396,30 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         return processBuilder;
     }
 
+    /// <summary>
+    /// Simple process with fan in functionality.<br/>
+    /// Input Event: <see cref="ProcessTestsEvents.StartProcess"/><br/>
+    /// Output Events: <see cref="ProcessTestsEvents.OutputReadyPublic"/><br/>
+    /// <code>
+    /// ┌─────────┐
+    /// │  echoA  ├──────┐
+    /// └─────────┘      ▼
+    ///              ┌────────┐
+    ///              │ fanInC │
+    ///              └────────┘
+    /// ┌─────────┐      ▲
+    /// │ repeatB ├──────┘
+    /// └─────────┘
+    /// </code>
+    /// </summary>
+    /// <param name="name">name of the process</param>
+    /// <returns><see cref="ProcessBuilder"/></returns>
     private ProcessBuilder CreateFanInProcess(string name)
     {
         var processBuilder = new ProcessBuilder(name);
         var echoAStep = processBuilder.AddStepFromType<EchoStep>("EchoStepA");
         var repeatBStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStepB");
         var fanInCStep = processBuilder.AddStepFromType<FanInStep>();
-        var echoDStep = processBuilder.AddStepFromType<EchoStep>();
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
@@ -307,6 +430,22 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         return processBuilder;
     }
 
+    /// <summary>
+    /// Creates a simple linear process with that emit error events.<br/>
+    /// Input Event: <see cref="ProcessTestsEvents.StartProcess"/><br/>
+    /// Output Events: <see cref="ProcessStepBuilder.OnFunctionError(string?)"/> <br/>
+    /// <code>
+    ///               ┌────────┐
+    ///      ┌───────►│ repeat │
+    ///      │        └────────┘
+    ///  ┌───┴───┐
+    ///  │ error │
+    ///  └───┬───┘
+    ///      │        ┌────────┐
+    ///      └───────►│ report │
+    ///               └────────┘
+    /// </code>
+    /// </summary>
     private ProcessBuilder CreateProcessWithError(string name)
     {
         var processBuilder = new ProcessBuilder(name);
@@ -320,4 +459,19 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 
         return processBuilder;
     }
+    #endregion
+    #region Assert Utils
+    private void AssertStepStateLastMessage(KernelProcess processInfo, string stepName, string? expectedLastMessage, int? expectedInvocationCount = null)
+    {
+        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
+        Assert.NotNull(stepInfo);
+        var outputStepResult = stepInfo.State as KernelProcessStepState<StepState>;
+        Assert.NotNull(outputStepResult?.State);
+        Assert.Equal(expectedLastMessage, outputStepResult.State.LastMessage);
+        if (expectedInvocationCount.HasValue)
+        {
+            Assert.Equal(expectedInvocationCount.Value, outputStepResult.State.InvocationCount);
+        }
+    }
+    #endregion
 }
