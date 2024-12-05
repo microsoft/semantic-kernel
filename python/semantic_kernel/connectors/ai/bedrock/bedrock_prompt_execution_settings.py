@@ -24,7 +24,6 @@ class BedrockChatPromptExecutionSettings(BedrockPromptExecutionSettings):
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
-            min_length=1,
             description="Do not set this manually. It is set by the service based "
             "on the function choice configuration.",
         ),

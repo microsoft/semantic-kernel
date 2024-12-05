@@ -39,7 +39,6 @@ class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
     tools: Annotated[
         list[Tool] | None,
         Field(
-            max_length=128,  # https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling#function-declarations
             description="Do not set this manually. It is set by the service based "
             "on the function choice configuration.",
         ),

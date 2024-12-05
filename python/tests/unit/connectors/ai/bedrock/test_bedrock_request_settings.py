@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.bedrock import BedrockChatPromptExecutionSettings, BedrockPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -84,18 +82,6 @@ def test_bedrock_chat_prompt_execution_settings_from_custom_completion_config_wi
     chat_settings = BedrockChatPromptExecutionSettings.from_prompt_execution_settings(settings)
 
     assert chat_settings.tools == [{"function": {}}]
-
-
-def test_bedrock_chat_prompt_execution_settings_with_functions_exception():
-    settings = PromptExecutionSettings(
-        service_id="test_service",
-        extension_data={
-            "tools": [],
-        },
-    )
-
-    with pytest.raises(ValidationError, match="List should have at least 1 item after validation"):
-        BedrockChatPromptExecutionSettings.from_prompt_execution_settings(settings)
 
 
 def test_create_options():

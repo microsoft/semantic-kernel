@@ -38,10 +38,6 @@ class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
-            # There is no official documentation on the maximum length of the tools list.
-            # Using the limit stated on the Vertex AI documentation:
-            # https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling#function-declarations
-            max_length=128,
             description="Do not set this manually. It is set by the service based "
             "on the function choice configuration.",
         ),

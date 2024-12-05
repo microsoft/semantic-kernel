@@ -76,7 +76,6 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
-            max_length=128,  # https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
             description="Do not set this manually. It is set by the service based "
             "on the function choice configuration.",
         ),
