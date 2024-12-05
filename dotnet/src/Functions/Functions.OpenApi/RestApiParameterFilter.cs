@@ -12,8 +12,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// to be removed from the REST API or return a new instance of <see cref="RestApiParameter"/>
 /// which will replace the original parameter.
 /// </remarks>
-/// <param name="parameter">The REST API parameter to filter.</param>
-/// <param name="operation">The REST API operation</param>
-/// <param name="parent">The parent object of the parameter, can be either an instance of <see cref="RestApiPayload"/> or <see cref="RestApiPayloadProperty"/> or null if the parameter belongs to the operation.</param>
+/// <param name="context">Instance of <see cref="RestApiParameterFilterContext"/> containing details of the parameter to filter.</param>
 [Experimental("SKEXP0040")]
-public delegate RestApiParameter? RestApiParameterFilter(RestApiParameter parameter, RestApiOperation operation, object? parent = null);
+internal delegate RestApiParameter? RestApiParameterFilter(RestApiParameterFilterContext context);

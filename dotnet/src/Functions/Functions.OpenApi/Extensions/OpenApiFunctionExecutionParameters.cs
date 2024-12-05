@@ -83,7 +83,7 @@ public class OpenApiFunctionExecutionParameters
     /// A custom REST API parameter filter.
     /// </summary>
     [Experimental("SKEXP0040")]
-    public RestApiParameterFilter? ParameterFilter { get; set; }
+    internal RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
