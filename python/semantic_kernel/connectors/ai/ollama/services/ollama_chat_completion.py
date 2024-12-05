@@ -300,7 +300,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
                     completion_tokens=response.eval_count,
                 )
             return metadata
-        metadata: dict[str, Any] = {
+        metadata = {
             "model": response.get("model"),
         }
 
