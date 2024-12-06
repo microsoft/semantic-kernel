@@ -99,7 +99,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
-        # Later on, we already use the tools or equivalant settings, we cast here.
+        # Later on, we already use the tools or equivalent settings, we cast here.
         if not isinstance(settings, self.get_prompt_execution_settings_class()):
             settings = self.get_prompt_execution_settings_from_settings(settings)
 
@@ -214,7 +214,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
-        # Later on, we already use the tools or equivalant settings, we cast here.
+        # Later on, we already use the tools or equivalent settings, we cast here.
         if not isinstance(settings, self.get_prompt_execution_settings_class()):
             settings = self.get_prompt_execution_settings_from_settings(settings)
 
