@@ -410,7 +410,8 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.Metadata.AdditionalProperties);
+            this.Metadata.AdditionalProperties,
+            this.Metadata.Strict ?? false);
         }
 
         return Clone();
