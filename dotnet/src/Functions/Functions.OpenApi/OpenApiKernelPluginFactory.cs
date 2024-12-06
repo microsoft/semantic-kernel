@@ -254,7 +254,7 @@ public static partial class OpenApiKernelPluginFactory
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     internal static KernelFunction CreateRestApiFunction(
         string pluginName,
-        RestApiOperationRunner runner,
+        IRestApiOperationRunner runner,
         RestApiInfo info,
         IList<RestApiSecurityRequirement>? security,
         RestApiOperation operation,

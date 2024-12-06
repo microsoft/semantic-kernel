@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,6 +31,7 @@ public static class CopilotAgentPluginKernelExtensions
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="chatClient">Optional chat client to use for request payload generation.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
     public static async Task<KernelPlugin> ImportPluginFromCopilotAgentPluginAsync(
@@ -37,9 +39,10 @@ public static class CopilotAgentPluginKernelExtensions
         string pluginName,
         string filePath,
         CopilotAgentPluginParameters? pluginParameters = null,
+        IChatClient? chatClient = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, chatClient, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -51,6 +54,7 @@ public static class CopilotAgentPluginKernelExtensions
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="chatClient">Optional chat client to use for request payload generation.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
     public static async Task<KernelPlugin> CreatePluginFromCopilotAgentPluginAsync(
@@ -58,6 +62,7 @@ public static class CopilotAgentPluginKernelExtensions
         string pluginName,
         string filePath,
         CopilotAgentPluginParameters? pluginParameters = null,
+        IChatClient? chatClient = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -156,12 +161,17 @@ public static class CopilotAgentPluginKernelExtensions
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
-            var runner = new RestApiOperationRunner(
+            IRestApiOperationRunner runner = new RestApiOperationRunner(
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? chatClient is null,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+
+            if (chatClient is not null)
+            {
+                runner = new RestApiOperationRunnerPayloadProxy((RestApiOperationRunner)runner, chatClient);
+            }
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
