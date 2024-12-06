@@ -96,6 +96,30 @@ public sealed class OpenAIFunctionTests
         }
     }
 
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void SetsParametersToRequiredWhenStrict(bool strict)
+    {
+        var parameters = new List<OpenAIFunctionParameter>
+        {
+            new ("foo", "bar", false, typeof(string), null),
+        };
+        OpenAIFunction sut = new("plugin", "function", "description", parameters, null, strict);
+
+        var result = sut.ToFunctionDefinition();
+
+        Assert.Equal(strict, result.FunctionSchemaIsStrict);
+        if (strict)
+        {
+            Assert.Equal("""{"type":"object","required":["foo"],"properties":{"foo":{"description":"bar","type":"string"}},"additionalProperties":false}""", result.FunctionParameters.ToString());
+        }
+        else
+        {
+            Assert.Equal("""{"type":"object","required":[],"properties":{"foo":{"description":"bar","type":"string"}}}""", result.FunctionParameters.ToString());
+        }
+    }
+
     [Fact]
     public void ItCanConvertToFunctionDefinitionWithPluginName()
     {
