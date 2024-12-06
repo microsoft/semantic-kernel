@@ -13,11 +13,11 @@ internal static partial class FunctionCallsProcessorLoggingExtensions
     /// <summary>
     /// Action to log the <see cref="FunctionChoiceBehaviorConfiguration"/>.
     /// </summary>
-    private static readonly Action<ILogger, string, bool, bool, bool?, string, Exception?> s_logFunctionChoiceBehaviorConfiguration =
-        LoggerMessage.Define<string, bool, bool, bool?, string>(
+    private static readonly Action<ILogger, string, bool, bool, bool?, bool, string, Exception?> s_logFunctionChoiceBehaviorConfiguration =
+        LoggerMessage.Define<string, bool, bool, bool?, bool, string>(
             logLevel: LogLevel.Debug,
             eventId: 0,
-            "Function choice behavior configuration: Choice:{Choice}, AutoInvoke:{AutoInvoke}, AllowConcurrentInvocation:{AllowConcurrentInvocation}, AllowParallelCalls:{AllowParallelCalls} Functions:{Functions}");
+            "Function choice behavior configuration: Choice:{Choice}, AutoInvoke:{AutoInvoke}, AllowConcurrentInvocation:{AllowConcurrentInvocation}, AllowParallelCalls:{AllowParallelCalls}, AllowStrictSchemaAdherence:{AllowStrictSchemaAdherence} Functions:{Functions}");
 
     /// <summary>
     /// Action to log function calls.
@@ -63,6 +63,7 @@ internal static partial class FunctionCallsProcessorLoggingExtensions
                 configuration.AutoInvoke,
                 configuration.Options.AllowConcurrentInvocation,
                 configuration.Options.AllowParallelCalls,
+                configuration.Options.AllowStrictSchemaAdherence,
                 functionsLog,
                 null);
         }
