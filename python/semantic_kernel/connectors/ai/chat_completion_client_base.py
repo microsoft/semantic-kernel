@@ -99,6 +99,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalant settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             return await self._inner_get_chat_message_contents(chat_history, settings)
@@ -211,6 +214,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalant settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
