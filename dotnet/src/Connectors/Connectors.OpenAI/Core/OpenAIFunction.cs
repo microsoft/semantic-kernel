@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -190,7 +191,7 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchemaBuilder.Build(typeof(string), description, this.Strict ? KernelJsonSchemaBuilder.s_schemaOptions : new());
+            return KernelJsonSchemaBuilder.Build(typeof(string), description, this.Strict ? KernelJsonSchemaBuilder.s_schemaOptions : AIJsonSchemaCreateOptions.Default);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
