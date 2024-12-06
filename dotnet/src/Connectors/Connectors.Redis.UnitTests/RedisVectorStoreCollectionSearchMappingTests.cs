@@ -255,7 +255,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [InlineData(DistanceFunction.CosineDistance, 2)]
     [InlineData(DistanceFunction.DotProductSimilarity, 2)]
     [InlineData(DistanceFunction.EuclideanDistance, 2)]
-    public void GetOutputScoreFromRedisScoreLeavesNonConsineSimiliartyUntouched(string distanceFunction, float score)
+    public void GetOutputScoreFromRedisScoreLeavesNonConsineSimilarityUntouched(string distanceFunction, float score)
     {
         // Act & Assert.
         Assert.Equal(score, RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(score, distanceFunction));
