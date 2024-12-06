@@ -12,7 +12,7 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, name: str = "Test Agent", description: str = "A test agent", id: str = None):
+    def __init__(self, name: str = "Test-Agent", description: str = "A test agent", id: str = None):
         args = {
             "name": name,
             "description": description,
@@ -30,7 +30,7 @@ class MockAgent(Agent):
 
 @pytest.mark.asyncio
 async def test_agent_initialization():
-    name = "Test Agent"
+    name = "TestAgent"
     description = "A test agent"
     id_value = str(uuid.uuid4())
 
@@ -68,21 +68,21 @@ async def test_create_channel():
 async def test_agent_equality():
     id_value = str(uuid.uuid4())
 
-    agent1 = MockAgent(name="Test Agent", description="A test agent", id=id_value)
-    agent2 = MockAgent(name="Test Agent", description="A test agent", id=id_value)
+    agent1 = MockAgent(name="TestAgent", description="A test agent", id=id_value)
+    agent2 = MockAgent(name="TestAgent", description="A test agent", id=id_value)
 
     assert agent1 == agent2
 
-    agent3 = MockAgent(name="Test Agent", description="A different description", id=id_value)
+    agent3 = MockAgent(name="TestAgent", description="A different description", id=id_value)
     assert agent1 != agent3
 
-    agent4 = MockAgent(name="Another Agent", description="A test agent", id=id_value)
+    agent4 = MockAgent(name="AnotherAgent", description="A test agent", id=id_value)
     assert agent1 != agent4
 
 
 @pytest.mark.asyncio
 async def test_agent_equality_different_type():
-    agent = MockAgent(name="Test Agent", description="A test agent", id=str(uuid.uuid4()))
+    agent = MockAgent(name="TestAgent", description="A test agent", id=str(uuid.uuid4()))
     non_agent = "Not an agent"
 
     assert agent != non_agent
@@ -92,10 +92,10 @@ async def test_agent_equality_different_type():
 async def test_agent_hash():
     id_value = str(uuid.uuid4())
 
-    agent1 = MockAgent(name="Test Agent", description="A test agent", id=id_value)
-    agent2 = MockAgent(name="Test Agent", description="A test agent", id=id_value)
+    agent1 = MockAgent(name="TestAgent", description="A test agent", id=id_value)
+    agent2 = MockAgent(name="TestAgent", description="A test agent", id=id_value)
 
     assert hash(agent1) == hash(agent2)
 
-    agent3 = MockAgent(name="Test Agent", description="A different description", id=id_value)
+    agent3 = MockAgent(name="TestAgent", description="A different description", id=id_value)
     assert hash(agent1) != hash(agent3)
