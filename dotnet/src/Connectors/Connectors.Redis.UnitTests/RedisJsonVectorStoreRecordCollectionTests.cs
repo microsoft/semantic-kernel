@@ -450,8 +450,14 @@ public class RedisJsonVectorStoreRecordCollectionTests
         {
             RedisResult.Create(new RedisValue("1")),
             RedisResult.Create(new RedisValue(TestRecordKey1)),
-            RedisResult.Create(new RedisValue("0.5")),
-            RedisResult.Create([new RedisValue("$"), new RedisValue(jsonResult)]),
+            RedisResult.Create(new RedisValue("0.8")),
+            RedisResult.Create(
+            [
+                new RedisValue("$"),
+                new RedisValue(jsonResult),
+                new RedisValue("vector_score"),
+                new RedisValue("0.25")
+            ]),
         });
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -496,7 +502,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(TestRecordKey1, results.First().Record.Key);
-        Assert.Equal(0.5d, results.First().Score);
+        Assert.Equal(0.25d, results.First().Score);
         Assert.Equal("data 1", results.First().Record.Data1);
         Assert.Equal("data 2", results.First().Record.Data2);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector1!.Value.ToArray());
@@ -617,7 +623,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true, StoragePropertyName = "ignored_data1_storage_name" },
             new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsFilterable = true },
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, StoragePropertyName = "ignored_vector1_storage_name" },
+            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name" },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 }
         ]
     };
@@ -635,7 +641,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("vector1_json_name")]
-        [VectorStoreRecordVector(4, StoragePropertyName = "ignored_vector1_storage_name")]
+        [VectorStoreRecordVector(4, DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
         [VectorStoreRecordVector(4)]
