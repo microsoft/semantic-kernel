@@ -7,6 +7,7 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
 from pydantic import Field
 from vertexai.generative_models import Tool, ToolConfig
 
@@ -38,7 +39,6 @@ class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
     tools: Annotated[
         list[Tool] | None,
         Field(
-            max_length=64,
             description="Do not set this manually. It is set by the service based "
             "on the function choice configuration.",
         ),
