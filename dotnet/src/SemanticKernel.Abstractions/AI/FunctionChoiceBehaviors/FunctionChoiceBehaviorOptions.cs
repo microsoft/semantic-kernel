@@ -30,7 +30,7 @@ public sealed class FunctionChoiceBehaviorOptions
     /// <summary>
     /// Gets or sets whether the AI model should strictly adhere to the function schema.
     /// </summary>
-    /// remarks>
+    /// <remarks>
     /// The default value is set to false. If set to true, the AI model will strictly adhere to the function schema.
     /// </remarks>
     [JsonPropertyName("allow_strict_schema_adherence")]
