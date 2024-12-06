@@ -102,7 +102,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.Address.City, searchResultRecord?.Address.City);
         Assert.Equal(record.Description, searchResultRecord?.Description);
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), searchResultRecord?.DescriptionEmbedding?.ToArray());
- 
+
         // Output
         output.WriteLine(collectionExistResult.ToString());
         output.WriteLine(upsertResult);
