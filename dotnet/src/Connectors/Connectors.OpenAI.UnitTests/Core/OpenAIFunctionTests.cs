@@ -59,17 +59,26 @@ public sealed class OpenAIFunctionTests
         Assert.Equal(sut.Description, result.FunctionDescription);
     }
 
-    [Fact]
-    public void ItCanConvertToFunctionDefinitionWithNullParameters()
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ItCanConvertToFunctionDefinitionWithNullParameters(bool strict)
     {
         // Arrange
-        OpenAIFunction sut = new("plugin", "function", "description", null, null, false);
+        OpenAIFunction sut = new("plugin", "function", "description", null, null, strict);
 
         // Act
         var result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.FunctionParameters.ToString());
+        if (strict)
+        {
+            Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{},\"additionalProperties\":false}", result.FunctionParameters.ToString());
+        }
+        else
+        {
+            Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.FunctionParameters.ToString());
+        }
     }
 
     [Fact]
