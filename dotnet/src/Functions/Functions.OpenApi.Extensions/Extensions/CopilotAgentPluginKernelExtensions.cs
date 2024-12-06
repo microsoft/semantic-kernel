@@ -179,7 +179,7 @@ public static class CopilotAgentPluginKernelExtensions
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
                         TrimOperationDescriptions(operation);
-                        functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                        functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory, pluginParameters?.Strict ?? false));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {

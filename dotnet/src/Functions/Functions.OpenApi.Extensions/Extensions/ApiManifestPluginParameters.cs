@@ -26,19 +26,30 @@ public sealed class ApiManifestPluginParameters
     public Dictionary<string, OpenApiFunctionExecutionParameters>? FunctionExecutionParameters { get; init; }
 
     /// <summary>
+    /// Whether to enforce strict adherence to the schema.
+    /// </summary>
+    /// <remarks>
+    /// If true, the function will only accept inputs that strictly match the schema.
+    /// </remarks>
+    public bool Strict { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ApiManifestPluginParameters"/> class.
     /// </summary>
     /// <param name="httpClient">Http client to be used in plugin initialization phase.</param>
     /// <param name="userAgent">User agent to be used in plugin initialization phase.</param>
     /// <param name="functionExecutionParameters">A map of function execution parameters.</param>
+    /// <param name="strict">Whether to enforce strict adherence to the schema.</param>
     public ApiManifestPluginParameters(
         HttpClient? httpClient = default,
         string? userAgent = default,
-        Dictionary<string, OpenApiFunctionExecutionParameters>? functionExecutionParameters = default
+        Dictionary<string, OpenApiFunctionExecutionParameters>? functionExecutionParameters = default,
+        bool strict = false
     )
     {
         this.HttpClient = httpClient;
         this.UserAgent = userAgent;
         this.FunctionExecutionParameters = functionExecutionParameters;
+        this.Strict = strict;
     }
 }
