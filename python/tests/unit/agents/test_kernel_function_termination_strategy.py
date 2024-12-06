@@ -16,7 +16,7 @@ from semantic_kernel.kernel import Kernel
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,
