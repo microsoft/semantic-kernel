@@ -150,9 +150,8 @@ public sealed class OpenAIFunction
             var properties = new Dictionary<string, KernelJsonSchema>();
             var required = new List<string>();
 
-            for (int i = 0; i < parameters.Count; i++)
+            foreach (var parameter in parameters)
             {
-                var parameter = parameters[i];
                 properties.Add(parameter.Name, parameter.Schema ?? this.GetDefaultSchemaForTypelessParameter(parameter.Description));
                 if (parameter.IsRequired || this.Strict)
                 {
