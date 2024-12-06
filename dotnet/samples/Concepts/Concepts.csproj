@@ -131,6 +131,9 @@
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\DeclarativeAgents\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\*">
