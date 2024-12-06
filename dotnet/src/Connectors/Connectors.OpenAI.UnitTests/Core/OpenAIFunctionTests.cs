@@ -87,10 +87,12 @@ public sealed class OpenAIFunctionTests
         if (strict)
         {
             Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{},\"additionalProperties\":false}", result.FunctionParameters.ToString());
+            Assert.True(sut.Strict);
         }
         else
         {
             Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.FunctionParameters.ToString());
+            Assert.False(sut.Strict);
         }
     }
 
