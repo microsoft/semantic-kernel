@@ -11,6 +11,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
+from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 
 @experimental_class
@@ -32,7 +33,7 @@ class Agent(KernelBaseModel):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     description: str | None = None
-    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}")
+    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}", pattern=AGENT_NAME_REGEX)
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None

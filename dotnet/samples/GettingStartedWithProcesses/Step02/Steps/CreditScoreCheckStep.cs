@@ -25,10 +25,16 @@ public class CreditScoreCheckStep : KernelProcessStep
 
         if (creditScore >= MinCreditScore)
         {
+            Console.WriteLine("[CREDIT CHECK] Credit Score Check Passed");
             await context.EmitEventAsync(new() { Id = AccountOpeningEvents.CreditScoreCheckApproved, Data = true });
             return;
         }
-
-        await context.EmitEventAsync(new() { Id = AccountOpeningEvents.CreditScoreCheckRejected, Data = $"We regret to inform you that your credit score of {creditScore} is insufficient to apply for an account of the type PRIME ABC" });
+        Console.WriteLine("[CREDIT CHECK] Credit Score Check Failed");
+        await context.EmitEventAsync(new()
+        {
+            Id = AccountOpeningEvents.CreditScoreCheckRejected,
+            Data = $"We regret to inform you that your credit score of {creditScore} is insufficient to apply for an account of the type PRIME ABC",
+            Visibility = KernelProcessEventVisibility.Public,
+        });
     }
 }
