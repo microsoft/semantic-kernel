@@ -72,6 +72,10 @@ public sealed class OpenAIFunction
     /// </remarks>
     private static readonly BinaryData s_zeroFunctionParametersSchema = new("""{"type":"object","required":[],"properties":{}}""");
     /// <summary>
+    /// Same as above, but with additionalProperties: false for strict mode.
+    /// </summary>
+    private static readonly BinaryData s_zeroFunctionParametersSchema_strict = new("""{"type":"object","required":[],"properties":{},"additionalProperties":false}""");
+    /// <summary>
     /// Cached schema for a descriptionless string.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
@@ -82,7 +86,8 @@ public sealed class OpenAIFunction
         string functionName,
         string? description,
         IReadOnlyList<OpenAIFunctionParameter>? parameters,
-        OpenAIFunctionReturnParameter? returnParameter)
+        OpenAIFunctionReturnParameter? returnParameter,
+        bool strict)
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
@@ -91,6 +96,7 @@ public sealed class OpenAIFunction
         this.Description = description;
         this.Parameters = parameters;
         this.ReturnParameter = returnParameter;
+        this.Strict = strict;
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
@@ -103,6 +109,12 @@ public sealed class OpenAIFunction
 
     /// <summary>Gets the name of the function.</summary>
     public string FunctionName { get; }
+
+    /// <summary>Gets or sets whether the function should be strictly adhered to.</summary>
+    /// <remarks>
+    /// This is a flag that indicates whether the function should be strictly adhered to. If set to true, the function will be strictly adhered to.
+    /// </remarks>
+    public bool Strict { get; set; }
 
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <remarks>
@@ -129,7 +141,7 @@ public sealed class OpenAIFunction
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
     public ChatTool ToFunctionDefinition()
     {
-        BinaryData resultParameters = s_zeroFunctionParametersSchema;
+        BinaryData resultParameters = this.Strict ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
 
         IReadOnlyList<OpenAIFunctionParameter>? parameters = this.Parameters;
         if (parameters is { Count: > 0 })
@@ -140,36 +152,45 @@ public sealed class OpenAIFunction
             for (int i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description));
-                if (parameter.IsRequired)
+                properties.Add(parameter.Name, parameter.Schema ?? this.GetDefaultSchemaForTypelessParameter(parameter.Description));
+                if (parameter.IsRequired || this.Strict)
                 {
                     required.Add(parameter.Name);
                 }
             }
 
-            resultParameters = BinaryData.FromObjectAsJson(new
-            {
-                type = "object",
-                required,
-                properties,
-            });
+            resultParameters = this.Strict
+                ? BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                    additionalProperties = false
+                })
+                : BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                });
         }
 
         return ChatTool.CreateFunctionTool
         (
             functionName: this.FullyQualifiedName,
             functionDescription: this.Description,
-            functionParameters: resultParameters
+            functionParameters: resultParameters,
+            functionSchemaIsStrict: this.Strict
         );
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
-    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
+    private KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
     {
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchemaBuilder.Build(typeof(string), description);
+            return KernelJsonSchemaBuilder.Build(typeof(string), description, this.Strict ? KernelJsonSchemaBuilder.s_schemaOptions : new());
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

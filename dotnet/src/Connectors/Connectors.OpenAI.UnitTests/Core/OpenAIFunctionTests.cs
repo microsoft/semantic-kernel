@@ -62,8 +62,8 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionWithNullParameters()
     {
-        // Arrange 
-        OpenAIFunction sut = new("plugin", "function", "description", null, null);
+        // Arrange
+        OpenAIFunction sut = new("plugin", "function", "description", null, null, false);
 
         // Act
         var result = sut.ToFunctionDefinition();

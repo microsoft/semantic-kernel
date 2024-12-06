@@ -49,6 +49,7 @@ public sealed class KernelFunctionMetadata
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
         this.AdditionalProperties = metadata.AdditionalProperties;
+        this.Strict = metadata.Strict;
     }
 
     /// <summary>Gets the name of the function.</summary>
@@ -85,6 +86,11 @@ public sealed class KernelFunctionMetadata
             this._parameters = value;
         }
     }
+
+    /// <summary>
+    /// Enables strict schema adherence for the function.
+    /// </summary>
+    public bool? Strict { get; init; }
 
     /// <summary>Gets parameter metadata for the return parameter.</summary>
     /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="KernelReturnParameterMetadata"/>.</remarks>

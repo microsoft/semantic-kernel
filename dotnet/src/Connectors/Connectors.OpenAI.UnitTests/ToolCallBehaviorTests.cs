@@ -43,7 +43,7 @@ public sealed class ToolCallBehaviorTests
     public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
-        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null)];
+        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null, false)];
         var behavior = ToolCallBehavior.EnableFunctions(functions);
 
         // Assert
@@ -55,7 +55,7 @@ public sealed class ToolCallBehaviorTests
     public void RequireFunctionReturnsRequiredFunctionInstance()
     {
         // Arrange & Act
-        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null));
+        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null, false));
 
         // Assert
         Assert.IsType<RequiredFunction>(behavior);

@@ -39,7 +39,8 @@ public static class OpenAIKernelFunctionMetadataExtensions
             new OpenAIFunctionReturnParameter(
                 metadata.ReturnParameter.Description,
                 metadata.ReturnParameter.ParameterType,
-                metadata.ReturnParameter.Schema));
+                metadata.ReturnParameter.Schema),
+            metadata.Strict == true);
 
         static string GetDescription(KernelParameterMetadata param)
         {
