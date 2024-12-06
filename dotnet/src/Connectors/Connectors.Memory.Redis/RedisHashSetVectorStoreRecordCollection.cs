@@ -119,13 +119,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
 
         // Lookup storage property names.
-        var dataStoragePropertyNames = this._propertyReader.DataPropertyStoragePropertyNames;
-
-        this._dataStoragePropertyNameRedisValues = dataStoragePropertyNames
+        this._dataStoragePropertyNameRedisValues = this._propertyReader.DataPropertyStoragePropertyNames
             .Select(RedisValue.Unbox)
             .ToArray();
 
-        this._dataStoragePropertyNamesWithScore = [.. dataStoragePropertyNames, "vector_score"];
+        this._dataStoragePropertyNamesWithScore = [.. this._propertyReader.DataPropertyStoragePropertyNames, "vector_score"];
 
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
