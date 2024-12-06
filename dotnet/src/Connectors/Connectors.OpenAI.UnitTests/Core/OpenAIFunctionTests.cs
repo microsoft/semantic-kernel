@@ -45,6 +45,19 @@ public sealed class OpenAIFunctionTests
         Assert.Same(schema, functionParameter.Schema);
     }
 
+    [InlineData(null, false)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(null, true)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [Theory]
+    public void ItSetsTheStrictModeAccordingToAllowance(bool? allowed, bool strict)
+    {
+        OpenAIFunction sut = new KernelFunctionMetadata("foo") { Strict = strict }.ToOpenAIFunction(allowed);
+        Assert.Equal((allowed ?? true) && strict, sut.Strict);
+    }
+
     [Fact]
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
