@@ -35,13 +35,12 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
-    /// <param name="eventId">The Id of the event of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnEvent(string eventId)
+    public ProcessStepEdgeBuilder OnEvent(string eventName)
     {
         // scope the event to this instance of this step
-        var scopedEventId = this.GetScopedEventId(eventId);
-        return new ProcessStepEdgeBuilder(this, scopedEventId);
+        var scopedEventId = this.GetScopedEventId(eventName);
+        return new ProcessStepEdgeBuilder(this, scopedEventId, eventName);
     }
 
     /// <summary>
