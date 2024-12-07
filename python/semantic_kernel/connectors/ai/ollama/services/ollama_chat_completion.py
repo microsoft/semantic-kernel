@@ -12,7 +12,7 @@ else:
 
 import httpx
 from ollama import AsyncClient
-from ollama._types import Message
+from ollama._types import ChatResponse, Message
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -186,11 +186,6 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
 
-        if settings.tools:
-            raise ServiceInvalidExecutionSettingsError(
-                "Ollama does not support tool calling in streaming chat completion."
-            )
-
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await self.client.chat(
@@ -248,10 +243,30 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         )
 
     def _create_streaming_chat_message_content(
-        self, part: Mapping[str, Any], metadata: dict[str, Any]
+        self, part: Mapping[str, Any] | ChatResponse, metadata: dict[str, Any]
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content from the response part."""
         items: list[STREAMING_ITEM_TYPES] = []
+        if isinstance(part, ChatResponse):
+            if part.message is None:
+                raise ServiceInvalidResponseError("No message content found in response part.")
+            if part.message.content:
+                items.append(
+                    StreamingTextContent(
+                        choice_index=0,
+                        text=part.message.content,
+                        inner_content=part.message,
+                    )
+                )
+            return StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                choice_index=0,
+                items=items,
+                inner_content=part,
+                ai_model_id=self.ai_model_id,
+                metadata=metadata,
+            )
+
         if not (message := part.get("message", None)):
             raise ServiceInvalidResponseError("No message content found in response part.")
 
@@ -273,8 +288,18 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             metadata=metadata,
         )
 
-    def _get_metadata_from_response(self, response: Mapping[str, Any]) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: Mapping[str, Any] | ChatResponse) -> dict[str, Any]:
         """Get metadata from the response."""
+        if isinstance(response, ChatResponse):
+            metadata: dict[str, Any] = {
+                "model": response.model,
+            }
+            if response.prompt_eval_count and response.eval_count:
+                metadata["usage"] = CompletionUsage(
+                    prompt_tokens=response.prompt_eval_count,
+                    completion_tokens=response.eval_count,
+                )
+            return metadata
         metadata = {
             "model": response.get("model"),
         }

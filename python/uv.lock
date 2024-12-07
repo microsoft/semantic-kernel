@@ -2824,14 +2824,15 @@ wheels = [
 
 [[package]]
 name = "ollama"
-version = "0.3.3"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/8e/60a9b065eb796ef3996451cbe2d8044f6b030696166693b9805ae33b8b4c/ollama-0.3.3.tar.gz", hash = "sha256:f90a6d61803117f40b0e8ff17465cab5e1eb24758a473cfe8101aff38bc13b51", size = 10390 }
+sdist = { url = "https://files.pythonhosted.org/packages/92/cf/d3035090602cf325d200e85df355253b6210ae81e6c6e21b57ece76c2b16/ollama-0.4.2.tar.gz", hash = "sha256:5dffc826737a1d121c9ae371439cace20ab02ec4b0840fd55c56efa9a3fb3646", size = 13098 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6a/ca/d22905ac3f768523f778189d38c9c6cd9edf4fa9dd09cb5a3fc57b184f90/ollama-0.3.3-py3-none-any.whl", hash = "sha256:ca6242ce78ab34758082b7392df3f9f6c2cb1d070a9dede1a4c545c929e16dba", size = 10267 },
+    { url = "https://files.pythonhosted.org/packages/da/8e/b651790e301c555fe76869308f9c8af1014146ce4187291cf13eb8109096/ollama-0.4.2-py3-none-any.whl", hash = "sha256:3059fe1fe34e24c782e9e8eebf69bcd2d7037007cb4b3cfda4b32bfee36ae2ef", size = 13138 },
 ]
 
 [[package]]
@@ -4695,7 +4696,7 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.16.0"
+version = "1.17.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4833,7 +4834,7 @@ requires-dist = [
     { name = "nest-asyncio", specifier = "~=1.6" },
     { name = "numpy", marker = "python_full_version < '3.12'", specifier = ">=1.25.0" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26.0" },
-    { name = "ollama", marker = "extra == 'ollama'", specifier = "~=0.2" },
+    { name = "ollama", marker = "extra == 'ollama'", specifier = "~=0.4" },
     { name = "onnxruntime-genai", marker = "platform_system != 'Darwin' and extra == 'onnx'", specifier = "~=0.4" },
     { name = "openai", specifier = "~=1.0" },
     { name = "openapi-core", specifier = ">=0.18,<0.20" },

@@ -83,7 +83,7 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 ollama = [
-    "ollama ~= 0.2"
+    "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
