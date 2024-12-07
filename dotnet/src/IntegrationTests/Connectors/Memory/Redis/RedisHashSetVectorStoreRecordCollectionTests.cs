@@ -84,6 +84,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
+        Assert.Equal(1, searchResults.First().Score);
         var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
         Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
@@ -325,6 +326,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Assert
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
+        Assert.Equal(1, searchResults.First().Score);
         var searchResult = searchResults.First().Record;
         Assert.Equal("HBaseSet-1", searchResult?.HotelId);
         Assert.Equal("My Hotel 1", searchResult?.HotelName);

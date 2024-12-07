@@ -9,13 +9,13 @@
   "capabilities": {
     "conversation_starters": [
       {
-        "text": "Get content for the navigation property children f"
+        "text": "Get content for the navigation property items from"
       }
     ]
   },
   "functions": [
     {
-      "name": "drive_root_GetChildrenContent",
+      "name": "drives_GetItemsContent",
       "description": "The content stream, if the item represents a file."
     }
   ],
@@ -29,7 +29,7 @@
         "url": "driveitem-openapi.yml"
       },
       "run_for_functions": [
-        "drive_root_GetChildrenContent"
+        "drives_GetItemsContent"
       ]
     }
   ]

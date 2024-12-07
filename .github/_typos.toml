@@ -23,7 +23,8 @@ extend-exclude = [
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
     "WomensSuffrage.txt",
-    "SK-dotnet.sln.DotSettings"
+    "SK-dotnet.sln.DotSettings",
+    "dotnet/samples/Concepts/Resources/Plugins/CopilotAgentPlugins/README.md"
 ]
 
 [default.extend-words]

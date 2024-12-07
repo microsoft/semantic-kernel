@@ -79,12 +79,12 @@ public static class CopilotAgentPluginKernelExtensions
 
         var results = await PluginManifestDocument.LoadAsync(CopilotAgentFileJsonContents, new ReaderOptions
         {
-            ValidationRules = new() // Disable validation rules
+            ValidationRules = [] // Disable validation rules
         }).ConfigureAwait(false);
 
         if (!results.IsValid)
         {
-            var messages = results.Problems.Select(p => p.Message).Aggregate((a, b) => $"{a}, {b}");
+            var messages = results.Problems.Select(static p => p.Message).Aggregate(static (a, b) => $"{a}, {b}");
             throw new InvalidOperationException($"Error loading the manifest: {messages}");
         }
 

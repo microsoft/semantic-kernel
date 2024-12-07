@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
+    <ProjectReference Include="..\..\Agents\Abstractions\Agents.Abstractions.csproj"/>
   </ItemGroup>
 </Project>

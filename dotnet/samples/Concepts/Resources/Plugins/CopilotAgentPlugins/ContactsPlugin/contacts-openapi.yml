@@ -12,9 +12,6 @@ paths:
         - me.contact
       summary: List contacts
       description: 'Get a contact collection from the default contacts folder of the signed-in user. There are two scenarios where an app can get contacts in another user''s contact folder:'
-      externalDocs:
-        description: Find more info here
-        url: https://learn.microsoft.com/graph/api/user-list-contacts?view=graph-rest-1.0
       operationId: me_ListContacts
       parameters:
         - $ref: '#/components/parameters/top'
@@ -31,83 +28,6 @@ paths:
             uniqueItems: true
             type: array
             items:
-              enum:
-                - id
-                - id desc
-                - categories
-                - categories desc
-                - changeKey
-                - changeKey desc
-                - createdDateTime
-                - createdDateTime desc
-                - lastModifiedDateTime
-                - lastModifiedDateTime desc
-                - assistantName
-                - assistantName desc
-                - birthday
-                - birthday desc
-                - businessAddress
-                - businessAddress desc
-                - businessHomePage
-                - businessHomePage desc
-                - businessPhones
-                - businessPhones desc
-                - children
-                - children desc
-                - companyName
-                - companyName desc
-                - department
-                - department desc
-                - displayName
-                - displayName desc
-                - emailAddresses
-                - emailAddresses desc
-                - fileAs
-                - fileAs desc
-                - generation
-                - generation desc
-                - givenName
-                - givenName desc
-                - homeAddress
-                - homeAddress desc
-                - homePhones
-                - homePhones desc
-                - imAddresses
-                - imAddresses desc
-                - initials
-                - initials desc
-                - jobTitle
-                - jobTitle desc
-                - manager
-                - manager desc
-                - middleName
-                - middleName desc
-                - mobilePhone
-                - mobilePhone desc
-                - nickName
-                - nickName desc
-                - officeLocation
-                - officeLocation desc
-                - otherAddress
-                - otherAddress desc
-                - parentFolderId
-                - parentFolderId desc
-                - personalNotes
-                - personalNotes desc
-                - profession
-                - profession desc
-                - spouseName
-                - spouseName desc
-                - surname
-                - surname desc
-                - title
-                - title desc
-                - yomiCompanyName
-                - yomiCompanyName desc
-                - yomiGivenName
-                - yomiGivenName desc
-                - yomiSurname
-                - yomiSurname desc
               type: string
         - name: $select
           in: query
@@ -118,49 +38,6 @@ paths:
             uniqueItems: true
             type: array
             items:
-              enum:
-                - id
-                - categories
-                - changeKey
-                - createdDateTime
-                - lastModifiedDateTime
-                - assistantName
-                - birthday
-                - businessAddress
-                - businessHomePage
-                - businessPhones
-                - children
-                - companyName
-                - department
-                - displayName
-                - emailAddresses
-                - fileAs
-                - generation
-                - givenName
-                - homeAddress
-                - homePhones
-                - imAddresses
-                - initials
-                - jobTitle
-                - manager
-                - middleName
-                - mobilePhone
-                - nickName
-                - officeLocation
-                - otherAddress
-                - parentFolderId
-                - personalNotes
-                - profession
-                - spouseName
-                - surname
-                - title
-                - yomiCompanyName
-                - yomiGivenName
-                - yomiSurname
-                - extensions
-                - multiValueExtendedProperties
-                - photo
-                - singleValueExtendedProperties
               type: string
         - name: $expand
           in: query
@@ -171,18 +48,10 @@ paths:
             uniqueItems: true
             type: array
             items:
-              enum:
-                - '*'
-                - extensions
-                - multiValueExtendedProperties
-                - photo
-                - singleValueExtendedProperties
               type: string
       responses:
-        '200':
+        2XX:
           $ref: '#/components/responses/microsoft.graph.contactCollectionResponse'
-        default:
-          $ref: '#/components/responses/error'
       x-ms-pageable:
         nextLinkName: '@odata.nextLink'
         operationName: listMore
@@ -190,256 +59,211 @@ paths:
 components:
   schemas:
     microsoft.graph.contactCollectionResponse:
-      title: Collection of contact
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/BaseCollectionPaginationCountResponse'
-        - type: object
-          properties:
-            value:
-              type: array
-              items:
-                $ref: '#/components/schemas/microsoft.graph.contact'
-    microsoft.graph.ODataErrors.ODataError:
-      required:
-        - error
-      type: object
-      properties:
-        error:
-          $ref: '#/components/schemas/microsoft.graph.ODataErrors.MainError'
-    BaseCollectionPaginationCountResponse:
       title: Base collection pagination and count responses
       type: object
       properties:
+        '@odata.count':
+          type: integer
+          format: int64
+          nullable: true
         '@odata.nextLink':
           type: string
           nullable: true
-    microsoft.graph.contact:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.outlookItem'
-        - title: contact
-          type: object
-          properties:
-            assistantName:
-              type: string
-              description: The name of the contact's assistant.
-              nullable: true
-            birthday:
-              pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
-              type: string
-              description: 'The contact''s birthday. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
-              format: date-time
-              nullable: true
-            businessAddress:
-              anyOf:
-                - $ref: '#/components/schemas/microsoft.graph.physicalAddress'
-                - type: object
-                  nullable: true
-              description: The contact's business address.
-            businessHomePage:
-              type: string
-              description: The business home page of the contact.
-              nullable: true
-            businessPhones:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: The contact's business phone numbers.
-            children:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: The names of the contact's children.
-            companyName:
-              type: string
-              description: The name of the contact's company.
-              nullable: true
-            department:
-              type: string
-              description: The contact's department.
-              nullable: true
-            displayName:
-              type: string
-              description: 'The contact''s display name. You can specify the display name in a create or update operation. Note that later updates to other properties may cause an automatically generated value to overwrite the displayName value you have specified. To preserve a pre-existing value, always include it as displayName in an update operation.'
-              nullable: true
-            emailAddresses:
-              type: array
-              items:
-                $ref: '#/components/schemas/microsoft.graph.emailAddress'
-              description: The contact's email addresses.
-            fileAs:
-              type: string
-              description: The name the contact is filed under.
-              nullable: true
-            generation:
-              type: string
-              description: The contact's suffix.
-              nullable: true
-            givenName:
-              type: string
-              description: The contact's given name.
-              nullable: true
-            homeAddress:
-              anyOf:
-                - $ref: '#/components/schemas/microsoft.graph.physicalAddress'
-                - type: object
-                  nullable: true
-              description: The contact's home address.
-            homePhones:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: The contact's home phone numbers.
-            imAddresses:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: The contact's instant messaging (IM) addresses.
-            initials:
-              type: string
-              description: The contact's initials.
-              nullable: true
-            jobTitle:
-              type: string
-              description: The contact’s job title.
-              nullable: true
-            manager:
-              type: string
-              description: The name of the contact's manager.
-              nullable: true
-            middleName:
-              type: string
-              description: The contact's middle name.
-              nullable: true
-            mobilePhone:
-              type: string
-              description: The contact's mobile phone number.
-              nullable: true
-            nickName:
-              type: string
-              description: The contact's nickname.
-              nullable: true
-            officeLocation:
-              type: string
-              description: The location of the contact's office.
-              nullable: true
-            otherAddress:
-              anyOf:
-                - $ref: '#/components/schemas/microsoft.graph.physicalAddress'
-                - type: object
-                  nullable: true
-              description: Other addresses for the contact.
-            parentFolderId:
-              type: string
-              description: The ID of the contact's parent folder.
-              nullable: true
-            personalNotes:
-              type: string
-              description: The user's notes about the contact.
-              nullable: true
-            profession:
-              type: string
-              description: The contact's profession.
-              nullable: true
-            spouseName:
-              type: string
-              description: The name of the contact's spouse/partner.
-              nullable: true
-            surname:
-              type: string
-              description: The contact's surname.
-              nullable: true
-            title:
-              type: string
-              description: The contact's title.
-              nullable: true
-            yomiCompanyName:
-              type: string
-              description: The phonetic Japanese company name of the contact.
-              nullable: true
-            yomiGivenName:
-              type: string
-              description: The phonetic Japanese given name (first name) of the contact.
-              nullable: true
-            yomiSurname:
-              type: string
-              description: The phonetic Japanese surname (last name)  of the contact.
-              nullable: true
-            extensions:
-              type: array
-              items:
-                $ref: '#/components/schemas/microsoft.graph.extension'
-              description: The collection of open extensions defined for the contact. Read-only. Nullable.
-            multiValueExtendedProperties:
-              type: array
-              items:
-                $ref: '#/components/schemas/microsoft.graph.multiValueLegacyExtendedProperty'
-              description: The collection of multi-value extended properties defined for the contact. Read-only. Nullable.
-            photo:
-              anyOf:
-                - $ref: '#/components/schemas/microsoft.graph.profilePhoto'
-                - type: object
-                  nullable: true
-              description: Optional contact picture. You can get or set a photo for a contact.
-            singleValueExtendedProperties:
-              type: array
-              items:
-                $ref: '#/components/schemas/microsoft.graph.singleValueLegacyExtendedProperty'
-              description: The collection of single-value extended properties defined for the contact. Read-only. Nullable.
-    microsoft.graph.ODataErrors.MainError:
-      required:
-        - code
-        - message
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-          x-ms-primary-error-message: true
-        target:
-          type: string
-          nullable: true
-        details:
+        value:
           type: array
           items:
-            $ref: '#/components/schemas/microsoft.graph.ODataErrors.ErrorDetails'
-        innerError:
-          $ref: '#/components/schemas/microsoft.graph.ODataErrors.InnerError'
-    microsoft.graph.outlookItem:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.entity'
-        - title: outlookItem
-          type: object
-          properties:
-            categories:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: The categories associated with the item
-            changeKey:
-              type: string
-              description: 'Identifies the version of the item. Every time the item is changed, changeKey changes as well. This allows Exchange to apply changes to the correct version of the object. Read-only.'
-              nullable: true
-            createdDateTime:
-              pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
-              type: string
-              description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
-              format: date-time
-              nullable: true
-            lastModifiedDateTime:
-              pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
-              type: string
-              description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
-              format: date-time
-              nullable: true
+            $ref: '#/components/schemas/microsoft.graph.contact'
+    microsoft.graph.contact:
+      title: contact
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The categories associated with the item
+        changeKey:
+          type: string
+          description: 'Identifies the version of the item. Every time the item is changed, changeKey changes as well. This allows Exchange to apply changes to the correct version of the object. Read-only.'
+          nullable: true
+        createdDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        assistantName:
+          type: string
+          description: The name of the contact's assistant.
+          nullable: true
+        birthday:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The contact''s birthday. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        businessAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        businessHomePage:
+          type: string
+          description: The business home page of the contact.
+          nullable: true
+        businessPhones:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's business phone numbers.
+        children:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The names of the contact's children.
+        companyName:
+          type: string
+          description: The name of the contact's company.
+          nullable: true
+        department:
+          type: string
+          description: The contact's department.
+          nullable: true
+        displayName:
+          type: string
+          description: 'The contact''s display name. You can specify the display name in a create or update operation. Note that later updates to other properties may cause an automatically generated value to overwrite the displayName value you have specified. To preserve a pre-existing value, always include it as displayName in an update operation.'
+          nullable: true
+        emailAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.emailAddress'
+          description: The contact's email addresses.
+        fileAs:
+          type: string
+          description: The name the contact is filed under.
+          nullable: true
+        generation:
+          type: string
+          description: The contact's suffix.
+          nullable: true
+        givenName:
+          type: string
+          description: The contact's given name.
+          nullable: true
+        homeAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        homePhones:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's home phone numbers.
+        imAddresses:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The contact's instant messaging (IM) addresses.
+        initials:
+          type: string
+          description: The contact's initials.
+          nullable: true
+        jobTitle:
+          type: string
+          description: The contact’s job title.
+          nullable: true
+        manager:
+          type: string
+          description: The name of the contact's manager.
+          nullable: true
+        middleName:
+          type: string
+          description: The contact's middle name.
+          nullable: true
+        mobilePhone:
+          type: string
+          description: The contact's mobile phone number.
+          nullable: true
+        nickName:
+          type: string
+          description: The contact's nickname.
+          nullable: true
+        officeLocation:
+          type: string
+          description: The location of the contact's office.
+          nullable: true
+        otherAddress:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        parentFolderId:
+          type: string
+          description: The ID of the contact's parent folder.
+          nullable: true
+        personalNotes:
+          type: string
+          description: The user's notes about the contact.
+          nullable: true
+        profession:
+          type: string
+          description: The contact's profession.
+          nullable: true
+        spouseName:
+          type: string
+          description: The name of the contact's spouse/partner.
+          nullable: true
+        surname:
+          type: string
+          description: The contact's surname.
+          nullable: true
+        title:
+          type: string
+          description: The contact's title.
+          nullable: true
+        yomiCompanyName:
+          type: string
+          description: The phonetic Japanese company name of the contact.
+          nullable: true
+        yomiGivenName:
+          type: string
+          description: The phonetic Japanese given name (first name) of the contact.
+          nullable: true
+        yomiSurname:
+          type: string
+          description: The phonetic Japanese surname (last name)  of the contact.
+          nullable: true
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.extension'
+          description: The collection of open extensions defined for the contact. Read-only. Nullable.
+        multiValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.multiValueLegacyExtendedProperty'
+          description: The collection of multi-value extended properties defined for the contact. Read-only. Nullable.
+        photo:
+          $ref: '#/components/schemas/microsoft.graph.profilePhoto'
+        singleValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.singleValueLegacyExtendedProperty'
+          description: The collection of single-value extended properties defined for the contact. Read-only. Nullable.
     microsoft.graph.physicalAddress:
       title: physicalAddress
+      required:
+        - '@odata.type'
       type: object
       properties:
         city:
@@ -462,8 +286,13 @@ components:
           type: string
           description: The street.
           nullable: true
+        '@odata.type':
+          type: string
+      description: The contact's business address.
     microsoft.graph.emailAddress:
       title: emailAddress
+      required:
+        - '@odata.type'
       type: object
       properties:
         address:
@@ -474,76 +303,53 @@ components:
           type: string
           description: The display name of the person or entity.
           nullable: true
+        '@odata.type':
+          type: string
     microsoft.graph.extension:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.entity'
-        - title: extension
-          type: object
-    microsoft.graph.multiValueLegacyExtendedProperty:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.entity'
-        - title: multiValueLegacyExtendedProperty
-          type: object
-          properties:
-            value:
-              type: array
-              items:
-                type: string
-                nullable: true
-              description: A collection of property values.
-    microsoft.graph.profilePhoto:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.entity'
-        - title: profilePhoto
-          type: object
-          properties:
-            height:
-              maximum: 2147483647
-              minimum: -2147483648
-              type: number
-              description: The height of the photo. Read-only.
-              format: int32
-              nullable: true
-            width:
-              maximum: 2147483647
-              minimum: -2147483648
-              type: number
-              description: The width of the photo. Read-only.
-              format: int32
-              nullable: true
-    microsoft.graph.singleValueLegacyExtendedProperty:
-      allOf:
-        - $ref: '#/components/schemas/microsoft.graph.entity'
-        - title: singleValueLegacyExtendedProperty
-          type: object
-          properties:
-            value:
-              type: string
-              description: A property value.
-              nullable: true
-    microsoft.graph.ODataErrors.ErrorDetails:
+      title: extension
       required:
-        - code
-        - message
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        target:
-          type: string
-          nullable: true
-    microsoft.graph.ODataErrors.InnerError:
-      type: object
-      description: The structure of this object is service-specific
-    microsoft.graph.entity:
-      title: entity
+        - '@odata.type'
       type: object
       properties:
         id:
           type: string
           description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+    microsoft.graph.multiValueLegacyExtendedProperty:
+      title: multiValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: A collection of property values.
+    microsoft.graph.profilePhoto:
+      description: Optional contact picture. You can get or set a photo for a contact.
+    microsoft.graph.singleValueLegacyExtendedProperty:
+      title: singleValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: string
+          description: A property value.
+          nullable: true
   responses:
     microsoft.graph.contactCollectionResponse:
       description: Retrieved collection
@@ -551,12 +357,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/microsoft.graph.contactCollectionResponse'
-    error:
-      description: error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/microsoft.graph.ODataErrors.ODataError'
   parameters:
     top:
       name: $top

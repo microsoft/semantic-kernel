@@ -410,7 +410,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                         new() { IncludeVectors = internalOptions.IncludeVectors });
                 });
 
-            return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
+            // Process the score of the result item.
+            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(internalOptions, this._propertyReader.VectorProperties, this._propertyReader.VectorProperty!);
+            var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
+
+            return new VectorSearchResult<TRecord>(mappedRecord, score);
         });
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());

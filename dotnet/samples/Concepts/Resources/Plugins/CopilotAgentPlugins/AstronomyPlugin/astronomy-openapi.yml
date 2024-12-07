@@ -42,8 +42,6 @@ paths:
               schema:
                 type: array
                 items: { }
-        '400':
-          description: 'Date must be between Jun 16, 1995 and Mar 28, 2019.'
       security:
         - api_key: [ ]
 components:
