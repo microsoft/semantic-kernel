@@ -21,14 +21,17 @@ public class FraudDetectionStep : KernelProcessStep
         // Placeholder for a call to API to validate user details for fraud detection
         if (customerDetails.UserId == "123-456-7890")
         {
+            Console.WriteLine("[FRAUD CHECK] Fraud Check Failed");
             await context.EmitEventAsync(new()
             {
                 Id = AccountOpeningEvents.FraudDetectionCheckFailed,
-                Data = "We regret to inform you that we found some inconsistent details regarding the information you provided regarding the new account of the type PRIME ABC you applied."
+                Data = "We regret to inform you that we found some inconsistent details regarding the information you provided regarding the new account of the type PRIME ABC you applied.",
+                Visibility = KernelProcessEventVisibility.Public,
             });
             return;
         }
 
-        await context.EmitEventAsync(new() { Id = AccountOpeningEvents.FraudDetectionCheckPassed, Data = true });
+        Console.WriteLine("[FRAUD CHECK] Fraud Check Passed");
+        await context.EmitEventAsync(new() { Id = AccountOpeningEvents.FraudDetectionCheckPassed, Data = true, Visibility = KernelProcessEventVisibility.Public });
     }
 }

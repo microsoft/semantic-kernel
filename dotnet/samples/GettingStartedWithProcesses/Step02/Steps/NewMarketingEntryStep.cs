@@ -18,6 +18,8 @@ public class NewMarketingEntryStep : KernelProcessStep
     [KernelFunction(Functions.CreateNewMarketingEntry)]
     public async Task CreateNewMarketingEntryAsync(KernelProcessStepContext context, MarketingNewEntryDetails userDetails, Kernel _kernel)
     {
+        Console.WriteLine($"[MARKETING ENTRY CREATION] New Account {userDetails.AccountId} created");
+
         // Placeholder for a call to API to create new entry of user for marketing purposes
         await context.EmitEventAsync(new() { Id = AccountOpeningEvents.NewMarketingEntryCreated, Data = true });
     }

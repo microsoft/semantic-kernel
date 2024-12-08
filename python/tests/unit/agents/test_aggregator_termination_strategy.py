@@ -17,7 +17,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,

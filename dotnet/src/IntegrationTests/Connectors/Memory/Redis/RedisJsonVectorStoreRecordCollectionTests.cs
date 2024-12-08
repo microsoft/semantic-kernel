@@ -88,6 +88,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
+        Assert.Equal(1, searchResults.First().Score);
         var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
         Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
@@ -351,6 +352,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Assert
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
+        Assert.Equal(1, searchResults.First().Score);
         var searchResult = searchResults.First().Record;
         Assert.Equal("My Hotel 1", searchResults.First().Record.HotelName);
         Assert.Equal("BaseSet-1", searchResult?.HotelId);

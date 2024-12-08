@@ -39,6 +39,8 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
         - Your goal is to help guide the user to provide the missing details on the current form.
         - Encourage the user to provide the remainingdetails with examples if necessary.
         - Fields with value 'Unanswered' need to be answered by the user.
+        - Format phone numbers and user ids correctly if the user does not provide the expected format.
+        - If the user does not make use of parenthesis in the phone number, add them.
         - For date fields, confirm with the user first if the date format is not clear. Example 02/03 03/02 could be March 2nd or February 3rd.
         """;
 
@@ -100,7 +102,7 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
         ChatHistory chatHistory = new();
         chatHistory.AddSystemMessage(_formCompletionSystemPrompt
             .Replace("{{current_form_state}}", JsonSerializer.Serialize(_state!.newCustomerForm.CopyWithDefaultValues(), _jsonOptions)));
-        chatHistory.AddUserMessage(userMessage);
+        chatHistory.AddRange(_state.conversation);
         IChatCompletionService chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
         ChatMessageContent response = await chatService.GetChatMessageContentAsync(chatHistory, settings, kernel).ConfigureAwait(false);
         var assistantResponse = "";
@@ -114,9 +116,10 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
 
         if (_state?.newCustomerForm != null && _state.newCustomerForm.IsFormCompleted())
         {
+            Console.WriteLine($"[NEW_USER_FORM_COMPLETED]: {JsonSerializer.Serialize(_state?.newCustomerForm)}");
             // All user information is gathered to proceed to the next step
-            await context.EmitEventAsync(new() { Id = AccountOpeningEvents.NewCustomerFormCompleted, Data = _state?.newCustomerForm });
-            await context.EmitEventAsync(new() { Id = AccountOpeningEvents.CustomerInteractionTranscriptReady, Data = _state?.conversation });
+            await context.EmitEventAsync(new() { Id = AccountOpeningEvents.NewCustomerFormCompleted, Data = _state?.newCustomerForm, Visibility = KernelProcessEventVisibility.Public });
+            await context.EmitEventAsync(new() { Id = AccountOpeningEvents.CustomerInteractionTranscriptReady, Data = _state?.conversation, Visibility = KernelProcessEventVisibility.Public });
             return;
         }
 

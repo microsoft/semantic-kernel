@@ -5,9 +5,15 @@ import sys
 from functools import partial, reduce
 from typing import Any
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.bedrock import BedrockTextCompletion, BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
@@ -19,18 +25,11 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextCompletion,
     OpenAITextPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 

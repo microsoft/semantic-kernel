@@ -1,0 +1,17 @@
+{
+  "$schema": "https://aka.ms/json-schemas/copilot/declarative-agent/v1.0/schema.json",
+  "version": "v1.0",
+  "instructions": "$[file('scheduling-assistant-instructions.txt')]",
+  "name": "SchedulingAssistant",
+  "description": "This agent helps you schedule meetings and send messages.",
+  "actions": [
+    {
+      "id": "CalendarPlugin",
+      "file": "../Plugins/CopilotAgentPlugins/CalendarPlugin/calendar-apiplugin.json"
+    },
+    {
+      "id": "MessagesPlugin",
+      "file": "../Plugins/CopilotAgentPlugins/MessagesPlugin/messages-apiplugin.json"
+    }
+  ]
+}

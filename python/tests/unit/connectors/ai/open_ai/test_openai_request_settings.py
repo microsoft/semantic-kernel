@@ -21,11 +21,11 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 ############################################
 # Test classes for structured output
-class TestClass:
+class ClassTest:
     attribute: str
 
 
-class TestClassPydantic(KernelBaseModel):
+class ClassTestPydantic(KernelBaseModel):
     attribute: str
 
 
@@ -354,13 +354,13 @@ def test_openai_chat_prompt_execution_settings_with_json_structured_output():
 
 def test_openai_chat_prompt_execution_settings_with_nonpydantic_type_structured_output():
     settings = OpenAIChatPromptExecutionSettings()
-    settings.response_format = TestClass
+    settings.response_format = ClassTest
     assert isinstance(settings.response_format, type)
 
 
 def test_openai_chat_prompt_execution_settings_with_pydantic_type_structured_output():
     settings = OpenAIChatPromptExecutionSettings()
-    settings.response_format = TestClassPydantic
+    settings.response_format = ClassTestPydantic
     assert issubclass(settings.response_format, BaseModel)
 
 
