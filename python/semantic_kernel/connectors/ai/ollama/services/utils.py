@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from ollama._types import Message
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -76,7 +75,7 @@ def _format_assistant_message(message: ChatMessageContent) -> Message:
                 "function": {
                     "name": tool_call.function_name,
                     "arguments": tool_call.arguments
-                    if isinstance(tool_call.arguments, dict)
+                    if isinstance(tool_call.arguments, Mapping)
                     else json.loads(tool_call.arguments or "{}"),
                 }
             }
@@ -115,11 +114,17 @@ def update_settings_from_function_choice_configuration(
     settings: PromptExecutionSettings,
     type: FunctionChoiceType,
 ) -> None:
-    """Update the settings from a FunctionChoiceConfiguration."""
-    assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
+    """Update the settings from a FunctionChoiceConfiguration.
 
+    Since this function might be called before the settings are cast to Ollama Settings
+    We need to try to use the tools attribute or fallback to the extension_data attribute.
+    """
     if function_choice_configuration.available_functions:
-        settings.tools = [
+        tools = [
             kernel_function_metadata_to_function_call_format(f)
             for f in function_choice_configuration.available_functions
         ]
+        try:
+            settings.tools = tools  # type: ignore
+        except Exception:
+            settings.extension_data["tools"] = tools
