@@ -39,13 +39,11 @@ public sealed class ToolCallBehaviorTests
         Assert.Equal(DefaultMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
     }
 
-    [InlineData(true)]
-    [InlineData(false)]
-    [Theory]
-    public void EnableFunctionsReturnsEnabledFunctionsInstance(bool strict)
+    [Fact]
+    public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
-        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null, strict)];
+        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null)];
         var behavior = ToolCallBehavior.EnableFunctions(functions);
 
         // Assert
@@ -53,13 +51,11 @@ public sealed class ToolCallBehaviorTests
         Assert.Contains($"{nameof(EnabledFunctions)}(autoInvoke:{behavior.MaximumAutoInvokeAttempts != 0})", behavior.ToString());
     }
 
-    [InlineData(true)]
-    [InlineData(false)]
-    [Theory]
-    public void RequireFunctionReturnsRequiredFunctionInstance(bool strict)
+    [Fact]
+    public void RequireFunctionReturnsRequiredFunctionInstance()
     {
         // Arrange & Act
-        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null, strict));
+        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null));
 
         // Assert
         Assert.IsType<RequiredFunction>(behavior);

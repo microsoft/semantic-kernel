@@ -219,7 +219,6 @@ public class KernelFunctionMetadataTests
                 { "method", "POST" },
                 { "path", "/api/v1" },
             }),
-            Strict = true,
             PluginName = "plugin",
             Name = "funcA",
         };
@@ -231,7 +230,6 @@ public class KernelFunctionMetadataTests
         Assert.Equal(original.Parameters, copy.Parameters);
         Assert.Equal(original.PluginName, copy.PluginName);
         Assert.Equal(original.ReturnParameter, copy.ReturnParameter);
-        Assert.Equal(original.Strict, copy.Strict);
     }
 
     private static void ValidFunctionName() { }

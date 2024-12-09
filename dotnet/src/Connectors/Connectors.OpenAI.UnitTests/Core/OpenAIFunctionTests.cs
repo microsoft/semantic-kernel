@@ -45,19 +45,6 @@ public sealed class OpenAIFunctionTests
         Assert.Same(schema, functionParameter.Schema);
     }
 
-    [InlineData(null, false)]
-    [InlineData(true, false)]
-    [InlineData(false, false)]
-    [InlineData(null, true)]
-    [InlineData(true, true)]
-    [InlineData(false, true)]
-    [Theory]
-    public void ItSetsTheStrictModeAccordingToAllowance(bool? allowed, bool strict)
-    {
-        OpenAIFunction sut = new KernelFunctionMetadata("foo") { Strict = strict }.ToOpenAIFunction(allowed);
-        Assert.Equal((allowed ?? true) && strict, sut.Strict);
-    }
-
     [Fact]
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
@@ -78,21 +65,19 @@ public sealed class OpenAIFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNullParameters(bool strict)
     {
         // Arrange
-        OpenAIFunction sut = new("plugin", "function", "description", null, null, strict);
+        OpenAIFunction sut = new("plugin", "function", "description", null, null);
 
         // Act
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         // Assert
         if (strict)
         {
             Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{},\"additionalProperties\":false}", result.FunctionParameters.ToString());
-            Assert.True(sut.Strict);
         }
         else
         {
             Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.FunctionParameters.ToString());
-            Assert.False(sut.Strict);
         }
     }
 
@@ -105,9 +90,9 @@ public sealed class OpenAIFunctionTests
         {
             new ("foo", "bar", false, typeof(string), null),
         };
-        OpenAIFunction sut = new("plugin", "function", "description", parameters, null, strict);
+        OpenAIFunction sut = new("plugin", "function", "description", parameters, null);
 
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         Assert.Equal(strict, result.FunctionSchemaIsStrict);
         if (strict)
