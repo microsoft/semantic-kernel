@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using OpenAI.Chat;
@@ -149,7 +151,7 @@ public sealed class OpenAIFunction
 
             foreach (var parameter in parameters)
             {
-                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
+                properties.Add(parameter.Name, GetSanitizesSchemaForStrictMode(parameter.Schema) ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
                 if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
@@ -205,4 +207,53 @@ public sealed class OpenAIFunction
         };
         return KernelJsonSchema.Parse(jObject.ToString());
     }
+    private static KernelJsonSchema? GetSanitizesSchemaForStrictMode(KernelJsonSchema? schema)
+    {
+        if (schema is null)
+        {
+            return null;
+        }
+        var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
+
+        if (forbiddenPropertyNames.Length > 0)
+        {
+            var originalSchema = JsonSerializer.Serialize(schema.RootElement);
+            var parsedJson = JsonNode.Parse(originalSchema);
+
+            if (parsedJson is null)
+            {
+                return schema;
+            }
+
+            var jsonObject = parsedJson.AsObject();
+            foreach (var forbiddenPropertyName in forbiddenPropertyNames)
+            {
+                jsonObject.Remove(forbiddenPropertyName);
+            }
+            return KernelJsonSchema.Parse(jsonObject.ToString());
+        }
+        return schema;
+    }
+    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    private static readonly string[] s_forbiddenKeywords = [
+        "contains",
+        "format",
+        "maxContains",
+        "maximum",
+        "maxItems",
+        "maxLength",
+        "maxProperties",
+        "minContains",
+        "minimum",
+        "minItems",
+        "minLength",
+        "minProperties",
+        "multipleOf",
+        "pattern",
+        "patternProperties",
+        "propertyNames",
+        "unevaluatedItems",
+        "unevaluatedProperties",
+        "uniqueItems",
+    ];
 }
