@@ -144,7 +144,7 @@ public sealed class OpenAIFunction
 
             foreach (var parameter in parameters)
             {
-                properties.Add(parameter.Name, parameter.Schema ?? this.GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
+                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
                 if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
@@ -177,7 +177,7 @@ public sealed class OpenAIFunction
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
-    private KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
+    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
     {
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
