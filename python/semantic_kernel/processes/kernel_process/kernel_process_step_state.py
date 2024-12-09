@@ -13,5 +13,6 @@ class KernelProcessStepState(KernelBaseModel, Generic[TState]):
     """The state of a step in a kernel process."""
 
     name: str
+    version: str
     id: str | None = None
     state: TState | None = None
