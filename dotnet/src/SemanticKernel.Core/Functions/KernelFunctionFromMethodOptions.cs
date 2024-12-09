@@ -44,9 +44,4 @@ public sealed class KernelFunctionFromMethodOptions
     /// Optional metadata in addition to the named values already provided in other arguments.
     /// </summary>
     public ReadOnlyDictionary<string, object?>? AdditionalMetadata { get; init; }
-
-    /// <summary>
-    /// Whether to enforce strict adherence to the schema. If true, the function will only accept inputs that strictly match the schema.
-    /// </summary>
-    public bool Strict { get; init; }
 }

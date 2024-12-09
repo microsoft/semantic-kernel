@@ -44,8 +44,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         string? description = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null,
-        bool strict = false)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
@@ -75,8 +74,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return Create(
             promptTemplate: factory.Create(promptConfig),
             promptConfig: promptConfig,
-            loggerFactory: loggerFactory,
-            strict: strict);
+            loggerFactory: loggerFactory);
     }
 
     /// <summary>
@@ -192,8 +190,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null,
-        bool strict = false)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptTemplate);
         Verify.NotNull(promptConfig);
@@ -201,8 +198,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
             promptConfig: promptConfig,
-            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance,
-            strict: strict);
+            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
 
     /// <summary>
@@ -360,8 +356,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILogger logger,
-        bool strict = false) : this(
+        ILogger logger) : this(
             template,
             promptConfig.Name ?? CreateRandomFunctionName(),
             null,
@@ -370,8 +365,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig.GetKernelReturnParameterMetadata(),
             promptConfig.ExecutionSettings,
             promptConfig.InputVariables,
-            logger,
-            strict: strict)
+            logger)
     {
     }
 
@@ -404,15 +398,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         KernelReturnParameterMetadata? returnParameter,
         Dictionary<string, PromptExecutionSettings> executionSettings,
         List<InputVariable> inputVariables,
-        ILogger logger,
-        bool strict = false) : base(
+        ILogger logger) : base(
             functionName ?? CreateRandomFunctionName(),
             pluginName,
             description ?? string.Empty,
             parameters,
             returnParameter,
-            executionSettings,
-            strict: strict)
+            executionSettings)
     {
         this._logger = logger;
 

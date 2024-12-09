@@ -1250,7 +1250,6 @@ public static class KernelExtensions
         KernelArguments? arguments = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        bool strict = false, // TODO this is going to be breaking, sort out why we need that with SK team
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -1261,8 +1260,7 @@ public static class KernelExtensions
             functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
-            loggerFactory: kernel.LoggerFactory,
-            strict: strict);
+            loggerFactory: kernel.LoggerFactory);
 
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }

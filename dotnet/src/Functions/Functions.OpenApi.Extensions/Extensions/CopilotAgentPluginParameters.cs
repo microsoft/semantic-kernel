@@ -24,12 +24,4 @@ public sealed class CopilotAgentPluginParameters
     /// and the value is OpenApiFunctionExecutionParameters specific to that dependency.
     /// </summary>
     public Dictionary<string, OpenApiFunctionExecutionParameters>? FunctionExecutionParameters { get; init; }
-
-    /// <summary>
-    /// Whether to enforce strict adherence to the schema.
-    /// </summary>
-    /// <remarks>
-    /// If true, the function will only accept inputs that strictly match the schema.
-    /// </remarks>
-    public bool Strict { get; init; }
 }

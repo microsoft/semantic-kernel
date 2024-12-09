@@ -206,8 +206,7 @@ public static partial class OpenApiKernelPluginFactory
         HttpClient httpClient,
         RestApiSpecification specification,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null,
-        bool strict = false)
+        ILoggerFactory? loggerFactory = null)
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
@@ -226,7 +225,7 @@ public static partial class OpenApiKernelPluginFactory
             try
             {
                 logger.LogTrace("Registering Rest function {PluginName}.{OperationId}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, specification.Info, specification.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory, strict));
+                functions.Add(CreateRestApiFunction(pluginName, runner, specification.Info, specification.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -252,7 +251,6 @@ public static partial class OpenApiKernelPluginFactory
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="strict">Whether to enforce strict adherence to the schema.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     internal static KernelFunction CreateRestApiFunction(
         string pluginName,
@@ -262,8 +260,7 @@ public static partial class OpenApiKernelPluginFactory
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null,
-        bool strict = false)
+        ILoggerFactory? loggerFactory = null)
     {
         IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
@@ -332,7 +329,6 @@ public static partial class OpenApiKernelPluginFactory
                 ReturnParameter = returnParameter,
                 LoggerFactory = loggerFactory,
                 AdditionalMetadata = new ReadOnlyDictionary<string, object?>(additionalMetadata),
-                Strict = strict
             });
     }
 

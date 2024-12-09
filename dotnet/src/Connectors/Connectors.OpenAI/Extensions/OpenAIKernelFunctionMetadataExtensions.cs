@@ -13,9 +13,8 @@ public static class OpenAIKernelFunctionMetadataExtensions
     /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="OpenAIFunctionParameter"/>.
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
-    /// <param name="allowStrictSchemaAdherence">Whether to allow strict adherence to the schema.</param>
     /// <returns>An <see cref="OpenAIFunction"/> object.</returns>
-    public static OpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata, bool? allowStrictSchemaAdherence = null)
+    public static OpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata)
     {
         IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
 
@@ -40,8 +39,7 @@ public static class OpenAIKernelFunctionMetadataExtensions
             new OpenAIFunctionReturnParameter(
                 metadata.ReturnParameter.Description,
                 metadata.ReturnParameter.ParameterType,
-                metadata.ReturnParameter.Schema),
-            metadata.Strict == true && allowStrictSchemaAdherence != false);
+                metadata.ReturnParameter.Schema));
 
         static string GetDescription(KernelParameterMetadata param)
         {

@@ -87,8 +87,7 @@ public sealed class OpenAIFunction
         string functionName,
         string? description,
         IReadOnlyList<OpenAIFunctionParameter>? parameters,
-        OpenAIFunctionReturnParameter? returnParameter,
-        bool strict)
+        OpenAIFunctionReturnParameter? returnParameter)
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
@@ -97,7 +96,6 @@ public sealed class OpenAIFunction
         this.Description = description;
         this.Parameters = parameters;
         this.ReturnParameter = returnParameter;
-        this.Strict = strict;
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
@@ -110,12 +108,6 @@ public sealed class OpenAIFunction
 
     /// <summary>Gets the name of the function.</summary>
     public string FunctionName { get; }
-
-    /// <summary>Gets or sets whether the function should be strictly adhered to.</summary>
-    /// <remarks>
-    /// This is a flag that indicates whether the function should be strictly adhered to. If set to true, the function will be strictly adhered to.
-    /// </remarks>
-    public bool Strict { get; set; }
 
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <remarks>
@@ -140,9 +132,9 @@ public sealed class OpenAIFunction
     /// <see cref="ChatTool"/> representation.
     /// </summary>
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
-    public ChatTool ToFunctionDefinition()
+    public ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence = false)
     {
-        BinaryData resultParameters = this.Strict ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
+        BinaryData resultParameters = allowStrictSchemaAdherence ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
 
         IReadOnlyList<OpenAIFunctionParameter>? parameters = this.Parameters;
         if (parameters is { Count: > 0 })
@@ -152,14 +144,14 @@ public sealed class OpenAIFunction
 
             foreach (var parameter in parameters)
             {
-                properties.Add(parameter.Name, parameter.Schema ?? this.GetDefaultSchemaForTypelessParameter(parameter.Description));
-                if (parameter.IsRequired || this.Strict)
+                properties.Add(parameter.Name, parameter.Schema ?? this.GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
+                if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
                 }
             }
 
-            resultParameters = this.Strict
+            resultParameters = allowStrictSchemaAdherence
                 ? BinaryData.FromObjectAsJson(new
                 {
                     type = "object",
@@ -180,17 +172,17 @@ public sealed class OpenAIFunction
             functionName: this.FullyQualifiedName,
             functionDescription: this.Description,
             functionParameters: resultParameters,
-            functionSchemaIsStrict: this.Strict
+            functionSchemaIsStrict: allowStrictSchemaAdherence
         );
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
-    private KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
+    private KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
     {
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchemaBuilder.Build(typeof(string), description, this.Strict ? KernelJsonSchemaBuilder.s_schemaOptions : AIJsonSchemaCreateOptions.Default);
+            return KernelJsonSchemaBuilder.Build(typeof(string), description, allowStrictSchemaAdherence ? KernelJsonSchemaBuilder.s_schemaOptions : AIJsonSchemaCreateOptions.Default);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
