@@ -97,7 +97,7 @@ public sealed class OpenAIFunctionTests
         Assert.Equal(strict, result.FunctionSchemaIsStrict);
         if (strict)
         {
-            Assert.Equal("""{"type":"object","required":["foo"],"properties":{"foo":{"description":"bar","type":"string"}},"additionalProperties":false}""", result.FunctionParameters.ToString());
+            Assert.Equal("""{"type":"object","required":["foo"],"properties":{"foo":{"description":"bar","type":["string","null"]}},"additionalProperties":false}""", result.FunctionParameters.ToString());
         }
         else
         {

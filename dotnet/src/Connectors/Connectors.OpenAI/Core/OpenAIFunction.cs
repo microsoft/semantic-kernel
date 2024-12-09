@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using OpenAI.Chat;
 
@@ -80,6 +81,10 @@ public sealed class OpenAIFunction
     /// Cached schema for a descriptionless string.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
+    /// <summary>
+    /// Cached schema for a descriptionless string that's nullable.
+    /// </summary>
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchemaAndNull = KernelJsonSchema.Parse("""{"type":["string","null"]}""");
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(
@@ -182,10 +187,22 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchemaBuilder.Build(typeof(string), description, allowStrictSchemaAdherence ? KernelJsonSchemaBuilder.s_schemaOptions : AIJsonSchemaCreateOptions.Default);
+            return allowStrictSchemaAdherence ?
+                GetOptionalStringSchemaWithDescription(description!) :
+                KernelJsonSchemaBuilder.Build(typeof(string), description, AIJsonSchemaCreateOptions.Default);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
-        return s_stringNoDescriptionSchema;
+        return allowStrictSchemaAdherence ? s_stringNoDescriptionSchemaAndNull : s_stringNoDescriptionSchema;
+    }
+
+    private static KernelJsonSchema GetOptionalStringSchemaWithDescription(string description)
+    {
+        var jObject = new JsonObject
+        {
+            { "description", description },
+            { "type", new JsonArray { "string", "null" } },
+        };
+        return KernelJsonSchema.Parse(jObject.ToString());
     }
 }
