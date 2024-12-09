@@ -540,10 +540,10 @@ internal partial class ClientCore
                     }
                 }
 
-                return OpenAIChatResponseFormatHelper.GetJsonSchemaResponseFormat(formatElement);
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatElement);
 
             case Type formatObjectType:
-                return OpenAIChatResponseFormatHelper.GetJsonSchemaResponseFormat(formatObjectType);
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
