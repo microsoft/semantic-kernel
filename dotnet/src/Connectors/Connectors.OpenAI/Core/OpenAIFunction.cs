@@ -151,7 +151,7 @@ public sealed class OpenAIFunction
 
             foreach (var parameter in parameters)
             {
-                properties.Add(parameter.Name, GetSanitizesSchemaForStrictMode(parameter.Schema) ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
+                properties.Add(parameter.Name, GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence) ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
                 if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
@@ -207,7 +207,7 @@ public sealed class OpenAIFunction
         };
         return KernelJsonSchema.Parse(jObject.ToString());
     }
-    private static KernelJsonSchema? GetSanitizesSchemaForStrictMode(KernelJsonSchema? schema)
+    private static KernelJsonSchema? GetSanitizedSchemaForStrictMode(KernelJsonSchema? schema, bool insertNullType)
     {
         if (schema is null)
         {
@@ -215,7 +215,9 @@ public sealed class OpenAIFunction
         }
         var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
 
-        if (forbiddenPropertyNames.Length > 0)
+        if (forbiddenPropertyNames.Length > 0 || insertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&
+            (typeElement.ValueKind == JsonValueKind.Array && !typeElement.EnumerateArray().Any(static t => NullType.Equals(t.GetString(), StringComparison.OrdinalIgnoreCase)) ||
+            typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType))
         {
             var originalSchema = JsonSerializer.Serialize(schema.RootElement);
             var parsedJson = JsonNode.Parse(originalSchema);
@@ -230,10 +232,29 @@ public sealed class OpenAIFunction
             {
                 jsonObject.Remove(forbiddenPropertyName);
             }
+
+            InsertNullTypeIfRequired(insertNullType, jsonObject);
+
             return KernelJsonSchema.Parse(jsonObject.ToString());
         }
         return schema;
     }
+    private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
+    {
+        if (insertNullType && jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
+        {
+            if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
+            {
+                jsonArray.Add(NullType);
+            }
+            else if (typeValue is JsonValue jsonValue && jsonValue.GetValueKind() == JsonValueKind.String)
+            {
+                jsonObject[TypeKey] = new JsonArray { typeValue.GetValue<string>(), NullType };
+            }
+        }
+    }
+    private const string NullType = "null";
+    private const string TypeKey = "type";
     // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
     private static readonly string[] s_forbiddenKeywords = [
         "contains",
