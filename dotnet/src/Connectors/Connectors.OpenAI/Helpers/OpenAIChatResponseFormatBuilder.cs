@@ -9,9 +9,9 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Helper class to process <see cref="ChatResponseFormat"/> object.
+/// Helper class to build <see cref="ChatResponseFormat"/> object.
 /// </summary>
-internal static class OpenAIChatResponseFormatHelper
+internal static class OpenAIChatResponseFormatBuilder
 {
     /// <summary>
     /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.

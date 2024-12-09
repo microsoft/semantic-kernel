@@ -10,13 +10,13 @@ using Xunit;
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Helpers;
 
 /// <summary>
-/// Unit tests for <see cref="OpenAIChatResponseFormatHelper"/> class.
+/// Unit tests for <see cref="OpenAIChatResponseFormatBuilder"/> class.
 /// </summary>
-public sealed class OpenAIChatResponseFormatHelperTests
+public sealed class OpenAIChatResponseFormatBuilderTests
 {
     private readonly JsonSerializerOptions _options = new();
 
-    public OpenAIChatResponseFormatHelperTests()
+    public OpenAIChatResponseFormatBuilderTests()
     {
         this._options.Converters.Add(new BinaryDataJsonConverter());
     }
@@ -33,7 +33,7 @@ public sealed class OpenAIChatResponseFormatHelperTests
         var jsonElement = jsonDocument.RootElement;
 
         // Act
-        var chatResponseFormat = OpenAIChatResponseFormatHelper.GetJsonSchemaResponseFormat(jsonElement);
+        var chatResponseFormat = OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(jsonElement);
         var responseFormat = this.GetResponseFormat(chatResponseFormat);
 
         // Assert
@@ -79,7 +79,7 @@ public sealed class OpenAIChatResponseFormatHelperTests
         var jsonElement = jsonDocument.RootElement;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => OpenAIChatResponseFormatHelper.GetJsonSchemaResponseFormat(jsonElement));
+        Assert.Throws<ArgumentException>(() => OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(jsonElement));
     }
 
     public static TheoryData<string, string, bool?> ChatResponseFormatJson => new()
