@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using SemanticKernel.IntegrationTests.Connectors.Memory;
