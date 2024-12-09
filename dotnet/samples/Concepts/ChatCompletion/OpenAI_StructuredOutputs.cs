@@ -299,10 +299,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         var functionPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Plugins", "MoviePlugins", "MoviePluginYaml", "TopMovies.yaml");
 
         // Load YAML prompt.
-        using Stream stream = File.OpenRead(functionPath);
-        using StreamReader reader = new(stream);
-
-        var topMoviesYaml = reader.ReadToEnd();
+        var topMoviesYaml = File.ReadAllText(functionPath);
 
         // Import a function from YAML.
         var function = kernel.CreateFunctionFromPromptYaml(topMoviesYaml);
