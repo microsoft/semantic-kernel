@@ -89,7 +89,8 @@
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
   },
   "AzureCosmosDBNoSQL": {
-    "ConnectionString": ""
+    "ConnectionString": "",
+    "Endpoint": ""
   },
   "AzureCosmosDBMongoDB": {
     "ConnectionString": ""

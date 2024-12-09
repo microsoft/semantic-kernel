@@ -35,5 +35,13 @@ public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorSto
         var actual = actualCollectionNames.Select(l => l.ToUpperInvariant()).ToList();
 
         expected.ForEach(item => Assert.Contains(item, actual));
+
+        // Cleanup
+        foreach (var collectionName in expectedCollectionNames)
+        {
+            var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
+
+            await collection.DeleteCollectionAsync();
+        }
     }
 }

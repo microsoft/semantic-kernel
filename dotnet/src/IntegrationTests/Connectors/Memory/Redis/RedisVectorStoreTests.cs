@@ -15,7 +15,7 @@ public class RedisVectorStoreTests(RedisVectorStoreFixture fixture)
     : BaseVectorStoreTests<string, RedisHotel>(new RedisVectorStore(fixture.Database))
 {
     // If null, all tests will be enabled
-    private const string SkipReason = "Requires Redis docker container up and running";
+    private const string SkipReason = "This test is for manual verification";
 
     [Fact(Skip = SkipReason)]
     public override async Task ItCanGetAListOfExistingCollectionNamesAsync()

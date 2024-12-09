@@ -13,17 +13,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
 [Collection("PineconeVectorStoreTests")]
 [PineconeApiKeySetCondition]
-public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : IClassFixture<PineconeVectorStoreFixture>
+public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
+    : BaseVectorStoreTests<string, PineconeHotel>(new PineconeVectorStore(fixture.Client)), IClassFixture<PineconeVectorStoreFixture>
 {
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
-
-    [PineconeFact]
-    public async Task ListCollectionNamesAsync()
-    {
-        var collectionNames = await this.Fixture.VectorStore.ListCollectionNamesAsync().ToListAsync();
-
-        Assert.Equal([this.Fixture.IndexName], collectionNames);
-    }
 
     [PineconeFact]
     public void CreateCollectionUsingFactory()
