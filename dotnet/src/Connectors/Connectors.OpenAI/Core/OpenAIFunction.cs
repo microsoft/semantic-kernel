@@ -239,6 +239,7 @@ public sealed class OpenAIFunction
         }
         return schema;
     }
+    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
     private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
     {
         if (insertNullType && jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
