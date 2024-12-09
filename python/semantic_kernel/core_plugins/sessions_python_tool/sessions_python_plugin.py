@@ -200,7 +200,7 @@ class SessionsPythonTool(KernelBaseModel):
             )
             response.raise_for_status()
             result = response.json()["properties"]
-            return f"Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"
+            return f"Status:\n{result['status']}Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"  # noqa: E501
         except HTTPStatusError as e:
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(
