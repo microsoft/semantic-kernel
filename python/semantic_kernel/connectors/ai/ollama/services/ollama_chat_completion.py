@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncGenerator, AsyncIterator, Callable, Mapping
+from collections.abc import AsyncGenerator, AsyncIterator, Callable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -166,7 +166,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         )
 
         if isinstance(response_object, ChatResponse):
-            return [self._create_chat_message_content_by_type(response_object, ChatMessageContent)]
+            return [self._create_chat_message_content_from_chat_response(response_object)]
         if isinstance(response_object, Mapping):
             return [self._create_chat_message_content(response_object)]
         raise ServiceInvalidResponseError(
@@ -202,7 +202,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
         async for part in response_object:
             if isinstance(part, ChatResponse):
-                yield [self._create_chat_message_content_by_type(part, StreamingChatMessageContent)]
+                yield [self._create_streaming_chat_message_content_from_chat_response(part)]
                 continue
             if isinstance(part, Mapping):
                 yield [self._create_streaming_chat_message_content(part)]
@@ -214,20 +214,32 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     # endregion
 
-    def _create_chat_message_content_by_type(self, response: ChatResponse, type: type[CMC_TYPE]) -> CMC_TYPE:
+    def _create_streaming_chat_message_content_from_chat_response(
+        self, response: ChatResponse
+    ) -> StreamingChatMessageContent:
         """Create a chat message content from the response."""
-        items: list[ITEM_TYPES] = []
-        if response.message is None:
-            raise ServiceInvalidResponseError("No message content found in response.")
+        items: list[STREAMING_ITEM_TYPES] = []
         if response.message.content:
             items.append(
-                TextContent(
+                StreamingTextContent(
+                    choice_index=0,
                     text=response.message.content,
                     inner_content=response.message,
                 )
             )
-        if response.message.tool_calls:
-            for tool_call in response.message.tool_calls:
+        self._parse_tool_calls(response.message.tool_calls, items)
+        return StreamingChatMessageContent(
+            choice_index=0,
+            role=AuthorRole.ASSISTANT,
+            items=items,
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=self._get_metadata_from_chat_response(response),
+        )
+
+    def _parse_tool_calls(self, tool_calls: Sequence[Message.ToolCall] | None, items: list[Any]):
+        if tool_calls:
+            for tool_call in tool_calls:
                 items.append(
                     FunctionCallContent(
                         inner_content=tool_call,
@@ -236,23 +248,24 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
                         arguments=tool_call.function.arguments,
                     )
                 )
-        metadata = self._get_metadata_from_chat_response(response)
-        if type is StreamingChatMessageContent:
-            return type(
-                choice_index=0,
-                role=AuthorRole.ASSISTANT,
-                items=items,
-                inner_content=response,
-                ai_model_id=self.ai_model_id,
-                metadata=metadata,
-            )
 
-        return type(
+    def _create_chat_message_content_from_chat_response(self, response: ChatResponse) -> ChatMessageContent:
+        """Create a chat message content from the response."""
+        items: list[ITEM_TYPES] = []
+        if response.message.content:
+            items.append(
+                TextContent(
+                    text=response.message.content,
+                    inner_content=response.message,
+                )
+            )
+        self._parse_tool_calls(response.message.tool_calls, items)
+        return ChatMessageContent(
             role=AuthorRole.ASSISTANT,
             items=items,
             inner_content=response,
             ai_model_id=self.ai_model_id,
-            metadata=metadata,
+            metadata=self._get_metadata_from_chat_response(response),
         )
 
     def _create_chat_message_content(self, response: Mapping[str, Any]) -> ChatMessageContent:

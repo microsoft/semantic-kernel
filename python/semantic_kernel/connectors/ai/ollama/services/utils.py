@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from ollama._types import Message
 
@@ -75,7 +75,7 @@ def _format_assistant_message(message: ChatMessageContent) -> Message:
                 "function": {
                     "name": tool_call.function_name,
                     "arguments": tool_call.arguments
-                    if isinstance(tool_call.arguments, dict)
+                    if isinstance(tool_call.arguments, Mapping)
                     else json.loads(tool_call.arguments or "{}"),
                 }
             }
