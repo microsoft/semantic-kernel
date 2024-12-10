@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from functools import partial
 from typing import Any
 
@@ -108,7 +108,9 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
                 "toolUse": {
                     "toolUseId": item.id,
                     "name": item.custom_fully_qualified_name(BEDROCK_FUNCTION_NAME_SEPARATOR),
-                    "input": item.arguments if isinstance(item.arguments, dict) else json.loads(item.arguments or "{}"),
+                    "input": item.arguments
+                    if isinstance(item.arguments, Mapping)
+                    else json.loads(item.arguments or "{}"),
                 }
             })
         else:

@@ -3,25 +3,24 @@
 using System;
 using System.Text;
 using System.Text.Json;
-using JsonSchemaMapper;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Helper class to process <see cref="ChatResponseFormat"/> object.
+/// Helper class to build <see cref="ChatResponseFormat"/> object.
 /// </summary>
-internal static class OpenAIChatResponseFormatHelper
+internal static class OpenAIChatResponseFormatBuilder
 {
     /// <summary>
-    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
+    /// <see cref="Microsoft.Extensions.AI.AIJsonSchemaCreateOptions"/> for JSON schema format for structured outputs.
     /// </summary>
-    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
+    private static readonly Microsoft.Extensions.AI.AIJsonSchemaCreateOptions s_jsonSchemaCreateOptions = new()
     {
-        IncludeSchemaVersion = false,
-        IncludeTypeInEnums = true,
-        TreatNullObliviousAsNonNullable = true,
-        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
+        IncludeSchemaKeyword = false,
+        IncludeTypeInEnumSchemas = true,
+        DisallowAdditionalProperties = true,
+        RequireAllProperties = true,
     };
 
     /// <summary>
@@ -56,7 +55,7 @@ internal static class OpenAIChatResponseFormatHelper
     {
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaCreateOptions);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         var typeName = GetTypeName(type);

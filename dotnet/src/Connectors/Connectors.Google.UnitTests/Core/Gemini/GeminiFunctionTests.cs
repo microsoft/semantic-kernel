@@ -95,8 +95,8 @@ public sealed class GeminiFunctionTests
                                          {   "type": "object",
                                          "required": ["param1", "param2"],
                                          "properties": {
-                                         "param1": { "type": "string", "description": "String param 1" },
-                                         "param2": { "type": "integer", "description": "Int param 2" }   } }
+                                         "param1": { "description": "String param 1", "type": "string" },
+                                         "param2": { "description": "Int param 2" , "type": "integer"}   } }
                                          """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
@@ -126,8 +126,8 @@ public sealed class GeminiFunctionTests
                                          {   "type": "object",
                                          "required": ["param1", "param2"],
                                          "properties": {
-                                         "param1": { "type": "string", "description": "String param 1" },
-                                         "param2": { "type": "integer", "description": "Int param 2" }   } }
+                                         "param1": { "description": "String param 1", "type": "string" },
+                                         "param2": { "description": "Int param 2", "type": "integer"}   } }
                                          """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
@@ -180,7 +180,7 @@ public sealed class GeminiFunctionTests
 
         // Assert
         Assert.Equal(
-            """{"type":"object","required":[],"properties":{"param1":{"type":"string","description":"something neat"}}}""",
+            """{"type":"object","required":[],"properties":{"param1":{"description":"something neat","type":"string"}}}""",
             JsonSerializer.Serialize(result.Parameters));
     }
 }
