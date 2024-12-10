@@ -4846,7 +4846,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
     { name = "pyarrow", marker = "extra == 'usearch'", specifier = ">=12.0,<19.0" },
     { name = "pybars4", specifier = "~=0.9" },
-    { name = "pydantic", specifier = ">=2.0,<2.10" },
+    { name = "pydantic", specifier = ">=2.0,<2.11" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.5" },
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.11" },
