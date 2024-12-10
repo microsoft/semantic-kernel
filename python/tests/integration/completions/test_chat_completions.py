@@ -42,6 +42,7 @@ class Reasoning(KernelBaseModel):
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
+        # region OpenAI
         pytest.param(
             "openai",
             {},
@@ -62,6 +63,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="openai_json_schema_response_format",
         ),
+        # endregion
+        # region Azure
         pytest.param(
             "azure",
             {},
@@ -82,6 +85,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_custom_client",
         ),
+        # endregion
+        # region Azure AI Inference
         pytest.param(
             "azure_ai_inference",
             {},
@@ -92,6 +97,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_ai_inference_text_input",
         ),
+        # endregion
+        # region Anthropic
         pytest.param(
             "anthropic",
             {},
@@ -103,6 +110,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
             id="anthropic_text_input",
         ),
+        # endregion
+        # region Mistral AI
         pytest.param(
             "mistral_ai",
             {},
@@ -114,6 +123,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_text_input",
         ),
+        # endregion
+        # region Ollama
         pytest.param(
             "ollama",
             {},
@@ -128,6 +139,8 @@ pytestmark = pytest.mark.parametrize(
             # pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
+        # endregion
+        # region Onnx Gen AI
         pytest.param(
             "onnx_gen_ai",
             {},
@@ -139,6 +152,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
             id="onnx_gen_ai",
         ),
+        # endregion
+        # region Google AI
         pytest.param(
             "google_ai",
             {},
@@ -150,6 +165,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
+        # endregion
+        # region Vertex AI
         pytest.param(
             "vertex_ai",
             {},
@@ -161,6 +178,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
+        # endregion
+        # region Bedrock
         pytest.param(
             "bedrock_amazon_titan",
             {},
@@ -226,6 +245,7 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_mistralai_text_input",
         ),
+        # endregion
     ],
 )
 
