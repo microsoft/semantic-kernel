@@ -48,7 +48,7 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install the project
-        run: uv sync --all-extras --dev --refresh
+        run: uv sync --all-extras --dev --reinstall
       - name: Test with pytest
         env:
           PYTHON_GIL: ${{ matrix.gil }}
