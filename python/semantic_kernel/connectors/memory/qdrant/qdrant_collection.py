@@ -40,7 +40,7 @@ TKey = TypeVar("TKey", str, int)
 
 @experimental_class
 class QdrantCollection(
-    VectorSearchBase[int | str, TModel],
+    VectorSearchBase[str | int, TModel],
     VectorizedSearchMixin[TModel],
     Generic[TModel],
 ):
