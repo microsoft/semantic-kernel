@@ -3,10 +3,11 @@
 using Events;
 using Microsoft.SemanticKernel;
 using SharedSteps;
+using Step02.EventSubscribers;
 using Step02.Models;
 using Step02.Processes;
 using Step02.Steps;
-using Step02.Utils;
+using static Step02.Models.AccountOpeningEvents;
 
 namespace Step02;
 
@@ -14,16 +15,16 @@ namespace Step02;
 /// Demonstrate creation of <see cref="KernelProcess"/> and
 /// eliciting its response to five explicit user messages.<br/>
 /// For each test there is a different set of user messages that will cause different steps to be triggered using the same pipeline.<br/>
-/// For visual reference of the process check the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step02b_accountOpening" >diagram</see>.
+/// For visual reference of the process check the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step02c_accountOpening" >diagram</see>.
 /// </summary>
-public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public class Step02c_AccountOpening(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
 
     private KernelProcess SetupAccountOpeningProcess<TUserInputStep>() where TUserInputStep : ScriptedUserInputStep
     {
-        ProcessBuilder process = new("AccountOpeningProcessWithSubprocesses");
+        var process = new ProcessBuilder<NewAccountOpeningEvents>("AccountOpeningProcessWithSubprocessesAndEventSubscribers");
         var newCustomerFormStep = process.AddStepFromType<CompleteNewCustomerFormStep>();
         var userInputStep = process.AddStepFromType<TUserInputStep>();
         var displayAssistantMessageStep = process.AddStepFromType<DisplayAssistantMessageStep>();
@@ -31,10 +32,8 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         var accountVerificationStep = (ProcessBuilder<NewAccountVerificationProcess.ProcessEvents>)process.AddStepFromProcess(NewAccountVerificationProcess.CreateProcess());
         var accountCreationStep = (ProcessBuilder<NewAccountCreationProcess.ProcessEvents>)process.AddStepFromProcess(NewAccountCreationProcess.CreateProcess());
 
-        var mailServiceStep = process.AddStepFromType<MailServiceStep>();
-
         process
-            .OnInputEvent(AccountOpeningEvents.StartProcess)
+            .OnInputEvent(NewAccountOpeningEvents.StartOpeningAccount)
             .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountWelcome));
 
         // When the welcome message is generated, send message to displayAssistantMessageStep
@@ -77,31 +76,31 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
 
         // When the creditScoreCheck step results in Rejection, the information gets to the mailService step to notify the user about the state of the application and the reasons
         accountVerificationStep
-            // .OnEvent(AccountOpeningEvents.CreditScoreCheckRejected) // if using OnEvent the event name must match exactly the name emitted by the inner step
             .OnProcessEvent(NewAccountVerificationProcess.ProcessEvents.OnNewUserCreditCheckFailed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
+            .EmitAsProcessEvent(process.GetProcessEvent(NewAccountOpeningEvents.OnNewUserCreditCheckFailed))
+            .StopProcess();
 
         // When the fraudDetectionCheck step fails, the information gets to the mailService step to notify the user about the state of the application and the reasons
+        // Sample of bubbling up nested ProcessEvents
         accountVerificationStep
-            // .OnEvent(AccountOpeningEvents.FraudDetectionCheckFailed) // if using OnEvent the event name must match exactly the name emitted by the inner step
             .OnProcessEvent(NewAccountVerificationProcess.ProcessEvents.OnNewUserFraudCheckFailed)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
+            .EmitAsProcessEvent(process.GetProcessEvent(NewAccountOpeningEvents.OnNewUserFraudCheckFailed))
+            .StopProcess();
 
         // When the fraudDetectionCheck step passes, the information gets to core system record creation step to kickstart this step
         accountVerificationStep
-            // .OnEvent(AccountOpeningEvents.FraudDetectionCheckPassed) // if using OnEvent the event name must match exactly the name emitted by the inner step
             .OnProcessEvent(NewAccountVerificationProcess.ProcessEvents.OnNewAccountVerificationSucceeded)
             .SendEventTo(accountCreationStep.WhereInputEventIs(NewAccountCreationProcess.ProcessEvents.OnNewAccountVerificationPassed));
 
         // After crmRecord and marketing gets created, a welcome packet is created to then send information to the user with the mailService step
+        // Sample of bubbling up nested ProcessEvents
         accountCreationStep
             .OnProcessEvent(NewAccountCreationProcess.ProcessEvents.AccountCreatedSuccessfully)
-            .SendEventTo(new ProcessFunctionTargetBuilder(mailServiceStep));
-
-        // All possible paths end up with the user being notified about the account creation decision throw the mailServiceStep completion
-        mailServiceStep
-            .OnEvent(AccountOpeningEvents.MailServiceSent)
+            .EmitAsProcessEvent(process.GetProcessEvent(NewAccountOpeningEvents.AccountCreatedSuccessfully))
             .StopProcess();
+
+        // Linking NewAccountOpeningEmailEvents subscriber to process
+        process.LinkEventSubscribersFromType<AccountOpeningEventSubscribers>();
 
         KernelProcess kernelProcess = process.Build();
 
@@ -118,10 +117,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteractionStep>();
         // Act
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-        // Assert
-        var processInfo = await runningProcess.GetStateAsync();
-        AccountOpeningAsserts.AssertAccountOpeningSuccessMailMessage(processInfo, nameof(MailServiceStep));
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.GetEventName(NewAccountOpeningEvents.StartOpeningAccount), Data = null });
     }
 
     /// <summary>
@@ -134,10 +130,7 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteractionStep>();
         // Act
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-        // Assert
-        var processInfo = await runningProcess.GetStateAsync();
-        AccountOpeningAsserts.AssertAccountOpeningFailDueCreditScoreMailMessage(processInfo, nameof(MailServiceStep));
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.GetEventName(NewAccountOpeningEvents.StartOpeningAccount), Data = null });
     }
 
     /// <summary>
@@ -150,9 +143,6 @@ public class Step02b_AccountOpening(ITestOutputHelper output) : BaseTest(output,
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteractionStep>();
         // Act
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
-        // Assert
-        var processInfo = await runningProcess.GetStateAsync();
-        AccountOpeningAsserts.AssertAccountOpeningFailDueFraudMailMessage(processInfo, nameof(MailServiceStep));
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.GetEventName(NewAccountOpeningEvents.StartOpeningAccount), Data = null });
     }
 }

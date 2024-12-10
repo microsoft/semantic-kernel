@@ -269,6 +269,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 List<Task> messageTasks = [];
                 foreach (var message in messagesToProcess)
                 {
+                    // Check if message has external event handler linked to it
+                    this.TryEmitMessageToExternalSubscribers(message);
+
                     // Check for end condition
                     if (message.DestinationId.Equals(ProcessConstants.EndStepName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -298,6 +301,25 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
 
         return;
+    }
+
+    //private string? TryGetLinkedExternalProcessEvent()
+    //{
+    //	this._process.EventsSubscriber.
+    //}
+
+    private void TryEmitMessageToExternalSubscribers(string processEventId, object? processEventData)
+    {
+        string? processEventName = null;
+        this._process.EventsSubscriber?.TryInvokeProcessEventFromStepMessage(processEventId, processEventData);
+        if (string.IsNullOrEmpty(processEventName))
+        {
+        }
+    }
+
+    private void TryEmitMessageToExternalSubscribers(ProcessMessage message)
+    {
+        this.TryEmitMessageToExternalSubscribers(message.EventId, message.TargetEventData);
     }
 
     /// <summary>
@@ -331,6 +353,13 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         var allStepEvents = step.GetAllEvents();
         foreach (ProcessEvent stepEvent in allStepEvents)
         {
+            if (this._process.EventsSubscriber != null && this._process.EventsSubscriber.TryGetLinkedProcessEvent(stepEvent.QualifiedId, out var processEventName) && !string.IsNullOrEmpty(processEventName))
+            {
+                // Since it is a subscribed to event making public in case it wasn't and renaming event name to match process name
+                var processEvent = stepEvent with { SourceId = processEventName!, Visibility = KernelProcessEventVisibility.Public };
+                base.EmitEvent(processEvent);
+            }
+
             // Emit the event out of the process (this one) if it's visibility is public.
             if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
             {
@@ -347,15 +376,20 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             }
 
             // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
-            if (!foundEdge && stepEvent.IsError)
+            if (!foundEdge)
             {
-                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+                if (stepEvent.IsError && this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
                         ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                         messageChannel.Enqueue(message);
                     }
+                }
+                else
+                {
+                    // Checking in case the step with no edges linked to it has event that should be emitted externally
+                    this.TryEmitMessageToExternalSubscribers(stepEvent.QualifiedId, stepEvent.Data);
                 }
             }
         }

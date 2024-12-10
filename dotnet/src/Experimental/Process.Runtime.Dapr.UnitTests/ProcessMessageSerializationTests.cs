@@ -127,7 +127,7 @@ public class ProcessMessageSerializationTests
 
     private static ProcessMessage CreateMessage(Dictionary<string, object?> values)
     {
-        return new ProcessMessage("test-source", "test-destination", "test-function", values)
+        return new ProcessMessage("test-event", "test-eventid", "test-source", "test-destination", "test-function", values)
         {
             TargetEventData = "testdata",
             TargetEventId = "targetevent",
