@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Azure;
@@ -149,7 +148,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         // Build the list of fields from the model, and then replace the DescriptionEmbedding field with a vector field, to work around
         // issue where the field is not recognized as an array on parsing on the server side when apply the VectorSearchFieldAttribute.
         FieldBuilder fieldBuilder = new();
-        var searchFields = fieldBuilder.Build(typeof(Hotel));
+        var searchFields = fieldBuilder.Build(typeof(AzureAISearchHotel));
         var embeddingfield = searchFields.First(x => x.Name == "DescriptionEmbedding");
         searchFields.Remove(embeddingfield);
         searchFields.Add(new VectorSearchField("DescriptionEmbedding", 1536, "my-vector-profile"));
@@ -185,9 +184,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     {
         var embedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
 
-        IndexDocumentsBatch<Hotel> batch = IndexDocumentsBatch.Create(
+        IndexDocumentsBatch<AzureAISearchHotel> batch = IndexDocumentsBatch.Create(
             IndexDocumentsAction.Upload(
-                new Hotel()
+                new AzureAISearchHotel()
                 {
                     HotelId = "BaseSet-1",
                     HotelName = "Hotel 1",
@@ -199,7 +198,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Rating = 3.6
                 }),
             IndexDocumentsAction.Upload(
-                new Hotel()
+                new AzureAISearchHotel()
                 {
                     HotelId = "BaseSet-2",
                     HotelName = "Hotel 2",
@@ -211,7 +210,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Rating = 3.60
                 }),
             IndexDocumentsAction.Upload(
-                new Hotel()
+                new AzureAISearchHotel()
                 {
                     HotelId = "BaseSet-3",
                     HotelName = "Hotel 3",
@@ -223,7 +222,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Rating = 4.80
                 }),
             IndexDocumentsAction.Upload(
-                new Hotel()
+                new AzureAISearchHotel()
                 {
                     HotelId = "BaseSet-4",
                     HotelName = "Hotel 4",
@@ -241,43 +240,4 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         // Add some delay to allow time for the documents to get indexed and show up in search.
         await Task.Delay(5000);
     }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public class Hotel
-    {
-        [SimpleField(IsKey = true, IsFilterable = true)]
-        [VectorStoreRecordKey]
-        public string HotelId { get; set; }
-
-        [SearchableField(IsFilterable = true, IsSortable = true)]
-        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
-        public string HotelName { get; set; }
-
-        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
-        [VectorStoreRecordData]
-        public string Description { get; set; }
-
-        [VectorStoreRecordVector(1536)]
-        public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
-
-        [SearchableField(IsFilterable = true, IsFacetable = true)]
-        [VectorStoreRecordData(IsFilterable = true)]
-#pragma warning disable CA1819 // Properties should not return arrays
-        public string[] Tags { get; set; }
-#pragma warning restore CA1819 // Properties should not return arrays
-
-        [JsonPropertyName("parking_is_included")]
-        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [VectorStoreRecordData(IsFilterable = true)]
-        public bool? ParkingIncluded { get; set; }
-
-        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [VectorStoreRecordData(IsFilterable = true)]
-        public DateTimeOffset? LastRenovationDate { get; set; }
-
-        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [VectorStoreRecordData]
-        public double? Rating { get; set; }
-    }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
