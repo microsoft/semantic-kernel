@@ -221,13 +221,21 @@ public sealed class OpenAIFunction
         };
         return KernelJsonSchema.Parse(jObject.ToString());
     }
+
+    private static bool ShouldPropertiesBeRemoved(string[] names) => names.Length > 0;
+
+    private static bool DoesNullTypeNeedToBeAdded(bool shouldInsertNullType, KernelJsonSchema schema)
+    => shouldInsertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&
+        // multiple types, but not null entry
+        (typeElement.ValueKind == JsonValueKind.Array && !typeElement.EnumerateArray().Any(static t => NullType.Equals(t.GetString(), StringComparison.OrdinalIgnoreCase)) ||
+        // single type which is not null
+        typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType);
+
     private static KernelJsonSchema GetSanitizedSchemaForStrictMode(KernelJsonSchema schema, bool insertNullType)
     {
         var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
 
-        if (forbiddenPropertyNames.Length > 0 || insertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&
-            (typeElement.ValueKind == JsonValueKind.Array && !typeElement.EnumerateArray().Any(static t => NullType.Equals(t.GetString(), StringComparison.OrdinalIgnoreCase)) ||
-            typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType))
+        if (ShouldPropertiesBeRemoved(forbiddenPropertyNames) || DoesNullTypeNeedToBeAdded(insertNullType, schema))
         {
             var originalSchema = JsonSerializer.Serialize(schema.RootElement);
             var parsedJson = JsonNode.Parse(originalSchema);
@@ -249,6 +257,7 @@ public sealed class OpenAIFunction
         }
         return schema;
     }
+
     // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
     private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
     {
@@ -264,8 +273,11 @@ public sealed class OpenAIFunction
             }
         }
     }
+
     private const string NullType = "null";
+
     private const string TypeKey = "type";
+
     // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
     private static readonly string[] s_forbiddenKeywords = [
         "contains",
