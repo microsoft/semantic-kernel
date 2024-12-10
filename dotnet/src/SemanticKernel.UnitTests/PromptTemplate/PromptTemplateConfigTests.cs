@@ -65,7 +65,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "service1": {
                   "model_id": "gpt-4",
@@ -74,7 +74,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -87,7 +87,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -114,7 +114,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "service1": {
                   "model_id": "gpt-4",
@@ -123,7 +123,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -136,7 +136,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -163,7 +163,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "default": {
                   "model_id": "gpt-4",
@@ -172,7 +172,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -199,7 +199,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "service1": {
                   "model_id": "gpt-4",
@@ -208,7 +208,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -222,7 +222,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -298,7 +298,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "service1": {
                   "model_id": "gpt-4",
@@ -307,7 +307,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -320,7 +320,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -349,7 +349,7 @@ public class PromptTemplateConfigTests
             {
               "schema": 1,
               "description": "",
-              "execution_settings": 
+              "execution_settings":
               {
                 "default": {
                   "model_id": "gpt-4",
@@ -358,7 +358,7 @@ public class PromptTemplateConfigTests
                   "top_p": 0.0,
                   "presence_penalty": 0.0,
                   "frequency_penalty": 0.0,
-                  "stop_sequences": 
+                  "stop_sequences":
                   [
                     "Human",
                     "AI"
@@ -391,7 +391,8 @@ public class PromptTemplateConfigTests
                     "type": "auto",
                     "functions":["p1.f1"],
                     "options":{
-                        "allow_concurrent_invocation": true
+                        "allow_concurrent_invocation": true,
+                        "allow_strict_schema_adherence": true
                     }
                   }
                 }
@@ -415,6 +416,7 @@ public class PromptTemplateConfigTests
         Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
 
         Assert.True(autoFunctionCallChoice.Options!.AllowConcurrentInvocation);
+        Assert.True(autoFunctionCallChoice.Options!.AllowStrictSchemaAdherence);
     }
 
     [Fact]
@@ -431,7 +433,8 @@ public class PromptTemplateConfigTests
                     "type": "required",
                     "functions":["p1.f1"],
                     "options":{
-                        "allow_concurrent_invocation": true
+                        "allow_concurrent_invocation": true,
+                        "allow_strict_schema_adherence": true
                     }
                   }
                 }
@@ -456,6 +459,7 @@ public class PromptTemplateConfigTests
         Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
 
         Assert.True(requiredFunctionCallChoice.Options!.AllowConcurrentInvocation);
+        Assert.True(requiredFunctionCallChoice.Options!.AllowStrictSchemaAdherence);
     }
 
     [Fact]
@@ -528,7 +532,7 @@ public class PromptTemplateConfigTests
         string configPayload = """
             {
               "description": "function description",
-              "output_variable": 
+              "output_variable":
                 {
                     "description": "output variable description"
                 }

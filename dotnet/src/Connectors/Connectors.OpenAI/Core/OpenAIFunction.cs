@@ -2,6 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -72,9 +76,17 @@ public sealed class OpenAIFunction
     /// </remarks>
     private static readonly BinaryData s_zeroFunctionParametersSchema = new("""{"type":"object","required":[],"properties":{}}""");
     /// <summary>
+    /// Same as above, but with additionalProperties: false for strict mode.
+    /// </summary>
+    private static readonly BinaryData s_zeroFunctionParametersSchema_strict = new("""{"type":"object","required":[],"properties":{},"additionalProperties":false}""");
+    /// <summary>
     /// Cached schema for a descriptionless string.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
+    /// <summary>
+    /// Cached schema for a descriptionless string that's nullable.
+    /// </summary>
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchemaAndNull = KernelJsonSchema.Parse("""{"type":["string","null"]}""");
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(
@@ -127,9 +139,17 @@ public sealed class OpenAIFunction
     /// <see cref="ChatTool"/> representation.
     /// </summary>
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
-    public ChatTool ToFunctionDefinition()
+    [Obsolete("Use the overload that takes a boolean parameter instead.")]
+    public ChatTool ToFunctionDefinition() => this.ToFunctionDefinition(false);
+
+    /// <summary>
+    /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
+    /// <see cref="ChatTool"/> representation.
+    /// </summary>
+    /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
+    public ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence)
     {
-        BinaryData resultParameters = s_zeroFunctionParametersSchema;
+        BinaryData resultParameters = allowStrictSchemaAdherence ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
 
         IReadOnlyList<OpenAIFunctionParameter>? parameters = this.Parameters;
         if (parameters is { Count: > 0 })
@@ -137,42 +157,147 @@ public sealed class OpenAIFunction
             var properties = new Dictionary<string, KernelJsonSchema>();
             var required = new List<string>();
 
-            for (int i = 0; i < parameters.Count; i++)
+            foreach (var parameter in parameters)
             {
-                var parameter = parameters[i];
-                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description));
-                if (parameter.IsRequired)
+                var parameterSchema = (parameter.Schema, allowStrictSchemaAdherence) switch
+                {
+                    (not null, true) => GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence),
+                    (not null, false) => parameter.Schema,
+                    (null, _) => GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence),
+                };
+                properties.Add(parameter.Name, parameterSchema);
+                if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
                 }
             }
 
-            resultParameters = BinaryData.FromObjectAsJson(new
-            {
-                type = "object",
-                required,
-                properties,
-            });
+            resultParameters = allowStrictSchemaAdherence
+                ? BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                    additionalProperties = false
+                })
+                : BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                });
         }
 
         return ChatTool.CreateFunctionTool
         (
             functionName: this.FullyQualifiedName,
             functionDescription: this.Description,
-            functionParameters: resultParameters
+            functionParameters: resultParameters,
+            functionSchemaIsStrict: allowStrictSchemaAdherence
         );
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
-    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
+    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
     {
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchemaBuilder.Build(typeof(string), description);
+            return allowStrictSchemaAdherence ?
+                GetOptionalStringSchemaWithDescription(description!) :
+                KernelJsonSchemaBuilder.Build(typeof(string), description, AIJsonSchemaCreateOptions.Default);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
-        return s_stringNoDescriptionSchema;
+        return allowStrictSchemaAdherence ? s_stringNoDescriptionSchemaAndNull : s_stringNoDescriptionSchema;
     }
+
+    private static KernelJsonSchema GetOptionalStringSchemaWithDescription(string description)
+    {
+        var jObject = new JsonObject
+        {
+            { "description", description },
+            { "type", new JsonArray { "string", "null" } },
+        };
+        return KernelJsonSchema.Parse(jObject.ToString());
+    }
+
+    private static bool ShouldPropertiesBeRemoved(string[] names) => names.Length > 0;
+
+    private static bool DoesNullTypeNeedToBeAdded(bool shouldInsertNullType, KernelJsonSchema schema)
+    => shouldInsertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&
+        // multiple types, but not null entry
+        (typeElement.ValueKind == JsonValueKind.Array && !typeElement.EnumerateArray().Any(static t => NullType.Equals(t.GetString(), StringComparison.OrdinalIgnoreCase)) ||
+        // single type which is not null
+        typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType);
+
+    private static KernelJsonSchema GetSanitizedSchemaForStrictMode(KernelJsonSchema schema, bool insertNullType)
+    {
+        var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
+
+        if (ShouldPropertiesBeRemoved(forbiddenPropertyNames) || DoesNullTypeNeedToBeAdded(insertNullType, schema))
+        {
+            var originalSchema = JsonSerializer.Serialize(schema.RootElement);
+            var parsedJson = JsonNode.Parse(originalSchema);
+
+            if (parsedJson is null)
+            {
+                return schema;
+            }
+
+            var jsonObject = parsedJson.AsObject();
+            foreach (var forbiddenPropertyName in forbiddenPropertyNames)
+            {
+                jsonObject.Remove(forbiddenPropertyName);
+            }
+
+            InsertNullTypeIfRequired(insertNullType, jsonObject);
+
+            return KernelJsonSchema.Parse(jsonObject.ToString());
+        }
+        return schema;
+    }
+
+    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
+    {
+        if (insertNullType && jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
+        {
+            if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
+            {
+                jsonArray.Add(NullType);
+            }
+            else if (typeValue is JsonValue jsonValue && jsonValue.GetValueKind() == JsonValueKind.String)
+            {
+                jsonObject[TypeKey] = new JsonArray { typeValue.GetValue<string>(), NullType };
+            }
+        }
+    }
+
+    private const string NullType = "null";
+
+    private const string TypeKey = "type";
+
+    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    private static readonly string[] s_forbiddenKeywords = [
+        "contains",
+        "format",
+        "maxContains",
+        "maximum",
+        "maxItems",
+        "maxLength",
+        "maxProperties",
+        "minContains",
+        "minimum",
+        "minItems",
+        "minLength",
+        "minProperties",
+        "multipleOf",
+        "pattern",
+        "patternProperties",
+        "propertyNames",
+        "unevaluatedItems",
+        "unevaluatedProperties",
+        "uniqueItems",
+    ];
 }

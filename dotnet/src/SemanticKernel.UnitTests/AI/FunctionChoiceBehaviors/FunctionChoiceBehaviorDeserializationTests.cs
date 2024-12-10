@@ -279,7 +279,8 @@ public class FunctionChoiceBehaviorDeserializationTests
             "type": "auto",
             "options": {
                 "allow_parallel_calls": true,
-                "allow_concurrent_invocation": true
+                "allow_concurrent_invocation": true,
+                "allow_strict_schema_adherence": true
             }
         }
         """;
@@ -292,6 +293,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
         Assert.True(config.Options.AllowConcurrentInvocation);
+        Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
 
     [Fact]
@@ -303,7 +305,8 @@ public class FunctionChoiceBehaviorDeserializationTests
             "type": "required",
             "options": {
                 "allow_parallel_calls": true,
-                "allow_concurrent_invocation": true
+                "allow_concurrent_invocation": true,
+                "allow_strict_schema_adherence": true
             }
         }
         """;
@@ -316,6 +319,7 @@ public class FunctionChoiceBehaviorDeserializationTests
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
         Assert.True(config.Options.AllowConcurrentInvocation);
+        Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
 
     private static KernelPlugin GetTestPlugin()

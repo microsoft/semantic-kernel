@@ -109,7 +109,9 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         // Microsoft Graph API execution parameters
         var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
             authCallback: authenticationProvider.AuthenticateRequestAsync,
-            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"));
+            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
+            enableDynamicOperationPayload: true,
+            enablePayloadNamespacing: true);
 
         // NASA API execution parameters
         var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -120,7 +122,9 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
                 query["api_key"] = "DEMO_KEY";
                 uriBuilder.Query = query.ToString();
                 request.RequestUri = uriBuilder.Uri;
-            });
+            },
+            enableDynamicOperationPayload: true,
+            enablePayloadNamespacing: true);
 
         var apiManifestPluginParameters = new CopilotAgentPluginParameters
         {
