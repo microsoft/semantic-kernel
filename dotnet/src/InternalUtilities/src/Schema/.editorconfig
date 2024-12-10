@@ -1,9 +1,0 @@
-# Suppressing code analysis diagnostics for code included as a source copy
-[*.cs]
-dotnet_diagnostic.CA1852.severity = none
-dotnet_diagnostic.IDE0005.severity = none
-dotnet_diagnostic.IDE0009.severity = none
-dotnet_diagnostic.IDE0055.severity = none
-dotnet_diagnostic.IDE0161.severity = none
-dotnet_diagnostic.IDE1006.severity = none
-dotnet_diagnostic.RCS1211.severity = none
