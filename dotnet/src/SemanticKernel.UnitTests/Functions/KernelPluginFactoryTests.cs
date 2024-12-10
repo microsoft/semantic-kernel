@@ -72,7 +72,7 @@ public class KernelPluginFactoryTests
 
         Assert.NotEmpty(function1.Metadata.Parameters);
         Assert.NotNull(function1.Metadata.Parameters[0].Schema);
-        Assert.Equal("""{"type":"string","description":"Description for parameter 1"}""", function1.Metadata.Parameters[0].Schema!.ToString());
+        Assert.Equal("""{"description":"Description for parameter 1","type":"string"}""", function1.Metadata.Parameters[0].Schema!.ToString());
 
         Assert.NotNull(function1.Metadata.ReturnParameter);
         Assert.NotNull(function1.Metadata.ReturnParameter.Schema);
@@ -86,7 +86,7 @@ public class KernelPluginFactoryTests
 
         Assert.NotEmpty(function2.Metadata.Parameters);
         Assert.NotNull(function2.Metadata.Parameters[0].Schema);
-        Assert.Equal("""{"type":"object","properties":{"Value":{"type":["string","null"]}},"description":"Description for parameter 1"}""", function2.Metadata.Parameters[0].Schema!.ToString());
+        Assert.Equal("""{"description":"Description for parameter 1","type":"object","properties":{"Value":{"type":["string","null"]}}}""", function2.Metadata.Parameters[0].Schema!.ToString());
 
         Assert.NotNull(function2.Metadata.ReturnParameter);
         Assert.NotNull(function2.Metadata.ReturnParameter.Schema);

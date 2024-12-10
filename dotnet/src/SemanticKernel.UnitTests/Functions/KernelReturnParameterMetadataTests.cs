@@ -37,7 +37,7 @@ public class KernelReturnParameterMetadataTests
             new KernelReturnParameterMetadata(jsos) { Description = "d", ParameterType = typeof(int) } :
             new KernelReturnParameterMetadata() { Description = "d", ParameterType = typeof(int) };
 
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"d" }""")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"d", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]
