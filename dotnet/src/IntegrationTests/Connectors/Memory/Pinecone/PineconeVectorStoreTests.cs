@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
@@ -15,6 +16,12 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
     : BaseVectorStoreTests<string, PineconeHotel>(new PineconeVectorStore(fixture.Client)), IClassFixture<PineconeVectorStoreFixture>
 {
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
+
+    [PineconeFact]
+    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
+    {
+        await base.ItCanGetAListOfExistingCollectionNamesAsync();
+    }
 
     [PineconeFact]
     public void CreateCollectionUsingFactory()
