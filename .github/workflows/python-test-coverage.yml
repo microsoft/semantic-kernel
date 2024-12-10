@@ -38,22 +38,6 @@ jobs:
         run: uv sync --all-extras --dev
       - name: Test with pytest
         run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
-          path: python/python-coverage.txt
-          overwrite: true
-          retention-days: 1
-      - name: Upload pytest.xml
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-${{ env.FILE_ID }}.xml
-          path: python/pytest.xml
-          overwrite: true
-          retention-days: 1
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
