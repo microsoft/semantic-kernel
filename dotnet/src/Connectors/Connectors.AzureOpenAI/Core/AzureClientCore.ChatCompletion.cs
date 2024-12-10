@@ -49,6 +49,7 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
+            StoredOutputEnabled = executionSettings.Store,
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -87,6 +88,14 @@ internal partial class AzureClientCore
             foreach (var s in executionSettings.StopSequences)
             {
                 options.StopSequences.Add(s);
+            }
+        }
+
+        if (executionSettings.Metadata is not null)
+        {
+            foreach (var kvp in executionSettings.Metadata)
+            {
+                options.Metadata.Add(kvp.Key, kvp.Value);
             }
         }
 
