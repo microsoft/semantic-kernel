@@ -159,7 +159,13 @@ public sealed class OpenAIFunction
 
             foreach (var parameter in parameters)
             {
-                properties.Add(parameter.Name, GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence) ?? GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence));
+                var parameterSchema = (parameter.Schema, allowStrictSchemaAdherence) switch
+                {
+                    (not null, true) => GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence),
+                    (not null, false) => parameter.Schema,
+                    (null, _) => GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence),
+                };
+                properties.Add(parameter.Name, parameterSchema);
                 if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
@@ -215,12 +221,8 @@ public sealed class OpenAIFunction
         };
         return KernelJsonSchema.Parse(jObject.ToString());
     }
-    private static KernelJsonSchema? GetSanitizedSchemaForStrictMode(KernelJsonSchema? schema, bool insertNullType)
+    private static KernelJsonSchema GetSanitizedSchemaForStrictMode(KernelJsonSchema schema, bool insertNullType)
     {
-        if (schema is null)
-        {
-            return null;
-        }
         var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
 
         if (forbiddenPropertyNames.Length > 0 || insertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&

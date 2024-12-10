@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -231,6 +232,71 @@ public sealed class OpenAIFunctionTests
         Assert.Equal(
             JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedSchema)),
             JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
+    [InlineData("number", "maximum", "10", false)]
+    [InlineData("number", "maximum", "10", true)]
+    [InlineData("number", "minimum", "10", false)]
+    [InlineData("number", "minimum", "10", true)]
+    [InlineData("number", "maxContains", "10", false)]
+    [InlineData("number", "maxContains", "10", true)]
+    [InlineData("number", "minContains", "10", false)]
+    [InlineData("number", "minContains", "10", true)]
+    [InlineData("number", "multipleOf", "10", false)]
+    [InlineData("number", "multipleOf", "10", true)]
+    [InlineData("number", "format", "\"int64\"", false)]
+    [InlineData("number", "format", "\"int64\"", true)]
+    [InlineData("array", "maxItems", "5", false)]
+    [InlineData("array", "maxItems", "5", true)]
+    [InlineData("array", "minItems", "5", false)]
+    [InlineData("array", "minItems", "5", true)]
+    [InlineData("array", "contains", "5", false)]
+    [InlineData("array", "contains", "5", true)]
+    [InlineData("array", "uniqueItems", "true", false)]
+    [InlineData("array", "uniqueItems", "true", true)]
+    [InlineData("string", "minLength", "5", false)]
+    [InlineData("string", "minLength", "5", true)]
+    [InlineData("string", "maxLength", "5", false)]
+    [InlineData("string", "maxLength", "5", true)]
+    [InlineData("object", "maxProperties", "5", false)]
+    [InlineData("object", "maxProperties", "5", true)]
+    [InlineData("object", "minProperties", "5", false)]
+    [InlineData("object", "minProperties", "5", true)]
+    [InlineData("object", "pattern", "\"foo*\"", false)]
+    [InlineData("object", "pattern", "\"foo*\"", true)]
+    [InlineData("object", "patternProperties", "\"foo*\"", false)]
+    [InlineData("object", "patternProperties", "\"foo*\"", true)]
+    [InlineData("object", "propertyNames", """{ "maxLength": 3, "minLength": 3 }""", false)]
+    [InlineData("object", "propertyNames", """{ "maxLength": 3, "minLength": 3 }""", true)]
+    [InlineData("object", "unevaluatedItems", "true", false)]
+    [InlineData("object", "unevaluatedItems", "true", true)]
+    [InlineData("object", "unevaluatedProperties", "true", false)]
+    [InlineData("object", "unevaluatedProperties", "true", true)]
+    [Theory]
+    public void ItCleansUpRestrictedSchemaKeywords(string typeName, string keyword, string keywordValue, bool strict)
+    {
+        // Arrange
+        var parameterSchema = KernelJsonSchema.Parse($$"""{ "description":"something neat", "type":"{{typeName}}", "{{keyword}}":{{keywordValue}} }""");
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: [new KernelParameterMetadata("param1") { Description = "something neat", Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
+
+        // Act
+        ChatTool result = f.ToFunctionDefinition(strict);
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
+
+        // Assert
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        var resultSchema = JsonSerializer.Serialize(pd.properties.First().Value.RootElement);
+        if (strict)
+        {
+            Assert.DoesNotContain(keyword, resultSchema, StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            Assert.Contains(keyword, resultSchema, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
 #pragma warning disable CA1812 // uninstantiated internal class
