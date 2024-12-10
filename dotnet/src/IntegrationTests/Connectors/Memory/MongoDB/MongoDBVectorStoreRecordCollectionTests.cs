@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Xunit;
-using static SemanticKernel.IntegrationTests.Connectors.MongoDB.MongoDBVectorStoreFixture;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
