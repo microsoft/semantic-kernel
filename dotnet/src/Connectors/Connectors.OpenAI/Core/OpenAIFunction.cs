@@ -139,7 +139,15 @@ public sealed class OpenAIFunction
     /// <see cref="ChatTool"/> representation.
     /// </summary>
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
-    public ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence = false)
+    [Obsolete("Use the overload that takes a boolean parameter instead.")]
+    public ChatTool ToFunctionDefinition() => this.ToFunctionDefinition(false);
+
+    /// <summary>
+    /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
+    /// <see cref="ChatTool"/> representation.
+    /// </summary>
+    /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
+    public ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence)
     {
         BinaryData resultParameters = allowStrictSchemaAdherence ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
 

@@ -179,8 +179,10 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
     }
 
-    [Fact]
-    public void ItCanCreateValidAzureOpenAIFunctionManualForPlugin()
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPlugin(bool strict)
     {
         // Arrange
         var kernel = new Kernel();
@@ -191,18 +193,31 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var sut = functionMetadata.ToOpenAIFunction();
 
         // Act
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}}}""",
-            result.FunctionParameters.ToString()
-        );
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}}}""",
+                parametersResult
+            );
+        }
     }
 
-    [Fact]
-    public void ItCanCreateValidAzureOpenAIFunctionManualForPrompt()
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPrompt(bool strict)
     {
         // Arrange
         var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
@@ -226,14 +241,25 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var sut = functionMetadata.ToOpenAIFunction();
 
         // Act
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
-            result.FunctionParameters.ToString()
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
+                parametersResult
         );
+        }
     }
 
     private enum MyEnum
