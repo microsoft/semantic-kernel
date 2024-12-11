@@ -12,8 +12,6 @@ env:
   UV_CACHE_DIR: /tmp/.uv-cache
 
 permissions:
-  contents: write
-  checks: write
   pull-requests: write
 
 jobs:
