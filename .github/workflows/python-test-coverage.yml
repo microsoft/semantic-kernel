@@ -4,9 +4,9 @@ on:
   pull_request_target:
     branches: ["main", "feature*"]
     types: [opened, synchronize, reopened]
-    # paths:
-    #   - "python/semantic_kernel/**"
-    #   - "python/tests/unit/**"
+    paths:
+      - "python/semantic_kernel/**"
+      - "python/tests/unit/**"
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
