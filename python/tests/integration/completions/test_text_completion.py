@@ -176,7 +176,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
 

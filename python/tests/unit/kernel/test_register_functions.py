@@ -12,7 +12,6 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 
 
-@pytest.mark.asyncio
 async def test_register_valid_native_function(kernel: Kernel, decorated_native_function: Callable):
     kernel.add_function(plugin_name="TestPlugin", function=decorated_native_function)
     registered_func = kernel.get_function(plugin_name="TestPlugin", function_name="getLightStatus")

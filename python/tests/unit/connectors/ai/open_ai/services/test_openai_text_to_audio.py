@@ -60,7 +60,6 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_text_to_audio.get_prompt_execution_settings_class() == OpenAITextToAudioExecutionSettings
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncSpeech, "create", return_value=_legacy_response.HttpxBinaryResponseContent(httpx.Response(200)))
 async def test_get_text_contents(mock_speech_create, openai_unit_test_env):
     openai_text_to_audio = OpenAITextToAudio()

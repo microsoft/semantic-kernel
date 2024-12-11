@@ -433,7 +433,6 @@ def mock_anthropic_client_completion_stream(mock_streaming_message_response: Asy
     return client
 
 
-@pytest.mark.asyncio
 async def test_complete_chat_contents(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -497,7 +496,6 @@ mock_message_function_call = ChatMessageContent(
         ),
     ],
 )
-@pytest.mark.asyncio
 async def test_complete_chat_contents_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -521,7 +519,6 @@ async def test_complete_chat_contents_function_call_behavior_tool_call(
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
-@pytest.mark.asyncio
 async def test_complete_chat_contents_function_call_behavior_without_kernel(
     mock_settings: AnthropicChatPromptExecutionSettings,
     mock_anthropic_client_completion: AsyncAnthropic,
@@ -537,7 +534,6 @@ async def test_complete_chat_contents_function_call_behavior_without_kernel(
         await chat_completion_base.get_chat_message_contents(chat_history=chat_history, settings=mock_settings)
 
 
-@pytest.mark.asyncio
 async def test_complete_chat_stream_contents(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -599,7 +595,6 @@ mock_message_text_content = StreamingChatMessageContent(
         pytest.param(FunctionChoiceBehavior.NoneInvoke(), [[mock_message_text_content]], TextContent, id="none"),
     ],
 )
-@pytest.mark.asyncio
 async def test_complete_chat_contents_streaming_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -630,7 +625,6 @@ async def test_complete_chat_contents_streaming_function_call_behavior_tool_call
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
-@pytest.mark.asyncio
 async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicChatPromptExecutionSettings):
     client = MagicMock(spec=AsyncAnthropic)
     messages_mock = MagicMock()
@@ -650,7 +644,6 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
         )
 
 
-@pytest.mark.asyncio
 async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: AnthropicChatPromptExecutionSettings):
     client = MagicMock(spec=AsyncAnthropic)
     messages_mock = MagicMock()
@@ -704,7 +697,6 @@ def test_prompt_execution_settings_class(anthropic_unit_test_env):
     assert prompt_execution_settings == AnthropicChatPromptExecutionSettings
 
 
-@pytest.mark.asyncio
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)
@@ -720,7 +712,6 @@ async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_
     assert mock_anthropic_client_completion.messages.create.call_args.kwargs["temperature"] == 0.2
 
 
-@pytest.mark.asyncio
 async def test_with_different_execution_settings_stream(
     kernel: Kernel, mock_anthropic_client_completion_stream: MagicMock
 ):
@@ -741,7 +732,6 @@ async def test_with_different_execution_settings_stream(
     assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
 
 
-@pytest.mark.asyncio
 async def test_prepare_chat_history_for_request_with_system_message(mock_anthropic_client_completion_stream: MagicMock):
     chat_history = ChatHistory()
     chat_history.add_system_message("System message")
@@ -768,7 +758,6 @@ async def test_prepare_chat_history_for_request_with_system_message(mock_anthrop
     assert not any(msg["role"] == AuthorRole.SYSTEM for msg in remaining_messages)
 
 
-@pytest.mark.asyncio
 async def test_prepare_chat_history_for_request_with_tool_message(
     mock_anthropic_client_completion_stream: MagicMock,
     mock_tool_calls_message: ChatMessageContent,
@@ -794,7 +783,6 @@ async def test_prepare_chat_history_for_request_with_tool_message(
     assert len(remaining_messages) == 3
 
 
-@pytest.mark.asyncio
 async def test_prepare_chat_history_for_request_with_tool_message_streaming(
     mock_anthropic_client_completion_stream: MagicMock,
     mock_streaming_chat_message_content: StreamingChatMessageContent,
@@ -823,7 +811,6 @@ async def test_prepare_chat_history_for_request_with_tool_message_streaming(
     assert len(remaining_messages) == 3
 
 
-@pytest.mark.asyncio
 async def test_send_chat_stream_request_tool_calls(
     mock_streaming_tool_calls_message: MagicMock,
     mock_streaming_chat_message_content: StreamingChatMessageContent,

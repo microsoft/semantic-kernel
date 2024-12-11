@@ -125,7 +125,6 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         raise e
 
 
-@pytest.mark.asyncio
 @pytestmark
 async def test_azure_e2e_chat_completion_with_extensions(create_with_data_chat_function):
     # Create an index and populate it with some data

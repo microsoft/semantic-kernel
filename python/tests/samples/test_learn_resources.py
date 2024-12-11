@@ -103,7 +103,6 @@ learn_resources = [
 ]
 
 
-@mark.asyncio
 @mark.parametrize("func,responses", learn_resources)
 async def test_learn_resources(func, responses, monkeypatch):
     saved_responses = copy.deepcopy(responses)

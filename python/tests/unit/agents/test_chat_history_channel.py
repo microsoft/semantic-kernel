@@ -41,7 +41,6 @@ class AsyncIterableMock:
         return self.async_gen()
 
 
-@pytest.mark.asyncio
 async def test_invoke():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -66,7 +65,6 @@ async def test_invoke():
     assert "Processed: Initial message" in received_messages[0].content
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -92,7 +90,6 @@ async def test_invoke_stream():
     assert "Processed: Initial message" in received_messages[0].content
 
 
-@pytest.mark.asyncio
 async def test_invoke_leftover_in_queue():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -130,7 +127,6 @@ async def test_invoke_leftover_in_queue():
     assert received_messages[2].items[0].id == "test_id"
 
 
-@pytest.mark.asyncio
 async def test_invoke_incorrect_instance_throws():
     channel = ChatHistoryChannel()
     agent = MockNonChatHistoryHandler()
@@ -140,7 +136,6 @@ async def test_invoke_incorrect_instance_throws():
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_incorrect_instance_throws():
     channel = ChatHistoryChannel()
     agent = MockNonChatHistoryHandler()
@@ -150,7 +145,6 @@ async def test_invoke_stream_incorrect_instance_throws():
             pass
 
 
-@pytest.mark.asyncio
 async def test_receive():
     channel = ChatHistoryChannel()
     history = [
@@ -167,7 +161,6 @@ async def test_receive():
     assert channel.messages[1].role == AuthorRole.USER
 
 
-@pytest.mark.asyncio
 async def test_get_history():
     channel = ChatHistoryChannel()
     history = [
@@ -185,7 +178,6 @@ async def test_get_history():
     assert messages[1].role == AuthorRole.SYSTEM
 
 
-@pytest.mark.asyncio
 async def test_reset_history():
     channel = ChatHistoryChannel()
     history = [

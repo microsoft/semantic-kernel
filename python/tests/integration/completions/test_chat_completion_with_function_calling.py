@@ -901,7 +901,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
     """Test Chat Completion with function calling"""
 

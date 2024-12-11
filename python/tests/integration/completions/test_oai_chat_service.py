@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import os
 
-import pytest
 from openai import AsyncOpenAI
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -9,7 +8,6 @@ from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import Open
 from semantic_kernel.contents.chat_history import ChatHistory
 
 
-@pytest.mark.asyncio
 async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 
@@ -46,7 +44,6 @@ async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_mod
     assert len(str(result.value)) > 0
 
 
-@pytest.mark.asyncio
 async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 

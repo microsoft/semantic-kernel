@@ -251,7 +251,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     """Test chat completion with image input and text output."""
 

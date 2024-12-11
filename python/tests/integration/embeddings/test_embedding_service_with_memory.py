@@ -89,7 +89,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestEmbeddingServiceWithMemory(EmbeddingServiceTestBase):
     """Test embedding service with memory.
 

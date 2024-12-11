@@ -787,7 +787,6 @@ def test_predicate_callback_applied(openapi_runner_with_predicate_callback):
 
 
 @patch("aiohttp.ClientSession.request")
-@pytest.mark.asyncio
 async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["getTodoById"]
@@ -799,7 +798,6 @@ async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
 
 
 @patch("aiohttp.ClientSession.request")
-@pytest.mark.asyncio
 async def test_run_operation_with_error(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["addTodo"]

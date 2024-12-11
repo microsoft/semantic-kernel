@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -10,7 +9,6 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from tests.utils import retry
 
 
-@pytest.mark.asyncio
 async def test_azure_summarize_conversation_using_plugin(setup_summarize_conversation_using_plugin):
     kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
@@ -40,7 +38,6 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     assert len(output) < len(chatTranscript)
 
 
-@pytest.mark.asyncio
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):

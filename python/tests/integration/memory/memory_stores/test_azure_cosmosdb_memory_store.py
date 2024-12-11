@@ -112,7 +112,6 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_create_get_drop_exists_collection():
     store = await azurecosmosdb_memorystore()
@@ -129,7 +128,6 @@ async def test_create_get_drop_exists_collection():
     assert result is False
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_upsert_and_get_and_remove(
     memory_record1: MemoryRecord,
@@ -147,7 +145,6 @@ async def test_upsert_and_get_and_remove(
     await store.remove("", memory_record1._id)
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_upsert_batch_and_get_batch_remove_batch(memory_record2: MemoryRecord, memory_record3: MemoryRecord):
     store = await azurecosmosdb_memorystore()
@@ -163,7 +160,6 @@ async def test_upsert_batch_and_get_batch_remove_batch(memory_record2: MemoryRec
     await store.remove_batch("", [memory_record2._id, memory_record3._id])
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     store = await azurecosmosdb_memorystore()
@@ -182,7 +178,6 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
     await store.remove_batch("", [memory_record1._id, memory_record2._id])
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_get_nearest_matches(
     memory_record1: MemoryRecord,
