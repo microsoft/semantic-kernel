@@ -8,7 +8,7 @@ from samples.concepts.setup.chat_completion_services import (
 )
 from semantic_kernel.contents import ChatHistory
 
-# This sample shows how to create a chatbot that whose output can be stored for use with the OpenAI
+# This sample shows how to create a chatbot whose output can be stored for use with the OpenAI
 # model distillation or evals products.
 # This sample uses the following three main components:
 # - a ChatCompletionService: This component is responsible for generating responses to user messages.
