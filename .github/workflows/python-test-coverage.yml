@@ -1,7 +1,7 @@
 name: Python Test Coverage
 
 on:
-  pull_request:
+  pull_request_target:
     branches: ["main", "feature*"]
     paths:
       - "python/semantic_kernel/**"
@@ -26,6 +26,9 @@ jobs:
       UV_PYTHON: "3.10"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Set up uv
