@@ -158,10 +158,10 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_ai_services
-        timeout-minutes: 25
+        timeout-minutes: 30
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO -n logical --dist loadfile --dist worksteal ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+          uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
 
   python-merge-gate-memory:
     name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
@@ -215,10 +215,10 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_memory
-        timeout-minutes: 10
+        timeout-minutes: 15
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
+          uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
 
   python-integration-tests:
     name: Python Integration Tests - Scheduled run

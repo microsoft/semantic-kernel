@@ -31,7 +31,7 @@ async def retry(
                 reset()
             return await func()
         except Exception as e:
-            logger.info(f"   On try {i + 1} got this error: {e}")
+            logger.warning(f"   On try {i + 1} got this error: {e}")
             if i == retries - 1:  # Last retry
                 raise
             # Binary exponential backoff
