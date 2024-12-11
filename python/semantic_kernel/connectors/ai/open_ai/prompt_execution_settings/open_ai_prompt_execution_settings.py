@@ -34,6 +34,7 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     user: str | None = None
 
+
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the completions endpoint."""
 
