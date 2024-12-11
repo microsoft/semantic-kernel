@@ -2,7 +2,7 @@
 
 import asyncio
 
-Hfrom samples.concepts.setup.chat_completion_services import (
+from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
@@ -33,7 +33,7 @@ Your name is Mosscap and you have one goal: to answer questions about basketball
 chat_history = ChatHistory(system_message=system_message)
 # Configure the store amd metadata settings for the chat completion service.
 request_settings.store = True
-request_settings.metadata = { "chatbot": "Mosscap" }
+request_settings.metadata = {"chatbot": "Mosscap"}
 
 
 async def chat() -> bool:
