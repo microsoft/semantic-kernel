@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -11,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed class ProcessBuilder : ProcessStepBuilder
+public class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];
@@ -21,6 +22,8 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+
+    internal KernelProcessEventsSubscriberInfo _eventsSubscriber;
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
@@ -301,7 +304,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges);
+        KernelProcess process = new(state, builtSteps, builtEdges, this._eventsSubscriber);
 
         return process;
     }
@@ -313,7 +316,91 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder(string name)
         : base(name)
     {
+        this._eventsSubscriber = new();
     }
 
+    #endregion
+}
+
+/// <summary>
+/// Provides functionality for incrementally defining a process with specific input/output process events
+/// </summary>
+public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enum, new()
+{
+    private readonly Dictionary<TEvents, string> _eventNames = [];
+
+    private void PopulateEventNames()
+    {
+        foreach (TEvents processEvent in Enum.GetValues(typeof(TEvents)))
+        {
+            this._eventNames.Add(processEvent, Enum.GetName(typeof(TEvents), processEvent)!);
+        }
+    }
+
+    #region Public Interface
+    /// <summary>
+    /// Retrieve string name of the <typeparamref name="TEvents"/> string value
+    /// </summary>
+    /// <param name="processEvent"></param>
+    /// <returns>string of the process event enum</returns>
+    public string GetEventName(TEvents processEvent)
+    {
+        return this._eventNames[processEvent];
+    }
+
+    /// <summary>
+    /// Method that imports a specific KernelProcessEventSubscriber class type
+    /// to be used when specific TEvents get triggered inside the SK Process
+    /// </summary>
+    /// <typeparam name="TEventListeners">Type of the class that contains the custom event subscriber definition</typeparam>
+    /// <param name="serviceProvider">services that the subscribers in the TEventListeners make use of</param>
+    public void LinkEventSubscribersFromType<TEventListeners>(IServiceProvider? serviceProvider = null) where TEventListeners : KernelProcessEventsSubscriber<TEvents>
+    {
+        this._eventsSubscriber.SubscribeToEventsFromClass<TEventListeners, TEvents>(serviceProvider);
+    }
+
+    /// <inheritdoc cref="ProcessBuilder.OnInputEvent(string)"/>
+    public ProcessEdgeBuilder OnInputEvent(TEvents eventId)
+    {
+        return this.OnInputEvent(this.GetEventName(eventId));
+    }
+
+    /// <inheritdoc cref="ProcessBuilder.WhereInputEventIs(string)"/>
+    public ProcessFunctionTargetBuilder WhereInputEventIs(TEvents eventId)
+    {
+        return this.WhereInputEventIs(this.GetEventName(eventId));
+    }
+
+    /// <inheritdoc cref="ProcessBuilder.OnInputEvent(string)"/>
+    public ProcessEdgeBuilder GetProcessEvent(TEvents processEvent)
+    {
+        return this.OnInputEvent(this.GetEventName(processEvent));
+    }
+
+    /// <summary>
+    /// Similar to <see cref="ProcessStepBuilder.OnEvent(string)"/> but
+    /// specific to make use of ProcessEvents defined by <typeparamref name="TEvents"/>
+    /// </summary>
+    /// <param name="eventId">process event type</param>
+    /// <returns><see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public ProcessStepEdgeBuilder OnProcessEvent(TEvents eventId)
+    {
+        var eventName = this.GetEventName(eventId);
+        var linkedEventIds = this._eventsSubscriber.GetLinkedStepIdsToProcessEventName(eventName);
+
+        if (linkedEventIds == null || linkedEventIds?.Count() == 0)
+        {
+            throw new InvalidOperationException($"Could not find linked steps to process event {eventName}");
+        }
+
+        return base.OnEvent(eventName);
+    }
+
+    /// <inheritdoc cref="ProcessBuilder.ProcessBuilder(string)"/>
+    public ProcessBuilder(string name) : base(name)
+    {
+        this.PopulateEventNames();
+    }
     #endregion
 }

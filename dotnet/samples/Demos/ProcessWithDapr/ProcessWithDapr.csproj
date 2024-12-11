@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Dapr.Actors" />
     <PackageReference Include="Dapr.Actors.AspNetCore" />
+    <PackageReference Include="Dapr.AspNetCore" />
   </ItemGroup>
 
 </Project>

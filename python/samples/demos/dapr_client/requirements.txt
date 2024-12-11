@@ -1,0 +1,2 @@
+dapr==1.14.0
+dapr-ext-grpc==1.14.0

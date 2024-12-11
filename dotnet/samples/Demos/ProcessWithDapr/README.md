@@ -12,12 +12,21 @@ For more information about Semantic Kernel Processes and Dapr, see the following
 #### Dapr
 
 - [Dapr documentation](https://docs.dapr.io/)
-- [Dapr Actor documentation](https://v1-10.docs.dapr.io/developing-applications/building-blocks/actors/)
+- [Dapr Actor documentation](https://v1-14.docs.dapr.io/developing-applications/building-blocks/actors/)
 - [Dapr local development](https://docs.dapr.io/getting-started/install-dapr-selfhost/)
 
 ## Running the Demo
 
-Before running this Demo, make sure to configure Dapr for local development following the links above. The Dapr containers must be running for this demo application to run.
+### Setup
+Before running this Demo, make sure to configure Dapr for local development following the links above. Then:
+
+1. Make sure `Docker` is running
+2. Initialize Dapr by running `dapr init`
+3. Make sure the Dapr containers are running:
+    - dap_redis
+    - dapr_placement
+    - dapr_scheduler
+    - dapr_zipkin (optional)
 
 ```mermaid
 flowchart LR
@@ -35,8 +44,10 @@ flowchart LR
     End((End))
 ```
 
+### Demo
+
 1. Build and run the sample. Running the Dapr service locally can be done using the Dapr Cli or with the Dapr VS Code extension. The VS Code extension is the recommended approach if you want to debug the code as it runs.
-1. When the service is up and running, it will expose a single API in localhost port 5000.
+2. When the service is up and running, it will expose a single API in localhost port 5000.
 
 #### Invoking the process:
 

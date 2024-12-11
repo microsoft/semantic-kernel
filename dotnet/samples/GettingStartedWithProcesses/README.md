@@ -25,6 +25,7 @@ Example|Description
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
 [Step02a_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02a_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
 [Step02b_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02b_AccountOpening.cs)|How to refactor processes and make use of smaller processes as steps in larger processes.
+[Step02c_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02c_AccountOpening.cs)|How to refactor processes and make use of SK Event Subscribers.
 [Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events, use of stateful steps with food preparation samples.
 [Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
 [Step04_AgentOrchestration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step04/Step04_AgentOrchestration.cs)|Showcasing use of process steps in conjunction with the _Agent Framework_. 
@@ -50,7 +51,7 @@ flowchart LR
 
 ### Step02_AccountOpening
 
-The account opening sample has 2 different implementations covering the same scenario, it just uses different SK components to achieve the same goal.
+The account opening sample has 3 different implementations covering the same scenario, it just uses different SK components to achieve the same goal.
 
 In addition, the sample introduces the concept of using smaller process as steps to maintain the main process readable and manageble for future improvements and unit testing.
 Also introduces the use of SK Event Subscribers.
@@ -175,6 +176,47 @@ graph LR
     NewUserFormConv-->NewUserFormConv1
 
 ```
+
+#### Step02c_AccountOpeningWithCloudEvents
+
+An additional optimization that could be made to the Account Creation sample, is to make use of SK Event subscriber to isolate logic that has to do with cloud events. 
+In this sample, the cloud event logic is mocked by the Mail Service functionality, which mocks sending an email to the user in different circumstances:
+
+- When new user credit score check fails
+- When new user fraud detection fails
+- When a new account was created successfully after passing all checks and creation steps
+
+When using SK Event subscribers, specific process events when triggered will emit the event data externally to
+any subscribers linked to specific events.
+
+```mermaid
+graph LR
+    subgraph EventSubscribers[SK Event Subscribers]
+        OnSendMailDueCreditCheckFailure[OnSendMailDueCredit<br/>CheckFailure]
+        OnSendMailDueFraudCheckFailure[OnSendMailDueFraud<br/>CheckFailure]
+        OnSendMailWithNewAccountInfo[OnSendMailWith<br/>NewAccountInfo]
+    end
+
+    subgraph Process[SK Process]
+        direction LR
+        User(User)
+        FillForm(Chat With User <br/> to Fill New <br/> Customer Form)
+        NewAccountVerification[[New Account Verification<br/> Process]]
+        NewAccountCreation[[New Account Creation<br/> Process]]
+
+        User<-->|Provides user details|FillForm
+        FillForm-->|New User Form|NewAccountVerification-->|Account Verification <br/> Succeeded|NewAccountCreation
+    end
+
+    NewAccountVerification-->|Account Credit Check <br/> Failed|OnSendMailDueCreditCheckFailure
+    NewAccountVerification-->|Account Fraud Detection<br/> Failed|OnSendMailDueFraudCheckFailure
+    NewAccountCreation-->|Account Creation<br/> Succeeded|OnSendMailWithNewAccountInfo
+
+```
+Creating a separation with SK Process when using cloud events (even though in this sample it's a mock of a Mailer), it is useful since 
+it can help to isolate additional logic related to authentication, use of additional frameworks, etc.
+
+For a more realistic sample of SK Process emitting real cloud events check out the [`ProcessWithCloudEvents` Demo](../Demos/ProcessWithCloudEvents/README.md).
 
 ### Step03a_FoodPreparation
 
