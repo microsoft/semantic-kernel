@@ -135,8 +135,8 @@ through prompt_template_config or in the prompt_template."
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: Mapping[str, Any],
-    ) -> Mapping[str, PromptExecutionSettings]:
+        data: dict[str, Any],
+    ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
