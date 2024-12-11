@@ -15,27 +15,14 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 /// </summary>
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
+    : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.Connection!))
 {
     private const string? SkipReason = "SQLite vector search extension is required";
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanGetAListOfExistingCollectionNamesAsync()
+    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
-        // Arrange
-        var sut = new SqliteVectorStore(fixture.Connection!);
-
-        var collection1 = fixture.GetCollection<SqliteHotel<string>>("ListCollectionNames1");
-        var collection2 = fixture.GetCollection<SqliteHotel<string>>("ListCollectionNames2");
-
-        await collection1.CreateCollectionIfNotExistsAsync();
-        await collection2.CreateCollectionIfNotExistsAsync();
-
-        // Act
-        var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
-
-        // Assert
-        Assert.Contains("ListCollectionNames1", collectionNames);
-        Assert.Contains("ListCollectionNames1", collectionNames);
+        await base.ItCanGetAListOfExistingCollectionNamesAsync();
     }
 
     [Fact(Skip = SkipReason)]
