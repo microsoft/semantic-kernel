@@ -290,7 +290,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Developer-defined tags and values used for filtering completions in the dashboard.
+    /// Developer-defined tags and values used for filtering completions in the OpenAI dashboard.
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("metadata")]
@@ -307,7 +307,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Whether or not to store the output of this chat completion request for use in our model distillation or evals products.
+    /// Whether or not to store the output of this chat completion request for use in the OpenAI model distillation or evals products.
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("store")]
