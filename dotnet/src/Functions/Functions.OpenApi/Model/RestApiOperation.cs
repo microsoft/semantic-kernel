@@ -40,7 +40,15 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation description.
     /// </summary>
-    public string? Description { get; }
+    public string? Description
+    {
+        get => this._description;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._description = value;
+        }
+    }
 
     /// <summary>
     /// The operation path.
@@ -212,6 +220,7 @@ public sealed class RestApiOperation
     /// </summary>
     internal void Freeze()
     {
+        this._freezable.Freeze();
         this.Payload?.Freeze();
 
         this.Parameters = new ReadOnlyCollection<RestApiParameter>(this.Parameters);
@@ -373,6 +382,8 @@ public sealed class RestApiOperation
     };
 
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
+    private readonly Freezable _freezable = new();
+    private string? _description;
 
     #endregion
 }

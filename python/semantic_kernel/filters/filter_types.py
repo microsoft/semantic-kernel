@@ -2,10 +2,7 @@
 
 from enum import Enum
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
-
-@experimental_class
 class FilterTypes(str, Enum):
     """Enum for the filter types."""
 

@@ -76,14 +76,14 @@ notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
-    "pymilvus >= 2.3,< 2.5",
+    "pymilvus >= 2.3,< 2.6",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 ollama = [
-    "ollama ~= 0.2"
+    "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
@@ -146,6 +146,7 @@ environments = [
 ]
 
 [tool.pytest.ini_options]
+testpaths = 'tests'
 addopts = "-ra -q -r fEX"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [

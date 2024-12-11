@@ -25,7 +25,7 @@ from tests.integration.completions.chat_completion_test_base import (
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.utils import retry
+from tests.utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -674,7 +674,6 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
             marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_auto",
@@ -697,7 +696,6 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.NON_AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
             marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_non_auto",
@@ -727,7 +725,6 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.FLOW,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
             marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_flow",
@@ -749,7 +746,6 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
             marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_auto_complex_return_type",

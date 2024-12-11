@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
@@ -17,6 +16,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 /// <summary>
 /// Does setup and teardown of redis docker container and associated test data.
 /// </summary>
@@ -49,7 +49,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
                 new VectorStoreRecordDataProperty("Rating", typeof(double)),
-                new VectorStoreRecordDataProperty("Address", typeof(HotelAddress))
+                new VectorStoreRecordDataProperty("Address", typeof(RedisHotelAddress))
             }
         };
         this.BasicVectorStoreRecordDefinition = new VectorStoreRecordDefinition
@@ -120,7 +120,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         await this.Database.FT().CreateAsync("hashhotels", hashsetCreateParams, hashSchema);
 
         // Create some test data.
-        var address = new HotelAddress { City = "Seattle", Country = "USA" };
+        var address = new RedisHotelAddress { City = "Seattle", Country = "USA" };
         var embedding = new[] { 30f, 31f, 32f, 33f };
 
         // Add JSON test data.
@@ -234,98 +234,4 @@ public class RedisVectorStoreFixture : IAsyncLifetime
 
         return container.ID;
     }
-
-    /// <summary>
-    /// A test model for the vector store that has complex properties as supported by JSON redis mode.
-    /// </summary>
-    public class Hotel
-    {
-        [VectorStoreRecordKey]
-        public string HotelId { get; init; }
-
-        [VectorStoreRecordData(IsFilterable = true)]
-        public string HotelName { get; init; }
-
-        [VectorStoreRecordData(IsFilterable = true)]
-        public int HotelCode { get; init; }
-
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
-        public string Description { get; init; }
-
-        [VectorStoreRecordVector(4)]
-        public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
-
-#pragma warning disable CA1819 // Properties should not return arrays
-        [VectorStoreRecordData(IsFilterable = true)]
-        public string[] Tags { get; init; }
-
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
-        public string[] FTSTags { get; init; }
-#pragma warning restore CA1819 // Properties should not return arrays
-
-        [JsonPropertyName("parking_is_included")]
-        [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
-        public bool ParkingIncluded { get; init; }
-
-        [VectorStoreRecordData]
-        public DateTimeOffset LastRenovationDate { get; init; }
-
-        [VectorStoreRecordData]
-        public double Rating { get; init; }
-
-        [VectorStoreRecordData]
-        public HotelAddress Address { get; init; }
-    }
-
-    /// <summary>
-    /// A test model for the vector store to simulate a complex type.
-    /// </summary>
-    public class HotelAddress
-    {
-        public string City { get; init; }
-        public string Country { get; init; }
-    }
-
-    /// <summary>
-    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
-    /// </summary>
-    public class BasicHotel<TVectorElement>
-    {
-        [VectorStoreRecordKey]
-        public string HotelId { get; init; }
-
-        [VectorStoreRecordData(IsFilterable = true)]
-        public string HotelName { get; init; }
-
-        [VectorStoreRecordData(IsFilterable = true)]
-        public int HotelCode { get; init; }
-
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
-        public string Description { get; init; }
-
-        [VectorStoreRecordVector(4)]
-        public ReadOnlyMemory<TVectorElement>? DescriptionEmbedding { get; init; }
-
-        [JsonPropertyName("parking_is_included")]
-        [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
-        public bool ParkingIncluded { get; init; }
-
-        [VectorStoreRecordData]
-        public double Rating { get; init; }
-    }
-
-    /// <summary>
-    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
-    /// </summary>
-    public class BasicFloat32Hotel : BasicHotel<float>
-    {
-    }
-
-    /// <summary>
-    /// A test model for the vector store that only uses basic types as supported by HashSets Redis mode.
-    /// </summary>
-    public class BasicFloat64Hotel : BasicHotel<double>
-    {
-    }
 }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

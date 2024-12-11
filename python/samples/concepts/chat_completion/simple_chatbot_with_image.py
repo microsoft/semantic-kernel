@@ -6,10 +6,7 @@ from samples.concepts.setup.chat_completion_services import (
     Services,
     get_chat_completion_service_and_request_settings,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent, TextContent
 
 # This sample shows how to create a chatbot that responds to user messages with image input.
 # This sample uses the following three main components:
@@ -30,6 +27,11 @@ from semantic_kernel.contents.text_content import TextContent
 # - Services.ONNX
 # - Services.VERTEX_AI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
+
+# [NOTE]
+# Not all models support image input. Make sure to select a model that supports image input.
+# Not all services support image input from an image URI. If your image is saved in a remote location,
+# make sure to use a service that supports image input from a URI.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 IMAGE_URI = "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
@@ -41,12 +43,6 @@ image_content_remote = ImageContent(uri=IMAGE_URI)
 image_content_local = ImageContent.from_image_file(IMAGE_PATH)
 
 
-# [NOTE]
-# Not all models support image input. Make sure to select a model that supports image input.
-# Not all services support image input from an image URI. If your image is saved in a remote location,
-# make sure to use a service that supports image input from a URI.
-
-
 # This is the system message that gives the chatbot its personality.
 system_message = """
 You are an image reviewing chat bot. Your name is Mosscap and you have one goal critiquing images that are supplied.
@@ -56,7 +52,7 @@ You are an image reviewing chat bot. Your name is Mosscap and you have one goal 
 chat_history = ChatHistory(system_message=system_message)
 chat_history.add_message(
     ChatMessageContent(
-        role="user",
+        role=AuthorRole.USER,
         items=[TextContent(text="What is in this image?"), image_content_local],
     )
 )
@@ -90,10 +86,11 @@ async def chat(skip_user_input: bool = False) -> bool:
         chat_history=chat_history,
         settings=request_settings,
     )
-    print(f"Mosscap:> {response}")
+    if response:
+        print(f"Mosscap:> {response}")
 
-    # Add the chat message to the chat history to keep track of the conversation.
-    chat_history.add_assistant_message(str(response))
+        # Add the chat message to the chat history to keep track of the conversation.
+        chat_history.add_message(response)
 
     return True
 

@@ -38,7 +38,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
+from tests.utils import is_service_setup_for_testing
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -56,15 +56,9 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
 # There is no single model in Ollama that supports both image and tool call in chat completion
 # We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
 # can be any model that supports chat completion. Also, Ollama is only available on Linux runners in our pipeline.
-ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"]) and is_test_running_on_supported_platforms([
-    "Linux"
-])
-ollama_image_setup: bool = is_service_setup_for_testing([
-    "OLLAMA_CHAT_MODEL_ID_IMAGE"
-]) and is_test_running_on_supported_platforms(["Linux"])
-ollama_tool_call_setup: bool = is_service_setup_for_testing([
-    "OLLAMA_CHAT_MODEL_ID_TOOL_CALL"
-]) and is_test_running_on_supported_platforms(["Linux"])
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
+ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(

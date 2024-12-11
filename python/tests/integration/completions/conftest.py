@@ -1,9 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 
 import pytest
 
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.logging import setup_logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+setup_logging()
 
 
 @pytest.fixture(scope="function")

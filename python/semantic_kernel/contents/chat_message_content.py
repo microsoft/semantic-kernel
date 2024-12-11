@@ -84,7 +84,7 @@ class ChatMessageContent(KernelContent):
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[Annotated[ITEM_TYPES, Field(..., discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
+    items: list[Annotated[ITEM_TYPES, Field(discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 

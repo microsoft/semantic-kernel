@@ -12,6 +12,7 @@ else:
 
 import httpx
 from ollama import AsyncClient
+from ollama._types import GenerateResponse
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
@@ -110,14 +111,20 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             **settings.prepare_settings_dict(),
         )
 
-        if not isinstance(response_object, Mapping):
+        if not isinstance(response_object, (Mapping, GenerateResponse)):
             raise ServiceInvalidResponseError(
-                f"Invalid response type from Ollama chat completion. Expected Mapping but got {type(response_object)}."
+                "Invalid response type from Ollama chat completion. "
+                f"Expected Mapping or GenerateResponse but got {type(response_object)}."
             )
-
-        inner_content = response_object
-        text = inner_content["response"]
-        return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
+        return [
+            TextContent(
+                inner_content=response_object,
+                ai_model_id=self.ai_model_id,
+                text=response_object.response
+                if isinstance(response_object, GenerateResponse)
+                else response_object["response"],
+            )
+        ]
 
     @override
     @trace_streaming_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
@@ -146,7 +153,10 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         async for part in response_object:
             yield [
                 StreamingTextContent(
-                    choice_index=0, inner_content=part, ai_model_id=self.ai_model_id, text=part.get("response")
+                    choice_index=0,
+                    inner_content=part,
+                    ai_model_id=self.ai_model_id,
+                    text=part.response if isinstance(part, GenerateResponse) else part.get("response"),
                 )
             ]
 
