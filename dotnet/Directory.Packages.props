@@ -29,7 +29,7 @@
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.6" />
     <PackageVersion Include="Markdig" Version="0.37.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.67" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.71" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
