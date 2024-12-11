@@ -3,6 +3,7 @@ name: Python Test Coverage
 on:
   pull_request_target:
     branches: ["main", "feature*"]
+    types: [opened, synchronize, reopened]
     # paths:
     #   - "python/semantic_kernel/**"
     #   - "python/tests/unit/**"
