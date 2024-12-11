@@ -231,6 +231,13 @@ public sealed class OpenAIFunction
         // single type which is not null
         typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType);
 
+    /// <summary>
+    /// Removes forbidden keywords from the schema and adds null to the types if required.
+    /// For more information <see cref="InsertNullTypeIfRequired"/> and <see cref="s_forbiddenKeywords"/>.
+    /// </summary>
+    /// <param name="schema">Kernel JSON schema for the parameter to sanitize.</param>
+    /// <param name="insertNullType">Whether a null type should be added to optional parameters.</param>
+    /// <returns>The sanitized schema compatible with strict mode.</returns>
     private static KernelJsonSchema GetSanitizedSchemaForStrictMode(KernelJsonSchema schema, bool insertNullType)
     {
         var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
@@ -258,19 +265,28 @@ public sealed class OpenAIFunction
         return schema;
     }
 
-    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    /// <summary>
+    /// Inserts null to the types if required. Strict mode enforces setting all parameters as required when some are optional.
+    /// The suggested approach is to add null to the types when they are optional so the model doesn't add random default values.
+    /// </summary>
+    /// <remarks>
+    /// Documentation to the required behavior <see href="https://platform.openai.com/docs/guides/structured-outputs#all-fields-must-be-required"/>
+    /// </remarks>
+    /// <param name="insertNullType">Whether null should be inserted</param>
+    /// <param name="jsonObject">The parsed JSON schema</param>
     private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
     {
-        if (insertNullType && jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
+        if (!insertNullType || !jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
         {
-            if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
-            {
-                jsonArray.Add(NullType);
-            }
-            else if (typeValue is JsonValue jsonValue && jsonValue.GetValueKind() == JsonValueKind.String)
-            {
-                jsonObject[TypeKey] = new JsonArray { typeValue.GetValue<string>(), NullType };
-            }
+            return;
+        }
+        if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
+        {
+            jsonArray.Add(NullType);
+        }
+        else if (typeValue is JsonValue jsonValue && jsonValue.GetValueKind() == JsonValueKind.String)
+        {
+            jsonObject[TypeKey] = new JsonArray { typeValue.GetValue<string>(), NullType };
         }
     }
 
@@ -278,7 +294,11 @@ public sealed class OpenAIFunction
 
     private const string TypeKey = "type";
 
-    // https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    /// <summary>
+    /// List of keywords that are not supported in the OpenAI API.
+    /// This list is based on the OpenAI documentation.
+    /// See <see href="https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported"/>.
+    /// </summary>
     private static readonly string[] s_forbiddenKeywords = [
         "contains",
         "format",
