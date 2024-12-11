@@ -10,7 +10,7 @@ from semantic_kernel.contents import ChatHistory
 
 # This sample shows how to create a chatbot whose output can be stored for use with the OpenAI
 # model distillation or evals products.
-# This sample uses the following three main components:
+# This sample uses the following two main components:
 # - a ChatCompletionService: This component is responsible for generating responses to user messages.
 # - a ChatHistory: This component is responsible for keeping track of the chat history.
 # The chatbot in this sample is called Mosscap, who is an expert in basketball.
