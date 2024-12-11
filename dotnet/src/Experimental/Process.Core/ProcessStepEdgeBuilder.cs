@@ -87,7 +87,7 @@ public sealed class ProcessStepEdgeBuilder
     /// <returns></returns>
     public ProcessStepEdgeBuilder EmitAsProcessEvent(ProcessEdgeBuilder processEdge)
     {
-        processEdge.Source._eventsSubscriber?.LinkStepEventToProcessEvent(this.EventId, processEventId: processEdge.EventId);
+        processEdge.Source._eventsSubscriber?.LinkStepEventToProcessEvent(this.EventId, processEventId: processEdge.EventId, sourceId: this.Source.Id);
 
         return new ProcessStepEdgeBuilder(this.Source, this.EventId, this.EventName);
     }

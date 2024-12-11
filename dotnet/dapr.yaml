@@ -1,0 +1,11 @@
+apps:
+- appDirPath: samples\Demos\ProcessWithDapr
+  appID: processwithdapr
+  appPort: 58641
+  httpPort: 5000
+  command:
+  - dotnet
+  - run
+  resourcesPaths:
+  - ./components
+version: 1

@@ -50,8 +50,8 @@ public sealed record DaprMapInfo : DaprStepInfo
         DaprStepInfo operationInfo =
             processMap.Operation is KernelProcess processOperation
                 ? DaprProcessInfo.FromKernelProcess(processOperation)
-                : DaprStepInfo.FromKernelStepInfo(processMap.Operation);
-        DaprStepInfo mapStepInfo = DaprStepInfo.FromKernelStepInfo(processMap);
+                : DaprStepInfo.FromKernelStepInfo(processMap.Operation, []);
+        DaprStepInfo mapStepInfo = DaprStepInfo.FromKernelStepInfo(processMap, []);
 
         return new DaprMapInfo
         {
@@ -59,6 +59,7 @@ public sealed record DaprMapInfo : DaprStepInfo
             State = mapStepInfo.State,
             Edges = mapStepInfo.Edges,
             Operation = operationInfo,
+            ExternalEventsMap = []
         };
     }
 }

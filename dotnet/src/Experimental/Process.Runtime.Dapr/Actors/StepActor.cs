@@ -11,6 +11,7 @@ using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Interfaces;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
@@ -167,7 +168,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         // This allows state information to be extracted even if the step has not been activated.
         await this._activateTask.Value.ConfigureAwait(false);
 
-        var stepInfo = new DaprStepInfo { InnerStepDotnetType = this._stepInfo!.InnerStepDotnetType!, State = this._stepInfo.State, Edges = this._stepInfo.Edges! };
+        var stepInfo = new DaprStepInfo { InnerStepDotnetType = this._stepInfo!.InnerStepDotnetType!, State = this._stepInfo.State, Edges = this._stepInfo.Edges!, ExternalEventsMap = [] };
         return stepInfo;
     }
 
@@ -403,6 +404,14 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
+        // If event is linked to be exposed externally it should be marked as public and emitted via
+        // pubsub if linked
+        if (this._stepInfo != null && this._stepInfo.ExternalEventsMap.TryGetValue(daprEvent.QualifiedId, out var daprInfo) && daprInfo != null)
+        {
+            IPubsubMessage pubsubPublisher = this.ProxyFactory.CreateActorProxy<IPubsubMessage>(new ActorId($"{this.Id}-{daprEvent.QualifiedId}"), nameof(PubsubMessageActor));
+            await pubsubPublisher.EmitPubsubMessageAsync(daprEvent, daprInfo).ConfigureAwait(false);
+        }
+
         // Emit the event out of the process (this one) if it's visibility is public.
         if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
         {

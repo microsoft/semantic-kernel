@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
+using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Interfaces;
 
 namespace Microsoft.SemanticKernel;
 
@@ -62,11 +65,15 @@ public sealed record DaprProcessInfo : DaprStepInfo
     {
         Verify.NotNull(kernelProcess);
 
-        DaprStepInfo daprStepInfo = DaprStepInfo.FromKernelStepInfo(kernelProcess);
+        var processDaprEvents = ConvertToStepPubsubData(kernelProcess.EventsSubscriber?.GetLinkedDaprPublishEventsInfoBySource(kernelProcess.State.Id!));
+        DaprStepInfo daprStepInfo = DaprStepInfo.FromKernelStepInfo(kernelProcess, []);
         List<DaprStepInfo> daprSteps = [];
 
         foreach (var step in kernelProcess.Steps)
         {
+            var externalEvents = kernelProcess.EventsSubscriber?.GetLinkedDaprPublishEventsInfoBySource(step.State.Id!);
+            var daprEvents = ConvertToStepPubsubData(externalEvents);
+
             if (step is KernelProcess processStep)
             {
                 daprSteps.Add(DaprProcessInfo.FromKernelProcess(processStep));
@@ -77,7 +84,7 @@ public sealed record DaprProcessInfo : DaprStepInfo
             }
             else
             {
-                daprSteps.Add(DaprStepInfo.FromKernelStepInfo(step));
+                daprSteps.Add(DaprStepInfo.FromKernelStepInfo(step, daprEvents));
             }
         }
 
@@ -87,6 +94,22 @@ public sealed record DaprProcessInfo : DaprStepInfo
             State = daprStepInfo.State,
             Edges = daprStepInfo.Edges,
             Steps = daprSteps,
+            ExternalEventsMap = processDaprEvents,
         };
+    }
+
+    private static Dictionary<string, DaprPubsubEventData> ConvertToStepPubsubData(IDictionary<string, IDaprPubsubEventInfo>? daprEvents)
+    {
+        if (daprEvents == null)
+        {
+            return [];
+        }
+
+        return daprEvents.ToDictionary(e => e.Key, e => new DaprPubsubEventData()
+        {
+            ProcessEventName = e.Value.EventName,
+            PubsubName = e.Value.DaprPubsub!,
+            TopicName = e.Value.DaprTopic!,
+        });
     }
 }

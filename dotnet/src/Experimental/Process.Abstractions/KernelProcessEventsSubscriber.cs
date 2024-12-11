@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Process.Interfaces;
 
 namespace Microsoft.SemanticKernel.Process;
 
@@ -26,8 +27,13 @@ public class KernelProcessEventsSubscriber<TEvents> : KernelProcessEventsSubscri
     /// Attribute to set Process related steps to link Process Events to specific functions to execute when the event is emitted outside the Process
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class ProcessEventSubscriberAttribute : Attribute
+    public sealed class ProcessEventSubscriberAttribute : Attribute, IDaprPubsubEventInfo
     {
+        private string GetEventName(TEvents eventEnum)
+        {
+            return Enum.GetName(typeof(TEvents), eventEnum) ?? "";
+        }
+
         /// <summary>
         /// Gets the enum of the event that the function is linked to
         /// </summary>
@@ -38,6 +44,18 @@ public class KernelProcessEventsSubscriber<TEvents> : KernelProcessEventsSubscri
         /// </summary>
         public string EventName { get; }
 
+        #region Dapr Runtime related properties
+        /// <summary>
+        /// When using Dapr Runtime, pubsub name is required to know where to send the specific Dapr event
+        /// </summary>
+        public string? DaprPubsub { get; }
+
+        /// <summary>
+        /// When using Dapr runtime, If daprTopic provided topic will be used instead of eventName, if not provided default will be eventName
+        /// </summary>
+        public string? DaprTopic { get; }
+        #endregion
+
         /// <summary>
         /// Initializes the attribute.
         /// </summary>
@@ -45,7 +63,20 @@ public class KernelProcessEventsSubscriber<TEvents> : KernelProcessEventsSubscri
         public ProcessEventSubscriberAttribute(TEvents eventEnum)
         {
             this.EventEnum = eventEnum;
-            this.EventName = Enum.GetName(typeof(TEvents), eventEnum) ?? "";
+            this.EventName = this.GetEventName(eventEnum);
+            // No Dapr related properties specified
+            this.DaprPubsub = null;
+            this.DaprTopic = null;
+        }
+
+        public ProcessEventSubscriberAttribute(TEvents eventEnum, string daprPubSub, string? daprTopic = null)
+        {
+            this.EventEnum = eventEnum;
+            this.EventName = this.GetEventName(eventEnum);
+            // Dapr related properties specified
+            // If not providing alternate topic name, process event name is used as topic
+            this.DaprPubsub = daprPubSub;
+            this.DaprTopic = daprTopic ?? this.EventName;
         }
     }
 }

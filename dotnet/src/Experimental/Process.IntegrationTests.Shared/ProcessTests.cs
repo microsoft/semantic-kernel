@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
@@ -324,6 +325,81 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         this.AssertStepStateLastMessage(processInfo, outputStepName2, expectedLastMessage: $"{testInput}-{testInput}");
         this.AssertStepStateLastMessage(processInfo, outputStepName3, expectedLastMessage: $"{testInput}-{testInput}-{testInput}-{testInput}");
         this.AssertStepStateLastMessage(processInfo, lastStepName, expectedLastMessage: $"{testInput}-{testInput}-{testInput}-{testInput}-{testInput}");
+    }
+
+    /// <summary>
+    /// <code>
+    ///               ┌─────┐     ┌─────┐
+    /// StartEvent ──►│  A  ├──┬─►│  B  ├───► LastEvent
+    ///               └─────┘  ▼  └─────┘
+    ///                     MidEvent
+    /// </code>
+    /// </summary>
+    /// <returns><see cref="Task"/></returns>
+    [Fact]
+    public async Task ProcessWithEventSubscriberAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        var processBuilder = new ProcessBuilder<TestProcessEvents>(nameof(ProcessWithEventSubscriberAsync));
+
+        var repeatStepA = processBuilder.AddStepFromType<RepeatStep>("stepA");
+        var repeatStepB = processBuilder.AddStepFromType<RepeatStep>("stepB");
+
+        processBuilder
+            .OnInputEvent(TestProcessEvents.StartEvent)
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStepA, parameterName: "message"));
+
+        repeatStepA
+            .OnEvent(ProcessTestsEvents.OutputReadyInternal)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(TestProcessEvents.MidEvent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(repeatStepB, parameterName: "message"));
+
+        repeatStepB
+            .OnEvent(ProcessTestsEvents.OutputReadyInternal)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(TestProcessEvents.LastEvent))
+            .StopProcess();
+
+        processBuilder.LinkEventSubscribersFromType<TestEventSubscriber>();
+        var process = processBuilder.Build();
+
+        // Act
+        string testInput = "SomeData";
+        var eventSubscriberInstance = (TestEventSubscriber)process.EventsSubscriber.GetProcessEventsSubscriberInstance();
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new KernelProcessEvent() { Id = processBuilder.GetEventName(TestProcessEvents.StartEvent), Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        Assert.NotNull(processInfo);
+        // checks below only work for LocalRuntime
+        Assert.NotNull(eventSubscriberInstance);
+        Assert.Equal(string.Join(" ", Enumerable.Repeat(testInput, 2)), eventSubscriberInstance.MidEventResult);
+        Assert.Equal(string.Join(" ", Enumerable.Repeat(testInput, 4)), eventSubscriberInstance.LastEventResult);
+    }
+
+    private enum TestProcessEvents
+    {
+        StartEvent,
+        MidEvent,
+        LastEvent,
+    }
+
+    private sealed class TestEventSubscriber : KernelProcessEventsSubscriber<TestProcessEvents>
+    {
+        public string? MidEventResult { get; set; } = null;
+        public string? LastEventResult { get; set; } = null;
+
+        [ProcessEventSubscriber(TestProcessEvents.MidEvent)]
+        public void OnMidEventReceived(string content)
+        {
+            this.MidEventResult = content;
+        }
+
+        [ProcessEventSubscriber(TestProcessEvents.LastEvent)]
+        public void OnLastEventReceived(string content)
+        {
+            this.LastEventResult = content;
+        }
     }
 
     #region Predefined ProcessBuilders for testing

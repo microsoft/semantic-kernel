@@ -3,6 +3,7 @@
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 
 namespace ProcessWithDapr.Controllers;
 
@@ -38,10 +39,20 @@ public class ProcessController : ControllerBase
         return this.Ok(processId);
     }
 
+    private enum ProcessEvents
+    {
+        StartProcess,
+        OnKickOffEvent,
+        OnStepACompleted,
+        OnStepBCompleted,
+        SharedEvent,
+        OnExitProcess,
+    }
+
     private KernelProcess GetProcess()
     {
         // Create the process builder.
-        ProcessBuilder processBuilder = new("ProcessWithDapr");
+        var processBuilder = new ProcessBuilder<ProcessEvents>("ProcessWithDapr");
 
         // Add some steps to the process.
         var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
@@ -62,28 +73,37 @@ public class ProcessController : ControllerBase
         // When the kickoff step is finished, trigger both AStep and BStep.
         kickoffStep
             .OnEvent(CommonEvents.StartARequested)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.OnKickOffEvent))
             .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
         // When AStep finishes, send its output to CStep.
         myAStep
             .OnEvent(CommonEvents.AStepDone)
+            //.EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.OnStepACompleted))
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.SharedEvent))
             .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
 
         // When BStep finishes, send its output to CStep also.
         myBStep
             .OnEvent(CommonEvents.BStepDone)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.OnStepBCompleted))
             .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep
             .OnEvent(CommonEvents.CStepDone)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.SharedEvent))
             .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
 
         // When the CStep has finished by requesting an exit, stop the process.
         myCStep
             .OnEvent(CommonEvents.ExitRequested)
+            .EmitAsProcessEvent(processBuilder.GetProcessEvent(ProcessEvents.OnExitProcess))
             .StopProcess();
+
+        // event subscribers
+        processBuilder.LinkEventSubscribersFromType<CloudEventsSubscribers>();
 
         var process = processBuilder.Build();
         return process;
@@ -184,6 +204,29 @@ public class ProcessController : ControllerBase
     {
         [DataMember]
         public int CurrentCycle { get; set; }
+    }
+
+    private class CloudEventsSubscribers : KernelProcessEventsSubscriber<ProcessEvents>
+    {
+        [ProcessEventSubscriber(ProcessEvents.OnKickOffEvent, "pubsub", "someotherkickofftopicname")]
+        public void OnKickOff()
+        {
+        }
+
+        //[ProcessEventSubscriber(ProcessEvents.OnStepACompleted, "mypubsub")]
+        //public void OnStepACompleted()
+        //{
+        //}
+
+        [ProcessEventSubscriber(ProcessEvents.OnStepBCompleted, "pubsub")]
+        public void OnStepBCompleted()
+        {
+        }
+
+        [ProcessEventSubscriber(ProcessEvents.SharedEvent, "pubsub", "sharedeventtopic")]
+        public void OnSharedEvent()
+        {
+        }
     }
 
     /// <summary>

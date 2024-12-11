@@ -1,0 +1,5 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+@ProcessWithDapr_HostAddress = http://localhost:58641
+
+GET {{ProcessWithDapr_HostAddress}}/processes/6
+Accept: application/json

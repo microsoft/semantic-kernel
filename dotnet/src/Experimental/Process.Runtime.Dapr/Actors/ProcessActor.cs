@@ -466,7 +466,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var processState = new KernelProcessState(this.Name, this._process!.State.Version, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
+        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps], ExternalEventsMap = [] };
     }
 
     /// <summary>

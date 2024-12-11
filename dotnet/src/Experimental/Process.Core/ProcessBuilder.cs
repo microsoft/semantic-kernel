@@ -336,12 +336,17 @@ public sealed class ProcessBuilder<TEvents> : ProcessBuilder where TEvents : Enu
             this._eventNames.Add(processEvent, Enum.GetName(typeof(TEvents), processEvent)!);
         }
     }
-    private string GetEventName(TEvents processEvent)
+
+    #region Public Interface
+    /// <summary>
+    /// Retrieve string name of the <typeparamref name="TEvents"/> string value
+    /// </summary>
+    /// <param name="processEvent"></param>
+    /// <returns>string of the process event enum</returns>
+    public string GetEventName(TEvents processEvent)
     {
         return this._eventNames[processEvent];
     }
-
-    #region Public Interface
 
     /// <summary>
     /// Method that imports a specific KernelProcessEventSubscriber class type
