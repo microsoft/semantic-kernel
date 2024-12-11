@@ -37,9 +37,9 @@ class PromptTemplateConfig(KernelBaseModel):
     description: str | None = ""
     template: str | None = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
-    input_variables: Sequence[InputVariable] = Field(default_factory=list)
+    input_variables: list[InputVariable] = Field(default_factory=list)
     allow_dangerously_set_content: bool = False
-    execution_settings: Mapping[str, PromptExecutionSettings] = Field(default_factory=dict)
+    execution_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def check_input_variables(self):
