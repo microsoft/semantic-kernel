@@ -67,7 +67,7 @@ feature parity between our currently supported languages.
       <td>
         <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
         <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
+          <a href="https://github.com/microsoft/semantic-kernel-java/blob/main/README.md">Using Semantic Kernel in Java</a>
         </div>
       </td>
     </tr>
