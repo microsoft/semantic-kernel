@@ -33,6 +33,8 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     user: str | None = None
+    store: bool | None = None
+    metadata: dict[str, str] | None = None
 
 
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
