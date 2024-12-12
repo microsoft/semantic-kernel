@@ -14,6 +14,7 @@
     <None Remove="Grpc\protoV3.proto" />
     <None Remove="OpenApi\TestPlugins\ai-plugin.json" />
     <None Remove="OpenApi\TestPlugins\ai-plugin2.json" />
+    <None Remove="OpenApi\TestPlugins\documentV3_0_x_api_version.json" />
     <None Remove="OpenApi\TestPlugins\documentV3_1.yaml" />
     <None Remove="OpenApi\TestPlugins\multipart-form-data.json" />
     <None Remove="OpenApi\TestPlugins\no-securityV3_0.json" />
@@ -27,6 +28,7 @@
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin2.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_0_x_api_version.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\oauth-securityV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\no-securityV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\apikey-securityV3_0.json" />
