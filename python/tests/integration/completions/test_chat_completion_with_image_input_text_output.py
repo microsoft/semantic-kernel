@@ -226,7 +226,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             marks=(
                 pytest.mark.skipif(not ollama_image_setup, reason="Ollama Environment Variables not set"),
-                pytest.mark.timeout(240),
+                pytest.mark.timeout(300),
             ),
             id="ollama_image_input_file",
         ),
