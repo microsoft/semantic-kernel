@@ -54,7 +54,10 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "ollama",
             {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Ollama environment variables not set"),
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Ollama environment variables not set"),
+                pytest.mark.ollama,
+            ),
             id="ollama",
         ),
         pytest.param(
