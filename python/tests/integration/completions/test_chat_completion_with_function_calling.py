@@ -5,6 +5,11 @@ from enum import Enum
 from functools import partial
 from typing import Any
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -26,11 +31,6 @@ from tests.integration.completions.chat_completion_test_base import (
 )
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.utils import retry
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 
 class FunctionChoiceTestTypes(str, Enum):
@@ -911,7 +911,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -931,7 +931,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
         if "streaming" in kwargs and not kwargs["streaming"]:
@@ -1033,7 +1033,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         if isinstance(inputs[0], list):
             [history.add_message(message) for message in inputs[0]]
         else:
-            [history.add_message(message) for message in inputs]
+            [history.add_message(message) for message in inputs if not isinstance(message, list)]
 
         self.setup(kernel)
         service, settings_type = services[service_id]
@@ -1042,7 +1042,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
             partial(
                 self.get_chat_completion_response,
                 kernel=kernel,
-                service=service,
+                service=service,  # type: ignore
                 execution_settings=settings_type(**execution_settings_kwargs),
                 chat_history=history,
                 stream=stream,

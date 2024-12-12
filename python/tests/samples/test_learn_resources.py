@@ -116,4 +116,4 @@ async def test_learn_resources(func, responses, monkeypatch):
         await retry(lambda: func(delay=10), reset=reset)
         return
 
-    await retry(lambda: func(), reset=reset)
+    await retry(lambda: func(), reset=reset, retries=5)

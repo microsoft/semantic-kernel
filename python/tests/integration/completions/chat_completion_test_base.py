@@ -4,8 +4,7 @@
 import os
 import platform
 import sys
-from functools import reduce
-from typing import Annotated, Any
+from typing import Annotated
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
@@ -32,6 +31,8 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -93,8 +94,8 @@ class ChatCompletionTestBase(CompletionTestBase):
     """Base class for testing completion services."""
 
     @override
-    @pytest.fixture(scope="class")
-    def services(self) -> dict[str, tuple[ServiceType, type[PromptExecutionSettings]]]:
+    @pytest.fixture(scope="module")
+    def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
@@ -185,7 +186,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         execution_settings: PromptExecutionSettings,
         chat_history: ChatHistory,
         stream: bool,
-    ) -> Any:
+    ) -> ChatMessageContent | StreamingChatMessageContent | None:
         """Get response from the service
 
         Args:
@@ -195,22 +196,21 @@ class ChatCompletionTestBase(CompletionTestBase):
             input (str): Input string.
             stream (bool): Stream flag.
         """
-        if stream:
-            response = service.get_streaming_chat_message_content(
+        if not stream:
+            return await service.get_chat_message_content(
                 chat_history,
                 execution_settings,
                 kernel=kernel,
             )
-            parts = [part async for part in response]
-            if parts:
-                response = reduce(lambda p, r: p + r, parts)
-            else:
-                raise AssertionError("No response")
-        else:
-            response = await service.get_chat_message_content(
+        parts: list[StreamingChatMessageContent] = [
+            part
+            async for part in service.get_streaming_chat_message_content(
                 chat_history,
                 execution_settings,
                 kernel=kernel,
             )
-
-        return response
+            if part
+        ]
+        if parts:
+            return sum(parts[1:], parts[0])
+        raise AssertionError("No response")
