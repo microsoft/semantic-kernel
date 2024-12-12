@@ -155,6 +155,9 @@ filterwarnings = [
     'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
 ]
 timeout = 120
+markers = [
+    "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)"
+]
 
 [tool.ruff]
 line-length = 120

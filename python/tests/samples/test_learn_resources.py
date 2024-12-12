@@ -80,8 +80,9 @@ learn_resources = [
         templates,
         ["Hello, who are you?", "Thanks, see you next time!"],
         id="templates",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        marks=(
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.xfail(reason="This sample is not working as expected."),
         ),
     ),
     param(

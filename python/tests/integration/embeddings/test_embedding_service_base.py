@@ -30,7 +30,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
-from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms
+from tests.utils import is_service_setup_for_testing
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
@@ -43,9 +43,7 @@ mistral_ai_setup: bool = is_service_setup_for_testing(
 )  # We don't have a MistralAI deployment
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
-ollama_setup: bool = is_service_setup_for_testing([
-    "OLLAMA_EMBEDDING_MODEL_ID"
-]) and is_test_running_on_supported_platforms(["Linux"])
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_EMBEDDING_MODEL_ID"])
 
 
 class EmbeddingServiceTestBase:

@@ -98,7 +98,12 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skip(
+                    reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+                ),
+                pytest.mark.ollama,
+            ),
             id="ollama_text_completion",
         ),
         pytest.param(

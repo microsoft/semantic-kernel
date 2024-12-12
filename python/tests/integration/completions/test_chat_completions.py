@@ -122,10 +122,12 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skip(
-                reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+            marks=(
+                pytest.mark.skip(
+                    reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+                ),
+                pytest.mark.ollama,
             ),
-            # pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
         pytest.param(

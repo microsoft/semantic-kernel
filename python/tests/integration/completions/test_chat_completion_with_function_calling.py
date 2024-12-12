@@ -675,7 +675,10 @@ pytestmark = pytest.mark.parametrize(
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_auto",
         ),
         pytest.param(
@@ -697,7 +700,10 @@ pytestmark = pytest.mark.parametrize(
             {
                 "test_type": FunctionChoiceTestTypes.NON_AUTO,
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_non_auto",
         ),
         pytest.param(
@@ -726,7 +732,10 @@ pytestmark = pytest.mark.parametrize(
             {
                 "test_type": FunctionChoiceTestTypes.FLOW,
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_flow",
         ),
         pytest.param(
@@ -747,7 +756,10 @@ pytestmark = pytest.mark.parametrize(
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_auto_complex_return_type",
         ),
         # endregion
