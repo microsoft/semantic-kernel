@@ -73,7 +73,8 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
 
         // Generate an image from the Mermaid diagram
-        await MermaidRenderer.GenerateMermaidImageAsync(mermaidGraph, "ChatBotProcess.png");
+        string generatedImagePath = await MermaidRenderer.GenerateMermaidImageAsync(mermaidGraph, "ChatBotProcess.png");
+        Console.WriteLine($"Diagram generated at: {generatedImagePath}");
 
         // Start the process with an initial external event
         using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });

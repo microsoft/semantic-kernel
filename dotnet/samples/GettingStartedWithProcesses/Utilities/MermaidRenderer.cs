@@ -18,7 +18,7 @@ public static class MermaidRenderer
     /// <param name="filenameOrPath"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static async Task GenerateMermaidImageAsync(string mermaidCode, string filenameOrPath)
+    public static async Task<string> GenerateMermaidImageAsync(string mermaidCode, string filenameOrPath)
     {
         // Ensure the filename has the correct .png extension
         if (!filenameOrPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
@@ -114,6 +114,6 @@ public static class MermaidRenderer
             }
         }
 
-        Console.WriteLine($"Diagram generated at: {outputFilePath}");
+        return outputFilePath;
     }
 }
