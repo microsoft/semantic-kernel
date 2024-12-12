@@ -116,7 +116,6 @@ def test_prompt_execution_settings_class(mock_client, bedrock_unit_test_env) -> 
 # region text completion
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",
@@ -165,7 +164,6 @@ async def test_bedrock_text_completion(
         assert response[0].text == output_text
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",
@@ -215,7 +213,6 @@ async def test_bedrock_streaming_text_completion(
         assert isinstance(response.inner_content, list)
 
 
-@pytest.mark.asyncio
 async def test_bedrock_streaming_text_completion_with_unsupported_model(
     model_id,
 ) -> None:

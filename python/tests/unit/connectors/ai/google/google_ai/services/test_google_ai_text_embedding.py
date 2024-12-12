@@ -65,7 +65,6 @@ def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
 # endregion init
 
 
-@pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
 async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
@@ -85,7 +84,6 @@ async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt)
     mock_embedding_client.assert_called_once_with(model=model_id, content=[prompt])
 
 
-@pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
@@ -110,7 +108,6 @@ async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_tes
     )
 
 
-@pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly without settings."""
@@ -129,7 +126,6 @@ async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_
     )
 
 
-@pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""
@@ -149,7 +145,6 @@ async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_e
     mock_embedding_client.assert_called_once_with(model=model_id, content=[prompt, prompt])
 
 
-@pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
 async def test_raw_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""

@@ -43,7 +43,6 @@ def process_context():
         yield context, mock_dapr_process
 
 
-@pytest.mark.asyncio
 async def test_start_with_event(process_context):
     context, mock_dapr_process = process_context
 
@@ -62,7 +61,6 @@ async def test_start_with_event(process_context):
     mock_dapr_process.run_once.assert_awaited_once_with(initial_event_json)
 
 
-@pytest.mark.asyncio
 async def test_send_event(process_context):
     context, mock_dapr_process = process_context
 
@@ -73,7 +71,6 @@ async def test_send_event(process_context):
     mock_dapr_process.send_message.assert_awaited_once_with(event)
 
 
-@pytest.mark.asyncio
 async def test_stop(process_context):
     context, mock_dapr_process = process_context
 
@@ -82,7 +79,6 @@ async def test_stop(process_context):
     mock_dapr_process.stop.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_get_state(process_context):
     context, mock_dapr_process = process_context
 

@@ -47,7 +47,6 @@ def test_init_empty_model_id(ollama_unit_test_env):
         _ = OllamaTextCompletion(env_file_path="fake_env_file_path.env")
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.__init__", return_value=None)  # mock_client
 @patch("ollama.AsyncClient.generate")  # mock_completion_client
 async def test_custom_host(
@@ -65,7 +64,6 @@ async def test_custom_host(
     mock_client.assert_called_once_with(host=host)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.__init__", return_value=None)  # mock_client
 @patch("ollama.AsyncClient.generate")  # mock_completion_client
 async def test_custom_host_streaming(
@@ -84,7 +82,6 @@ async def test_custom_host_streaming(
     mock_client.assert_called_once_with(host=host)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
 async def test_completion(mock_completion_client, model_id, service_id, prompt, default_options):
     """Test that the service generates content correctly."""
@@ -105,7 +102,6 @@ async def test_completion(mock_completion_client, model_id, service_id, prompt, 
     )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
 async def test_completion_wrong_return_type(
     mock_completion_client,
@@ -126,7 +122,6 @@ async def test_completion_wrong_return_type(
         )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
 async def test_streaming_completion(
     mock_completion_client,
@@ -159,7 +154,6 @@ async def test_streaming_completion(
     )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
 async def test_streaming_completion_wrong_return_type(
     mock_completion_client,

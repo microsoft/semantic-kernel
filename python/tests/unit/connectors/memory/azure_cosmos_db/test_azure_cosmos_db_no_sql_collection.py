@@ -154,7 +154,6 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
     mock_cosmos_client_init.assert_called_once_with(url, credential=ANY)
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
     mock_cosmos_client,
@@ -185,7 +184,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
     )
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_database_not_exists(
     mock_cosmos_client,
@@ -210,7 +208,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
         await vector_collection._get_database_proxy()
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
@@ -241,7 +238,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
     )
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
@@ -272,7 +268,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     )
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize("index_kind, distance_function", [("flat", "cosine_similarity")])
@@ -303,7 +298,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     )
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.CosmosClient")
 @patch("azure.cosmos.aio.DatabaseProxy")
 @pytest.mark.parametrize(
@@ -335,7 +329,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
         await vector_collection.create_collection()
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.DatabaseProxy")
 async def test_azure_cosmos_db_no_sql_collection_delete_collection(
     mock_database_proxy,
@@ -358,7 +351,6 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
     mock_database_proxy.delete_container.assert_called_once_with(collection_name)
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.DatabaseProxy")
 async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
     mock_database_proxy,
@@ -379,7 +371,6 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
         await vector_collection.delete_collection()
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.ContainerProxy")
 async def test_azure_cosmos_db_no_sql_upsert(
     mock_container_proxy,
@@ -405,7 +396,6 @@ async def test_azure_cosmos_db_no_sql_upsert(
     assert result == item["id"]
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.ContainerProxy")
 async def test_azure_cosmos_db_no_sql_upsert_without_id(
     mock_container_proxy,
@@ -432,7 +422,6 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
     assert result == item["key"]
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.ContainerProxy")
 async def test_azure_cosmos_db_no_sql_get(
     mock_container_proxy,
@@ -459,7 +448,6 @@ async def test_azure_cosmos_db_no_sql_get(
     assert record.id == "test_id"
 
 
-@pytest.mark.asyncio
 @patch("azure.cosmos.aio.ContainerProxy")
 async def test_azure_cosmos_db_no_sql_get_without_id(
     mock_container_proxy,
@@ -488,7 +476,6 @@ async def test_azure_cosmos_db_no_sql_get_without_id(
     assert record.key == "test_key"
 
 
-@pytest.mark.asyncio
 @patch.object(CosmosClientWrapper, "close", return_value=None)
 async def test_client_is_closed(
     mock_cosmos_client_close,

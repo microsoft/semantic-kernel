@@ -69,7 +69,6 @@ def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk
 # region Chat Message Content
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc(
     mock_create,
@@ -93,7 +92,6 @@ async def test_cmc(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_singular(
     mock_create,
@@ -117,7 +115,6 @@ async def test_cmc_singular(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_prompt_execution_settings(
     mock_create,
@@ -141,7 +138,6 @@ async def test_cmc_prompt_execution_settings(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_function_call_behavior(
     mock_create,
@@ -192,7 +188,6 @@ async def test_cmc_function_call_behavior(
         mock_process_function_call.assert_awaited()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_function_choice_behavior(
     mock_create,
@@ -267,7 +262,6 @@ async def test_cmc_function_choice_behavior(
         mock_process_function_call.assert_awaited()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_fcb_parallel_func_calling_disabled(
     mock_create,
@@ -344,7 +338,6 @@ async def test_cmc_fcb_parallel_func_calling_disabled(
         mock_process_function_call.assert_awaited()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_function_choice_behavior_missing_kwargs(
     mock_create,
@@ -392,7 +385,6 @@ async def test_cmc_function_choice_behavior_missing_kwargs(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_no_fcc_in_response(
     mock_create,
@@ -422,7 +414,6 @@ async def test_cmc_no_fcc_in_response(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_structured_output_no_fcc(
     mock_create,
@@ -448,7 +439,6 @@ async def test_cmc_structured_output_no_fcc(
     mock_create.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_run_out_of_auto_invoke_loop(
     mock_create: MagicMock,
@@ -493,7 +483,6 @@ async def test_cmc_run_out_of_auto_invoke_loop(
     mock_create.call_count == 6
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_prompt_execution_settings(
     mock_create,
@@ -519,7 +508,6 @@ async def test_scmc_prompt_execution_settings(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock, side_effect=Exception)
 async def test_cmc_general_exception(
     mock_create,
@@ -542,7 +530,6 @@ async def test_cmc_general_exception(
 # region Streaming
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc(
     mock_create,
@@ -587,7 +574,6 @@ async def test_scmc(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_singular(
     mock_create,
@@ -632,7 +618,6 @@ async def test_scmc_singular(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_structured_output_no_fcc(
     mock_create,
@@ -676,7 +661,6 @@ async def test_scmc_structured_output_no_fcc(
     mock_create.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_function_call_behavior(
     mock_create,
@@ -712,7 +696,6 @@ async def test_scmc_function_call_behavior(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_function_choice_behavior(
     mock_create,
@@ -772,7 +755,6 @@ async def test_scmc_function_choice_behavior(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_fcb_parallel_tool_call_disabled(
     mock_create,
@@ -834,7 +816,6 @@ async def test_scmc_fcb_parallel_tool_call_disabled(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_function_choice_behavior_missing_kwargs(
     mock_create,
@@ -871,7 +852,6 @@ async def test_scmc_function_choice_behavior_missing_kwargs(
         ]
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_no_fcc_in_response(
     mock_create,
@@ -905,7 +885,6 @@ async def test_scmc_no_fcc_in_response(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_run_out_of_auto_invoke_loop(
     mock_create: MagicMock,
@@ -960,7 +939,6 @@ async def test_scmc_run_out_of_auto_invoke_loop(
     mock_create.call_count == 6
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_no_stream(
     mock_create, kernel: Kernel, chat_history: ChatHistory, openai_unit_test_env, mock_chat_completion_response
@@ -985,7 +963,6 @@ async def test_scmc_no_stream(
 # region TextContent
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_tc(
     mock_create,
@@ -1007,7 +984,6 @@ async def test_tc(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_stc(
     mock_create,
@@ -1029,7 +1005,6 @@ async def test_stc(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_stc_with_msgs(
     mock_create,
@@ -1056,7 +1031,6 @@ async def test_stc_with_msgs(
 # region Autoinvoke
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_scmc_terminate_through_filter(
     mock_create: MagicMock,

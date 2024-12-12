@@ -14,7 +14,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 from semantic_kernel.contents.chat_history import ChatHistory
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -43,7 +42,6 @@ async def test_azure_ai_inference_chat_completion_instrumentation(
     mock_uninstrument.assert_called_once()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [
@@ -84,7 +82,6 @@ async def test_azure_ai_inference_chat_completion_not_instrumentation(
     mock_uninstrument.assert_not_called()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [
@@ -125,7 +122,6 @@ async def test_azure_ai_inference_chat_completion_instrumentation_without_sensit
     mock_uninstrument.assert_called_once()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -157,7 +153,6 @@ async def test_azure_ai_inference_streaming_chat_completion_instrumentation(
     mock_uninstrument.assert_called_once()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [
@@ -201,7 +196,6 @@ async def test_azure_ai_inference_streaming_chat_completion_not_instrumentation(
     mock_uninstrument.assert_not_called()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [

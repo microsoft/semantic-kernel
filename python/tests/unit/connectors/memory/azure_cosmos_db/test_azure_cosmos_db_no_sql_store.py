@@ -95,7 +95,6 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(CosmosClientWrapper, "close", return_value=None)
 async def test_client_is_closed(mock_cosmos_client_close, azure_cosmos_db_no_sql_unit_test_env) -> None:
     """Test the close method of an AzureCosmosDBNoSQLStore object."""

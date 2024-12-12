@@ -88,7 +88,6 @@ def test_create_client_from_configuration_missing_endpoint():
         AzureAssistantAgent._create_client(api_key="test")
 
 
-@pytest.mark.asyncio
 async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
     with patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
@@ -100,7 +99,6 @@ async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
         await agent.client.close()
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_files(kernel: Kernel, azure_openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -131,7 +129,6 @@ async def test_create_agent_with_files(kernel: Kernel, azure_openai_unit_test_en
         mock_create_assistant.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, azure_openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -155,7 +152,6 @@ async def test_create_agent_with_code_files_not_found_raises_exception(kernel: K
             )
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_search_files_not_found_raises_exception(kernel: Kernel, azure_openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -179,7 +175,6 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
             )
 
 
-@pytest.mark.asyncio
 async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_unit_test_env):
     agent = AzureAssistantAgent(
         kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
@@ -230,7 +225,6 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
         }
 
 
-@pytest.mark.asyncio
 async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
     with patch.object(
         AzureAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
@@ -322,7 +316,6 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
-@pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
     with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
         _ = await AzureAssistantAgent.retrieve(
@@ -331,7 +324,6 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-@pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
     with pytest.raises(
         AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."

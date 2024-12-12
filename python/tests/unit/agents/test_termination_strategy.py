@@ -37,7 +37,6 @@ class TerminationStrategyTest(TerminationStrategy):
         return True
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_with_matching_agent():
     agent = MockAgent(id="test-agent-id")
     strategy = TerminationStrategyTest(agents=[agent])
@@ -49,7 +48,6 @@ async def test_should_terminate_with_matching_agent():
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_with_non_matching_agent():
     agent = MockAgent(id="test-agent-id")
     non_matching_agent = MockAgent(id="non-matching-agent-id")
@@ -62,7 +60,6 @@ async def test_should_terminate_with_non_matching_agent():
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_no_agents_in_strategy():
     agent = MockAgent(id="test-agent-id")
     strategy = TerminationStrategyTest()
@@ -74,7 +71,6 @@ async def test_should_terminate_no_agents_in_strategy():
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_not_implemented():
     agent = MockAgent(id="test-agent-id")
     strategy = TerminationStrategy(agents=[agent])
