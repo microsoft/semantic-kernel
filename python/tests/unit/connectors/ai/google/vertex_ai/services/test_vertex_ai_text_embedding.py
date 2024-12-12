@@ -68,7 +68,6 @@ def test_prompt_execution_settings_class(vertex_ai_unit_test_env) -> None:
 # endregion init
 
 
-@pytest.mark.asyncio
 @patch.object(TextEmbeddingModel, "from_pretrained")
 @patch.object(MockTextEmbeddingModel, "get_embeddings_async", new_callable=AsyncMock)
 async def test_embedding(mock_embedding_client, mock_from_pretrained, vertex_ai_unit_test_env, prompt):
@@ -89,7 +88,6 @@ async def test_embedding(mock_embedding_client, mock_from_pretrained, vertex_ai_
     mock_embedding_client.assert_called_once_with([prompt])
 
 
-@pytest.mark.asyncio
 @patch.object(TextEmbeddingModel, "from_pretrained")
 @patch.object(MockTextEmbeddingModel, "get_embeddings_async", new_callable=AsyncMock)
 async def test_embedding_with_settings(mock_embedding_client, mock_from_pretrained, vertex_ai_unit_test_env, prompt):
@@ -115,7 +113,6 @@ async def test_embedding_with_settings(mock_embedding_client, mock_from_pretrain
     )
 
 
-@pytest.mark.asyncio
 @patch.object(TextEmbeddingModel, "from_pretrained")
 @patch.object(MockTextEmbeddingModel, "get_embeddings_async", new_callable=AsyncMock)
 async def test_embedding_without_settings(mock_embedding_client, mock_from_pretrained, vertex_ai_unit_test_env, prompt):
@@ -131,7 +128,6 @@ async def test_embedding_without_settings(mock_embedding_client, mock_from_pretr
     mock_embedding_client.assert_called_once_with([prompt])
 
 
-@pytest.mark.asyncio
 @patch.object(TextEmbeddingModel, "from_pretrained")
 @patch.object(MockTextEmbeddingModel, "get_embeddings_async", new_callable=AsyncMock)
 async def test_embedding_list_input(mock_embedding_client, mock_from_pretrained, vertex_ai_unit_test_env, prompt):
@@ -147,7 +143,6 @@ async def test_embedding_list_input(mock_embedding_client, mock_from_pretrained,
     mock_embedding_client.assert_called_once_with([prompt, prompt])
 
 
-@pytest.mark.asyncio
 @patch.object(TextEmbeddingModel, "from_pretrained")
 @patch.object(MockTextEmbeddingModel, "get_embeddings_async", new_callable=AsyncMock)
 async def test_raw_embedding(mock_embedding_client, mock_from_pretrained, vertex_ai_unit_test_env, prompt):

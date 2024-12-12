@@ -24,7 +24,6 @@ from tests.integration.memory.vector_stores.vector_store_test_base import Vector
 class TestCosmosDBNoSQL(VectorStoreTestBase):
     """Test Cosmos DB NoSQL store functionality."""
 
-    @pytest.mark.asyncio
     async def test_list_collection_names(
         self,
         stores: dict[str, VectorStore],
@@ -49,7 +48,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             # Deleting the collection doesn't remove it from the vector_record_collections list in the store
             assert collection_name in store.vector_record_collections
 
-    @pytest.mark.asyncio
     async def test_collection_not_created(
         self,
         stores: dict[str, VectorStore],
@@ -79,7 +77,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             with pytest.raises(MemoryConnectorException, match="Container could not be deleted."):
                 await collection.delete_collection()
 
-    @pytest.mark.asyncio
     async def test_custom_partition_key(
         self,
         stores: dict[str, VectorStore],
@@ -117,7 +114,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             await collection.delete_collection()
             assert await collection.does_collection_exist() is False
 
-    @pytest.mark.asyncio
     async def test_get_include_vector(
         self,
         stores: dict[str, VectorStore],
@@ -148,7 +144,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             await collection.delete_collection()
             assert await collection.does_collection_exist() is False
 
-    @pytest.mark.asyncio
     async def test_get_not_include_vector(
         self,
         stores: dict[str, VectorStore],
@@ -179,7 +174,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             await collection.delete_collection()
             assert await collection.does_collection_exist() is False
 
-    @pytest.mark.asyncio
     async def test_collection_with_key_as_key_field(
         self,
         stores: dict[str, VectorStore],
@@ -211,7 +205,6 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             await collection.delete_collection()
             assert await collection.does_collection_exist() is False
 
-    @pytest.mark.asyncio
     async def test_custom_client(
         self,
         data_model_type: type,

@@ -148,7 +148,6 @@ def test_vector_store_fail():
         QdrantStore(location="localhost", url="http://localhost", env_file_path="test.env")
 
 
-@mark.asyncio
 async def test_store_list_collection_names(vector_store):
     collections = await vector_store.list_collection_names()
     assert collections == ["test"]
@@ -208,7 +207,6 @@ def test_collection_init_fail(data_model_definition):
         )
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_upsert(collection_to_use, request):
     from qdrant_client.models import PointStruct
@@ -225,7 +223,6 @@ async def test_upsert(collection_to_use, request):
     assert ids == "id1"
 
 
-@mark.asyncio
 async def test_get(collection):
     records = await collection._inner_get(["id1"])
     assert records is not None
@@ -234,22 +231,18 @@ async def test_get(collection):
     assert records is not None
 
 
-@mark.asyncio
 async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-@mark.asyncio
 async def test_does_collection_exist(collection):
     await collection.does_collection_exist()
 
 
-@mark.asyncio
 async def test_delete_collection(collection):
     await collection.delete_collection()
 
 
-@mark.asyncio
 @mark.parametrize(
     "collection_to_use, results",
     [
@@ -274,7 +267,6 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
     mock_create_collection.assert_called_once_with(**results)
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
@@ -283,7 +275,6 @@ async def test_create_index_fail(collection_to_use, request):
         await collection.create_collection()
 
 
-@mark.asyncio
 async def test_search(collection):
     results = await collection._inner_search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
     async for result in results.results:

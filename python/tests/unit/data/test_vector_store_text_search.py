@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from pytest import fixture, mark, raises
+from pytest import fixture, raises
 
 from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding
 from semantic_kernel.data import VectorStoreTextSearch
@@ -18,7 +18,6 @@ def vector_collection(DictVectorStoreRecordCollection, data_model_definition):
     )
 
 
-@mark.asyncio
 async def test_from_vectorizable_text_search(vector_collection):
     vsts = VectorStoreTextSearch.from_vectorizable_text_search(vector_collection)
     assert vsts is not None
@@ -31,7 +30,6 @@ async def test_from_vectorizable_text_search(vector_collection):
     assert search_result is not None
 
 
-@mark.asyncio
 async def test_from_vector_text_search(vector_collection):
     vsts = VectorStoreTextSearch.from_vector_text_search(vector_collection)
     assert vsts is not None
@@ -44,7 +42,6 @@ async def test_from_vector_text_search(vector_collection):
     assert search_result is not None
 
 
-@mark.asyncio
 async def test_from_vectorized_search(vector_collection, azure_openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base.OpenAITextEmbeddingBase.generate_raw_embeddings",

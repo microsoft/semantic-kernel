@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from pytest import mark
-
 from semantic_kernel import Kernel
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
@@ -31,7 +29,6 @@ class MyPlugin:
 
 
 class TestHandlebarsPromptTemplateEngine:
-    @mark.asyncio
     async def test_it_supports_variables(self, kernel: Kernel):
         # Arrange
         input = "template tests"
@@ -45,7 +42,6 @@ class TestHandlebarsPromptTemplateEngine:
         expected = template.replace("{{input}}", input).replace("{{  winner }}", winner)
         assert expected == result
 
-    @mark.asyncio
     async def test_it_allows_to_pass_variables_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=call}} =="
@@ -58,7 +54,6 @@ class TestHandlebarsPromptTemplateEngine:
         # Assert
         assert result == "== 123 ok =="
 
-    @mark.asyncio
     async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=234}} =="
@@ -70,7 +65,6 @@ class TestHandlebarsPromptTemplateEngine:
         # Assert
         assert result == "== 234 != 123 =="
 
-    @mark.asyncio
     async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input='a\\'b'}} =="
@@ -81,7 +75,6 @@ class TestHandlebarsPromptTemplateEngine:
         # Assert
         assert result == "== a'b != 123 =="
 
-    @mark.asyncio
     async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
         # Arrange
         template = '== {{my-check123 input="a\\"b"}} =='
@@ -93,7 +86,6 @@ class TestHandlebarsPromptTemplateEngine:
         # Assert
         assert result == '== a"b != 123 =='
 
-    @mark.asyncio
     async def test_chat_history_round_trip(self, kernel: Kernel):
         # Arrange
         template = """{{#each chat_history}}{{#message role=role}}{{~content~}}{{/message}} {{/each}}"""

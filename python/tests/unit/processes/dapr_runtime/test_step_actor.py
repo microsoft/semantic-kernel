@@ -20,7 +20,6 @@ def actor_context():
     return StepActor(ctx, actor_id, kernel)
 
 
-@pytest.mark.asyncio
 async def test_initialize_step(actor_context):
     input_data = json.dumps({
         "step_info": {
@@ -42,7 +41,6 @@ async def test_initialize_step(actor_context):
         mock_save_state.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_prepare_incoming_messages(actor_context):
     message = ProcessMessage(
         source_id="source_1",
@@ -71,7 +69,6 @@ async def test_prepare_incoming_messages(actor_context):
         mock_save_state.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_process_incoming_messages(actor_context):
     actor_context.step_info = DaprStepInfo(
         state=KernelProcessStepState(name="Test Step", id="step_123"),

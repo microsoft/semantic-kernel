@@ -4,10 +4,10 @@
 from typing import Annotated, Any, ClassVar, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, UrlConstraints
-from pydantic.networks import Url
+from pydantic.networks import AnyUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-HttpsUrl = Annotated[Url, UrlConstraints(max_length=2083, allowed_schemes=["https"])]
+HttpsUrl = Annotated[AnyUrl, UrlConstraints(max_length=2083, allowed_schemes=["https"])]
 
 
 class KernelBaseModel(BaseModel):

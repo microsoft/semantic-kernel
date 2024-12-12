@@ -75,7 +75,8 @@ def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
 
 
 # region chat completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion(
     mock_google_ai_model_generate_content_async,
@@ -108,7 +109,6 @@ async def test_google_ai_chat_completion(
     assert responses[0].inner_content == mock_google_ai_chat_completion_response
 
 
-@pytest.mark.asyncio
 async def test_google_ai_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
@@ -129,7 +129,6 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_fail_veri
         )
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion_with_function_choice_behavior(
     mock_google_ai_model_generate_content_async,
@@ -164,7 +163,6 @@ async def test_google_ai_chat_completion_with_function_choice_behavior(
     assert responses[0].finish_reason == FinishReason.STOP
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_google_ai_model_generate_content_async,
@@ -204,7 +202,8 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
 
 
 # region streaming chat completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion(
     mock_google_ai_model_generate_content_async,
@@ -234,7 +233,6 @@ async def test_google_ai_streaming_chat_completion(
     )
 
 
-@pytest.mark.asyncio
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
@@ -257,7 +255,6 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
             pass
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior(
     mock_google_ai_model_generate_content_async,
@@ -294,7 +291,6 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
     assert mock_google_ai_model_generate_content_async.call_count == 1
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_google_ai_model_generate_content_async,

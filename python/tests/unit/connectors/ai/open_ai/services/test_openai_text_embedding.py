@@ -59,7 +59,6 @@ def test_init_with_no_model_id(openai_unit_test_env) -> None:
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_embedding_calls_with_parameters(mock_create, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
@@ -79,7 +78,6 @@ async def test_embedding_calls_with_parameters(mock_create, openai_unit_test_env
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_embedding_calls_with_settings(mock_create, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
@@ -97,7 +95,6 @@ async def test_embedding_calls_with_settings(mock_create, openai_unit_test_env) 
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock, side_effect=Exception)
 async def test_embedding_fail(mock_create, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
@@ -111,7 +108,6 @@ async def test_embedding_fail(mock_create, openai_unit_test_env) -> None:
         await openai_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_embedding_pes(mock_create, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"

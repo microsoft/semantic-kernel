@@ -30,7 +30,6 @@ def mock_streaming_chat_completion_response() -> AsyncMock:
     return mock_response
 
 
-@pytest.mark.asyncio
 async def test_initialization():
     agent = ChatCompletionAgent(
         service_id="test_service",
@@ -47,7 +46,6 @@ async def test_initialization():
     assert agent.instructions == "Test Instructions"
 
 
-@pytest.mark.asyncio
 async def test_initialization_invalid_name_throws():
     with pytest.raises(ValidationError):
         _ = ChatCompletionAgent(
@@ -59,7 +57,6 @@ async def test_initialization_invalid_name_throws():
         )
 
 
-@pytest.mark.asyncio
 async def test_initialization_no_service_id():
     agent = ChatCompletionAgent(
         name="TestAgent",
@@ -76,7 +73,6 @@ async def test_initialization_no_service_id():
     assert agent.instructions == "Test Instructions"
 
 
-@pytest.mark.asyncio
 async def test_initialization_with_kernel(kernel: Kernel):
     agent = ChatCompletionAgent(
         kernel=kernel,
@@ -94,7 +90,6 @@ async def test_initialization_with_kernel(kernel: Kernel):
     assert agent.instructions == "Test Instructions"
 
 
-@pytest.mark.asyncio
 async def test_invoke():
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = create_autospec(ChatCompletionClientBase)
@@ -113,7 +108,6 @@ async def test_invoke():
     assert messages[0].content == "Processed Message"
 
 
-@pytest.mark.asyncio
 async def test_invoke_tool_call_added():
     kernel = create_autospec(Kernel)
     chat_completion_service = create_autospec(ChatCompletionClientBase)
@@ -145,7 +139,6 @@ async def test_invoke_tool_call_added():
     assert history.messages[2].name == "TestAgent"
 
 
-@pytest.mark.asyncio
 async def test_invoke_no_service_throws():
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = None
@@ -158,7 +151,6 @@ async def test_invoke_no_service_throws():
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream():
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = create_autospec(ChatCompletionClientBase)
@@ -180,7 +172,6 @@ async def test_invoke_stream():
             assert message.content == "Initial Message"
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_tool_call_added(mock_streaming_chat_completion_response):
     kernel = create_autospec(Kernel)
     chat_completion_service = create_autospec(ChatCompletionClientBase)
@@ -199,7 +190,6 @@ async def test_invoke_stream_tool_call_added(mock_streaming_chat_completion_resp
     assert len(history.messages) == 3
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_no_service_throws():
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = None
@@ -219,7 +209,6 @@ def test_get_channel_keys():
     assert keys == [ChatHistoryChannel.__name__]
 
 
-@pytest.mark.asyncio
 async def test_create_channel():
     agent = ChatCompletionAgent()
     channel = await agent.create_channel()
