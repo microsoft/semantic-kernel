@@ -94,12 +94,13 @@ class ChatCompletionTestBase(CompletionTestBase):
     """Base class for testing completion services."""
 
     @override
-    @pytest.fixture(scope="session")
+    @pytest.fixture(scope="function")
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        os.environ["AZURE_OPENAI_AD_TOKEN"] = ad_token
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(

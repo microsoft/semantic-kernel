@@ -8,6 +8,7 @@ import os
 
 import httpx
 import pytest
+import pytest_asyncio
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
@@ -72,7 +73,7 @@ class LoggingAsyncClient(httpx.AsyncClient):
 # region Test Helper Methods
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture
 async def async_client():
     openai_settings = OpenAISettings.create()
     logging_async_client = LoggingAsyncClient()
