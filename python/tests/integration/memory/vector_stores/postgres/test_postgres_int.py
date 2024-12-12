@@ -119,9 +119,6 @@ def test_create_store(vector_store):
     assert vector_store.connection_pool is not None
 
 
-()
-
-
 async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
 
@@ -139,17 +136,11 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     assert does_exist_3 is False
 
 
-()
-
-
 async def test_list_collection_names(vector_store):
     async with create_simple_collection(vector_store) as simple_collection:
         simple_collection_id = simple_collection.collection_name
         result = await vector_store.list_collection_names()
         assert simple_collection_id in result
-
-
-()
 
 
 async def test_upsert_get_and_delete(vector_store: PostgresStore):
@@ -180,9 +171,6 @@ async def test_upsert_get_and_delete(vector_store: PostgresStore):
         assert result_after_delete is None
 
 
-()
-
-
 async def test_upsert_get_and_delete_pandas(vector_store):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     definition, df = DataModelPandas(record.model_dump())
@@ -210,9 +198,6 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         assert result_after_delete is None
     finally:
         await collection.delete_collection()
-
-
-()
 
 
 async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
