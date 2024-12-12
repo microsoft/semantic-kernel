@@ -50,9 +50,9 @@ ollama_setup: bool = is_service_setup_for_testing([
 
 class EmbeddingServiceTestBase:
     @pytest.fixture(scope="class")
-    def services(self) -> dict[str, tuple[EmbeddingGeneratorBase, type[PromptExecutionSettings]]]:
+    def services(self) -> dict[str, tuple[EmbeddingGeneratorBase | None, type[PromptExecutionSettings]]]:
         azure_openai_settings = AzureOpenAISettings.create()
-        endpoint = azure_openai_settings.endpoint
+        endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.embedding_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
         api_version = azure_openai_settings.api_version
@@ -68,7 +68,7 @@ class EmbeddingServiceTestBase:
         azure_ai_inference_client = AzureAIInferenceTextEmbedding(
             ai_model_id=deployment_name,
             client=EmbeddingsClient(
-                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
+                endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
             ),

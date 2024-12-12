@@ -113,7 +113,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_ai_inference_client = AzureAIInferenceChatCompletion(
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
-                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
+                endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
             ),
