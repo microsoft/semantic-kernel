@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
 using System;
-using System.Threading.Tasks;
-using Microsoft.Plugins.Manifest;
-using Microsoft.Extensions.Logging;
-using System.Threading;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
-using System.Net.Http;
-using System.IO;
+using Microsoft.Plugins.Manifest;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
