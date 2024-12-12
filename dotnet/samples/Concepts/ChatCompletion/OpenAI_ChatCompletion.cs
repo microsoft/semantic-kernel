@@ -107,6 +107,36 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         OutputInnerContent(replyInnerContent!);
     }
 
+    /// <summary>
+    /// Demonstrates how you can store the output of a chat completion request for use in the OpenAI model distillation or evals products.
+    /// </summary>
+    /// <remarks>
+    /// This sample adds metadata to the chat completion request which allows the requests to be filtered in the OpenAI dashboard.
+    /// </remarks>
+    [Fact]
+    public async Task ChatPromptStoreWithMetadataAsync()
+    {
+        Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
+        Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
+
+        StringBuilder chatPrompt = new("""
+                                       <message role="system">You are a librarian, expert about books</message>
+                                       <message role="user">Hi, I'm looking for book suggestions about Artificial Intelligence</message>
+                                       """);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        var functionResult = await kernel.InvokePromptAsync(chatPrompt.ToString(),
+            new(new OpenAIPromptExecutionSettings { Store = true, Metadata = new Dictionary<string, string>() { { "concept", "chatcompletion" } } }));
+
+        var messageContent = functionResult.GetValue<ChatMessageContent>(); // Retrieves underlying chat message content from FunctionResult.
+        var replyInnerContent = messageContent!.InnerContent as OpenAI.Chat.ChatCompletion; // Retrieves inner content from ChatMessageContent.
+
+        OutputInnerContent(replyInnerContent!);
+    }
+
     private async Task StartChatAsync(IChatCompletionService chatGPT)
     {
         Console.WriteLine("Chat content:");

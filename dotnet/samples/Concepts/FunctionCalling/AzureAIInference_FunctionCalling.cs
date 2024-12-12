@@ -5,6 +5,9 @@ using Microsoft.SemanticKernel;
 namespace FunctionCalling;
 public class AzureAIInference_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// This example demonstrates usage of <see cref="FunctionChoiceBehavior.Auto"/> that advertises all kernel functions to the AI model.
+    /// </summary>
     [Fact]
     public async Task FunctionCallingAsync()
     {
