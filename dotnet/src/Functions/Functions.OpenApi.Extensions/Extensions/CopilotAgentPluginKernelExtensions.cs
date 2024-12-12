@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Services;
 using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -39,7 +37,7 @@ public static class CopilotAgentPluginKernelExtensions
         CopilotAgentPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromCopilotAgentPluginAsync(pluginName, filePath, pluginParameters, null, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -51,6 +49,7 @@ public static class CopilotAgentPluginKernelExtensions
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the Copilot Agent Plugin.</param>
     /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="pluginPolicy">The operation policy to use for the plugin.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
     public static async Task<KernelPlugin> CreatePluginFromCopilotAgentPluginAsync(
@@ -58,10 +57,13 @@ public static class CopilotAgentPluginKernelExtensions
         string pluginName,
         string filePath,
         CopilotAgentPluginParameters? pluginParameters = null,
+        CopilotAgentPluginPolicy? pluginPolicy = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
+
+        pluginPolicy ??= new CopilotAgentPluginPolicy();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -74,32 +76,20 @@ public static class CopilotAgentPluginKernelExtensions
 
         var loggerFactory = kernel.LoggerFactory;
         var logger = loggerFactory.CreateLogger(typeof(CopilotAgentPluginKernelExtensions)) ?? NullLogger.Instance;
-        using var CopilotAgentFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
-            logger);
 
-        var results = await PluginManifestDocument.LoadAsync(CopilotAgentFileJsonContents, new ReaderOptions
-        {
-            ValidationRules = [] // Disable validation rules
-        }).ConfigureAwait(false);
+        var document = await pluginPolicy.LoadManifestAsync(filePath, logger, cancellationToken).ConfigureAwait(false);
 
-        if (!results.IsValid)
-        {
-            var messages = results.Problems.Select(static p => p.Message).Aggregate(static (a, b) => $"{a}, {b}");
-            throw new InvalidOperationException($"Error loading the manifest: {messages}");
-        }
-
-        var document = results.Document;
-        var openAPIRuntimes = document?.Runtimes?.Where(runtime => runtime.Type == RuntimeType.OpenApi).ToList();
+        var openAPIRuntimes = document.Runtimes?.Where(runtime => runtime.Type == RuntimeType.OpenApi).ToList();
         if (openAPIRuntimes is null || openAPIRuntimes.Count == 0)
         {
             throw new InvalidOperationException("No OpenAPI runtimes found in the manifest.");
         }
 
         var functions = new List<KernelFunction>();
-        var documentWalker = new OpenApiWalker(new OperationIdNormalizationOpenApiVisitor());
+
         foreach (var runtime in openAPIRuntimes)
         {
-            var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
+            var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList(); ;
             if (manifestFunctions is null || manifestFunctions.Count == 0)
             {
                 logger.LogWarning("No functions found in the runtime object.");
@@ -114,32 +104,14 @@ public static class CopilotAgentPluginKernelExtensions
                 continue;
             }
 
-            var (parsedDescriptionUrl, isOnlineDescription) = Uri.TryCreate(apiDescriptionUrl, UriKind.Absolute, out var result) ?
-                (result, true) :
-                (new Uri(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, apiDescriptionUrl)), false);
-
-            using var openApiDocumentStream = isOnlineDescription ?
-                await DocumentLoader.LoadDocumentFromUriAsStreamAsync(parsedDescriptionUrl,
-                    logger,
-                    httpClient,
-                    authCallback: null,
-                    pluginParameters?.UserAgent,
-                    cancellationToken).ConfigureAwait(false) :
-                DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
-                    logger);
-
-            var documentReadResult = await new OpenApiStreamReader(new()
-            {
-                BaseUrl = parsedDescriptionUrl
-            }
-            ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
-            var openApiDocument = documentReadResult.OpenApiDocument;
-            var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
-
-            documentWalker.Walk(openApiDocument);
-
-            var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(static f => f.Name)), null, null, openApiDocument);
-            var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
+            var filteredOpenApiDocument = await pluginPolicy.LoadNormalizeAndFilterOpenApiDocumentAsync(
+                manifestFunctions,
+                apiDescriptionUrl,
+                filePath,
+                logger,
+                httpClient,
+                pluginParameters?.UserAgent ?? string.Empty,
+                cancellationToken).ConfigureAwait(false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
             if (server?.Url is null)
@@ -166,7 +138,11 @@ public static class CopilotAgentPluginKernelExtensions
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true,
+                pluginPolicy.ReadHttpResponseContent,
+                pluginPolicy.CreateRestApiOperationUrl,
+                pluginPolicy.CreateRestApiOperationHeaders,
+                pluginPolicy.CreateRestApiOperationPayload);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
@@ -179,7 +155,7 @@ public static class CopilotAgentPluginKernelExtensions
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
                         TrimOperationDescriptions(operation);
-                        functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                        functions.Add(pluginPolicy.CreateKernelFunction(pluginName, server, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
