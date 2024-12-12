@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: |
-            python-coverage.txt
-            pytest.xml
+            python/python-coverage.txt
+            python/pytest.xml
           overwrite: true
           retention-days: 1

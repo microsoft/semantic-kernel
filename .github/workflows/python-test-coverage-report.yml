@@ -21,7 +21,7 @@ jobs:
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           run-id: ${{ github.event.workflow_run.id }}
-          path: ./
+          path: ./python
           merge-multiple: true
       - name: Display structure of downloaded files
         run: ls
@@ -29,10 +29,10 @@ jobs:
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          pytest-coverage-path: python-coverage.txt
+          pytest-coverage-path: python/python-coverage.txt
           title: "Python Test Coverage Report"
           badge-title: "Python Test Coverage"
           junitxml-title: "Python Unit Test Overview"
-          junitxml-path: pytest.xml
+          junitxml-path: python/pytest.xml
           default-branch: "main"
           report-only-changed-files: true
