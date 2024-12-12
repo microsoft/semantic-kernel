@@ -46,12 +46,13 @@ google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOG
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_EMBEDDING_MODEL_ID"])
 # When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
-bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"])
+bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
 
 class EmbeddingServiceTestBase:
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[EmbeddingGeneratorBase | None, type[PromptExecutionSettings]]]:
+        azure_openai_setup = True
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.embedding_deployment_name

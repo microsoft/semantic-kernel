@@ -42,6 +42,7 @@ vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
+bedrock_setup = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
@@ -136,6 +137,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
+            marks=pytest.mark.skipif(not bedrock_setup, reason="Not setup"),
             id="bedrock_amazon_titan_text_completion",
         ),
         pytest.param(
@@ -188,6 +190,7 @@ class TestTextCompletion(CompletionTestBase):
     @override
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
+        azure_openai_setup = True
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.text_deployment_name
@@ -245,27 +248,27 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                BedrockTextCompletion(model_id="anthropic.claude-v2"),
+                BedrockTextCompletion(model_id="anthropic.claude-v2") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (
-                BedrockTextCompletion(model_id="cohere.command-text-v14"),
+                BedrockTextCompletion(model_id="cohere.command-text-v14") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (
-                BedrockTextCompletion(model_id="ai21.j2-mid-v1"),
+                BedrockTextCompletion(model_id="ai21.j2-mid-v1") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
+                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_mistralai": (
-                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2"),
+                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
         }

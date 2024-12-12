@@ -62,7 +62,7 @@ def is_service_setup_for_testing(env_var_names: list[str], raise_if_not_set: boo
         raise_if_not_set = os.getenv("INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION", "false").lower() == "true"
 
     def does_env_var_exist(env_var_name):
-        exist = env_var_name in os.environ and os.environ[env_var_name]
+        exist = os.getenv(env_var_name, False)
         if not exist and raise_if_not_set:
             raise KeyError(f"Environment variable {env_var_name} is not set.")
         return exist
