@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Reflection;
 using PuppeteerSharp;
 
@@ -14,30 +15,51 @@ public static class MermaidRenderer
     /// Generates a Mermaid diagram image from the provided Mermaid code.
     /// </summary>
     /// <param name="mermaidCode"></param>
-    /// <param name="filename"></param>
+    /// <param name="filenameOrPath"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static async Task GenerateMermaidImageAsync(string mermaidCode, string filename)
+    public static async Task GenerateMermaidImageAsync(string mermaidCode, string filenameOrPath)
     {
-        // Locate the current assembly's directory
-        string? assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (assemblyPath == null)
+        // Ensure the filename has the correct .png extension
+        if (!filenameOrPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Could not determine the assembly path.");
+            throw new ArgumentException("The filename must have a .png extension.", nameof(filenameOrPath));
         }
 
-        // Define the output folder path and create it if it doesn't exist
-        string outputPath = Path.Combine(assemblyPath, "output");
-        Directory.CreateDirectory(outputPath);
+        string outputFilePath;
 
-        // Full path for the output file
-        string outputFilePath = Path.Combine(outputPath, filename);
+        // Check if the user provided an absolute path
+        if (Path.IsPathRooted(filenameOrPath))
+        {
+            // Use the provided absolute path
+            outputFilePath = filenameOrPath;
+
+            // Ensure the directory exists
+            string directoryPath = Path.GetDirectoryName(outputFilePath)
+                ?? throw new InvalidOperationException("Could not determine the directory path.");
+            if (!Directory.Exists(directoryPath))
+            {
+                throw new DirectoryNotFoundException($"The directory '{directoryPath}' does not exist.");
+            }
+        }
+        else
+        {
+            // Use the assembly's directory for relative paths
+            string? assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (assemblyPath == null)
+            {
+                throw new InvalidOperationException("Could not determine the assembly path.");
+            }
+
+            string outputPath = Path.Combine(assemblyPath, "output");
+            Directory.CreateDirectory(outputPath); // Ensure output directory exists
+            outputFilePath = Path.Combine(outputPath, filenameOrPath);
+        }
 
         // Download Chromium if it hasn't been installed yet
         BrowserFetcher browserFetcher = new();
         browserFetcher.Browser = SupportedBrowser.Chrome;
         await browserFetcher.DownloadAsync();
-        //await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
 
         // Define the HTML template with Mermaid.js CDN
         string htmlContent = $@"
@@ -66,19 +88,32 @@ public static class MermaidRenderer
 
         // Create a temporary HTML file with the Mermaid code
         string tempHtmlFile = Path.Combine(Path.GetTempPath(), "mermaid_temp.html");
-        await File.WriteAllTextAsync(tempHtmlFile, htmlContent);
-
-        // Launch Puppeteer-Sharp with a headless browser to render the Mermaid diagram
-        using (var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true }))
-        using (var page = await browser.NewPageAsync())
+        try
         {
-            await page.GoToAsync($"file://{tempHtmlFile}");
-            await page.WaitForSelectorAsync(".mermaid"); // Wait for Mermaid to render
-            await page.ScreenshotAsync(outputFilePath, new ScreenshotOptions { FullPage = true });
+            await File.WriteAllTextAsync(tempHtmlFile, htmlContent);
+
+            // Launch Puppeteer-Sharp with a headless browser to render the Mermaid diagram
+            using (var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true }))
+            using (var page = await browser.NewPageAsync())
+            {
+                await page.GoToAsync($"file://{tempHtmlFile}");
+                await page.WaitForSelectorAsync(".mermaid"); // Wait for Mermaid to render
+                await page.ScreenshotAsync(outputFilePath, new ScreenshotOptions { FullPage = true });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+        finally
+        {
+            // Clean up the temporary HTML file  
+            if (File.Exists(tempHtmlFile))
+            {
+                File.Delete(tempHtmlFile);
+            }
         }
 
-        // Clean up the temporary HTML file
-        File.Delete(tempHtmlFile);
         Console.WriteLine($"Diagram generated at: {outputFilePath}");
     }
 }

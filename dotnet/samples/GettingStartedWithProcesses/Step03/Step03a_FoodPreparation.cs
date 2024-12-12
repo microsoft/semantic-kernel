@@ -38,7 +38,7 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
     {
         var process = FishSandwichProcess.CreateProcess();
 
-        string mermaidGraph = process.ToMermaid(2);
+        string mermaidGraph = process.ToMermaid(1);
         Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
         Console.WriteLine(mermaidGraph);
         Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");

@@ -15,7 +15,7 @@ public static class ProcessVisualizationExtensions
     /// Generates a Mermaid diagram from a process builder.
     /// </summary>
     /// <param name="processBuilder"></param>
-    /// <param name="maxLevel"></param>
+    /// <param name="maxLevel">The maximum indentation level to reach for nested processes, 1 is basically no nesting</param>
     /// <returns></returns>
     public static string ToMermaid(this ProcessBuilder processBuilder, int maxLevel = 2)
     {
@@ -27,7 +27,7 @@ public static class ProcessVisualizationExtensions
     /// Generates a Mermaid diagram from a kernel process.
     /// </summary>
     /// <param name="process"></param>
-    /// <param name="maxLevel"></param>
+    /// <param name="maxLevel">The maximum indentation level to reach for nested processes, 1 is basically no nesting</param>
     /// <returns></returns>
     public static string ToMermaid(this KernelProcess process, int maxLevel = 2)
     {
@@ -49,7 +49,7 @@ public static class ProcessVisualizationExtensions
     /// <param name="process">The process to render.</param>
     /// <param name="level">The indentation level for nested processes.</param>
     /// <param name="isSubProcess">Indicates if the current process is a sub-process.</param>
-    /// <param name="maxLevel"></param>
+    /// <param name="maxLevel">The maximum indentation level to reach for nested processes, 1 is basically no nesting</param>
     /// <returns>A string representation of the process in Mermaid syntax.</returns>
     private static string RenderProcess(KernelProcess process, int level, bool isSubProcess, int maxLevel = 2)
     {
