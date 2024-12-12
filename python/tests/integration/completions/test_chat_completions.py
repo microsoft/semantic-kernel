@@ -123,9 +123,7 @@ pytestmark = pytest.mark.parametrize(
             ],
             {},
             marks=(
-                pytest.mark.skip(
-                    reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
-                ),
+                pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
                 pytest.mark.ollama,
             ),
             id="ollama_text_input",
@@ -298,6 +296,8 @@ class TestChatCompletion(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:

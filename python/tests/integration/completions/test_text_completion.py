@@ -33,6 +33,7 @@ from semantic_kernel.utils.authentication.entra_id_authentication import get_ent
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
+azure_openai_setup = True
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
     "Linux"
 ])
@@ -191,20 +192,24 @@ class TestTextCompletion(CompletionTestBase):
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.text_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        if not ad_token:
+            azure_openai_setup = False
         api_version = azure_openai_settings.api_version
-        azure_custom_client = AzureTextCompletion(
-            async_client=AsyncAzureOpenAI(
-                azure_endpoint=endpoint,
-                azure_deployment=deployment_name,
-                azure_ad_token=ad_token,
-                api_version=api_version,
-                default_headers={"Test-User-X-ID": "test"},
-            ),
-        )
+        azure_custom_client = None
+        if azure_openai_setup:
+            azure_custom_client = AzureTextCompletion(
+                async_client=AsyncAzureOpenAI(
+                    azure_endpoint=endpoint,
+                    azure_deployment=deployment_name,
+                    azure_ad_token=ad_token,
+                    api_version=api_version,
+                    default_headers={"Test-User-X-ID": "test"},
+                ),
+            )
 
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
-            "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
+            "azure": (AzureTextCompletion() if azure_openai_setup else None, OpenAITextPromptExecutionSettings),
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
@@ -344,7 +349,8 @@ class TestTextCompletion(CompletionTestBase):
         stream: bool,
     ):
         service, settings_type = services[service_id]
-
+        if not service:
+            pytest.skip(f"Setup not ready for {service_id if service_id else 'None'}")
         for test_input in inputs:
             response = await retry(
                 partial(

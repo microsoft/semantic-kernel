@@ -106,6 +106,9 @@ class TestEmbeddingServiceWithMemory(EmbeddingServiceTestBase):
     ):
         embedding_generator, settings_type = services[service_id]
 
+        if embedding_generator is None:
+            pytest.skip(f"Service {service_id} not set up")
+
         memory = SemanticTextMemory(
             storage=VolatileMemoryStore(),
             embeddings_generator=embedding_generator,

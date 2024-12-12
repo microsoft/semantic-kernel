@@ -1037,6 +1037,9 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         kwargs: dict[str, Any],
         stream: bool,
     ):
+        service, settings_type = services[service_id]
+        if not service:
+            pytest.skip(f"Skipping test for {service_id}")
         assert "test_type" in kwargs, "Invalid parameterization: Test type not provided"
         test_type = kwargs["test_type"]
 
@@ -1048,7 +1051,6 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
             [history.add_message(message) for message in inputs if not isinstance(message, list)]
 
         self.setup(kernel)
-        service, settings_type = services[service_id]
 
         cmc = await retry(
             partial(

@@ -316,6 +316,8 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:

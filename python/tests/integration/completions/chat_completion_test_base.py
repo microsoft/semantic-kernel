@@ -49,6 +49,7 @@ else:
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
 # 1. OpenAI and Azure OpenAI services are always setup for testing.
+azure_openai_setup: bool = True
 # 2. Bedrock services don't use API keys and model providers are tested individually,
 #    so no environment variables are required.
 mistral_ai_setup: bool = is_service_setup_for_testing(
@@ -68,6 +69,9 @@ onnx_setup: bool = is_service_setup_for_testing(
 anthropic_setup: bool = is_service_setup_for_testing(
     ["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"], raise_if_not_set=False
 )  # We don't have an Anthropic deployment
+# When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
+bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"])
+
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
@@ -100,28 +104,33 @@ class ChatCompletionTestBase(CompletionTestBase):
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.chat_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        if not ad_token:
+            azure_openai_setup = False
         api_version = azure_openai_settings.api_version
-        azure_custom_client = AzureChatCompletion(
-            async_client=AsyncAzureOpenAI(
-                azure_endpoint=endpoint,
-                azure_deployment=deployment_name,
-                azure_ad_token=ad_token,
-                api_version=api_version,
-                default_headers={"Test-User-X-ID": "test"},
-            ),
-        )
-        azure_ai_inference_client = AzureAIInferenceChatCompletion(
-            ai_model_id=deployment_name,
-            client=ChatCompletionsClient(
-                endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                credential=DefaultAzureCredential(),
-                credential_scopes=["https://cognitiveservices.azure.com/.default"],
-            ),
-        )
+        azure_custom_client = None
+        azure_ai_inference_client = None
+        if azure_openai_setup:
+            azure_custom_client = AzureChatCompletion(
+                async_client=AsyncAzureOpenAI(
+                    azure_endpoint=endpoint,
+                    azure_deployment=deployment_name,
+                    azure_ad_token=ad_token,
+                    api_version=api_version,
+                    default_headers={"Test-User-X-ID": "test"},
+                ),
+            )
+            azure_ai_inference_client = AzureAIInferenceChatCompletion(
+                ai_model_id=deployment_name,
+                client=ChatCompletionsClient(
+                    endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
+                    credential=DefaultAzureCredential(),
+                    credential_scopes=["https://cognitiveservices.azure.com/.default"],
+                ),
+            )
 
         return {
             "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
-            "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
+            "azure": (AzureChatCompletion() if azure_openai_setup else None, AzureChatPromptExecutionSettings),
             "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
             "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
@@ -149,27 +158,27 @@ class ChatCompletionTestBase(CompletionTestBase):
                 OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
             ),
             "bedrock_amazon_titan": (
-                BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (
-                BedrockChatCompletion(model_id="ai21.jamba-1-5-mini-v1:0"),
+                BedrockChatCompletion(model_id="ai21.jamba-1-5-mini-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                BedrockChatCompletion(model_id="anthropic.claude-3-5-sonnet-20240620-v1:0"),
+                BedrockChatCompletion(model_id="anthropic.claude-3-5-sonnet-20240620-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (
-                BedrockChatCompletion(model_id="cohere.command-r-v1:0"),
+                BedrockChatCompletion(model_id="cohere.command-r-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockChatCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
+                BedrockChatCompletion(model_id="meta.llama3-70b-instruct-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_mistralai": (
-                BedrockChatCompletion(model_id="mistral.mistral-small-2402-v1:0"),
+                BedrockChatCompletion(model_id="mistral.mistral-small-2402-v1:0") if bedrock_setup else None,
                 BedrockChatPromptExecutionSettings,
             ),
         }

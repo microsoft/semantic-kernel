@@ -191,13 +191,6 @@ jobs:
           ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
           ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
           ollama list
-      - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_ai_services
         shell: bash
