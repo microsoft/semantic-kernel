@@ -10,11 +10,6 @@ env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
 
-permissions:
-  contents: write
-  checks: write
-  pull-requests: write
-
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
@@ -26,8 +21,6 @@ jobs:
       UV_PYTHON: "3.10"
     steps:
       - uses: actions/checkout@v4
-      - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
         with:
@@ -38,16 +31,11 @@ jobs:
         run: uv sync --all-extras --dev
       - name: Test with pytest
         run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
-      - name: Pytest coverage comment
-        id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@main
-        continue-on-error: false
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
         with:
-          pytest-coverage-path: python/python-coverage.txt
-          coverage-path-prefix: "python/"
-          title: "Python Test Coverage Report"
-          badge-title: "Python Test Coverage"
-          junitxml-title: "Python Unit Test Overview"
-          junitxml-path: python/pytest.xml
-          default-branch: "main"
-          report-only-changed-files: true
+          path: |
+            python-coverage.txt
+            pytest.xml
+          overwrite: true
+          retention-days: 1
