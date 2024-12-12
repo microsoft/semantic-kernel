@@ -274,6 +274,7 @@ public sealed class OpenApiKernelPluginFactoryTests
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
     [InlineData("documentV3_1.yaml")]
+    [InlineData("documentV3_0_x_api_version.json")]
     public async Task ItShouldReplicateMetadataToOperationAsync(string documentFileName)
     {
         // Arrange
