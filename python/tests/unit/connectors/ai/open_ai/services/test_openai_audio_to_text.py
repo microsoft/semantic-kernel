@@ -63,7 +63,6 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_audio_to_text.get_prompt_execution_settings_class() == OpenAIAudioToTextExecutionSettings
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncTranscriptions, "create", return_value=Transcription(text="This is a test audio file."))
 async def test_get_text_contents(mock_transcription_create, openai_unit_test_env):
     audio_content = AudioContent.from_audio_file(
@@ -78,7 +77,6 @@ async def test_get_text_contents(mock_transcription_create, openai_unit_test_env
     assert text_contents[0].ai_model_id == openai_unit_test_env["OPENAI_AUDIO_TO_TEXT_MODEL_ID"]
 
 
-@pytest.mark.asyncio
 async def test_get_text_contents_invalid_audio_content(openai_unit_test_env):
     audio_content = AudioContent()
 

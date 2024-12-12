@@ -47,7 +47,6 @@ def clean_structure(data):
     return data
 
 
-@pytest.mark.asyncio
 async def test_initialize_process(actor_context):
     input_data = {
         "process_info": {
@@ -109,7 +108,6 @@ async def test_initialize_process(actor_context):
         actor_context._initialize_process_actor.assert_called_once_with(dapr_process_info_instance, "parent_123")
 
 
-@pytest.mark.asyncio
 async def test_start_process(actor_context):
     actor_context.initialize_task = True
 
@@ -136,7 +134,6 @@ def test_run_once(actor_context):
         assert actor_context.process_task is not None
 
 
-@pytest.mark.asyncio
 async def test_stop(actor_context):
     actor_context.initialize_task = True
     actor_context.process_task = asyncio.create_task(asyncio.sleep(1))

@@ -2,6 +2,7 @@
 
 import logging
 from abc import ABC
+from collections.abc import Mapping, Sequence
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -126,7 +127,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         prompt: str | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
         prompt_execution_settings: (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+            PromptExecutionSettings | Sequence[PromptExecutionSettings] | Mapping[str, PromptExecutionSettings] | None
         ) = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,

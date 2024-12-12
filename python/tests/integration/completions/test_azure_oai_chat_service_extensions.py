@@ -46,7 +46,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def create_memory_store():
     # Create an index and populate it with some data
     collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
@@ -75,7 +75,7 @@ of climate change.",
         raise e
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
     collection, memory_store = create_memory_store
     try:
@@ -125,7 +125,6 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         raise e
 
 
-@pytest.mark.asyncio
 @pytestmark
 async def test_azure_e2e_chat_completion_with_extensions(create_with_data_chat_function):
     # Create an index and populate it with some data

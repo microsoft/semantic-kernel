@@ -42,7 +42,6 @@ def test_queue_reference_is_empty_false():
 # region BroadcastQueue Tests
 
 
-@pytest.mark.asyncio
 async def test_enqueue_new_channel(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -55,7 +54,6 @@ async def test_enqueue_new_channel(channel_ref, message):
     assert not queue_ref.receive_task.done()
 
 
-@pytest.mark.asyncio
 async def test_enqueue_existing_channel(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -70,7 +68,6 @@ async def test_enqueue_existing_channel(channel_ref, message):
     assert not queue_ref.receive_task.done()
 
 
-@pytest.mark.asyncio
 async def test_ensure_synchronized_channel_empty(channel_ref):
     broadcast_queue = BroadcastQueue()
 
@@ -78,7 +75,6 @@ async def test_ensure_synchronized_channel_empty(channel_ref):
     assert channel_ref.hash not in broadcast_queue.queues
 
 
-@pytest.mark.asyncio
 async def test_ensure_synchronized_with_messages(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -90,7 +86,6 @@ async def test_ensure_synchronized_with_messages(channel_ref, message):
     assert queue_ref.is_empty is True
 
 
-@pytest.mark.asyncio
 async def test_ensure_synchronized_with_failure(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -105,7 +100,6 @@ async def test_ensure_synchronized_with_failure(channel_ref, message):
     assert queue_ref.receive_failure is None
 
 
-@pytest.mark.asyncio
 async def test_ensure_synchronized_creates_new_task(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -125,7 +119,6 @@ async def test_ensure_synchronized_creates_new_task(channel_ref, message):
         assert queue_ref.receive_task is None
 
 
-@pytest.mark.asyncio
 async def test_receive_processes_queue(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -141,7 +134,6 @@ async def test_receive_processes_queue(channel_ref, message):
     channel_ref.channel.receive.assert_any_await([message])
 
 
-@pytest.mark.asyncio
 async def test_receive_handles_failure(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 
@@ -157,7 +149,6 @@ async def test_receive_handles_failure(channel_ref, message):
     assert str(queue_ref.receive_failure) == "Simulated failure"
 
 
-@pytest.mark.asyncio
 async def test_receive_breaks_when_queue_is_empty(channel_ref, message):
     broadcast_queue = BroadcastQueue()
 

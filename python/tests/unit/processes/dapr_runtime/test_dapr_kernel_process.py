@@ -19,7 +19,6 @@ class FakeDaprKernelProcessContext:
         self.start_with_event = AsyncMock()
 
 
-@pytest.mark.asyncio
 async def test_start_with_valid_parameters():
     state = MagicMock(spec=KernelProcessState)
     state.name = "valid_state"
@@ -42,7 +41,6 @@ async def test_start_with_valid_parameters():
         result.start_with_event.assert_called_once_with(initial_event)
 
 
-@pytest.mark.asyncio
 async def test_start_with_invalid_process():
     kernel = MagicMock(spec=Kernel)
     initial_event = KernelProcessEvent(id="event_1", data="data_1")
@@ -51,7 +49,6 @@ async def test_start_with_invalid_process():
         await start(process=None, kernel=kernel, initial_event=initial_event)
 
 
-@pytest.mark.asyncio
 async def test_start_with_invalid_initial_event():
     state = MagicMock(spec=KernelProcessState)
     type(state).name = PropertyMock(return_value="valid_state")
@@ -63,7 +60,6 @@ async def test_start_with_invalid_initial_event():
         await start(process=process, kernel=kernel, initial_event=None)
 
 
-@pytest.mark.asyncio
 async def test_start_with_initial_event_as_string():
     state = MagicMock(spec=KernelProcessState)
     type(state).name = PropertyMock(return_value="valid_state")

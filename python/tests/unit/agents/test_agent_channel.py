@@ -3,8 +3,6 @@
 from collections.abc import AsyncIterable
 from unittest.mock import AsyncMock
 
-import pytest
-
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -22,7 +20,6 @@ class MockAgentChannel(AgentChannel):
         yield ChatMessageContent(role=AuthorRole.SYSTEM, content="test history message")
 
 
-@pytest.mark.asyncio
 async def test_receive():
     mock_channel = AsyncMock(spec=MockAgentChannel)
 
@@ -35,7 +32,6 @@ async def test_receive():
     mock_channel.receive.assert_called_once_with(history)
 
 
-@pytest.mark.asyncio
 async def test_invoke():
     mock_channel = AsyncMock(spec=MockAgentChannel)
     agent = AsyncMock()
@@ -50,7 +46,6 @@ async def test_invoke():
     mock_channel.invoke.assert_called_once_with(agent)
 
 
-@pytest.mark.asyncio
 async def test_get_history():
     mock_channel = AsyncMock(spec=MockAgentChannel)
 

@@ -23,7 +23,6 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.mark.asyncio
 async def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
     async with AzureCognitiveSearchMemoryStore(vector_size=4, search_endpoint=test_endpoint) as memory_store:
@@ -31,7 +30,6 @@ async def test_constructor():
         assert memory_store._search_index_client is not None
 
 
-@pytest.mark.asyncio
 async def test_collections():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
@@ -51,7 +49,6 @@ async def test_collections():
         assert not await memory_store.does_collection_exist(collection)
 
 
-@pytest.mark.asyncio
 async def test_upsert():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
@@ -84,7 +81,6 @@ async def test_upsert():
         await memory_store.delete_collection(collection)
 
 
-@pytest.mark.asyncio
 async def test_record_not_found():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
@@ -122,7 +118,6 @@ async def test_record_not_found():
         await memory_store.delete_collection(collection)
 
 
-@pytest.mark.asyncio
 async def test_search():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:

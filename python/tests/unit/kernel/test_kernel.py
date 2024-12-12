@@ -101,7 +101,6 @@ def test_kernel_init_with_kernel_plugin_list():
 # region Invoke Functions
 
 
-@pytest.mark.asyncio
 async def test_invoke_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
 
@@ -110,7 +109,6 @@ async def test_invoke_function(kernel: Kernel, create_mock_function):
     assert mock_function.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_with_cancellation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
 
@@ -125,7 +123,6 @@ async def test_invoke_function_with_cancellation(kernel: Kernel, create_mock_fun
         Kernel.invoke.assert_called_once_with(function=mock_function, arguments=KernelArguments())
 
 
-@pytest.mark.asyncio
 async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
     mock_function = kernel.add_function(plugin_name="test", function=create_mock_function(name="test_function"))
 
@@ -138,7 +135,6 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
         assert response[0].text == "test"
 
 
-@pytest.mark.asyncio
 async def test_invoke_functions_by_name_return_function_results(kernel: Kernel, create_mock_function):
     mock_function = kernel.add_function(plugin_name="test", function=create_mock_function(name="test_function"))
 
@@ -153,7 +149,6 @@ async def test_invoke_functions_by_name_return_function_results(kernel: Kernel, 
         assert isinstance(result, FunctionResult)
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
@@ -166,7 +161,6 @@ async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_cancelled(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     mock_function._invoke_internal = AsyncMock(side_effect=OperationCancelledException("Operation cancelled"))
@@ -176,7 +170,6 @@ async def test_invoke_function_cancelled(kernel: Kernel, create_mock_function):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     mock_function = kernel.add_function(plugin_name="test", function=mock_function)
@@ -187,7 +180,6 @@ async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     assert mock_function.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
@@ -206,7 +198,6 @@ async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_m
             break
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     with patch(
@@ -217,7 +208,6 @@ async def test_invoke_prompt(kernel: Kernel, create_mock_function):
         mock_invoke.invoke.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
     with pytest.raises(TemplateSyntaxError):
         await kernel.invoke_prompt(
@@ -227,14 +217,12 @@ async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt_stream_no_prompt_throws(kernel: Kernel):
     with pytest.raises(TemplateSyntaxError):
         async for _ in kernel.invoke_prompt_stream(prompt=""):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt_stream(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     with (
@@ -249,7 +237,6 @@ async def test_invoke_prompt_stream(kernel: Kernel, create_mock_function):
             assert response.value == "test"
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt_stream_returns_function_results(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     with (
@@ -264,7 +251,6 @@ async def test_invoke_prompt_stream_returns_function_results(kernel: Kernel, cre
             assert isinstance(response, FunctionResult)
 
 
-@pytest.mark.asyncio
 async def test_invoke_prompt_stream_raises_exception(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     with (
@@ -282,7 +268,6 @@ async def test_invoke_prompt_stream_raises_exception(kernel: Kernel, create_mock
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
@@ -312,7 +297,6 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
@@ -343,7 +327,6 @@ async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_too
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
@@ -370,7 +353,6 @@ async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     tool_call_mock.name = None
@@ -400,7 +382,6 @@ async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     tool_call_mock.to_kernel_arguments.return_value = {}
@@ -432,7 +413,6 @@ async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_t
         )
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = MagicMock(spec=FunctionCallContent)
     tool_call_mock.to_kernel_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
@@ -609,7 +589,6 @@ def test_add_functions_to_existing(kernel: Kernel):
     assert len(plugin.functions) == 2
 
 
-@pytest.mark.asyncio
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
 async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel):
     base_folder = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")

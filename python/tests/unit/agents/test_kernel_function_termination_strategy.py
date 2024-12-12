@@ -2,8 +2,6 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies import KernelFunctionTerminationStrategy
@@ -32,7 +30,6 @@ class MockAgent(Agent):
         return AsyncMock(spec=AgentChannel)
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_with_result_true():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -51,7 +48,6 @@ async def test_should_agent_terminate_with_result_true():
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_with_result_false():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -70,7 +66,6 @@ async def test_should_agent_terminate_with_result_false():
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_with_none_result():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -92,7 +87,6 @@ async def test_should_agent_terminate_with_none_result():
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_custom_arguments():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -119,7 +113,6 @@ async def test_should_agent_terminate_custom_arguments():
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_result_parser_awaitable():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]

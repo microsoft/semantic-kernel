@@ -22,7 +22,6 @@ class TestVectorStore(VectorStoreTestBase):
     This only tests if the vector stores can upsert, get, and delete records.
     """
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "store_id, collection_name, collection_options, data_model_type, data_model_definition, distance_function, "
         "index_kind, vector_property_type, dimensions, record",

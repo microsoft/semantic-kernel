@@ -36,7 +36,6 @@ def test_init_empty_model_id(ollama_unit_test_env):
         _ = OllamaTextEmbedding(env_file_path="fake_env_file_path.env")
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.__init__", return_value=None)  # mock_client
 @patch("ollama.AsyncClient.embeddings")  # mock_embedding_client
 async def test_custom_host(mock_embedding_client, mock_client, model_id, host, prompt):
@@ -51,7 +50,6 @@ async def test_custom_host(mock_embedding_client, mock_client, model_id, host, p
     mock_client.assert_called_once_with(host=host)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.embeddings")
 async def test_embedding(mock_embedding_client, model_id, prompt):
     """Test that the service initializes and generates embeddings correctly."""
@@ -69,7 +67,6 @@ async def test_embedding(mock_embedding_client, model_id, prompt):
     mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.embeddings")
 async def test_embedding_list_input(mock_embedding_client, model_id, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""
@@ -90,7 +87,6 @@ async def test_embedding_list_input(mock_embedding_client, model_id, prompt):
     mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.embeddings")
 async def test_raw_embedding(mock_embedding_client, model_id, prompt):
     """Test that the service initializes and generates embeddings correctly."""
@@ -108,7 +104,6 @@ async def test_raw_embedding(mock_embedding_client, model_id, prompt):
     mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.embeddings")
 async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""

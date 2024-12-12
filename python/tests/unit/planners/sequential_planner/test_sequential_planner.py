@@ -28,7 +28,6 @@ def create_mock_function(
     return mock_function
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("goal", ["Write a poem or joke and send it in an e-mail to Kai."])
 async def test_it_can_create_plan(goal, kernel: Kernel):
     # Arrange
@@ -92,7 +91,6 @@ async def test_it_can_create_plan(goal, kernel: Kernel):
         assert any(step.plugin_name == expectedPlugin for step in plan._steps)
 
 
-@pytest.mark.asyncio
 async def test_empty_goal_throws(kernel: Kernel):
     # Arrange
     planner = SequentialPlanner(kernel, service_id="test")
@@ -102,7 +100,6 @@ async def test_empty_goal_throws(kernel: Kernel):
         await planner.create_plan("")
 
 
-@pytest.mark.asyncio
 async def test_invalid_xml_throws(kernel: Kernel):
     # Arrange
 
