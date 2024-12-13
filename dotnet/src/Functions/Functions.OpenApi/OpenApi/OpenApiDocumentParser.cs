@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -211,7 +212,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, pathItem.Parameters.Union(operationItem.Parameters)),
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, GetDeduplicatedParametersOverrides(pathItem, operationItem)),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
@@ -235,6 +236,22 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
             logger.LogError(ex, "Fatal error occurred during REST API operation creation.");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Returns a list of parameters that are defined in the path and operation.
+    /// Will deduplicate operation parameters overrides.
+    /// </summary>
+    /// <param name="pathItem">The path item.</param>
+    /// <param name="operation">The operation.</param>
+    /// <returns>The list of parameters.</returns>
+    private static IEnumerable<OpenApiParameter> GetDeduplicatedParametersOverrides(OpenApiPathItem pathItem, OpenApiOperation operation)
+    {
+        return pathItem.Parameters
+                .Select(static x => (Parameter: x, IsInPath: true))
+                .Union(operation.Parameters.Select(static x => (Parameter: x, IsInPath: false)))
+                .GroupBy(static x => $"{x.Parameter.In}{x.Parameter.Name}", StringComparer.Ordinal)
+                .Select(static x => x.OrderBy(static y => y.IsInPath).First().Parameter);
     }
 
     /// <summary>
