@@ -324,7 +324,7 @@ public sealed class OpenAIFunction
 
     private static void NormalizeAdditionalProperties(JsonObject jsonObject)
     {
-        if (jsonObject.TryGetPropertyValue(AdditionalPropertiesKey, out var additionalPropertiesValue) && additionalPropertiesValue!.GetValue<bool>())
+        if (jsonObject.TryGetPropertyValue(AdditionalPropertiesKey, out var additionalPropertiesValue))
         {
             jsonObject[AdditionalPropertiesKey] = false;
         }
