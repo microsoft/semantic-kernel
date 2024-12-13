@@ -506,17 +506,28 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     {
         var document =
         """
-            {
-                "openapi": "3.0.0",
-                "info": {
-                    "title": "Test API",
-                    "version": "1.0.0"
-                },
-                "paths": {
-                    "/items/{itemId}/{format}": {
+        {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/items/{itemId}/{format}": {
+                    "parameters": [
+                        {
+                            "name": "itemId",
+                            "in": "path",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "get": {
                         "parameters": [
                             {
-                                "name": "itemId",
+                                "name": "format",
                                 "in": "path",
                                 "required": true,
                                 "schema": {
@@ -524,27 +535,16 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
                                 }
                             }
                         ],
-                        "get": {
-                            "parameters": [
-                                {
-                                    "name": "format",
-                                    "in": "path",
-                                    "required": true,
-                                    "schema": {
-                                        "type": "string"
-                                    }
-                                }
-                            ],
-                            "summary": "Get an item by ID",
-                            "responses": {
-                                "200": {
-                                    "description": "Successful response"
-                                }
+                        "summary": "Get an item by ID",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
                             }
                         }
                     }
                 }
             }
+        }
         """;
 
         await using var steam = new MemoryStream(Encoding.UTF8.GetBytes(document));
