@@ -246,11 +246,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <returns>The list of parameters.</returns>
     private static IEnumerable<OpenApiParameter> GetDeduplicatedParametersOverrides(OpenApiPathItem pathItem, OpenApiOperation operation)
     {
-        return pathItem.Parameters
-                .Select(static x => (Parameter: x, IsInPath: true))
-                .Union(operation.Parameters.Select(static x => (Parameter: x, IsInPath: false)))
-                .GroupBy(static x => x.Parameter, s_parameterNameAndLocationComparer)
-                .Select(static x => x.OrderBy(static y => y.IsInPath).First().Parameter);
+        return operation.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer);
     }
 
     private static readonly ParameterNameAndLocationComparer s_parameterNameAndLocationComparer = new();
