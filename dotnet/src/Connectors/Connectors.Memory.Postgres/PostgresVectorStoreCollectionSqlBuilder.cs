@@ -418,7 +418,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         {
             if (filterClause is EqualToFilterClause equalTo)
             {
-                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == equalTo.FieldName || p.StoragePropertyName == equalTo.FieldName);
+                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == equalTo.FieldName);
                 if (property == null) { throw new ArgumentException($"Property {equalTo.FieldName} not found in record definition."); }
 
                 var columnName = property.StoragePropertyName ?? property.DataModelPropertyName;
@@ -428,7 +428,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
             }
             else if (filterClause is AnyTagEqualToFilterClause anyTagEqualTo)
             {
-                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == anyTagEqualTo.FieldName || p.StoragePropertyName == anyTagEqualTo.FieldName);
+                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == anyTagEqualTo.FieldName);
                 if (property == null) { throw new ArgumentException($"Property {anyTagEqualTo.FieldName} not found in record definition."); }
 
                 if (property.PropertyType != typeof(List<string>))

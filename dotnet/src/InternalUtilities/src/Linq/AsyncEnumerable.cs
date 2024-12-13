@@ -157,7 +157,7 @@ internal static class AsyncEnumerable
     /// function on each element of the original sequence.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when the source or selector is null.</exception>
-    public static async IAsyncEnumerable<TResult> Select<TSource, TResult>(
+    public static async IAsyncEnumerable<TResult> SelectAsync<TSource, TResult>(
        this IAsyncEnumerable<TSource> source,
        Func<TSource, TResult> selector,
        [EnumeratorCancellation] CancellationToken cancellationToken = default)

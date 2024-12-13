@@ -27,7 +27,7 @@ public class VectorStorePostgresContainerFixture : IAsyncLifetime
             this._postgresContainerId = await VectorStoreInfra.SetupPostgresContainerAsync(this._dockerClient);
 
             // Delay until the Postgres server is ready.
-            var connectionString = "Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;";
+            var connectionString = TestConfiguration.Postgres.ConnectionString;
             var succeeded = false;
             var attemptCount = 0;
             while (!succeeded && attemptCount++ < 10)

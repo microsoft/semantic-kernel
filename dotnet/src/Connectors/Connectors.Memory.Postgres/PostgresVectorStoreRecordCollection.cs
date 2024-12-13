@@ -218,7 +218,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken)
-                .Select(row =>
+                .SelectAsync(row =>
                     VectorStoreErrorHandler.RunModelConversion(
                         PostgresConstants.DatabaseName,
                         this.CollectionName,
@@ -292,8 +292,8 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 searchOptions.Filter,
                 searchOptions.Skip,
                 searchOptions.IncludeVectors,
-                cancellationToken
-                ).Select(result =>
+                cancellationToken)
+            .SelectAsync(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(
                         PostgresConstants.DatabaseName,

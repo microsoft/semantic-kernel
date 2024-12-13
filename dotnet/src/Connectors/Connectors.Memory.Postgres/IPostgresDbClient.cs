@@ -9,13 +9,8 @@ using Pgvector;
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
-/// Interface for client managing postgres database operations.
+/// Interface for client managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>
-/// <remarks>
-/// This interface is used with the PostgresMemoryStore, which is being deprecated.
-/// Use the <see cref="IPostgresVectorStoreDbClient"/> interface with the PostgresVectorStore
-/// and related classes instead.
-/// </remarks>
 public interface IPostgresDbClient
 {
     /// <summary>

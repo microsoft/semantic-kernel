@@ -25,11 +25,6 @@ namespace Memory;
 /// </summary>
 public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper output, VectorStorePostgresContainerFixture PostgresFixture) : BaseTest(output), IClassFixture<VectorStorePostgresContainerFixture>
 {
-    /// <summary>
-    /// The connection string to the Postgres database hosted in the docker container.
-    /// </summary>
-    private const string ConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;";
-
     [Fact]
     public async Task ExampleWithDIAsync()
     {
@@ -45,7 +40,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
 
         // Initialize the Postgres docker container via the fixtures and register the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        kernelBuilder.Services.AddPostgresVectorStore(ConnectionString);
+        kernelBuilder.Services.AddPostgresVectorStore(TestConfiguration.Postgres.ConnectionString);
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
@@ -74,7 +69,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
 
         // Initialize the Postgres docker container via the fixtures and construct the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(TestConfiguration.Postgres.ConnectionString);
         dataSourceBuilder.UseVector();
         await using var dataSource = dataSourceBuilder.Build();
         var vectorStore = new PostgresVectorStore(dataSource);
