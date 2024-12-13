@@ -324,10 +324,13 @@ public sealed class OpenAIFunction
 
     private static void NormalizeAdditionalProperties(JsonObject jsonObject)
     {
-        if (jsonObject.TryGetPropertyValue(AdditionalPropertiesKey, out var additionalPropertiesValue))
+        if (!jsonObject.TryGetPropertyValue(TypeKey, out var typeValue) ||
+            (typeValue!.GetValueKind() is JsonValueKind.String && !ObjectValue.Equals(typeValue!.GetValue<string>(), StringComparison.OrdinalIgnoreCase)) ||
+            (typeValue!.GetValueKind() is JsonValueKind.Array && !typeValue.AsArray().Contains(ObjectValue)))
         {
-            jsonObject[AdditionalPropertiesKey] = false;
+            return;
         }
+        jsonObject[AdditionalPropertiesKey] = false;
     }
 
     private const string AdditionalPropertiesKey = "additionalProperties";
@@ -337,6 +340,8 @@ public sealed class OpenAIFunction
     private const string TypeKey = "type";
 
     private const string NullableKey = "nullable";
+
+    private const string ObjectValue = "object";
 
     /// <summary>
     /// List of keywords that are not supported in the OpenAI API.
