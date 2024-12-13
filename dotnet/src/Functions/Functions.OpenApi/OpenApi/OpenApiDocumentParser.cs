@@ -211,7 +211,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, GetDeduplicatedParametersOverrides(pathItem, operationItem)),
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer)),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
@@ -235,18 +235,6 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
             logger.LogError(ex, "Fatal error occurred during REST API operation creation.");
             throw;
         }
-    }
-
-    /// <summary>
-    /// Returns a list of parameters that are defined in the path and operation.
-    /// Will deduplicate operation parameters overrides.
-    /// </summary>
-    /// <param name="pathItem">The path item.</param>
-    /// <param name="operation">The operation.</param>
-    /// <returns>The list of parameters.</returns>
-    private static IEnumerable<OpenApiParameter> GetDeduplicatedParametersOverrides(OpenApiPathItem pathItem, OpenApiOperation operation)
-    {
-        return operation.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer);
     }
 
     private static readonly ParameterNameAndLocationComparer s_parameterNameAndLocationComparer = new();
