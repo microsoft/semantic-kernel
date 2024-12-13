@@ -211,7 +211,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, pathItem.Parameters.Union(operationItem.Parameters).ToList()),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
