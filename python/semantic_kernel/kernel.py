@@ -35,6 +35,7 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
+from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -51,7 +52,7 @@ TDataModel = TypeVar("TDataModel")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension):
+class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
     """The Kernel of Semantic Kernel.
 
     This is the main entry point for Semantic Kernel. It provides the ability to run
