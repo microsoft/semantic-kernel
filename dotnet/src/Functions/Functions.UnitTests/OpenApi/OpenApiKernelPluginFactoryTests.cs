@@ -274,7 +274,6 @@ public sealed class OpenApiKernelPluginFactoryTests
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
     [InlineData("documentV3_1.yaml")]
-    [InlineData("documentV3_0_x_api_version.json")]
     public async Task ItShouldReplicateMetadataToOperationAsync(string documentFileName)
     {
         // Arrange
@@ -354,7 +353,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
-        Assert.Equal(6, plugin.Count());
+        Assert.Equal(7, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 
@@ -373,7 +372,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
-        Assert.Equal(6, plugin.Count());
+        Assert.Equal(7, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 

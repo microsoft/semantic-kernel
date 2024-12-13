@@ -33,7 +33,6 @@ public class OpenApiDocumentParserExtensionsTests
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
     [InlineData("documentV3_1.yaml")]
-    [InlineData("documentV3_0_x_api_version.json")]
     public async Task ItCanExtractExtensionsOfAllTypesAsync(string documentName)
     {
         // Arrange.
@@ -80,8 +79,9 @@ public class OpenApiDocumentParserExtensionsTests
     }
 
     [Theory]
-    [InlineData("documentV3_0_x_api_version.json")]
-    public async Task ItCanParseAsync(string documentName)
+    [InlineData("documentV3_0.json")]
+    [InlineData("documentV3_1.yaml")]
+    public async Task ItCanParseMediaTypeAsync(string documentName)
     {
         // Arrange.
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
@@ -91,6 +91,9 @@ public class OpenApiDocumentParserExtensionsTests
 
         // Assert.
         Assert.NotNull(restApi.Operations);
-        Assert.Equal(6, restApi.Operations.Count);
+        Assert.Equal(7, restApi.Operations.Count);
+        var operation = restApi.Operations.Single(o => o.Id == "Joke");
+        Assert.NotNull(operation);
+        Assert.Equal("application/json; x-api-version=2.0", operation.Payload?.MediaType);
     }
 }

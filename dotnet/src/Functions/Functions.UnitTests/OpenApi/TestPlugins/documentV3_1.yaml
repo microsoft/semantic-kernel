@@ -138,6 +138,38 @@ paths:
             text/plain:
               schema:
                 type: string
+  /FunPlugin/Joke:
+    post:
+      summary: Gneerate a funny joke
+      operationId: Joke
+      requestBody:
+        description: Joke subject
+        content:
+          application/json; x-api-version=2.0:
+            schema:
+              type: object
+              properties:
+                scenario:
+                  type: string
+                  description: Joke subject
+          text/plain; x-api-version=2.0:
+            schema:
+              type: string
+        x-bodyName: body
+      responses:
+        '200':
+          description: The OK response
+          content:
+            text/plain; x-api-version=2.0:
+              schema:
+                type: string
+            application/json; x-api-version=2.0:
+              schema:
+                type: object
+                properties:
+                  scenario:
+                    type: string
+                    description: Joke subject
   '/test-default-values/{string-parameter}':
     put:
       summary: Operation to test default parameter values.

@@ -430,7 +430,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
             return null;
         }
 
-        var mediaType = GetMediaType(operationId, requestBody.Content);
+        var mediaType = GetMediaType(requestBody.Content) ?? throw new KernelException($"Neither of the media types of {operationId} is supported."); ;
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema);
@@ -444,11 +444,10 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <remarks>
     /// Handles the case when the media type contains additional parameters e.g. application/json; x-api-version=2.0.
     /// </remarks>
-    /// <param name="operationId">The operation id.</param>
     /// <param name="content">The OpenAPI request body content.</param>
     /// <returns>The first support ed media type.</returns>
     /// <exception cref="KernelException"></exception>
-    private static string GetMediaType(string operationId, IDictionary<string, OpenApiMediaType> content)
+    private static string? GetMediaType(IDictionary<string, OpenApiMediaType> content)
     {
         foreach (var mediaType in s_supportedMediaTypes)
         {
@@ -461,14 +460,18 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 }
             }
         }
-        throw new KernelException($"Neither of the media types of {operationId} is supported.");
+        return null;
     }
 
+    /// <summary>
+    /// Create collection of expected responses for the REST API operation for the supported media types.
+    /// </summary>
+    /// <param name="responses">Responses from the OpenAPI endpoint.</param>
     private static IEnumerable<(string, RestApiExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
     {
         foreach (var response in responses)
         {
-            var mediaType = s_supportedMediaTypes.FirstOrDefault(response.Value.Content.ContainsKey);
+            var mediaType = GetMediaType(response.Value.Content);
             if (mediaType is not null)
             {
                 var matchingSchema = response.Value.Content[mediaType].Schema;
