@@ -227,15 +227,6 @@ public sealed class OpenAIFunction
         return KernelJsonSchema.Parse(jObject.ToString());
     }
 
-    private static bool ShouldPropertiesBeRemoved(string[] names) => names.Length > 0;
-
-    private static bool DoesNullTypeNeedToBeAdded(bool shouldInsertNullType, KernelJsonSchema schema)
-    => shouldInsertNullType && schema.RootElement.TryGetProperty(TypeKey, out var typeElement) &&
-        // multiple types, but not null entry
-        (typeElement.ValueKind == JsonValueKind.Array && !typeElement.EnumerateArray().Any(static t => NullType.Equals(t.GetString(), StringComparison.OrdinalIgnoreCase)) ||
-        // single type which is not null
-        typeElement.ValueKind == JsonValueKind.String && typeElement.GetString() != NullType);
-
     /// <summary>
     /// Removes forbidden keywords from the schema and adds null to the types if required.
     /// For more information <see cref="InsertNullTypeIfRequired"/> and <see cref="s_forbiddenKeywords"/>.
@@ -245,33 +236,67 @@ public sealed class OpenAIFunction
     /// <returns>The sanitized schema compatible with strict mode.</returns>
     private static KernelJsonSchema GetSanitizedSchemaForStrictMode(KernelJsonSchema schema, bool insertNullType)
     {
-        var forbiddenPropertyNames = s_forbiddenKeywords.Where(k => schema.RootElement.TryGetProperty(k, out _)).ToArray();
-
-        if (ShouldPropertiesBeRemoved(forbiddenPropertyNames) || DoesNullTypeNeedToBeAdded(insertNullType, schema))
+        var originalSchema = JsonSerializer.Serialize(schema.RootElement);
+        var node = JsonNode.Parse(originalSchema);
+        if (node is not (JsonObject or JsonArray))
         {
-            var originalSchema = JsonSerializer.Serialize(schema.RootElement);
-            var parsedJson = JsonNode.Parse(originalSchema);
-
-            if (parsedJson is null)
-            {
-                return schema;
-            }
-
-            var jsonObject = parsedJson.AsObject();
-            foreach (var forbiddenPropertyName in forbiddenPropertyNames)
-            {
-                jsonObject.Remove(forbiddenPropertyName);
-            }
-
-            InsertNullTypeIfRequired(insertNullType, jsonObject);
-
-            return KernelJsonSchema.Parse(jsonObject.ToString());
+            return schema;
         }
-        return schema;
+
+        List<string> propertyNamesToRemove = [];
+        Stack<JsonNode> stack = [];
+        stack.Push(node);
+
+        while (stack.Count > 0)
+        {
+            var currentNode = stack.Pop();
+
+            switch (currentNode)
+            {
+                case JsonObject obj:
+                    InsertNullTypeIfRequired(insertNullType, obj);
+                    foreach (var property in obj)
+                    {
+                        if (s_forbiddenKeywords.Contains(property.Key))
+                        {
+                            propertyNamesToRemove.Add(property.Key);
+                        }
+                        else
+                        {
+                            TryPush(property.Value);
+                        }
+                    }
+
+                    foreach (string propertyName in propertyNamesToRemove)
+                    {
+                        obj.Remove(propertyName);
+                    }
+
+                    propertyNamesToRemove.Clear();
+                    break;
+
+                case JsonArray array:
+                    foreach (JsonNode? item in array)
+                    {
+                        TryPush(item);
+                    }
+                    break;
+            }
+        }
+
+        return KernelJsonSchema.Parse(node.ToString());
+
+        void TryPush(JsonNode? value)
+        {
+            if (value is JsonObject or JsonArray)
+            {
+                stack.Push(value);
+            }
+        }
     }
 
     /// <summary>
-    /// Inserts null to the types if required. Strict mode enforces setting all parameters as required when some are optional.
+    /// Inserts null to the types if required or when nullable is true. Strict mode enforces setting all parameters as required when some are optional.
     /// The suggested approach is to add null to the types when they are optional so the model doesn't add random default values.
     /// </summary>
     /// <remarks>
@@ -281,7 +306,8 @@ public sealed class OpenAIFunction
     /// <param name="jsonObject">The parsed JSON schema</param>
     private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
     {
-        if (!insertNullType || !jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
+        if ((!insertNullType && (!jsonObject.TryGetPropertyValue(NullableKey, out var nullableRawValue) || !nullableRawValue!.GetValue<bool>())) ||
+            !jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
         {
             return;
         }
@@ -299,12 +325,14 @@ public sealed class OpenAIFunction
 
     private const string TypeKey = "type";
 
+    private const string NullableKey = "nullable";
+
     /// <summary>
     /// List of keywords that are not supported in the OpenAI API.
     /// This list is based on the OpenAI documentation.
     /// See <see href="https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported"/>.
     /// </summary>
-    private static readonly string[] s_forbiddenKeywords = [
+    private static readonly HashSet<string> s_forbiddenKeywords = new([
         "contains",
         "format",
         "maxContains",
@@ -318,11 +346,12 @@ public sealed class OpenAIFunction
         "minLength",
         "minProperties",
         "multipleOf",
+        "nullable",
         "pattern",
         "patternProperties",
         "propertyNames",
         "unevaluatedItems",
         "unevaluatedProperties",
         "uniqueItems",
-    ];
+    ], StringComparer.OrdinalIgnoreCase);
 }

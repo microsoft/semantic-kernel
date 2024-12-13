@@ -262,6 +262,48 @@ public sealed class KernelFunctionMetadataExtensionsTests
         }
     }
 
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPromptWithNestedSchema(bool strict)
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
+        {
+            Description = "My sample function."
+        };
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter1",
+            Description = "Object parameter",
+            JsonSchema = """{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"required":["name"]}"""
+        });
+        var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
+        var functionMetadata = function.Metadata;
+        var sut = functionMetadata.ToOpenAIFunction();
+
+        // Act
+        var result = sut.ToFunctionDefinition(strict);
+
+        // Assert
+        Assert.NotNull(result);
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"required":["name"]}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"required":["name"]}}}""",
+                parametersResult
+            );
+        }
+    }
+
     private enum MyEnum
     {
         Value1,
