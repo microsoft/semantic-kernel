@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.functions.function_result import FunctionResult
@@ -10,7 +9,6 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.text import aggregate_chunked_results
 
 
-@pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
 

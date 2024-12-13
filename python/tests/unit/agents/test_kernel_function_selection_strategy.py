@@ -40,7 +40,6 @@ def agents():
     return [MockAgent(id=f"agent-{i}", name=f"Agent_{i}") for i in range(3)]
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_success(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -57,7 +56,6 @@ async def test_kernel_function_selection_next_success(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_agent_not_found(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -75,7 +73,6 @@ async def test_kernel_function_selection_next_agent_not_found(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_result_is_none(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -93,7 +90,6 @@ async def test_kernel_function_selection_next_result_is_none(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_exception_during_invoke(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -111,7 +107,6 @@ async def test_kernel_function_selection_next_exception_during_invoke(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_result_parser_is_async(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)

@@ -64,7 +64,6 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_text_to_image.get_prompt_execution_settings_class() == OpenAITextToImageExecutionSettings
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
 async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_env) -> None:
     mock_generate.return_value.data = [Image(url="abc")]
@@ -84,7 +83,6 @@ async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_en
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncImages, "generate", new_callable=AsyncMock, side_effect=Exception)
 async def test_generate_fail(mock_generate, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
@@ -95,7 +93,6 @@ async def test_generate_fail(mock_generate, openai_unit_test_env) -> None:
         await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
 
 
-@pytest.mark.asyncio
 async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
     width = 100
@@ -105,7 +102,6 @@ async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
         await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
 
 
-@pytest.mark.asyncio
 async def test_generate_empty_description(openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
     width = 100
@@ -115,7 +111,6 @@ async def test_generate_empty_description(openai_unit_test_env) -> None:
         await openai_text_to_image.generate_image(description="", width=width, height=width)
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncImages, "generate", new_callable=AsyncMock)
 async def test_generate_no_result(mock_generate, openai_unit_test_env) -> None:
     mock_generate.return_value = ImagesResponse(created=0, data=[])

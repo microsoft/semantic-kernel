@@ -200,7 +200,6 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
     assert collection.async_client is not None
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_distance")])
 async def test_weaviate_collection_create_collection(
     clear_weaviate_env,
@@ -239,7 +238,6 @@ async def test_weaviate_collection_create_collection(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -268,7 +266,6 @@ async def test_weaviate_collection_create_collection_fail(
         await collection.create_collection()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_delete_collection(
     clear_weaviate_env,
     data_model_type,
@@ -291,7 +288,6 @@ async def test_weaviate_collection_delete_collection(
     mock_async_client.collections.delete.assert_called_once_with(collection_name)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -320,7 +316,6 @@ async def test_weaviate_collection_delete_collection_fail(
         await collection.delete_collection()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_collection_exist(
     clear_weaviate_env,
     data_model_type,
@@ -343,7 +338,6 @@ async def test_weaviate_collection_collection_exist(
     mock_async_client.collections.exists.assert_called_once_with(collection_name)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -372,7 +366,6 @@ async def test_weaviate_collection_collection_exist_fail(
         await collection.does_collection_exist()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_serialize_data(
     mock_async_client,
     clear_weaviate_env,
@@ -405,7 +398,6 @@ async def test_weaviate_collection_serialize_data(
         ])
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_deserialize_data(
     mock_async_client,
     clear_weaviate_env,

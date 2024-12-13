@@ -14,7 +14,6 @@ def google_connector(google_search_unit_test_env):
     return GoogleConnector()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status_code, response_data, expected_result",
     [
@@ -62,7 +61,6 @@ def test_google_search_connector_init_with_empty_search_id(google_search_unit_te
         )
 
 
-@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 async def test_search_http_status_error(mock_get, google_connector):
     query = "test query"
@@ -76,7 +74,6 @@ async def test_search_http_status_error(mock_get, google_connector):
     mock_get.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 async def test_search_request_error(mock_get, google_connector):
     query = "test query"
@@ -90,7 +87,6 @@ async def test_search_request_error(mock_get, google_connector):
     mock_get.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 async def test_search_general_exception(mock_get, google_connector):
     query = "test query"
@@ -104,13 +100,11 @@ async def test_search_general_exception(mock_get, google_connector):
     mock_get.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_search_invalid_query(google_connector):
     with pytest.raises(ServiceInvalidRequestError, match="query cannot be 'None' or empty."):
         await google_connector.search(query="")
 
 
-@pytest.mark.asyncio
 async def test_search_num_results_less_than_or_equal_to_zero(google_connector):
     with pytest.raises(ServiceInvalidRequestError, match="num_results value must be greater than 0."):
         await google_connector.search(query="test query", num_results=0)
@@ -119,13 +113,11 @@ async def test_search_num_results_less_than_or_equal_to_zero(google_connector):
         await google_connector.search(query="test query", num_results=-1)
 
 
-@pytest.mark.asyncio
 async def test_search_num_results_greater_than_ten(google_connector):
     with pytest.raises(ServiceInvalidRequestError, match="num_results value must be less than or equal to 10."):
         await google_connector.search(query="test query", num_results=11)
 
 
-@pytest.mark.asyncio
 async def test_search_offset_less_than_zero(google_connector):
     with pytest.raises(ServiceInvalidRequestError, match="offset must be greater than 0."):
         await google_connector.search(query="test query", offset=-1)

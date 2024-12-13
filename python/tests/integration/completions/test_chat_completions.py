@@ -15,6 +15,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
+    bedrock_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
@@ -122,10 +123,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skip(
-                reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
             ),
-            # pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
         pytest.param(
@@ -169,6 +170,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+            marks=pytest.mark.skipif(not bedrock_setup, reason="Bedrock Environment Variables not set"),
             id="bedrock_amazon_titan_text_input",
         ),
         pytest.param(
@@ -230,7 +232,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
@@ -297,6 +298,8 @@ class TestChatCompletion(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:

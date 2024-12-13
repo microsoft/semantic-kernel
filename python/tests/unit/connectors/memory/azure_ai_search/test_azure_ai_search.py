@@ -186,7 +186,6 @@ def test_init_with_clients_fail(azure_ai_search_unit_test_env, data_model_defini
         )
 
 
-@mark.asyncio
 async def test_upsert(collection, mock_upsert):
     ids = await collection._inner_upsert({"id": "id1", "name": "test"})
     assert ids[0] == "id1"
@@ -195,7 +194,6 @@ async def test_upsert(collection, mock_upsert):
     assert ids == "id1"
 
 
-@mark.asyncio
 async def test_get(collection, mock_get):
     records = await collection._inner_get(["id1"])
     assert records is not None
@@ -204,22 +202,18 @@ async def test_get(collection, mock_get):
     assert records is not None
 
 
-@mark.asyncio
 async def test_delete(collection, mock_delete):
     await collection._inner_delete(["id1"])
 
 
-@mark.asyncio
 async def test_does_collection_exist(collection, mock_list_collection_names):
     await collection.does_collection_exist()
 
 
-@mark.asyncio
 async def test_delete_collection(collection, mock_delete_collection):
     await collection.delete_collection()
 
 
-@mark.asyncio
 async def test_create_index_from_index(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
@@ -227,7 +221,6 @@ async def test_create_index_from_index(collection, mock_create_collection):
     await collection.create_collection(index=index)
 
 
-@mark.asyncio
 async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
@@ -238,7 +231,6 @@ async def test_create_index_from_definition(collection, mock_create_collection):
         await collection.create_collection()
 
 
-@mark.asyncio
 async def test_create_index_from_index_fail(collection, mock_create_collection):
     index = Mock()
     with raises(MemoryConnectorException):
@@ -253,14 +245,12 @@ def test_data_model_definition_to_azure_ai_search_index(data_model_definition):
     assert len(index.fields) == 3
 
 
-@mark.asyncio
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_ENDPOINT"]], indirect=True)
 async def test_vector_store_fail(azure_ai_search_unit_test_env):
     with raises(MemoryConnectorInitializationError):
         AzureAISearchStore(env_file_path="test.env")
 
 
-@mark.asyncio
 async def test_vector_store_list_collection_names(vector_store, mock_list_collection_names):
     assert vector_store.search_index_client is not None
     collection_names = await vector_store.list_collection_names()

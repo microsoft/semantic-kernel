@@ -68,7 +68,8 @@ def test_prompt_execution_settings_class(vertex_ai_unit_test_env) -> None:
 
 
 # region text completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_vertex_ai_text_completion(
     mock_vertex_ai_model_generate_content_async,
@@ -99,7 +100,8 @@ async def test_vertex_ai_text_completion(
 
 
 # region streaming text completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_vertex_ai_streaming_text_completion(
     mock_vertex_ai_model_generate_content_async,

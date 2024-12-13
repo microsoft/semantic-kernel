@@ -55,7 +55,6 @@ def test_constructor(connection_string):
         assert memory._connection_pool is not None
 
 
-@pytest.mark.asyncio
 async def test_create_and_does_collection_exist(connection_string):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         await memory.create_collection("test_collection")
@@ -63,7 +62,6 @@ async def test_create_and_does_collection_exist(connection_string):
         assert result is not None
 
 
-@pytest.mark.asyncio
 async def test_get_collections(connection_string):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -74,7 +72,6 @@ async def test_get_collections(connection_string):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(connection_string):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -90,7 +87,6 @@ async def test_delete_collection(connection_string):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_does_collection_exist(connection_string):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -101,7 +97,6 @@ async def test_does_collection_exist(connection_string):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get(connection_string, memory_record1):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -118,7 +113,6 @@ async def test_upsert_and_get(connection_string, memory_record1):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_upsert_batch_and_get_batch(connection_string, memory_record1, memory_record2):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -137,7 +131,6 @@ async def test_upsert_batch_and_get_batch(connection_string, memory_record1, mem
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_remove(connection_string, memory_record1):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -154,7 +147,6 @@ async def test_remove(connection_string, memory_record1):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_remove_batch(connection_string, memory_record1, memory_record2):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -174,7 +166,6 @@ async def test_remove_batch(connection_string, memory_record1, memory_record2):
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_match(connection_string, memory_record1, memory_record2):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:
@@ -196,7 +187,6 @@ async def test_get_nearest_match(connection_string, memory_record1, memory_recor
             pytest.skip("PoolTimeout exception raised, skipping test.")
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_matches(connection_string, memory_record1, memory_record2, memory_record3):
     with PostgresMemoryStore(connection_string, 2, 1, 5) as memory:
         try:

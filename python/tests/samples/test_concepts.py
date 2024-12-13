@@ -361,7 +361,6 @@ concepts = [
 ]
 
 
-@mark.asyncio
 @mark.parametrize("sample, responses", concepts)
 async def test_concepts(sample: Callable[..., Awaitable[Any]], responses: list[str], monkeypatch):
     saved_responses = copy.deepcopy(responses)

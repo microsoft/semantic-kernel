@@ -2,7 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock
 
-from pytest import mark, raises
+from pytest import raises
 
 from semantic_kernel import Kernel
 from semantic_kernel.data import (
@@ -15,7 +15,6 @@ from semantic_kernel.data import (
 from semantic_kernel.exceptions import VectorStoreModelException
 
 
-@mark.asyncio
 async def test_add_vector_to_records(data_model_definition):
     kernel = MagicMock(spec=Kernel)
     kernel.add_embedding_to_object = AsyncMock()
@@ -26,7 +25,6 @@ async def test_add_vector_to_records(data_model_definition):
     kernel.add_embedding_to_object.assert_called_once()
 
 
-@mark.asyncio
 async def test_add_vector_wrong_fields():
     data_model = VectorStoreRecordDefinition(
         fields={

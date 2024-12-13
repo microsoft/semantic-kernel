@@ -47,7 +47,6 @@ class TestOnnxTextCompletion:
     @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
     @patch("onnxruntime_genai.Model")
     @patch("onnxruntime_genai.Tokenizer")
-    @pytest.mark.asyncio
     async def test_onnx_text_completion(self, gen_ai_config, model, tokenizer):
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
@@ -63,7 +62,6 @@ class TestOnnxTextCompletion:
     @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
     @patch("onnxruntime_genai.Model")
     @patch("onnxruntime_genai.Tokenizer")
-    @pytest.mark.asyncio
     async def test_onnx_text_completion_streaming(self, gen_ai_config, model, tokenizer):
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]

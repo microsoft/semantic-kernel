@@ -78,7 +78,6 @@ def test_azure_text_to_image_init_with_from_dict(azure_openai_unit_test_env) -> 
         assert azure_text_to_image.client.default_headers[key] == value
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
 async def test_azure_text_to_image_calls_with_parameters(mock_generate, azure_openai_unit_test_env) -> None:
     mock_generate.return_value.data = [Image(url="abc")]

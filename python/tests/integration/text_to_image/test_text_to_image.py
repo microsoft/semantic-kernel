@@ -23,11 +23,9 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestTextToImage(TextToImageTestBase):
     """Test text-to-image services."""
 
-    @pytest.mark.asyncio
     async def test_text_to_image(
         self,
         services: dict[str, TextToImageClientBase],

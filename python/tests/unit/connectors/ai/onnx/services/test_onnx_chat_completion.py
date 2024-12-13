@@ -75,7 +75,6 @@ class TestOnnxChatCompletion:
     @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
     @patch("onnxruntime_genai.Model")
     @patch("onnxruntime_genai.Tokenizer")
-    @pytest.mark.asyncio
     async def test_onnx_chat_completion(self, gen_ai_config, model, tokenizer):
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
@@ -96,7 +95,6 @@ class TestOnnxChatCompletion:
     @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
     @patch("onnxruntime_genai.Model")
     @patch("onnxruntime_genai.Tokenizer")
-    @pytest.mark.asyncio
     async def test_onnx_chat_completion_streaming(self, gen_ai_config, model, tokenizer):
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
@@ -151,7 +149,6 @@ class TestOnnxChatCompletion:
             last_image = chat_completion._get_images_from_history(history)
             assert last_image == image_content
 
-    @pytest.mark.asyncio
     @patch("onnxruntime_genai.Model")
     @patch("onnxruntime_genai.Tokenizer")
     async def test_onnx_chat_get_image_history_with_not_multimodal(self, model, tokenizer):

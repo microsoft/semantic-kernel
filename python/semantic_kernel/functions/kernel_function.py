@@ -3,7 +3,7 @@
 import logging
 import time
 from abc import abstractmethod
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
@@ -108,7 +108,7 @@ class KernelFunction(KernelBaseModel):
         prompt_template: "PromptTemplateBase | None " = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
         prompt_execution_settings: (
-            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
+            "PromptExecutionSettings | Sequence[PromptExecutionSettings] | Mapping[str, PromptExecutionSettings] | None"
         ) = None,
     ) -> "KernelFunctionFromPrompt":
         """Create a new instance of the KernelFunctionFromPrompt class."""

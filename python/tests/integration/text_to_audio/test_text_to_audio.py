@@ -25,11 +25,9 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestTextToAudio(TextToAudioTestBase):
     """Test text-to-audio services."""
 
-    @pytest.mark.asyncio
     async def test_audio_to_text(
         self,
         services: dict[str, TextToAudioClientBase],

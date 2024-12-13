@@ -73,7 +73,6 @@ def test_to_embedding_string(function, expected_output):
     assert result == expected_output
 
 
-@pytest.mark.asyncio
 async def test_get_functions_manual():
     kernel = MagicMock()
     arguments = MagicMock()
@@ -100,7 +99,6 @@ async def test_get_functions_manual():
     assert result == expected_output
 
 
-@pytest.mark.asyncio
 async def test_get_functions_manual_with_custom_get_available_functions():
     kernel = MagicMock()
     arguments = MagicMock()
@@ -126,7 +124,6 @@ async def test_get_functions_manual_with_custom_get_available_functions():
     assert result == expected_output
 
 
-@pytest.mark.asyncio
 async def test_get_available_functions():
     kernel = MagicMock()
     arguments = MagicMock()

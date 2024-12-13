@@ -85,7 +85,7 @@ def DataModelPandas(record) -> tuple:
     return definition, df
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture
 async def vector_store() -> AsyncGenerator[PostgresStore, None]:
     try:
         async with await pg_settings.create_connection_pool() as pool:
@@ -119,7 +119,6 @@ def test_create_store(vector_store):
     assert vector_store.connection_pool is not None
 
 
-@pytest.mark.asyncio()
 async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
 
@@ -137,7 +136,6 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     assert does_exist_3 is False
 
 
-@pytest.mark.asyncio()
 async def test_list_collection_names(vector_store):
     async with create_simple_collection(vector_store) as simple_collection:
         simple_collection_id = simple_collection.collection_name
@@ -145,7 +143,6 @@ async def test_list_collection_names(vector_store):
         assert simple_collection_id in result
 
 
-@pytest.mark.asyncio()
 async def test_upsert_get_and_delete(vector_store: PostgresStore):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     async with create_simple_collection(vector_store) as simple_collection:
@@ -174,7 +171,6 @@ async def test_upsert_get_and_delete(vector_store: PostgresStore):
         assert result_after_delete is None
 
 
-@pytest.mark.asyncio()
 async def test_upsert_get_and_delete_pandas(vector_store):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     definition, df = DataModelPandas(record.model_dump())
@@ -204,7 +200,6 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         await collection.delete_collection()
 
 
-@pytest.mark.asyncio()
 async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
     async with create_simple_collection(vector_store) as simple_collection:
         record1 = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
