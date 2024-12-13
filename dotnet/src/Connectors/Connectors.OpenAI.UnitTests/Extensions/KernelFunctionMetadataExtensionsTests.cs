@@ -291,7 +291,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         if (strict)
         {
             Assert.Equal(
-                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"additionalProperties":false,"required":["name"]}},"additionalProperties":false}""",
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"additionalProperties":false,"required":["name","age"]}},"additionalProperties":false}""",
                 parametersResult
             );
         }

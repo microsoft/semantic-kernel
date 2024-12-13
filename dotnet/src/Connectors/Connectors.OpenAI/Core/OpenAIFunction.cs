@@ -274,6 +274,7 @@ public sealed class OpenAIFunction
                     }
 
                     propertyNamesToRemove.Clear();
+                    MakeAllPropertiesRequired(obj);
                     break;
 
                 case JsonArray array:
@@ -322,16 +323,44 @@ public sealed class OpenAIFunction
         }
     }
 
+    /// <summary>
+    /// Adds additional properties to false to any object schema type.
+    /// </summary>
+    /// <remarks>
+    /// Strict mode requires to always provide additional properties and set it to false on object schemas.
+    /// </remarks>
+    /// <param name="jsonObject">The schema object to update</param>
     private static void NormalizeAdditionalProperties(JsonObject jsonObject)
     {
         if (!jsonObject.TryGetPropertyValue(TypeKey, out var typeValue) ||
-            (typeValue!.GetValueKind() is JsonValueKind.String && !ObjectValue.Equals(typeValue!.GetValue<string>(), StringComparison.OrdinalIgnoreCase)) ||
-            (typeValue!.GetValueKind() is JsonValueKind.Array && !typeValue.AsArray().Contains(ObjectValue)))
+            (typeValue!.GetValueKind() is not JsonValueKind.String || !ObjectValue.Equals(typeValue!.GetValue<string>(), StringComparison.OrdinalIgnoreCase)) &&
+            (typeValue!.GetValueKind() is not JsonValueKind.Array || !typeValue.AsArray().Any(static x => ObjectValue.Equals(x?.GetValue<string>(), StringComparison.OrdinalIgnoreCase))))
         {
             return;
         }
         jsonObject[AdditionalPropertiesKey] = false;
     }
+
+    /// <summary>
+    /// Makes all properties required in the schema.
+    /// </summary>
+    /// <remarks>
+    /// strict mode requires all properties of an object to be required.
+    /// </remarks>
+    /// <param name="jsonObject">The schema object to update</param>
+    private static void MakeAllPropertiesRequired(JsonObject jsonObject)
+    {
+        if (!jsonObject.TryGetPropertyValue(PropertiesKey, out var propertiesValue) ||
+            propertiesValue!.GetValueKind() is not JsonValueKind.Object)
+        {
+            return;
+        }
+        jsonObject[RequiredKey] = new JsonArray(propertiesValue.AsObject().Select(static x => x.Key).Select(static x => JsonValue.Create(x)).ToArray());
+    }
+
+    private const string RequiredKey = "required";
+
+    private const string PropertiesKey = "properties";
 
     private const string AdditionalPropertiesKey = "additionalProperties";
 
