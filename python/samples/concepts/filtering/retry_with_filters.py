@@ -71,7 +71,7 @@ async def main() -> None:
     # Register the plugin to the kernel
     kernel.add_plugin(WeatherPlugin(), plugin_name="WeatherPlugin")
     # Add the filter to the kernel as a function invocation filter
-    # A function invocation fileter is called during when the kernel executes a function
+    # A function invocation filter is called during when the kernel executes a function
     kernel.add_filter(FilterTypes.FUNCTION_INVOCATION, retry_filter)
 
     chat_history = ChatHistory()
