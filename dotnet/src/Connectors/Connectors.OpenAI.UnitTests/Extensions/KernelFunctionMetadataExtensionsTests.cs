@@ -276,7 +276,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             Name = "parameter1",
             Description = "Object parameter",
-            JsonSchema = """{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"required":["name"]}"""
+            JsonSchema = """{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"additionalProperties":true,"required":["name"]}"""
         });
         var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
         var functionMetadata = function.Metadata;
@@ -291,14 +291,14 @@ public sealed class KernelFunctionMetadataExtensionsTests
         if (strict)
         {
             Assert.Equal(
-                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"required":["name"]}},"additionalProperties":false}""",
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"additionalProperties":false,"required":["name"]}},"additionalProperties":false}""",
                 parametersResult
             );
         }
         else
         {
             Assert.Equal(
-                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"required":["name"]}}}""",
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"additionalProperties":true,"required":["name"]}}}""",
                 parametersResult
             );
         }

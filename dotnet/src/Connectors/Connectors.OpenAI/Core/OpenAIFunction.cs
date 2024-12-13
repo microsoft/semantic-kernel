@@ -255,6 +255,7 @@ public sealed class OpenAIFunction
             {
                 case JsonObject obj:
                     InsertNullTypeIfRequired(insertNullType, obj);
+                    NormalizeAdditionalProperties(obj);
                     foreach (var property in obj)
                     {
                         if (s_forbiddenKeywords.Contains(property.Key))
@@ -320,6 +321,16 @@ public sealed class OpenAIFunction
             jsonObject[TypeKey] = new JsonArray { typeValue.GetValue<string>(), NullType };
         }
     }
+
+    private static void NormalizeAdditionalProperties(JsonObject jsonObject)
+    {
+        if (jsonObject.TryGetPropertyValue(AdditionalPropertiesKey, out var additionalPropertiesValue) && additionalPropertiesValue!.GetValue<bool>())
+        {
+            jsonObject[AdditionalPropertiesKey] = false;
+        }
+    }
+
+    private const string AdditionalPropertiesKey = "additionalProperties";
 
     private const string NullType = "null";
 
