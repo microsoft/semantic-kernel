@@ -212,6 +212,11 @@ public sealed class OpenAIFunction
         return allowStrictSchemaAdherence ? s_stringNoDescriptionSchemaAndNull : s_stringNoDescriptionSchema;
     }
 
+    /// <summary>
+    /// Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, type string, and nullable.
+    /// </summary>
+    /// <param name="description">The description for the parameter.</param>
+    /// <returns>The generated schema</returns>
     private static KernelJsonSchema GetOptionalStringSchemaWithDescription(string description)
     {
         var jObject = new JsonObject
