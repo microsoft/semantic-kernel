@@ -2,12 +2,17 @@
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel.Process.Models;
 
 /// <summary>
 /// Step state used for State Persistence serialization
 /// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
+[JsonDerivedType(typeof(KernelProcessStepStateMetadata), typeDiscriminator: nameof(ProcessConstants.SupportedComponents.Step))]
+[JsonDerivedType(typeof(KernelProcessMapStateMetadata), typeDiscriminator: nameof(ProcessConstants.SupportedComponents.Map))]
+[JsonDerivedType(typeof(KernelProcessStateMetadata), typeDiscriminator: nameof(ProcessConstants.SupportedComponents.Process))]
 public record class KernelProcessStepStateMetadata
 {
     /// <summary>
@@ -24,7 +29,7 @@ public record class KernelProcessStepStateMetadata
     /// </summary>
     [DataMember]
     [JsonPropertyName("name")]
-    public string? Name { get; init; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Version of the state that is stored. Used for validation and versioning
@@ -33,17 +38,11 @@ public record class KernelProcessStepStateMetadata
     [DataMember]
     [JsonPropertyName("versionInfo")]
     public string? VersionInfo { get; init; } = null;
-}
 
-/// <summary>
-/// Step state used for State Persistence serialization for stateful steps
-/// </summary>
-public record class KernelProcessStepStateMetadata<TState> : KernelProcessStepStateMetadata where TState : class, new()
-{
     /// <summary>
-    /// The user-defined state object associated with the Step.
+    /// The user-defined state object associated with the Step (if the step is stateful)
     /// </summary>
     [DataMember]
     [JsonPropertyName("state")]
-    public TState? State { get; set; } = null;
+    public object? State { get; set; } = null;
 }

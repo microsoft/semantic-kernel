@@ -21,6 +21,32 @@ internal static class DocumentLoader
         string? userAgent,
         CancellationToken cancellationToken)
     {
+        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static async Task<Stream> LoadDocumentFromUriAsStreamAsync(
+        Uri uri,
+        ILogger logger,
+        HttpClient httpClient,
+        AuthenticateRequestAsyncCallback? authCallback,
+        string? userAgent,
+        CancellationToken cancellationToken)
+    {
+        //disposing the response disposes the stream
+        var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
+        return new HttpResponseStream(stream, response);
+    }
+
+    private static async Task<HttpResponseMessage> LoadDocumentResponseFromUriAsync(
+        Uri uri,
+        ILogger logger,
+        HttpClient httpClient,
+        AuthenticateRequestAsyncCallback? authCallback,
+        string? userAgent,
+        CancellationToken cancellationToken)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
         request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? HttpHeaderConstant.Values.UserAgent));
 
@@ -29,10 +55,9 @@ internal static class DocumentLoader
             await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
-        logger.LogTrace("Importing document from {0}", uri);
+        logger.LogTrace("Importing document from '{Uri}'", uri);
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task<string> LoadDocumentFromFilePathAsync(
@@ -42,14 +67,9 @@ internal static class DocumentLoader
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var pluginJson = string.Empty;
+        CheckIfFileExists(filePath, logger);
 
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
-        }
-
-        logger.LogTrace("Importing document from {0}", filePath);
+        logger.LogTrace("Importing document from '{FilePath}'", filePath);
 
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
@@ -59,9 +79,36 @@ internal static class DocumentLoader
             ).ConfigureAwait(false);
     }
 
-    internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)
+    private static void CheckIfFileExists(string filePath, ILogger logger)
+    {
+        if (!File.Exists(filePath))
+        {
+            var exception = new FileNotFoundException($"Invalid file path. The specified path '{filePath}' does not exist.");
+            logger.LogError(exception, "Invalid file path. The specified path '{FilePath}' does not exist.", filePath);
+            throw exception;
+        }
+    }
+
+    internal static Stream LoadDocumentFromFilePathAsStream(
+        string filePath,
+        ILogger logger)
+    {
+        CheckIfFileExists(filePath, logger);
+
+        logger.LogTrace("Importing document from {0}", filePath);
+
+        return File.OpenRead(filePath);
+    }
+
+    internal static async Task<string> LoadDocumentFromStreamAsync(
+        Stream stream,
+        CancellationToken cancellationToken)
     {
         using StreamReader reader = new(stream);
+#if NET7_0_OR_GREATER
+        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+#else
         return await reader.ReadToEndAsync().ConfigureAwait(false);
+#endif
     }
 }

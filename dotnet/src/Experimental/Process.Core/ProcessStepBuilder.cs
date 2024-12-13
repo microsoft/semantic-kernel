@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -19,12 +20,17 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The unique identifier for the step. This may be null until the step is run within a process.
     /// </summary>
-    public string? Id { get; }
+    public string Id { get; }
 
     /// <summary>
     /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// Alternative names that have been used to previous versions of the step
+    /// </summary>
+    public IReadOnlyList<string> Aliases { get; internal set; } = [];
 
     /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
@@ -41,20 +47,30 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Define the behavior of the step when the specified function has been successfully invoked.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnResult");
     }
 
     /// <summary>
     /// Define the behavior of the step when the specified function has thrown an exception.
+    /// If the function name is not provided, it will be inferred if there's exactly one function in the step.
     /// </summary>
-    /// <param name="functionName">The name of the function of interest.</param>
+    /// <param name="functionName">Optional: The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionError(string? functionName = null)
     {
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
         return this.OnEvent($"{functionName}.OnError");
     }
 
@@ -76,14 +92,27 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Builds the step with step state
     /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata);
+    /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
+    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
 
     /// <summary>
-    /// Builds the step.
+    /// Resolves the function name for the step.
     /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep();
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    private string ResolveFunctionName()
+    {
+        if (this.FunctionsDict.Count == 0)
+        {
+            throw new KernelException($"The step {this.Name} has no functions.");
+        }
+        else if (this.FunctionsDict.Count > 1)
+        {
+            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+        }
+
+        return this.FunctionsDict.Keys.First();
+    }
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
@@ -219,18 +248,14 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         this._initialState = initialState;
     }
 
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.BuildStep(null);
-    }
-
     /// <summary>
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
+        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
 
         if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
@@ -242,18 +267,15 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            if (stateMetadata != null && stateMetadata.State != null)
+            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
             {
-                if (stateMetadata.State is JsonElement jsonState)
+                try
                 {
-                    try
-                    {
-                        this._initialState = jsonState.Deserialize(userStateType);
-                    }
-                    catch (JsonException)
-                    {
-                        throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                    }
+                    this._initialState = jsonState.Deserialize(userStateType);
+                }
+                catch (JsonException)
+                {
+                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
                 }
             }
 
@@ -264,13 +286,13 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             }
 
             var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id);
             stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Name, this.Id);
+            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version, this.Id);
         }
 
         Verify.NotNull(stateObject);

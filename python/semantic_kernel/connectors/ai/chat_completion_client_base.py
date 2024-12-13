@@ -99,6 +99,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalent settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             return await self._inner_get_chat_message_contents(chat_history, settings)
@@ -112,7 +115,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 settings.function_call_behavior
             )
 
-        kernel = kwargs.get("kernel", None)
+        kernel: "Kernel" = kwargs.get("kernel")  # type: ignore
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for function calls.")
@@ -156,7 +159,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                         kernel.invoke_function_call(
                             function_call=function_call,
                             chat_history=chat_history,
-                            arguments=kwargs.get("arguments", None),
+                            arguments=kwargs.get("arguments"),
                             function_call_count=fc_count,
                             request_index=request_index,
                             function_behavior=settings.function_choice_behavior,
@@ -211,6 +214,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalent settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
@@ -228,7 +234,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 settings.function_call_behavior
             )
 
-        kernel = kwargs.get("kernel", None)
+        kernel: "Kernel" = kwargs.get("kernel")  # type: ignore
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for function calls.")
@@ -288,7 +294,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                         kernel.invoke_function_call(
                             function_call=function_call,
                             chat_history=chat_history,
-                            arguments=kwargs.get("arguments", None),
+                            arguments=kwargs.get("arguments"),
                             function_call_count=fc_count,
                             request_index=request_index,
                             function_behavior=settings.function_choice_behavior,

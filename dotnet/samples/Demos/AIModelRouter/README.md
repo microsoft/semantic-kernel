@@ -26,6 +26,9 @@ dotnet user-secrets set "OpenAI:ChatModelId" ".. chat completion model .." (defa
 dotnet user-secrets set "AzureOpenAI:Endpoint" ".. endpoint .."
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" ".. chat deployment name .." (default: gpt-4o)
 dotnet user-secrets set "AzureOpenAI:ApiKey" ".. api key .." (default: Authenticate with Azure CLI credential)
+dotnet user-secrets set "AzureAIInference:ApiKey" ".. api key .."
+dotnet user-secrets set "AzureAIInference:Endpoint" ".. endpoint .."
+dotnet user-secrets set "AzureAIInference:ChatModelId" ".. chat completion model .."
 dotnet user-secrets set "LMStudio:Endpoint" ".. endpoint .." (default: http://localhost:1234)
 dotnet user-secrets set "Ollama:ModelId" ".. model id .."
 dotnet user-secrets set "Ollama:Endpoint" ".. endpoint .." (default: http://localhost:11434)

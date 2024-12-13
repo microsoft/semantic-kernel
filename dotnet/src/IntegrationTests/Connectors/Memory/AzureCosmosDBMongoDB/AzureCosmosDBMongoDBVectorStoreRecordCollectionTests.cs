@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Xunit;
-using static SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 

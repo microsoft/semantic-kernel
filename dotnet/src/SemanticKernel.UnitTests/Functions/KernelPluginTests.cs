@@ -208,8 +208,8 @@ public class KernelPluginTests
         AIFunction[] funcs = plugin.AsAIFunctions(kernel).ToArray();
         Assert.Equal(2, funcs.Length);
 
-        Assert.Equal("PluginName_Function1", funcs[0].Metadata.Name);
-        Assert.Equal("PluginName_Function2", funcs[1].Metadata.Name);
+        Assert.Equal("PluginName-Function1", funcs[0].Metadata.Name);
+        Assert.Equal("PluginName-Function2", funcs[1].Metadata.Name);
 
         Assert.Equal("arg1", Assert.Single(funcs[0].Metadata.Parameters).Name);
         Assert.Equal(2, funcs[1].Metadata.Parameters.Count);
@@ -220,9 +220,9 @@ public class KernelPluginTests
         Assert.NotNull(funcs[1].Metadata.Parameters[0].Schema);
         Assert.NotNull(funcs[1].Metadata.Parameters[1].Schema);
 
-        Assert.Equal(plugin["Function1"].Metadata.Parameters[0].Schema?.ToString(), funcs[0].Metadata.Parameters[0].Schema?.ToString());
-        Assert.Equal(plugin["Function2"].Metadata.Parameters[0].Schema?.ToString(), funcs[1].Metadata.Parameters[0].Schema?.ToString());
-        Assert.Equal(plugin["Function2"].Metadata.Parameters[1].Schema?.ToString(), funcs[1].Metadata.Parameters[1].Schema?.ToString());
+        Assert.Equal(plugin["Function1"].Metadata.Parameters[0].Schema?.ToString(), JsonSerializer.Serialize(funcs[0].Metadata.Parameters[0].Schema));
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[0].Schema?.ToString(), JsonSerializer.Serialize(funcs[1].Metadata.Parameters[0].Schema));
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[1].Schema?.ToString(), JsonSerializer.Serialize(funcs[1].Metadata.Parameters[1].Schema));
 
         using CancellationTokenSource cts = new();
 

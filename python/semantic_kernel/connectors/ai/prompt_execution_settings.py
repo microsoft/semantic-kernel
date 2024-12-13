@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, TypeVar
+from typing import Annotated, Any, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -32,9 +32,9 @@ class PromptExecutionSettings(KernelBaseModel):
         from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings.
     """
 
-    service_id: str | None = Field(None, min_length=1)
+    service_id: Annotated[str | None, Field(min_length=1)] = None
     extension_data: dict[str, Any] = Field(default_factory=dict)
-    function_choice_behavior: FunctionChoiceBehavior | None = Field(None, exclude=True)
+    function_choice_behavior: Annotated[FunctionChoiceBehavior | None, Field(exclude=True)] = None
 
     @model_validator(mode="before")
     @classmethod

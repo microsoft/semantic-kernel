@@ -5,7 +5,7 @@ authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic ~= 2.0",
+    "pydantic >=2.0,<2.11,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -50,13 +50,14 @@ dependencies = [
 ### Optional dependencies
 [project.optional-dependencies]
 azure = [
-    "azure-ai-inference >= 1.0.0b3",
+    "azure-ai-inference >= 1.0.0b6",
+    "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.4,<0.6"
+    "chromadb >= 0.5,<0.6"
 ]
 google = [
     "google-cloud-aiplatform ~= 1.60",
@@ -65,24 +66,24 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.4.1"
+    "torch == 2.5.1"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.9",
-    "motor >= 3.3.2,< 3.6.0"
+    "pymongo >= 4.8.0, < 4.11",
+    "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
-    "pymilvus >= 2.3,< 2.5",
+    "pymilvus >= 2.3,< 2.6",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 0.4,< 2.0"
+    "mistralai >= 1.2,< 2.0"
 ]
 ollama = [
-    "ollama ~= 0.2"
+    "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
@@ -101,11 +102,12 @@ qdrant = [
 ]
 redis = [
     "redis[hiredis] ~= 5.0",
-    "types-redis ~= 4.6.0.20240425"
+    "types-redis ~= 4.6.0.20240425",
+    "redisvl >= 0.3.6",
 ]
 usearch = [
     "usearch ~= 2.9",
-    "pyarrow >= 12.0,<18.0"
+    "pyarrow >= 12.0,< 19.0"
 ]
 weaviate = [
     "weaviate-client>=4.7,<5.0",
@@ -115,6 +117,11 @@ pandas = [
 ]
 aws = [
     "boto3>=1.28.57",
+]
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0"
 ]
 
 [tool.uv]
@@ -126,11 +133,12 @@ dev-dependencies = [
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
     "pytest-cov >= 5.0",
-    "pytest-asyncio ~= 0.23",
+    "pytest-asyncio ~= 0.24",
+    "pytest-timeout>=2.3.1",
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.5"
+    "ruff ~= 0.7",
 ]
 environments = [
     "sys_platform == 'darwin'",
@@ -139,7 +147,17 @@ environments = [
 ]
 
 [tool.pytest.ini_options]
+testpaths = 'tests'
 addopts = "-ra -q -r fEX"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
+]
+timeout = 120
+markers = [
+    "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)"
+]
 
 [tool.ruff]
 line-length = 120
@@ -201,4 +219,5 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
+
 

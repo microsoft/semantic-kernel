@@ -8,7 +8,8 @@ from qdrant_client.models import Datatype, Distance, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
@@ -107,6 +108,17 @@ def mock_delete():
         yield mock_delete
 
 
+@fixture(autouse=True)
+def mock_search():
+    with patch(f"{BASE_PATH}.search") as mock_search:
+        from qdrant_client.models import ScoredPoint
+
+        response1 = ScoredPoint(id="id1", version=1, score=0.0, payload={"content": "content"})
+        response2 = ScoredPoint(id="id2", version=1, score=0.0, payload={"content": "content"})
+        mock_search.return_value = [response1, response2]
+        yield mock_search
+
+
 def test_vector_store_defaults(vector_store):
     assert vector_store.qdrant_client is not None
     assert vector_store.qdrant_client._client.rest_uri == "http://localhost:6333"
@@ -136,7 +148,6 @@ def test_vector_store_fail():
         QdrantStore(location="localhost", url="http://localhost", env_file_path="test.env")
 
 
-@mark.asyncio
 async def test_store_list_collection_names(vector_store):
     collections = await vector_store.list_collection_names()
     assert collections == ["test"]
@@ -196,7 +207,6 @@ def test_collection_init_fail(data_model_definition):
         )
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_upsert(collection_to_use, request):
     from qdrant_client.models import PointStruct
@@ -213,7 +223,6 @@ async def test_upsert(collection_to_use, request):
     assert ids == "id1"
 
 
-@mark.asyncio
 async def test_get(collection):
     records = await collection._inner_get(["id1"])
     assert records is not None
@@ -222,22 +231,18 @@ async def test_get(collection):
     assert records is not None
 
 
-@mark.asyncio
 async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-@mark.asyncio
 async def test_does_collection_exist(collection):
     await collection.does_collection_exist()
 
 
-@mark.asyncio
 async def test_delete_collection(collection):
     await collection.delete_collection()
 
 
-@mark.asyncio
 @mark.parametrize(
     "collection_to_use, results",
     [
@@ -245,14 +250,14 @@ async def test_delete_collection(collection):
             "collection",
             {
                 "collection_name": "test",
-                "vectors_config": {"vector": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32)},
+                "vectors_config": {"vector": VectorParams(size=5, distance=Distance.COSINE, datatype=Datatype.FLOAT32)},
             },
         ),
         (
             "collection_without_named_vectors",
             {
                 "collection_name": "test",
-                "vectors_config": VectorParams(size=3, distance=Distance.COSINE, datatype=Datatype.FLOAT32),
+                "vectors_config": VectorParams(size=5, distance=Distance.COSINE, datatype=Datatype.FLOAT32),
             },
         ),
     ],
@@ -262,10 +267,16 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
     mock_create_collection.assert_called_once_with(**results)
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None
     with raises(MemoryConnectorException, match="Vector field must have dimensions."):
         await collection.create_collection()
+
+
+async def test_search(collection):
+    results = await collection._inner_search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
+    async for result in results.results:
+        assert result.record["id"] == "id1"
+        break

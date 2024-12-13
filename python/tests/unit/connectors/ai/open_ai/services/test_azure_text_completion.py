@@ -11,7 +11,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
@@ -58,10 +57,9 @@ def test_init_with_custom_header(azure_openai_unit_test_env) -> None:
 def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_openai_unit_test_env) -> None:
     with (
         patch(
-            f"{AzureOpenAISettings.__module__}.{AzureOpenAISettings.__qualname__}.get_azure_openai_auth_token",
+            "semantic_kernel.utils.authentication.entra_id_authentication.get_entra_auth_token",
         ) as mock_get_token,
     ):
-        mock_get_token.return_value = "test_token"
         azure_text_completion = AzureTextCompletion()
 
         assert azure_text_completion.client is not None
@@ -92,7 +90,6 @@ def test_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
         AzureTextCompletion()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",
@@ -120,7 +117,6 @@ async def test_call_with_parameters(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",

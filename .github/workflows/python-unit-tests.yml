@@ -20,10 +20,20 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
-        include:
-          - python-version: "3.13.0-beta.4"
-            os: "ubuntu-latest"
-            experimental: true
+        # include:
+        #   - python-version: "3.13"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 0
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 1
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     permissions:
       contents: write
     defaults:
@@ -32,28 +42,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up uv
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: irm https://astral.sh/uv/install.ps1 | iex
-        shell: powershell
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Restore uv cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ${{  env.UV_CACHE_DIR  }}
-          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Test with pytest
-        run: uv run pytest --junitxml=pytest.xml ./tests/unit
+        env:
+          PYTHON_GIL: ${{ matrix.gil }}
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
       - name: Surface failing tests
-        if: always()
+        if: ${{ !matrix.experimental }}
         uses: pmeier/pytest-results-action@main
         with:
           path: python/pytest.xml
@@ -61,53 +62,3 @@ jobs:
           display-options: fEX
           fail-on-empty: true
           title: Test results
-      - name: Minimize uv cache
-        run: uv cache prune --ci
-  python-test-coverage:
-    name: Python Test Coverage
-    runs-on: [ubuntu-latest]
-    continue-on-error: true
-    permissions:
-      contents: write
-    defaults:
-      run:
-        working-directory: python
-    env:
-      PYTHON_VERSION: "3.10"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
-      - name: Set up uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Restore uv cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.UV_CACHE_DIR }}
-          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/uv.lock') }}
-      - name: Install the project
-        run: uv sync --all-extras --dev
-      - name: Test with pytest
-        run: uv run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
-          path: python/python-coverage.txt
-          overwrite: true
-          retention-days: 1
-      - name: Upload pytest.xml
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-${{ env.FILE_ID }}.xml
-          path: python/pytest.xml
-          overwrite: true
-          retention-days: 1
-      - name: Minimize uv cache
-        run: uv cache prune --ci

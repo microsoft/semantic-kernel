@@ -3,9 +3,6 @@
 import pytest
 
 from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
@@ -118,17 +115,6 @@ pytestmark = pytest.mark.parametrize(
             "__model_diagnostics_streaming_text_completion__",
             id="GoogleAITextCompletion._inner_get_streaming_text_contents",
         ),
-        # AzureAIInferenceChatCompletion
-        pytest.param(
-            AzureAIInferenceChatCompletion._inner_get_chat_message_contents,
-            "__model_diagnostics_chat_completion__",
-            id="AzureAIInferenceChatCompletion._inner_get_chat_message_contents",
-        ),
-        pytest.param(
-            AzureAIInferenceChatCompletion._inner_get_streaming_chat_message_contents,
-            "__model_diagnostics_streaming_chat_completion__",
-            id="AzureAIInferenceChatCompletion._inner_get_streaming_chat_message_contents",
-        ),
         # AnthropicChatCompletion
         pytest.param(
             AnthropicChatCompletion._inner_get_chat_message_contents,
@@ -146,6 +132,6 @@ pytestmark = pytest.mark.parametrize(
 
 def test_decorated(decorated_method, expected_attribute):
     """Test that the connectors are being decorated properly with the model diagnostics decorators."""
-    assert hasattr(decorated_method, expected_attribute) and getattr(
-        decorated_method, expected_attribute
-    ), f"{decorated_method} should be decorated with the appropriate model diagnostics decorator."
+    assert hasattr(decorated_method, expected_attribute) and getattr(decorated_method, expected_attribute), (
+        f"{decorated_method} should be decorated with the appropriate model diagnostics decorator."
+    )

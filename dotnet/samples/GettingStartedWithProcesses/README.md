@@ -21,11 +21,22 @@ The getting started with agents examples include:
 
 Example|Description
 ---|---
+[Step00_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step00/Step00_Processes.cs)|How to create the simplest process with minimal code and event wiring
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
-[Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
+[Step02a_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02a_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
+[Step02b_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02b_AccountOpening.cs)|How to refactor processes and make use of smaller processes as steps in larger processes.
 [Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events, use of stateful steps with food preparation samples.
 [Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
 [Step04_AgentOrchestration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step04/Step04_AgentOrchestration.cs)|Showcasing use of process steps in conjunction with the _Agent Framework_. 
+
+### Step00_Processes
+
+```mermaid
+flowchart LR  
+    Start(Start)--> DoSomeWork(DoSomeWork)
+    DoSomeWork--> DoMoreWork(DoMoreWork)
+    DoMoreWork--> End(End)
+```
 
 ### Step01_Processes
 
@@ -38,6 +49,27 @@ flowchart LR
 ```
 
 ### Step02_AccountOpening
+
+The account opening sample has 2 different implementations covering the same scenario, it just uses different SK components to achieve the same goal.
+
+In addition, the sample introduces the concept of using smaller process as steps to maintain the main process readable and manageble for future improvements and unit testing.
+Also introduces the use of SK Event Subscribers.
+
+A process for opening an account for this sample has the following steps:
+- Fill New User Account Application Form
+- Verify Applicant Credit Score
+- Apply Fraud Detection Analysis to the Application Form
+- Create New Entry in Core System Records
+- Add new account to Marketing Records
+- CRM Record Creation
+- Mail user a user a notification about:
+    - Failure to open a new account due to Credit Score Check
+    - Failure to open a new account due to Fraud Detection Alert
+    - Welcome package including new account details
+
+A SK process that only connects the steps listed above as is (no use of subprocesses as steps) for opening an account look like this:
+
+#### Step02a_AccountOpening
 
 ```mermaid
 flowchart LR  
@@ -67,6 +99,81 @@ flowchart LR
   
     Welcome -->|Success: Notify User about Account Creation| Mailer  
     Mailer -->|End of Interaction| User
+```
+
+#### Step02b_AccountOpening
+
+After grouping steps that have a common theme/dependencies, and creating smaller subprocesses and using them as steps, 
+the root process looks like this:
+
+```mermaid
+flowchart LR
+    User(User)
+    FillForm(Chat With User <br/> to Fill New <br/> Customer Form)
+    NewAccountVerification[[New Account Verification<br/> Process]]
+    NewAccountCreation[[New Account Creation<br/> Process]]
+    Mailer(Mail <br/> Service)
+
+    User<-->|Provides user details|FillForm
+    FillForm-->|New User Form|NewAccountVerification
+    NewAccountVerification-->|Account Credit Check<br/> Verification Failed|Mailer
+    NewAccountVerification-->|Account Fraud<br/> Detection Failed|Mailer
+    NewAccountVerification-->|Account Verification <br/> Succeeded|NewAccountCreation
+    NewAccountCreation-->|Account Creation <br/> Succeeded|Mailer
+```
+
+Where processes used as steps, which are reusing the same steps used [`Step02a_AccountOpening`](#step02a_accountopening), are:
+
+```mermaid
+graph LR
+    NewUserForm([New User Form])
+    NewUserFormConv([Form Filling Interaction])
+    
+    subgraph AccountCreation[Account Creation Process]
+        direction LR
+        AccountValidation([Account Verification Passed])
+        NewUser1([New User Form])
+        NewUserFormConv1([Form Filling Interaction])
+
+        CoreSystem(Core System <br/> Record <br/> Creation)
+        Marketing(New Marketing <br/> Record Creation) 
+        CRM(CRM Record <br/> Creation)
+        Welcome(Welcome <br/> Packet)
+        NewAccountCreation([New Account Success])
+
+        NewUser1-->CoreSystem
+        NewUserFormConv1-->CoreSystem
+
+        AccountValidation-->CoreSystem
+        CoreSystem-->CRM-->|Success|Welcome
+        CoreSystem-->Marketing-->|Success|Welcome
+        CoreSystem-->|Account Details|Welcome
+
+        Welcome-->NewAccountCreation
+    end
+
+    subgraph AccountVerification[Account Verification Process]
+        direction LR
+        NewUser2([New User Form])
+        CreditScoreCheck[Credit Check <br/> Step]
+        FraudCheck[Fraud Detection <br/> Step]
+        AccountVerificationPass([Account Verification Passed])
+        AccountCreditCheckFail([Credit Check Failed])
+        AccountFraudCheckFail([Fraud Check Failed])
+
+        
+        NewUser2-->CreditScoreCheck-->|Credit Score <br/> Check Passed|FraudCheck
+        FraudCheck-->AccountVerificationPass
+
+        CreditScoreCheck-->AccountCreditCheckFail
+        FraudCheck-->AccountFraudCheckFail
+    end
+
+    AccountVerificationPass-->AccountValidation
+    NewUserForm-->NewUser1
+    NewUserForm-->NewUser2
+    NewUserFormConv-->NewUserFormConv1
+
 ```
 
 ### Step03a_FoodPreparation
@@ -270,6 +377,56 @@ flowchart RL
         E[Agent2] --> D
     end
 ```
+
+## Concepts
+
+### Components
+
+- **Process:** A sequence of steps designed to achieve a specific goal. These steps are interconnected in such a way that they can communicate by sending and receiving events. The connections between the steps are established during the process creation.
+- **Steps:** Individual activities within a process, each with defined inputs and outputs, contributing to the overall objective. Existing processes can be utilized as steps within another process. There are two main types of steps:
+    - _Stateless Steps_: These steps do not retain any information between executions. They operate independently without the need to store state data.
+    - _Stateful Steps_: These steps maintain a state that can be persisted, allowing the state to be reused and updated in subsequent runs of the process. The state of these steps can be stored and serialized.
+
+In general, both processes and steps are designed to be reusable across different processes.
+
+### Versioning
+
+Once stateful steps/processes have been deployed, versioning becomes a crucial aspect to understand. 
+It enables you to tweak and improve processes while maintaining the ability to read step states generated by previous versions of the steps.
+
+Stateful processes involve steps that maintain state information. 
+When these processes are updated, it's important to manage versioning effectively to ensure continuity and compatibility with previously saved states.
+
+There are two primary scenarios to consider when addressing process state versioning:
+
+1. **Minor SK Process Improvements/Changes:**
+    
+    In this scenario, the root process remains conceptually the same, but with some modifications:
+
+    - _Step Renaming:_ Some step names may have been changed.
+    - _Step Version Updates:_ New versions of one or more steps used by the root process or any steps in a subprocess may be introduced.
+
+    **Considerations:**
+
+    - Ensure backward compatibility by mapping old step names to new step names.
+    - Validate that the new step versions can read and interpret the state data generated by previous versions.
+
+    **Related Samples:**
+
+    - `Step03a_FoodPreparation.cs/RunStatefulFriedFishV2ProcessWithLowStockV1StateFromFileAsync`
+    - `Step03a_FoodPreparation.cs/RunStatefulFishSandwichV2ProcessWithLowStockV1StateFromFileAsync`
+
+2. **Major SK Process Improvements/Changes:**
+    
+    This scenario involves significant modifications to the root process, which may include:
+
+    - _Step Refactoring_: Multiple steps may be refactored and replaced. However, some properties of the replaced steps can be used to set properties of the new steps.
+    - _Custom Mappings:_ Custom equivalent mappings may be required to translate the previous stored state to the current process state.
+
+    **Considerations:**
+
+    - Develop a detailed mapping strategy to align old and new process states.
+    - Implement and test custom mappings to ensure data integrity and process continuity.
 
 ## Running Examples with Filters
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.

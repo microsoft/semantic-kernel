@@ -30,14 +30,9 @@ internal sealed class EndStep : ProcessStepBuilder
         return [];
     }
 
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.BuildStep(null);
-    }
-
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The end step has no state.
-        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(ProcessConstants.EndStepName), []);
+        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(ProcessConstants.EndStepName, version: ProcessConstants.InternalStepsVersion), []);
     }
 }

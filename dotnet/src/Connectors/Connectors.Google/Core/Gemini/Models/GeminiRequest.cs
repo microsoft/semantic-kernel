@@ -247,7 +247,9 @@ internal sealed class GeminiRequest
             TopK = executionSettings.TopK,
             MaxOutputTokens = executionSettings.MaxTokens,
             StopSequences = executionSettings.StopSequences,
-            CandidateCount = executionSettings.CandidateCount
+            CandidateCount = executionSettings.CandidateCount,
+            AudioTimestamp = executionSettings.AudioTimestamp,
+            ResponseMimeType = executionSettings.ResponseMimeType
         };
     }
 
@@ -282,5 +284,13 @@ internal sealed class GeminiRequest
         [JsonPropertyName("candidateCount")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? CandidateCount { get; set; }
+
+        [JsonPropertyName("audioTimestamp")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? AudioTimestamp { get; set; }
+
+        [JsonPropertyName("responseMimeType")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ResponseMimeType { get; set; }
     }
 }

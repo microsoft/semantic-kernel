@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -38,6 +40,7 @@ internal static class AssistantMessageFactory
     /// <param name="message">The message content.</param>
     public static IEnumerable<MessageContent> GetMessageContents(ChatMessageContent message)
     {
+        bool hasTextContent = message.Items.OfType<TextContent>().Any();
         foreach (KernelContent content in message.Items)
         {
             if (content is TextContent textContent)
@@ -50,7 +53,7 @@ internal static class AssistantMessageFactory
                 {
                     yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
-                else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
+                else if (!string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
                 }
@@ -58,6 +61,11 @@ internal static class AssistantMessageFactory
             else if (content is FileReferenceContent fileContent)
             {
                 yield return MessageContent.FromImageFileId(fileContent.FileId);
+            }
+            else if (content is FunctionResultContent resultContent && resultContent.Result != null && !hasTextContent)
+            {
+                // Only convert a function result when text-content is not already present
+                yield return MessageContent.FromText(FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result));
             }
         }
     }

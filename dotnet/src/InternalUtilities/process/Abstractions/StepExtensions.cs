@@ -16,6 +16,11 @@ internal static class StepExtensions
             return subProcess.CloneProcess(logger);
         }
 
+        if (step is KernelProcessMap mapStep)
+        {
+            return mapStep.CloneMap(logger);
+        }
+
         Type stateType = step.InnerStepType.ExtractStateType(out Type? userStateType, logger);
 
         KernelProcessStepState newState = step.State.Clone(stateType, userStateType, logger);
@@ -32,7 +37,7 @@ internal static class StepExtensions
     // Exposed for testing
     public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType, ILogger logger)
     {
-        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id);
+        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Version, sourceState.Id);
         if (newState == null)
         {
             throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].").Log(logger);

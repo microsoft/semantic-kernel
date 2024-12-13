@@ -75,6 +75,21 @@ public static class EmbeddingGenerationExtensions
             new EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding>(generator, serviceProvider);
     }
 
+    /// <summary>Creates a <see cref="ITextEmbeddingGenerationService"/> from a <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> where input of <see cref="string"/> and an embedding of <see cref="float"/>.</summary>
+    /// <param name="generator">Input as string with embedding as floats generator</param>
+    /// <param name="serviceProvider">An optional <see cref="IServiceProvider"/> that can be used to resolve services to use in the instance.</param>
+    /// <returns>
+    /// The <see cref="ITextEmbeddingGenerationService"/>. If the <paramref name="generator"/> is an <see cref="ITextEmbeddingGenerationService"/>,
+    /// the <paramref name="generator"/> will be returned. Otherwise, a new <see cref="ITextEmbeddingGenerationService"/> will be created that wraps the <paramref name="generator"/>.
+    /// </returns>
+    public static ITextEmbeddingGenerationService AsTextEmbeddingGenerationService(this IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider = null)
+    {
+        Verify.NotNull(generator);
+        return generator is ITextEmbeddingGenerationService service ?
+            service :
+            new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
+    }
+
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     private sealed class EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding> : IEmbeddingGenerator<TValue, Embedding<TEmbedding>>
         where TEmbedding : unmanaged
@@ -109,16 +124,20 @@ public static class EmbeddingGenerationExtensions
         }
 
         /// <inheritdoc />
-        public TService? GetService<TService>(object? key = null) where TService : class
+        public object? GetService(Type serviceType, object? serviceKey = null)
         {
+            Verify.NotNull(serviceType);
+
             return
-                typeof(TService) == typeof(IEmbeddingGenerator<TValue, Embedding<TEmbedding>>) ? (TService)(object)this :
-                this._service as TService;
+                serviceKey is not null ? null :
+                serviceType.IsInstanceOfType(this) ? this :
+                serviceType.IsInstanceOfType(this._service) ? this._service :
+                null;
         }
     }
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/> around an <see cref="EmbeddingGeneratorEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
-    private sealed class EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding> : IEmbeddingGenerationService<TValue, TEmbedding>
+    private class EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding> : IEmbeddingGenerationService<TValue, TEmbedding>
         where TEmbedding : unmanaged
     {
         /// <summary>The wrapped <see cref="IEmbeddingGenerator{TValue, TEmbedding}"/></summary>
@@ -157,6 +176,13 @@ public static class EmbeddingGenerationExtensions
             var embeddings = await this._generator.GenerateAsync(data, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return embeddings.Select(e => e.Vector).ToList();
+        }
+    }
+
+    private sealed class EmbeddingGeneratorTextEmbeddingGenerationService : EmbeddingGeneratorEmbeddingGenerationService<string, float>, ITextEmbeddingGenerationService
+    {
+        public EmbeddingGeneratorTextEmbeddingGenerationService(IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider) : base(generator, serviceProvider)
+        {
         }
     }
 }

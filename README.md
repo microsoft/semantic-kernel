@@ -67,7 +67,7 @@ feature parity between our currently supported languages.
       <td>
         <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
         <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
+          <a href="https://github.com/microsoft/semantic-kernel-java/blob/main/README.md">Using Semantic Kernel in Java</a>
         </div>
       </td>
     </tr>
@@ -86,7 +86,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For Python:
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python) and follow the steps to dive in.
-2. You'll need to ensure that you toggle to Python in the the Choose a programming language table at the top of the page.
+2. You'll need to ensure that you toggle to Python in the Choose a programming language table at the top of the page.
    ![pythonmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
 ### For Java:

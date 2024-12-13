@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Generic
 
 from pydantic import Field
@@ -52,7 +53,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         functions_dict = {}
         if type:
             # Initialize functions dictionary by fetching the function metadata
-            functions_dict = self.get_function_metadata_map(type, name, kwargs.get("kernel", None))
+            functions_dict = self.get_function_metadata_map(type, name, kwargs.get("kernel"))
 
         # Call the parent Pydantic BaseModel constructor using super()
         super().__init__(
@@ -65,17 +66,21 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             **kwargs,
         )
 
-    def on_input_event(self, event_id: str) -> "ProcessStepEdgeBuilder":
+    def on_input_event(self, event_id: str | Enum) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the input event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
-        return ProcessStepEdgeBuilder(source=self, event_id=event_id)
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
 
-    def on_event(self, event_id: str) -> "ProcessStepEdgeBuilder":
+        return ProcessStepEdgeBuilder(source=self, event_id=event_id_str)
+
+    def on_event(self, event_id: str | Enum) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the event."""
         from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
-        scoped_event_id = self.get_scoped_event_id(event_id)
+        event_id_str: str = event_id.value if isinstance(event_id, Enum) else event_id
+
+        scoped_event_id = self.get_scoped_event_id(event_id_str)
         return ProcessStepEdgeBuilder(source=self, event_id=scoped_event_id)
 
     def resolve_function_target(
@@ -166,11 +171,8 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             # Create state_object as KernelProcessStepState[TState]
             state_type = KernelProcessStepState[t_state]  # type: ignore
 
-            state_object = state_type(
-                name=self.name,
-                id=self.id,
-                state=self.initial_state,  # Can be None
-            )
+            initial_state = self.initial_state or t_state()
+            state_object = state_type(name=self.name, id=self.id, state=initial_state)
         else:
             # The step has no user-defined state; use the base KernelProcessStepState
             if self.initial_state is not None:

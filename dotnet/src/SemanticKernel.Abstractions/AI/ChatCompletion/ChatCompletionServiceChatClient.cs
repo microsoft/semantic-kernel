@@ -40,7 +40,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(ChatCompletionServiceExtensions.ToChatMessageContent)),
+            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
@@ -58,7 +58,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(chatMessages.Select(ChatCompletionServiceExtensions.ToChatMessageContent)),
+            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
@@ -74,11 +74,15 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null) where TService : class
+    public object? GetService(Type serviceType, object? serviceKey = null)
     {
+        Verify.NotNull(serviceType);
+
         return
-            typeof(TService) == typeof(IChatClient) ? (TService)(object)this :
-            this._chatCompletionService as TService;
+            serviceKey is not null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            serviceType.IsInstanceOfType(this._chatCompletionService) ? this._chatCompletionService :
+            null;
     }
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
@@ -138,6 +142,11 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             settings.ExtensionData["top_k"] = options.TopK.Value;
         }
 
+        if (options.Seed is not null)
+        {
+            settings.ExtensionData["seed"] = options.Seed.Value;
+        }
+
         if (options.ResponseFormat is not null)
         {
             if (options.ResponseFormat is ChatResponseFormatText)
@@ -192,6 +201,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             AuthorName = content.AuthorName,
             ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
+            RawRepresentation = content,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
         };
 

@@ -143,6 +143,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
+    /// An object specifying the format that the model must output.
+    /// Setting to <c>{ "type": "json_schema", "json_schema": { ...} }</c> enables Structured Outputs which ensures the model will match your supplied JSON schema. Learn more in the Structured Outputs guide.
+    /// Setting to <c>{ "type": "json_object" }</c> enables JSON mode, which ensures the message the model generates is valid JSON.
+    /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if finish_reason= "length", which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
     /// Possible values are:
     /// <para>- <see cref="string"/> values: <c>"json_object"</c>, <c>"text"</c>;</para>
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
@@ -285,6 +289,40 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Developer-defined tags and values used for filtering completions in the OpenAI dashboard.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("metadata")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Metadata
+    {
+        get => this._metadata;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._metadata = value;
+        }
+    }
+
+    /// <summary>
+    /// Whether or not to store the output of this chat completion request for use in the OpenAI model distillation or evals products.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("store")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Store
+    {
+        get => this._store;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._store = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -303,6 +341,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         if (this._tokenSelectionBiases is not null)
         {
             this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
+        }
+
+        if (this._metadata is not null)
+        {
+            this._metadata = new ReadOnlyDictionary<string, string>(this._metadata);
         }
     }
 
@@ -368,7 +411,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
-            TopLogprobs = this.TopLogprobs
+            TopLogprobs = this.TopLogprobs,
+            Store = this.Store,
+            Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
         };
     }
 
@@ -388,6 +433,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
+    private bool? _store;
+    private IDictionary<string, string>? _metadata;
 
     #endregion
 }

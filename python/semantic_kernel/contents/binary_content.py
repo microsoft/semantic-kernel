@@ -39,7 +39,7 @@ class BinaryContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.BINARY_CONTENT] = Field(BINARY_CONTENT_TAG, init=False)  # type: ignore
-    uri: Url | FilePath | None = None
+    uri: Url | str | None = None
     default_mime_type: ClassVar[str] = "text/plain"
     tag: ClassVar[str] = BINARY_CONTENT_TAG
     _data_uri: DataUri | None = None
@@ -164,6 +164,11 @@ class BinaryContent(KernelContent):
             return cls(data_uri=element.text, uri=element.get("uri", None))
 
         return cls(uri=element.get("uri", None))
+
+    def write_to_file(self, path: str | FilePath) -> None:
+        """Write the data to a file."""
+        with open(path, "wb") as file:
+            file.write(self.data)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""

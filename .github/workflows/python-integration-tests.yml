@@ -20,6 +20,55 @@ permissions:
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
+  Python_Integration_Tests: Python_Integration_Tests
+  INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION: ${{ true }}
+  AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+  AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+  AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
+  AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
+  BING_API_KEY: ${{ secrets.BING_API_KEY }}
+  OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+  OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+  OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+  OPENAI_AUDIO_TO_TEXT_MODEL_ID: ${{ vars.OPENAI_AUDIO_TO_TEXT_MODEL_ID }}
+  OPENAI_TEXT_TO_AUDIO_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_AUDIO_MODEL_ID }}
+  OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+  POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+  POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
+  AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+  AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+  MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+  AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+  AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+  AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+  ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
+  MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
+  MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+  MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
+  ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+  ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
+  OLLAMA_CHAT_MODEL_ID: "${{ vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+  OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+  OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+  OLLAMA_TEXT_MODEL_ID: "${{ vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+  OLLAMA_EMBEDDING_MODEL_ID: "${{ vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
+  GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+  GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+  GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+  VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
+  VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
+  VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
+  REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+  AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+  AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
 
 jobs:
   paths-filter:
@@ -43,8 +92,8 @@ jobs:
         if: steps.filter.outputs.python != 'true'
         run: echo "NOT python file"
 
-  python-merge-gate:
-    name: Python Pre-Merge Integration Tests
+  python-merge-gate-ai-services:
+    name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -58,32 +107,73 @@ jobs:
         working-directory: python
     runs-on: ${{ matrix.os }}
     environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up uv
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: irm https://astral.sh/uv/install.ps1 | iex
-        shell: powershell
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Restore uv cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ${{  env.UV_CACHE_DIR  }}
-          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
-      - name: Install dependencies with hnswlib native disabled
-        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
-          export HNSWLIB_NO_NATIVE=1
           uv sync --all-extras --dev
-      - name: Install dependencies with hnswlib native enabled
-        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+      - name: Google auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Integration Tests
+        id: run_tests_ai_services
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+
+  python-merge-gate-ollama:
+    name: Python Pre-Merge Integration Tests - Ollama
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
           uv sync --all-extras --dev
       - name: Install Ollama
@@ -101,24 +191,55 @@ jobs:
           ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
           ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
           ollama list
-      - name: Google auth
-        uses: google-github-actions/auth@v2
+      - name: Run Integration Tests
+        id: run_tests_ai_services
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal -m ollama --timeout=300 ./tests/integration/completions ./tests/integration/embeddings
+
+  python-merge-gate-memory:
+    name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      MEMORY_CONCEPT_SAMPLE: "true"
+    # Service containers to run with for the memory connectors, this only works on Ubuntu
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis/redis-stack-server:latest
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+      weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        ports:
+          - 8080:8080
+          - 50051:50051
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
         with:
-          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
-          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - name: Setup Redis Stack Server
-        if: matrix.os == 'ubuntu-latest'
-        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-      - name: Setup Weaviate docker deployment
-        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -127,64 +248,14 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
-        id: run_tests
+        id: run_tests_memory
+        timeout-minutes: 15
         shell: bash
-        env:
-          HNSWLIB_NO_NATIVE: 1
-          Python_Integration_Tests: Python_Integration_Tests
-          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
-          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          BING_API_KEY: ${{ secrets.BING_API_KEY }}
-          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
-          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
-          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
-          OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
-          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
-          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
-          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
-          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
-          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
-          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
-          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
-          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
-          MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
-          MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
-          MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
-          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
-          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
-          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
-          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
-          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
-          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
-          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
-          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
-          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
-          VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
-          VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
-          VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
-          REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
-      - name: Surface failing tests
-        if: always()
-        uses: pmeier/pytest-results-action@main
-        with:
-          path: python/pytest.xml
-          summary: true
-          display-options: fEX
-          fail-on-empty: true
-          title: Test results
-      - name: Minimize uv cache
-        run: uv cache prune --ci
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
 
   python-integration-tests:
+    name: Python Integration Tests - Scheduled run
     needs: paths-filter
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
@@ -198,32 +269,33 @@ jobs:
         working-directory: python
     runs-on: ${{ matrix.os }}
     environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      MEMORY_CONCEPT_SAMPLE: "true"
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    # Service containers to run with for the memory connectors, this only works on Ubuntu
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis/redis-stack-server:latest
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+      weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        ports:
+          - 8080:8080
+          - 50051:50051
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up uv
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: irm https://astral.sh/uv/install.ps1 | iex
-        shell: powershell
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Restore uv cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.UV_CACHE_DIR }}
-          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
-      - name: Install dependencies with hnswlib native disabled
-        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
-        run: |
-          export HNSWLIB_NO_NATIVE=1
-          uv sync --all-extras --dev
-      - name: Install dependencies with hnswlib native enabled
-        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
           uv sync --all-extras --dev
       - name: Install Ollama
@@ -254,11 +326,12 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      - name: Setup Redis Stack Server
-        if: matrix.os == 'ubuntu-latest'
-        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-      - name: Setup Weaviate docker deployment
-        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -266,63 +339,42 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Run Integration Tests
-        id: run_tests
+      - name: Run Integration Tests - Completions
+        id: run_tests_completions
+        timeout-minutes: 10
         shell: bash
-        env:
-          HNSWLIB_NO_NATIVE: 1
-          Python_Integration_Tests: Python_Integration_Tests
-          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
-          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          BING_API_KEY: ${{ secrets.BING_API_KEY }}
-          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
-          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
-          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
-          OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
-          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
-          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
-          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
-          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
-          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
-          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
-          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
-          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
-          MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
-          MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
-          MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
-          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
-          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
-          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
-          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
-          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
-          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
-          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
-          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
-          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
-          VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
-          VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
-          VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
-          REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
-      - name: Surface failing tests
-        if: always()
-        uses: pmeier/pytest-results-action@main
-        with:
-          path: python/pytest.xml
-          summary: true
-          display-options: fEX
-          fail-on-empty: true
-          title: Test results
-      - name: Minimize uv cache
-        run: uv cache prune --ci
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/completions
+      - name: Run Integration Tests - Embeddings
+        id: run_tests_embeddings
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings
+      - name: Run Integration Tests - Memory
+        id: run_tests_memory
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/memory
+      - name: Run Integration Tests - Cross Language
+        id: run_tests_cross_language
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language
+      - name: Run Integration Tests - Planning
+        id: run_tests_planning
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/planning
+      - name: Run Integration Tests - Samples
+        id: run_tests_samples
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/samples
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
@@ -331,7 +383,13 @@ jobs:
     strategy:
       max-parallel: 1
       fail-fast: false
-    needs: [python-merge-gate, python-integration-tests]
+    needs:
+      [
+        python-merge-gate-ai-services,
+        python-merge-gate-ollama,
+        python-merge-gate-memory,
+        python-integration-tests,
+      ]
     steps:
       - name: Get Date
         shell: bash
@@ -378,7 +436,7 @@ jobs:
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
         uses: skitionek/notify-microsoft-teams@master
@@ -388,4 +446,4 @@ jobs:
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"

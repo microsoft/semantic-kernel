@@ -15,13 +15,14 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
+    bedrock_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.test_utils import retry
+from tests.utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -122,7 +123,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_text_input",
         ),
         pytest.param(
@@ -166,6 +170,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+            marks=pytest.mark.skipif(not bedrock_setup, reason="Bedrock Environment Variables not set"),
             id="bedrock_amazon_titan_text_input",
         ),
         pytest.param(
@@ -227,7 +232,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
@@ -294,6 +298,8 @@ class TestChatCompletion(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:

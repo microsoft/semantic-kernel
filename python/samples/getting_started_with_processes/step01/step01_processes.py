@@ -37,7 +37,7 @@ class UserInputState(KernelBaseModel):
     current_input_index: int = 0
 
 
-class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
+class UserInputStep(KernelProcessStep[UserInputState]):
     GET_USER_INPUT: ClassVar[str] = "get_user_input"
 
     def create_default_state(self) -> "UserInputState":
@@ -48,18 +48,43 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         """Method to be overridden by the user to populate with custom user messages."""
         pass
 
-    async def on_activate(self):
-        """This is called during the activation of the process step."""
-        self.populate_user_inputs()
-
     async def activate(self, state: KernelProcessStepState[UserInputState]):
         """Activates the step and sets the state."""
         state.state = state.state or self.create_default_state()
         self.state = state.state
         self.populate_user_inputs()
-        pass
 
     @kernel_function(name=GET_USER_INPUT)
+    async def get_user_input(self, context: KernelProcessStepContext):
+        """Gets the user input."""
+        if not self.state:
+            raise ValueError("State has not been initialized")
+
+        user_message = input("USER: ")
+
+        # print(f"USER: {user_message}")
+
+        if "exit" in user_message:
+            await context.emit_event(process_event=ChatBotEvents.Exit, data=None)
+            return
+
+        self.state.current_input_index += 1
+
+        # Emit the user input event
+        await context.emit_event(process_event=CommonEvents.UserInputReceived, data=user_message)
+
+
+class ScriptedInputStep(UserInputStep):
+    def populate_user_inputs(self):
+        """Override the method to populate user inputs for the chat step."""
+        if self.state is not None:
+            self.state.user_inputs.append("Hello")
+            self.state.user_inputs.append("How tall is the tallest mountain?")
+            self.state.user_inputs.append("How low is the lowest valley?")
+            self.state.user_inputs.append("How wide is the widest river?")
+            self.state.user_inputs.append("exit")
+
+    @kernel_function
     async def get_user_input(self, context: KernelProcessStepContext):
         """Gets the user input."""
         if not self.state:
@@ -70,24 +95,13 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         print(f"USER: {user_message}")
 
         if "exit" in user_message:
-            await context.emit_event(process_event=ChatBotEvents.Exit.value, data=None)
+            await context.emit_event(process_event=ChatBotEvents.Exit, data=None)
             return
 
         self.state.current_input_index += 1
 
         # Emit the user input event
-        await context.emit_event(process_event=CommonEvents.UserInputReceived.value, data=user_message)
-
-
-class ChatUserInputStep(ScriptedUserInputStep):
-    def populate_user_inputs(self):
-        """Override the method to populate user inputs for the chat step."""
-        if self.state is not None:
-            self.state.user_inputs.append("Hello")
-            self.state.user_inputs.append("How tall is the tallest mountain?")
-            self.state.user_inputs.append("How low is the lowest valley?")
-            self.state.user_inputs.append("How wide is the widest river?")
-            self.state.user_inputs.append("exit")
+        await context.emit_event(process_event=CommonEvents.UserInputReceived, data=user_message)
 
 
 class IntroStep(KernelProcessStep):
@@ -140,24 +154,24 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
         self.state.chat_messages.append(answer)
 
         # Emit an event: assistantResponse
-        await context.emit_event(process_event=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
+        await context.emit_event(process_event=ChatBotEvents.AssistantResponseGenerated, data=answer)
 
 
 kernel = Kernel()
 
 
-async def step01_processes():
+async def step01_processes(scripted: bool = True):
     kernel.add_service(OpenAIChatCompletion(service_id="default"))
 
     process = ProcessBuilder(name="ChatBot")
 
     # Define the steps on the process builder based on their types, not concrete objects
     intro_step = process.add_step(IntroStep)
-    user_input_step = process.add_step(ChatUserInputStep)
+    user_input_step = process.add_step(ScriptedInputStep if scripted else UserInputStep)
     response_step = process.add_step(ChatBotResponseStep)
 
     # Define the input event that starts the process and where to send it
-    process.on_input_event(event_id=ChatBotEvents.StartProcess.value).send_event_to(target=intro_step)
+    process.on_input_event(event_id=ChatBotEvents.StartProcess).send_event_to(target=intro_step)
 
     # Define the event that triggers the next step in the process
     intro_step.on_function_result(function_name=IntroStep.print_intro_message.__name__).send_event_to(
@@ -165,16 +179,14 @@ async def step01_processes():
     )
 
     # Define the event that triggers the process to stop
-    user_input_step.on_event(event_id=ChatBotEvents.Exit.value).stop_process()
+    user_input_step.on_event(event_id=ChatBotEvents.Exit).stop_process()
     # For the user step, send the user input to the response step
-    user_input_step.on_event(event_id=CommonEvents.UserInputReceived.value).send_event_to(
+    user_input_step.on_event(event_id=CommonEvents.UserInputReceived).send_event_to(
         target=response_step, parameter_name="user_message"
     )
 
     # For the response step, send the response back to the user input step
-    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated.value).send_event_to(
-        target=user_input_step
-    )
+    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated).send_event_to(target=user_input_step)
 
     # Build the kernel process
     kernel_process = process.build()
@@ -183,9 +195,10 @@ async def step01_processes():
     await start(
         process=kernel_process,
         kernel=kernel,
-        initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess.value, data=None),
+        initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess, data=None),
     )
 
 
 if __name__ == "__main__":
-    asyncio.run(step01_processes())
+    # if you want to run this sample with your won input, set the below parameter to False
+    asyncio.run(step01_processes(scripted=False))

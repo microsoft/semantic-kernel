@@ -427,7 +427,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             RedisResult.Create(new RedisValue("1")),
             RedisResult.Create(new RedisValue(TestRecordKey1)),
-            RedisResult.Create(new RedisValue("0.5")),
+            RedisResult.Create(new RedisValue("0.8")),
             RedisResult.Create(
             [
                 new RedisValue("OriginalNameData"),
@@ -436,6 +436,8 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 new RedisValue("data 1"),
                 new RedisValue("vector_storage_name"),
                 RedisValue.Unbox(MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray()),
+                new RedisValue("vector_score"),
+                new RedisValue("0.25"),
             ]),
         });
         var sut = this.CreateRecordCollection(useDefinition);
@@ -468,9 +470,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var returnArgs = includeVectors ? Array.Empty<object>() : new object[]
         {
             "RETURN",
-            2,
+            3,
             "OriginalNameData",
-            "data_storage_name"
+            "data_storage_name",
+            "vector_score"
         };
         var expectedArgsPart2 = new object[]
         {
@@ -493,7 +496,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(TestRecordKey1, results.First().Record.Key);
-        Assert.Equal(0.5d, results.First().Score);
+        Assert.Equal(0.25d, results.First().Score);
         Assert.Equal("original data 1", results.First().Record.OriginalNameData);
         Assert.Equal("data 1", results.First().Record.Data);
         if (includeVectors)
@@ -613,7 +616,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
             new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -630,7 +633,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreRecordVector(4, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreRecordVector(4, DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

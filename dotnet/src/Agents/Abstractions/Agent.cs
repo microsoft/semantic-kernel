@@ -27,9 +27,9 @@ public abstract class Agent
     /// <summary>
     /// The identifier of the agent (optional).
     /// </summary>
-    /// <reamarks>
+    /// <remarks>
     /// Default to a random guid value, but may be overridden.
-    /// </reamarks>
+    /// </remarks>
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
@@ -71,6 +71,18 @@ public abstract class Agent
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
+    /// </summary>
+    /// <param name="channelState">The channel state, as serialized</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
+    /// <remarks>
+    /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
+    /// objects according to the specific <see cref="Agent"/> type.
+    /// </remarks>
+    protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
     private ILogger? _logger;
 }

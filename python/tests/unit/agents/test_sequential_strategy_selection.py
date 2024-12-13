@@ -12,7 +12,7 @@ from semantic_kernel.agents.strategies.selection.sequential_selection_strategy i
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,
@@ -34,7 +34,6 @@ def agents():
     return [MockAgent(id=f"agent-{i}") for i in range(3)]
 
 
-@pytest.mark.asyncio
 async def test_sequential_selection_next(agents):
     strategy = SequentialSelectionStrategy()
 
@@ -48,7 +47,6 @@ async def test_sequential_selection_next(agents):
     assert selected_agent_3.id == "agent-2"
 
 
-@pytest.mark.asyncio
 async def test_sequential_selection_wraps_around(agents):
     strategy = SequentialSelectionStrategy()
 
@@ -59,7 +57,6 @@ async def test_sequential_selection_wraps_around(agents):
     assert selected_agent.id == "agent-0"
 
 
-@pytest.mark.asyncio
 async def test_sequential_selection_reset(agents):
     strategy = SequentialSelectionStrategy()
 
@@ -73,7 +70,6 @@ async def test_sequential_selection_reset(agents):
     assert selected_agent.id == "agent-0"
 
 
-@pytest.mark.asyncio
 async def test_sequential_selection_exceeds_length(agents):
     strategy = SequentialSelectionStrategy()
 
@@ -85,7 +81,6 @@ async def test_sequential_selection_exceeds_length(agents):
     assert strategy._index == 1
 
 
-@pytest.mark.asyncio
 async def test_sequential_selection_empty_agents():
     strategy = SequentialSelectionStrategy()
 

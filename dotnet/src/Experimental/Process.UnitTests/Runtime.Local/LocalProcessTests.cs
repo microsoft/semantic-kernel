@@ -18,11 +18,11 @@ public class LocalProcessTests
     public async Task ExecuteAsyncInitializesCorrectlyAsync()
     {
         // Arrange
-        var processState = new KernelProcessState(name: "TestProcess", id: "123");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "123");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         var mockKernel = new Kernel();
@@ -45,11 +45,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act
@@ -67,11 +67,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess", id: "AlreadySet");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "AlreadySet");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act
@@ -165,20 +165,28 @@ public class LocalProcessTests
     /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
-    private sealed class TestStep : KernelProcessStep<TestState>
+    [Fact]
+    public void ProcessWithSubprocessAndInvalidTargetThrows()
     {
-        /// <summary>
-        /// The name of the step.
-        /// </summary>
-        public static string Name => "TestStep";
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessWithSubprocessAndInvalidTargetThrows));
 
-        /// <summary>
-        /// A method that represents a function for testing.
-        /// </summary>
-        [KernelFunction]
-        public void TestFunction()
-        {
-        }
+        ProcessBuilder subProcess = new("SubProcess");
+        ProcessStepBuilder innerStep = subProcess.AddStepFromType<TestStep>("InnerStep");
+        subProcess
+            .OnInputEvent("Go")
+            .SendEventTo(new ProcessFunctionTargetBuilder(innerStep));
+        process
+            .OnInputEvent("Start")
+            .SendEventTo(subProcess.WhereInputEventIs("Go"));
+
+        ProcessStepBuilder outerStep = process.AddStepFromType<TestStep>("OuterStep");
+        innerStep
+            .OnEvent(TestStep.EventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(outerStep));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
     }
 
     /// <summary>
@@ -221,9 +229,17 @@ public class LocalProcessTests
     }
 
     /// <summary>
-    /// A class that represents a state for testing.
+    /// A class that represents a step for testing.
     /// </summary>
-    private sealed class TestState
+    private sealed class TestStep : KernelProcessStep
     {
+        public const string EventId = "Next";
+        public const string Name = nameof(TestStep);
+
+        [KernelFunction]
+        public async Task TestFunctionAsync(KernelProcessStepContext context)
+        {
+            await context.EmitEventAsync(new() { Id = EventId });
+        }
     }
 }

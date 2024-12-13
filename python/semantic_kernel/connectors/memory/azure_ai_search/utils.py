@@ -24,8 +24,8 @@ from semantic_kernel.connectors.memory.azure_ai_search.const import (
     TYPE_MAPPER_DATA,
     TYPE_MAPPER_VECTOR,
 )
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -145,12 +145,21 @@ def data_model_definition_to_azure_ai_search_index(
                     algorithm_configuration_name=algo_name,
                 )
             )
-            algo_class, algo_params = INDEX_ALGORITHM_MAP[field.index_kind or "default"]
+            try:
+                algo_class, algo_params = INDEX_ALGORITHM_MAP[field.index_kind or "default"]
+            except KeyError as e:
+                raise ServiceInitializationError(f"Error: {field.index_kind} not found in INDEX_ALGORITHM_MAP.") from e
+            try:
+                distance_metric = DISTANCE_FUNCTION_MAP[field.distance_function or "default"]
+            except KeyError as e:
+                raise ServiceInitializationError(
+                    f"Error: {field.distance_function} not found in DISTANCE_FUNCTION_MAP."
+                ) from e
             search_algos.append(
                 algo_class(
                     name=algo_name,
                     parameters=algo_params(
-                        metric=DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+                        metric=distance_metric,
                     ),
                 )
             )

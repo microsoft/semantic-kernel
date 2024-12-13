@@ -15,9 +15,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.OpenApi.ApiManifest" />
+    <PackageReference Include="Microsoft.Plugins.Manifest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
+    <ProjectReference Include="..\..\Agents\Abstractions\Agents.Abstractions.csproj"/>
   </ItemGroup>
 </Project>

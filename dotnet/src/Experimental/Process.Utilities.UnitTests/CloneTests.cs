@@ -24,7 +24,7 @@ public class CloneTests
     public void VerifyCloneStepStateTest()
     {
         // Arrange
-        KernelProcessStepState state = new(nameof(VerifyCloneStepStateTest), "test");
+        KernelProcessStepState state = new(nameof(VerifyCloneStepStateTest), "v1", "test");
 
         // Act
         KernelProcessStepState copy = state.Clone(typeof(KernelProcessStepState), null, NullLogger.Instance);
@@ -40,7 +40,7 @@ public class CloneTests
     public void VerifyCloneTypedStepStateTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "v1", "test") { State = new TestState() };
 
         // Act
         KernelProcessStepState copy = state.Clone(state.GetType(), typeof(TestState), NullLogger.Instance);
@@ -56,7 +56,7 @@ public class CloneTests
     public void VerifyCloneSimpleStepTest()
     {
         // Arrange
-        KernelProcessStepInfo source = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSimpleStepTest), "test"), []);
+        KernelProcessStepInfo source = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSimpleStepTest), "v1", "test"), []);
 
         // Act
         KernelProcessStepInfo copy = source.Clone(NullLogger.Instance);
@@ -72,7 +72,7 @@ public class CloneTests
     public void VerifyCloneRealStepTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "v1", "test") { State = new TestState() };
         KernelProcessStepInfo source = new(typeof(KernelProcessStep<TestState>), state, CreateTestEdges());
 
         // Act
@@ -89,8 +89,8 @@ public class CloneTests
     public void VerifyCloneSingleProcessTest()
     {
         // Arrange
-        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
-        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "test");
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "v1", "teststep"), []);
+        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "v1", "test");
         KernelProcess source = new(processState, [step], CreateTestEdges());
 
         // Act
@@ -108,8 +108,27 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "teststep"), []);
-        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "inner"), [step], CreateTestEdges());
-        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "outer"), [subProcess], []);
+        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "v2", "inner"), [step], CreateTestEdges());
+        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "outer"), [subProcess], []);
+
+        // Act
+        KernelProcess copy = source.CloneProcess(NullLogger.Instance);
+
+        // Assert
+        VerifyProcess(source, copy);
+    }
+
+    /// <summary>
+    /// Verify result of cloning a <see cref="KernelProcess"/> with a <see cref="KernelProcessMap"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyCloneMapStepTest()
+    {
+        // Arrange
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "v1", "teststep"), []);
+        KernelProcess mapOperation = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "operation"), [step], CreateTestEdges());
+        KernelProcessMap mapStep = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "map"), mapOperation, CreateTestEdges());
+        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "outer"), [mapStep], []);
 
         // Act
         KernelProcess copy = source.CloneProcess(NullLogger.Instance);
@@ -122,6 +141,7 @@ public class CloneTests
     {
         Assert.Equal(expected.State.Id, actual.State.Id);
         Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.State.Version, actual.State.Version);
         Assert.Equal(expected.InnerStepType, actual.InnerStepType);
         Assert.Equivalent(expected.Edges, actual.Edges);
         foreach (var (expectedStep, actualStep) in expected.Steps.Zip(actual.Steps))

@@ -2,7 +2,7 @@
 
 import logging
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Mapping, Sequence
 from html import unescape
 from typing import TYPE_CHECKING, Any
 
@@ -63,8 +63,10 @@ class KernelFunctionFromPrompt(KernelFunction):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
-        prompt_execution_settings: None
-        | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]) = None,
+        prompt_execution_settings: PromptExecutionSettings
+        | Sequence[PromptExecutionSettings]
+        | Mapping[str, PromptExecutionSettings]
+        | None = None,
     ) -> None:
         """Initializes a new instance of the KernelFunctionFromPrompt class.
 
@@ -152,7 +154,7 @@ through prompt_template_config or in the prompt_template."
             data["prompt_execution_settings"] = {
                 prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
             }
-        if isinstance(prompt_execution_settings, list):
+        if isinstance(prompt_execution_settings, Sequence):
             data["prompt_execution_settings"] = {
                 s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
             }

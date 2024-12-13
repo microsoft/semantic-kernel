@@ -13,7 +13,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,
@@ -29,7 +29,7 @@ class MockAgent(Agent):
         return AsyncMock(spec=AgentChannel)
 
 
-class TestTerminationStrategy(TerminationStrategy):
+class TerminationStrategyTest(TerminationStrategy):
     """A test implementation of TerminationStrategy for testing purposes."""
 
     async def should_agent_terminate(self, agent: "Agent", history: list[ChatMessageContent]) -> bool:
@@ -37,10 +37,9 @@ class TestTerminationStrategy(TerminationStrategy):
         return True
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_with_matching_agent():
     agent = MockAgent(id="test-agent-id")
-    strategy = TestTerminationStrategy(agents=[agent])
+    strategy = TerminationStrategyTest(agents=[agent])
 
     # Assuming history is a list of ChatMessageContent; can be mocked or made minimal
     history = [MagicMock(spec=ChatMessageContent)]
@@ -49,11 +48,10 @@ async def test_should_terminate_with_matching_agent():
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_with_non_matching_agent():
     agent = MockAgent(id="test-agent-id")
     non_matching_agent = MockAgent(id="non-matching-agent-id")
-    strategy = TestTerminationStrategy(agents=[non_matching_agent])
+    strategy = TerminationStrategyTest(agents=[non_matching_agent])
 
     # Assuming history is a list of ChatMessageContent; can be mocked or made minimal
     history = [MagicMock(spec=ChatMessageContent)]
@@ -62,10 +60,9 @@ async def test_should_terminate_with_non_matching_agent():
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_should_terminate_no_agents_in_strategy():
     agent = MockAgent(id="test-agent-id")
-    strategy = TestTerminationStrategy()
+    strategy = TerminationStrategyTest()
 
     # Assuming history is a list of ChatMessageContent; can be mocked or made minimal
     history = [MagicMock(spec=ChatMessageContent)]
@@ -74,7 +71,6 @@ async def test_should_terminate_no_agents_in_strategy():
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_should_agent_terminate_not_implemented():
     agent = MockAgent(id="test-agent-id")
     strategy = TerminationStrategy(agents=[agent])

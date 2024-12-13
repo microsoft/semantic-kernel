@@ -29,4 +29,27 @@ public sealed class KernelProcessStepContext
     {
         return this._stepMessageChannel.EmitEventAsync(processEvent);
     }
+
+    /// <summary>
+    /// Emit an event from the current step with a simplified method signature.
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="data"></param>
+    /// <param name="visibility"></param>
+    /// <returns></returns>
+    public ValueTask EmitEventAsync(
+        string eventId,
+        object? data = null,
+        KernelProcessEventVisibility visibility = KernelProcessEventVisibility.Internal)
+    {
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
+
+        return this._stepMessageChannel.EmitEventAsync(
+            new KernelProcessEvent
+            {
+                Id = eventId,
+                Data = data,
+                Visibility = visibility
+            });
+    }
 }

@@ -1,0 +1,21 @@
+dirs: 
+  - .
+ignorePatterns:
+  - pattern: "/github/"
+  - pattern: "./actions"
+  - pattern: "./blob"
+  - pattern: "./issues"
+  - pattern: "./discussions"
+  - pattern: "./pulls"
+  - pattern: "^http://localhost"
+  - pattern: "^https://localhost"
+  - pattern: "^https://platform.openai.com"
+  - pattern: "^https://outlook.office.com/bookings"
+baseUrl: https://github.com/microsoft/semantic-kernel/
+aliveStatusCodes: 
+  - 200
+  - 206
+  - 429
+  - 500
+  - 503
+useGitIgnore: true

@@ -63,7 +63,7 @@ class SessionsPythonTool(KernelBaseModel):
             settings = SessionsPythonSettings()
 
         if not http_client:
-            http_client = AsyncClient()
+            http_client = AsyncClient(timeout=5)
 
         if auth_callback is None:
             auth_callback = self._default_auth_callback(aca_settings)
@@ -200,7 +200,12 @@ class SessionsPythonTool(KernelBaseModel):
             )
             response.raise_for_status()
             result = response.json()["properties"]
-            return f"Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"
+            return (
+                f"Status:\n{result['status']}\n"
+                f"Result:\n{result['result']}\n"
+                f"Stdout:\n{result['stdout']}\n"
+                f"Stderr:\n{result['stderr']}"
+            )
         except HTTPStatusError as e:
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(

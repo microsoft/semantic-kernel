@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Utils for Pinecone connector.
 /// </summary>
+[Experimental("SKEXP0020")]
 public static class PineconeUtils
 {
     /// <summary>

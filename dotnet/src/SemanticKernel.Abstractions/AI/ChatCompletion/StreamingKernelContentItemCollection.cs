@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -12,7 +11,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Contains collection of streaming kernel content items of type <see cref="StreamingKernelContent"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class StreamingKernelContentItemCollection : IList<StreamingKernelContent>, IReadOnlyList<StreamingKernelContent>
 {
     /// <summary>

@@ -9,7 +9,7 @@ from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.ai.inference.models import (
     ChatChoice,
     ChatCompletions,
-    ChatCompletionsFunctionToolCall,
+    ChatCompletionsToolCall,
     ChatResponseMessage,
     CompletionsUsage,
     FunctionCall,
@@ -46,6 +46,31 @@ def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_par
     env_vars = {
         "AZURE_AI_INFERENCE_API_KEY": "test-api-key",
         "AZURE_AI_INFERENCE_ENDPOINT": "https://test-endpoint.com",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def model_diagnostics_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Azure AI Inference Unit Tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS": "true",
+        "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE": "true",
     }
 
     env_vars.update(override_env_param_dict)
@@ -135,7 +160,7 @@ def mock_azure_ai_inference_chat_completion_response_with_tool_call(model_id) ->
                 message=ChatResponseMessage(
                     role="assistant",
                     tool_calls=[
-                        ChatCompletionsFunctionToolCall(
+                        ChatCompletionsToolCall(
                             id="test_id",
                             function=FunctionCall(
                                 name="test_function",
@@ -224,7 +249,7 @@ def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(mo
                     delta=ChatResponseMessage(
                         role="assistant",
                         tool_calls=[
-                            ChatCompletionsFunctionToolCall(
+                            ChatCompletionsToolCall(
                                 id="test_id",
                                 function=FunctionCall(
                                     name="test_function",

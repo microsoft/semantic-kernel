@@ -3,6 +3,7 @@
 using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,7 +15,7 @@ using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 /// <summary>
 /// Base class for samples that demonstrate the usage of agents.
 /// </summary>
-public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output)
+public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Metadata key to indicate the assistant as created for a sample.
@@ -41,8 +42,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
-                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
-                OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+                !string.IsNullOrWhiteSpace(this.ApiKey) ?
+                    OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+                    OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -78,7 +81,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             }
             else if (item is FunctionResultContent functionResult)
             {
-                Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId}");
+                Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId} - {functionResult.Result?.AsJson() ?? "*"}");
             }
         }
 

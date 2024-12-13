@@ -5,49 +5,44 @@ import sys
 from functools import partial, reduce
 from typing import Any
 
-import pytest
-from openai import AsyncAzureOpenAI
-
-from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
-    GoogleAITextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
-    VertexAITextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
-from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAITextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.text_content import TextContent
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.test_utils import is_service_setup_for_testing, retry
+import pytest
+from openai import AsyncAzureOpenAI
 
-ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.bedrock import BedrockTextCompletion, BedrockTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletion, GoogleAITextPromptExecutionSettings
+from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
+from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
+from semantic_kernel.connectors.ai.ollama import OllamaTextCompletion, OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureOpenAISettings,
+    AzureTextCompletion,
+    OpenAITextCompletion,
+    OpenAITextPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
+from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
+from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
+
+azure_openai_setup = True
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
+    "Linux"
+])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
+bedrock_setup = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
@@ -105,7 +100,12 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skip(
+                    reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+                ),
+                pytest.mark.ollama,
+            ),
             id="ollama_text_completion",
         ),
         pytest.param(
@@ -137,6 +137,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
+            marks=pytest.mark.skipif(not bedrock_setup, reason="Not setup"),
             id="bedrock_amazon_titan_text_completion",
         ),
         pytest.param(
@@ -183,31 +184,35 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
 
     @override
     @pytest.fixture(scope="class")
-    def services(self) -> dict[str, tuple[ServiceType, type[PromptExecutionSettings]]]:
+    def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
+        azure_openai_setup = True
         azure_openai_settings = AzureOpenAISettings.create()
-        endpoint = azure_openai_settings.endpoint
+        endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = azure_openai_settings.get_azure_openai_auth_token()
+        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+        if not ad_token:
+            azure_openai_setup = False
         api_version = azure_openai_settings.api_version
-        azure_custom_client = AzureTextCompletion(
-            async_client=AsyncAzureOpenAI(
-                azure_endpoint=endpoint,
-                azure_deployment=deployment_name,
-                azure_ad_token=ad_token,
-                api_version=api_version,
-                default_headers={"Test-User-X-ID": "test"},
-            ),
-        )
+        azure_custom_client = None
+        if azure_openai_setup:
+            azure_custom_client = AzureTextCompletion(
+                async_client=AsyncAzureOpenAI(
+                    azure_endpoint=endpoint,
+                    azure_deployment=deployment_name,
+                    azure_ad_token=ad_token,
+                    api_version=api_version,
+                    default_headers={"Test-User-X-ID": "test"},
+                ),
+            )
 
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
-            "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
+            "azure": (AzureTextCompletion() if azure_openai_setup else None, OpenAITextPromptExecutionSettings),
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
             "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
@@ -243,27 +248,27 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                BedrockTextCompletion(model_id="anthropic.claude-v2"),
+                BedrockTextCompletion(model_id="anthropic.claude-v2") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (
-                BedrockTextCompletion(model_id="cohere.command-text-v14"),
+                BedrockTextCompletion(model_id="cohere.command-text-v14") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (
-                BedrockTextCompletion(model_id="ai21.j2-mid-v1"),
+                BedrockTextCompletion(model_id="ai21.j2-mid-v1") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
+                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_mistralai": (
-                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2"),
+                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2") if bedrock_setup else None,
                 BedrockTextPromptExecutionSettings,
             ),
         }
@@ -347,7 +352,8 @@ class TestTextCompletion(CompletionTestBase):
         stream: bool,
     ):
         service, settings_type = services[service_id]
-
+        if not service:
+            pytest.skip(f"Setup not ready for {service_id if service_id else 'None'}")
         for test_input in inputs:
             response = await retry(
                 partial(

@@ -78,20 +78,13 @@ def test_azure_ai_inference_chat_completion_init_with_custom_client(azure_ai_inf
     assert azure_ai_inference.client == client
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True)
-def test_azure_ai_inference_chat_completion_init_with_empty_api_key(azure_ai_inference_unit_test_env, model_id) -> None:
-    """Test initialization of AzureAIInferenceChatCompletion with empty API key"""
-    with pytest.raises(ServiceInitializationError):
-        AzureAIInferenceChatCompletion(model_id)
-
-
 @pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_ENDPOINT"]], indirect=True)
 def test_azure_ai_inference_chat_completion_init_with_empty_endpoint(
     azure_ai_inference_unit_test_env, model_id
 ) -> None:
     """Test initialization of AzureAIInferenceChatCompletion with empty endpoint"""
     with pytest.raises(ServiceInitializationError):
-        AzureAIInferenceChatCompletion(model_id)
+        AzureAIInferenceChatCompletion(model_id, env_file_path="fake_path")
 
 
 def test_prompt_execution_settings_class(azure_ai_inference_unit_test_env, model_id) -> None:
@@ -103,7 +96,8 @@ def test_prompt_execution_settings_class(azure_ai_inference_unit_test_env, model
 
 
 # region chat completion
-@pytest.mark.asyncio
+
+
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -135,7 +129,6 @@ async def test_azure_ai_inference_chat_completion(
     assert responses[0].content == "Hello"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -182,7 +175,6 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
     assert responses[0].content == "Hello"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -216,7 +208,6 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
     assert responses[0].content == "Hello"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -254,7 +245,6 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
         )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -295,7 +285,6 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
     assert responses[0].finish_reason == FinishReason.TOOL_CALLS
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -340,7 +329,8 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
 
 
 # region streaming chat completion
-@pytest.mark.asyncio
+
+
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -373,7 +363,6 @@ async def test_azure_ai_inference_streaming_chat_completion(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -421,7 +410,6 @@ async def test_azure_ai_inference_chat_streaming_completion_with_standard_parame
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -456,7 +444,6 @@ async def test_azure_ai_inference_streaming_chat_completion_with_extra_parameter
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -496,7 +483,6 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
             pass
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],
@@ -537,7 +523,6 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
     assert mock_complete.call_count == 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceChatCompletion.__name__],

@@ -5,8 +5,10 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Features | Description |
 | -------- | ----------- |
 | Agents | Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel |
+| Audio | Using services that support audio-to-text and text-to-audio conversion |
 | AutoFunctionCalling | Using `Auto Function Calling` to allow function call capable models to invoke Kernel Functions automatically |
 | ChatCompletion | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) messaging capable service with models  |
+| ChatHistory | Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py) |
 | Filtering | Creating and using Filters |
 | Functions | Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_prompt.py) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/kernel.py) |
 | Grounding | An example of how to perform LLM grounding |

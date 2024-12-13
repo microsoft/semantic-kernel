@@ -8,7 +8,6 @@ from openai.resources.embeddings import AsyncEmbeddings
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -78,10 +77,9 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_openai_unit_test_env) -> None:
     with (
         patch(
-            f"{AzureOpenAISettings.__module__}.{AzureOpenAISettings.__qualname__}.get_azure_openai_auth_token",
+            "semantic_kernel.utils.authentication.entra_id_authentication.get_entra_auth_token",
         ) as mock_get_token,
     ):
-        mock_get_token.return_value = "test_token"
         azure_text_embedding = AzureTextEmbedding()
 
         assert azure_text_embedding.client is not None
@@ -89,7 +87,6 @@ def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_opena
         assert mock_get_token.call_count == 0
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_openai_unit_test_env) -> None:
     texts = ["hello world", "goodbye world"]
@@ -106,7 +103,6 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai_unit_test_env) -> None:
     texts = [i for i in range(0, 5)]

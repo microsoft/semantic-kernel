@@ -1,22 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-import weaviate
 from pydantic import field_validator
+from weaviate import WeaviateAsyncClient, use_async_with_embedded, use_async_with_local, use_async_with_weaviate_cloud
 from weaviate.classes.init import Auth
-from weaviate.classes.query import Filter
+from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
+from weaviate.exceptions import WeaviateClosedClientError
 
 from semantic_kernel.connectors.memory.weaviate.utils import (
+    create_filter_from_vector_search_filters,
     data_model_definition_to_weaviate_named_vectors,
     data_model_definition_to_weaviate_properties,
     extract_key_from_dict_record_based_on_data_model_definition,
@@ -25,40 +28,58 @@ from semantic_kernel.connectors.memory.weaviate.utils import (
     extract_properties_from_weaviate_object_based_on_data_model_definition,
     extract_vectors_from_dict_record_based_on_data_model_definition,
     extract_vectors_from_weaviate_object_based_on_data_model_definition,
+    to_weaviate_vector_index_config,
 )
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
+from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, int)
 
 
 @experimental_class
-class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
+class WeaviateCollection(
+    VectorSearchBase[TKey, TModel],
+    VectorizedSearchMixin[TModel],
+    VectorTextSearchMixin[TModel],
+    VectorizableTextSearchMixin[TModel],
+    Generic[TKey, TModel],
+):
     """A Weaviate collection is a collection of records that are stored in a Weaviate database."""
 
-    async_client: weaviate.WeaviateAsyncClient
+    async_client: WeaviateAsyncClient
+    named_vectors: bool = True
 
     def __init__(
         self,
         data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition,
         collection_name: str,
+        data_model_definition: VectorStoreRecordDefinition | None = None,
         url: str | None = None,
         api_key: str | None = None,
         local_host: str | None = None,
         local_port: int | None = None,
         local_grpc_port: int | None = None,
         use_embed: bool = False,
-        async_client: weaviate.WeaviateAsyncClient | None = None,
+        named_vectors: bool = True,
+        async_client: WeaviateAsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ):
@@ -74,11 +95,16 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             local_port: The local Weaviate port.
             local_grpc_port: The local Weaviate gRPC port.
             use_embed: Whether to use the client embedding options.
+            named_vectors: Whether to use named vectors, or a single unnamed vector.
+                In both cases the data model can be the same, but it has to have 1 vector
+                field if named_vectors is False.
             async_client: A custom Weaviate async client.
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
+        managed_client: bool = False
         if not async_client:
+            managed_client = True
             weaviate_settings = WeaviateSettings.create(
                 url=url,
                 api_key=api_key,
@@ -92,7 +118,7 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
 
             try:
                 if weaviate_settings.url:
-                    async_client = weaviate.use_async_with_weaviate_cloud(
+                    async_client = use_async_with_weaviate_cloud(
                         cluster_url=str(weaviate_settings.url),
                         auth_credentials=Auth.api_key(weaviate_settings.api_key.get_secret_value()),
                     )
@@ -102,12 +128,12 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
                         "grpc_port": weaviate_settings.local_grpc_port,
                     }
                     kwargs = {k: v for k, v in kwargs.items() if v is not None}
-                    async_client = weaviate.use_async_with_local(
+                    async_client = use_async_with_local(
                         host=weaviate_settings.local_host,
                         **kwargs,
                     )
                 elif weaviate_settings.use_embed:
-                    async_client = weaviate.use_async_with_embedded()
+                    async_client = use_async_with_embedded()
                 else:
                     raise NotImplementedError(
                         "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
@@ -121,6 +147,8 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             data_model_definition=data_model_definition,
             collection_name=collection_name,
             async_client=async_client,
+            managed_client=managed_client,
+            named_vectors=named_vectors,
         )
 
     @field_validator("collection_name")
@@ -143,47 +171,153 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
     ) -> Sequence[TKey]:
         assert all([isinstance(record, DataObject) for record in records])  # nosec
 
-        async with self.async_client:
-            try:
-                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-                response = await collection.data.insert_many(records)
-            except Exception as ex:
-                raise MemoryConnectorException(f"Failed to upsert records: {ex}")
+        try:
+            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+            response = await collection.data.insert_many(records)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to upsert records: {ex}")
 
         return [str(v) for _, v in response.uuids.items()]
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
-        include_vectors: bool = kwargs.get("include_vectors", False)
-        named_vectors: list[str] = []
-        if include_vectors:
-            named_vectors = [
-                data_field.name
-                for data_field in self.data_model_definition.fields.values()
-                if isinstance(data_field, VectorStoreRecordDataField) and data_field.has_embedding
-            ]
+        try:
+            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+            result = await collection.query.fetch_objects(
+                filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),
+                include_vector=kwargs.get("include_vectors", False),
+            )
 
-        async with self.async_client:
-            try:
-                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-                result = await collection.query.fetch_objects(
-                    filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),
-                    # Requires a list of named vectors if it is not empty. Otherwise, a boolean is sufficient.
-                    include_vector=named_vectors or include_vectors,
-                )
-
-                return result.objects
-            except Exception as ex:
-                raise MemoryConnectorException(f"Failed to get records: {ex}")
+            return result.objects
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to get records: {ex}")
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
-        async with self.async_client:
-            try:
-                collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-                await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
-            except Exception as ex:
-                raise MemoryConnectorException(f"Failed to delete records: {ex}")
+        try:
+            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+            await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to delete records: {ex}")
+
+    @override
+    async def _inner_search(
+        self,
+        options: VectorSearchOptions,
+        search_text: str | None = None,
+        vectorizable_text: str | None = None,
+        vector: list[float | int] | None = None,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+        args = {
+            "filters": create_filter_from_vector_search_filters(options.filter),
+            "include_vector": options.include_vectors,
+            "limit": options.top,
+            "offset": options.skip,
+        }
+        if search_text:
+            results = await self._inner_vector_text_search(collection, search_text, args)
+        elif vectorizable_text:
+            results = await self._inner_vectorizable_text_search(collection, vectorizable_text, vector_field, args)
+        elif vector:
+            results = await self._inner_vectorized_search(collection, vector, vector_field, args)
+        else:
+            raise MemoryConnectorException("No search criteria provided.")
+
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(results.objects), total_count=len(results.objects)
+        )
+
+    async def _inner_vector_text_search(
+        self, collection: CollectionAsync, search_text: str, args: dict[str, Any]
+    ) -> Any:
+        try:
+            return await collection.query.bm25(
+                query=search_text,
+                return_metadata=MetadataQuery(score=True),
+                **args,
+            )
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed searching using a text: {ex}") from ex
+
+    async def _inner_vectorizable_text_search(
+        self,
+        collection: CollectionAsync,
+        vectorizable_text: str,
+        vector_field: VectorStoreRecordVectorField | None,
+        args: dict[str, Any],
+    ) -> Any:
+        if self.named_vectors and not vector_field:
+            raise MemoryConnectorException(
+                "Vectorizable text search requires a vector field to be specified in the options."
+            )
+        try:
+            return await collection.query.near_text(
+                query=vectorizable_text,
+                target_vector=vector_field.name if self.named_vectors and vector_field else None,
+                return_metadata=MetadataQuery(distance=True),
+                **args,
+            )
+        except Exception as ex:
+            logger.error(
+                f"Failed searching using a vectorizable text: {ex}. "
+                "This is probably due to not having setup Weaviant with a vectorizer, the default config for a "
+                "collection does not include a vectorizer, you would have to supply a custom set of arguments"
+                "to the create_collection method to include a vectorizer."
+                "Alternatively you could use a existing collection that has a vectorizer setup."
+                "See also: https://weaviate.io/developers/weaviate/manage-data/collections#create-a-collection"
+            )
+            raise MemoryConnectorException(f"Failed searching using a vectorizable text: {ex}") from ex
+
+    async def _inner_vectorized_search(
+        self,
+        collection: CollectionAsync,
+        vector: list[float | int],
+        vector_field: VectorStoreRecordVectorField | None,
+        args: dict[str, Any],
+    ) -> Any:
+        if self.named_vectors and not vector_field:
+            raise MemoryConnectorException(
+                "Vectorizable text search requires a vector field to be specified in the options."
+            )
+        try:
+            return await collection.query.near_vector(
+                near_vector=vector,
+                target_vector=vector_field.name if self.named_vectors and vector_field else None,
+                return_metadata=MetadataQuery(distance=True),
+                **args,
+            )
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed searching using a vector: {ex}") from ex
+
+    def _get_record_from_result(self, result: Any) -> Any:
+        """Get the record from the returned search result."""
+        return result
+
+    def _get_score_from_result(self, result: Any) -> float | None:
+        if result.metadata and result.metadata.score is not None:
+            return result.metadata.score
+        if result.metadata and result.metadata.distance is not None:
+            return result.metadata.distance
+        return None
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -196,7 +330,7 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             # If key is None, Weaviate will generate a UUID
             key = extract_key_from_dict_record_based_on_data_model_definition(record, self.data_model_definition)
             vectors = extract_vectors_from_dict_record_based_on_data_model_definition(
-                record, self.data_model_definition
+                record, self.data_model_definition, self.named_vectors
             )
             records_in_store_model.append(DataObject(properties=properties, uuid=key, vector=vectors))
         return records_in_store_model
@@ -210,7 +344,7 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             )
             key = extract_key_from_weaviate_object_based_on_data_model_definition(record, self.data_model_definition)
             vectors = extract_vectors_from_weaviate_object_based_on_data_model_definition(
-                record, self.data_model_definition
+                record, self.data_model_definition, self.named_vectors
             )
 
             records_in_dict.append(properties | key | vectors)
@@ -222,17 +356,42 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
         """Create the collection in Weaviate.
 
         Args:
-            **kwargs: Additional keyword arguments.
+            **kwargs: Additional keyword arguments, when any kwargs are supplied they are passed
+                straight to the Weaviate client.collections.create method.
+                Make sure to check the arguments of that method for the specifications.
         """
-        async with self.async_client:
+        if not self.named_vectors and len(self.data_model_definition.vector_field_names) != 1:
+            raise MemoryConnectorException(
+                "Named vectors must be enabled if there is not exactly one vector field in the data model definition."
+            )
+        if kwargs:
             try:
-                await self.async_client.collections.create(
-                    self.collection_name,
-                    properties=data_model_definition_to_weaviate_properties(self.data_model_definition),
-                    vectorizer_config=data_model_definition_to_weaviate_named_vectors(self.data_model_definition),
-                )
+                await self.async_client.collections.create(**kwargs)
+            except WeaviateClosedClientError as ex:
+                raise MemoryConnectorException(
+                    "Client is closed, please use the context manager or self.async_client.connect."
+                ) from ex
             except Exception as ex:
-                raise MemoryConnectorException(f"Failed to create collection: {ex}")
+                raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
+        try:
+            await self.async_client.collections.create(
+                name=self.collection_name,
+                properties=data_model_definition_to_weaviate_properties(self.data_model_definition),
+                vector_index_config=to_weaviate_vector_index_config(
+                    self.data_model_definition.fields[self.data_model_definition.vector_field_names[0]]
+                )
+                if not self.named_vectors
+                else None,
+                vectorizer_config=data_model_definition_to_weaviate_named_vectors(self.data_model_definition)
+                if self.named_vectors
+                else None,
+            )
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
@@ -244,12 +403,14 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
         Returns:
             bool: Whether the collection exists.
         """
-        async with self.async_client:
-            try:
-                await self.async_client.collections.exists(self.collection_name)
-                return True
-            except Exception as ex:
-                raise MemoryConnectorException(f"Failed to check if collection exists: {ex}")
+        try:
+            return await self.async_client.collections.exists(self.collection_name)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to check if collection exists: {ex}") from ex
 
     @override
     async def delete_collection(self, **kwargs) -> None:
@@ -258,8 +419,30 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
         Args:
             **kwargs: Additional keyword arguments.
         """
-        async with self.async_client:
-            try:
-                await self.async_client.collections.delete(self.collection_name)
-            except Exception as ex:
-                raise MemoryConnectorException(f"Failed to delete collection: {ex}")
+        try:
+            await self.async_client.collections.delete(self.collection_name)
+        except WeaviateClosedClientError as ex:
+            raise MemoryConnectorException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise MemoryConnectorException(f"Failed to delete collection: {ex}") from ex
+
+    @override
+    async def __aenter__(self) -> "WeaviateCollection":
+        """Enter the context manager."""
+        await self.async_client.connect()
+        return self
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.async_client.close()
+
+    def _validate_data_model(self):
+        super()._validate_data_model()
+        if self.named_vectors and len(self.data_model_definition.vector_field_names) > 1:
+            raise VectorStoreModelValidationError(
+                "Named vectors must be enabled if there are more then 1 vector fields in the data model definition."
+            )

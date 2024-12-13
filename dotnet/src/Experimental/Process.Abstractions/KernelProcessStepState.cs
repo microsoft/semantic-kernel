@@ -49,16 +49,25 @@ public record KernelProcessStepState
     public string Name { get; init; }
 
     /// <summary>
+    /// Version of the state
+    /// </summary>
+    [DataMember]
+    public string Version { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
     /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="version">version id of the process step state</param>
     /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string name, string? id = null)
+    public KernelProcessStepState(string name, string version, string? id = null)
     {
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(name, nameof(name));
+        Verify.NotNullOrWhiteSpace(version, nameof(version));
 
         this.Id = id;
         this.Name = name;
+        this.Version = version;
     }
 }
 
@@ -79,13 +88,15 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
     /// </summary>
     /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="version">version id of the process step state</param>
     /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessStepState(string name, string? id = null)
-        : base(name, id)
+    public KernelProcessStepState(string name, string version, string? id = null)
+        : base(name, version, id)
     {
         Verify.NotNullOrWhiteSpace(name);
 
         this.Id = id;
         this.Name = name;
+        this.Version = version;
     }
 }

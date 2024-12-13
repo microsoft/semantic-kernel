@@ -16,7 +16,6 @@ class MockKernelProcessMessageChannel(KernelProcessMessageChannel):
         pass
 
 
-@pytest.mark.asyncio
 async def test_initialization():
     # Arrange
     channel = MockKernelProcessMessageChannel()
@@ -28,7 +27,6 @@ async def test_initialization():
     assert context.step_message_channel == channel
 
 
-@pytest.mark.asyncio
 async def test_emit_event():
     # Arrange
     channel = MockKernelProcessMessageChannel()
@@ -43,7 +41,6 @@ async def test_emit_event():
     channel.emit_event.assert_called_once_with(event)
 
 
-@pytest.mark.asyncio
 async def test_emit_event_with_invalid_event():
     # Arrange
     channel = MockKernelProcessMessageChannel()

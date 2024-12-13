@@ -79,14 +79,14 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
+        await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, promptExecutionSettings))
         {
-            Console.Write(word);
+            Console.Write(update);
+
+            var streamingCitations = GetCitations(update);
+
+            OutputCitations(streamingCitations);
         }
-
-        citations = GetCitations(chatMessage);
-
-        OutputCitations(citations);
 
         Console.WriteLine(Environment.NewLine);
     }
@@ -159,19 +159,33 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
+    /// Returns a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private static IReadOnlyList<ChatCitation>? GetCitations(StreamingChatMessageContent streamingContent)
+    {
+        var message = streamingContent.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
+        var messageContext = message?.GetMessageContext();
+
+        return messageContext?.Citations;
+    }
+
+    /// <summary>
     /// Outputs a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private void OutputCitations(IReadOnlyList<ChatCitation> citations)
+    private void OutputCitations(IReadOnlyList<ChatCitation>? citations)
     {
-        Console.WriteLine("Citations:");
-
-        foreach (var citation in citations)
+        if (citations is not null)
         {
-            Console.WriteLine($"Chunk ID: {citation.ChunkId}");
-            Console.WriteLine($"Title: {citation.Title}");
-            Console.WriteLine($"File path: {citation.FilePath}");
-            Console.WriteLine($"URI: {citation.Uri}");
-            Console.WriteLine($"Content: {citation.Content}");
+            Console.WriteLine("Citations:");
+
+            foreach (var citation in citations)
+            {
+                Console.WriteLine($"Chunk ID: {citation.ChunkId}");
+                Console.WriteLine($"Title: {citation.Title}");
+                Console.WriteLine($"File path: {citation.FilePath}");
+                Console.WriteLine($"URL: {citation.Url}");
+                Console.WriteLine($"Content: {citation.Content}");
+            }
         }
     }
 

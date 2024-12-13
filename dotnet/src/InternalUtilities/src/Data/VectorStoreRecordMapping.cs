@@ -127,7 +127,7 @@ internal static class VectorStoreRecordMapping
         }
 
         // If the required type is one of a few supported generic collection interface types that
-        // are all implemented by List<>, we can create a LIst<> and add all items from the input.
+        // are all implemented by List<>, we can create a List<> and add all items from the input.
         if (requiredEnumerable.IsGenericType)
         {
             var genericTypeDefinition = requiredEnumerable.GetGenericTypeDefinition();

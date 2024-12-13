@@ -13,6 +13,7 @@ from tests.integration.embeddings.test_embedding_service_base import (
     EmbeddingServiceTestBase,
     google_ai_setup,
     mistral_ai_setup,
+    ollama_setup,
     vertex_ai_setup,
 )
 
@@ -53,6 +54,10 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "ollama",
             {},
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Ollama environment variables not set"),
+                pytest.mark.ollama,
+            ),
             id="ollama",
         ),
         pytest.param(
@@ -87,7 +92,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestEmbeddingServiceWithMemory(EmbeddingServiceTestBase):
     """Test embedding service with memory.
 
@@ -101,6 +105,9 @@ class TestEmbeddingServiceWithMemory(EmbeddingServiceTestBase):
         execution_settings_kwargs: dict[str, Any],
     ):
         embedding_generator, settings_type = services[service_id]
+
+        if embedding_generator is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         memory = SemanticTextMemory(
             storage=VolatileMemoryStore(),
