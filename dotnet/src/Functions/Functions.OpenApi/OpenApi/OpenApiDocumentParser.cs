@@ -249,8 +249,29 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         return pathItem.Parameters
                 .Select(static x => (Parameter: x, IsInPath: true))
                 .Union(operation.Parameters.Select(static x => (Parameter: x, IsInPath: false)))
-                .GroupBy(static x => $"{x.Parameter.In}{x.Parameter.Name}", StringComparer.Ordinal)
+                .GroupBy(static x => x.Parameter, s_parameterNameAndLocationComparer)
                 .Select(static x => x.OrderBy(static y => y.IsInPath).First().Parameter);
+    }
+
+    private static readonly ParameterNameAndLocationComparer s_parameterNameAndLocationComparer = new();
+
+    /// <summary>
+    /// Compares two <see cref="OpenApiParameter"/> objects by their name and location.
+    /// </summary>
+    private sealed class ParameterNameAndLocationComparer : IEqualityComparer<OpenApiParameter>
+    {
+        public bool Equals(OpenApiParameter? x, OpenApiParameter? y)
+        {
+            if (x is null || y is null)
+            {
+                return x == y;
+            }
+            return this.GetHashCode(x) == this.GetHashCode(y);
+        }
+        public int GetHashCode([DisallowNull] OpenApiParameter obj)
+        {
+            return HashCode.Combine(obj.Name, obj.In);
+        }
     }
 
     /// <summary>
