@@ -11,6 +11,7 @@ from pydantic import Field
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.process_edge_builder import ProcessEdgeBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
@@ -110,11 +111,90 @@ class ProcessBuilder(ProcessStepBuilder):
         # The process is a step so we can return the step info directly
         return self.build()
 
-    def build(self) -> "KernelProcess":
+    def build(self, state_metadata: KernelProcessStateMetadata | None = None) -> "KernelProcess":
         """Builds the KernelProcess."""
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
         built_edges = {key: [edge.build() for edge in edges] for key, edges in self.edges.items()}
         built_steps = [step.build_step() for step in self.steps]
+        built_steps = self._build_with_state_metadata(state_metadata=state_metadata)
+
         process_state = KernelProcessState(name=self.name, id=self.id if self.has_parent_process else None)
         return KernelProcess(state=process_state, steps=built_steps, edges=built_edges)
+
+    def _build_with_state_metadata(
+        self, state_metadata: "KernelProcessStateMetadata | None"
+    ) -> list["KernelProcessStepInfo"]:
+        built_steps: list["KernelProcessStepInfo"] = []
+
+        # 1- Validate StateMetadata: Migrate previous state versions if needed + sanitize state
+        sanitized_metadata: "KernelProcessStateMetadata | None" = None
+        if state_metadata is not None:
+            sanitized_metadata = self.sanitize_process_state_metadata(state_metadata, self.steps)
+
+        # 2- Build steps info with validated stateMetadata
+        for step in self.steps:
+            if (
+                sanitized_metadata
+                and sanitized_metadata.steps_state
+                and step.name in sanitized_metadata.steps_state
+                and sanitized_metadata.steps_state[step.name] is not None
+            ):
+                built_steps.append(step.build_step(sanitized_metadata.steps_state[step.name]))
+            else:
+                built_steps.append(step.build_step())
+
+        return built_steps
+
+    def _sanitize_process_state_metadata(
+        self, state_metadata: "KernelProcessStateMetadata", step_builders: list["ProcessStepBuilder"]
+    ) -> "KernelProcessStateMetadata":
+        sanitized_state_metadata = state_metadata
+
+        for step in step_builders:
+            # 1- find matching key name with exact match or by alias match
+            step_key: str | None = None
+            if sanitized_state_metadata.steps_state and step.name in sanitized_state_metadata.steps_state:
+                step_key = step.name
+            else:
+                step_key = next(
+                    (
+                        alias
+                        for alias in step.Aliases
+                        if sanitized_state_metadata.steps_state and alias in sanitized_state_metadata.steps_state
+                    ),
+                    None,
+                )
+
+            # 2- stepKey match found
+            if step_key is not None:
+                current_version_state_metadata = step.BuildStep().ToProcessStateMetadata()
+                saved_state_metadata = sanitized_state_metadata.steps_state.get(step_key)
+
+                if saved_state_metadata is not None:
+                    if step_key != step.name:
+                        if saved_state_metadata.VersionInfo == current_version_state_metadata.VersionInfo:
+                            # key mismatch only, but same version
+                            sanitized_state_metadata.steps_state[step.name] = saved_state_metadata
+                            # TODO: Should there be state formatting check too?
+                        else:
+                            # version mismatch - check if migration logic in place
+                            if isinstance(step, ProcessBuilder):
+                                sanitized_step_state = sanitize_process_state_metadata(saved_state_metadata, step.Steps)
+                                sanitized_state_metadata.steps_state[step.name] = sanitized_step_state
+                            elif isinstance(step, ProcessMapBuilder):
+                                sanitized_step_state = sanitize_process_state_metadata(
+                                    saved_state_metadata, [step.MapOperation]
+                                )
+                                sanitized_state_metadata.steps_state[step.name] = sanitized_step_state
+                            else:
+                                # no compatible state found, migrating id only
+                                sanitized_state_metadata.steps_state[step.name] = type(saved_state_metadata)(
+                                    Name=step.name,
+                                    Id=step.Id,
+                                )
+
+                        sanitized_state_metadata.steps_state[step.name].name = step.name
+                        del sanitized_state_metadata.steps_state[step_key]
+
+        return sanitized_state_metadata
