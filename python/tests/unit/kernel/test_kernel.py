@@ -18,6 +18,7 @@ from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.exceptions.content_exceptions import FunctionCallInvalidArgumentsException
 from semantic_kernel.exceptions.kernel_exceptions import (
@@ -299,6 +300,7 @@ async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_too
     result_mock = MagicMock(spec=ChatMessageContent)
     result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
+    chat_history_mock.messages = [MagicMock(spec=StreamingChatMessageContent)]
 
     func_mock = AsyncMock(spec=KernelFunction)
     func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
