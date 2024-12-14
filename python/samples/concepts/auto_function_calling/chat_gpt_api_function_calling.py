@@ -149,8 +149,6 @@ async def handle_streaming(
 
     print("\n")
     if result_content:
-        # this line is new to view content types
-        streaming_chat_message = reduce(lambda first, second: first + second, result_content)
         return "".join([str(content) for content in result_content])
     return None
 
