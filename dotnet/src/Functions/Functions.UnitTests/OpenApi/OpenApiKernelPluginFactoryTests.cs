@@ -353,7 +353,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
-        Assert.Equal(6, plugin.Count());
+        Assert.Equal(7, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 
@@ -372,7 +372,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
-        Assert.Equal(6, plugin.Count());
+        Assert.Equal(7, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 

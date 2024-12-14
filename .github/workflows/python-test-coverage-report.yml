@@ -25,10 +25,19 @@ jobs:
           merge-multiple: true
       - name: Display structure of downloaded files
         run: ls
+      - name: Read and set PR number
+        # Need to read the PR number from the file saved in the previous workflow
+        # because the workflow_run event does not have access to the PR number
+        # The PR number is needed to post the comment on the PR
+        run: |
+          PR_NUMBER=$(cat pr_number)
+          echo "PR number: $PR_NUMBER"
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
+          issue-number: ${{ env.PR_NUMBER }}
           pytest-coverage-path: python/python-coverage.txt
           title: "Python Test Coverage Report"
           badge-title: "Python Test Coverage"
