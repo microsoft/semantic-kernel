@@ -2,7 +2,7 @@
 
 import json
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -50,7 +50,7 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
                 "type": "tool_use",
                 "id": item.id or "",
                 "name": item.name or "",
-                "input": item.arguments if isinstance(item.arguments, dict) else json.loads(item.arguments),
+                "input": item.arguments if isinstance(item.arguments, Mapping) else json.loads(item.arguments),
             })
         else:
             logger.warning(
