@@ -429,8 +429,12 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         return span
 
     def _get_ai_model_id(self, settings: "PromptExecutionSettings") -> str:
-        """Retrieve the AI model ID from settings if available."""
-        return getattr(settings, "ai_model_id", "")
+        """Retrieve the AI model ID from settings if available.
+
+        Attempt to get ai_model_id from the settings object. If it doesn't exist or
+        is blank, fallback to self.ai_model_id (from AIServiceClientBase).
+        """
+        return getattr(settings, "ai_model_id", self.ai_model_id) or self.ai_model_id
 
     def _yield_function_result_messages(self, function_result_messages: list) -> bool:
         """Determine if the function result messages should be yielded."""
