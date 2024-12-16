@@ -194,4 +194,12 @@ class FunctionResultContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function result content."""
-        return hash((self.tag, self.id, self.result, self.name, self.function_name, self.plugin_name, self.encoding))
+        return hash((
+            self.tag,
+            self.id,
+            tuple(self.result) if isinstance(self.result, list) else self.result,
+            self.name,
+            self.function_name,
+            self.plugin_name,
+            self.encoding,
+        ))

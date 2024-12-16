@@ -211,7 +211,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer)),
                     payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                     responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
@@ -234,6 +234,27 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         {
             logger.LogError(ex, "Fatal error occurred during REST API operation creation.");
             throw;
+        }
+    }
+
+    private static readonly ParameterNameAndLocationComparer s_parameterNameAndLocationComparer = new();
+
+    /// <summary>
+    /// Compares two <see cref="OpenApiParameter"/> objects by their name and location.
+    /// </summary>
+    private sealed class ParameterNameAndLocationComparer : IEqualityComparer<OpenApiParameter>
+    {
+        public bool Equals(OpenApiParameter? x, OpenApiParameter? y)
+        {
+            if (x is null || y is null)
+            {
+                return x == y;
+            }
+            return this.GetHashCode(x) == this.GetHashCode(y);
+        }
+        public int GetHashCode([DisallowNull] OpenApiParameter obj)
+        {
+            return HashCode.Combine(obj.Name, obj.In);
         }
     }
 
@@ -381,7 +402,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <param name="operationId">The operation id.</param>
     /// <param name="parameters">The OpenAPI parameters.</param>
     /// <returns>The parameters.</returns>
-    private static List<RestApiParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
+    private static List<RestApiParameter> CreateRestApiOperationParameters(string operationId, IEnumerable<OpenApiParameter> parameters)
     {
         var result = new List<RestApiParameter>();
 
