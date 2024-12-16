@@ -109,11 +109,15 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
 
             case FunctionResultContent():
                 final_result = content.result
-                if isinstance(final_result, (list, tuple)):
-                    final_result = " ".join(map(str, final_result))
-                elif not isinstance(final_result, str):
-                    final_result = str(final_result)
-                contents.append({"type": "text", "text": final_result})
+                match final_result:
+                    case str():
+                        contents.append({"type": "text", "text": final_result})
+                    case list() | tuple():
+                        contents.append({"type": "text", "text": " ".join(map(str, final_result))})
+                    case dict():
+                        contents.append({"type": "text", "text": str(final_result)})
+                    case _:
+                        contents.append({"type": "text", "text": str(final_result)})
 
     return contents
 
