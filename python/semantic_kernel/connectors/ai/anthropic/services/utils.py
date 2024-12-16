@@ -50,7 +50,7 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
                 "type": "tool_use",
                 "id": item.id or "",
                 "name": item.name or "",
-                "input": item.arguments if isinstance(item.arguments, Mapping) else json.loads(item.arguments),
+                "input": item.arguments if isinstance(item.arguments, Mapping) else json.loads(item.arguments or ""),
             })
         else:
             logger.warning(
