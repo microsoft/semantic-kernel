@@ -89,6 +89,21 @@ internal sealed class RestApiOperationRunner
     private readonly HttpResponseContentReader? _httpResponseContentReader;
 
     /// <summary>
+    /// The external URL factory to use if provided, instead of the default one.
+    /// </summary>
+    private readonly RestApiOperationUrlFactory? _urlFactory;
+
+    /// <summary>
+    /// The external header factory to use if provided, instead of the default one.
+    /// </summary>
+    private readonly RestApiOperationHeadersFactory? _headersFactory;
+
+    /// <summary>
+    /// The external payload factory to use if provided, instead of the default one.
+    /// </summary>
+    private readonly RestApiOperationPayloadFactory? _payloadFactory;
+
+    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -100,19 +115,28 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     /// <param name="httpResponseContentReader">Custom HTTP response content reader.</param>
+    /// <param name="urlFactory">The external URL factory to use if provided if provided instead of the default one.</param>
+    /// <param name="headersFactory">The external headers factory to use if provided instead of the default one.</param>
+    /// <param name="payloadFactory">The external payload factory to use if provided instead of the default one.</param>
     public RestApiOperationRunner(
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false,
-        HttpResponseContentReader? httpResponseContentReader = null)
+        HttpResponseContentReader? httpResponseContentReader = null,
+        RestApiOperationUrlFactory? urlFactory = null,
+        RestApiOperationHeadersFactory? headersFactory = null,
+        RestApiOperationPayloadFactory? payloadFactory = null)
     {
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
         this._httpResponseContentReader = httpResponseContentReader;
+        this._urlFactory = urlFactory;
+        this._headersFactory = headersFactory;
+        this._payloadFactory = payloadFactory;
 
         // If no auth callback provided, use empty function
         if (authCallback is null)
@@ -145,13 +169,13 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        var headers = operation.BuildHeaders(arguments);
+        var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
-        var operationPayload = this.BuildOperationPayload(operation, arguments);
+        var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, Payload, Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
     }
 
     #region private
@@ -340,7 +364,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The JSON payload the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         // Build operation payload dynamically
         if (this._enableDynamicPayload)
@@ -440,7 +464,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The text payload and corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildPlainTextPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object Payload, HttpContent Content) BuildPlainTextPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string payload)
         {
