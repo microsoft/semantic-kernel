@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
@@ -10,7 +9,6 @@ from tests.integration.fakes.summarize_plugin_fake import SummarizePluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
 
 
-@pytest.mark.asyncio
 async def test_can_call_to_plan_from_xml():
     kernel = Kernel()
     # Configure LLM service

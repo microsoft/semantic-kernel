@@ -75,7 +75,6 @@ def test_azure_audio_to_text_init_with_from_dict(azure_openai_unit_test_env) -> 
         assert azure_audio_to_text.client.default_headers[key] == value
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncTranscriptions, "create", return_value=Transcription(text="This is a test audio file."))
 async def test_azure_audio_to_text_get_text_contents(mock_transcription_create, azure_openai_unit_test_env) -> None:
     audio_content = AudioContent.from_audio_file(
@@ -90,7 +89,6 @@ async def test_azure_audio_to_text_get_text_contents(mock_transcription_create, 
     assert text_contents[0].ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME"]
 
 
-@pytest.mark.asyncio
 async def test_azure_audio_to_text_get_text_contents_invalid_audio_content(azure_openai_unit_test_env):
     audio_content = AudioContent()
 

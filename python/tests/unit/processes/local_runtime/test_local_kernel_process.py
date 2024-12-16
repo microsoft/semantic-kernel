@@ -14,7 +14,6 @@ from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.local_runtime.local_kernel_process_context import LocalKernelProcessContext
 
 
-@pytest.mark.asyncio
 async def test_start_method():
     # Arrange
     state = MagicMock(spec=KernelProcessState)
@@ -44,7 +43,6 @@ async def test_start_method():
         assert isinstance(result, LocalKernelProcessContext)
 
 
-@pytest.mark.asyncio
 async def test_failed_start():
     state = MagicMock(spec=KernelProcessState)
     state.name = "startable_state"

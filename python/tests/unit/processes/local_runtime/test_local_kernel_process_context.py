@@ -29,7 +29,6 @@ def mock_process():
     return process
 
 
-@pytest.mark.asyncio
 async def test_initialization(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"
@@ -41,7 +40,6 @@ async def test_initialization(mock_process, mock_kernel):
     assert context.local_process is not None
 
 
-@pytest.mark.asyncio
 async def test_initialization_with_missing_kernel_throws(mock_process):
     # Arrange
     mock_process.state.id = "test_id"
@@ -61,7 +59,6 @@ def test_initialization_raises_value_error_for_missing_process_state(mock_kernel
         LocalKernelProcessContext(process=mock_process, kernel=mock_kernel)
 
 
-@pytest.mark.asyncio
 async def test_start_with_event(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"
@@ -77,7 +74,6 @@ async def test_start_with_event(mock_process, mock_kernel):
         mock_run_once.assert_awaited_once_with(event)
 
 
-@pytest.mark.asyncio
 async def test_send_event(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"
@@ -93,7 +89,6 @@ async def test_send_event(mock_process, mock_kernel):
         mock_send_message.assert_awaited_once_with(event)
 
 
-@pytest.mark.asyncio
 async def test_stop(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"
@@ -108,7 +103,6 @@ async def test_stop(mock_process, mock_kernel):
         mock_stop.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_get_state(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"
@@ -126,7 +120,6 @@ async def test_get_state(mock_process, mock_kernel):
         mock_get_process_info.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_async_context_manager(mock_process, mock_kernel):
     # Arrange
     mock_process.state.id = "test_id"

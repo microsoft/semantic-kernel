@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_plugin import TextPlugin
@@ -9,14 +8,12 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import Plan
 
 
-@pytest.mark.asyncio
 async def test_invoke_empty_plan(kernel: Kernel):
     plan = Plan()
     result = await plan.invoke(kernel)
     assert str(result) == ""
 
 
-@pytest.mark.asyncio
 async def test_invoke_plan_constructed_with_function(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
@@ -27,7 +24,6 @@ async def test_invoke_plan_constructed_with_function(kernel: Kernel):
     assert str(result) == "HELLO WORLD "
 
 
-@pytest.mark.asyncio
 async def test_invoke_empty_plan_with_added_function_step(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
@@ -40,7 +36,6 @@ async def test_invoke_empty_plan_with_added_function_step(kernel: Kernel):
     assert str(result) == "HELLO WORLD "
 
 
-@pytest.mark.asyncio
 async def test_invoke_empty_plan_with_added_plan_step(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
@@ -53,7 +48,6 @@ async def test_invoke_empty_plan_with_added_plan_step(kernel: Kernel):
     assert str(result) == "HELLO WORLD "
 
 
-@pytest.mark.asyncio
 async def test_invoke_multi_step_plan(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
@@ -68,7 +62,6 @@ async def test_invoke_multi_step_plan(kernel: Kernel):
     assert str(result) == "HELLO WORLD"
 
 
-@pytest.mark.asyncio
 async def test_invoke_multi_step_plan_with_arguments(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(MathPlugin(), "math")

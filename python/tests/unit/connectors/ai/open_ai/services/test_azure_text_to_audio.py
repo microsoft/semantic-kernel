@@ -73,7 +73,6 @@ def test_azure_text_to_audio_init_with_from_dict(azure_openai_unit_test_env) -> 
         assert azure_text_to_audio.client.default_headers[key] == value
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncSpeech, "create", return_value=_legacy_response.HttpxBinaryResponseContent(httpx.Response(200)))
 async def test_azure_text_to_audio_get_audio_contents(mock_speech_create, azure_openai_unit_test_env) -> None:
     openai_audio_to_text = AzureTextToAudio()

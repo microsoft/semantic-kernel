@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest_asyncio
 from psycopg import AsyncConnection, AsyncCursor
 from psycopg_pool import AsyncConnectionPool
-from pytest import fixture, mark
+from pytest import fixture
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
@@ -76,7 +76,6 @@ class SimpleDataModel:
     ]
 
 
-@mark.asyncio
 async def test_vector_store_defaults(vector_store: PostgresStore) -> None:
     assert vector_store.connection_pool is not None
     async with vector_store.connection_pool.connection() as conn:
@@ -89,7 +88,6 @@ def test_vector_store_with_connection_pool(vector_store: PostgresStore) -> None:
     assert vector_store.connection_pool == connection_pool
 
 
-@mark.asyncio
 async def test_list_collection_names(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [
         ("test_collection",),
@@ -104,7 +102,6 @@ def test_get_collection(vector_store: PostgresStore) -> None:
     assert collection.collection_name == "test_collection"
 
 
-@mark.asyncio
 async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
@@ -112,7 +109,6 @@ async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: M
     assert result is True
 
 
-@mark.asyncio
 async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     await collection.delete_collection()
@@ -125,7 +121,6 @@ async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock)
     assert statement_str == 'DROP TABLE "public"."test_collection" CASCADE'
 
 
-@mark.asyncio
 async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     await collection.delete_batch([1, 2])
@@ -138,7 +133,6 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
     assert statement_str == """DELETE FROM "public"."test_collection" WHERE "id" IN (1, 2)"""
 
 
-@mark.asyncio
 async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     await collection.create_collection()
@@ -164,7 +158,6 @@ async def test_create_collection_simple_model(vector_store: PostgresStore, mock_
     )
 
 
-@mark.asyncio
 async def test_create_collection_model_with_python_types(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     @vectorstoremodel
     @dataclass
@@ -194,7 +187,6 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
     )
 
 
-@mark.asyncio
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     await collection.upsert_batch([
@@ -220,7 +212,6 @@ async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) ->
     assert values[2] == (3, [5.0, 6.0, 1.0], '{"key": "value3"}')
 
 
-@mark.asyncio
 async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [
         (1, "[1.0, 2.0, 3.0]", {"key": "value1"}),

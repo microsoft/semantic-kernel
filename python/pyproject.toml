@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,<2.10",
+    "pydantic >=2.0,<2.11,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -133,11 +133,12 @@ dev-dependencies = [
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
     "pytest-cov >= 5.0",
-    "pytest-asyncio ~= 0.23",
+    "pytest-asyncio ~= 0.24",
+    "pytest-timeout>=2.3.1",
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.7"
+    "ruff ~= 0.7",
 ]
 environments = [
     "sys_platform == 'darwin'",
@@ -148,9 +149,14 @@ environments = [
 [tool.pytest.ini_options]
 testpaths = 'tests'
 addopts = "-ra -q -r fEX"
+asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
+]
+timeout = 120
+markers = [
+    "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)"
 ]
 
 [tool.ruff]

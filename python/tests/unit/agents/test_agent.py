@@ -3,8 +3,6 @@
 import uuid
 from unittest.mock import AsyncMock
 
-import pytest
-
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 
@@ -28,7 +26,6 @@ class MockAgent(Agent):
         return AsyncMock(spec=AgentChannel)
 
 
-@pytest.mark.asyncio
 async def test_agent_initialization():
     name = "TestAgent"
     description = "A test agent"
@@ -41,7 +38,6 @@ async def test_agent_initialization():
     assert agent.id == id_value
 
 
-@pytest.mark.asyncio
 async def test_agent_default_id():
     agent = MockAgent()
 
@@ -56,7 +52,6 @@ def test_get_channel_keys():
     assert keys == ["key1", "key2"]
 
 
-@pytest.mark.asyncio
 async def test_create_channel():
     agent = MockAgent()
     channel = await agent.create_channel()
@@ -64,7 +59,6 @@ async def test_create_channel():
     assert isinstance(channel, AgentChannel)
 
 
-@pytest.mark.asyncio
 async def test_agent_equality():
     id_value = str(uuid.uuid4())
 
@@ -80,7 +74,6 @@ async def test_agent_equality():
     assert agent1 != agent4
 
 
-@pytest.mark.asyncio
 async def test_agent_equality_different_type():
     agent = MockAgent(name="TestAgent", description="A test agent", id=str(uuid.uuid4()))
     non_agent = "Not an agent"
@@ -88,7 +81,6 @@ async def test_agent_equality_different_type():
     assert agent != non_agent
 
 
-@pytest.mark.asyncio
 async def test_agent_hash():
     id_value = str(uuid.uuid4())
 

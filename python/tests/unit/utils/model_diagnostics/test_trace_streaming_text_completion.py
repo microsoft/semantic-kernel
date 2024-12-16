@@ -68,7 +68,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_streaming_text_completion(
     mock_span,
@@ -133,7 +132,6 @@ async def test_trace_streaming_text_completion(
         )
 
 
-@pytest.mark.asyncio
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_streaming_text_completion_exception(
     mock_span,

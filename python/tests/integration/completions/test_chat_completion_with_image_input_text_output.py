@@ -5,6 +5,11 @@ import sys
 from functools import partial
 from typing import Any
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 
 from semantic_kernel import Kernel
@@ -21,12 +26,6 @@ from tests.integration.completions.chat_completion_test_base import (
 )
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.utils import retry
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
@@ -225,7 +224,10 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             {},
-            marks=pytest.mark.skipif(not ollama_image_setup, reason="Ollama Environment Variables not set"),
+            marks=(
+                pytest.mark.skipif(not ollama_image_setup, reason="Ollama Environment Variables not set"),
+                pytest.mark.ollama,
+            ),
             id="ollama_image_input_file",
         ),
         pytest.param(
@@ -251,7 +253,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     """Test chat completion with image input and text output."""
 
@@ -315,6 +316,8 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:

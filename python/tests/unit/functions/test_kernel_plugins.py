@@ -497,7 +497,6 @@ def test_from_object_class(custom_plugin_class):
     assert plugin.functions.get("getLightStatus") is not None
 
 
-@pytest.mark.asyncio
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
 async def test_from_openai_from_file(mock_parse_openai_manifest):
     openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
@@ -525,7 +524,6 @@ async def test_from_openai_from_file(mock_parse_openai_manifest):
     assert plugin.functions.get("SetSecret") is not None
 
 
-@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
 async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get):
@@ -563,13 +561,11 @@ async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get)
     mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT})
 
 
-@pytest.mark.asyncio
 async def test_from_openai_fail():
     with raises(PluginInitializationError):
         await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin")
 
 
-@pytest.mark.asyncio
 async def test_from_openai_fail_json_parsing():
     with raises(PluginInitializationError):
         await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin", plugin_str="test")

@@ -170,7 +170,6 @@ def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk
     return stream
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc(
     mock_create,
@@ -194,7 +193,6 @@ async def test_cmc(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_with_logit_bias(
     mock_create,
@@ -225,7 +223,6 @@ async def test_cmc_with_logit_bias(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_with_stop(
     mock_create,
@@ -253,7 +250,6 @@ async def test_cmc_with_stop(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_azure_on_your_data(
     mock_create,
@@ -322,7 +318,6 @@ async def test_azure_on_your_data(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_azure_on_your_data_string(
     mock_create,
@@ -391,7 +386,6 @@ async def test_azure_on_your_data_string(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_azure_on_your_data_fail(
     mock_create,
@@ -449,7 +443,6 @@ async def test_azure_on_your_data_fail(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_azure_on_your_data_split_messages(
     mock_create,
@@ -502,7 +495,6 @@ async def test_azure_on_your_data_split_messages(
     assert message == [messages[0]]
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_function_calling(
     mock_create,
@@ -550,7 +542,6 @@ async def test_cmc_function_calling(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_tool_calling(
     mock_create,
@@ -599,7 +590,6 @@ async def test_cmc_tool_calling(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_tool_calling_parallel_tool_calls(
     mock_create,
@@ -676,7 +666,6 @@ async def test_cmc_tool_calling_parallel_tool_calls(
         mock_process_function_call.assert_awaited()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_tool_calling_parallel_tool_calls_disabled(
     mock_create,
@@ -768,7 +757,6 @@ CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
 ) % CONTENT_FILTERED_ERROR_MESSAGE
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
 async def test_content_filtering_raises_correct_exception(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
@@ -812,7 +800,6 @@ async def test_content_filtering_raises_correct_exception(
     assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
 async def test_content_filtering_without_response_code_raises_with_default_code(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
@@ -850,7 +837,6 @@ async def test_content_filtering_without_response_code_raises_with_default_code(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
 async def test_bad_request_non_content_filter(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
@@ -872,7 +858,6 @@ async def test_bad_request_non_content_filter(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
 async def test_no_kernel_provided_throws_error(
     mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
@@ -899,7 +884,6 @@ async def test_no_kernel_provided_throws_error(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
 async def test_auto_invoke_false_no_kernel_provided_throws_error(
     mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
@@ -926,7 +910,6 @@ async def test_auto_invoke_false_no_kernel_provided_throws_error(
         )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_streaming(
     mock_create,

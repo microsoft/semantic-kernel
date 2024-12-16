@@ -59,7 +59,6 @@ class TestSearch(TextSearch):
         return KernelSearchResults(results=generator(), metadata=kwargs)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("search_function", ["search", "get_text_search_result", "get_search_result"])
 async def test_create_kernel_function(search_function: str, kernel: Kernel):
     test_search = TestSearch()
@@ -98,7 +97,6 @@ def test_create_kernel_function_fail():
         )
 
 
-@pytest.mark.asyncio
 async def test_create_kernel_function_inner(kernel: Kernel):
     test_search = TestSearch()
 
@@ -116,7 +114,6 @@ async def test_create_kernel_function_inner(kernel: Kernel):
     assert results.value == ["test"]
 
 
-@pytest.mark.asyncio
 async def test_create_kernel_function_inner_with_options(kernel: Kernel):
     test_search = TestSearch()
 
@@ -142,7 +139,6 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
     assert results.value == ["test"]
 
 
-@pytest.mark.asyncio
 async def test_create_kernel_function_inner_with_other_options_type(kernel: Kernel):
     test_search = TestSearch()
 
@@ -168,7 +164,6 @@ async def test_create_kernel_function_inner_with_other_options_type(kernel: Kern
     assert results.value == ["test"]
 
 
-@pytest.mark.asyncio
 async def test_create_kernel_function_inner_no_results(kernel: Kernel):
     test_search = TestSearch()
 
@@ -189,7 +184,6 @@ async def test_create_kernel_function_inner_no_results(kernel: Kernel):
         await kernel_function.invoke(kernel, None)
 
 
-@pytest.mark.asyncio
 async def test_create_kernel_function_inner_update_options(kernel: Kernel):
     test_search = TestSearch()
 
