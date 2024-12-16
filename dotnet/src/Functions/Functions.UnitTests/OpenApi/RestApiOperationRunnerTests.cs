@@ -1517,6 +1517,121 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("true", enabledProperty.ToString());
     }
 
+    [Fact]
+    public async Task ItShouldUseUrlHeaderAndPayloadFactoriesIfProvidedAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, [])
+        ];
+
+        var payload = new RestApiPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var expectedOperation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: payload
+        );
+
+        var expectedArguments = new KernelArguments();
+
+        var expectedOptions = new RestApiOperationRunOptions()
+        {
+            Kernel = new(),
+            KernelFunction = KernelFunctionFactory.CreateFromMethod(() => false),
+            KernelArguments = expectedArguments,
+        };
+
+        bool createUrlFactoryCalled = false;
+        bool createHeadersFactoryCalled = false;
+        bool createPayloadFactoryCalled = false;
+
+        Uri CreateUrl(RestApiOperation operation, IDictionary<string, object?> arguments, RestApiOperationRunOptions? options)
+        {
+            createUrlFactoryCalled = true;
+            Assert.Same(expectedOperation, operation);
+            Assert.Same(expectedArguments, arguments);
+            Assert.Same(expectedOptions, options);
+
+            return new Uri("https://fake-random-test-host-from-factory/");
+        }
+
+        IDictionary<string, string>? CreateHeaders(RestApiOperation operation, IDictionary<string, object?> arguments, RestApiOperationRunOptions? options)
+        {
+            createHeadersFactoryCalled = true;
+            Assert.Same(expectedOperation, operation);
+            Assert.Same(expectedArguments, arguments);
+            Assert.Same(expectedOptions, options);
+
+            return new Dictionary<string, string>() { ["header-from-factory"] = "value-of-header-from-factory" };
+        }
+
+        (object Payload, HttpContent Content)? CreatePayload(RestApiOperation operation, IDictionary<string, object?> arguments, bool enableDynamicPayload, bool enablePayloadNamespacing, RestApiOperationRunOptions? options)
+        {
+            createPayloadFactoryCalled = true;
+            Assert.Same(expectedOperation, operation);
+            Assert.Same(expectedArguments, arguments);
+            Assert.True(enableDynamicPayload);
+            Assert.True(enablePayloadNamespacing);
+            Assert.Same(expectedOptions, options);
+
+            var json = """{"name":"fake-name-value"}""";
+
+            return ((JsonObject)JsonObject.Parse(json)!, new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json));
+        }
+
+        var sut = new RestApiOperationRunner(
+            this._httpClient,
+            enableDynamicPayload: true,
+            enablePayloadNamespacing: true,
+            urlFactory: CreateUrl,
+            headersFactory: CreateHeaders,
+            payloadFactory: CreatePayload);
+
+        // Act
+        var result = await sut.RunAsync(expectedOperation, expectedArguments, expectedOptions);
+
+        // Assert
+        Assert.True(createUrlFactoryCalled);
+        Assert.True(createHeadersFactoryCalled);
+        Assert.True(createPayloadFactoryCalled);
+
+        // Assert url factory
+        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host-from-factory/", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+
+        // Assert headers factory
+        Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Equal(3, this._httpMessageHandlerStub.RequestHeaders.Count());
+
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "header-from-factory" && h.Value.Contains("value-of-header-from-factory"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("Semantic-Kernel"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "Semantic-Kernel-Version");
+
+        // Assert payload factory
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
+        Assert.NotNull(deserializedPayload);
+
+        var nameProperty = deserializedPayload["name"]?.ToString();
+        Assert.Equal("fake-name-value", nameProperty);
+
+        Assert.NotNull(result.RequestPayload);
+        Assert.IsType<JsonObject>(result.RequestPayload);
+        Assert.Equal("""{"name":"fake-name-value"}""", ((JsonObject)result.RequestPayload).ToJsonString());
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
