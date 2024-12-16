@@ -6,6 +6,10 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   python-test-coverage-report:
     runs-on: ubuntu-latest
@@ -37,6 +41,7 @@ jobs:
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           issue-number: ${{ env.PR_NUMBER }}
           pytest-coverage-path: python/python-coverage.txt
           title: "Python Test Coverage Report"
