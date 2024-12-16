@@ -87,17 +87,34 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     for content in message.items:
         match content:
             case TextContent():
-                contents.append({"type": "text", "text": content.text})
+                # Make sure text is a string
+                final_text = content.text
+                if not isinstance(final_text, str):
+                    if isinstance(final_text, (list, tuple)):
+                        final_text = " ".join(map(str, final_text))
+                    else:
+                        final_text = str(final_text)
+
+                contents.append({"type": "text", "text": final_text})
+
             case ImageContent():
                 if content.uri:
                     contents.append(content.to_dict())
+
             case FileReferenceContent():
                 contents.append({
                     "type": "image_file",
                     "image_file": {"file_id": content.file_id},
                 })
+
             case FunctionResultContent():
-                contents.append({"type": "text", "text": content.result})
+                final_result = content.result
+                if isinstance(final_result, (list, tuple)):
+                    final_result = " ".join(map(str, final_result))
+                elif not isinstance(final_result, str):
+                    final_result = str(final_result)
+                contents.append({"type": "text", "text": final_result})
+
     return contents
 
 

@@ -1487,6 +1487,8 @@ def test_get_message_contents(azure_openai_assistant_agent: AzureAssistantAgent,
         ImageContent(role=AuthorRole.ASSISTANT, content="test message", uri="http://image.url"),
         TextContent(role=AuthorRole.ASSISTANT, text="test message"),
         FileReferenceContent(role=AuthorRole.ASSISTANT, file_id="test_file_id"),
+        TextContent(role=AuthorRole.USER, text="test message"),
+        FunctionResultContent(role=AuthorRole.ASSISTANT, result=["test result"], id="test_id"),
     ]
 
     result = get_message_contents(message)
