@@ -379,6 +379,7 @@ public sealed class OpenAIFunction
     /// </summary>
     private static readonly HashSet<string> s_forbiddenKeywords = new([
         "contains",
+        "default",
         "format",
         "maxContains",
         "maximum",
