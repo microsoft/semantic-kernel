@@ -152,7 +152,7 @@ public static class CopilotAgentPluginKernelExtensions
                 ? parameters
                 : new OpenApiFunctionExecutionParameters()
                 {
-                    EnableDynamicPayload = true,
+                    EnableDynamicPayload = false,
                     EnablePayloadNamespacing = true,
                 };
             openApiFunctionExecutionParameters.ParameterFilter ??= (RestApiParameterFilterContext context) => context.Parameter.Name == "@odata.type" ? null : context.Parameter;
@@ -165,7 +165,7 @@ public static class CopilotAgentPluginKernelExtensions
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
