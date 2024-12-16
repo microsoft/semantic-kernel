@@ -6,7 +6,7 @@ from collections.abc import AsyncGenerator, Mapping, Sequence
 from html import unescape
 from typing import TYPE_CHECKING, Any
 
-import yaml  # type: ignore
+import yaml
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
