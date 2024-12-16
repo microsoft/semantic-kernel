@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 
 import numpy as np
+from pandas import DataFrame
 from pydantic import BaseModel, Field
 from pytest import fixture
 
@@ -25,7 +26,7 @@ from semantic_kernel.data import (
 
 
 @fixture
-def DictVectorStoreRecordCollection():
+def DictVectorStoreRecordCollection() -> type[VectorSearchBase]:
     class DictVectorStoreRecordCollection(
         VectorSearchBase[str, Any],
         VectorizedSearchMixin[Any],
@@ -344,3 +345,53 @@ def data_model_type_dataclass():
         id: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
+
+
+@fixture(scope="function")
+def vector_store_record_collection(
+    DictVectorStoreRecordCollection,
+    data_model_definition,
+    data_model_serialize_definition,
+    data_model_to_from_dict_definition,
+    data_model_container_definition,
+    data_model_container_serialize_definition,
+    data_model_pandas_definition,
+    data_model_type_vanilla,
+    data_model_type_vanilla_serialize,
+    data_model_type_vanilla_to_from_dict,
+    data_model_type_pydantic,
+    data_model_type_dataclass,
+    data_model_type_vector_array,
+    request,
+) -> VectorSearchBase:
+    item = request.param if request and hasattr(request, "param") else "definition_basic"
+    defs = {
+        "definition_basic": data_model_definition,
+        "definition_with_serialize": data_model_serialize_definition,
+        "definition_with_to_from": data_model_to_from_dict_definition,
+        "definition_container": data_model_container_definition,
+        "definition_container_serialize": data_model_container_serialize_definition,
+        "definition_pandas": data_model_pandas_definition,
+        "type_vanilla": data_model_type_vanilla,
+        "type_vanilla_with_serialize": data_model_type_vanilla_serialize,
+        "type_vanilla_with_to_from_dict": data_model_type_vanilla_to_from_dict,
+        "type_pydantic": data_model_type_pydantic,
+        "type_dataclass": data_model_type_dataclass,
+        "type_vector_array": data_model_type_vector_array,
+    }
+    if item.endswith("pandas"):
+        return DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=DataFrame,
+            data_model_definition=defs[item],
+        )
+    if item.startswith("definition_"):
+        return DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=defs[item],
+        )
+    return DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=defs[item],
+    )

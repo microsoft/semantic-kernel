@@ -10,8 +10,8 @@ TModel = TypeVar("TModel", bound=object)
 
 @experimental_class
 @runtime_checkable
-class VectorStoreModelFunctionSerdeProtocol(Protocol):
-    """Data model serialization and deserialization protocol.
+class SerializeMethodProtocol(Protocol):
+    """Data model serialization protocol.
 
     This can optionally be implemented to allow single step serialization and deserialization
     for using your data model with a specific datastore.
@@ -21,6 +21,16 @@ class VectorStoreModelFunctionSerdeProtocol(Protocol):
         """Serialize the object to the format required by the data store."""
         ...  # pragma: no cover
 
+
+@experimental_class
+@runtime_checkable
+class DeserializeMethodProtocol(Protocol):
+    """Data model deserialization protocol.
+
+    This can optionally be implemented to allow single step serialization and deserialization
+    for using your data model with a specific datastore.
+    """
+
     @classmethod
     def deserialize(cls: type[TModel], obj: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
@@ -29,27 +39,18 @@ class VectorStoreModelFunctionSerdeProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class VectorStoreModelPydanticProtocol(Protocol):
-    """Class used internally to make sure a datamodel has model_dump and model_validate."""
+class ToDictMethodProtocol(Protocol):
+    """Class used internally to check if a model has a to_dict method."""
 
-    def model_dump(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+    def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Serialize the object to the format required by the data store."""
-        ...  # pragma: no cover
-
-    @classmethod
-    def model_validate(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
-        """Deserialize the output of the data store to an object."""
         ...  # pragma: no cover
 
 
 @experimental_class
 @runtime_checkable
-class VectorStoreModelToDictFromDictProtocol(Protocol):
-    """Class used internally to check if a model has to_dict and from_dict methods."""
-
-    def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        """Serialize the object to the format required by the data store."""
-        ...  # pragma: no cover
+class FromDictMethodProtocol(Protocol):
+    """Class used internally to check if a model has a from_dict method."""
 
     @classmethod
     def from_dict(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
@@ -59,8 +60,19 @@ class VectorStoreModelToDictFromDictProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class ToDictProtocol(Protocol):
-    """Protocol for to_dict method.
+class ModelValidateMethodProtocol(Protocol):
+    """Class used internally to check if a model has a from_dict method."""
+
+    @classmethod
+    def model_validate(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
+        """Deserialize the output of the data store to an object."""
+        ...  # pragma: no cover
+
+
+@experimental_class
+@runtime_checkable
+class ToDictFunctionProtocol(Protocol):
+    """Protocol for to_dict function.
 
     Args:
         record: The record to be serialized.
@@ -75,8 +87,8 @@ class ToDictProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class FromDictProtocol(Protocol):
-    """Protocol for from_dict method.
+class FromDictFunctionProtocol(Protocol):
+    """Protocol for from_dict function.
 
     Args:
         records: A list of dictionaries.
@@ -91,8 +103,8 @@ class FromDictProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class SerializeProtocol(Protocol):
-    """Protocol for serialize method.
+class SerializeFunctionProtocol(Protocol):
+    """Protocol for serialize function.
 
     Args:
         record: The record to be serialized.
@@ -108,8 +120,8 @@ class SerializeProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class DeserializeProtocol(Protocol):
-    """Protocol for deserialize method.
+class DeserializeFunctionProtocol(Protocol):
+    """Protocol for deserialize function.
 
     Args:
         records: The serialized record directly from the store.

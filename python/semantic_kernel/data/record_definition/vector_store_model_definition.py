@@ -4,10 +4,10 @@ from dataclasses import dataclass, field
 from typing import TypeVar
 
 from semantic_kernel.data.record_definition.vector_store_model_protocols import (
-    DeserializeProtocol,
-    FromDictProtocol,
-    SerializeProtocol,
-    ToDictProtocol,
+    DeserializeFunctionProtocol,
+    FromDictFunctionProtocol,
+    SerializeFunctionProtocol,
+    ToDictFunctionProtocol,
 )
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -40,10 +40,10 @@ class VectorStoreRecordDefinition:
     key_field_name: str = field(init=False)
     fields: FieldsType
     container_mode: bool = False
-    to_dict: ToDictProtocol | None = None
-    from_dict: FromDictProtocol | None = None
-    serialize: SerializeProtocol | None = None
-    deserialize: DeserializeProtocol | None = None
+    to_dict: ToDictFunctionProtocol | None = None
+    from_dict: FromDictFunctionProtocol | None = None
+    serialize: SerializeFunctionProtocol | None = None
+    deserialize: DeserializeFunctionProtocol | None = None
 
     @property
     def field_names(self) -> list[str]:
