@@ -114,8 +114,6 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
                         contents.append({"type": "text", "text": final_result})
                     case list() | tuple():
                         contents.append({"type": "text", "text": " ".join(map(str, final_result))})
-                    case dict():
-                        contents.append({"type": "text", "text": str(final_result)})
                     case _:
                         contents.append({"type": "text", "text": str(final_result)})
 
