@@ -21,6 +21,11 @@ jobs:
       UV_PYTHON: "3.10"
     steps:
       - uses: actions/checkout@v4
+      # Save the PR number to a file since the workflow_run event
+      # in the coverage report workflow does not have access to it
+      - name: Save PR number
+        run: |
+          echo ${{ github.event.number }} > ./pr_number
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
         with:
@@ -37,6 +42,7 @@ jobs:
           path: |
             python/python-coverage.txt
             python/pytest.xml
+            python/pr_number
           overwrite: true
           retention-days: 1
           if-no-files-found: error
