@@ -2,10 +2,10 @@
 
 from typing import TYPE_CHECKING
 
-from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 
+from samples.demos.document_generator.custom_chat_completion_client import CustomChatCompletionsClient
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
@@ -21,15 +21,6 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 
-SYSTEM_MESSAGE = """
-You will be given a conversation history where there will be one writer and multiple reviewers.
-The writer is responsible for creating content. The reviewers are responsible for providing feedback and
-approving the content.
-
-The content is considered approved only when the reviewers agree that the content is ready for publication.
-Determine if the content has been approved. If so, say "yes".
-"""
-
 TERMINATE_KEYWORD = "yes"
 
 
@@ -44,7 +35,7 @@ class CustomTerminationStrategy(TerminationStrategy):
 
         chat_completion_service = AzureAIInferenceChatCompletion(
             ai_model_id=deployment_name,
-            client=ChatCompletionsClient(
+            client=CustomChatCompletionsClient(
                 endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
@@ -62,17 +53,36 @@ class CustomTerminationStrategy(TerminationStrategy):
         """
         tracer = trace.get_tracer(__name__)
         with tracer.start_as_current_span("terminate_strategy"):
-            chat_history = ChatHistory(system_message=SYSTEM_MESSAGE)
+            chat_history = ChatHistory(system_message=self.get_system_message())
 
-            history_content: list[dict[str, str]] = []
+            history_content: list[str] = []
             for message in history:
-                history_content.append(message.to_dict())
+                content = message.content
+                if content:
+                    if message.name is None:
+                        history_content.append(f"{message.role}: {content}")
+                    else:
+                        history_content.append(f"{message.name}: {content}")
 
-            chat_history.add_user_message(str(history_content))
+            chat_history.add_user_message("\n\n".join(history_content))
 
             completion = await self.chat_completion_service.get_chat_message_content(
                 chat_history,
                 AzureAIInferenceChatPromptExecutionSettings(),
             )
 
-            return TERMINATE_KEYWORD in completion.content
+            return TERMINATE_KEYWORD in completion.content.lower()
+
+    def get_system_message(self) -> str:
+        return f"""
+            You will be given a conversation history where there will be one writer
+            and {len(self.agents) - 1} reviewers. The writer is responsible for creating
+            content. The reviewers are responsible for providing feedback and approving
+            the content.
+
+            The content is considered approved only when the reviewers agree that the
+            content is ready for publication. The content is not approved when none of
+            the reviewers have spoken yet.
+
+            Determine if the content has been approved. If so, say "{TERMINATE_KEYWORD}".
+            """

@@ -32,6 +32,7 @@ class ProofreadAgent(ChatCompletionAgent, AgentBaseExtension):
         super().__init__(
             kernel=kernel,
             execution_settings=settings,
+            name="ProofreadAgent",
             instructions=INSTRUCTION,
-            description="QA Agent",
+            description="Proofread Agent",
         )

@@ -25,6 +25,7 @@ class ContentCreationAgent(ChatCompletionAgent, AgentBaseExtension):
         super().__init__(
             kernel=kernel,
             execution_settings=settings,
+            name="ContentCreationAgent",
             instructions=INSTRUCTION,
             description="Content Creation Agent",
         )

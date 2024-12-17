@@ -3,9 +3,9 @@
 from abc import ABC
 from typing import ClassVar
 
-from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
 
+from samples.demos.document_generator.custom_chat_completion_client import CustomChatCompletionsClient
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
     AzureAIInferenceChatCompletion,
 )
@@ -27,7 +27,7 @@ class AgentBaseExtension(ABC):
             AzureAIInferenceChatCompletion(
                 ai_model_id=deployment_name,
                 service_id=self.AZURE_AI_INFERENCE_SERVICE_ID,
-                client=ChatCompletionsClient(
+                client=CustomChatCompletionsClient(
                     endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                     credential=DefaultAzureCredential(),
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
