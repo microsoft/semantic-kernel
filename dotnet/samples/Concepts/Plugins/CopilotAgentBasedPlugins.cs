@@ -67,7 +67,7 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
     [
         // function names are sanitized operationIds from the OpenAPI document
         ["MessagesPlugin", "me_ListMessages", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "MessagesPlugin"],
-        ["DriveItemPlugin", "drive_root_GetChildrenContent", new KernelArguments(s_promptExecutionSettings) { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
+        ["DriveItemPlugin", "drives_GetItemsContent", new KernelArguments(s_promptExecutionSettings) { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
         ["ContactsPlugin", "me_ListContacts", new KernelArguments(s_promptExecutionSettings) { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
         ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
