@@ -5,11 +5,15 @@ import logging
 from collections.abc import Callable, Mapping
 from typing import Any
 
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -50,29 +54,32 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
                 "type": "tool_use",
                 "id": item.id or "",
                 "name": item.name or "",
-                "input": item.arguments if isinstance(item.arguments, Mapping) else json.loads(item.arguments or ""),
+                "input": item.arguments
+                if isinstance(item.arguments, Mapping)
+                else json.loads(item.arguments)
+                if item.arguments
+                else {},
             })
         else:
             logger.warning(
                 f"Unsupported item type in Assistant message while formatting chat history for Anthropic: {type(item)}"
             )
 
-    if tool_calls:
-        return {
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": message.content,
-                },
-                *tool_calls,
-            ],
-        }
+    formatted_message = {"role": "assistant", "content": []}
 
-    return {
-        "role": "assistant",
-        "content": message.content,
-    }
+    if message.content:
+        # Only include the text content if it is not empty.
+        # Otherwise, the Anthropic client will throw an error.
+        formatted_message["content"].append({
+            "type": "text",
+            "text": message.content,
+        })
+    if tool_calls:
+        # Only include the tool calls if there are any.
+        # Otherwise, the Anthropic client will throw an error.
+        formatted_message["content"].extend(tool_calls)
+
+    return formatted_message
 
 
 def _format_tool_message(message: ChatMessageContent) -> dict[str, Any]:
@@ -108,3 +115,40 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], dict[str, An
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
 }
+
+
+def update_settings_from_function_call_configuration(
+    function_choice_configuration: FunctionCallChoiceConfiguration,
+    settings: PromptExecutionSettings,
+    type: FunctionChoiceType,
+) -> None:
+    """Update the settings from a FunctionChoiceConfiguration."""
+    if (
+        function_choice_configuration.available_functions
+        and hasattr(settings, "tools")
+        and hasattr(settings, "tool_choice")
+    ):
+        settings.tools = [
+            kernel_function_metadata_to_function_call_format(f)
+            for f in function_choice_configuration.available_functions
+        ]
+
+        if (
+            settings.function_choice_behavior and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+        ) or type == FunctionChoiceType.REQUIRED:
+            settings.tool_choice = {"type": "any"}
+        else:
+            settings.tool_choice = {"type": type.value}
+
+
+def kernel_function_metadata_to_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
+    """Convert the kernel function metadata to function calling format."""
+    return {
+        "name": metadata.fully_qualified_name,
+        "description": metadata.description or "",
+        "input_schema": {
+            "type": "object",
+            "properties": {p.name: p.schema_data for p in metadata.parameters},
+            "required": [p.name for p in metadata.parameters if p.is_required],
+        },
+    }
