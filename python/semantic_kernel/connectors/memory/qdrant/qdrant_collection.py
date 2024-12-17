@@ -188,7 +188,7 @@ class QdrantCollection(
             else:
                 query_vector = vector
         if query_vector is None:
-            raise VectorSearchExecutionException("Search requires either a vector.")
+            raise VectorSearchExecutionException("Search requires a vector.")
         results = await self.qdrant_client.search(
             collection_name=self.collection_name,
             query_vector=query_vector,
@@ -214,7 +214,7 @@ class QdrantCollection(
     def _create_filter(self, options: VectorSearchOptions) -> Filter:
         return Filter(
             must=[
-                FieldCondition(key=filter.field_name, match=MatchAny(any=filter.value))
+                FieldCondition(key=filter.field_name, match=MatchAny(any=[filter.value]))
                 for filter in options.filter.filters
             ]
         )
