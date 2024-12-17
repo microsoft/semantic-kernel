@@ -44,11 +44,11 @@ internal static partial class RestApiOperationExtensions
 
         foreach (var parameter in parameters)
         {
-            // The functionality of replacing invalid symbols and setting the argument name   
-            // was introduced to handle dashes allowed in OpenAPI parameter names and   
-            // not supported by SK at that time. More context -   
-            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780   
-            // It's kept for backward compatibility only.  
+            // The functionality of replacing invalid symbols and setting the argument name
+            // was introduced to handle dashes allowed in OpenAPI parameter names and
+            // not supported by SK at that time. More context -
+            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780
+            // It's kept for backward compatibility only.
             parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
@@ -120,7 +120,16 @@ internal static partial class RestApiOperationExtensions
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
-        return [
+        if (parameterFilter is not null)
+        {
+            return new RestApiParameter[]
+            {
+                CreatePayloadArtificialParameter(operation),
+                CreateContentTypeArtificialParameter(operation)
+            }.Select(p => parameterFilter(new(operation, p))).OfType<RestApiParameter>().ToList();
+        }
+        return
+        [
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
         ];
