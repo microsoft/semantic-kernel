@@ -450,7 +450,12 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
             "anthropic",
-            {},
+            {
+                # Anthropic expects tools in the request when it sees tool use in the chat history.
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                ),
+            },
             [
                 [
                     ChatMessageContent(
@@ -460,9 +465,12 @@ pytestmark = pytest.mark.parametrize(
                     ChatMessageContent(
                         role=AuthorRole.ASSISTANT,
                         items=[
+                            # Anthropic will often include a chain of thought in the tool call by default.
+                            # If this is not in the message, it will complain about the missing chain of thought.
+                            TextContent(text="I will find the revenue for you."),
                             FunctionCallContent(
                                 id="123456789", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
-                            )
+                            ),
                         ],
                     ),
                     ChatMessageContent(
