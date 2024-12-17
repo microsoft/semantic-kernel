@@ -66,9 +66,7 @@ vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "V
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
-anthropic_setup: bool = is_service_setup_for_testing(
-    ["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"], raise_if_not_set=False
-)  # We don't have an Anthropic deployment
+anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
 # When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
 bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
