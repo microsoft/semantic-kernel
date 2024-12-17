@@ -31,6 +31,12 @@ public static class ProcessVisualizationExtensions
     /// <returns></returns>
     public static string ToMermaid(this KernelProcess process, int maxLevel = 2)
     {
+        // Check that the maximum level is at least 1
+        if (maxLevel < 1)
+        {
+            throw new InvalidOperationException("The maximum indentation level must be at least 1.");
+        }
+
         StringBuilder sb = new();
         sb.AppendLine("flowchart LR");
 
