@@ -54,6 +54,11 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public KernelFunction Function { get; } = function;
 
     /// <summary>
+    /// Only include agent name in history when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// </summary>
+    public bool EvaluateNameOnly { get; init; }
+
+    /// <summary>
     /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
@@ -79,7 +84,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentsVariableName, string.Join(",", agents.Select(a => a.Name)) },
-                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history, this.EvaluateNameOnly) },
             };
 
         this.Logger.LogKernelFunctionSelectionStrategyInvokingFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name);
