@@ -26,6 +26,7 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.anthropic.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -34,7 +35,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -192,69 +192,25 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             A tuple containing the prepared chat history and the first SYSTEM message content.
         """
         system_message_content = None
-        remaining_messages: list[dict[str, Any]] = []
-        system_message_found = False
+        system_message_count = 0
+        formatted_messages: list[dict[str, Any]] = []
         for message in chat_history.messages:
             # Skip system messages after the first one is found
             if message.role == AuthorRole.SYSTEM:
-                if not system_message_found:
+                if system_message_count == 0:
                     system_message_content = message.content
-                    system_message_found = True
-            elif message.role == AuthorRole.TOOL:
-                # if tool result message isn't the most recent message, add it to the remaining messages
-                if not remaining_messages or remaining_messages[-1][role_key] != AuthorRole.USER:
-                    remaining_messages.append({
-                        role_key: AuthorRole.USER,
-                        content_key: [],
-                    })
-
-                # add the tool result to the most recent message
-                tool_results_message = remaining_messages[-1]
-                for item in message.items:
-                    if isinstance(item, FunctionResultContent):
-                        tool_results_message["content"].append({
-                            "type": "tool_result",
-                            "tool_use_id": item.id,
-                            content_key: str(item.result),
-                        })
-            elif message.finish_reason == SemanticKernelFinishReason.TOOL_CALLS:
-                if not stream:
-                    if not message.inner_content:
-                        raise ServiceInvalidResponseError(
-                            "Expected a message with an Anthropic Message as inner content."
-                        )
-
-                    remaining_messages.append({
-                        role_key: AuthorRole.ASSISTANT,
-                        content_key: [content_block.to_dict() for content_block in message.inner_content.content],
-                    })
-                else:
-                    content: list[TextBlock | ToolUseBlock] = []
-                    # for remaining items, add them to the content
-                    for item in message.items:
-                        if isinstance(item, TextContent):
-                            content.append(TextBlock(text=item.text, type="text"))
-                        elif isinstance(item, FunctionCallContent):
-                            item_arguments = (
-                                item.arguments if not isinstance(item.arguments, str) else json.loads(item.arguments)
-                            )
-
-                            content.append(
-                                ToolUseBlock(id=item.id, input=item_arguments, name=item.name, type="tool_use")
-                            )
-
-                    remaining_messages.append({
-                        role_key: AuthorRole.ASSISTANT,
-                        content_key: content,
-                    })
+                system_message_count += 1
             else:
-                # The API requires only role and content keys for the remaining messages
-                remaining_messages.append({
-                    role_key: getattr(message, role_key),
-                    content_key: getattr(message, content_key),
-                })
+                formatted_messages.append(MESSAGE_CONVERTERS[message.role](message))
 
-        return remaining_messages, system_message_content
+        if system_message_count > 1:
+            logger.warning(
+                "Anthropic service only supports one system message, but %s system messages were found."
+                " Only the first system message will be included in the request.",
+                system_message_count,
+            )
+
+        return formatted_messages, system_message_content
 
     # endregion
 
