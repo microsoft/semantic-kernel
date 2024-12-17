@@ -65,7 +65,7 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
                 f"Unsupported item type in Assistant message while formatting chat history for Anthropic: {type(item)}"
             )
 
-    formatted_message = {"role": "assistant", "content": []}
+    formatted_message: dict[str, list[Any]] = {"role": "assistant", "content": []}
 
     if message.content:
         # Only include the text content if it is not empty.

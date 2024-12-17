@@ -222,7 +222,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             elif curr_message.role == AuthorRole.USER or curr_message.role == AuthorRole.ASSISTANT:
                 formatted_messages.append(MESSAGE_CONVERTERS[curr_message.role](curr_message))
             elif curr_message.role == AuthorRole.TOOL:
-                if i == 0:
+                if prev_message is None:
                     # Under no circumstances should a tool message be the first message in the chat history
                     raise ServiceInvalidRequestError("Tool message found without a preceding message.")
                 if prev_message.role == AuthorRole.USER or prev_message.role == AuthorRole.SYSTEM:
