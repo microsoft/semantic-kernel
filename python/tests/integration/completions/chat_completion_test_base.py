@@ -118,11 +118,12 @@ class ChatCompletionTestBase(CompletionTestBase):
                     default_headers={"Test-User-X-ID": "test"},
                 ),
             )
+            assert deployment_name
             azure_ai_inference_client = AzureAIInferenceChatCompletion(
                 ai_model_id=deployment_name,
                 client=ChatCompletionsClient(
                     endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                    credential=DefaultAzureCredential(),
+                    credential=DefaultAzureCredential(),  # type: ignore
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 ),
             )
@@ -190,7 +191,7 @@ class ChatCompletionTestBase(CompletionTestBase):
     async def get_chat_completion_response(
         self,
         kernel: Kernel,
-        service: ChatCompletionClientBase,
+        service: ServiceType,
         execution_settings: PromptExecutionSettings,
         chat_history: ChatHistory,
         stream: bool,
@@ -204,6 +205,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             input (str): Input string.
             stream (bool): Stream flag.
         """
+        assert isinstance(service, ChatCompletionClientBase)
         if not stream:
             return await service.get_chat_message_content(
                 chat_history,

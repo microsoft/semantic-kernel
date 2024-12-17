@@ -6,6 +6,11 @@ from typing import Any
 
 import pytest
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatMessageContent, TextContent
@@ -23,11 +28,6 @@ from tests.integration.completions.chat_completion_test_base import (
 )
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.utils import retry
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 
 class Step(KernelBaseModel):
@@ -265,7 +265,7 @@ class TestChatCompletion(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -284,7 +284,7 @@ class TestChatCompletion(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -299,6 +299,7 @@ class TestChatCompletion(ChatCompletionTestBase):
     @override
     def evaluate(self, test_target: Any, **kwargs):
         inputs = kwargs.get("inputs")
+        assert isinstance(inputs, list)
         assert len(test_target) == len(inputs) * 2
         for i in range(len(inputs)):
             message = test_target[i * 2 + 1]
@@ -325,7 +326,7 @@ class TestChatCompletion(ChatCompletionTestBase):
         for message in inputs:
             history.add_message(message)
 
-            cmc = await retry(
+            cmc: ChatMessageContent | None = await retry(
                 partial(
                     self.get_chat_completion_response,
                     kernel=kernel,
@@ -335,7 +336,9 @@ class TestChatCompletion(ChatCompletionTestBase):
                     stream=stream,
                 ),
                 retries=5,
+                name="get_chat_completion_response",
             )
-            history.add_message(cmc)
+            if cmc:
+                history.add_message(cmc)
 
         self.evaluate(history.messages, inputs=inputs)

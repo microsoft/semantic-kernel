@@ -971,6 +971,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
     def evaluate(self, test_target: Any, **kwargs):
         inputs = kwargs.get("inputs")
         test_type = kwargs.get("test_type")
+        assert isinstance(inputs, list)
 
         if test_type == FunctionChoiceTestTypes.AUTO:
             self._evaluate_auto_function_choice(test_target, inputs)
@@ -1060,7 +1061,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
 
         self.setup(kernel)
 
-        cmc = await retry(
+        cmc: ChatMessageContent | None = await retry(
             partial(
                 self.get_chat_completion_response,
                 kernel=kernel,
@@ -1070,11 +1071,13 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
                 stream=stream,
             ),
             retries=5,
+            name="function_calling",
         )
 
         # We need to add the latest message to the history because the connector is
         # not responsible for updating the history, unless it is related to auto function
         # calling, when the history is updated after the function calls are invoked.
-        history.add_message(cmc)
+        if cmc:
+            history.add_message(cmc)
 
         self.evaluate(history, inputs=inputs, test_type=test_type)

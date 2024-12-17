@@ -416,6 +416,20 @@ def test_to_dict_fail(vector_store_record_collection):
         vector_store_record_collection.serialize(record)
 
 
+def test_serialize_with_array_func(DictVectorStoreRecordCollection, data_model_type_pydantic_array):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_pydantic_array,
+    )
+    record = data_model_type_pydantic_array(**{
+        "id": "test_id",
+        "content": "test_content",
+        "vector": np.array([1.0, 2.0, 3.0]),
+    })
+    ser = vector_store_record_collection.serialize(record)
+    assert ser["vector"] == [1.0, 2.0, 3.0]
+
+
 # region Deserialize
 
 
@@ -507,3 +521,18 @@ def test_from_dict_fail(vector_store_record_collection):
     vector_store_record_collection.data_model_type = model
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record:"):
         vector_store_record_collection.deserialize(dict_record)
+
+
+def test_deserialize_with_array_func(DictVectorStoreRecordCollection, data_model_type_pydantic_array):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_pydantic_array,
+    )
+    record = {
+        "id": "test_id",
+        "content": "test_content",
+        "vector": [1.0, 2.0, 3.0],
+    }
+    ser = vector_store_record_collection.deserialize(record)
+    assert isinstance(ser.vector, np.ndarray)
+    assert np.array_equal(ser.vector, np.array([1.0, 2.0, 3.0]))

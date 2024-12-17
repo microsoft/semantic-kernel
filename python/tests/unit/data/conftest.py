@@ -7,7 +7,7 @@ from typing import Annotated, Any
 
 import numpy as np
 from pandas import DataFrame
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pytest import fixture
 
 from semantic_kernel.data import (
@@ -330,6 +330,24 @@ def data_model_type_pydantic():
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreRecordDataField()]
         vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_pydantic_array():
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        content: Annotated[str, VectorStoreRecordDataField()]
+        vector: Annotated[
+            np.ndarray,
+            VectorStoreRecordVectorField(
+                serialize_function=np.ndarray.tolist,
+                deserialize_function=np.array,
+            ),
+        ]
         id: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass

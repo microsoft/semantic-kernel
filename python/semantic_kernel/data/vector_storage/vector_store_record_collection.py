@@ -445,26 +445,12 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return self.data_model_definition.to_dict(record, **kwargs)
         if isinstance(record, BaseModel):
             try:
-                ret = record.model_dump()
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return ret
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        assert field.name is not None  # nosec
-                        ret[field.name] = field.serialize_function(ret[field.name])
-                return ret
+                return self._serialize_vectors(record.model_dump())
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
         if isinstance(record, ToDictMethodProtocol):
             try:
-                ret = record.to_dict()
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return ret
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        assert field.name is not None  # nosec
-                        ret[field.name] = field.serialize_function(ret[field.name])
-                return ret
+                return self._serialize_vectors(record.to_dict())
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
 
@@ -480,6 +466,15 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     f"Error serializing record, not able to get: {field_name}"
                 ) from exc
         return store_model
+
+    def _serialize_vectors(self, record: dict[str, Any]) -> dict[str, Any]:
+        if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
+            return record
+        for field in self.data_model_definition.vector_fields:
+            if field.serialize_function:
+                assert field.name is not None  # nosec
+                record[field.name] = field.serialize_function(record[field.name])
+        return record
 
     # region Deserialization methods
 
@@ -555,25 +550,15 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             record = record[0]
         if issubclass(self.data_model_type, BaseModel):
             try:
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return self.data_model_type.model_validate(record)
                 if include_vectors:
-                    for field in self.data_model_definition.vector_fields:
-                        if field.serialize_function:
-                            field_name = field.name or ""
-                            record[field_name] = field.serialize_function(record[field_name])
+                    record = self._deserialize_vector(record)
                 return self.data_model_type.model_validate(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         if func := getattr(self.data_model_type, "from_dict", None):
             try:
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return func(record)
                 if include_vectors:
-                    for field in self.data_model_definition.vector_fields:
-                        if field.serialize_function:
-                            field_name = field.name or ""
-                            record[field_name] = field.serialize_function(record[field_name])
+                    record = self._deserialize_vector(record)
                 return func(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
@@ -593,6 +578,15 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         if self.data_model_type is dict:
             return data_model_dict  # type: ignore
         return self.data_model_type(**data_model_dict)
+
+    def _deserialize_vector(self, record: dict[str, Any]) -> dict[str, Any]:
+        if not any(field.deserialize_function is not None for field in self.data_model_definition.vector_fields):
+            return record
+        for field in self.data_model_definition.vector_fields:
+            if field.deserialize_function:
+                field_name = field.name or ""
+                record[field_name] = field.deserialize_function(record[field_name])
+        return record
 
     # region Internal Functions
 
