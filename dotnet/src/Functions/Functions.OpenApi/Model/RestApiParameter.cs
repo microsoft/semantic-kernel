@@ -33,7 +33,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
     /// </summary>
-    internal string Type { get; }
+    public string Type { get; }
 
     /// <summary>
     /// The parameter type modifier that refines the generic parameter type to a more specific one.
@@ -64,7 +64,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// Type of array item for parameters of "array" type.
     /// </summary>
-    internal string? ArrayItemType { get; }
+    public string? ArrayItemType { get; }
 
     /// <summary>
     /// The default value.
@@ -96,7 +96,7 @@ public sealed class RestApiParameter
     /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
     /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The parameter schema.</param>
-    internal RestApiParameter(
+    public RestApiParameter(
         string name,
         string type,
         bool isRequired,
