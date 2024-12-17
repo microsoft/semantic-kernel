@@ -426,8 +426,8 @@ def test_serialize_with_array_func(DictVectorStoreRecordCollection, data_model_t
         "content": "test_content",
         "vector": np.array([1.0, 2.0, 3.0]),
     })
-    ser = vector_store_record_collection.serialize(record)
-    assert ser["vector"] == [1.0, 2.0, 3.0]
+    serialized_record = vector_store_record_collection.serialize(record)
+    assert serialized_record["vector"] == [1.0, 2.0, 3.0]
 
 
 # region Deserialize
@@ -533,6 +533,6 @@ def test_deserialize_with_array_func(DictVectorStoreRecordCollection, data_model
         "content": "test_content",
         "vector": [1.0, 2.0, 3.0],
     }
-    ser = vector_store_record_collection.deserialize(record)
-    assert isinstance(ser.vector, np.ndarray)
-    assert np.array_equal(ser.vector, np.array([1.0, 2.0, 3.0]))
+    deserialized_record = vector_store_record_collection.deserialize(record)
+    assert isinstance(deserialized_record.vector, np.ndarray)
+    assert np.array_equal(deserialized_record.vector, np.array([1.0, 2.0, 3.0]))
