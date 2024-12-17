@@ -120,6 +120,4 @@ def merge_streaming_function_results(
 
     # If we want to be able to support adding the streaming message chunks together, then the author role needs to be
     # `Assistant```, as the `Tool` role will cause the add method to break.
-    return [
-        StreamingChatMessageContent(role=AuthorRole.ASSISTANT, items=items, choice_index=0, ai_model_id=ai_model_id)
-    ]
+    return [StreamingChatMessageContent(role=AuthorRole.TOOL, items=items, choice_index=0, ai_model_id=ai_model_id)]

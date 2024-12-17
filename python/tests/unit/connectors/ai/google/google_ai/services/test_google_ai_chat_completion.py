@@ -297,7 +297,7 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
     )
 
     # Validate the second message
-    assert all_messages[1].role == "assistant", f"Unexpected role for second message: {all_messages[1].role}"
+    assert all_messages[1].role == "tool", f"Unexpected role for second message: {all_messages[1].role}"
     assert all_messages[1].content == "", f"Unexpected content for second message: {all_messages[1].content}"
     assert all_messages[1].finish_reason is None
 
