@@ -65,8 +65,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         plugins: A dict with the plugins registered with the Kernel, from KernelFunctionExtension.
         services: A dict with the services registered with the Kernel, from KernelServicesExtension.
         ai_service_selector: The AI service selector to be used by the kernel, from KernelServicesExtension.
-        retry_mechanism: The retry mechanism to be used by the kernel, from KernelReliabilityExtension.
-
     """
 
     def __init__(
@@ -84,12 +82,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugins: The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
             services: The services to be used by the kernel, will be rewritten to a dict with service_id as key
             ai_service_selector: The AI service selector to be used by the kernel,
-                default is based on order of execution settings.
-            **kwargs: Additional fields to be passed to the Kernel model,
-                these are limited to retry_mechanism and function_invoking_handlers
-                and function_invoked_handlers, the best way to add function_invoking_handlers
-                and function_invoked_handlers is to use the add_function_invoking_handler
-                and add_function_invoked_handler methods.
+                                 default is based on order of execution settings.
+            **kwargs: Additional fields to be passed to the Kernel model, these are limited to filters.
         """
         args = {
             "services": services,

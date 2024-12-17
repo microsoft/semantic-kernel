@@ -18,10 +18,7 @@ from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.exceptions import (
-    KernelFunctionAlreadyExistsError,
-    KernelServiceNotFoundError,
-)
+from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.exceptions.content_exceptions import FunctionCallInvalidArgumentsException
 from semantic_kernel.exceptions.kernel_exceptions import (
     KernelFunctionNotFoundError,
