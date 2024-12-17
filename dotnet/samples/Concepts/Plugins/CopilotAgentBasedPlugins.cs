@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
@@ -96,6 +98,80 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         Console.WriteLine();
     }
+    private static readonly HashSet<string> s_fieldsToIgnore = new(
+        [
+            "bodyPreview",
+            "categories",
+            "conversationId",
+            "conversationIndex",
+            "inferenceClassification",
+            "internetMessageHeaders",
+            "isDeliveryReceiptRequested",
+            "multiValueExtendedProperties",
+            "singleValueExtendedProperties",
+            "uniqueBody",
+            "webLink",
+        ],
+        StringComparer.OrdinalIgnoreCase
+    );
+    private const string RequiredPropertyName = "required";
+    private const string PropertiesPropertyName = "properties";
+    /// <summary>
+    /// Trims the properties from the request body schema.
+    /// Most models in strict mode enforce a limit on the properties.
+    /// </summary>
+    /// <param name="schema">Source schema</param>
+    /// <returns>the trimmed schema for the request body</returns>
+    private static KernelJsonSchema? TrimPropertiesFromRequestBody(KernelJsonSchema? schema)
+    {
+        if (schema is null)
+        {
+            return null;
+        }
+
+        var originalSchema = JsonSerializer.Serialize(schema.RootElement);
+        var node = JsonNode.Parse(originalSchema);
+        if (node is not JsonObject jsonNode)
+        {
+            return schema;
+        }
+        if (jsonNode.TryGetPropertyValue(RequiredPropertyName, out var requiredRawValue) && requiredRawValue is JsonArray requiredArray)
+        {
+            jsonNode[RequiredPropertyName] = new JsonArray(requiredArray.Where(x => x is not null).Select(x => x!.GetValue<string>()).Where(x => !s_fieldsToIgnore.Contains(x)).Select(x => JsonValue.Create(x)).ToArray());
+        }
+
+        if (jsonNode.TryGetPropertyValue(PropertiesPropertyName, out var propertiesRawValue) && propertiesRawValue is JsonObject propertiesObject)
+        {
+            var properties = propertiesObject.Where(x => s_fieldsToIgnore.Contains(x.Key)).Select(x => x.Key).ToArray();
+            foreach (var property in properties)
+            {
+                propertiesObject.Remove(property);
+            }
+        }
+
+        return KernelJsonSchema.Parse(node.ToString());
+    }
+    private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
+    {
+        if ("me_CreateMessages".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            return new RestApiParameter(
+                context.Parameter.Name,
+                context.Parameter.Type,
+                context.Parameter.IsRequired,
+                context.Parameter.Expand,
+                context.Parameter.Location,
+                context.Parameter.Style,
+                context.Parameter.ArrayItemType,
+                context.Parameter.DefaultValue,
+                context.Parameter.Description,
+                context.Parameter.Format,
+                TrimPropertiesFromRequestBody(context.Parameter.Schema)
+            );
+        }
+        return context.Parameter;
+    };
     internal static async Task<CopilotAgentPluginParameters> GetAuthenticationParametersAsync()
     {
         if (TestConfiguration.MSGraph.Scopes is null)
@@ -120,7 +196,10 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
             authCallback: authenticationProvider.AuthenticateRequestAsync,
             serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
             enableDynamicOperationPayload: false,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: true)
+        {
+            ParameterFilter = s_restApiParameterFilter
+        };
 
         // NASA API execution parameters
         var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
