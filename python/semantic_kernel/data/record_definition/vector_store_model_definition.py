@@ -126,7 +126,7 @@ class VectorStoreRecordDefinition:
         for name, value in self.fields.items():
             if not name:
                 raise VectorStoreModelException("Fields must have a name.")
-            if value.name is None:
+            if not value.name:
                 value.name = name
             if (
                 isinstance(value, VectorStoreRecordDataField)
