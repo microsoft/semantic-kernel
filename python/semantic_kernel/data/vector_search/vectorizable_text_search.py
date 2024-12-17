@@ -40,8 +40,10 @@ class VectorizableTextSearchMixin(Generic[TModel]):
             **kwargs: if options are not set, this is used to create them.
 
         Raises:
-            VectorSearchOptionsException: raised when the options given are not correct.
+            VectorStoreOperationException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
             SearchResultEmptyError: raised when there are no results returned.
+            VectorStoreMixinException: raised when the method is not used in combination with the VectorSearchBase.
 
         """
         from semantic_kernel.data.vector_search.vector_search import VectorSearchBase

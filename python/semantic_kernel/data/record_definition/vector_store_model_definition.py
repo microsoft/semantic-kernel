@@ -15,7 +15,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions import VectorStoreModelException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 VectorStoreRecordFields = TypeVar("VectorStoreRecordFields", bound=VectorStoreRecordField)

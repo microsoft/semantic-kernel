@@ -10,6 +10,7 @@ from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.exceptions import VectorStoreModelDeserializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.list_handler import desync_list
 
@@ -67,6 +68,10 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
         Returns:
             The search results, wrapped in a KernelSearchResults object.
 
+        Raises:
+            VectorStoreOperationException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+
         """
         ...
 
@@ -106,9 +111,14 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
         if isinstance(results, Sequence):
             results = desync_list(results)
         async for result in results:
-            record = self.deserialize(
-                self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
-            )
+            try:
+                record = self.deserialize(
+                    self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
+                )
+            except Exception as exc:
+                raise VectorStoreModelDeserializationException(
+                    f"An error occurred while deserializing the record: {exc}"
+                ) from exc
             score = self._get_score_from_result(result)
             if record:
                 # single records are always returned as single records by the deserializer

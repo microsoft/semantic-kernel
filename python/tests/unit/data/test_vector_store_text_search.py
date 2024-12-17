@@ -10,7 +10,7 @@ from semantic_kernel.data import VectorStoreTextSearch
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.exceptions import VectorStoreTextSearchValidationError
+from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.list_handler import desync_list
 
 
@@ -66,12 +66,12 @@ async def test_from_vectorized_search(vector_collection, azure_openai_unit_test_
 
 
 def test_validation_no_embedder_for_vectorized_search(vector_collection):
-    with raises(VectorStoreTextSearchValidationError):
+    with raises(VectorStoreInitializationException):
         VectorStoreTextSearch(vectorized_search=vector_collection)
 
 
 def test_validation_no_collections():
-    with raises(VectorStoreTextSearchValidationError):
+    with raises(VectorStoreInitializationException):
         VectorStoreTextSearch()
 
 

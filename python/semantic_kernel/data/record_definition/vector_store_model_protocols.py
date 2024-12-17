@@ -24,48 +24,11 @@ class SerializeMethodProtocol(Protocol):
 
 @experimental_class
 @runtime_checkable
-class DeserializeMethodProtocol(Protocol):
-    """Data model deserialization protocol.
-
-    This can optionally be implemented to allow single step serialization and deserialization
-    for using your data model with a specific datastore.
-    """
-
-    @classmethod
-    def deserialize(cls: type[TModel], obj: Any, **kwargs: Any) -> TModel:
-        """Deserialize the output of the data store to an object."""
-        ...  # pragma: no cover
-
-
-@experimental_class
-@runtime_checkable
 class ToDictMethodProtocol(Protocol):
     """Class used internally to check if a model has a to_dict method."""
 
     def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Serialize the object to the format required by the data store."""
-        ...  # pragma: no cover
-
-
-@experimental_class
-@runtime_checkable
-class FromDictMethodProtocol(Protocol):
-    """Class used internally to check if a model has a from_dict method."""
-
-    @classmethod
-    def from_dict(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
-        """Deserialize the output of the data store to an object."""
-        ...  # pragma: no cover
-
-
-@experimental_class
-@runtime_checkable
-class ModelValidateMethodProtocol(Protocol):
-    """Class used internally to check if a model has a from_dict method."""
-
-    @classmethod
-    def model_validate(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
-        """Deserialize the output of the data store to an object."""
         ...  # pragma: no cover
 
 

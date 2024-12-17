@@ -14,7 +14,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     data_model_definition_to_azure_ai_search_index,
     get_search_index_client,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )

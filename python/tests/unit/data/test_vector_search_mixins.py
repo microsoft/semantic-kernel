@@ -3,7 +3,7 @@
 from pytest import raises
 
 from semantic_kernel.data import VectorizableTextSearchMixin, VectorizedSearchMixin, VectorTextSearchMixin
-from semantic_kernel.exceptions.search_exceptions import VectorStoreMixinException
+from semantic_kernel.exceptions import VectorStoreMixinException
 
 
 class VectorTextSearchMixinTest(VectorTextSearchMixin):

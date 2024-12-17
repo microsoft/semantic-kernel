@@ -11,12 +11,12 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
+    VectorSearchExecutionException,
     VectorStoreModelValidationError,
 )
-from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException
 
 BASE_PATH = "qdrant_client.async_qdrant_client.AsyncQdrantClient"
 

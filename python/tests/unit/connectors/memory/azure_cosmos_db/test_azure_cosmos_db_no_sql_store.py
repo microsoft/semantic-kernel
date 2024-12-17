@@ -10,7 +10,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 
 def test_azure_cosmos_db_no_sql_store_init(

@@ -10,7 +10,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions import VectorStoreModelException
 from semantic_kernel.utils.experimental_decorator import experimental_function
 
 logger = logging.getLogger(__name__)
