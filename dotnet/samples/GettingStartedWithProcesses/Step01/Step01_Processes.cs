@@ -4,7 +4,7 @@ using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Tools;
 using SharedSteps;
 using Utilities;
 

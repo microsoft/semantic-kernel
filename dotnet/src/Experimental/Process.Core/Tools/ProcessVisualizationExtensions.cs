@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel.Process.Tools;
 
 /// <summary>
 /// Provides extension methods to visualize a process as a Mermaid diagram.

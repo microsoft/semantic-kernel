@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Models;
+using Microsoft.SemanticKernel.Process.Tools;
 using Step03.Processes;
 using Utilities;
 

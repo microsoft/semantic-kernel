@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Reflection;
 using PuppeteerSharp;
 
@@ -101,9 +100,14 @@ public static class MermaidRenderer
                 await page.ScreenshotAsync(outputFilePath, new ScreenshotOptions { FullPage = true });
             }
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
-            throw;
+            throw new IOException("An error occurred while accessing the file.", ex);
+        }
+        catch (Exception ex) // Catch any other exceptions that might occur  
+        {
+            throw new InvalidOperationException(
+                "An unexpected error occurred during the Mermaid diagram rendering.", ex);
         }
         finally
         {
