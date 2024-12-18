@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from samples.demos.document_generator.agent_base_extension import AgentBaseExtension
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
+from samples.demos.document_generator.agents.custom_agent_base import CustomAgentBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 
 INSTRUCTION = """
@@ -20,12 +19,12 @@ If you think the content is ready for publication, let the author know.
 """
 
 
-class ProofreadAgent(ChatCompletionAgent, AgentBaseExtension):
+class ProofreadAgent(CustomAgentBase):
     def __init__(self):
         kernel = self._create_kernel()
 
         settings = kernel.get_prompt_execution_settings_from_service_id(
-            service_id=AgentBaseExtension.AZURE_AI_INFERENCE_SERVICE_ID
+            service_id=CustomAgentBase.AZURE_AI_INFERENCE_SERVICE_ID
         )
         settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 

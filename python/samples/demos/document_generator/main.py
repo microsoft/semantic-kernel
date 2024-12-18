@@ -6,9 +6,10 @@ from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.semconv.resource import ResourceAttributes
 
-from samples.demos.document_generator.content_creation_agent import ContentCreationAgent
+from samples.demos.document_generator.agents.code_validation_agent import CodeValidationAgent
+from samples.demos.document_generator.agents.content_creation_agent import ContentCreationAgent
+from samples.demos.document_generator.agents.proofread_agent import ProofreadAgent
 from samples.demos.document_generator.custom_termination_strategy import CustomTerminationStrategy
-from samples.demos.document_generator.proofread_agent import ProofreadAgent
 from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -55,15 +56,15 @@ async def main():
 
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("main"):
-        content_creation_agent_agent = ContentCreationAgent()
-        proofread_agent = ProofreadAgent()
+        agents = [
+            ContentCreationAgent(),
+            ProofreadAgent(),
+            CodeValidationAgent(),
+        ]
 
         group_chat = AgentGroupChat(
-            [
-                content_creation_agent_agent,
-                proofread_agent,
-            ],
-            termination_strategy=CustomTerminationStrategy(),
+            agents=agents,
+            termination_strategy=CustomTerminationStrategy(agents=agents),
         )
         await group_chat.add_chat_message(
             ChatMessageContent(

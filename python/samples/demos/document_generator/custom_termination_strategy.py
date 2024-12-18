@@ -28,7 +28,7 @@ class CustomTerminationStrategy(TerminationStrategy):
     maximum_iterations: int = 10
     chat_completion_service: AzureAIInferenceChatCompletion
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
@@ -42,7 +42,7 @@ class CustomTerminationStrategy(TerminationStrategy):
             ),
         )
 
-        super().__init__(chat_completion_service=chat_completion_service)
+        super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
         """Check if the agent should terminate.
@@ -60,9 +60,9 @@ class CustomTerminationStrategy(TerminationStrategy):
                 content = message.content
                 if content:
                     if message.name is None:
-                        history_content.append(f"{message.role}: {content}")
+                        history_content.append(f"{str(message.role)}:\n{content}")
                     else:
-                        history_content.append(f"{message.name}: {content}")
+                        history_content.append(f"{message.name}:\n{content}")
 
             chat_history.add_user_message("\n\n".join(history_content))
 
@@ -75,14 +75,18 @@ class CustomTerminationStrategy(TerminationStrategy):
 
     def get_system_message(self) -> str:
         return f"""
-            You will be given a conversation history where there will be one writer
-            and {len(self.agents) - 1} reviewers. The writer is responsible for creating
-            content. The reviewers are responsible for providing feedback and approving
-            the content.
+You will be given a conversation history where there will be one writer
+and {len(self.agents) - 1} reviewers. The writer is responsible for creating
+content. The reviewers are responsible for providing feedback and approving
+the content.
 
-            The content is considered approved only when the reviewers agree that the
-            content is ready for publication. The content is not approved when none of
-            the reviewers have spoken yet.
+Following are the names of the participants in fullfilling the user's request:
+{"\n".join(agent.name for agent in self.agents)}
 
-            Determine if the content has been approved. If so, say "{TERMINATE_KEYWORD}".
-            """
+The content is considered approved only when the reviewers agree that the
+content is ready for publication. The content is not approved when none of
+the reviewers have spoken yet. All reviewers must at least have spoken once.
+
+Determine if the content has been approved. If so, say "{TERMINATE_KEYWORD}".
+Otherwise, say "no".
+"""

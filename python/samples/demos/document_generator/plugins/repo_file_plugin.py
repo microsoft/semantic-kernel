@@ -16,7 +16,7 @@ class RepoFilePlugin:
     def read_file_by_path(
         self, path: Annotated[str, "The relative path to the file."]
     ) -> Annotated[str, "Returns the file content."]:
-        path = os.path.join(os.path.dirname(__file__), "..", "..", "..", path)
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", path)
 
         try:
             with open(path) as file:
@@ -30,7 +30,7 @@ class RepoFilePlugin:
     def read_file_by_name(
         self, file_name: Annotated[str, "The name of the file."]
     ) -> Annotated[str, "Returns the file content."]:
-        path = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
         for root, dirs, files in os.walk(path):
             if file_name in files:
                 print(f"Found file {file_name} in {root}.")
