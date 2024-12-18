@@ -12,7 +12,10 @@ from opentelemetry.trace import Span, Tracer, get_tracer, use_span
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    merge_streaming_function_results,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -303,8 +306,18 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     ],
                 )
 
+                # Merge and yield the function results, regardless of the termination status
+                # Include the ai_model_id so we can later add two streaming messages together
+                # Some settings may not have an ai_model_id, so we need to check for it
+                ai_model_id = self._get_ai_model_id(settings)
+                function_result_messages = merge_streaming_function_results(
+                    messages=chat_history.messages[-len(results) :],
+                    ai_model_id=ai_model_id,  # type: ignore
+                )
+                if self._yield_function_result_messages(function_result_messages):
+                    yield function_result_messages
+
                 if any(result.terminate for result in results if result is not None):
-                    yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
                     break
 
     async def get_streaming_chat_message_content(
@@ -414,5 +427,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             )
 
         return span
+
+    def _get_ai_model_id(self, settings: "PromptExecutionSettings") -> str:
+        """Retrieve the AI model ID from settings if available.
+
+        Attempt to get ai_model_id from the settings object. If it doesn't exist or
+        is blank, fallback to self.ai_model_id (from AIServiceClientBase).
+        """
+        return getattr(settings, "ai_model_id", self.ai_model_id) or self.ai_model_id
+
+    def _yield_function_result_messages(self, function_result_messages: list) -> bool:
+        """Determine if the function result messages should be yielded."""
+        return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
 
     # endregion
