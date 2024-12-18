@@ -154,6 +154,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -164,7 +165,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
 
-        response = self._send_chat_stream_request(settings)
+        response = self._send_chat_stream_request(settings, function_invoke_attempt)
         if not isinstance(response, AsyncGenerator):
             raise ServiceInvalidResponseError("Expected an AsyncGenerator response.")
 
@@ -242,6 +243,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         stream_event: TextEvent | ContentBlockStopEvent | RawMessageDeltaEvent,
         metadata: dict[str, Any] = {},
+        function_invoke_attempt: int = 0,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a content block."""
         items: list[STREAMING_ITEM_TYPES] = []
@@ -275,6 +277,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             role=AuthorRole.ASSISTANT,
             finish_reason=finish_reason,
             items=items,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     def update_settings_from_function_call_configuration_anthropic(
@@ -338,7 +341,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         return [self._create_chat_message_content(response, response_metadata)]
 
     async def _send_chat_stream_request(
-        self, settings: AnthropicChatPromptExecutionSettings
+        self,
+        settings: AnthropicChatPromptExecutionSettings,
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
         """Send the chat stream request.
 
@@ -359,7 +364,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         isinstance(stream_event, ContentBlockStopEvent)
                         and stream_event.content_block.type == "tool_use"
                     ):
-                        yield [self._create_streaming_chat_message_content(stream_event, metadata)]
+                        yield [
+                            self._create_streaming_chat_message_content(stream_event, metadata, function_invoke_attempt)
+                        ]
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
