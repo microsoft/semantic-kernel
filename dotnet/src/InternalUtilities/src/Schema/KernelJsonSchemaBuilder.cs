@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static JsonSerializerOptions? s_options;
-    private static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
     {
         IncludeSchemaKeyword = false,
         IncludeTypeInEnumSchemas = true,

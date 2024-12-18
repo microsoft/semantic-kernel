@@ -179,8 +179,10 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
     }
 
-    [Fact]
-    public void ItCanCreateValidAzureOpenAIFunctionManualForPlugin()
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPlugin(bool strict)
     {
         // Arrange
         var kernel = new Kernel();
@@ -191,18 +193,31 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var sut = functionMetadata.ToOpenAIFunction();
 
         // Act
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}}}""",
-            result.FunctionParameters.ToString()
-        );
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"description":"String parameter","type":"string"},"parameter2":{"description":"Enum parameter","type":"string","enum":["Value1","Value2"]},"parameter3":{"description":"DateTime parameter","type":"string"}}}""",
+                parametersResult
+            );
+        }
     }
 
-    [Fact]
-    public void ItCanCreateValidAzureOpenAIFunctionManualForPrompt()
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPrompt(bool strict)
     {
         // Arrange
         var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
@@ -226,14 +241,67 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var sut = functionMetadata.ToOpenAIFunction();
 
         // Act
-        var result = sut.ToFunctionDefinition();
+        var result = sut.ToFunctionDefinition(strict);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
-            result.FunctionParameters.ToString()
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
+                parametersResult
         );
+        }
+    }
+
+    [InlineData(false)]
+    [InlineData(true)]
+    [Theory]
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPromptWithNestedSchema(bool strict)
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
+        {
+            Description = "My sample function."
+        };
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter1",
+            Description = "Object parameter",
+            JsonSchema = """{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"additionalProperties":true,"required":["name"]}"""
+        });
+        var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
+        var functionMetadata = function.Metadata;
+        var sut = functionMetadata.ToOpenAIFunction();
+
+        // Act
+        var result = sut.ToFunctionDefinition(strict);
+
+        // Assert
+        Assert.NotNull(result);
+        var parametersResult = result.FunctionParameters.ToString();
+        if (strict)
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":["integer","null"],"description":"The age of the user"}},"additionalProperties":false,"required":["name","age"]}},"additionalProperties":false}""",
+                parametersResult
+            );
+        }
+        else
+        {
+            Assert.Equal(
+                """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"object","description":"A user of the application","properties":{"name":{"type":"string","description":"The name of the user"},"age":{"type":"integer","description":"The age of the user","minimum":0,"nullable":true}},"additionalProperties":true,"required":["name"]}}}""",
+                parametersResult
+            );
+        }
     }
 
     private enum MyEnum

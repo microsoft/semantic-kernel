@@ -14,4 +14,4 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </remarks>
 /// <param name="context">Instance of <see cref="RestApiParameterFilterContext"/> containing details of the parameter to filter.</param>
 [Experimental("SKEXP0040")]
-internal delegate RestApiParameter? RestApiParameterFilter(RestApiParameterFilterContext context);
+public delegate RestApiParameter? RestApiParameterFilter(RestApiParameterFilterContext context);
