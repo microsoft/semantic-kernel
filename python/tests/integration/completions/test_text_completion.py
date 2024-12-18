@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import platform
 import sys
 from functools import partial
 from typing import Any
@@ -19,6 +18,7 @@ from semantic_kernel.connectors.ai.google.google_ai import GoogleAITextCompletio
 from semantic_kernel.connectors.ai.google.vertex_ai import VertexAITextCompletion, VertexAITextPromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama import OllamaTextCompletion, OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai import (
     AzureOpenAISettings,
     AzureTextCompletion,
@@ -42,11 +42,6 @@ onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
 bedrock_setup = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
-
-skip_on_mac_available = platform.system() == "Darwin"
-if not skip_on_mac_available:
-    from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
-
 
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
@@ -242,7 +237,7 @@ class TestTextCompletion(CompletionTestBase):
             ),
             "onnx_gen_ai": (
                 OnnxGenAITextCompletion() if onnx_setup else None,
-                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
+                OnnxGenAIPromptExecutionSettings,
             ),
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
