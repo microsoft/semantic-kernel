@@ -25,43 +25,21 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
     {
         // Create a simple kernel 
         Kernel kernel = Kernel.CreateBuilder()
-            .Build();
+        .Build();
 
         ProcessBuilder processBuilder = new(nameof(Step00_Processes));
 
-        // Create a process that will interact with the chat completion service
-        ProcessBuilder process = new("ChatBot");
-        var startStep = processBuilder.AddStepFromType<StartStep>();
-        var doSomeWorkStep = processBuilder.AddStepFromType<DoSomeWorkStep>();
-        var doMoreWorkStep = processBuilder.AddStepFromType<DoMoreWorkStep>();
-        var lastStep = processBuilder.AddStepFromType<LastStep>();
-
-        // Define the process flow
         processBuilder
-            .OnInputEvent(ProcessEvents.StartProcess)
-            .SendEventTo(new ProcessFunctionTargetBuilder(startStep));
-
-        startStep
-            .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(doSomeWorkStep));
-
-        doSomeWorkStep
-            .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(doMoreWorkStep));
-
-        doMoreWorkStep
-            .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(lastStep));
-
-        lastStep
-            .OnFunctionResult()
-            .StopProcess();
+            .StartWith<StartStep>(ProcessEvents.StartProcess)
+            .AndThen<DoSomeWorkStep>()
+            .AndThen<DoMoreWorkStep>()
+            .AndFinally<LastStep>();
 
         // Build the process to get a handle that can be started
-        KernelProcess kernelProcess = process.Build();
+        KernelProcess kernelProcess = processBuilder.Build();
 
         // Start the process with an initial external event
-        using var runningProcess = await kernelProcess.StartAsync(
+        using var runningProcess = await kernelProcess!.StartAsync(
             kernel,
                 new KernelProcessEvent()
                 {

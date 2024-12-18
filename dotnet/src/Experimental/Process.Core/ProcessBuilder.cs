@@ -315,5 +315,77 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
     }
 
+    /// <summary>
+    /// Starts the process with the specified step and binds it to the given input event.
+    /// </summary>
+    /// <typeparam name="TStep">The step type to start the process.</typeparam>
+    /// <param name="eventName">The name of the input event that triggers the start.</param>
+    /// <param name="name">Optional: The name of the step.</param>
+    /// <returns>The current ProcessBuilder instance.</returns>
+    public ProcessBuilder StartWith<TStep>(string eventName, string? name = null) where TStep : KernelProcessStep
+    {
+        Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
+
+        // Add the first step
+        var stepBuilder = this.AddStepFromType<TStep>(name);
+
+        // Bind the step to the input event
+        this.OnInputEvent(eventName)
+            .SendEventTo(new ProcessFunctionTargetBuilder(stepBuilder));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Chains the next step in the process using an input event or a function result.
+    /// </summary>
+    /// <typeparam name="TStep">The step type to add next.</typeparam>
+    /// <param name="eventOrFunctionName">The event name or function name that triggers this transition.</param>
+    /// <param name="name">Optional: The name of the step.</param>
+    /// <returns>The current ProcessBuilder instance.</returns>
+    public ProcessBuilder AndThen<TStep>(string? eventOrFunctionName = null, string? name = null) where TStep : KernelProcessStep
+    {
+        // Ensure there is a previous step
+        if (this._steps.Count == 0)
+        {
+            throw new InvalidOperationException("AndThen cannot be called before StartWith.");
+        }
+
+        // Get the previous step
+        var previousStepBuilder = this._steps.Last();
+
+        // Add the next step
+        var nextStepBuilder = this.AddStepFromType<TStep>(name);
+
+        // Determine the edge builder from the previous step
+        ProcessStepEdgeBuilder edgeBuilder = string.IsNullOrWhiteSpace(eventOrFunctionName)
+            ? previousStepBuilder.OnFunctionResult() // Default to OnFunctionResult
+            : previousStepBuilder.OnEvent(eventOrFunctionName); // Use OnEvent if specified
+
+        // Link the edge to the next step
+        edgeBuilder.SendEventTo(new ProcessFunctionTargetBuilder(nextStepBuilder));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the final step in the process and stops the process automatically.
+    /// </summary>
+    /// <typeparam name="TStep">The step type to add as the final step.</typeparam>
+    /// <param name="eventOrFunctionName">The event name or function name that triggers this transition.</param>
+    /// <param name="name">Optional: The name of the step.</param>
+    /// <returns>The current ProcessBuilder instance.</returns>
+    public ProcessBuilder AndFinally<TStep>(string? eventOrFunctionName = null, string? name = null) where TStep : KernelProcessStep
+    {
+        this.AndThen<TStep>(eventOrFunctionName, name);
+
+        // Get the final step
+        var finalStepBuilder = this._steps.Last();
+
+        finalStepBuilder.OnFunctionResult().StopProcess();
+
+        return this;
+    }
+
     #endregion
 }
