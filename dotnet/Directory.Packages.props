@@ -47,6 +47,7 @@
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
+    <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
