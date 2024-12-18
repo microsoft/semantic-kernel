@@ -2,12 +2,12 @@
 
 set -e
 
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
-cd "$HERE"
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cd dotnet
+pushd "$SCRIPT_DIR" > /dev/null
 
 # Release config triggers also "dotnet format"
 dotnet build --configuration Release --interactive
-
 dotnet test --configuration Release --no-build --no-restore --interactive
+
+popd > /dev/null
