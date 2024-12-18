@@ -91,7 +91,7 @@ public class OpenApiDocumentParserExtensionsTests
 
         // Assert.
         Assert.NotNull(restApi.Operations);
-        Assert.Equal(7, restApi.Operations.Count);
+        Assert.Equal(8, restApi.Operations.Count);
         var operation = restApi.Operations.Single(o => o.Id == "Joke");
         Assert.NotNull(operation);
         Assert.Equal("application/json; x-api-version=2.0", operation.Payload?.MediaType);
