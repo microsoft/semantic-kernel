@@ -7,8 +7,7 @@ import weaviate
 from weaviate import WeaviateAsyncClient
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_store import WeaviateStore
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, VectorStoreInitializationException
 
 
 @patch.object(
@@ -119,7 +118,7 @@ def test_weaviate_store_init_fail_to_create_client(
     data_model_definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object raises an error when failing to create a client."""
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         WeaviateStore(
             local_host="localhost",
             env_file_path="fake_env_file_path.env",

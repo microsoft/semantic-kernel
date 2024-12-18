@@ -6,8 +6,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -37,6 +35,7 @@ from semantic_kernel.data.vector_search.vector_search_result import VectorSearch
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )

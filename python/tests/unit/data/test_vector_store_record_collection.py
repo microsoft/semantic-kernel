@@ -12,10 +12,10 @@ from semantic_kernel.data.record_definition.vector_store_model_protocols import 
     ToDictMethodProtocol,
 )
 from semantic_kernel.exceptions import (
-    MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
     VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
 
 
@@ -287,9 +287,9 @@ async def test_upsert_fail(DictVectorStoreRecordCollection, data_model_definitio
         data_model_definition=data_model_definition,
     )
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(MemoryConnectorException, match="Error upserting record:"):
+    with raises(VectorStoreOperationException, match="Error upserting record:"):
         await vector_store_record_collection.upsert(record)
-    with raises(MemoryConnectorException, match="Error upserting records:"):
+    with raises(VectorStoreOperationException, match="Error upserting records:"):
         await vector_store_record_collection.upsert_batch([record])
     assert len(vector_store_record_collection.inner_storage) == 0
 
@@ -304,9 +304,25 @@ async def test_get_fail(DictVectorStoreRecordCollection, data_model_definition):
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    with raises(MemoryConnectorException, match="Error getting record:"):
+    with raises(VectorStoreOperationException, match="Error getting record:"):
         await vector_store_record_collection.get("test_id")
-    with raises(MemoryConnectorException, match="Error getting records:"):
+    with raises(VectorStoreOperationException, match="Error getting records:"):
+        await vector_store_record_collection.get_batch(["test_id"])
+
+
+async def test_deserialize_in_get_fail(DictVectorStoreRecordCollection, data_model_definition):
+    data_model_definition.deserialize = MagicMock(side_effect=Exception)
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    await vector_store_record_collection.upsert(record)
+    assert len(vector_store_record_collection.inner_storage) == 1
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing records:"):
+        await vector_store_record_collection.get("test_id")
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing records:"):
         await vector_store_record_collection.get_batch(["test_id"])
 
 
@@ -323,7 +339,9 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_def
         patch(
             "semantic_kernel.data.vector_storage.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
         ) as deserialize_mock,
-        raises(MemoryConnectorException, match="Error deserializing record, multiple records returned:"),
+        raises(
+            VectorStoreModelDeserializationException, match="Error deserializing record, multiple records returned:"
+        ),
     ):
         deserialize_mock.return_value = [
             {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]},
@@ -342,29 +360,29 @@ async def test_delete_fail(DictVectorStoreRecordCollection, data_model_definitio
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    with raises(MemoryConnectorException, match="Error deleting record:"):
+    with raises(VectorStoreOperationException, match="Error deleting record:"):
         await vector_store_record_collection.delete("test_id")
-    with raises(MemoryConnectorException, match="Error deleting records:"):
+    with raises(VectorStoreOperationException, match="Error deleting records:"):
         await vector_store_record_collection.delete_batch(["test_id"])
     assert len(vector_store_record_collection.inner_storage) == 1
 
 
 # region Serialize
-async def test_serialize_fail(DictVectorStoreRecordCollection, data_model_definition):
-    DictVectorStoreRecordCollection.serialize = MagicMock(side_effect=Exception)
+async def test_serialize_in_upsert_fail(DictVectorStoreRecordCollection, data_model_definition):
+    DictVectorStoreRecordCollection.serialize = MagicMock(side_effect=VectorStoreModelSerializationException)
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
         data_model_type=dict,
         data_model_definition=data_model_definition,
     )
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(MemoryConnectorException, match="Error serializing record"):
+    with raises(VectorStoreModelSerializationException):
         await vector_store_record_collection.upsert(record)
-    with raises(MemoryConnectorException, match="Error serializing record"):
+    with raises(VectorStoreModelSerializationException):
         await vector_store_record_collection.upsert_batch([record])
 
 
-def test_serialize_custom_fail(DictVectorStoreRecordCollection, data_model_type_vanilla_serialize):
+def test_serialize_data_model_type_serialize_fail(DictVectorStoreRecordCollection, data_model_type_vanilla_serialize):
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
         data_model_type=data_model_type_vanilla_serialize,
@@ -382,7 +400,7 @@ def test_serialize_data_model_to_dict_fail_mapping(DictVectorStoreRecordCollecti
         data_model_definition=data_model_definition,
     )
     record = {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
+    with raises(KeyError):
         vector_store_record_collection._serialize_data_model_to_dict(record)
 
 
@@ -392,7 +410,7 @@ def test_serialize_data_model_to_dict_fail_object(DictVectorStoreRecordCollectio
         data_model_type=data_model_type_vanilla,
     )
     record = Mock(spec=data_model_type_vanilla)
-    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
+    with raises(AttributeError):
         vector_store_record_collection._serialize_data_model_to_dict(record)
 
 
@@ -404,7 +422,7 @@ def test_pydantic_serialize_fail(vector_store_record_collection):
     vector_store_record_collection.data_model_type = model
     dict_record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     record = model(**dict_record)
-    with raises(VectorStoreModelSerializationException, match="Error serializing record:"):
+    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
         vector_store_record_collection.serialize(record)
 
 
@@ -412,7 +430,7 @@ def test_pydantic_serialize_fail(vector_store_record_collection):
 def test_to_dict_fail(vector_store_record_collection):
     record = MagicMock(spec=ToDictMethodProtocol)
     record.to_dict = MagicMock(side_effect=Exception)
-    with raises(VectorStoreModelSerializationException, match="Error serializing record:"):
+    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
         vector_store_record_collection.serialize(record)
 
 
@@ -442,9 +460,9 @@ async def test_deserialize_definition_fail(DictVectorStoreRecordCollection, data
     )
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     vector_store_record_collection.inner_storage["test_id"] = record
-    with raises(MemoryConnectorException, match="Error deserializing record"):
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         await vector_store_record_collection.get("test_id")
-    with raises(MemoryConnectorException, match="Error deserializing record"):
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         await vector_store_record_collection.get_batch(["test_id"])
 
 
@@ -465,7 +483,7 @@ def test_deserialize_type_fail(DictVectorStoreRecordCollection, data_model_type_
     )
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     vector_store_record_collection.data_model_type.deserialize = MagicMock(side_effect=Exception)
-    with raises(VectorStoreModelDeserializationException, match="Error deserializing record:"):
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         vector_store_record_collection.deserialize(record)
 
 
@@ -484,7 +502,7 @@ def test_deserialize_dict_data_model_fail(DictVectorStoreRecordCollection, data_
         data_model_type=dict,
         data_model_definition=data_model_definition,
     )
-    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
+    with raises(KeyError):
         vector_store_record_collection._deserialize_dict_to_data_model({
             "content": "test_content",
             "vector": [1.0, 2.0, 3.0],
@@ -508,7 +526,7 @@ async def test_pydantic_deserialize_fail(vector_store_record_collection):
     id = "test_id"
     dict_record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     vector_store_record_collection.data_model_type.model_validate = MagicMock(side_effect=Exception)
-    with raises(VectorStoreModelDeserializationException, match="Error deserializing record:"):
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         vector_store_record_collection.deserialize(dict_record)
 
 
@@ -519,7 +537,7 @@ def test_from_dict_fail(vector_store_record_collection):
     dict_record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     model.from_dict = MagicMock(side_effect=Exception)
     vector_store_record_collection.data_model_type = model
-    with raises(VectorStoreModelDeserializationException, match="Error deserializing record:"):
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         vector_store_record_collection.deserialize(dict_record)
 
 

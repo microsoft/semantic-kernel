@@ -272,17 +272,17 @@ class AzureCosmosDBNoSQLCollection(
 
     @override
     async def create_collection(self, **kwargs) -> None:
+        indexing_policy = kwargs.pop("indexing_policy", create_default_indexing_policy(self.data_model_definition))
+        vector_embedding_policy = kwargs.pop(
+            "vector_embedding_policy", create_default_vector_embedding_policy(self.data_model_definition)
+        )
+        database_proxy = await self._get_database_proxy(**kwargs)
         try:
-            database_proxy = await self._get_database_proxy(**kwargs)
             await database_proxy.create_container_if_not_exists(
                 id=self.collection_name,
                 partition_key=self.partition_key,
-                indexing_policy=kwargs.pop(
-                    "indexing_policy", create_default_indexing_policy(self.data_model_definition)
-                ),
-                vector_embedding_policy=kwargs.pop(
-                    "vector_embedding_policy", create_default_vector_embedding_policy(self.data_model_definition)
-                ),
+                indexing_policy=indexing_policy,
+                vector_embedding_policy=vector_embedding_policy,
                 **kwargs,
             )
         except CosmosHttpResponseError as e:
@@ -290,8 +290,8 @@ class AzureCosmosDBNoSQLCollection(
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
+        container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         try:
-            container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
             await container_proxy.read(**kwargs)
             return True
         except CosmosHttpResponseError:
@@ -299,10 +299,10 @@ class AzureCosmosDBNoSQLCollection(
 
     @override
     async def delete_collection(self, **kwargs) -> None:
+        database_proxy = await self._get_database_proxy(**kwargs)
         try:
-            database_proxy = await self._get_database_proxy(**kwargs)
             await database_proxy.delete_container(self.collection_name)
-        except CosmosHttpResponseError as e:
+        except Exception as e:
             raise VectorStoreOperationException("Container could not be deleted.") from e
 
     @override

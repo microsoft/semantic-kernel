@@ -58,6 +58,9 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
         The implementation of this method must deal with the possibility that multiple search contents are provided,
         and should handle them in a way that makes sense for that particular store.
 
+        The public methods will catch and reraise the three exceptions mentioned below, others are caught and turned
+        into a VectorSearchExecutionException.
+
         Args:
             options: The search options, can be None.
             search_text: The text to search for, optional.
@@ -69,8 +72,9 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
             The search results, wrapped in a KernelSearchResults object.
 
         Raises:
-            VectorStoreOperationException: If an error occurs during the search.
+            VectorSearchExecutionException: If an error occurs during the search.
             VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
 
         """
         ...
@@ -115,6 +119,8 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
                 record = self.deserialize(
                     self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
                 )
+            except VectorStoreModelDeserializationException:
+                raise
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(
                     f"An error occurred while deserializing the record: {exc}"

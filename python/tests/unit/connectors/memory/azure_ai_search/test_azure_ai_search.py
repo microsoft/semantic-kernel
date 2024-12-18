@@ -15,10 +15,10 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_index_client,
 )
 from semantic_kernel.exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+    ServiceInitializationError,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.list_handler import desync_list
 
 BASE_PATH_SEARCH_CLIENT = "azure.search.documents.aio.SearchClient"
@@ -104,7 +104,7 @@ def test_init_with_type(azure_ai_search_unit_test_env, data_model_type):
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_ENDPOINT"]], indirect=True)
 def test_init_endpoint_fail(azure_ai_search_unit_test_env, data_model_definition):
-    with raises(MemoryConnectorInitializationError):
+    with raises(VectorStoreInitializationException):
         AzureAISearchCollection(
             data_model_type=dict, data_model_definition=data_model_definition, env_file_path="test.env"
         )
@@ -112,7 +112,7 @@ def test_init_endpoint_fail(azure_ai_search_unit_test_env, data_model_definition
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_INDEX_NAME"]], indirect=True)
 def test_init_index_fail(azure_ai_search_unit_test_env, data_model_definition):
-    with raises(MemoryConnectorInitializationError):
+    with raises(VectorStoreInitializationException):
         AzureAISearchCollection(
             data_model_type=dict, data_model_definition=data_model_definition, env_file_path="test.env"
         )
@@ -161,7 +161,7 @@ def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model
 
 def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, data_model_definition):
     search_index_client = MagicMock(spec=SearchIndexClientWrapper)
-    with raises(MemoryConnectorInitializationError, match="Collection name is required."):
+    with raises(VectorStoreInitializationException, match="Collection name is required."):
         AzureAISearchCollection(
             data_model_type=dict,
             data_model_definition=data_model_definition,
@@ -175,7 +175,7 @@ def test_init_with_clients_fail(azure_ai_search_unit_test_env, data_model_defini
     search_client._index_name = "test-index-name"
 
     with raises(
-        MemoryConnectorInitializationError, match="Search client and search index client have different index names."
+        VectorStoreInitializationException, match="Search client and search index client have different index names."
     ):
         AzureAISearchCollection(
             data_model_type=dict,
@@ -233,7 +233,7 @@ async def test_create_index_from_definition(collection, mock_create_collection):
 
 async def test_create_index_from_index_fail(collection, mock_create_collection):
     index = Mock()
-    with raises(MemoryConnectorException):
+    with raises(VectorStoreOperationException):
         await collection.create_collection(index=index)
 
 
@@ -247,7 +247,7 @@ def test_data_model_definition_to_azure_ai_search_index(data_model_definition):
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_ENDPOINT"]], indirect=True)
 async def test_vector_store_fail(azure_ai_search_unit_test_env):
-    with raises(MemoryConnectorInitializationError):
+    with raises(VectorStoreInitializationException):
         AzureAISearchStore(env_file_path="test.env")
 
 

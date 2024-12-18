@@ -5,9 +5,6 @@ import sys
 from functools import partial
 from typing import Any
 
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -29,7 +26,8 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents import StreamingTextContent, TextContent
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
