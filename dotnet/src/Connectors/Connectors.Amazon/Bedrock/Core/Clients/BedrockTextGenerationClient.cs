@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
@@ -76,7 +77,7 @@ internal sealed class BedrockTextGenerationClient
         try
         {
             var requestBody = this._ioTextService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
-            using var requestBodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody));
+            using var requestBodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }));
             invokeRequest.Body = requestBodyStream;
 
             response = await this._bedrockRuntime.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
@@ -111,7 +112,7 @@ internal sealed class BedrockTextGenerationClient
         }
         activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
-        IReadOnlyList<TextContent> textResponse = this._ioTextService.GetInvokeResponseBody(response);
+        IReadOnlyList<TextContent> textResponse = this._ioTextService.GetInvokeResponseBody(this._modelId, response);
         activity?.SetCompletionResponse(textResponse);
         return textResponse;
     }
@@ -178,7 +179,7 @@ internal sealed class BedrockTextGenerationClient
             {
                 continue;
             }
-            IEnumerable<string> texts = this._ioTextService.GetTextStreamOutput(chunk);
+            IEnumerable<string> texts = this._ioTextService.GetTextStreamOutput(this._modelId, chunk);
             foreach (var text in texts)
             {
                 var content = new StreamingTextContent(text);

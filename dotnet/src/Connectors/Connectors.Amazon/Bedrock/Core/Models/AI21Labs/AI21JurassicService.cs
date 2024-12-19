@@ -34,7 +34,7 @@ internal sealed class AI21JurassicService : IBedrockTextGenerationService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
@@ -48,7 +48,7 @@ internal sealed class AI21JurassicService : IBedrockTextGenerationService
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         throw new NotSupportedException("Streaming not supported by this model.");
     }

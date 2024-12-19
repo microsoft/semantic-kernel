@@ -46,7 +46,7 @@ internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JambaResponse.AI21TextResponse>(reader.ReadToEnd());
@@ -108,7 +108,7 @@ internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         var choiceDeltaContent = chunk["choices"]?[0]?["delta"]?["content"];
         if (choiceDeltaContent is not null)
