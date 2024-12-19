@@ -129,8 +129,8 @@ async def chat() -> bool:
     # Handle non-streaming responses
     result = await kernel.invoke(chat_function, arguments=arguments)
 
-    # If function calls are returned and auto invoking is off, we must show them.
-    if not request_settings.function_choice_behavior.auto_invoke_kernel_functions and result and result.value:
+    # If function calls are returned, we show them on the console.
+    if result and result.value:
         # Extract function calls from the returned content
         function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
         if len(function_calls) > 0:
