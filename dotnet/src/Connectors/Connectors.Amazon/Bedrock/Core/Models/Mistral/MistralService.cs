@@ -40,7 +40,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<MistralResponse>(reader.ReadToEnd());
@@ -82,7 +82,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         var outputs = chunk["outputs"]?.AsArray();
         if (outputs != null)

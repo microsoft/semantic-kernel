@@ -23,14 +23,15 @@ internal interface IBedrockTextGenerationService
     /// <summary>
     /// Extracts the text contents from the <see cref="InvokeModelResponse"/>.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="response">The <see cref="InvokeModelResponse"/> instance to be returned from the InvokeAsync Bedrock call.</param>
     /// <returns>The list of TextContent objects for the Semantic Kernel output.</returns>
-    internal IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);
+    internal IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response);
 
     /// <summary>
     /// Converts the streaming JSON into <see cref="IEnumerable{String}"/> for output.
     /// </summary>
     /// <param name="chunk">The payloadPart bytes provided from the streaming response.</param>
     /// <returns><see cref="IEnumerable{String}"/> output strings.</returns>
-    internal IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
+    internal IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk);
 }

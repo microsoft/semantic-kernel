@@ -32,7 +32,7 @@ internal sealed class BedrockServiceFactory
                 }
                 throw new NotSupportedException($"Unsupported AI21 model: {modelId}");
             case "AMAZON":
-                if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
+                if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase) || modelName.StartsWith("nova-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new AmazonService();
                 }

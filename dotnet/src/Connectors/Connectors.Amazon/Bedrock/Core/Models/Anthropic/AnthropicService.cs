@@ -33,7 +33,7 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<ClaudeResponse>(reader.ReadToEnd());
@@ -120,7 +120,7 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         var text = chunk["completion"]?.ToString();
         if (!string.IsNullOrEmpty(text))

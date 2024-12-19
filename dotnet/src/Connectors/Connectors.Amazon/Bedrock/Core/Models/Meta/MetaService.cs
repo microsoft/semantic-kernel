@@ -30,7 +30,7 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<LlamaResponse>(reader.ReadToEnd());
@@ -75,7 +75,7 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         var generation = chunk["generation"]?.ToString();
         if (!string.IsNullOrEmpty(generation))

@@ -57,7 +57,7 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(string modelId, InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<CommandRResponse>(reader.ReadToEnd());
@@ -140,7 +140,7 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<string> GetTextStreamOutput(string modelId, JsonNode chunk)
     {
         var text = chunk["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))
