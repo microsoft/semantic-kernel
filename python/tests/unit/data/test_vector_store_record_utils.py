@@ -40,3 +40,14 @@ async def test_add_vector_wrong_fields():
     record = {"id": "test_id", "content": "content"}
     with raises(VectorStoreModelException, match="Embedding field"):
         await utils.add_vector_to_records(record, None, data_model)
+
+
+async def test_fail():
+    kernel = MagicMock(spec=Kernel)
+    kernel.add_embedding_to_object = AsyncMock()
+    utils = VectorStoreRecordUtils(kernel)
+    assert utils is not None
+    record = {"id": "test_id", "content": "content"}
+    with raises(VectorStoreModelException, match="Data model definition is required"):
+        await utils.add_vector_to_records(record, dict, None)
+    kernel.add_embedding_to_object.assert_not_called()

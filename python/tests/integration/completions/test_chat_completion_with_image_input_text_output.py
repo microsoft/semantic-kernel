@@ -118,7 +118,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            marks=(
+                pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+                pytest.mark.onnx,
+            ),
             id="onnx_gen_ai_image_input_file",
         ),
         pytest.param(
@@ -263,7 +266,7 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -282,7 +285,7 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -297,6 +300,7 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     @override
     def evaluate(self, test_target: Any, **kwargs):
         inputs = kwargs.get("inputs")
+        assert isinstance(inputs, list)
         assert len(test_target) == len(inputs) * 2
         for i in range(len(inputs)):
             message = test_target[i * 2 + 1]
@@ -323,7 +327,7 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
         for message in inputs:
             history.add_message(message)
 
-            cmc = await retry(
+            cmc: ChatMessageContent | None = await retry(
                 partial(
                     self.get_chat_completion_response,
                     kernel=kernel,
@@ -333,7 +337,9 @@ class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
                     stream=stream,
                 ),
                 retries=5,
+                name="image_input",
             )
-            history.add_message(cmc)
+            if cmc:
+                history.add_message(cmc)
 
         self.evaluate(history.messages, inputs=inputs)

@@ -11,3 +11,4 @@ from semantic_kernel.exceptions.process_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.search_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.service_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.template_engine_exceptions import *  # noqa: F403
+from semantic_kernel.exceptions.vector_store_exceptions import *  # noqa: F403
