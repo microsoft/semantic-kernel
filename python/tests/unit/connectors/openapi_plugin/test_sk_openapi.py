@@ -749,7 +749,7 @@ def openapi_runner_with_predicate_callback():
     return runner, operations, exec_settings
 
 
-def test_predicate_callback_applied(openapi_runner_with_predicate_callback):
+def test_predicate_callback_applied(openapi_runner_with_predicate_callback, define_openai_predicate_context):
     _, operations, exec_settings = openapi_runner_with_predicate_callback
 
     skipped_operations = []

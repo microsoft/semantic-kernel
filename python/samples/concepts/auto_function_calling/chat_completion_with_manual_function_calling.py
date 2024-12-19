@@ -65,7 +65,7 @@ chat_function = kernel.add_function(
 # - Services.ONNX
 # - Services.VERTEX_AI
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 # Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=False.
 # With `FunctionChoiceBehavior(auto_invoke=False)`, the model may return tool call instructions

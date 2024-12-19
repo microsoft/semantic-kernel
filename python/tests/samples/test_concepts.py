@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from pytest import mark, param
 
-from samples.concepts.auto_function_calling.chat_completion_with_function_calling import (
+from samples.concepts.auto_function_calling.chat_completion_with_auto_function_calling import (
     main as chat_completion_with_function_calling,
 )
 from samples.concepts.auto_function_calling.functions_defined_in_json_prompt import (
