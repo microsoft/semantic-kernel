@@ -17,7 +17,7 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelFunction
+    pass
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
@@ -56,25 +56,12 @@ chat_function = kernel.add_function(
     function_name="Chat",
 )
 
-# You can select from the following chat completion services that support function calling:
-# - Services.OPENAI
-# - Services.AZURE_OPENAI
-# - Services.AZURE_AI_INFERENCE
-# - Services.ANTHROPIC
-# - Services.BEDROCK
-# - Services.GOOGLE_AI
-# - Services.MISTRAL_AI
-# - Services.OLLAMA
-# - Services.ONNX
-# - Services.VERTEX_AI
-# Please make sure you have configured your environment correctly for the selected chat completion service.
+# Configure the chat completion service and request settings.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
-# Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=False.
-# With `FunctionChoiceBehavior(auto_invoke=False)`, the model may return tool call instructions
-# that you must handle and call manually. We will only print the tool calls in this sample.
+# Configure the function choice behavior to Auto with auto_invoke=False.
+# This means the model may return tool calls that must be manually handled.
 request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(auto_invoke=False)
-
 kernel.add_service(chat_completion_service)
 
 # Pass the request settings to the kernel arguments.
@@ -111,125 +98,83 @@ def print_tool_calls(message: ChatMessageContent) -> None:
         print("\n[No tool calls returned by the model]")
 
 
-async def handle_streaming(
-    kernel: Kernel,
-    chat_function: "KernelFunction",
-    arguments: KernelArguments,
-) -> str | None:
-    """
-    Handle the streaming response from the model.
-    This function demonstrates two possible paths:
-
-    1. When auto function calling is ON (auto_invoke=True):
-       - The model may call tools automatically and produce a continuous
-         stream of assistant messages. We can simply print these as they come in.
-
-    2. When auto function calling is OFF (auto_invoke=False):
-       - The model may instead return tool call instructions embedded in the stream.
-         We can track these calls using `function_invoke_attempt` attributes and print
-         them for the user. The user can then manually invoke the tools and return the results
-         to the model for further completion.
-    """
-
-    response = kernel.invoke_stream(
-        chat_function,
-        return_function_results=False,
-        arguments=arguments,
-    )
-
-    print("Mosscap:> ", end="", flush=True)
-
-    # If auto_invoking is False, the model may return separate streaming chunks containing tool instructions.
-    # We'll store them here.
-    streamed_tool_chunks: list[StreamingChatMessageContent] = []
-
-    # For content messages (the final assistant's response text), store them here.
-    streamed_response_chunks: list[StreamingChatMessageContent] = []
-
-    async for message in response:
-        msg = message[0]
-
-        # We only expect assistant messages here.
-        if not isinstance(msg, StreamingChatMessageContent) or msg.role != AuthorRole.ASSISTANT:
-            continue
-
-        # When auto invocation is OFF, the model may send chunks that represent tool calls.
-        # Chunks that contain function call instructions will have a function_invoke_attempt attribute.
-        if hasattr(msg, "function_invoke_attempt"):
-            # This chunk is part of a tool call instruction sequence
-            streamed_tool_chunks.append(msg)
-        else:
-            # This chunk is normal assistant response text
-            streamed_response_chunks.append(msg)
-            print(str(msg), end="", flush=True)
-
-    print("\n", flush=True)
-
-    # If auto function calling was OFF, handle any tool call instructions we captured.
-    if streamed_tool_chunks:
-        # Group streamed chunks by `function_invoke_attempt` to handle each invocation attempt separately.
-        grouped_chunks = {}
-        for chunk in streamed_tool_chunks:
-            key = getattr(chunk, "function_invoke_attempt", None)
-            if key is not None:
-                grouped_chunks.setdefault(key, []).append(chunk)
-
-        # Process each group of chunks
-        for attempt, chunks in grouped_chunks.items():
-            try:
-                # Combine all chunks for a given attempt into one message.
-                combined_content = reduce(lambda first, second: first + second, chunks)
-                if hasattr(combined_content, "content"):
-                    print(f"[function_invoke_attempt {attempt} content]:\n{combined_content.content}")
-
-                print("[Auto function calling is OFF] Here are the returned tool calls:")
-                print_tool_calls(combined_content)
-            except Exception as e:
-                print(f"Error processing chunks for function_invoke_attempt {attempt}: {e}")
-
-    # Return the final concatenated assistant response (if any).
-    if streamed_response_chunks:
-        return "".join([str(content) for content in streamed_response_chunks])
-    return None
-
-
-async def chat() -> bool:
-    """
-    Continuously prompt the user for input and show the assistant's response.
-    Type 'exit' to exit.
-    """
-    try:
-        user_input = input("User:> ")
-    except (KeyboardInterrupt, EOFError):
-        print("\n\nExiting chat...")
-        return False
-
-    if user_input.lower().strip() == "exit":
-        print("\n\nExiting chat...")
-        return False
-
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
-    result = await handle_streaming(kernel, chat_function, arguments=arguments)
-
-    # Update the chat history with the user's input and the assistant's response
-    if result:
-        history.add_user_message(user_input)
-        history.add_assistant_message(str(result))
-
-    return True
-
-
 async def main() -> None:
     print(
         "Welcome to the chat bot!\n"
         "  Type 'exit' to exit.\n"
         "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
     )
-    chatting = True
-    while chatting:
-        chatting = await chat()
+
+    while True:
+        # Get user input
+        try:
+            user_input = input("User:> ")
+        except (KeyboardInterrupt, EOFError):
+            print("\n\nExiting chat...")
+            break
+
+        if user_input.lower().strip() == "exit":
+            print("\n\nExiting chat...")
+            break
+
+        # Prepare arguments for the model invocation
+        arguments["user_input"] = user_input
+        arguments["chat_history"] = history
+
+        print("Mosscap:> ", end="", flush=True)
+
+        # Lists to store streamed chunks
+        streamed_tool_chunks: list[StreamingChatMessageContent] = []
+        streamed_response_chunks: list[StreamingChatMessageContent] = []
+
+        async for message in kernel.invoke_stream(
+            chat_function,
+            return_function_results=False,
+            arguments=arguments,
+        ):
+            msg = message[0]
+
+            # Expecting assistant messages only
+            if not isinstance(msg, StreamingChatMessageContent) or msg.role != AuthorRole.ASSISTANT:
+                continue
+
+            # If auto_invoking is False, the model may send tool calls in separate chunks.
+            if hasattr(msg, "function_invoke_attempt"):
+                # This chunk is part of a tool call instruction
+                streamed_tool_chunks.append(msg)
+            else:
+                # Normal assistant response text
+                streamed_response_chunks.append(msg)
+                print(str(msg), end="", flush=True)
+
+        print("\n", flush=True)
+
+        # If we have tool call instructions
+        if streamed_tool_chunks:
+            # Group streamed tool chunks by `function_invoke_attempt`
+            grouped_chunks = {}
+            for chunk in streamed_tool_chunks:
+                key = getattr(chunk, "function_invoke_attempt", None)
+                if key is not None:
+                    grouped_chunks.setdefault(key, []).append(chunk)
+
+            # Process each group of chunks
+            for attempt, chunks in grouped_chunks.items():
+                try:
+                    combined_content = reduce(lambda first, second: first + second, chunks)
+                    if hasattr(combined_content, "content"):
+                        print(f"[function_invoke_attempt {attempt} content]:\n{combined_content.content}")
+
+                    print("[Auto function calling is OFF] Here are the returned tool calls:")
+                    print_tool_calls(combined_content)
+                except Exception as e:
+                    print(f"Error processing chunks for function_invoke_attempt {attempt}: {e}")
+
+        # Update the chat history with user input and assistant response, if any
+        if streamed_response_chunks:
+            result = "".join([str(content) for content in streamed_response_chunks])
+            history.add_user_message(user_input)
+            history.add_assistant_message(str(result))
 
 
 if __name__ == "__main__":

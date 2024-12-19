@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import TYPE_CHECKING
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
@@ -12,9 +11,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
-
-if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelFunction
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
@@ -66,8 +62,7 @@ chat_function = kernel.add_function(
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
-# Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
-# With `auto_invoke=True`, the model will automatically choose and call functions as needed.
+# Configure the function choice behavior. Here, we set it to Auto.
 request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 kernel.add_service(chat_completion_service)
@@ -82,87 +77,52 @@ history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 
-async def handle_streaming(
-    kernel: Kernel,
-    chat_function: "KernelFunction",
-    arguments: KernelArguments,
-) -> str | None:
-    """
-    Handle the streaming response from the model.
-    This function demonstrates two possible paths:
-
-    When auto function calling is ON (auto_invoke=True):
-    - The model may call tools automatically and produce a continuous
-        stream of assistant messages. We can simply print these as they come in.
-    """
-
-    response = kernel.invoke_stream(
-        chat_function,
-        return_function_results=False,
-        arguments=arguments,
-    )
-
-    print("Mosscap:> ", end="", flush=True)
-
-    # For content messages (the final assistant's response text), store them here.
-    streamed_response_chunks: list[StreamingChatMessageContent] = []
-
-    async for message in response:
-        msg = message[0]
-
-        # We only expect assistant messages here.
-        if not isinstance(msg, StreamingChatMessageContent) or msg.role != AuthorRole.ASSISTANT:
-            continue
-
-        # When auto invocation is ON, no special handling is needed. Just print out messages as they arrive.
-        streamed_response_chunks.append(msg)
-        print(str(msg), end="", flush=True)
-
-    print("\n", flush=True)
-
-    # Return the final concatenated assistant response (if any).
-    if streamed_response_chunks:
-        return "".join([str(content) for content in streamed_response_chunks])
-    return None
-
-
-async def chat() -> bool:
-    """
-    Continuously prompt the user for input and show the assistant's response.
-    Type 'exit' to exit.
-    """
-    try:
-        user_input = input("User:> ")
-    except (KeyboardInterrupt, EOFError):
-        print("\n\nExiting chat...")
-        return False
-
-    if user_input.lower().strip() == "exit":
-        print("\n\nExiting chat...")
-        return False
-
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
-    result = await handle_streaming(kernel, chat_function, arguments=arguments)
-
-    # Update the chat history with the user's input and the assistant's response
-    if result:
-        history.add_user_message(user_input)
-        history.add_assistant_message(str(result))
-
-    return True
-
-
 async def main() -> None:
     print(
         "Welcome to the chat bot!\n"
         "  Type 'exit' to exit.\n"
         "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
     )
-    chatting = True
-    while chatting:
-        chatting = await chat()
+
+    while True:
+        try:
+            user_input = input("User:> ")
+        except (KeyboardInterrupt, EOFError):
+            print("\n\nExiting chat...")
+            break
+
+        if user_input.lower().strip() == "exit":
+            print("\n\nExiting chat...")
+            break
+
+        arguments["user_input"] = user_input
+        arguments["chat_history"] = history
+
+        # Directly handle streaming of the assistant's response here
+        print("Mosscap:> ", end="", flush=True)
+
+        streamed_response_chunks: list[StreamingChatMessageContent] = []
+
+        async for message in kernel.invoke_stream(
+            chat_function,
+            return_function_results=False,
+            arguments=arguments,
+        ):
+            msg = message[0]
+
+            # We only expect assistant messages here.
+            if not isinstance(msg, StreamingChatMessageContent) or msg.role != AuthorRole.ASSISTANT:
+                continue
+
+            streamed_response_chunks.append(msg)
+            print(str(msg), end="", flush=True)
+
+        print("\n", flush=True)
+
+        if streamed_response_chunks:
+            result = "".join([str(content) for content in streamed_response_chunks])
+            history.add_user_message(user_input)
+            history.add_assistant_message(result)
 
 
 if __name__ == "__main__":

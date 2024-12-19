@@ -105,7 +105,7 @@ async def chat() -> bool:
     if result:
         print(f"Mosscap:> {result}")
         history.add_user_message(user_input)
-        history.add_assistant_message(str(result))
+        history.add_message(result.value[0])  # Capture the full context of the response
 
     return True
 
