@@ -22,7 +22,7 @@ from semantic_kernel.connectors.ai.google.vertex_ai import VertexAIChatCompletio
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion, OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
-from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
+from semantic_kernel.connectors.ai.onnx import ONNXTemplate
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
