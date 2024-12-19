@@ -64,15 +64,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         """Send a streaming chat request to the AI service.
 
         Args:
-            chat_history (ChatHistory): The chat history to send.
-            settings (PromptExecutionSettings): The settings for the request.
+            chat_history: The chat history to send.
+            settings: The settings for the request.
+            function_invoke_attempt: The current attempt count for automatically invoking functions.
 
         Yields:
-            streaming_chat_message_contents (list[StreamingChatMessageContent]): The streaming chat message contents.
+            streaming_chat_message_contents: The streaming chat message contents.
         """
         raise NotImplementedError("The _inner_get_streaming_chat_message_contents method is not implemented.")
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
@@ -268,7 +270,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 # Hold the messages, if there are more than one response, it will not be used, so we flatten
                 all_messages: list["StreamingChatMessageContent"] = []
                 function_call_returned = False
-                async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
+                async for messages in self._inner_get_streaming_chat_message_contents(
+                    chat_history, settings, request_index
+                ):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
@@ -313,6 +317,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 function_result_messages = merge_streaming_function_results(
                     messages=chat_history.messages[-len(results) :],
                     ai_model_id=ai_model_id,  # type: ignore
+                    function_invoke_attempt=request_index,
                 )
                 if self._yield_function_result_messages(function_result_messages):
                     yield function_result_messages
