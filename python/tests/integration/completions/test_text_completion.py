@@ -296,7 +296,7 @@ class TestTextCompletion(CompletionTestBase):
             )
             parts: list[StreamingTextContent] = [part async for part in response if part is not None]
             if parts:
-                return sum(parts[:1], parts[0])
+                return sum(parts[1:], parts[0])
             raise AssertionError("No response")
         return await service.get_text_content(
             prompt=prompt,
