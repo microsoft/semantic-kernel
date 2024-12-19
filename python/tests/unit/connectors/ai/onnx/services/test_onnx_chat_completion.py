@@ -5,11 +5,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.onnx import (
-    OnnxGenAIChatCompletion,
-    OnnxGenAIPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings, ONNXTemplate
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel import Kernel
