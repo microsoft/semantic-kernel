@@ -48,4 +48,4 @@ class VectorStore(KernelBaseModel):
         If the client is passed in the constructor, it should not be closed,
         in that case the managed_client should be set to False.
         """
-        pass
+        pass  # pragma: no cover

@@ -27,7 +27,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.exceptions.search_exceptions import VectorSearchOptionsException
+from semantic_kernel.exceptions import VectorSearchOptionsException
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 

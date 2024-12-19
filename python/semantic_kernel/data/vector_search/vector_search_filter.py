@@ -3,9 +3,9 @@
 import sys
 
 if sys.version_info >= (3, 11):
-    from typing import Self
+    from typing import Self  # pragma: no cover
 else:
-    from typing_extensions import Self
+    from typing_extensions import Self  # pragma: no cover
 
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.search_filter import SearchFilter

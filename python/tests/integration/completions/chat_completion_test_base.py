@@ -2,7 +2,6 @@
 
 
 import os
-import platform
 import sys
 from typing import Annotated
 
@@ -22,6 +21,7 @@ from semantic_kernel.connectors.ai.google.google_ai import GoogleAIChatCompletio
 from semantic_kernel.connectors.ai.google.vertex_ai import VertexAIChatCompletion, VertexAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion, OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings, ONNXTemplate
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
@@ -66,17 +66,9 @@ vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "V
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
-anthropic_setup: bool = is_service_setup_for_testing(
-    ["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"], raise_if_not_set=False
-)  # We don't have an Anthropic deployment
+anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
 # When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
 bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
-
-
-skip_on_mac_available = platform.system() == "Darwin"
-if not skip_on_mac_available:
-    from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
-    from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -120,11 +112,12 @@ class ChatCompletionTestBase(CompletionTestBase):
                     default_headers={"Test-User-X-ID": "test"},
                 ),
             )
+            assert deployment_name
             azure_ai_inference_client = AzureAIInferenceChatCompletion(
                 ai_model_id=deployment_name,
                 client=ChatCompletionsClient(
                     endpoint=f"{endpoint.strip('/')}/openai/deployments/{deployment_name}",
-                    credential=DefaultAzureCredential(),
+                    credential=DefaultAzureCredential(),  # type: ignore
                     credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 ),
             )
@@ -156,7 +149,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (
                 OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
-                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
+                OnnxGenAIPromptExecutionSettings,
             ),
             "bedrock_amazon_titan": (
                 BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
@@ -192,7 +185,7 @@ class ChatCompletionTestBase(CompletionTestBase):
     async def get_chat_completion_response(
         self,
         kernel: Kernel,
-        service: ChatCompletionClientBase,
+        service: ServiceType,
         execution_settings: PromptExecutionSettings,
         chat_history: ChatHistory,
         stream: bool,
@@ -206,6 +199,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             input (str): Input string.
             stream (bool): Stream flag.
         """
+        assert isinstance(service, ChatCompletionClientBase)
         if not stream:
             return await service.get_chat_message_content(
                 chat_history,

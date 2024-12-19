@@ -101,6 +101,7 @@ def merge_function_results(
 def merge_streaming_function_results(
     messages: list[ChatMessageContent | StreamingChatMessageContent],
     ai_model_id: str,
+    function_invoke_attempt: int,
 ) -> list[StreamingChatMessageContent]:
     """Combine multiple streaming function result content types to one streaming chat message content type.
 
@@ -110,6 +111,7 @@ def merge_streaming_function_results(
     Args:
         messages: The list of streaming chat message content types.
         ai_model_id: The AI model ID.
+        function_invoke_attempt: The function invoke attempt.
 
     Returns:
         The combined streaming chat message content type.
@@ -118,4 +120,12 @@ def merge_streaming_function_results(
     for message in messages:
         items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
 
-    return [StreamingChatMessageContent(role=AuthorRole.TOOL, items=items, choice_index=0, ai_model_id=ai_model_id)]
+    return [
+        StreamingChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=items,
+            choice_index=0,
+            ai_model_id=ai_model_id,
+            function_invoke_attempt=function_invoke_attempt,
+        )
+    ]
