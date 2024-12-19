@@ -2,7 +2,7 @@
 
 import platform
 import sys
-from functools import partial, reduce
+from functools import partial
 from typing import Any
 
 if sys.version_info >= (3, 12):
@@ -27,8 +27,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents import StreamingTextContent, TextContent
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
@@ -275,7 +274,7 @@ class TestTextCompletion(CompletionTestBase):
 
     async def get_text_completion_response(
         self,
-        service: TextCompletionClientBase,
+        service: ServiceType,
         execution_settings: PromptExecutionSettings,
         prompt: str,
         stream: bool,
@@ -289,21 +288,20 @@ class TestTextCompletion(CompletionTestBase):
             prompt (str): Input string.
             stream (bool): Stream flag.
         """
+        assert isinstance(service, TextCompletionClientBase)
         if stream:
             response = service.get_streaming_text_content(
                 prompt=prompt,
                 settings=execution_settings,
             )
-            parts = [part async for part in response]
+            parts: list[StreamingTextContent] = [part async for part in response if part is not None]
             if parts:
-                response = reduce(lambda p, r: p + r, parts)
-            else:
-                raise AssertionError("No response")
-        else:
-            response = await service.get_text_content(
-                prompt=prompt,
-                settings=execution_settings,
-            )
+                return sum(parts[1:], parts[0])
+            raise AssertionError("No response")
+        return await service.get_text_content(
+            prompt=prompt,
+            settings=execution_settings,
+        )
 
         return response
 
@@ -314,7 +312,7 @@ class TestTextCompletion(CompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[str],
         kwargs: dict[str, Any],
     ) -> None:
         await self._test_helper(service_id, services, execution_settings_kwargs, inputs, False)
@@ -326,7 +324,7 @@ class TestTextCompletion(CompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[str],
         kwargs: dict[str, Any],
     ):
         if "streaming" in kwargs and not kwargs["streaming"]:
@@ -364,5 +362,6 @@ class TestTextCompletion(CompletionTestBase):
                     stream=stream,
                 ),
                 retries=5,
+                name="text completions",
             )
             self.evaluate(response)

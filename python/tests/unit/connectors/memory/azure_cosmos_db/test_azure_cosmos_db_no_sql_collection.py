@@ -15,11 +15,10 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     create_default_indexing_policy,
     create_default_vector_embedding_policy,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
-    MemoryConnectorResourceNotFound,
+from semantic_kernel.exceptions import (
+    VectorStoreInitializationException,
 )
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
 
 
 def test_azure_cosmos_db_no_sql_collection_init(
@@ -74,7 +73,7 @@ def test_azure_cosmos_db_no_sql_collection_init_no_url(
     collection_name: str,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLCollection object with missing URL."""
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
             collection_name=collection_name,
@@ -90,7 +89,7 @@ def test_azure_cosmos_db_no_sql_collection_init_no_database_name(
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLCollection object with missing database name."""
     with pytest.raises(
-        MemoryConnectorInitializationError, match="The name of the Azure Cosmos DB NoSQL database is missing."
+        VectorStoreInitializationException, match="The name of the Azure Cosmos DB NoSQL database is missing."
     ):
         AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
@@ -105,7 +104,7 @@ def test_azure_cosmos_db_no_sql_collection_invalid_settings(
     collection_name: str,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLCollection object with invalid settings."""
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
             collection_name=collection_name,
@@ -204,7 +203,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_databa
 
     assert vector_collection.create_database is False
 
-    with pytest.raises(MemoryConnectorResourceNotFound):
+    with pytest.raises(VectorStoreOperationException):
         await vector_collection._get_database_proxy()
 
 
@@ -325,7 +324,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_v
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreModelException):
         await vector_collection.create_collection()
 
 
@@ -367,7 +366,7 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
     mock_database_proxy.delete_container = AsyncMock(side_effect=CosmosHttpResponseError)
 
-    with pytest.raises(MemoryConnectorException, match="Container could not be deleted."):
+    with pytest.raises(VectorStoreOperationException, match="Container could not be deleted."):
         await vector_collection.delete_collection()
 
 
