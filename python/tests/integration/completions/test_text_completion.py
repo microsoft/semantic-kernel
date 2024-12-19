@@ -123,7 +123,10 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["<|user|>Repeat the word Hello<|end|><|assistant|>"],
             {},
-            marks=pytest.mark.skipif(not onnx_setup, reason="Need local Onnx setup"),
+            marks=(
+                pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+                pytest.mark.onnx,
+            ),
             id="onnx_gen_ai_text_completion",
         ),
         pytest.param(

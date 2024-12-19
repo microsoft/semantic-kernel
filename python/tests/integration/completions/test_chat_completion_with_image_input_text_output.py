@@ -118,7 +118,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            marks=(
+                pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+                pytest.mark.onnx,
+            ),
             id="onnx_gen_ai_image_input_file",
         ),
         pytest.param(
