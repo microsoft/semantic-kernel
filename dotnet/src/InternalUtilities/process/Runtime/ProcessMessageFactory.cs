@@ -24,7 +24,7 @@ internal static class ProcessMessageFactory
             parameterValue.Add(target.ParameterName!, data);
         }
 
-        ProcessMessage newMessage = new(edge.SourceStepId, target.StepId, target.FunctionName, parameterValue)
+        ProcessMessage newMessage = new(edge.SourceEventName, edge.SourceEventId, edge.SourceStepId, target.StepId, target.FunctionName, parameterValue)
         {
             TargetEventId = target.TargetEventId,
             TargetEventData = data

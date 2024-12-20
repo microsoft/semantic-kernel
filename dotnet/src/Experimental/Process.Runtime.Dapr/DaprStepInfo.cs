@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 
@@ -34,6 +35,9 @@ public record DaprStepInfo
     /// </summary>
     public required Dictionary<string, List<KernelProcessEdge>> Edges { get; init; }
 
+    // key: original event name, value: event name pubsub "topic" related data
+    public required Dictionary<string, DaprPubsubEventData> ExternalEventsMap { get; init; }
+
     /// <summary>
     /// Builds an instance of <see cref="KernelProcessStepInfo"/> from the current object.
     /// </summary>
@@ -54,7 +58,7 @@ public record DaprStepInfo
     /// Initializes a new instance of the <see cref="DaprStepInfo"/> class from an instance of <see cref="KernelProcessStepInfo"/>.
     /// </summary>
     /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
-    public static DaprStepInfo FromKernelStepInfo(KernelProcessStepInfo kernelStepInfo)
+    public static DaprStepInfo FromKernelStepInfo(KernelProcessStepInfo kernelStepInfo, Dictionary<string, DaprPubsubEventData> daprEvents)
     {
         Verify.NotNull(kernelStepInfo, nameof(kernelStepInfo));
 
@@ -63,6 +67,7 @@ public record DaprStepInfo
             InnerStepDotnetType = kernelStepInfo.InnerStepType.AssemblyQualifiedName!,
             State = kernelStepInfo.State,
             Edges = kernelStepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => new List<KernelProcessEdge>(kvp.Value)),
+            ExternalEventsMap = daprEvents,
         };
     }
 }
