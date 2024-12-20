@@ -434,6 +434,63 @@
         },
         "summary": "Get secret"
       }
+    },
+    "/test-parameter-names-sanitization/{string-parameter}": {
+      "put": {
+        "summary": "Operation to test parameter names sanitization.",
+        "description": "Operation to test that forbidden characters in parameter names are sanitized.",
+        "operationId": "TestParameterNamesSanitization",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "string-parameter",
+            "required": true,
+            "type": "string",
+            "default": "string-value"
+          },
+          {
+            "in": "query",
+            "name": "boolean@parameter",
+            "required": true,
+            "type": "boolean",
+            "default": true
+          },
+          {
+            "in": "header",
+            "name": "integer+parameter",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "default": 281
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "float?parameter"
+              ],
+              "type": "object",
+              "properties": {
+                "float?parameter": {
+                  "format": "float",
+                  "default": 12.01,
+                  "type": "number"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The OK response"
+          }
+        }
+      }
     }
   },
   "produces": [],
