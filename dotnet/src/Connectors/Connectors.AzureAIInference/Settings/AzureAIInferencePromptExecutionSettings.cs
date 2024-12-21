@@ -153,7 +153,7 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     /// <summary> A collection of textual sequences that will end completions generation. </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<string> StopSequences
+    public IList<string>? StopSequences
     {
         get => this._stopSequences;
         set
@@ -170,7 +170,7 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     /// </summary>
     [JsonPropertyName("tools")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<ChatCompletionsToolDefinition> Tools
+    public IList<ChatCompletionsToolDefinition>? Tools
     {
         get => this._tools;
         set
@@ -229,8 +229,8 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
             NucleusSamplingFactor = this.NucleusSamplingFactor,
             MaxTokens = this.MaxTokens,
             ResponseFormat = this.ResponseFormat,
-            StopSequences = new List<string>(this.StopSequences),
-            Tools = new List<ChatCompletionsToolDefinition>(this.Tools),
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            Tools = this.Tools is not null ? new List<ChatCompletionsToolDefinition>(this.Tools) : null,
             Seed = this.Seed,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
         };
@@ -273,8 +273,8 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     private float? _nucleusSamplingFactor;
     private int? _maxTokens;
     private object? _responseFormat;
-    private IList<string> _stopSequences = [];
-    private IList<ChatCompletionsToolDefinition> _tools = [];
+    private IList<string>? _stopSequences;
+    private IList<ChatCompletionsToolDefinition>? _tools;
     private long? _seed;
 
     #endregion

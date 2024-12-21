@@ -26,9 +26,9 @@ public sealed class AzureAIInferencePromptExecutionSettingsTests
         Assert.Null(executionSettings.ResponseFormat);
         Assert.Null(executionSettings.Seed);
         Assert.Null(executionSettings.MaxTokens);
+        Assert.Null(executionSettings.Tools);
+        Assert.Null(executionSettings.StopSequences);
         Assert.Empty(executionSettings.ExtensionData!);
-        Assert.Empty(executionSettings.Tools);
-        Assert.Empty(executionSettings.StopSequences!);
     }
 
     [Fact]

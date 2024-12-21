@@ -39,8 +39,9 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 
 ### FunctionCalling - Examples on `Function Calling` with function call capable models
 
-- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
 - [FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling.cs)
+- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
+- [AzureAIInference_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/AzureAIInference_FunctionCalling.cs)
 - [NexusRaven_HuggingFaceTextGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/NexusRaven_FunctionCalling.cs)
 - [MultipleFunctionsVsParameters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/MultipleFunctionsVsParameters.cs)
 
