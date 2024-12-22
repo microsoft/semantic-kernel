@@ -21,4 +21,4 @@ class AzureCosmosDBSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "COSMOSDB_"
 
     api: str | None = None
-    connection_string: SecretStr | None = Field(None, alias="AZCOSMOS_CONNSTR")
+    connection_string: SecretStr | None = None
