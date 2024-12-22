@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
@@ -93,5 +94,38 @@ def merge_function_results(
         ChatMessageContent(
             role=AuthorRole.TOOL,
             items=items,
+        )
+    ]
+
+
+def merge_streaming_function_results(
+    messages: list[ChatMessageContent | StreamingChatMessageContent],
+    ai_model_id: str,
+    function_invoke_attempt: int,
+) -> list[StreamingChatMessageContent]:
+    """Combine multiple streaming function result content types to one streaming chat message content type.
+
+    This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
+    and is used in the event that the `context.terminate = True` condition is met.
+
+    Args:
+        messages: The list of streaming chat message content types.
+        ai_model_id: The AI model ID.
+        function_invoke_attempt: The function invoke attempt.
+
+    Returns:
+        The combined streaming chat message content type.
+    """
+    items: list[Any] = []
+    for message in messages:
+        items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+
+    return [
+        StreamingChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=items,
+            choice_index=0,
+            ai_model_id=ai_model_id,
+            function_invoke_attempt=function_invoke_attempt,
         )
     ]

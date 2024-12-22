@@ -2,8 +2,6 @@
 
 from unittest.mock import AsyncMock
 
-import pytest
-
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 
@@ -13,7 +11,6 @@ class MockKernelProcessMessageChannel(KernelProcessMessageChannel):
         pass
 
 
-@pytest.mark.asyncio
 async def test_emit_event():
     # Arrange
     event = KernelProcessEvent(id="event_001", data={"key": "value"})
@@ -27,7 +24,6 @@ async def test_emit_event():
     channel.emit_event.assert_awaited_once_with(event)
 
 
-@pytest.mark.asyncio
 async def test_emit_event_with_no_event():
     # Arrange
     channel = MockKernelProcessMessageChannel()

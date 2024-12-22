@@ -4,16 +4,18 @@ from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark, raises
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import Datatype, Distance, VectorParams
+from qdrant_client.models import Datatype, Distance, FieldCondition, Filter, MatchAny, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreInitializationException,
     VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
 
 BASE_PATH = "qdrant_client.async_qdrant_client.AsyncQdrantClient"
@@ -119,9 +121,10 @@ def mock_search():
         yield mock_search
 
 
-def test_vector_store_defaults(vector_store):
-    assert vector_store.qdrant_client is not None
-    assert vector_store.qdrant_client._client.rest_uri == "http://localhost:6333"
+async def test_vector_store_defaults(vector_store):
+    async with vector_store:
+        assert vector_store.qdrant_client is not None
+        assert vector_store.qdrant_client._client.rest_uri == "http://localhost:6333"
 
 
 def test_vector_store_with_client():
@@ -141,14 +144,13 @@ def test_vector_store_in_memory(qdrant_unit_test_env):
 
 
 def test_vector_store_fail():
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant settings."):
         QdrantStore(location="localhost", url="localhost", env_file_path="test.env")
 
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant client."):
         QdrantStore(location="localhost", url="http://localhost", env_file_path="test.env")
 
 
-@mark.asyncio
 async def test_store_list_collection_names(vector_store):
     collections = await vector_store.list_collection_names()
     assert collections == ["test"]
@@ -163,22 +165,22 @@ def test_get_collection(vector_store, data_model_definition, qdrant_unit_test_en
     assert vector_store.vector_record_collections["test"] == collection
 
 
-def test_collection_init(data_model_definition, qdrant_unit_test_env):
-    collection = QdrantCollection(
+async def test_collection_init(data_model_definition, qdrant_unit_test_env):
+    async with QdrantCollection(
         data_model_type=dict,
         collection_name="test",
         data_model_definition=data_model_definition,
         env_file_path="test.env",
-    )
-    assert collection.collection_name == "test"
-    assert collection.qdrant_client is not None
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
-    assert collection.named_vectors
+    ) as collection:
+        assert collection.collection_name == "test"
+        assert collection.qdrant_client is not None
+        assert collection.data_model_type is dict
+        assert collection.data_model_definition == data_model_definition
+        assert collection.named_vectors
 
 
 def test_collection_init_fail(data_model_definition):
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant settings."):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -186,7 +188,7 @@ def test_collection_init_fail(data_model_definition):
             url="localhost",
             env_file_path="test.env",
         )
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant client."):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -208,7 +210,6 @@ def test_collection_init_fail(data_model_definition):
         )
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_upsert(collection_to_use, request):
     from qdrant_client.models import PointStruct
@@ -225,7 +226,6 @@ async def test_upsert(collection_to_use, request):
     assert ids == "id1"
 
 
-@mark.asyncio
 async def test_get(collection):
     records = await collection._inner_get(["id1"])
     assert records is not None
@@ -234,22 +234,18 @@ async def test_get(collection):
     assert records is not None
 
 
-@mark.asyncio
 async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
-@mark.asyncio
 async def test_does_collection_exist(collection):
     await collection.does_collection_exist()
 
 
-@mark.asyncio
 async def test_delete_collection(collection):
     await collection.delete_collection()
 
 
-@mark.asyncio
 @mark.parametrize(
     "collection_to_use, results",
     [
@@ -274,18 +270,71 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
     mock_create_collection.assert_called_once_with(**results)
 
 
-@mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None
-    with raises(MemoryConnectorException, match="Vector field must have dimensions."):
+    with raises(VectorStoreOperationException, match="Vector field must have dimensions."):
         await collection.create_collection()
 
 
-@mark.asyncio
-async def test_search(collection):
+async def test_search(collection, mock_search):
     results = await collection._inner_search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
     async for result in results.results:
         assert result.record["id"] == "id1"
         break
+
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query_vector=[1.0, 2.0, 3.0],
+        query_filter=Filter(must=[]),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
+
+
+async def test_search_named_vectors(collection, mock_search):
+    collection.named_vectors = True
+    results = await collection._inner_search(
+        vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(vector_field_name="vector", include_vectors=False)
+    )
+    async for result in results.results:
+        assert result.record["id"] == "id1"
+        break
+
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query_vector=("vector", [1.0, 2.0, 3.0]),
+        query_filter=Filter(must=[]),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
+
+
+async def test_search_filter(collection, mock_search):
+    results = await collection._inner_search(
+        vector=[1.0, 2.0, 3.0],
+        options=VectorSearchOptions(include_vectors=False, filter=VectorSearchFilter.equal_to("id", "id1")),
+    )
+    async for result in results.results:
+        assert result.record["id"] == "id1"
+        break
+
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query_vector=[1.0, 2.0, 3.0],
+        query_filter=Filter(must=[FieldCondition(key="id", match=MatchAny(any=["id1"]))]),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
+
+
+async def test_search_fail(collection):
+    with raises(VectorSearchExecutionException, match="Search requires a vector."):
+        await collection._inner_search(options=VectorSearchOptions(include_vectors=False))

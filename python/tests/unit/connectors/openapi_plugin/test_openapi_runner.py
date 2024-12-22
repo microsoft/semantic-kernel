@@ -293,7 +293,6 @@ def test_get_first_response_media_type_default():
     assert runner._get_first_response_media_type(responses) == runner.media_type_application_json
 
 
-@pytest.mark.asyncio
 async def test_run_operation():
     runner = OpenApiRunner({})
     operation = MagicMock()

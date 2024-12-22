@@ -90,7 +90,6 @@ def test_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
         AzureTextCompletion()
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",
@@ -118,7 +117,6 @@ async def test_call_with_parameters(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",

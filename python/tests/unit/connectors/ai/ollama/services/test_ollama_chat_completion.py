@@ -72,7 +72,6 @@ def test_service_url(ollama_unit_test_env):
     assert ollama.service_url() == ollama_unit_test_env["OLLAMA_HOST"]
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.__init__", return_value=None)  # mock_client
 @patch("ollama.AsyncClient.chat")  # mock_chat_client
 async def test_custom_host(
@@ -104,7 +103,6 @@ async def test_custom_host(
     assert chat_responses[0].content == "test_response"
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.__init__", return_value=None)  # mock_client
 @patch("ollama.AsyncClient.chat")  # mock_chat_client
 async def test_custom_host_streaming(
@@ -138,7 +136,6 @@ async def test_custom_host_streaming(
     assert mock_chat_client.call_count == 1
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
 async def test_chat_completion(mock_chat_client, model_id, service_id, chat_history, default_options):
     """Test that the chat completion service completes correctly."""
@@ -160,7 +157,6 @@ async def test_chat_completion(mock_chat_client, model_id, service_id, chat_hist
     )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
 async def test_chat_completion_wrong_return_type(
     mock_chat_client,
@@ -181,7 +177,6 @@ async def test_chat_completion_wrong_return_type(
         )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
 async def test_streaming_chat_completion(
     mock_chat_client,
@@ -215,7 +210,6 @@ async def test_streaming_chat_completion(
     )
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat")
 async def test_streaming_chat_completion_wrong_return_type(
     mock_chat_client,
@@ -232,24 +226,5 @@ async def test_streaming_chat_completion_wrong_return_type(
         async for _ in ollama.get_streaming_chat_message_contents(
             chat_history,
             OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
-        ):
-            pass
-
-
-@pytest.mark.asyncio
-async def test_streaming_chat_completion_with_tools_raise(
-    model_id,
-    service_id,
-    chat_history,
-    default_options,
-):
-    """Test that the chat completion streaming service fails when tool calls are requested."""
-    ollama = OllamaChatCompletion(ai_model_id=model_id)
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        async for _ in ollama.get_streaming_chat_message_contents(
-            chat_history,
-            OllamaChatPromptExecutionSettings(
-                tools=[{"type": "function"}], service_id=service_id, options=default_options
-            ),
         ):
             pass

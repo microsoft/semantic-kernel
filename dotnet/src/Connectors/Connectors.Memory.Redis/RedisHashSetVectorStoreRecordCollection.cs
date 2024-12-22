@@ -78,8 +78,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     /// <summary>An array of the names of all the data properties that are part of the Redis payload as RedisValue objects, i.e. all properties except the key and vector properties.</summary>
     private readonly RedisValue[] _dataStoragePropertyNameRedisValues;
 
-    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
-    private readonly string[] _dataStoragePropertyNames;
+    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties, plus the generated score property.</summary>
+    private readonly string[] _dataStoragePropertyNamesWithScore;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)> _mapper;
@@ -119,13 +119,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
 
         // Lookup storage property names.
-        this._dataStoragePropertyNames = this._propertyReader
-            .DataPropertyStoragePropertyNames
-            .ToArray();
-
-        this._dataStoragePropertyNameRedisValues = this._dataStoragePropertyNames
+        this._dataStoragePropertyNameRedisValues = this._propertyReader.DataPropertyStoragePropertyNames
             .Select(RedisValue.Unbox)
             .ToArray();
+
+        this._dataStoragePropertyNamesWithScore = [.. this._propertyReader.DataPropertyStoragePropertyNames, "vector_score"];
 
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
@@ -342,7 +340,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
         // Build query & search.
-        var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNames;
+        var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.StoragePropertyNamesMap, this._propertyReader.FirstVectorPropertyStoragePropertyName!, selectFields);
         var results = await this.RunOperationAsync(
@@ -369,7 +367,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
                     return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = internalOptions.IncludeVectors });
                 });
 
-            return new VectorSearchResult<TRecord>(dataModel, result.Score);
+            // Process the score of the result item.
+            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(internalOptions, this._propertyReader.VectorProperties, this._propertyReader.VectorProperty!);
+            var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
+
+            return new VectorSearchResult<TRecord>(dataModel, score);
         });
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());

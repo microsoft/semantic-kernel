@@ -14,6 +14,7 @@ async def retry(
     func: Callable[..., Awaitable[Any]],
     retries: int = 20,
     reset: Callable[..., None] | None = None,
+    name: str | None = None,
 ):
     """Retry the function if it raises an exception.
 
@@ -23,15 +24,15 @@ async def retry(
         reset (function): Function to reset the state of any variables used in the function
 
     """
-    logger.info(f"Running {retries} retries with func: {func.__module__}")
+    logger.info(f"Running {retries} retries with func: {name or func.__module__}")
     for i in range(retries):
-        logger.info(f"   Try {i + 1} for {func.__module__}")
+        logger.info(f"   Try {i + 1} for {name or func.__module__}")
         try:
             if reset:
                 reset()
             return await func()
         except Exception as e:
-            logger.info(f"   On try {i + 1} got this error: {e}")
+            logger.warning(f"   On try {i + 1} got this error: {e}")
             if i == retries - 1:  # Last retry
                 raise
             # Binary exponential backoff
@@ -62,7 +63,7 @@ def is_service_setup_for_testing(env_var_names: list[str], raise_if_not_set: boo
         raise_if_not_set = os.getenv("INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION", "false").lower() == "true"
 
     def does_env_var_exist(env_var_name):
-        exist = env_var_name in os.environ and os.environ[env_var_name]
+        exist = os.getenv(env_var_name, False)
         if not exist and raise_if_not_set:
             raise KeyError(f"Environment variable {env_var_name} is not set.")
         return exist

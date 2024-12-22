@@ -71,7 +71,7 @@ public class KernelParameterMetadataTests
             new KernelParameterMetadata("p", jsos) { Description = "something neat", ParameterType = typeof(int) } :
             new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
 
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat" }""")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"something neat", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Theory]
@@ -82,7 +82,7 @@ public class KernelParameterMetadataTests
             new KernelParameterMetadata("p", jsos) { DefaultValue = "42", ParameterType = typeof(int) } :
             new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
 
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"(default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"(default value: 42)", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Theory]
@@ -93,7 +93,7 @@ public class KernelParameterMetadataTests
             new KernelParameterMetadata("p", jsos) { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) } :
             new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
 
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat (default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"description":"something neat (default value: 42)", "type":"integer"}""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]

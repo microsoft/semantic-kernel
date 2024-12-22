@@ -24,18 +24,22 @@ internal static partial class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
+    /// <param name="parameterFilter">Filter which can be used to eliminate or modify RestApiParameters.</param>
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<RestApiParameter> GetParameters(
         this RestApiOperation operation,
         bool addPayloadParamsFromMetadata = true,
-        bool enablePayloadNamespacing = false)
+        bool enablePayloadNamespacing = false,
+        RestApiParameterFilter? parameterFilter = null)
     {
-        var parameters = new List<RestApiParameter>(operation.Parameters);
+        var parameters = new List<RestApiParameter>(parameterFilter is null ?
+        operation.Parameters :
+            operation.Parameters.Select(p => parameterFilter(new(operation, p))).Where(p => p != null).Cast<RestApiParameter>().ToList());
 
         // Add payload parameters
         if (operation.Payload is not null)
         {
-            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
+            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing, parameterFilter));
         }
 
         foreach (var parameter in parameters)
@@ -94,8 +98,9 @@ internal static partial class RestApiOperationExtensions
     /// <param name="useParametersFromMetadata">Flag indicating whether to include parameters from metadata.
     /// If false or not specified, the 'payload' and 'content-type' parameters are added instead.</param>
     /// <param name="enableNamespacing">Flag indicating whether to namespace payload parameter names.</param>
+    /// <param name="parameterFilter">Filter which can be used to eliminate or modify RestApiParameters.</param>
     /// <returns>A list of <see cref="RestApiParameter"/> representing the payload parameters.</returns>
-    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
+    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing, RestApiParameterFilter? parameterFilter)
     {
         if (useParametersFromMetadata)
         {
@@ -111,7 +116,7 @@ internal static partial class RestApiOperationExtensions
                 return [CreatePayloadArtificialParameter(operation)];
             }
 
-            return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing);
+            return GetParametersFromPayloadMetadata(operation, operation.Payload, operation.Payload.Properties, enableNamespacing, parameterFilter);
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
@@ -159,13 +164,16 @@ internal static partial class RestApiOperationExtensions
     /// <summary>
     /// Retrieves parameters from REST API payload metadata.
     /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="parent">The parent object of the parameter, can be either an instance of <see cref="RestApiPayload"/> or <see cref="RestApiPayloadProperty"/>.</param>
     /// <param name="properties">The REST API payload properties.</param>
     /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
+    /// <param name="parameterFilter">Filter which can be used to eliminate or modify RestApiParameters.</param>
     /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiParameter> GetParametersFromPayloadMetadata(IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
+    private static List<RestApiParameter> GetParametersFromPayloadMetadata(RestApiOperation operation, object parent, IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, RestApiParameterFilter? parameterFilter = null, string? rootPropertyName = null)
     {
         var parameters = new List<RestApiParameter>();
 
@@ -175,7 +183,7 @@ internal static partial class RestApiOperationExtensions
 
             if (!property.Properties.Any())
             {
-                parameters.Add(new RestApiParameter(
+                var parameter = new RestApiParameter(
                     name: parameterName,
                     type: property.Type,
                     isRequired: property.IsRequired,
@@ -188,10 +196,15 @@ internal static partial class RestApiOperationExtensions
                     schema: property.Schema)
                 {
                     ArgumentName = property.ArgumentName
-                });
+                };
+                parameter = parameterFilter is null ? parameter : parameterFilter(new(operation, parameter) { Parent = parent });
+                if (parameter is not null)
+                {
+                    parameters.Add(parameter);
+                }
             }
 
-            parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
+            parameters.AddRange(GetParametersFromPayloadMetadata(operation, property, property.Properties, enableNamespacing, parameterFilter, parameterName));
         }
 
         return parameters;

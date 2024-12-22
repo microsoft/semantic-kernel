@@ -17,7 +17,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class VectorStoreRecordField(ABC):
     """Base class for all Vector Store Record Fields."""
 
-    name: str | None = None
+    name: str = ""
     property_type: str | None = None
 
 

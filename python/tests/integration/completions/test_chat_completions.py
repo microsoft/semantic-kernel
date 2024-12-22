@@ -6,6 +6,11 @@ from typing import Any
 
 import pytest
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatMessageContent, TextContent
@@ -15,6 +20,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
+    bedrock_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
@@ -22,11 +28,6 @@ from tests.integration.completions.chat_completion_test_base import (
 )
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.utils import retry
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 
 class Step(KernelBaseModel):
@@ -42,6 +43,7 @@ class Reasoning(KernelBaseModel):
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
+        # region OpenAI
         pytest.param(
             "openai",
             {},
@@ -62,6 +64,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="openai_json_schema_response_format",
         ),
+        # endregion
+        # region Azure
         pytest.param(
             "azure",
             {},
@@ -82,6 +86,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_custom_client",
         ),
+        # endregion
+        # region Azure AI Inference
         pytest.param(
             "azure_ai_inference",
             {},
@@ -92,6 +98,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             id="azure_ai_inference_text_input",
         ),
+        # endregion
+        # region Anthropic
         pytest.param(
             "anthropic",
             {},
@@ -103,6 +111,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
             id="anthropic_text_input",
         ),
+        # endregion
+        # region Mistral AI
         pytest.param(
             "mistral_ai",
             {},
@@ -114,6 +124,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_text_input",
         ),
+        # endregion
+        # region Ollama
         pytest.param(
             "ollama",
             {},
@@ -122,12 +134,14 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skip(
-                reason="Need local Ollama setup" if not ollama_setup else "Ollama responses are not always correct."
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
             ),
-            # pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
+        # endregion
+        # region Onnx Gen AI
         pytest.param(
             "onnx_gen_ai",
             {},
@@ -136,9 +150,14 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            marks=(
+                pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+                pytest.mark.onnx,
+            ),
             id="onnx_gen_ai",
         ),
+        # endregion
+        # region Google AI
         pytest.param(
             "google_ai",
             {},
@@ -150,6 +169,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
+        # endregion
+        # region Vertex AI
         pytest.param(
             "vertex_ai",
             {},
@@ -161,6 +182,8 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
+        # endregion
+        # region Bedrock
         pytest.param(
             "bedrock_amazon_titan",
             {},
@@ -169,6 +192,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+            marks=pytest.mark.skipif(not bedrock_setup, reason="Bedrock Environment Variables not set"),
             id="bedrock_amazon_titan_text_input",
         ),
         pytest.param(
@@ -226,11 +250,11 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_mistralai_text_input",
         ),
+        # endregion
     ],
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
@@ -244,7 +268,7 @@ class TestChatCompletion(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -263,7 +287,7 @@ class TestChatCompletion(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -278,6 +302,7 @@ class TestChatCompletion(ChatCompletionTestBase):
     @override
     def evaluate(self, test_target: Any, **kwargs):
         inputs = kwargs.get("inputs")
+        assert isinstance(inputs, list)
         assert len(test_target) == len(inputs) * 2
         for i in range(len(inputs)):
             message = test_target[i * 2 + 1]
@@ -297,12 +322,14 @@ class TestChatCompletion(ChatCompletionTestBase):
     ):
         self.setup(kernel)
         service, settings_type = services[service_id]
+        if service is None:
+            pytest.skip(f"Service {service_id} not set up")
 
         history = ChatHistory()
         for message in inputs:
             history.add_message(message)
 
-            cmc = await retry(
+            cmc: ChatMessageContent | None = await retry(
                 partial(
                     self.get_chat_completion_response,
                     kernel=kernel,
@@ -312,7 +339,9 @@ class TestChatCompletion(ChatCompletionTestBase):
                     stream=stream,
                 ),
                 retries=5,
+                name="get_chat_completion_response",
             )
-            history.add_message(cmc)
+            if cmc:
+                history.add_message(cmc)
 
         self.evaluate(history.messages, inputs=inputs)

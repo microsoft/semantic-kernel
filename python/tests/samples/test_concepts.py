@@ -8,7 +8,9 @@ from typing import Any
 import pytest
 from pytest import mark, param
 
-from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
+from samples.concepts.auto_function_calling.chat_completion_with_auto_function_calling import (
+    main as chat_completion_with_function_calling,
+)
 from samples.concepts.auto_function_calling.functions_defined_in_json_prompt import (
     main as function_defined_in_json_prompt,
 )
@@ -106,9 +108,9 @@ concepts = [
         ),
     ),
     param(
-        chat_gpt_api_function_calling,
+        chat_completion_with_function_calling,
         ["What is 3+3?", "exit"],
-        id="chat_gpt_api_function_calling",
+        id="chat_completion_with_function_calling",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
@@ -361,7 +363,6 @@ concepts = [
 ]
 
 
-@mark.asyncio
 @mark.parametrize("sample, responses", concepts)
 async def test_concepts(sample: Callable[..., Awaitable[Any]], responses: list[str], monkeypatch):
     saved_responses = copy.deepcopy(responses)
