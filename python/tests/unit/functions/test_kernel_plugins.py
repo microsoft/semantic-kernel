@@ -497,9 +497,8 @@ def test_from_object_class(custom_plugin_class):
     assert plugin.functions.get("getLightStatus") is not None
 
 
-@pytest.mark.asyncio
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_from_openai_from_file(mock_parse_openai_manifest):
+async def test_from_openai_from_file(mock_parse_openai_manifest, define_openai_predicate_context):
     openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
     with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json")) as file:
         openai_spec = file.read()
@@ -525,10 +524,9 @@ async def test_from_openai_from_file(mock_parse_openai_manifest):
     assert plugin.functions.get("SetSecret") is not None
 
 
-@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get):
+async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, define_openai_predicate_context):
     openai_spec_file_path = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAIPlugin", "akv-openai.json"
     )
@@ -563,14 +561,12 @@ async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get)
     mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT})
 
 
-@pytest.mark.asyncio
-async def test_from_openai_fail():
+async def test_from_openai_fail(define_openai_predicate_context):
     with raises(PluginInitializationError):
         await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin")
 
 
-@pytest.mark.asyncio
-async def test_from_openai_fail_json_parsing():
+async def test_from_openai_fail_json_parsing(define_openai_predicate_context):
     with raises(PluginInitializationError):
         await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin", plugin_str="test")
 

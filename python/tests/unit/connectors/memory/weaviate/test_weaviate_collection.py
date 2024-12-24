@@ -9,11 +9,11 @@ from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    ServiceInvalidExecutionSettingsError,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 
 
 @patch(
@@ -164,7 +164,7 @@ def test_weaviate_collection_init_fail_to_create_client(
     """Test the initialization of a WeaviateCollection object raises an error when failing to create a client."""
     collection_name = "TestCollection"
 
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         WeaviateCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -200,7 +200,6 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
     assert collection.async_client is not None
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine_distance")])
 async def test_weaviate_collection_create_collection(
     clear_weaviate_env,
@@ -239,7 +238,6 @@ async def test_weaviate_collection_create_collection(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -264,11 +262,10 @@ async def test_weaviate_collection_create_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.create_collection()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_delete_collection(
     clear_weaviate_env,
     data_model_type,
@@ -291,7 +288,6 @@ async def test_weaviate_collection_delete_collection(
     mock_async_client.collections.delete.assert_called_once_with(collection_name)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -316,11 +312,10 @@ async def test_weaviate_collection_delete_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.delete_collection()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_collection_exist(
     clear_weaviate_env,
     data_model_type,
@@ -343,7 +338,6 @@ async def test_weaviate_collection_collection_exist(
     mock_async_client.collections.exists.assert_called_once_with(collection_name)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "collections_side_effects",
     [
@@ -368,11 +362,10 @@ async def test_weaviate_collection_collection_exist_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.does_collection_exist()
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_serialize_data(
     mock_async_client,
     clear_weaviate_env,
@@ -405,7 +398,6 @@ async def test_weaviate_collection_serialize_data(
         ])
 
 
-@pytest.mark.asyncio
 async def test_weaviate_collection_deserialize_data(
     mock_async_client,
     clear_weaviate_env,

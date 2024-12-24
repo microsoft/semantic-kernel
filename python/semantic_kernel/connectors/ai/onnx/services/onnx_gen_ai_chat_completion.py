@@ -47,6 +47,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         ai_model_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the OnnxGenAITextCompletion class.
 
@@ -57,6 +58,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             env_file_path : Use the environment settings file as a fallback
                 to environment variables.
             env_file_encoding : The encoding of the environment settings file.
+            kwargs : Additional arguments.
         """
         try:
             settings = OnnxGenAISettings.create(
@@ -76,7 +78,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         if ai_model_id is None:
             ai_model_id = settings.chat_model_folder
 
-        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.chat_model_folder, template=template)
+        super().__init__(ai_model_id=ai_model_id, ai_model_path=settings.chat_model_folder, template=template, **kwargs)
 
     @override
     async def _inner_get_chat_message_contents(
@@ -107,6 +109,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         """Create streaming chat message contents, in the number specified by the settings.
 
@@ -114,6 +117,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             chat_history : A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings : Settings for the request.
+            function_invoke_attempt : The function invoke attempt.
 
         Yields:
             A stream representing the response(s) from the LLM.
@@ -125,7 +129,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         images = self._get_images_from_history(chat_history)
         async for chunk in self._generate_next_token_async(prompt, settings, images):
             yield [
-                self._create_streaming_chat_message_content(choice_index, new_token)
+                self._create_streaming_chat_message_content(choice_index, new_token, function_invoke_attempt)
                 for choice_index, new_token in enumerate(chunk)
             ]
 
@@ -140,12 +144,15 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             ],
         )
 
-    def _create_streaming_chat_message_content(self, choice_index: int, choice: str) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(
+        self, choice_index: int, choice: str, function_invoke_attempt: int
+    ) -> StreamingChatMessageContent:
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
             choice_index=choice_index,
             content=choice,
             ai_model_id=self.ai_model_id,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     @override

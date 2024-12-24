@@ -87,9 +87,8 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         Console.WriteLine();
     }
-    private async Task AddCopilotAgentPluginsAsync(Kernel kernel, params string[] pluginNames)
+    internal static async Task<CopilotAgentPluginParameters> GetAuthenticationParametersAsync()
     {
-#pragma warning disable SKEXP0050
         if (TestConfiguration.MSGraph.Scopes is null)
         {
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
@@ -131,6 +130,12 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
                 { "https://api.nasa.gov/planetary", nasaOpenApiFunctionExecutionParameters }
             }
         };
+        return apiManifestPluginParameters;
+    }
+    private async Task AddCopilotAgentPluginsAsync(Kernel kernel, params string[] pluginNames)
+    {
+#pragma warning disable SKEXP0050
+        var apiManifestPluginParameters = await GetAuthenticationParametersAsync().ConfigureAwait(false);
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "CopilotAgentPlugins");
 
         foreach (var pluginName in pluginNames)

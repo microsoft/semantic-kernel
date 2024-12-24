@@ -1,27 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic import AsyncAnthropic
-from anthropic.lib.streaming import TextEvent
-from anthropic.lib.streaming._types import InputJsonEvent
-from anthropic.types import (
-    ContentBlockStopEvent,
-    InputJSONDelta,
-    Message,
-    MessageDeltaUsage,
-    MessageStopEvent,
-    RawContentBlockDeltaEvent,
-    RawContentBlockStartEvent,
-    RawMessageDeltaEvent,
-    RawMessageStartEvent,
-    TextBlock,
-    TextDelta,
-    ToolUseBlock,
-    Usage,
-)
-from anthropic.types.raw_message_delta_event import Delta
+from anthropic.types import Message
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
@@ -33,407 +15,20 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import (
-    ChatMessageContent,
-    FunctionCallContent,
-    FunctionResultContent,
-    TextContent,
-)
-from semantic_kernel.contents.const import ContentTypes
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent, StreamingTextContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent, FunctionCallContent, TextContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
     ServiceResponseException,
 )
-from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionMetadata
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 
 
-@pytest.fixture
-def mock_tool_calls_message() -> ChatMessageContent:
-    return ChatMessageContent(
-        inner_content=Message(
-            id="test_message_id",
-            content=[
-                TextBlock(text="<thinking></thinking>", type="text"),
-                ToolUseBlock(
-                    id="test_tool_use_blocks",
-                    input={"input": 3, "amount": 3},
-                    name="math-Add",
-                    type="tool_use",
-                ),
-            ],
-            model="claude-3-opus-20240229",
-            role="assistant",
-            stop_reason="tool_use",
-            stop_sequence=None,
-            type="message",
-            usage=Usage(input_tokens=1720, output_tokens=194),
-        ),
-        ai_model_id="claude-3-opus-20240229",
-        metadata={},
-        content_type="message",
-        role=AuthorRole.ASSISTANT,
-        name=None,
-        items=[
-            FunctionCallContent(
-                inner_content=None,
-                ai_model_id=None,
-                metadata={},
-                content_type=ContentTypes.FUNCTION_CALL_CONTENT,
-                id="test_function_call_content",
-                index=1,
-                name="math-Add",
-                function_name="Add",
-                plugin_name="math",
-                arguments={"input": 3, "amount": 3},
-            ),
-            TextContent(
-                inner_content=None,
-                ai_model_id=None,
-                metadata={},
-                content_type="text",
-                text="<thinking></thinking>",
-                encoding=None,
-            ),
-        ],
-        encoding=None,
-        finish_reason=FinishReason.TOOL_CALLS,
-    )
-
-
-@pytest.fixture
-def mock_streaming_tool_calls_message() -> list:
-    stream_events = [
-        RawMessageStartEvent(
-            message=Message(
-                id="test_message_id",
-                content=[],
-                model="claude-3-opus-20240229",
-                role="assistant",
-                stop_reason=None,
-                stop_sequence=None,
-                type="message",
-                usage=Usage(input_tokens=1720, output_tokens=2),
-            ),
-            type="message_start",
-        ),
-        RawContentBlockStartEvent(content_block=TextBlock(text="", type="text"), index=0, type="content_block_start"),
-        RawContentBlockDeltaEvent(
-            delta=TextDelta(text="<thinking>", type="text_delta"), index=0, type="content_block_delta"
-        ),
-        TextEvent(type="text", text="<thinking>", snapshot="<thinking>"),
-        RawContentBlockDeltaEvent(
-            delta=TextDelta(text="</thinking>", type="text_delta"), index=0, type="content_block_delta"
-        ),
-        TextEvent(type="text", text="</thinking>", snapshot="<thinking></thinking>"),
-        ContentBlockStopEvent(
-            index=0, type="content_block_stop", content_block=TextBlock(text="<thinking></thinking>", type="text")
-        ),
-        RawContentBlockStartEvent(
-            content_block=ToolUseBlock(id="test_tool_use_message_id", input={}, name="math-Add", type="tool_use"),
-            index=1,
-            type="content_block_start",
-        ),
-        RawContentBlockDeltaEvent(
-            delta=InputJSONDelta(partial_json='{"input": 3, "amount": 3}', type="input_json_delta"),
-            index=1,
-            type="content_block_delta",
-        ),
-        InputJsonEvent(type="input_json", partial_json='{"input": 3, "amount": 3}', snapshot={"input": 3, "amount": 3}),
-        ContentBlockStopEvent(
-            index=1,
-            type="content_block_stop",
-            content_block=ToolUseBlock(
-                id="test_tool_use_block_id", input={"input": 3, "amount": 3}, name="math-Add", type="tool_use"
-            ),
-        ),
-        RawMessageDeltaEvent(
-            delta=Delta(stop_reason="tool_use", stop_sequence=None),
-            type="message_delta",
-            usage=MessageDeltaUsage(output_tokens=159),
-        ),
-        MessageStopEvent(
-            type="message_stop",
-            message=Message(
-                id="test_message_id",
-                content=[
-                    TextBlock(text="<thinking></thinking>", type="text"),
-                    ToolUseBlock(
-                        id="test_tool_use_block_id", input={"input": 3, "amount": 3}, name="math-Add", type="tool_use"
-                    ),
-                ],
-                model="claude-3-opus-20240229",
-                role="assistant",
-                stop_reason="tool_use",
-                stop_sequence=None,
-                type="message",
-                usage=Usage(input_tokens=100, output_tokens=100),
-            ),
-        ),
-    ]
-
-    async def async_generator():
-        for event in stream_events:
-            yield event
-
-    stream_mock = AsyncMock()
-    stream_mock.__aenter__.return_value = async_generator()
-
-    return stream_mock
-
-
-@pytest.fixture
-def mock_tool_call_result_message() -> ChatMessageContent:
-    return ChatMessageContent(
-        inner_content=None,
-        ai_model_id=None,
-        metadata={},
-        content_type="message",
-        role=AuthorRole.TOOL,
-        name=None,
-        items=[
-            FunctionResultContent(
-                id="tool_01",
-                inner_content=FunctionResult(
-                    function=KernelFunctionMetadata(
-                        name="Add",
-                        plugin_name="math",
-                        description="Returns the Addition result of the values provided.",
-                        parameters=[
-                            KernelParameterMetadata(
-                                name="input",
-                                description="the first number to add",
-                                default_value=None,
-                                type_="int",
-                                is_required=True,
-                                type_object=int,
-                                schema_data={"type": "integer", "description": "the first number to add"},
-                                function_schema_include=True,
-                            ),
-                            KernelParameterMetadata(
-                                name="amount",
-                                description="the second number to add",
-                                default_value=None,
-                                type_="int",
-                                is_required=True,
-                                type_object=int,
-                                schema_data={"type": "integer", "description": "the second number to add"},
-                                function_schema_include=True,
-                            ),
-                        ],
-                        is_prompt=False,
-                        is_asynchronous=False,
-                        return_parameter=KernelParameterMetadata(
-                            name="return",
-                            description="the output is a number",
-                            default_value=None,
-                            type_="int",
-                            is_required=True,
-                            type_object=int,
-                            schema_data={"type": "integer", "description": "the output is a number"},
-                            function_schema_include=True,
-                        ),
-                        additional_properties={},
-                    ),
-                    value=6,
-                    metadata={},
-                ),
-                value=6,
-            )
-        ],
-        encoding=None,
-        finish_reason=FinishReason.TOOL_CALLS,
-    )
-
-
-# mock StreamingChatMessageContent
-@pytest.fixture
-def mock_streaming_chat_message_content() -> StreamingChatMessageContent:
-    return StreamingChatMessageContent(
-        choice_index=0,
-        inner_content=[
-            RawContentBlockDeltaEvent(
-                delta=TextDelta(text="<thinking>", type="text_delta"), index=0, type="content_block_delta"
-            ),
-            RawContentBlockDeltaEvent(
-                delta=TextDelta(text="</thinking>", type="text_delta"), index=0, type="content_block_delta"
-            ),
-            ContentBlockStopEvent(
-                index=1,
-                type="content_block_stop",
-                content_block=ToolUseBlock(
-                    id="tool_id",
-                    input={"input": 3, "amount": 3},
-                    name="math-Add",
-                    type="tool_use",
-                ),
-            ),
-            RawMessageDeltaEvent(
-                delta=Delta(stop_reason="tool_use", stop_sequence=None),
-                type="message_delta",
-                usage=MessageDeltaUsage(output_tokens=175),
-            ),
-        ],
-        ai_model_id="claude-3-opus-20240229",
-        metadata={},
-        role=AuthorRole.ASSISTANT,
-        name=None,
-        items=[
-            StreamingTextContent(
-                inner_content=None,
-                ai_model_id=None,
-                metadata={},
-                content_type="text",
-                text="<thinking></thinking>",
-                encoding=None,
-                choice_index=0,
-            ),
-            FunctionCallContent(
-                inner_content=None,
-                ai_model_id=None,
-                metadata={},
-                content_type=ContentTypes.FUNCTION_CALL_CONTENT,
-                id="tool_id",
-                index=0,
-                name="math-Add",
-                function_name="Add",
-                plugin_name="math",
-                arguments='{"input": 3, "amount": 3}',
-            ),
-        ],
-        encoding=None,
-        finish_reason=FinishReason.TOOL_CALLS,
-    )
-
-
-@pytest.fixture
-def mock_settings() -> AnthropicChatPromptExecutionSettings:
-    return AnthropicChatPromptExecutionSettings()
-
-
-@pytest.fixture
-def mock_chat_message_response() -> Message:
-    return Message(
-        id="test_message_id",
-        content=[TextBlock(text="Hello, how are you?", type="text")],
-        model="claude-3-opus-20240229",
-        role="assistant",
-        stop_reason="end_turn",
-        stop_sequence=None,
-        type="message",
-        usage=Usage(input_tokens=10, output_tokens=10),
-    )
-
-
-@pytest.fixture
-def mock_streaming_message_response() -> AsyncGenerator:
-    raw_message_start_event = RawMessageStartEvent(
-        message=Message(
-            id="test_message_id",
-            content=[],
-            model="claude-3-opus-20240229",
-            role="assistant",
-            stop_reason=None,
-            stop_sequence=None,
-            type="message",
-            usage=Usage(input_tokens=41, output_tokens=3),
-        ),
-        type="message_start",
-    )
-
-    raw_content_block_start_event = RawContentBlockStartEvent(
-        content_block=TextBlock(text="", type="text"),
-        index=0,
-        type="content_block_start",
-    )
-
-    raw_content_block_delta_event = RawContentBlockDeltaEvent(
-        delta=TextDelta(text="Hello! It", type="text_delta"),
-        index=0,
-        type="content_block_delta",
-    )
-
-    text_event = TextEvent(
-        type="text",
-        text="Hello! It",
-        snapshot="Hello! It",
-    )
-
-    content_block_stop_event = ContentBlockStopEvent(
-        index=0,
-        type="content_block_stop",
-        content_block=TextBlock(text="Hello! It's nice to meet you.", type="text"),
-    )
-
-    raw_message_delta_event = RawMessageDeltaEvent(
-        delta=Delta(stop_reason="end_turn", stop_sequence=None),
-        type="message_delta",
-        usage=MessageDeltaUsage(output_tokens=84),
-    )
-
-    message_stop_event = MessageStopEvent(
-        type="message_stop",
-        message=Message(
-            id="test_message_stop_id",
-            content=[TextBlock(text="Hello! It's nice to meet you.", type="text")],
-            model="claude-3-opus-20240229",
-            role="assistant",
-            stop_reason="end_turn",
-            stop_sequence=None,
-            type="message",
-            usage=Usage(input_tokens=41, output_tokens=84),
-        ),
-    )
-
-    # Combine all mock events into a list
-    stream_events = [
-        raw_message_start_event,
-        raw_content_block_start_event,
-        raw_content_block_delta_event,
-        text_event,
-        content_block_stop_event,
-        raw_message_delta_event,
-        message_stop_event,
-    ]
-
-    async def async_generator():
-        for event in stream_events:
-            yield event
-
-    # Create an AsyncMock for the stream
-    stream_mock = AsyncMock()
-    stream_mock.__aenter__.return_value = async_generator()
-
-    return stream_mock
-
-
-@pytest.fixture
-def mock_anthropic_client_completion(mock_chat_message_response: Message) -> AsyncAnthropic:
-    client = MagicMock(spec=AsyncAnthropic)
-    messages_mock = MagicMock()
-    messages_mock.create = AsyncMock(return_value=mock_chat_message_response)
-    client.messages = messages_mock
-    return client
-
-
-@pytest.fixture
-def mock_anthropic_client_completion_stream(mock_streaming_message_response: AsyncGenerator) -> AsyncAnthropic:
-    client = MagicMock(spec=AsyncAnthropic)
-    messages_mock = MagicMock()
-    messages_mock.stream.return_value = mock_streaming_message_response
-    client.messages = messages_mock
-    return client
-
-
-@pytest.mark.asyncio
 async def test_complete_chat_contents(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -497,7 +92,6 @@ mock_message_function_call = ChatMessageContent(
         ),
     ],
 )
-@pytest.mark.asyncio
 async def test_complete_chat_contents_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -521,7 +115,6 @@ async def test_complete_chat_contents_function_call_behavior_tool_call(
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
-@pytest.mark.asyncio
 async def test_complete_chat_contents_function_call_behavior_without_kernel(
     mock_settings: AnthropicChatPromptExecutionSettings,
     mock_anthropic_client_completion: AsyncAnthropic,
@@ -537,7 +130,6 @@ async def test_complete_chat_contents_function_call_behavior_without_kernel(
         await chat_completion_base.get_chat_message_contents(chat_history=chat_history, settings=mock_settings)
 
 
-@pytest.mark.asyncio
 async def test_complete_chat_stream_contents(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -599,7 +191,6 @@ mock_message_text_content = StreamingChatMessageContent(
         pytest.param(FunctionChoiceBehavior.NoneInvoke(), [[mock_message_text_content]], TextContent, id="none"),
     ],
 )
-@pytest.mark.asyncio
 async def test_complete_chat_contents_streaming_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: AnthropicChatPromptExecutionSettings,
@@ -630,7 +221,6 @@ async def test_complete_chat_contents_streaming_function_call_behavior_tool_call
         assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
-@pytest.mark.asyncio
 async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicChatPromptExecutionSettings):
     client = MagicMock(spec=AsyncAnthropic)
     messages_mock = MagicMock()
@@ -650,7 +240,6 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
         )
 
 
-@pytest.mark.asyncio
 async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: AnthropicChatPromptExecutionSettings):
     client = MagicMock(spec=AsyncAnthropic)
     messages_mock = MagicMock()
@@ -704,7 +293,6 @@ def test_prompt_execution_settings_class(anthropic_unit_test_env):
     assert prompt_execution_settings == AnthropicChatPromptExecutionSettings
 
 
-@pytest.mark.asyncio
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)
@@ -720,7 +308,6 @@ async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_
     assert mock_anthropic_client_completion.messages.create.call_args.kwargs["temperature"] == 0.2
 
 
-@pytest.mark.asyncio
 async def test_with_different_execution_settings_stream(
     kernel: Kernel, mock_anthropic_client_completion_stream: MagicMock
 ):
@@ -741,7 +328,6 @@ async def test_with_different_execution_settings_stream(
     assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
 
 
-@pytest.mark.asyncio
 async def test_prepare_chat_history_for_request_with_system_message(mock_anthropic_client_completion_stream: MagicMock):
     chat_history = ChatHistory()
     chat_history.add_system_message("System message")
@@ -763,12 +349,11 @@ async def test_prepare_chat_history_for_request_with_system_message(mock_anthrop
     assert system_message_content == "System message"
     assert remaining_messages == [
         {"role": AuthorRole.USER, "content": "User message"},
-        {"role": AuthorRole.ASSISTANT, "content": "Assistant message"},
+        {"role": AuthorRole.ASSISTANT, "content": [{"type": "text", "text": "Assistant message"}]},
     ]
     assert not any(msg["role"] == AuthorRole.SYSTEM for msg in remaining_messages)
 
 
-@pytest.mark.asyncio
 async def test_prepare_chat_history_for_request_with_tool_message(
     mock_anthropic_client_completion_stream: MagicMock,
     mock_tool_calls_message: ChatMessageContent,
@@ -791,39 +376,123 @@ async def test_prepare_chat_history_for_request_with_tool_message(
     )
 
     assert system_message_content is None
-    assert len(remaining_messages) == 3
+    assert remaining_messages == [
+        {"role": AuthorRole.USER, "content": "What is 3+3?"},
+        {
+            "role": AuthorRole.ASSISTANT,
+            "content": [
+                {"type": "text", "text": mock_tool_calls_message.items[0].text},
+                {
+                    "type": "tool_use",
+                    "id": mock_tool_calls_message.items[1].id,
+                    "name": mock_tool_calls_message.items[1].name,
+                    "input": mock_tool_calls_message.items[1].arguments,
+                },
+            ],
+        },
+        {
+            "role": AuthorRole.USER,
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": mock_tool_call_result_message.items[0].id,
+                    "content": str(mock_tool_call_result_message.items[0].result),
+                }
+            ],
+        },
+    ]
 
 
-@pytest.mark.asyncio
-async def test_prepare_chat_history_for_request_with_tool_message_streaming(
+async def test_prepare_chat_history_for_request_with_parallel_tool_message(
     mock_anthropic_client_completion_stream: MagicMock,
-    mock_streaming_chat_message_content: StreamingChatMessageContent,
-    mock_tool_call_result_message: ChatMessageContent,
+    mock_parallel_tool_calls_message: ChatMessageContent,
+    mock_parallel_tool_call_result_message: ChatMessageContent,
 ):
     chat_history = ChatHistory()
     chat_history.add_user_message("What is 3+3?")
-    chat_history.add_message(mock_streaming_chat_message_content)
-    chat_history.add_message(mock_tool_call_result_message)
+    chat_history.add_message(mock_parallel_tool_calls_message)
+    chat_history.add_message(mock_parallel_tool_call_result_message)
 
-    chat_completion = AnthropicChatCompletion(
+    chat_completion_client = AnthropicChatCompletion(
         ai_model_id="test_model_id",
         service_id="test",
         api_key="",
         async_client=mock_anthropic_client_completion_stream,
     )
 
-    remaining_messages, system_message_content = chat_completion._prepare_chat_history_for_request(
-        chat_history,
-        role_key="role",
-        content_key="content",
-        stream=True,
+    remaining_messages, system_message_content = chat_completion_client._prepare_chat_history_for_request(
+        chat_history, role_key="role", content_key="content"
     )
 
     assert system_message_content is None
-    assert len(remaining_messages) == 3
+    assert remaining_messages == [
+        {"role": AuthorRole.USER, "content": "What is 3+3?"},
+        {
+            "role": AuthorRole.ASSISTANT,
+            "content": [
+                {"type": "text", "text": mock_parallel_tool_calls_message.items[0].text},
+                *[
+                    {
+                        "type": "tool_use",
+                        "id": function_call_content.id,
+                        "name": function_call_content.name,
+                        "input": function_call_content.arguments,
+                    }
+                    for function_call_content in mock_parallel_tool_calls_message.items[1:]
+                ],
+            ],
+        },
+        {
+            "role": AuthorRole.USER,
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": function_result_content.id,
+                    "content": str(function_result_content.result),
+                }
+                for function_result_content in mock_parallel_tool_call_result_message.items
+            ],
+        },
+    ]
 
 
-@pytest.mark.asyncio
+async def test_prepare_chat_history_for_request_with_tool_message_right_after_user_message(
+    mock_anthropic_client_completion_stream: MagicMock,
+    mock_tool_call_result_message: ChatMessageContent,
+):
+    chat_history = ChatHistory()
+    chat_history.add_user_message("What is 3+3?")
+    chat_history.add_message(mock_tool_call_result_message)
+
+    chat_completion_client = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_anthropic_client_completion_stream,
+    )
+
+    with pytest.raises(ServiceInvalidRequestError, match="Tool message found after a user or system message."):
+        chat_completion_client._prepare_chat_history_for_request(chat_history, role_key="role", content_key="content")
+
+
+async def test_prepare_chat_history_for_request_with_tool_message_as_the_first_message(
+    mock_anthropic_client_completion_stream: MagicMock,
+    mock_tool_call_result_message: ChatMessageContent,
+):
+    chat_history = ChatHistory()
+    chat_history.add_message(mock_tool_call_result_message)
+
+    chat_completion_client = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_anthropic_client_completion_stream,
+    )
+
+    with pytest.raises(ServiceInvalidRequestError, match="Tool message found without a preceding message."):
+        chat_completion_client._prepare_chat_history_for_request(chat_history, role_key="role", content_key="content")
+
+
 async def test_send_chat_stream_request_tool_calls(
     mock_streaming_tool_calls_message: MagicMock,
     mock_streaming_chat_message_content: StreamingChatMessageContent,

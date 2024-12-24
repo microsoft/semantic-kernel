@@ -10,7 +10,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
 def test_azure_cosmos_db_no_sql_store_init(
@@ -43,7 +43,7 @@ def test_azure_cosmos_db_no_sql_store_init_no_url(
     azure_cosmos_db_no_sql_unit_test_env,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLStore object with missing URL."""
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         AzureCosmosDBNoSQLStore(env_file_path="fake_path")
 
 
@@ -53,7 +53,7 @@ def test_azure_cosmos_db_no_sql_store_init_no_database_name(
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLStore object with missing database name."""
     with pytest.raises(
-        MemoryConnectorInitializationError, match="The name of the Azure Cosmos DB NoSQL database is missing."
+        VectorStoreInitializationException, match="The name of the Azure Cosmos DB NoSQL database is missing."
     ):
         AzureCosmosDBNoSQLStore(env_file_path="fake_path")
 
@@ -62,7 +62,7 @@ def test_azure_cosmos_db_no_sql_store_invalid_settings(
     clear_azure_cosmos_db_no_sql_env,
 ) -> None:
     """Test the initialization of an AzureCosmosDBNoSQLStore object with invalid settings."""
-    with pytest.raises(MemoryConnectorInitializationError, match="Failed to validate Azure Cosmos DB NoSQL settings."):
+    with pytest.raises(VectorStoreInitializationException, match="Failed to validate Azure Cosmos DB NoSQL settings."):
         AzureCosmosDBNoSQLStore(url="invalid_url")
 
 
@@ -95,7 +95,6 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
     )
 
 
-@pytest.mark.asyncio
 @patch.object(CosmosClientWrapper, "close", return_value=None)
 async def test_client_is_closed(mock_cosmos_client_close, azure_cosmos_db_no_sql_unit_test_env) -> None:
     """Test the close method of an AzureCosmosDBNoSQLStore object."""

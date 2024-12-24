@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
+using Xunit;
 
 namespace SemanticKernel.Process.IntegrationTests;
 

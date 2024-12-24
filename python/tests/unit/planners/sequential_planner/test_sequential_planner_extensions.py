@@ -3,8 +3,6 @@
 
 from unittest.mock import Mock
 
-import pytest
-
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -34,7 +32,6 @@ def create_mock_function(
     return mock_function
 
 
-@pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel):
     arguments = KernelArguments()
 
@@ -49,7 +46,6 @@ async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel
     assert result is not None
 
 
-@pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
     arguments = KernelArguments()
     kernel_function_metadata = KernelFunctionMetadata(
@@ -96,7 +92,6 @@ async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
     assert result[1] == native_kernel_function_metadata
 
 
-@pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_default_relevancy(kernel: Kernel):
     # Arrange
     arguments = KernelArguments()

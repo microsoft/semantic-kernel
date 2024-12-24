@@ -2,8 +2,6 @@
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.termination.aggregator_termination_strategy import (
@@ -17,7 +15,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,
@@ -33,7 +31,6 @@ class MockAgent(Agent):
         return AsyncMock(spec=AgentChannel)
 
 
-@pytest.mark.asyncio
 async def test_aggregate_termination_condition_all_true():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -56,7 +53,6 @@ async def test_aggregate_termination_condition_all_true():
     strategy2.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_aggregate_termination_condition_all_false():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -79,7 +75,6 @@ async def test_aggregate_termination_condition_all_false():
     strategy2.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_aggregate_termination_condition_any_true():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]
@@ -102,7 +97,6 @@ async def test_aggregate_termination_condition_any_true():
     strategy2.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_aggregate_termination_condition_any_false():
     agent = MockAgent(id="test-agent-id")
     history = [MagicMock(spec=ChatMessageContent)]

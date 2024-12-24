@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Union
+from typing import Any
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -8,13 +8,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel import Kernel
 
-ServiceType = Union[ChatCompletionClientBase | TextCompletionClientBase]
+ServiceType = ChatCompletionClientBase | TextCompletionClientBase
 
 
 class CompletionTestBase:
     """Base class for testing completion services."""
 
-    def services(self) -> dict[str, tuple[ServiceType, type[PromptExecutionSettings]]]:
+    def services(self) -> dict[str, tuple["ServiceType", type[PromptExecutionSettings]]]:
         """Return completion services."""
         raise NotImplementedError
 

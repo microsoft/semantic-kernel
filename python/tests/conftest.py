@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated
@@ -13,6 +14,9 @@ from pytest import fixture
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
@@ -28,6 +32,15 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+
+def pytest_configure(config):
+    logging.basicConfig(level=logging.ERROR)
+    logging.getLogger("tests.utils").setLevel(logging.INFO)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("semantic_kernel").setLevel(logging.INFO)
 
 
 @fixture(scope="function")
@@ -180,44 +193,6 @@ def chat_history() -> "ChatHistory":
 @fixture(scope="function")
 def prompt() -> str:
     return "test prompt"
-
-
-# @fixture(autouse=True)
-# def enable_debug_mode():
-#     """Set `autouse=True` to enable easy debugging for tests.
-
-#     How to debug:
-#     1. Ensure [snoop](https://github.com/alexmojaki/snoop) is installed
-#         (`pip install snoop`).
-#     2. If you're doing print based debugging, use `pr` instead of `print`.
-#         That is, convert `print(some_var)` to `pr(some_var)`.
-#     3. If you want a trace of a particular functions calls, just add `ss()` as the first
-#         line of the function.
-
-#     Note:
-#     ----
-#         It's completely fine to leave `autouse=True` in the fixture. It doesn't affect
-#         the tests unless you use `pr` or `ss` in any test.
-
-#     Note:
-#     ----
-#         When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
-#         because they don't know that we're adding these functions to the builtins. The
-#         tests will run fine though.
-#     """
-#     import builtins
-
-#     try:
-#         import snoop
-#     except ImportError:
-#         warnings.warn(
-#             "Install snoop to enable trace debugging. `pip install snoop`",
-#             ImportWarning,
-#         )
-#         return
-
-#     builtins.ss = snoop.snoop(depth=4).__enter__
-#     builtins.pr = snoop.pp
 
 
 @fixture
@@ -676,3 +651,10 @@ def data_model_type_with_key_as_key_field(
         key: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
+
+
+@fixture
+def define_openai_predicate_context():
+    from semantic_kernel.connectors.openapi_plugin import OperationSelectionPredicateContext  # noqa: F401
+
+    OpenAIFunctionExecutionParameters.model_rebuild()

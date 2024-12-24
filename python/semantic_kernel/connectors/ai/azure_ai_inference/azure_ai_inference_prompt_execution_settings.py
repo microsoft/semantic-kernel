@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
@@ -16,13 +16,13 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
         `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
     """
 
-    frequency_penalty: float | None = Field(None, ge=-2, le=2)
-    max_tokens: int | None = Field(None, gt=0)
-    presence_penalty: float | None = Field(None, ge=-2, le=2)
+    frequency_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
+    max_tokens: Annotated[int | None, Field(gt=0)] = None
+    presence_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
     seed: int | None = None
     stop: str | None = None
-    temperature: float | None = Field(None, ge=0.0, le=1.0)
-    top_p: float | None = Field(None, ge=0.0, le=1.0)
+    temperature: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
+    top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     extra_parameters: dict[str, Any] | None = None
 
 
@@ -30,15 +30,20 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
 class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
     """Azure AI Inference Chat Prompt Execution Settings."""
 
-    tools: list[dict[str, Any]] | None = Field(
-        None,
-        max_length=64,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
-    tool_choice: str | None = Field(
-        None,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
+    tools: Annotated[
+        list[dict[str, Any]] | None,
+        Field(
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
+    tool_choice: Annotated[
+        str | None,
+        Field(
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
 
 
 @experimental_class
@@ -49,7 +54,7 @@ class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
         `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
     """
 
-    dimensions: int | None = Field(None, gt=0)
+    dimensions: Annotated[int | None, Field(gt=0)] = None
     encoding_format: Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None = None
     input_type: Literal["text", "query", "document"] | None = None
     extra_parameters: dict[str, str] | None = None

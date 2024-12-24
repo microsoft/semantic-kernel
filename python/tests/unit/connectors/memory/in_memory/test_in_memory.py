@@ -19,7 +19,6 @@ def test_store_init():
     assert store.vector_record_collections == {}
 
 
-@mark.asyncio
 async def test_store_get_collection(data_model_definition):
     store = InMemoryVectorStore()
     collection = store.get_collection("test", dict, data_model_definition)
@@ -30,7 +29,6 @@ async def test_store_get_collection(data_model_definition):
     assert (await store.list_collection_names()) == ["test"]
 
 
-@mark.asyncio
 async def test_upsert(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     key = await collection.upsert(record)
@@ -38,7 +36,6 @@ async def test_upsert(collection):
     assert collection.inner_storage == {"testid": record}
 
 
-@mark.asyncio
 async def test_get(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
@@ -46,13 +43,11 @@ async def test_get(collection):
     assert result == record
 
 
-@mark.asyncio
 async def test_get_missing(collection):
     result = await collection.get("testid")
     assert result is None
 
 
-@mark.asyncio
 async def test_delete(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
@@ -60,12 +55,10 @@ async def test_delete(collection):
     assert collection.inner_storage == {}
 
 
-@mark.asyncio
 async def test_does_collection_exist(collection):
     assert await collection.does_collection_exist() is True
 
 
-@mark.asyncio
 async def test_delete_collection(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
@@ -74,12 +67,10 @@ async def test_delete_collection(collection):
     assert collection.inner_storage == {}
 
 
-@mark.asyncio
 async def test_create_collection(collection):
     await collection.create_collection()
 
 
-@mark.asyncio
 async def test_text_search(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
@@ -87,7 +78,6 @@ async def test_text_search(collection):
     assert len([res async for res in results.results]) == 1
 
 
-@mark.asyncio
 async def test_text_search_with_filter(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
@@ -100,7 +90,6 @@ async def test_text_search_with_filter(collection):
     assert len([res async for res in results.results]) == 1
 
 
-@mark.asyncio
 @mark.parametrize(
     "distance_function",
     [

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -155,12 +156,101 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Gets or sets the response format to use for the completion.
+    /// </summary>
+    /// <remarks>
+    /// An object specifying the format that the model must output.
+    /// Setting to { "type": "json_object" } enables JSON mode, which guarantees the message the model generates is in JSON.
+    /// When using JSON mode you MUST also instruct the model to produce JSON yourself with a system or a user message.
+    /// </remarks>
+    [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the stop sequences to use for the completion.
+    /// </summary>
+    /// <remarks>
+    /// Stop generation if this token is detected. Or if one of these tokens is detected when providing an array
+    /// </remarks>
+    [JsonPropertyName("stop")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<string>? Stop
+    {
+        get => this._stop;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._stop = value;
+        }
+    }
+
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens
+    /// based on whether they appear in the text so far, increasing the
+    /// model's likelihood to talk about new topics.
+    /// </summary>
+    /// <remarks>
+    /// presence_penalty determines how much the model penalizes the repetition of words or phrases.
+    /// A higher presence penalty encourages the model to use a wider variety of words and phrases, making the output more diverse and creative.
+    /// </remarks>
+    [JsonPropertyName("presence_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? PresencePenalty
+    {
+        get => this._presencePenalty;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._presencePenalty = value;
+        }
+    }
+
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens
+    /// based on their existing frequency in the text so far, decreasing
+    /// the model's likelihood to repeat the same line verbatim.
+    /// </summary>
+    /// <remarks>
+    /// frequency_penalty penalizes the repetition of words based on their frequency in the generated text.
+    /// A higher frequency penalty discourages the model from repeating words that have already appeared frequently in the output, promoting diversity and reducing repetition.
+    /// </remarks>
+    [JsonPropertyName("frequency_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FrequencyPenalty
+    {
+        get => this._frequencyPenalty;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._frequencyPenalty = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
         if (this.IsFrozen)
         {
             return;
+        }
+
+        if (this._stop is not null)
+        {
+            this._stop = new ReadOnlyCollection<string>(this._stop);
         }
 
         base.Freeze();
@@ -180,6 +270,10 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
             RandomSeed = this.RandomSeed,
             ApiVersion = this.ApiVersion,
             ToolCallBehavior = this.ToolCallBehavior,
+            ResponseFormat = this.ResponseFormat,
+            FrequencyPenalty = this.FrequencyPenalty,
+            PresencePenalty = this.PresencePenalty,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
         };
     }
 
@@ -215,6 +309,10 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     private int? _randomSeed;
     private string _apiVersion = "v1";
     private MistralAIToolCallBehavior? _toolCallBehavior;
+    private object? _responseFormat;
+    private double? _presencePenalty;
+    private double? _frequencyPenalty;
+    private IList<string>? _stop;
 
     #endregion
 }

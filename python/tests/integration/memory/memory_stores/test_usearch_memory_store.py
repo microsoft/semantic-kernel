@@ -130,7 +130,6 @@ def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_em
         assert record1._embedding == pytest.approx(record2._embedding, abs=1e-2), "_embedding arrays are not equal"
 
 
-@pytest.mark.asyncio
 async def test_create_and_get_collection():
     memory = USearchMemoryStore()
 
@@ -143,7 +142,6 @@ async def test_create_and_get_collection():
     assert result == ["test_collection1", "test_collection2", "test_collection3"]
 
 
-@pytest.mark.asyncio
 async def test_delete_collection():
     memory = USearchMemoryStore()
 
@@ -158,7 +156,6 @@ async def test_delete_collection():
     assert len(result) == 0
 
 
-@pytest.mark.asyncio
 async def test_does_collection_exist():
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection")
@@ -169,7 +166,6 @@ async def test_does_collection_exist():
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_with_no_embedding(memory_record1: MemoryRecord):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=2)
@@ -179,7 +175,6 @@ async def test_upsert_and_get_with_no_embedding(memory_record1: MemoryRecord):
     compare_memory_records(result, memory_record1, False)
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_with_embedding(memory_record1: MemoryRecord):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=2)
@@ -189,7 +184,6 @@ async def test_upsert_and_get_with_embedding(memory_record1: MemoryRecord):
     compare_memory_records(result, memory_record1, True)
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_batch(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=memory_record1.embedding.shape[0])
@@ -203,7 +197,6 @@ async def test_upsert_and_get_batch(memory_record1: MemoryRecord, memory_record2
     compare_memory_records(result[1], memory_record2, True)
 
 
-@pytest.mark.asyncio
 async def test_remove(memory_record1):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=memory_record1.embedding.shape[0])
@@ -216,7 +209,6 @@ async def test_remove(memory_record1):
         await memory.get("test_collection", "test_id1", True)
 
 
-@pytest.mark.asyncio
 async def test_remove_batch(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=memory_record1.embedding.shape[0])
@@ -228,7 +220,6 @@ async def test_remove_batch(memory_record1: MemoryRecord, memory_record2: Memory
     assert len(result) == 0
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     memory = USearchMemoryStore()
 
@@ -244,7 +235,6 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
     assert result[1] == pytest.approx(1, abs=1e-2)
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_matches(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     memory = USearchMemoryStore()
 
@@ -261,7 +251,6 @@ async def test_get_nearest_matches(memory_record1: MemoryRecord, memory_record2:
     assert results[1][1] == pytest.approx(0.90450, abs=1e-2)
 
 
-@pytest.mark.asyncio
 async def test_create_and_save_collection(tmpdir, memory_record1, memory_record2, memory_record3):
     memory = USearchMemoryStore(tmpdir)
 
@@ -300,7 +289,6 @@ async def test_create_and_save_collection(tmpdir, memory_record1, memory_record2
     assert len(result) == 0
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_with_embedding_with_persist(
     tmpdir, memory_record1: MemoryRecord, memory_record1_with_collision: MemoryRecord
 ):
@@ -326,7 +314,6 @@ async def test_upsert_and_get_with_embedding_with_persist(
     compare_memory_records(result, memory_record1_with_collision, True)
 
 
-@pytest.mark.asyncio
 async def test_remove_get(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     memory = USearchMemoryStore()
     await memory.create_collection("test_collection", ndim=memory_record1.embedding.shape[0])

@@ -252,8 +252,8 @@ def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(mo
                             ChatCompletionsToolCall(
                                 id="test_id",
                                 function=FunctionCall(
-                                    name="test_function",
-                                    arguments={"test_arg": "test_value"},
+                                    name="getLightStatus",
+                                    arguments={"arg1": "test_value"},
                                 ),
                             ),
                         ],

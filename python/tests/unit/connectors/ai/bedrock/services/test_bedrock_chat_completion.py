@@ -174,7 +174,6 @@ def test_prepare_settings_for_request(mock_client, model_id, chat_history) -> No
 # region chat completion
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",
@@ -231,7 +230,6 @@ async def test_bedrock_chat_completion(
         assert response[0].inner_content == mock_bedrock_chat_completion_response
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",
@@ -283,7 +281,6 @@ async def test_bedrock_streaming_chat_completion(
         assert response.finish_reason == FinishReason.STOP
 
 
-@pytest.mark.asyncio
 async def test_bedrock_streaming_chat_completion_with_unsupported_model(
     model_id,
     chat_history: ChatHistory,
@@ -308,8 +305,6 @@ async def test_bedrock_streaming_chat_completion_with_unsupported_model(
                 pass
 
 
-@pytest.mark.asyncio
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",

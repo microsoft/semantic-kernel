@@ -5,6 +5,11 @@ from enum import Enum
 from functools import partial
 from typing import Any
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -25,12 +30,7 @@ from tests.integration.completions.chat_completion_test_base import (
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.utils import retry
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from tests.utils import retry
 
 
 class FunctionChoiceTestTypes(str, Enum):
@@ -450,7 +450,12 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
             "anthropic",
-            {},
+            {
+                # Anthropic expects tools in the request when it sees tool use in the chat history.
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
+                ),
+            },
             [
                 [
                     ChatMessageContent(
@@ -460,9 +465,12 @@ pytestmark = pytest.mark.parametrize(
                     ChatMessageContent(
                         role=AuthorRole.ASSISTANT,
                         items=[
+                            # Anthropic will often include a chain of thought in the tool call by default.
+                            # If this is not in the message, it will complain about the missing chain of thought.
+                            TextContent(text="I will find the revenue for you."),
                             FunctionCallContent(
                                 id="123456789", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
-                            )
+                            ),
                         ],
                     ),
                     ChatMessageContent(
@@ -674,9 +682,11 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_auto",
         ),
         pytest.param(
@@ -697,9 +707,11 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.NON_AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_non_auto",
         ),
         pytest.param(
@@ -727,9 +739,11 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.FLOW,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_flow",
         ),
         pytest.param(
@@ -749,9 +763,11 @@ pytestmark = pytest.mark.parametrize(
             ],
             {
                 "test_type": FunctionChoiceTestTypes.AUTO,
-                "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+            marks=(
+                pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama_tool_call_auto_complex_return_type",
         ),
         # endregion
@@ -905,7 +921,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
     """Test Chat Completion with function calling"""
 
@@ -916,7 +931,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
         await self._test_helper(
@@ -936,7 +951,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
         if "streaming" in kwargs and not kwargs["streaming"]:
@@ -956,6 +971,7 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
     def evaluate(self, test_target: Any, **kwargs):
         inputs = kwargs.get("inputs")
         test_type = kwargs.get("test_type")
+        assert isinstance(inputs, list)
 
         if test_type == FunctionChoiceTestTypes.AUTO:
             self._evaluate_auto_function_choice(test_target, inputs)
@@ -1030,6 +1046,9 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         kwargs: dict[str, Any],
         stream: bool,
     ):
+        service, settings_type = services[service_id]
+        if not service:
+            pytest.skip(f"Skipping test for {service_id}")
         assert "test_type" in kwargs, "Invalid parameterization: Test type not provided"
         test_type = kwargs["test_type"]
 
@@ -1038,26 +1057,27 @@ class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
         if isinstance(inputs[0], list):
             [history.add_message(message) for message in inputs[0]]
         else:
-            [history.add_message(message) for message in inputs]
+            [history.add_message(message) for message in inputs if not isinstance(message, list)]
 
         self.setup(kernel)
-        service, settings_type = services[service_id]
 
-        cmc = await retry(
+        cmc: ChatMessageContent | None = await retry(
             partial(
                 self.get_chat_completion_response,
                 kernel=kernel,
-                service=service,
+                service=service,  # type: ignore
                 execution_settings=settings_type(**execution_settings_kwargs),
                 chat_history=history,
                 stream=stream,
             ),
             retries=5,
+            name="function_calling",
         )
 
         # We need to add the latest message to the history because the connector is
         # not responsible for updating the history, unless it is related to auto function
         # calling, when the history is updated after the function calls are invoked.
-        history.add_message(cmc)
+        if cmc:
+            history.add_message(cmc)
 
         self.evaluate(history, inputs=inputs, test_type=test_type)

@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -27,17 +26,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    /// <summary>
-    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
-    /// </summary>
-    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
-    {
-        IncludeSchemaVersion = false,
-        IncludeTypeInEnums = true,
-        TreatNullObliviousAsNonNullable = true,
-        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
-    };
-
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
@@ -468,7 +456,8 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs
+            IncludeLogProbabilities = executionSettings.Logprobs,
+            StoredOutputEnabled = executionSettings.Store,
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -506,6 +495,14 @@ internal partial class ClientCore
         if (toolCallingConfig.Options?.AllowParallelCalls is not null)
         {
             options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
+        if (executionSettings.Metadata is not null)
+        {
+            foreach (var kvp in executionSettings.Metadata)
+            {
+                options.Metadata.Add(kvp.Key, kvp.Value);
+            }
         }
 
         return options;
@@ -552,49 +549,13 @@ internal partial class ClientCore
                     }
                 }
 
-                return ChatResponseFormat.CreateJsonSchemaFormat(
-                    "JsonSchema",
-                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatElement);
 
             case Type formatObjectType:
-                return GetJsonSchemaResponseFormat(formatObjectType);
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
-    /// </summary>
-    private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
-    {
-        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
-
-        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
-        var schemaBinaryData = BinaryData.FromString(schema.ToString());
-
-        var typeName = GetTypeName(type);
-
-        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
-    }
-
-    /// <summary>
-    /// Returns a type name concatenated with generic argument type names if they exist.
-    /// </summary>
-    private static string GetTypeName(Type type)
-    {
-        if (!type.IsGenericType)
-        {
-            return type.Name;
-        }
-
-        // If type is generic, base name is followed by ` character.
-        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
-
-        Type[] typeArguments = type.GetGenericArguments();
-        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
-
-        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>

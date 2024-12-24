@@ -148,9 +148,10 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: dict[str, Any],
+        function_invoke_attempt: int = 0,
     ) -> "StreamingChatMessageContent":
         """Create an Azure streaming chat message content object from a choice."""
-        content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+        content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata, function_invoke_attempt)
         assert isinstance(content, StreamingChatMessageContent) and isinstance(choice, ChunkChoice)  # nosec
         return self._add_tool_message_to_chat_message_content(content, choice)
 

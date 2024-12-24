@@ -3,7 +3,6 @@
 from typing import TYPE_CHECKING
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -11,7 +10,6 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 
-@experimental_class
 class FilterContextBase(KernelBaseModel):
     """Base class for Kernel Filter Contexts."""
 

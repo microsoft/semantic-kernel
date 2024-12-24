@@ -162,7 +162,6 @@ def test_init_invalid_name():
         KernelFunction.from_method(method=invalid_name, plugin_name="MockPlugin")
 
 
-@pytest.mark.asyncio
 async def test_invoke_non_async(kernel: Kernel):
     @kernel_function()
     def non_async_function() -> str:
@@ -178,7 +177,6 @@ async def test_invoke_non_async(kernel: Kernel):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_async(kernel: Kernel):
     @kernel_function()
     async def async_function() -> str:
@@ -194,7 +192,6 @@ async def test_invoke_async(kernel: Kernel):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_gen(kernel: Kernel):
     @kernel_function()
     def gen_function() -> Iterable[str]:
@@ -209,7 +206,6 @@ async def test_invoke_gen(kernel: Kernel):
         assert partial_result == ""
 
 
-@pytest.mark.asyncio
 async def test_invoke_gen_async(kernel: Kernel):
     @kernel_function()
     async def async_gen_function() -> AsyncGenerator[str, Any]:
@@ -224,7 +220,6 @@ async def test_invoke_gen_async(kernel: Kernel):
         assert partial_result == ""
 
 
-@pytest.mark.asyncio
 async def test_service_execution(kernel: Kernel, openai_unit_test_env):
     service = OpenAIChatCompletion(service_id="test", ai_model_id="test")
     req_settings = service.get_prompt_execution_settings_class()(service_id="test")
@@ -251,7 +246,6 @@ async def test_service_execution(kernel: Kernel, openai_unit_test_env):
     assert result.value == "ok"
 
 
-@pytest.mark.asyncio
 async def test_required_param_not_supplied(kernel: Kernel):
     @kernel_function()
     def my_function(input: str) -> str:
@@ -263,7 +257,6 @@ async def test_required_param_not_supplied(kernel: Kernel):
         await func.invoke(kernel=kernel, arguments=KernelArguments())
 
 
-@pytest.mark.asyncio
 async def test_service_execution_with_complex_object(kernel: Kernel):
     class InputObject(KernelBaseModel):
         arg1: str
@@ -289,7 +282,6 @@ class InputObject(KernelBaseModel):
     arg2: int
 
 
-@pytest.mark.asyncio
 async def test_service_execution_with_complex_object_from_str(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject) -> str:
@@ -306,7 +298,6 @@ async def test_service_execution_with_complex_object_from_str(kernel: Kernel):
     assert result.value == "test 5"
 
 
-@pytest.mark.asyncio
 async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject, input_str: str) -> str:
@@ -323,7 +314,6 @@ async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kern
     assert result.value == "test test2 5"
 
 
-@pytest.mark.asyncio
 async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject, input_str: str | int) -> str:
@@ -345,7 +335,6 @@ def test_function_from_lambda():
     assert func is not None
 
 
-@pytest.mark.asyncio
 async def test_function_invoke_return_list_type(kernel: Kernel):
     @kernel_function(name="list_func")
     def test_list_func() -> list[str]:
@@ -357,7 +346,6 @@ async def test_function_invoke_return_list_type(kernel: Kernel):
     assert str(result) == "test1,test2"
 
 
-@pytest.mark.asyncio
 async def test_function_invocation_filters(kernel: Kernel):
     func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
     kernel.add_function(plugin_name="math", function=func)
@@ -379,7 +367,6 @@ async def test_function_invocation_filters(kernel: Kernel):
     assert post_call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_function_invocation_multiple_filters(kernel: Kernel):
     call_stack = []
 
@@ -416,7 +403,6 @@ async def test_function_invocation_multiple_filters(kernel: Kernel):
     ]
 
 
-@pytest.mark.asyncio
 async def test_function_invocation_filters_streaming(kernel: Kernel):
     call_stack = []
 
@@ -462,7 +448,6 @@ async def test_function_invocation_filters_streaming(kernel: Kernel):
     ]
 
 
-@pytest.mark.asyncio
 async def test_default_handling(kernel: Kernel):
     @kernel_function
     def func_default(input: str = "test"):
@@ -474,7 +459,6 @@ async def test_default_handling(kernel: Kernel):
     assert str(res) == "test"
 
 
-@pytest.mark.asyncio
 async def test_default_handling_2(kernel: Kernel):
     @kernel_function
     def func_default(base: str, input: str = "test"):

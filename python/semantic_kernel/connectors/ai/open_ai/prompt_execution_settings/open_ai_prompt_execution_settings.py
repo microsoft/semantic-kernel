@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
@@ -21,29 +21,31 @@ logger = logging.getLogger(__name__)
 class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     """Common request settings for (Azure) OpenAI services."""
 
-    ai_model_id: str | None = Field(None, serialization_alias="model")
-    frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
+    frequency_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
     logit_bias: dict[str | int, float] | None = None
-    max_tokens: int | None = Field(None, gt=0)
-    number_of_responses: int | None = Field(None, ge=1, le=128, serialization_alias="n")
-    presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    max_tokens: Annotated[int | None, Field(gt=0)] = None
+    number_of_responses: Annotated[int | None, Field(ge=1, le=128, serialization_alias="n")] = None
+    presence_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
     seed: int | None = None
     stop: str | list[str] | None = None
     stream: bool = False
-    temperature: float | None = Field(None, ge=0.0, le=2.0)
-    top_p: float | None = Field(None, ge=0.0, le=1.0)
+    temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
+    top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     user: str | None = None
+    store: bool | None = None
+    metadata: dict[str, str] | None = None
 
 
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the completions endpoint."""
 
-    prompt: str | None = Field(
-        None, description="Do not set this manually. It is set by the service based on the text content."
-    )
-    best_of: int | None = Field(None, ge=1)
+    prompt: Annotated[
+        str | None, Field(description="Do not set this manually. It is set by the service based on the text content.")
+    ] = None
+    best_of: Annotated[int | None, Field(ge=1)] = None
     echo: bool = False
-    logprobs: int | None = Field(None, ge=0, le=5)
+    logprobs: Annotated[int | None, Field(ge=0, le=5)] = None
     suffix: str | None = None
 
     @model_validator(mode="after")
@@ -68,25 +70,32 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     ) = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
-    messages: list[dict[str, Any]] | None = Field(
-        None, description="Do not set this manually. It is set by the service based on the chat history."
-    )
-    function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    messages: Annotated[
+        list[dict[str, Any]] | None, Field(description="Do not set this manually. It is set by the service.")
+    ] = None
+    function_call_behavior: Annotated[FunctionCallBehavior | None, Field(exclude=True)] = None
     parallel_tool_calls: bool = True
-    tools: list[dict[str, Any]] | None = Field(
-        None,
-        max_length=64,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
-    tool_choice: str | None = Field(
-        None,
-        description="Do not set this manually. It is set by the service based on the function choice configuration.",
-    )
-    structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
-    stream_options: dict[str, Any] | None = Field(
-        None,
-        description="Additional options to pass when streaming is used. Do not set this manually.",
-    )
+    tools: Annotated[
+        list[dict[str, Any]] | None,
+        Field(
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
+    tool_choice: Annotated[
+        str | None,
+        Field(
+            description="Do not set this manually. It is set by the service based "
+            "on the function choice configuration.",
+        ),
+    ] = None
+    structured_json_response: Annotated[
+        bool, Field(description="Do not set this manually. It is set by the service.")
+    ] = False
+    stream_options: Annotated[
+        dict[str, Any] | None,
+        Field(description="Additional options to pass when streaming is used. Do not set this manually."),
+    ] = None
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -160,11 +169,11 @@ class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Specific settings for the text embedding endpoint."""
 
     input: str | list[str] | list[int] | list[list[int]] | None = None
-    ai_model_id: str | None = Field(None, serialization_alias="model")
+    ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
     encoding_format: Literal["float", "base64"] | None = None
     user: str | None = None
     extra_headers: dict | None = None
     extra_query: dict | None = None
     extra_body: dict | None = None
     timeout: float | None = None
-    dimensions: int | None = Field(None, gt=0, le=3072)
+    dimensions: Annotated[int | None, Field(gt=0, le=3072)] = None
