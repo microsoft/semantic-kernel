@@ -77,7 +77,8 @@ notebooks = [
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
-    "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
+    "milvus >= 2.3,<2.3.8; platform_system != 'Windows'",
+    "milvus-lite < 2.4.11; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 1.2,< 2.0"
