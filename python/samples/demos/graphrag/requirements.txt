@@ -1,0 +1,3 @@
+graphrag
+semantic-kernel[azure]
+pandas
