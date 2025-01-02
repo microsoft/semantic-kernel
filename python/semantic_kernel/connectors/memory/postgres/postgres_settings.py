@@ -6,6 +6,7 @@ from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
 from pydantic import Field, SecretStr
 
+from semantic_kernel import __version__
 from semantic_kernel.connectors.memory.postgres.constants import (
     PGDATABASE_ENV_VAR,
     PGHOST_ENV_VAR,
@@ -122,7 +123,12 @@ class PostgresSettings(KernelBaseSettings):
                 min_size=self.min_pool,
                 max_size=self.max_pool,
                 open=False,
-                kwargs=self.get_connection_args(),
+                kwargs={
+                    **self.get_connection_args(),
+                    **{
+                        "application_name": f"semantic_kernel (python) v{__version__}",
+                    },
+                },
             )
             await pool.open()
         except Exception as e:
