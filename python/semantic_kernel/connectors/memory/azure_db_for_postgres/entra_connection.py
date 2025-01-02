@@ -14,7 +14,7 @@ from semantic_kernel.connectors.memory.azure_db_for_postgres.constants import AZ
 logger = logging.getLogger(__name__)
 
 
-async def get_entra_token_aysnc(credential: AsyncTokenCredential) -> str:
+async def get_entra_token_async(credential: AsyncTokenCredential) -> str:
     """Get the password from Entra using the provided credential."""
     logger.info("Acquiring Entra token for postgres password")
 
@@ -52,7 +52,7 @@ async def get_entra_conninfo(credential: TokenCredential | AsyncTokenCredential 
     """Fetches a token returns the username and token."""
     # Fetch a new token and extract the username
     if isinstance(credential, AsyncTokenCredential):
-        token = await get_entra_token_aysnc(credential)
+        token = await get_entra_token_async(credential)
     else:
         token = get_entra_token(credential)
     claims = decode_jwt(token)
