@@ -33,7 +33,7 @@ internal static class Program
 
         // Get configuration
         builder.Services.AddOptions<AzureOpenAIOptions>()
-                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAIOptions)))
+                        .Bind(builder.Configuration.GetSection(AzureOpenAIOptions.SectionName))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
 
