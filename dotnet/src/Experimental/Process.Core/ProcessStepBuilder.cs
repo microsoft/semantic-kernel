@@ -229,7 +229,7 @@ public abstract class ProcessStepBuilder
 /// <summary>
 /// Provides functionality for incrementally defining a process step.
 /// </summary>
-public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
+public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
 {
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.
@@ -310,5 +310,19 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     {
         var metadata = KernelFunctionMetadataFactory.CreateFromType(typeof(TStep));
         return metadata.ToDictionary(m => m.Name, m => m);
+    }
+}
+
+public sealed class ProcessStepBuilder<TProxyStep, TProcessEvents> : ProcessStepBuilder<TProxyStep>
+    where TProxyStep : KernelProcessProxyStep<TProcessEvents>
+    where TProcessEvents : Enum
+{
+    internal ProcessStepBuilder(string? name = null, object? initialState = default)
+        : base(name ?? typeof(TProxyStep).Name) { }
+
+    public ProcessStepEdgeBuilder OnEvent(TProcessEvents eventId)
+    {
+        var processEventName = Enum.GetName(typeof(TProcessEvents), eventId);
+        return this.OnEvent(processEventName!);
     }
 }

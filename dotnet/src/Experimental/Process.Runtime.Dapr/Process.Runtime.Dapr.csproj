@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" />
     <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>

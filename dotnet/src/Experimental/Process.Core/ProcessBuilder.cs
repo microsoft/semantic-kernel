@@ -242,6 +242,15 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.AddStep(mapBuilder, aliases);
     }
 
+    public ProcessStepBuilder<TProxyStep, TProcessEvents> AddProxyStepFromType<TProxyStep, TProcessEvents>(string? name = null, IReadOnlyList<string>? aliases = null)
+        where TProxyStep : KernelProcessProxyStep<TProcessEvents>
+        where TProcessEvents : Enum
+    {
+        ProcessStepBuilder<TProxyStep, TProcessEvents> stepBuilder = new(name);
+
+        return this.AddStep(stepBuilder, aliases);
+    }
+
     /// <summary>
     /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
     /// step inside the process for a given external event.
