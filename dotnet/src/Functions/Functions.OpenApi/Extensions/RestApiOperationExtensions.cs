@@ -126,7 +126,7 @@ internal static partial class RestApiOperationExtensions
             {
                 CreatePayloadArtificialParameter(operation),
                 CreateContentTypeArtificialParameter(operation)
-            }.Select(p => parameterFilter(new(operation, p))).OfType<RestApiParameter>().ToList();
+            }.Where(p => parameterFilter(new(operation, p)) is not null).ToList();
         }
         return
         [
