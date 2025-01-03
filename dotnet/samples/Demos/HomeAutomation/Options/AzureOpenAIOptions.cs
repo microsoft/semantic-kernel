@@ -9,7 +9,7 @@ namespace HomeAutomation.Options;
 /// </summary>
 public sealed class AzureOpenAIOptions
 {
-    public const string SectionName = "AzureOpenAI";
+    internal const string SectionName = "AzureOpenAI";
 
     [Required]
     public string ChatDeploymentName { get; set; } = string.Empty;

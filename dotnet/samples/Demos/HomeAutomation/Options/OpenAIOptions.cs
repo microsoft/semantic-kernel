@@ -9,7 +9,7 @@ namespace HomeAutomation.Options;
 /// </summary>
 public sealed class OpenAIOptions
 {
-    public const string SectionName = "OpenAI";
+    internal const string SectionName = "OpenAI";
 
     [Required]
     public string ChatModelId { get; set; } = string.Empty;
