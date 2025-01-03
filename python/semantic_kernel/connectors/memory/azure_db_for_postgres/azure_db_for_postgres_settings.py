@@ -4,7 +4,11 @@ from typing import Any
 
 from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
+from pydantic import Field, SecretStr
 
+from semantic_kernel.connectors.memory.azure_db_for_postgres.constants import (
+    AZURE_DB_FOR_POSTGRES_CONNECTION_STRING_ENV_VAR,
+)
 from semantic_kernel.connectors.memory.azure_db_for_postgres.entra_connection import AsyncEntraConnection
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 
@@ -30,6 +34,12 @@ class AzureDBForPostgresSettings(PostgresSettings):
 
     credential: AsyncTokenCredential | TokenCredential | None = None
 
+    azure_db_connection_string: SecretStr | None = Field(None, alias=AZURE_DB_FOR_POSTGRES_CONNECTION_STRING_ENV_VAR)
+    """A azure db specific connection string. Can be supplied instead of POSTGRES_CONNECTION_STRING
+    
+    This is useful if settings for both an Azure DB and a regular Postgres database are needed.
+    """
+
     def get_connection_args(self, **kwargs) -> dict[str, Any]:
         """Get connection arguments.
 
@@ -40,7 +50,8 @@ class AzureDBForPostgresSettings(PostgresSettings):
         Returns:
             dict[str, Any]: Connection arguments that can be passed to psycopg.connect
         """
-        result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
+        conn_string_setting = self.azure_db_connection_string or self.connection_string
+        result = conninfo_to_dict(conn_string_setting.get_secret_value()) if conn_string_setting else {}
 
         if self.host:
             result["host"] = self.host
