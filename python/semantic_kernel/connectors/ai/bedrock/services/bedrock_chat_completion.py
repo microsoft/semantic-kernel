@@ -128,6 +128,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         # Not all models support streaming: check if the model supports streaming before proceeding
         model_info = await self.get_foundation_model_info(self.ai_model_id)
@@ -146,7 +147,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             elif "contentBlockStart" in event:
                 yield [self._parse_content_block_start_event(event)]
             elif "contentBlockDelta" in event:
-                yield [self._parse_content_block_delta_event(event)]
+                yield [self._parse_content_block_delta_event(event, function_invoke_attempt)]
             elif "contentBlockStop" in event:
                 continue
             elif "messageStop" in event:
@@ -338,7 +339,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             inner_content=event,
         )
 
-    def _parse_content_block_delta_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+    def _parse_content_block_delta_event(
+        self, event: dict[str, Any], function_invoke_attempt: int
+    ) -> StreamingChatMessageContent:
         """Parse the content block delta event.
 
         The content block delta event contains the completion.
@@ -363,6 +366,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             items=items,
             choice_index=0,
             inner_content=event,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     def _parse_message_stop_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:

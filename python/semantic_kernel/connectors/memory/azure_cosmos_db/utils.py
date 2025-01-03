@@ -20,7 +20,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions import VectorStoreModelException
 
 
 def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
@@ -34,6 +34,9 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
 
     Returns:
         str: The vector index policy type.
+
+    Raises:
+        VectorStoreModelException: If the index kind is not supported by Azure Cosmos DB NoSQL container.
     """
     if index_kind is None:
         # Use IndexKind.FLAT as the default index kind.
@@ -46,7 +49,18 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
 
 
 def to_distance_function(distance_function: DistanceFunction | None) -> str:
-    """Converts the distance function to the distance function for Azure Cosmos DB NoSQL container."""
+    """Converts the distance function to the distance function for Azure Cosmos DB NoSQL container.
+
+    Args:
+        distance_function: The distance function.
+
+    Returns:
+        str: The distance function as defined by Azure Cosmos DB NoSQL container.
+
+    Raises:
+        VectorStoreModelException: If the distance function is not supported by Azure Cosmos DB NoSQL container.
+
+    """
     if distance_function is None:
         # Use DistanceFunction.COSINE_SIMILARITY as the default distance function.
         return DISTANCE_FUNCTION_MAPPING[DistanceFunction.COSINE_SIMILARITY]
@@ -60,7 +74,18 @@ def to_distance_function(distance_function: DistanceFunction | None) -> str:
 
 
 def to_datatype(property_type: str | None) -> str:
-    """Converts the property type to the data type for Azure Cosmos DB NoSQL container."""
+    """Converts the property type to the data type for Azure Cosmos DB NoSQL container.
+
+    Args:
+        property_type: The property type.
+
+    Returns:
+        str: The data type as defined by Azure Cosmos DB NoSQL container.
+
+    Raises:
+        VectorStoreModelException: If the property type is not supported by Azure Cosmos DB NoSQL container
+
+    """
     if property_type is None:
         # Use the default data type.
         return DATATYPES_MAPPING["default"]
@@ -83,8 +108,11 @@ def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefin
 
     Returns:
         dict[str, Any]: The indexing policy.
+
+    Raises:
+        VectorStoreModelException: If the field is not full text searchable and not filterable.
     """
-    indexing_policy = {
+    indexing_policy: dict[str, Any] = {
         "automatic": True,
         "includedPaths": [
             {
@@ -103,15 +131,15 @@ def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefin
         if isinstance(field, VectorStoreRecordDataField) and (
             not field.is_full_text_searchable and not field.is_filterable
         ):
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})  # type: ignore
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})
 
         if isinstance(field, VectorStoreRecordVectorField):
-            indexing_policy["vectorIndexes"].append({  # type: ignore
+            indexing_policy["vectorIndexes"].append({
                 "path": f'/"{field.name}"',
                 "type": to_vector_index_policy_type(field.index_kind),
             })
             # Exclude the vector field from the index for performance optimization.
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})  # type: ignore
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})
 
     return indexing_policy
 
@@ -126,6 +154,10 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
 
     Returns:
         dict[str, Any]: The vector embedding policy.
+
+    Raises:
+        VectorStoreModelException: If the datatype or distance function is not supported by Azure Cosmos DB NoSQL.
+
     """
     vector_embedding_policy: dict[str, Any] = {"vectorEmbeddings": []}
 

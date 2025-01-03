@@ -122,6 +122,8 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 HistoryVariableName = "history",
                                 // Save tokens by not including the entire history in the prompt
                                 HistoryReducer = strategyReducer,
+                                // Only include the agent names and not the message content
+                                EvaluateNameOnly = true,
                             },
                     }
             };

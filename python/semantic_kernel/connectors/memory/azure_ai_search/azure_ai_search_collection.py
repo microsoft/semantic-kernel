@@ -34,7 +34,11 @@ from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -91,7 +95,7 @@ class AzureAISearchCollection(
             if not collection_name:
                 collection_name = search_client._index_name
             elif search_client._index_name != collection_name:
-                raise MemoryConnectorInitializationError(
+                raise VectorStoreInitializationException(
                     "Search client and search index client have different index names."
                 )
             super().__init__(
@@ -107,7 +111,7 @@ class AzureAISearchCollection(
 
         if search_index_client:
             if not collection_name:
-                raise MemoryConnectorInitializationError("Collection name is required.")
+                raise VectorStoreInitializationException("Collection name is required.")
             super().__init__(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
@@ -133,14 +137,14 @@ class AzureAISearchCollection(
                 index_name=collection_name,
             )
         except ValidationError as exc:
-            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
+            raise VectorStoreInitializationException("Failed to create Azure Cognitive Search settings.") from exc
         search_index_client = get_search_index_client(
             azure_ai_search_settings=azure_ai_search_settings,
             azure_credential=kwargs.get("azure_credentials"),
             token_credential=kwargs.get("token_credentials"),
         )
         if not azure_ai_search_settings.index_name:
-            raise MemoryConnectorInitializationError("Collection name is required.")
+            raise VectorStoreInitializationException("Collection name is required.")
 
         super().__init__(
             data_model_type=data_model_type,
@@ -211,7 +215,7 @@ class AzureAISearchCollection(
             if isinstance(index, SearchIndex):
                 await self.search_index_client.create_index(index=index, **kwargs)
                 return
-            raise MemoryConnectorException("Invalid index type supplied.")
+            raise VectorStoreOperationException("Invalid index type supplied, should be a SearchIndex object.")
         await self.search_index_client.create_index(
             index=data_model_definition_to_azure_ai_search_index(
                 collection_name=self.collection_name,
@@ -279,7 +283,10 @@ class AzureAISearchCollection(
                 for name, field in self.data_model_definition.fields.items()
                 if not isinstance(field, VectorStoreRecordVectorField)
             ]
-        raw_results = await self.search_client.search(**search_args)
+        try:
+            raw_results = await self.search_client.search(**search_args)
+        except Exception as exc:
+            raise VectorSearchExecutionException("Failed to search the collection.") from exc
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(raw_results, options),
             total_count=await raw_results.get_count() if options.include_total_count else None,

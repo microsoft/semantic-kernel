@@ -44,7 +44,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         {
             await InvokeAgentAsync(
                 """
-                Display this data using a bar-chart:
+                Display this data using a bar-chart (not stacked):
 
                 Banding  Brown Pink Yellow  Sum
                 X00000   339   433     126  898
@@ -55,7 +55,6 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 """);
 
             await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
-            await InvokeAgentAsync("Perfect, can you regenerate this as a line chart?");
         }
         finally
         {

@@ -10,6 +10,7 @@ from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
@@ -398,7 +399,12 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call, result=invocation_context.function_result
         )
-        chat_history.add_message(message=frc.to_chat_message_content())
+
+        is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
+
+        message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
+
+        chat_history.add_message(message=message)
 
         return invocation_context if invocation_context.terminate else None
 
