@@ -196,7 +196,7 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
             authCallback: authenticationProvider.AuthenticateRequestAsync,
             serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
             enableDynamicOperationPayload: false,
-            enablePayloadNamespacing: true)
+            enablePayloadNamespacing: false)
         {
             ParameterFilter = s_restApiParameterFilter
         };
@@ -212,7 +212,7 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
                 request.RequestUri = uriBuilder.Uri;
             },
             enableDynamicOperationPayload: false,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: false);
 
         var apiManifestPluginParameters = new CopilotAgentPluginParameters
         {

@@ -127,7 +127,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
             authCallback: authenticationProvider.AuthenticateRequestAsync,
             serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
             enableDynamicOperationPayload: false,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: false);
 
         // NASA API execution parameters
         var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -140,7 +140,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                 request.RequestUri = uriBuilder.Uri;
             },
             enableDynamicOperationPayload: false,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: false);
 
         var apiManifestPluginParameters = new ApiManifestPluginParameters(
             functionExecutionParameters: new()
