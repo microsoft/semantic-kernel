@@ -2,7 +2,7 @@
 
 from typing import ClassVar
 
-from pydantic import Field, SecretStr, ConfigDict
+from pydantic import ConfigDict, Field, SecretStr
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
