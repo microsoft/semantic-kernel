@@ -3,10 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
+
+// Serializer Options
+var options = new JsonSerializerOptions
+{
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+};
 
 // List of available models
 Dictionary<int, ModelDefinition> bedrockModels = GetBedrockModels();
@@ -62,6 +71,8 @@ async Task PerformChatCompletion()
             {
                 output += message.Content;
                 Console.WriteLine($"Chat Completion Answer: {message.Content}");
+                var innerContent = message.InnerContent as ConverseResponse;
+                Console.WriteLine($"Usage Metadata: {JsonSerializer.Serialize(innerContent?.Usage, options)}");
                 Console.WriteLine();
             }
 
@@ -93,6 +104,7 @@ async Task PerformTextGeneration()
         if (firstTextContent != null)
         {
             Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
+            Console.WriteLine($"Metadata: {JsonSerializer.Serialize(firstTextContent.InnerContent, options)}");
         }
         else
         {
