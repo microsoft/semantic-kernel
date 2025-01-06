@@ -4,23 +4,22 @@ import logging
 from collections.abc import AsyncGenerator
 from typing import Any, Literal
 
-import graphrag.api as api
 import pandas as pd
 import yaml
+
+import graphrag.api as api
 from graphrag.config.create_graphrag_config import GraphRagConfig, create_graphrag_config
 from graphrag.index.typing import PipelineRunResult
-
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, StreamingChatMessageContent
+
+logger = logging.getLogger(__name__)
 
 
 class GraphRagPromptExecutionSettings(PromptExecutionSettings):
     response_type: str = "Multiple Paragraphs"
     search_type: Literal["local", "global", "drift"] = "global"
-
-
-logger = logging.getLogger(__name__)
 
 
 class GraphRagChatCompletion(ChatCompletionClientBase):
@@ -229,69 +228,3 @@ class GraphRagChatCompletion(ChatCompletionClientBase):
                     yield [cmc]
             return
         raise NotImplementedError("Drift search is not available when streaming.")
-
-
-async def chat(service: ChatCompletionClientBase, chat_history: ChatHistory) -> bool:
-    try:
-        user_input = input("User:> ")
-    except KeyboardInterrupt:
-        print("\n\nExiting chat...")
-        return False
-    except EOFError:
-        print("\n\nExiting chat...")
-        return False
-
-    if user_input == "exit":
-        print("\n\nExiting chat...")
-        return False
-
-    # Add the user message to the chat history so that the chatbot can respond to it.
-    chat_history.add_user_message(user_input)
-
-    # Get the chat message content from the chat completion service.
-    # The response is an async generator that streams the response in chunks.
-    response = service.get_streaming_chat_message_content(
-        chat_history=chat_history,
-        settings=GraphRagPromptExecutionSettings(search_type="local"),
-    )
-
-    # Capture the chunks of the response and print them as they come in.
-    chunks: list[StreamingChatMessageContent] = []
-    print("Mosscap:> ", end="")
-    async for chunk in response:
-        if chunk:
-            chunks.append(chunk)
-            print(chunk, end="")
-    print("")
-
-    # Combine the chunks into a single message to add to the chat history.
-    full_message = sum(chunks[1:], chunks[0])
-    print("Context:")
-    for part in ["reports", "entities", "relationships", "claims", "sources"]:
-        print(f"  {part}:")
-        for values in full_message.metadata["context"][part]:
-            if isinstance(values, dict):
-                for key, value in values.items():
-                    print(f"    {key}:{value}")
-            else:
-                print(f"    {values}")
-    print("done")
-    # Add the chat message to the chat history to keep track of the conversation.
-    chat_history.add_message(full_message)
-
-    return True
-
-
-async def main():
-    graph_rag_chat_completion = GraphRagChatCompletion(project_directory="./ragtest")
-    if not graph_rag_chat_completion.has_loaded():
-        await graph_rag_chat_completion.setup()
-    chat_history = ChatHistory()
-    while await chat(graph_rag_chat_completion, chat_history):
-        pass
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
