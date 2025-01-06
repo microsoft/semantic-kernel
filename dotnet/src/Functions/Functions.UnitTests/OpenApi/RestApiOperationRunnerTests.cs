@@ -1136,11 +1136,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
-    [Fact]
-    public async Task ItShouldHandleNoContentAsync()
+    [InlineData(System.Net.HttpStatusCode.NoContent)]
+    [InlineData(System.Net.HttpStatusCode.Accepted)]
+    [InlineData(System.Net.HttpStatusCode.Created)]
+    [Theory]
+    public async Task ItShouldHandleNoContentAsync(System.Net.HttpStatusCode statusCode)
     {
         // Arrange
-        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(statusCode);
 
         List<RestApiPayloadProperty> payloadProperties =
         [
