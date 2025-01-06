@@ -270,7 +270,7 @@ class GraphRagChatCompletion(ChatCompletionClientBase):
                 query=chat_history.messages[-1].content,
             )
         async for response in responses:
-            # the reponse is either a string (the response) or a dict (the context)
+            # the response is either a string (the response) or a dict (the context)
             if isinstance(response, str):
                 # the response is a string, we can wrap it into a StreamingChatMessageContent
                 cmc = StreamingChatMessageContent(choice_index=0, role=AuthorRole.ASSISTANT, content=response)
