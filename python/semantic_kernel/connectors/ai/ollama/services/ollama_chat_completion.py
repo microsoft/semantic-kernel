@@ -180,6 +180,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, OllamaChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -202,10 +203,10 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
         async for part in response_object:
             if isinstance(part, ChatResponse):
-                yield [self._create_streaming_chat_message_content_from_chat_response(part)]
+                yield [self._create_streaming_chat_message_content_from_chat_response(part, function_invoke_attempt)]
                 continue
             if isinstance(part, Mapping):
-                yield [self._create_streaming_chat_message_content(part)]
+                yield [self._create_streaming_chat_message_content(part, function_invoke_attempt)]
                 continue
             raise ServiceInvalidResponseError(
                 "Invalid response type from Ollama streaming chat completion. "
@@ -215,7 +216,9 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     # endregion
 
     def _create_streaming_chat_message_content_from_chat_response(
-        self, response: ChatResponse
+        self,
+        response: ChatResponse,
+        function_invoke_attempt: int,
     ) -> StreamingChatMessageContent:
         """Create a chat message content from the response."""
         items: list[STREAMING_ITEM_TYPES] = []
@@ -235,6 +238,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_chat_response(response),
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     def _parse_tool_calls(self, tool_calls: Sequence[Message.ToolCall] | None, items: list[Any]):
@@ -299,7 +303,9 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             metadata=self._get_metadata_from_response(response),
         )
 
-    def _create_streaming_chat_message_content(self, part: Mapping[str, Any]) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(
+        self, part: Mapping[str, Any], function_invoke_attempt: int
+    ) -> StreamingChatMessageContent:
         """Create a streaming chat message content from the response part."""
         items: list[STREAMING_ITEM_TYPES] = []
         if not (message := part.get("message", None)):
@@ -331,6 +337,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=part,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_response(part),
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     def _get_metadata_from_response(self, response: Mapping[str, Any]) -> dict[str, Any]:

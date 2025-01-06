@@ -77,4 +77,23 @@ public class OpenApiDocumentParserExtensionsTests
         Assert.True(operation.Extensions.TryGetValue("x-object-extension", out var objectValue));
         Assert.Equal("{\"key1\":\"value1\",\"key2\":\"value2\"}", objectValue);
     }
+
+    [Theory]
+    [InlineData("documentV3_0.json")]
+    [InlineData("documentV3_1.yaml")]
+    public async Task ItCanParseMediaTypeAsync(string documentName)
+    {
+        // Arrange.
+        using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
+
+        // Act.
+        var restApi = await this._sut.ParseAsync(openApiDocument);
+
+        // Assert.
+        Assert.NotNull(restApi.Operations);
+        Assert.Equal(8, restApi.Operations.Count);
+        var operation = restApi.Operations.Single(o => o.Id == "Joke");
+        Assert.NotNull(operation);
+        Assert.Equal("application/json; x-api-version=2.0", operation.Payload?.MediaType);
+    }
 }

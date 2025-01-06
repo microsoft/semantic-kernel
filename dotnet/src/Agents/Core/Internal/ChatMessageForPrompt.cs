@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -31,14 +32,16 @@ internal sealed class ChatMessageForPrompt(ChatMessageContent message)
     public string Content => message.Content ?? string.Empty;
 
     /// <summary>
-    /// Convenience method to reference a set of messages.
-    /// </summary>
-    public static IEnumerable<ChatMessageForPrompt> Prepare(IEnumerable<ChatMessageContent> messages) =>
-        messages.Where(m => !string.IsNullOrWhiteSpace(m.Content)).Select(m => new ChatMessageForPrompt(m));
-
-    /// <summary>
     /// Convenience method to format a set of messages for use in a prompt.
     /// </summary>
-    public static string Format(IEnumerable<ChatMessageContent> messages) =>
-        JsonSerializer.Serialize(Prepare(messages).ToArray(), s_jsonOptions);
+    public static string Format(IEnumerable<ChatMessageContent> messages, bool useNameOnly = false) =>
+        useNameOnly ?
+            JsonSerializer.Serialize(Prepare(messages, m => string.IsNullOrEmpty(m.AuthorName) ? m.Role.Label : m.AuthorName).ToArray(), s_jsonOptions) :
+            JsonSerializer.Serialize(Prepare(messages, m => new ChatMessageForPrompt(m)).ToArray(), s_jsonOptions);
+
+    /// <summary>
+    /// Convenience method to reference a set of messages.
+    /// </summary>
+    internal static IEnumerable<TResult> Prepare<TResult>(IEnumerable<ChatMessageContent> messages, Func<ChatMessageContent, TResult> transform) =>
+        messages.Where(m => !string.IsNullOrWhiteSpace(m.Content)).Select(m => transform.Invoke(m));
 }

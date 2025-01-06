@@ -41,10 +41,11 @@ from semantic_kernel.data.vector_search.vector_text_search import VectorTextSear
 from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+    VectorSearchExecutionException,
+    VectorStoreInitializationException,
+    VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -140,7 +141,7 @@ class WeaviateCollection(
                         " a local Weaviate instance, or the client embedding options.",
                     )
             except Exception as e:
-                raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+                raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
 
         super().__init__(
             data_model_type=data_model_type,
@@ -170,47 +171,24 @@ class WeaviateCollection(
         **kwargs: Any,
     ) -> Sequence[TKey]:
         assert all([isinstance(record, DataObject) for record in records])  # nosec
-
-        try:
-            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-            response = await collection.data.insert_many(records)
-        except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
-                "Client is closed, please use the context manager or self.async_client.connect."
-            ) from ex
-        except Exception as ex:
-            raise MemoryConnectorException(f"Failed to upsert records: {ex}")
-
+        collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+        response = await collection.data.insert_many(records)
         return [str(v) for _, v in response.uuids.items()]
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
-        try:
-            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-            result = await collection.query.fetch_objects(
-                filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),
-                include_vector=kwargs.get("include_vectors", False),
-            )
+        collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+        result = await collection.query.fetch_objects(
+            filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),
+            include_vector=kwargs.get("include_vectors", False),
+        )
 
-            return result.objects
-        except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
-                "Client is closed, please use the context manager or self.async_client.connect."
-            ) from ex
-        except Exception as ex:
-            raise MemoryConnectorException(f"Failed to get records: {ex}")
+        return result.objects
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
-        try:
-            collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-            await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
-        except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
-                "Client is closed, please use the context manager or self.async_client.connect."
-            ) from ex
-        except Exception as ex:
-            raise MemoryConnectorException(f"Failed to delete records: {ex}")
+        collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
+        await collection.data.delete_many(where=Filter.any_of([Filter.by_id().equal(key) for key in keys]))
 
     @override
     async def _inner_search(
@@ -236,7 +214,7 @@ class WeaviateCollection(
         elif vector:
             results = await self._inner_vectorized_search(collection, vector, vector_field, args)
         else:
-            raise MemoryConnectorException("No search criteria provided.")
+            raise VectorSearchExecutionException("No search criteria provided.")
 
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(results.objects), total_count=len(results.objects)
@@ -252,7 +230,7 @@ class WeaviateCollection(
                 **args,
             )
         except Exception as ex:
-            raise MemoryConnectorException(f"Failed searching using a text: {ex}") from ex
+            raise VectorSearchExecutionException(f"Failed searching using a text: {ex}") from ex
 
     async def _inner_vectorizable_text_search(
         self,
@@ -262,7 +240,7 @@ class WeaviateCollection(
         args: dict[str, Any],
     ) -> Any:
         if self.named_vectors and not vector_field:
-            raise MemoryConnectorException(
+            raise VectorSearchExecutionException(
                 "Vectorizable text search requires a vector field to be specified in the options."
             )
         try:
@@ -281,7 +259,7 @@ class WeaviateCollection(
                 "Alternatively you could use a existing collection that has a vectorizer setup."
                 "See also: https://weaviate.io/developers/weaviate/manage-data/collections#create-a-collection"
             )
-            raise MemoryConnectorException(f"Failed searching using a vectorizable text: {ex}") from ex
+            raise VectorSearchExecutionException(f"Failed searching using a vectorizable text: {ex}") from ex
 
     async def _inner_vectorized_search(
         self,
@@ -291,7 +269,7 @@ class WeaviateCollection(
         args: dict[str, Any],
     ) -> Any:
         if self.named_vectors and not vector_field:
-            raise MemoryConnectorException(
+            raise VectorSearchExecutionException(
                 "Vectorizable text search requires a vector field to be specified in the options."
             )
         try:
@@ -302,11 +280,11 @@ class WeaviateCollection(
                 **args,
             )
         except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
+            raise VectorSearchExecutionException(
                 "Client is closed, please use the context manager or self.async_client.connect."
             ) from ex
         except Exception as ex:
-            raise MemoryConnectorException(f"Failed searching using a vector: {ex}") from ex
+            raise VectorSearchExecutionException(f"Failed searching using a vector: {ex}") from ex
 
     def _get_record_from_result(self, result: Any) -> Any:
         """Get the record from the returned search result."""
@@ -361,18 +339,18 @@ class WeaviateCollection(
                 Make sure to check the arguments of that method for the specifications.
         """
         if not self.named_vectors and len(self.data_model_definition.vector_field_names) != 1:
-            raise MemoryConnectorException(
+            raise VectorStoreOperationException(
                 "Named vectors must be enabled if there is not exactly one vector field in the data model definition."
             )
         if kwargs:
             try:
                 await self.async_client.collections.create(**kwargs)
             except WeaviateClosedClientError as ex:
-                raise MemoryConnectorException(
+                raise VectorStoreOperationException(
                     "Client is closed, please use the context manager or self.async_client.connect."
                 ) from ex
             except Exception as ex:
-                raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
+                raise VectorStoreOperationException(f"Failed to create collection: {ex}") from ex
         try:
             await self.async_client.collections.create(
                 name=self.collection_name,
@@ -387,11 +365,11 @@ class WeaviateCollection(
                 else None,
             )
         except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
+            raise VectorStoreOperationException(
                 "Client is closed, please use the context manager or self.async_client.connect."
             ) from ex
         except Exception as ex:
-            raise MemoryConnectorException(f"Failed to create collection: {ex}") from ex
+            raise VectorStoreOperationException(f"Failed to create collection: {ex}") from ex
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
@@ -406,11 +384,11 @@ class WeaviateCollection(
         try:
             return await self.async_client.collections.exists(self.collection_name)
         except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
+            raise VectorStoreOperationException(
                 "Client is closed, please use the context manager or self.async_client.connect."
             ) from ex
         except Exception as ex:
-            raise MemoryConnectorException(f"Failed to check if collection exists: {ex}") from ex
+            raise VectorStoreOperationException(f"Failed to check if collection exists: {ex}") from ex
 
     @override
     async def delete_collection(self, **kwargs) -> None:
@@ -422,11 +400,11 @@ class WeaviateCollection(
         try:
             await self.async_client.collections.delete(self.collection_name)
         except WeaviateClosedClientError as ex:
-            raise MemoryConnectorException(
+            raise VectorStoreOperationException(
                 "Client is closed, please use the context manager or self.async_client.connect."
             ) from ex
         except Exception as ex:
-            raise MemoryConnectorException(f"Failed to delete collection: {ex}") from ex
+            raise VectorStoreOperationException(f"Failed to delete collection: {ex}") from ex
 
     @override
     async def __aenter__(self) -> "WeaviateCollection":

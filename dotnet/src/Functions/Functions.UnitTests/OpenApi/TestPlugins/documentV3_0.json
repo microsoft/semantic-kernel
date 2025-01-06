@@ -212,6 +212,63 @@
         }
       }
     },
+    "/FunPlugin/Joke": {
+      "post": {
+        "summary": "Generate a funny joke",
+        "operationId": "Joke",
+        "requestBody": {
+          "description": "Joke subject",
+          "content": {
+            "text/plain; x-api-version=2.0": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/json; x-api-version=2.0": {
+              "schema": {
+                "required": [
+                  "scenario"
+                ],
+                "type": "object",
+                "properties": {
+                  "scenario": {
+                    "type": "string",
+                    "description": "Joke subject"
+                  }
+                }
+              }
+            }
+          },
+          "x-bodyName": "body"
+        },
+        "responses": {
+          "200": {
+            "description": "The OK response",
+            "content": {
+              "text/plain; x-api-version=2.0": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json; x-api-version=2.0": {
+                "schema": {
+                  "required": [
+                    "scenario"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "scenario": {
+                      "type": "string",
+                      "description": "Joke subject"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/test-default-values/{string-parameter}": {
       "put": {
         "summary": "Operation to test default parameter values.",
@@ -417,6 +474,67 @@
                     "default": 123
                   }
                 }
+              }
+            }
+          },
+          "required": true,
+          "x-bodyName": "body"
+        },
+        "responses": {
+          "200": {
+            "description": "The OK response"
+          }
+        }
+      }
+    },
+    "/test-parameter-names-sanitization/{string-parameter}": {
+      "put": {
+        "summary": "Operation to test parameter names sanitization.",
+        "description": "Operation to test that forbidden characters in parameter names are sanitized.",
+        "operationId": "TestParameterNamesSanitization",
+        "parameters": [
+          {
+            "name": "string-parameter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "string-value"
+            }
+          },
+          {
+            "name": "boolean@parameter",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "integer+parameter",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 281
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "float?parameter": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 12.01
+                  }
+                },
+                "required": [ "float?parameter" ]
               }
             }
           },

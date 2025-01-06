@@ -7,6 +7,7 @@ from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
@@ -144,8 +145,9 @@ async def main():
         all_chunks = []
         print("Assistant:> ", end="")
         async for chunk in result:
-            all_chunks.append(chunk[0])
-            print(str(chunk[0]), end="")
+            if isinstance(chunk[0], StreamingChatMessageContent) and chunk[0].role == AuthorRole.ASSISTANT:
+                all_chunks.append(chunk[0])
+                print(str(chunk[0]), end="")
         print()
 
         history.add_user_message(request)
