@@ -15,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 
+#pragma warning disable RCS1261 /// Resource can be disposed asynchronously
+
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>

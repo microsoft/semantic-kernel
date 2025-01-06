@@ -154,7 +154,9 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
         ReadOnlySpan<char> lineSpan = lineText.AsSpan();
         int colonIndex = lineSpan.IndexOf(':');
+#pragma warning disable IDE0057 // Use range operator
         ReadOnlySpan<char> fieldValue = colonIndex >= 0 ? lineSpan.Slice(colonIndex + 1) : string.Empty.AsSpan();
+#pragma warning restore IDE0057 // Use range operator
 
         bool hasSpace = fieldValue.Length > 0 && fieldValue[0] == ' ';
         line = new SseLine(lineText, colonIndex, hasSpace, this._lastEventName);

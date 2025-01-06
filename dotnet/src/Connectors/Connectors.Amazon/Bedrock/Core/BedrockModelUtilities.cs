@@ -22,17 +22,11 @@ internal static class BedrockModelUtilities
     /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid role.</exception>
     internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
-        if (role == AuthorRole.User)
-        {
-            return ConversationRole.User;
-        }
-
-        if (role == AuthorRole.Assistant)
-        {
-            return ConversationRole.Assistant;
-        }
-
-        throw new ArgumentOutOfRangeException($"Invalid role: {role}");
+        return role == AuthorRole.User
+            ? ConversationRole.User
+            : role == AuthorRole.Assistant
+            ? ConversationRole.Assistant
+            : throw new ArgumentOutOfRangeException($"Invalid role: {role}");
     }
 
     /// <summary>
@@ -58,19 +52,20 @@ internal static class BedrockModelUtilities
     {
         // Check that the text from the latest message in the chat history  is not empty.
         Verify.NotNullOrEmpty(chatHistory);
+#pragma warning disable IDE0056 // Use index operator
         string? text = chatHistory[chatHistory.Count - 1].Content;
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new ArgumentException("Last message in chat history was null or whitespace.");
-        }
-        return chatHistory
-            .Where(m => m.Role != AuthorRole.System)
-            .Select(m => new Message
-            {
-                Role = MapAuthorRoleToConversationRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            })
-            .ToList();
+#pragma warning restore IDE0056 // Use index operator
+
+        return string.IsNullOrWhiteSpace(text)
+            ? throw new ArgumentException("Last message in chat history was null or whitespace.")
+            : chatHistory
+                .Where(m => m.Role != AuthorRole.System)
+                .Select(m => new Message
+                {
+                    Role = MapAuthorRoleToConversationRole(m.Role),
+                    Content = [new() { Text = m.Content }]
+                })
+                .ToList();
     }
 
     /// <summary>

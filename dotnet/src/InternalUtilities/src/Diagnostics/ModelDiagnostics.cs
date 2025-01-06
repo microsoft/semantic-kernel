@@ -367,12 +367,9 @@ internal static class ModelDiagnostics
     {
         var finishReasons = completions.Select(c =>
         {
-            if (c.Metadata?.TryGetValue("FinishReason", out var finishReason) == true && !string.IsNullOrEmpty(finishReason as string))
-            {
-                return finishReason;
-            }
-
-            return "N/A";
+            return c.Metadata?.TryGetValue("FinishReason", out var finishReason) == true && !string.IsNullOrEmpty(finishReason as string)
+                ? finishReason
+                : "N/A";
         });
 
         if (finishReasons.Any())

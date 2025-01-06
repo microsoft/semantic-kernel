@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable IDE0290 // Use primary constructor
 
 #if !NET7_0_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis;

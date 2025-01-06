@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+#pragma warning disable IDE0046 // Convert to conditional expression
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
@@ -118,11 +120,8 @@ internal sealed class VectorStoreRecordPropertyReader
 
         this._parameterlessConstructorInfo = new Lazy<ConstructorInfo>(() =>
         {
-            var constructor = dataModelType.GetConstructor(Type.EmptyTypes);
-            if (constructor == null)
-            {
-                throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
-            }
+            var constructor = dataModelType.GetConstructor(Type.EmptyTypes)
+                ?? throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
 
             return constructor;
         });
@@ -173,7 +172,9 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>Gets the record definition of the current storage model.</summary>
+#pragma warning disable RCS1085 // Use auto-implemented property
     public VectorStoreRecordDefinition RecordDefinition => this._vectorStoreRecordDefinition;
+#pragma warning restore RCS1085 // Use auto-implemented property
 
     /// <summary>Gets the list of properties from the record definition.</summary>
     public IReadOnlyList<VectorStoreRecordProperty> Properties => this._vectorStoreRecordDefinition.Properties;
@@ -393,13 +394,11 @@ internal sealed class VectorStoreRecordPropertyReader
         {
             throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
         }
+#pragma warning restore IDE0046 // Convert to conditional expression
 
-        if (!supportsMultipleVectors && vectorProperties.Count > 1)
-        {
-            throw new ArgumentException($"Multiple vector properties found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
-        }
-
-        return (keyProperties, dataProperties, vectorProperties);
+        return !supportsMultipleVectors && vectorProperties.Count > 1
+            ? throw new ArgumentException($"Multiple vector properties found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.")
+            : ((List<VectorStoreRecordKeyProperty> KeyProperties, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties))(keyProperties, dataProperties, vectorProperties);
     }
 
     /// <summary>
@@ -411,9 +410,9 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <returns>The categorized properties.</returns>
     private static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
-        List<PropertyInfo> keyProperties = new();
-        List<PropertyInfo> dataProperties = new();
-        List<PropertyInfo> vectorProperties = new();
+        List<PropertyInfo> keyProperties = [];
+        List<PropertyInfo> dataProperties = [];
+        List<PropertyInfo> vectorProperties = [];
 
         foreach (var property in type.GetProperties())
         {
@@ -449,42 +448,33 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <returns>The categorized properties.</returns>
     public static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
-        List<PropertyInfo> keyProperties = new();
-        List<PropertyInfo> dataProperties = new();
-        List<PropertyInfo> vectorProperties = new();
+        List<PropertyInfo> keyProperties = [];
+        List<PropertyInfo> dataProperties = [];
+        List<PropertyInfo> vectorProperties = [];
 
         foreach (VectorStoreRecordProperty property in vectorStoreRecordDefinition.Properties)
         {
             // Key.
             if (property is VectorStoreRecordKeyProperty keyPropertyInfo)
             {
-                var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
-                if (keyProperty == null)
-                {
-                    throw new ArgumentException($"Key property '{keyPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Key property '{keyPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 keyProperties.Add(keyProperty);
             }
             // Data.
             else if (property is VectorStoreRecordDataProperty dataPropertyInfo)
             {
-                var dataProperty = type.GetProperty(dataPropertyInfo.DataModelPropertyName);
-                if (dataProperty == null)
-                {
-                    throw new ArgumentException($"Data property '{dataPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var dataProperty = type.GetProperty(dataPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Data property '{dataPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 dataProperties.Add(dataProperty);
             }
             // Vector.
             else if (property is VectorStoreRecordVectorProperty vectorPropertyInfo)
             {
-                var vectorProperty = type.GetProperty(vectorPropertyInfo.DataModelPropertyName);
-                if (vectorProperty == null)
-                {
-                    throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var vectorProperty = type.GetProperty(vectorPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 vectorProperties.Add(vectorProperty);
             }
@@ -635,11 +625,8 @@ internal sealed class VectorStoreRecordPropertyReader
             }
         }
 
-        if (options?.PropertyNamingPolicy is not null)
-        {
-            return options.PropertyNamingPolicy.ConvertName(property.DataModelPropertyName);
-        }
-
-        return property.DataModelPropertyName;
+        return options?.PropertyNamingPolicy is not null
+            ? options.PropertyNamingPolicy.ConvertName(property.DataModelPropertyName)
+            : property.DataModelPropertyName;
     }
 }

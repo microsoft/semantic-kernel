@@ -149,14 +149,14 @@ public sealed class BedrockChatCompletionServiceTests
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        List<StreamingChatMessageContent> output = new();
+        List<StreamingChatMessageContent> output = [];
         var result = service.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
 
         // Assert
         int iterations = 0;
         await foreach (var item in result)
         {
-            iterations += 1;
+            iterations++;
             Assert.NotNull(item);
             Assert.NotNull(item.Content);
             Assert.NotNull(item.Role);
@@ -399,7 +399,7 @@ public sealed class BedrockChatCompletionServiceTests
                 Message = new Message
                 {
                     Role = role,
-                    Content = new List<ContentBlock> { new() { Text = text } }
+                    Content = [new() { Text = text }]
                 }
             },
             Metrics = new ConverseMetrics(),
