@@ -419,7 +419,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     public async Task ItCanFilterOutSpecifiedOperationsAsync()
     {
         // Arrange
-        var operationsToExclude = new[] { "Excuses", "TestDefaultValues", "OpenApiExtensions", "TestParameterDataTypes", "TestParameterNamesSanitization" };
+        string[] operationsToExclude = ["Excuses", "TestDefaultValues", "OpenApiExtensions", "TestParameterDataTypes", "TestParameterNamesSanitization"];
 
         var options = new OpenApiDocumentParserOptions
         {
