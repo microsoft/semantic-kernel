@@ -18,7 +18,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
@@ -93,7 +93,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
             containers = database.list_containers()
             return [container["id"] async for container in containers]
         except Exception as e:
-            raise MemoryConnectorException("Failed to list collection names.") from e
+            raise VectorStoreOperationException("Failed to list collection names.") from e
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""

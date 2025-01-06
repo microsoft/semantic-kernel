@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any, Protocol
 
 from pydantic import ValidationError
@@ -7,6 +9,8 @@ from pydantic import ValidationError
 if TYPE_CHECKING:
     from semantic_kernel.data.search_options import SearchOptions
     from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+
+logger = logging.getLogger(__name__)
 
 
 class OptionsUpdateFunctionType(Protocol):
@@ -20,7 +24,7 @@ class OptionsUpdateFunctionType(Protocol):
         **kwargs: Any,
     ) -> tuple[str, "SearchOptions"]:
         """Signature of the function."""
-        ...
+        ...  # pragma: no cover
 
 
 def create_options(
@@ -44,30 +48,24 @@ def create_options(
         SearchOptions: The options.
 
     """
+    new_options = options_class()
     if options:
         if not isinstance(options, options_class):
+            inputs = None
             try:
-                # Validate the options in one go
-                new_options = options_class.model_validate(
-                    options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True),
-                )
-            except ValidationError:
-                # if that fails, go one by one
-                new_options = options_class()
-                for key, value in options.model_dump(
-                    exclude_none=True, exclude_defaults=True, exclude_unset=True
-                ).items():
-                    setattr(new_options, key, value)
+                inputs = options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)
+            except Exception:
+                logger.warning("Options are not valid. Creating new options.")
+            if inputs:
+                new_options = options_class.model_validate(inputs)
         else:
             new_options = options
         for key, value in kwargs.items():
             if key in new_options.model_fields:
                 setattr(new_options, key, value)
     else:
-        try:
+        with suppress(ValidationError):
             new_options = options_class(**kwargs)
-        except ValidationError:
-            new_options = options_class()
     return new_options
 
 
