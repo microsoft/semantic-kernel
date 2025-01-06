@@ -1705,6 +1705,44 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
+    [Theory]
+    [InlineData("application/json;x-api-version=2.0", "application/json")]
+    [InlineData("application/json ; x-api-version=2.0", "application/json")]
+    [InlineData(" application/JSON; x-api-version=2.0", "application/json")]
+    [InlineData(" TEXT/PLAIN ; x-api-version=2.0", "text/plain")]
+    public async Task ItShouldNormalizeContentTypeArgumentAsync(string actualContentType, string normalizedContentType)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", actualContentType },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Any(h => h.StartsWith(normalizedContentType, StringComparison.InvariantCulture)));
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
