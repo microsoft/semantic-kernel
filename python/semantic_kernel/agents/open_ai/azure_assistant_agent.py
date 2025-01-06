@@ -113,7 +113,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             token_endpoint=token_endpoint,
         )
 
-        # We centralize the client/ad_token setup
         client, ad_token = self._setup_client_and_token(
             azure_openai_settings=azure_openai_settings,
             ad_token=ad_token,
@@ -122,7 +121,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             default_headers=default_headers,
         )
 
-        # Once the client is configured, we proceed
         service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
