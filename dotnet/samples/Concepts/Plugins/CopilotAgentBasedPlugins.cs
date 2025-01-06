@@ -156,19 +156,8 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         if ("me_CreateMessages".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
             "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
         {
-            return new RestApiParameter(
-                context.Parameter.Name,
-                context.Parameter.Type,
-                context.Parameter.IsRequired,
-                context.Parameter.Expand,
-                context.Parameter.Location,
-                context.Parameter.Style,
-                context.Parameter.ArrayItemType,
-                context.Parameter.DefaultValue,
-                context.Parameter.Description,
-                context.Parameter.Format,
-                TrimPropertiesFromRequestBody(context.Parameter.Schema)
-            );
+            context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
+            return context.Parameter;
         }
         return context.Parameter;
     };

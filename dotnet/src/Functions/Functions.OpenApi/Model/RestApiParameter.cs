@@ -33,7 +33,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
     /// </summary>
-    public string Type { get; }
+    internal string Type { get; }
 
     /// <summary>
     /// The parameter type modifier that refines the generic parameter type to a more specific one.
@@ -64,7 +64,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// Type of array item for parameters of "array" type.
     /// </summary>
-    public string? ArrayItemType { get; }
+    internal string? ArrayItemType { get; }
 
     /// <summary>
     /// The default value.
@@ -79,7 +79,15 @@ public sealed class RestApiParameter
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public KernelJsonSchema? Schema { get; }
+    public KernelJsonSchema? Schema
+    {
+        get => this._schema;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._schema = value;
+        }
+    }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiParameter"/> class.
@@ -96,7 +104,7 @@ public sealed class RestApiParameter
     /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
     /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The parameter schema.</param>
-    public RestApiParameter(
+    internal RestApiParameter(
         string name,
         string type,
         bool isRequired,
@@ -128,4 +136,5 @@ public sealed class RestApiParameter
 
     private readonly Freezable _freezable = new();
     private string? _argumentName;
+    private KernelJsonSchema? _schema;
 }
