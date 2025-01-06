@@ -13,15 +13,11 @@
 
 using HomeAutomation.Options;
 using HomeAutomation.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-// Alternatively, you can use plain, Azure OpenAI
-#pragma warning disable IDE0005 // Using directive is unnecessary.
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace HomeAutomation;
@@ -31,37 +27,30 @@ internal static class Program
     internal static async Task Main(string[] args)
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-        builder.Configuration.AddUserSecrets<Worker>();
 
         // Actual code to execute is found in Worker class
         builder.Services.AddHostedService<Worker>();
 
         // Get configuration
-        builder.Services.AddOptions<OpenAIOptions>()
-                        .Bind(builder.Configuration.GetSection(OpenAIOptions.SectionName))
-                        .ValidateDataAnnotations()
-                        .ValidateOnStart();
-
         builder.Services.AddOptions<AzureOpenAIOptions>()
-                        .Bind(builder.Configuration.GetSection(AzureOpenAIOptions.SectionName))
+                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAIOptions)))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
 
         // Chat completion service that kernels will use
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
-            OpenAIOptions openAIOptions = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
+            OpenAIOptions options = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
 
             // A custom HttpClient can be provided to this constructor
-            return new OpenAIChatCompletionService(openAIOptions.ChatModelId, openAIOptions.ApiKey);
+            return new OpenAIChatCompletionService(options.ChatModelId, options.ApiKey);
 
             /* Alternatively, you can use plain, Azure OpenAI after loading AzureOpenAIOptions instead
-               of OpenAI options with builder.Services.AddOptions: 
+               of OpenAI options with builder.Services.AddOptions:
 
-            AzureOpenAIOptions azureOpenAIOptions = sp.GetRequiredService<IOptions<AzureOpenAIOptions>>().Value;
-            return new AzureOpenAIChatCompletionService(azureOpenAIOptions.ChatDeploymentName, azureOpenAIOptions.Endpoint, azureOpenAIOptions.ApiKey);
+            AzureOpenAIOptions options = sp.GetRequiredService<IOptions<AzureOpenAI>>().Value;
 
-            */
+            return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey); */
         });
 
         // Add plugins that can be used by kernels
