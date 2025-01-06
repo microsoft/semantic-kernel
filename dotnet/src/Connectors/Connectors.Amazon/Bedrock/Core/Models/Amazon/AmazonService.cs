@@ -43,14 +43,13 @@ internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockCha
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<TitanTextResponse>(reader.ReadToEnd());
-        List<TextContent> textContents = [];
         if (responseBody?.Results is not { Count: > 0 })
         {
-            return textContents;
+            return [];
         }
+
         string? outputText = responseBody.Results[0].OutputText;
-        textContents.Add(new TextContent(outputText));
-        return textContents;
+        return [new TextContent(outputText, innerContent: responseBody)];
     }
 
     /// <inheritdoc/>
@@ -85,12 +84,12 @@ internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockCha
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk["outputText"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text!;
+            yield return new StreamingTextContent(text, innerContent: chunk)!;
         }
     }
 

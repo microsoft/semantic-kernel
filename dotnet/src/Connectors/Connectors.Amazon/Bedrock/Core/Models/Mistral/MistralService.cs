@@ -44,13 +44,14 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<MistralResponse>(reader.ReadToEnd());
-        List<TextContent> textContents = [];
         if (responseBody?.Outputs is not { Count: > 0 })
         {
-            return textContents;
+            return [];
         }
-        textContents.AddRange(responseBody.Outputs.Select(output => new TextContent(output.Text)));
-        return textContents;
+
+        return responseBody.Outputs
+                    .Select(output => new TextContent(output.Text, innerContent: responseBody))
+                    .ToList();
     }
 
     /// <inheritdoc/>
@@ -82,7 +83,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var outputs = chunk["outputs"]?.AsArray();
         if (outputs != null)
@@ -92,7 +93,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
                 var text = output?["text"]?.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    yield return text!;
+                    yield return new StreamingTextContent(text, innerContent: chunk)!;
                 }
             }
         }

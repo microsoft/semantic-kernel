@@ -28,12 +28,14 @@ switch (choice)
     case 4:
         await PerformStreamTextGeneration().ConfigureAwait(false);
         break;
+    default:
+        throw new InvalidOperationException("Invalid choice");
 }
 
 async Task PerformChatCompletion()
 {
     string userInput;
-    ChatHistory chatHistory = new();
+    ChatHistory chatHistory = [];
 
     // Get available chat completion models
     var availableChatModels = bedrockModels.Values
@@ -106,7 +108,7 @@ async Task PerformTextGeneration()
 async Task PerformStreamChatCompletion()
 {
     string userInput;
-    ChatHistory streamChatHistory = new();
+    ChatHistory streamChatHistory = [];
 
     // Get available streaming chat completion models
     var availableStreamingChatModels = bedrockModels.Values
