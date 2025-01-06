@@ -19,9 +19,9 @@ from semantic_kernel.data.record_definition.vector_store_model_definition import
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
-    MemoryConnectorConnectionException,
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+    VectorStoreException,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -95,7 +95,7 @@ class WeaviateStore(VectorStore):
                         " a local Weaviate instance, or the client embedding options.",
                     )
             except Exception as e:
-                raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
+                raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
 
         super().__init__(async_client=async_client, managed_client=managed_client)
 
@@ -124,7 +124,7 @@ class WeaviateStore(VectorStore):
                 collections = await self.async_client.collections.list_all()
                 return [collection.name for collection in collections]
             except Exception as e:
-                raise MemoryConnectorException(f"Failed to list Weaviate collections: {e}")
+                raise VectorStoreOperationException(f"Failed to list Weaviate collections: {e}")
 
     @override
     async def __aenter__(self) -> "VectorStore":
@@ -133,7 +133,7 @@ class WeaviateStore(VectorStore):
             try:
                 await self.async_client.connect()
             except WeaviateConnectionError as exc:
-                raise MemoryConnectorConnectionException("Weaviate client cannot connect.") from exc
+                raise VectorStoreException("Weaviate client cannot connect.") from exc
         return self
 
     @override

@@ -47,11 +47,12 @@ from semantic_kernel.data.vector_search.vector_search_options import VectorSearc
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorSearchOptionsException,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException, VectorSearchOptionsException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.list_handler import desync_list
 
@@ -111,7 +112,7 @@ class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TMode
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
+            raise VectorStoreInitializationException("Failed to create Redis settings.", ex) from ex
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -149,7 +150,7 @@ class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TMode
                     fields, definition=index_definition, **kwargs
                 )
                 return
-            raise MemoryConnectorException("Invalid index type supplied.")
+            raise VectorStoreOperationException("Invalid index type supplied.")
         fields = data_model_definition_to_redis_fields(self.data_model_definition, self.collection_type)
         index_definition = IndexDefinition(
             prefix=f"{self.collection_name}:", index_type=INDEX_TYPE_MAP[self.collection_type]

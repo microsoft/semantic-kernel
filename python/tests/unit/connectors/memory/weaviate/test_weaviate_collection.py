@@ -9,11 +9,11 @@ from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    ServiceInvalidExecutionSettingsError,
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 
 
 @patch(
@@ -164,7 +164,7 @@ def test_weaviate_collection_init_fail_to_create_client(
     """Test the initialization of a WeaviateCollection object raises an error when failing to create a client."""
     collection_name = "TestCollection"
 
-    with pytest.raises(MemoryConnectorInitializationError):
+    with pytest.raises(VectorStoreInitializationException):
         WeaviateCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -262,7 +262,7 @@ async def test_weaviate_collection_create_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.create_collection()
 
 
@@ -312,7 +312,7 @@ async def test_weaviate_collection_delete_collection_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.delete_collection()
 
 
@@ -362,7 +362,7 @@ async def test_weaviate_collection_collection_exist_fail(
         env_file_path="fake_env_file_path.env",
     )
 
-    with pytest.raises(MemoryConnectorException):
+    with pytest.raises(VectorStoreOperationException):
         await collection.does_collection_exist()
 
 
