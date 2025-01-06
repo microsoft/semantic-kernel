@@ -1136,11 +1136,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
-    [Fact]
-    public async Task ItShouldHandleNoContentAsync()
+    [InlineData(System.Net.HttpStatusCode.NoContent)]
+    [InlineData(System.Net.HttpStatusCode.Accepted)]
+    [InlineData(System.Net.HttpStatusCode.Created)]
+    [Theory]
+    public async Task ItShouldHandleNoContentAsync(System.Net.HttpStatusCode statusCode)
     {
         // Arrange
-        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(statusCode);
 
         List<RestApiPayloadProperty> payloadProperties =
         [
@@ -1700,6 +1703,44 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(result);
         var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
+    }
+
+    [Theory]
+    [InlineData("application/json;x-api-version=2.0", "application/json")]
+    [InlineData("application/json ; x-api-version=2.0", "application/json")]
+    [InlineData(" application/JSON; x-api-version=2.0", "application/json")]
+    [InlineData(" TEXT/PLAIN ; x-api-version=2.0", "text/plain")]
+    public async Task ItShouldNormalizeContentTypeArgumentAsync(string actualContentType, string normalizedContentType)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", actualContentType },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Any(h => h.StartsWith(normalizedContentType, StringComparison.InvariantCulture)));
     }
 
     /// <summary>

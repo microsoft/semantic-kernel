@@ -486,6 +486,67 @@
           }
         }
       }
+    },
+    "/test-parameter-names-sanitization/{string-parameter}": {
+      "put": {
+        "summary": "Operation to test parameter names sanitization.",
+        "description": "Operation to test that forbidden characters in parameter names are sanitized.",
+        "operationId": "TestParameterNamesSanitization",
+        "parameters": [
+          {
+            "name": "string-parameter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "string-value"
+            }
+          },
+          {
+            "name": "boolean@parameter",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "integer+parameter",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 281
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "float?parameter": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 12.01
+                  }
+                },
+                "required": [ "float?parameter" ]
+              }
+            }
+          },
+          "required": true,
+          "x-bodyName": "body"
+        },
+        "responses": {
+          "200": {
+            "description": "The OK response"
+          }
+        }
+      }
     }
   },
   "components": {

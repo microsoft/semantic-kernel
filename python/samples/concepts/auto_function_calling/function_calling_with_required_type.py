@@ -6,12 +6,13 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
 
@@ -131,20 +132,32 @@ async def handle_streaming(
 
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
+    result_content = []
     async for message in response:
-        if isinstance(message[0], StreamingChatMessageContent):
+        if (
+            (
+                not execution_settings.function_choice_behavior.auto_invoke_kernel_functions
+                or execution_settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
+            )
+            and isinstance(message[0], StreamingChatMessageContent)
+            and message[0].role == AuthorRole.ASSISTANT
+        ):
             streamed_chunks.append(message[0])
-        else:
+        elif isinstance(message[0], StreamingChatMessageContent) and message[0].role == AuthorRole.ASSISTANT:
+            result_content.append(message[0])
             print(str(message[0]), end="")
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        if hasattr(streaming_chat_message, "content"):
+        if hasattr(streaming_chat_message, "content") and streaming_chat_message.content:
             print(streaming_chat_message.content)
         print("Printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
     print("\n")
+    if result_content:
+        return "".join([str(content) for content in result_content])
+    return None
 
 
 async def chat() -> bool:
@@ -164,7 +177,7 @@ async def chat() -> bool:
     arguments["chat_history"] = history
 
     if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
+        result = await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
         result = await kernel.invoke(chat_function, arguments=arguments)
 
@@ -177,6 +190,9 @@ async def chat() -> bool:
             return True
 
         print(f"Mosscap:> {result}")
+
+    history.add_user_message(user_input)
+    history.add_assistant_message(str(result))
     return True
 
 

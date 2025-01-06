@@ -294,7 +294,7 @@ class TextSearch:
         return [self._default_map_to_string(result) async for result in results.results]
 
     @staticmethod
-    def _default_map_to_string(result: Any) -> str:
+    def _default_map_to_string(result: BaseModel | object) -> str:
         """Default mapping function for text search results."""
         if isinstance(result, BaseModel):
             return result.model_dump_json()

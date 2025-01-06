@@ -14,6 +14,7 @@ async def retry(
     func: Callable[..., Awaitable[Any]],
     retries: int = 20,
     reset: Callable[..., None] | None = None,
+    name: str | None = None,
 ):
     """Retry the function if it raises an exception.
 
@@ -23,9 +24,9 @@ async def retry(
         reset (function): Function to reset the state of any variables used in the function
 
     """
-    logger.info(f"Running {retries} retries with func: {func.__module__}")
+    logger.info(f"Running {retries} retries with func: {name or func.__module__}")
     for i in range(retries):
-        logger.info(f"   Try {i + 1} for {func.__module__}")
+        logger.info(f"   Try {i + 1} for {name or func.__module__}")
         try:
             if reset:
                 reset()

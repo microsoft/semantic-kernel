@@ -183,6 +183,12 @@ internal static partial class RestApiOperationExtensions
 
             if (!property.Properties.Any())
             {
+                // Assign an argument name (sanitized form of the property name) so that the parameter value look-up / resolution functionality in the RestApiOperationRunner
+                // class can find the value for the parameter by the argument name in the arguments dictionary. If the argument name is not assigned here, the resolution mechanism
+                // will try to find the parameter value by the parameter's original name. However, because the parameter was advertised with the sanitized name by the RestApiOperationExtensions.GetParameters
+                // method, no value will be found, and an exception will be thrown: "No argument is found for the 'customerid_contact@odata.bind' payload property."
+                property.ArgumentName ??= InvalidSymbolsRegex().Replace(parameterName, "_");
+
                 var parameter = new RestApiParameter(
                     name: parameterName,
                     type: property.Type,
