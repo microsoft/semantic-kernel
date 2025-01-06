@@ -11,12 +11,12 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreInitializationException,
     VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
-from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException
 
 BASE_PATH = "qdrant_client.async_qdrant_client.AsyncQdrantClient"
 
@@ -144,10 +144,10 @@ def test_vector_store_in_memory(qdrant_unit_test_env):
 
 
 def test_vector_store_fail():
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant settings."):
         QdrantStore(location="localhost", url="localhost", env_file_path="test.env")
 
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant client."):
         QdrantStore(location="localhost", url="http://localhost", env_file_path="test.env")
 
 
@@ -180,7 +180,7 @@ async def test_collection_init(data_model_definition, qdrant_unit_test_env):
 
 
 def test_collection_init_fail(data_model_definition):
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant settings."):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -188,7 +188,7 @@ def test_collection_init_fail(data_model_definition):
             url="localhost",
             env_file_path="test.env",
         )
-    with raises(MemoryConnectorInitializationError, match="Failed to create Qdrant client."):
+    with raises(VectorStoreInitializationException, match="Failed to create Qdrant client."):
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -274,7 +274,7 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None
-    with raises(MemoryConnectorException, match="Vector field must have dimensions."):
+    with raises(VectorStoreOperationException, match="Vector field must have dimensions."):
         await collection.create_collection()
 
 

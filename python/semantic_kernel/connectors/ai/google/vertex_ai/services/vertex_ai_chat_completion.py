@@ -142,6 +142,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, VertexAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -162,7 +163,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         )
 
         async for chunk in response:
-            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
+            yield [
+                self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
+                for candidate in chunk.candidates
+            ]
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
@@ -262,12 +266,14 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         self,
         chunk: GenerationResponse,
         candidate: Candidate,
+        function_invoke_attempt: int,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object.
 
         Args:
             chunk: The response from the service.
             candidate: The candidate from the response.
+            function_invoke_attempt: The function invoke attempt.
 
         Returns:
             A streaming chat message content object.
@@ -308,6 +314,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             inner_content=chunk,
             finish_reason=finish_reason,
             metadata=response_metadata,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     # endregion

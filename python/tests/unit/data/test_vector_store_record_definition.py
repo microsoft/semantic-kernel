@@ -7,6 +7,7 @@ from semantic_kernel.data import (
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
 )
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import VectorStoreModelException
 
 
@@ -55,3 +56,64 @@ def test_no_matching_vector_field_fail():
                 "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
             }
         )
+
+
+def test_vector_and_non_vector_field_names():
+    definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
+    assert definition.vector_field_names == ["vector"]
+    assert definition.non_vector_field_names == ["id", "content"]
+
+
+def test_try_get_vector_field():
+    definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
+    assert definition.try_get_vector_field() == definition.fields["vector"]
+    assert definition.try_get_vector_field("vector") == definition.fields["vector"]
+
+
+def test_try_get_vector_field_none():
+    definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+        }
+    )
+    assert definition.try_get_vector_field() is None
+    with raises(VectorStoreModelException, match="Field vector not found."):
+        definition.try_get_vector_field("vector")
+
+
+def test_try_get_vector_field_wrong_name_fail():
+    definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+        }
+    )
+    with raises(VectorStoreModelException, match="Field content is not a vector field."):
+        definition.try_get_vector_field("content")
+
+
+def test_get_field_names():
+    definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
+    assert definition.get_field_names() == ["id", "content", "vector"]
+    assert definition.get_field_names(include_vector_fields=False) == ["id", "content"]
+    assert definition.get_field_names(include_key_field=False) == ["content", "vector"]
+    assert definition.get_field_names(include_vector_fields=False, include_key_field=False) == ["content"]

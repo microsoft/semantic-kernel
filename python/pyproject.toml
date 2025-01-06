@@ -86,7 +86,7 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
+    "onnxruntime-genai ~= 0.5"
 ]
 anthropic = [
     "anthropic ~= 0.32"
@@ -156,7 +156,8 @@ filterwarnings = [
 ]
 timeout = 120
 markers = [
-    "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)"
+    "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)",
+    "onnx: mark a test as requiring the Onnx service (use \"not onnx\" to skip those tests)"
 ]
 
 [tool.ruff]

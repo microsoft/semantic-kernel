@@ -302,7 +302,9 @@ internal sealed class RestApiOperationRunner
     /// <returns>The operation response.</returns>
     private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
-        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent ||
+         (string.IsNullOrEmpty(responseMessage.Content.Headers.ContentType?.MediaType) &&
+            (responseMessage.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.Created)))
         {
             return new RestApiOperationResponse(null, null)
             {

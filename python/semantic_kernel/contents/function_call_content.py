@@ -149,7 +149,7 @@ class FunctionCallContent(KernelContent):
         if isinstance(self.arguments, Mapping):
             return self.arguments
         try:
-            return json.loads(self.arguments)
+            return json.loads(self.arguments.replace("'", '"'))
         except json.JSONDecodeError as exc:
             raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
 

@@ -109,6 +109,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         """Create streaming chat message contents, in the number specified by the settings.
 
@@ -116,6 +117,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             chat_history : A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings : Settings for the request.
+            function_invoke_attempt : The function invoke attempt.
 
         Yields:
             A stream representing the response(s) from the LLM.
@@ -127,7 +129,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
         images = self._get_images_from_history(chat_history)
         async for chunk in self._generate_next_token_async(prompt, settings, images):
             yield [
-                self._create_streaming_chat_message_content(choice_index, new_token)
+                self._create_streaming_chat_message_content(choice_index, new_token, function_invoke_attempt)
                 for choice_index, new_token in enumerate(chunk)
             ]
 
@@ -142,12 +144,15 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             ],
         )
 
-    def _create_streaming_chat_message_content(self, choice_index: int, choice: str) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(
+        self, choice_index: int, choice: str, function_invoke_attempt: int
+    ) -> StreamingChatMessageContent:
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
             choice_index=choice_index,
             content=choice,
             ai_model_id=self.ai_model_id,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     @override

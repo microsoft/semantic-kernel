@@ -16,7 +16,7 @@ from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
@@ -94,14 +94,14 @@ class QdrantStore(VectorStore):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Qdrant settings.", ex) from ex
+            raise VectorStoreInitializationException("Failed to create Qdrant settings.", ex) from ex
         if APP_INFO:
             kwargs.setdefault("metadata", {})
             kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
         try:
             client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
+            raise VectorStoreInitializationException("Failed to create Qdrant client.", ex) from ex
         super().__init__(qdrant_client=client)
 
     def get_collection(
