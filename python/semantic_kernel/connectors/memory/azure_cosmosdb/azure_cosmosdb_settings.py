@@ -2,7 +2,7 @@
 
 from typing import ClassVar
 
-from pydantic import Field, SecretStr
+from pydantic import ConfigDict, Field, SecretStr
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -22,3 +22,7 @@ class AzureCosmosDBSettings(KernelBaseSettings):
 
     api: str | None = None
     connection_string: SecretStr | None = Field(None, alias="AZCOSMOS_CONNSTR")
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
