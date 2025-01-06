@@ -56,7 +56,7 @@
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
-    <PackageVersion Include="OllamaSharp" Version="4.0.8" />
+    <PackageVersion Include="OllamaSharp" Version="4.0.17" />
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.0" />
     <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.3" />
