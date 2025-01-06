@@ -1703,7 +1703,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldReturnResponseAndResponseContentHadersAsync()
+    public async Task ItShouldReturnResponseAndResponseContentHeadersAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Headers.Add("fake-response-header", "fake-response-header-value");
