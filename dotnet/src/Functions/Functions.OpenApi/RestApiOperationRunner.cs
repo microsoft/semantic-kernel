@@ -175,7 +175,7 @@ internal sealed class RestApiOperationRunner
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, Payload, Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
+        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
     }
 
     #region private
@@ -183,26 +183,24 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
+    /// <param name="operation">The REST API operation.</param>
     /// <param name="url">The url to send request to.</param>
-    /// <param name="method">The HTTP request method.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
-    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
+        RestApiOperation operation,
         Uri url,
-        HttpMethod method,
         IDictionary<string, string>? headers = null,
         object? payload = null,
         HttpContent? requestContent = null,
-        IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        using var requestMessage = new HttpRequestMessage(method, url);
+        using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
 #if NET5_0_OR_GREATER
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
@@ -237,9 +235,7 @@ internal sealed class RestApiOperationRunner
         {
             responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-            response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
-
-            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            response = await this.BuildResponseAsync(operation, requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
 
             return response;
         }
@@ -568,6 +564,24 @@ internal sealed class RestApiOperationRunner
         }
 
         return content;
+    }
+
+    /// <summary>
+    /// Builds the operation response.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    /// <param name="responseMessage">The HTTP response message.</param>
+    /// <param name="payload">The payload sent in the HTTP request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The operation response.</returns>
+    private async Task<RestApiOperationResponse> BuildResponseAsync(RestApiOperation operation, HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
+    {
+        var response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
+
+        response.ExpectedSchema ??= GetExpectedSchema(operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), responseMessage.StatusCode);
+
+        return response;
     }
 
     #endregion
