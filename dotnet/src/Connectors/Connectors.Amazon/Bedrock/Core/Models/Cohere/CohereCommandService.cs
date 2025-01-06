@@ -49,7 +49,7 @@ internal sealed class CohereCommandService : IBedrockTextGenerationService
 
         return responseBody.Generations
                .Where(g => !string.IsNullOrEmpty(g.Text))
-               .Select(g => new TextContent(g.Text))
+               .Select(g => new TextContent(g.Text, innerContent: responseBody))
                .ToList();
     }
 

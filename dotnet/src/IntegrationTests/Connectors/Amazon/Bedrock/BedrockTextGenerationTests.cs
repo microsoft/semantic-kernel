@@ -4,12 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Amazon;
 
 public class BedrockTextGenerationTests
 {
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("cohere.command-text-v14")]
     [InlineData("cohere.command-light-text-v14")]
     [InlineData("cohere.command-r-v1:0")]
@@ -39,6 +40,7 @@ public class BedrockTextGenerationTests
         foreach (var text in response)
         {
             output += text;
+            Assert.NotNull(text.InnerContent);
         }
 
         // Assert
@@ -47,7 +49,7 @@ public class BedrockTextGenerationTests
         Assert.False(string.IsNullOrEmpty(output));
     }
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("anthropic.claude-v2")]
     [InlineData("anthropic.claude-v2:1")]
     [InlineData("anthropic.claude-instant-v1")]
@@ -67,6 +69,7 @@ public class BedrockTextGenerationTests
         foreach (var text in response)
         {
             output += text;
+            Assert.NotNull(text.InnerContent);
         }
 
         // Assert
@@ -75,7 +78,7 @@ public class BedrockTextGenerationTests
         Assert.False(string.IsNullOrEmpty(output));
     }
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("cohere.command-text-v14")]
     [InlineData("cohere.command-light-text-v14")]
@@ -103,6 +106,7 @@ public class BedrockTextGenerationTests
         await foreach (var textContent in response)
         {
             output += textContent.Text;
+            Assert.NotNull(textContent.InnerContent);
         }
 
         // Assert
@@ -110,7 +114,7 @@ public class BedrockTextGenerationTests
         Assert.False(string.IsNullOrEmpty(output));
     }
 
-    [Theory(Skip = "For manual verification only")]
+    [Theory]//(Skip = "For manual verification only")]
     [InlineData("anthropic.claude-v2")]
     [InlineData("anthropic.claude-v2:1")]
     [InlineData("anthropic.claude-instant-v1")]
@@ -130,6 +134,7 @@ public class BedrockTextGenerationTests
         await foreach (var textContent in response)
         {
             output += textContent.Text;
+            Assert.NotNull(textContent.InnerContent);
         }
 
         // Assert
