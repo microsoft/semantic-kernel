@@ -14,6 +14,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_function_target imp
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.process_state_metadata_utils import extract_process_step_metadata_from_type
 from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -36,6 +37,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
     event_namespace: str
     function_type: type[TStep] | None = None
     initial_state: TState | None = None
+    aliases: list[str] = Field(default_factory=list)
 
     def __init__(self, name: str, type: type[TStep] | None = None, initial_state: TState | None = None, **kwargs):
         """Initialize the ProcessStepBuilder with a step class type and name."""
@@ -155,7 +157,11 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         if step_cls is None:
             raise ProcessInvalidConfigurationException("function_type is not set.")
 
-        # Extract TState from step class
+        # Retrieve metadata (version)
+        step_metadata_attr = extract_process_step_metadata_from_type(step_cls)
+        version = step_metadata_attr.version
+
+        # Extract TState from step class (similar logic as before)
         t_state = get_generic_state_type(step_cls)
 
         if t_state is not None:
@@ -172,16 +178,14 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             state_type = KernelProcessStepState[t_state]  # type: ignore
 
             initial_state = self.initial_state or t_state()
-            state_object = state_type(name=self.name, id=self.id, state=initial_state)
+            state_object = state_type(name=self.name, id=self.id, state=initial_state, version=version)
         else:
             # The step has no user-defined state; use the base KernelProcessStepState
             if self.initial_state is not None:
-                # Validate that the initial state is not provided for stateless steps
                 raise ProcessInvalidConfigurationException(
                     f"An initial state was provided for step {self.name}, but the step does not accept a state."
                 )
-
-            state_object = KernelProcessStepState(name=self.name, id=self.id, state=None)
+            state_object = KernelProcessStepState(name=self.name, id=self.id, state=None, version=version)
 
         # Build the edges based on the current step's edge definitions.
         built_edges = {event_id: [edge.build() for edge in edges] for event_id, edges in self.edges.items()}

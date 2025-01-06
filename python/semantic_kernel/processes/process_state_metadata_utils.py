@@ -7,6 +7,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_map_step_state_meta
     KernelProcessMapStateMetadata,
 )
 from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
+from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import KernelProcessStepMetadataAttribute
 from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStepStateMetadata
 from semantic_kernel.processes.process_types import get_generic_state_type
 
@@ -32,10 +33,12 @@ def kernel_process_to_process_state_metadata(kernel_process: "KernelProcess") ->
     return metadata
 
 
-def to_process_state_metadata(step_info: KernelProcessStepInfo) -> KernelProcessStepStateMetadata:
+def to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProcessStepStateMetadata:
     """Converts a step info object to process state metadata."""
     # We assume type-checking against your Python classes similar to C# type checks:
     # KernelProcess, KernelProcessMap, etc.
+
+    from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo  # noqa: F401
 
     if is_kernel_process(step_info):
         return kernel_process_to_process_state_metadata(step_info)
@@ -87,3 +90,81 @@ def is_kernel_process_map(obj) -> bool:
     """Checks if the object is an instance of KernelProcessMap."""
     # Implement a check to see if obj is instance of KernelProcessMap
     return hasattr(obj, "Operation") and hasattr(obj, "State")  # Example placeholder
+
+
+def extract_process_step_metadata_from_type(step_cls: type) -> KernelProcessStepMetadataAttribute:
+    """Extracts the process step metadata from the type."""
+    return getattr(step_cls, "_kernel_process_step_metadata", KernelProcessStepMetadataAttribute("v1"))
+
+
+# class ProcessStateMetadataFactory:
+#     """
+#     This class mirrors the static methods in C#'s ProcessStateMetadataFactory.
+#     """
+
+#     @staticmethod
+#     def kernel_process_to_process_state_metadata(kernel_process: KernelProcess) -> KernelProcessStateMetadata:
+#         """
+#         Captures a KernelProcess into a KernelProcessStateMetadata, including its steps' state.
+#         Equivalent to 'KernelProcessToProcessStateMetadata(KernelProcess kernelProcess)' in C#.
+#         """
+#         metadata = KernelProcessStateMetadata(
+#             name=kernel_process.state.name,
+#             id=kernel_process.state.id,
+#             version_info=kernel_process.state.version,
+#             steps_state={},  # Start empty and fill below
+#         )
+#         for step in kernel_process.steps:
+#             # step is a KernelProcessStepInfo
+#             # in C#, we do: metadata.StepsState.Add(step.State.Name, step.ToProcessStateMetadata());
+#             step_metadata = ProcessStateMetadataFactory.to_process_state_metadata(step)
+#             step_name = step.state.name or "UnnamedStep"
+#             metadata.steps_state[step_name] = step_metadata
+
+#         return metadata
+
+#     @staticmethod
+#     def to_process_state_metadata(step_info: KernelProcessStepInfo) -> KernelProcessStepStateMetadata:
+#         """
+#         Extension method in C#: 'public static KernelProcessStepStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)'.
+#         Checks if step_info is a KernelProcess (subprocess) or KernelProcessMap,
+#         or else calls step_info_to_process_state_metadata for a 'normal' step.
+#         """
+#         if isinstance(step_info, KernelProcess):
+#             # Means it's a subprocess (or top-level process)
+#             return ProcessStateMetadataFactory.kernel_process_to_process_state_metadata(step_info)
+#         elif isinstance(step_info, KernelProcessMap):
+#             return ProcessStateMetadataFactory.kernel_process_map_to_process_state_metadata(step_info)
+#         else:
+#             return ProcessStateMetadataFactory.step_info_to_process_state_metadata(step_info)
+
+#     @staticmethod
+#     def kernel_process_map_to_process_state_metadata(step_map: KernelProcessMap) -> KernelProcessMapStateMetadata:
+#         """
+#         Equivalent to the C# 'KernelProcessMapToProcessStateMetadata(KernelProcessMap stepMap)'.
+#         """
+#         return KernelProcessMapStateMetadata(
+#             name=step_map.state.name,
+#             id=step_map.state.id,
+#             version_info=step_map.state.version,
+#             operation_state=ProcessStateMetadataFactory.to_process_state_metadata(step_map.operation),
+#         )
+
+#     @staticmethod
+#     def step_info_to_process_state_metadata(step_info: KernelProcessStepInfo) -> KernelProcessStepStateMetadata:
+#         """
+#         Captures a normal step's state into a KernelProcessStepStateMetadata.
+#         Equivalent to 'StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)' in C#.
+#         """
+#         # Start with a simple KernelProcessStepStateMetadata
+#         metadata = KernelProcessStepStateMetadata(
+#             name=step_info.state.name, id=step_info.state.id, version_info=step_info.state.version, state=None
+#         )
+
+#         # The C# code checks if stepInfo.InnerStepType is a subtype of stateful step,
+#         # and if so, we get stepInfo.State's .State property. We'll do a simplified approach:
+#         user_state = getattr(step_info.state, "state", None)
+#         if user_state is not None:
+#             metadata.state = user_state
+
+#         return metadata
