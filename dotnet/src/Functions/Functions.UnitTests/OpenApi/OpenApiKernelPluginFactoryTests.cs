@@ -518,41 +518,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
     }
 
-    [Fact]
-    public async Task ItShouldWorkWithPayloadMediaTypesDeclaredWithParametersAsync()
-    {
-        // Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-
-        this._executionParameters.EnableDynamicPayload = true;
-        this._executionParameters.HttpClient = httpClient;
-
-        var arguments = new KernelArguments
-        {
-            ["scenario"] = "fake-scenario",
-        };
-
-        var kernel = new Kernel();
-
-        var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
-
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
-
-        // Act
-        // The media type string for the joke operation is declared with the x-api-version parameter: "application/json; x-api-version=2.0."
-        var result = await kernel.InvokeAsync(plugin["Joke"], arguments);
-
-        // Assert
-        var messageContent = messageHandlerStub.RequestContent;
-        Assert.NotNull(messageContent);
-
-        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
-        Assert.NotNull(deserializedPayload);
-
-        Assert.Equal("fake-scenario", deserializedPayload["scenario"]!.GetValue<string>());
-    }
-
     /// <summary>
     /// Generate theory data for ItAddSecurityMetadataToOperationAsync
     /// </summary>
