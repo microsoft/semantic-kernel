@@ -302,7 +302,9 @@ internal sealed class RestApiOperationRunner
     /// <returns>The operation response.</returns>
     private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
-        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent ||
+         (string.IsNullOrEmpty(responseMessage.Content.Headers.ContentType?.MediaType) &&
+            (responseMessage.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.Created)))
         {
             return new RestApiOperationResponse(null, null)
             {
@@ -350,7 +352,15 @@ internal sealed class RestApiOperationRunner
             mediaType = mediaTypeFallback;
         }
 
-        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
+        // Remove media type parameters, such as x-api-version, from the "text/plain; x-api-version=2.0" media type string.
+        mediaType = mediaType!.Split(';').First();
+
+        // Normalize the media type to lowercase and remove trailing whitespaces.
+#pragma warning disable CA1308 // Normalize strings to uppercase
+        mediaType = mediaType!.ToLowerInvariant().Trim();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType, out var payloadFactory))
         {
             throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
         }
