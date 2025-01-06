@@ -241,6 +241,8 @@ internal sealed class RestApiOperationRunner
 
             response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
+            response.Headers = GetResponseHeaders(responseMessage);
+
             return response;
         }
         catch (HttpRequestException ex)
@@ -558,6 +560,27 @@ internal sealed class RestApiOperationRunner
         }
 
         return content;
+    }
+
+    /// <summary>
+    /// Retrieves the headers from the specified HTTP response message, including content headers.
+    /// </summary>
+    /// <param name="responseMessage">The HTTP response message from which to extract headers.</param>
+    /// <returns>
+    /// A dictionary containing the headers of the HTTP response message, including content headers.
+    /// The dictionary keys are header names, and the values are collections of header values.
+    /// </returns>
+    private static Dictionary<string, IEnumerable<string>>? GetResponseHeaders(HttpResponseMessage responseMessage)
+    {
+        var headers = responseMessage.Headers.ToDictionary(h => h.Key, h => h.Value);
+
+        // Add the content headers as well.
+        foreach (var item_ in responseMessage.Content.Headers)
+        {
+            headers[item_.Key] = item_.Value;
+        }
+
+        return headers;
     }
 
     #endregion

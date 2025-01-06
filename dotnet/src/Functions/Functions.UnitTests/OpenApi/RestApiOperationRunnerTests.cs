@@ -1702,6 +1702,38 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
+    [Fact]
+    public async Task ItShouldReturnResponseAndResponseContentHadersAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Headers.Add("fake-response-header", "fake-response-header-value");
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("fake-response-content-header", "fake-response-content-header-value");
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Get,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient);
+
+        // Act
+        var result = await sut.RunAsync(operation, []);
+
+        // Assert
+        Assert.NotNull(result.Headers);
+
+        Assert.Contains(result.Headers, h => h.Key == "fake-response-header" && h.Value.Contains("fake-response-header-value"));
+
+        Assert.Contains(result.Headers, h => h.Key == "fake-response-content-header" && h.Value.Contains("fake-response-content-header-value"));
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
