@@ -24,14 +24,14 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
         var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CohereCommandRTools.ChatMessage>>(executionSettings?.ExtensionData, "chat_history") ?? exec.ChatHistory;
         if (chatHistory == null || chatHistory.Count == 0)
         {
-            chatHistory =
-            [
+            chatHistory = new List<CohereCommandRTools.ChatMessage>
+            {
                 new()
                 {
                     Role = "USER",
                     Message = prompt
                 }
-            ];
+            };
         }
         var requestBody = new CommandRRequest.CommandRTextGenerationRequest()
         {
@@ -131,7 +131,7 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = [],
+            AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
         };
@@ -210,7 +210,7 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = [],
+            AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
         };

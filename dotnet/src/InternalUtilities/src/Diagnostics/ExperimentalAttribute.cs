@@ -3,7 +3,6 @@
 // This is a copy of:
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/ExperimentalAttribute.cs
 // made internal rather than public.
-#pragma warning disable IDE0290 // Use primary constructor
 
 #if !NET8_0_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis;

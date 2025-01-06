@@ -7,9 +7,6 @@
 // This was copied from https://github.com/dotnet/runtime/blob/39b9607807f29e48cae4652cd74735182b31182e/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 // and updated to have the scope of the attributes be internal.
 
-#pragma warning disable RCS1251 //Remove unnecessary braces
-#pragma warning disable IDE0290 // Using directive is unnecessary.
-
 #if !NETCOREAPP
 namespace System.Diagnostics.CodeAnalysis;
 

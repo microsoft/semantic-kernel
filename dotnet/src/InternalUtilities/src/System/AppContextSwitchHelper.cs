@@ -3,8 +3,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0046 // Convert to conditional expression
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>

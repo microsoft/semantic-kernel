@@ -113,10 +113,8 @@ internal sealed class StreamJsonParser
                     int nextIndex = i + 1;
                     if (nextIndex < line.Length)
                     {
-#pragma warning disable IDE0057 // Use range operator
                         this._lastLine = line.Substring(nextIndex);
                         this.AppendLine(line.Substring(0, nextIndex));
-#pragma warning restore IDE0057 // Use range operator
                     }
                     else
                     {
@@ -148,9 +146,7 @@ internal sealed class StreamJsonParser
             switch (this._jsonBuilder)
             {
                 case { Length: 0 } when this._startBracketIndex >= 0:
-#pragma warning disable IDE0057 // Use range operator
                     this._jsonBuilder.Append(line.Substring(this._startBracketIndex));
-#pragma warning restore IDE0057 // Use range operator
                     break;
                 case { Length: > 0 }:
                     this._jsonBuilder.Append(line);

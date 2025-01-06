@@ -14,8 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
-#pragma warning disable IDE0305 // Simplify collection initialization
-
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>

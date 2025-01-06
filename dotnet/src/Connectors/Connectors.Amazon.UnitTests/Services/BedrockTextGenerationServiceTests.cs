@@ -150,14 +150,14 @@ public class BedrockTextGenerationServiceTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
                 {
                     InputTextTokenCount = 5,
-                    Results =
-                    [
+                    Results = new List<TitanTextResponse.Result>
+                    {
                         new() {
                             TokenCount = 10,
                             OutputText = "This is a mock output.",
                             CompletionReason = "stop"
                         }
-                    ]
+                    }
                 }))),
                 ContentType = "application/json"
             });
@@ -201,14 +201,14 @@ public class BedrockTextGenerationServiceTests
         var service = kernel.GetRequiredService<ITextGenerationService>();
 
         // Act
-        List<StreamingTextContent> result = [];
+        List<StreamingTextContent> result = new();
         var output = service.GetStreamingTextContentsAsync(prompt).ConfigureAwait(true);
 
         // Assert
         int iterations = 0;
         await foreach (var item in output)
         {
-            iterations++;
+            iterations += 1;
             Assert.NotNull(item);
             Assert.NotNull(item.Text);
             Assert.NotNull(item.InnerContent);

@@ -6,7 +6,6 @@
 
 #if !NETCOREAPP
 #pragma warning disable IDE0005 // Using directive is unnecessary.
-#pragma warning disable IDE0290 // Use primary constructor
 
 using System.Diagnostics.CodeAnalysis;
 
