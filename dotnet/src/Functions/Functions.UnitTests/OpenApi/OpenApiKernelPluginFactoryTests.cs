@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
