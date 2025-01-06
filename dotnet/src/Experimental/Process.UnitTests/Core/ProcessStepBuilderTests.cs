@@ -91,7 +91,7 @@ public class ProcessStepBuilderTests
     {
         // Arrange
         var stepBuilder = new TestProcessStepBuilder("TestStep");
-        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent");
+        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent", "TestEvent");
 
         // Act
         stepBuilder.LinkTo("TestEvent", edgeBuilder);

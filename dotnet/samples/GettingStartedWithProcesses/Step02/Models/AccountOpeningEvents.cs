@@ -32,4 +32,19 @@ public static class AccountOpeningEvents
     public static readonly string WelcomePacketCreated = nameof(WelcomePacketCreated);
 
     public static readonly string MailServiceSent = nameof(MailServiceSent);
+
+    // For now, root process events should match internal subprocess event names to be able to use
+    // SK Event Subscribers
+    public enum NewAccountOpeningEvents
+    {
+        StartOpeningAccount,
+        OnNewUserFraudCheckFailed,
+        OnNewUserCreditCheckFailed,
+        AccountCreatedSuccessfully,
+    }
+
+    public static string GetEventName(NewAccountOpeningEvents processEvent)
+    {
+        return Enum.GetName(processEvent) ?? "";
+    }
 }
