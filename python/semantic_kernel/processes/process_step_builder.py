@@ -14,6 +14,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_function_target imp
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStepStateMetadata
 from semantic_kernel.processes.process_state_metadata_utils import extract_process_step_metadata_from_type
 from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -148,50 +149,146 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
 
         return None
 
-    def build_step(self) -> "KernelProcessStepInfo":
+    def build_step(self, state_metadata: KernelProcessStepStateMetadata | None = None) -> KernelProcessStepInfo:
         """Builds the process step."""
-        from semantic_kernel.processes.process_builder import ProcessBuilder  # noqa: F401
-
-        # Determine the function type (the step class)
+        # 1. Determine the function type (the step class)
         step_cls = self.function_type
         if step_cls is None:
             raise ProcessInvalidConfigurationException("function_type is not set.")
 
-        # Retrieve metadata (version)
+        # 2. Extract metadata (version) from an attribute
         step_metadata_attr = extract_process_step_metadata_from_type(step_cls)
         version = step_metadata_attr.version
 
-        # Extract TState from step class (similar logic as before)
+        # 3. Check if step_cls is a subclass of KernelProcessStep[TState]
         t_state = get_generic_state_type(step_cls)
 
-        if t_state is not None:
-            # The step is a subclass of KernelProcessStep[TState], so we need to create a KernelProcessStepState[TState]
+        # We'll eventually create a 'state_object' (like 'KernelProcessStepState or KernelProcessStepState<TState>')
+        state_object: KernelProcessStepState | None = None
 
-            # Validate that the initial state is of the correct type, if provided
-            if self.initial_state is not None and not isinstance(self.initial_state, t_state):
+        if t_state is not None:
+            # The step is a subclass of KernelProcessStep<TState>
+            # So we need to create a KernelProcessStepStateGeneric[t_state].
+            # a) Possibly parse from 'state_metadata' if it has a .state
+            parsed_state_from_metadata = None
+            if state_metadata and state_metadata.state is not None:
+                # This is analogous to the C# code that checks if stateMetadata.State is a JsonElement
+                # Here, we assume it's already a dict or something parseable as t_state
+                # We'll do a minimal approach. If it's not the correct type,
+                # we raise a KernelException
+                candidate = state_metadata.state
+                # If it's a dict, we try to instantiate t_state from it
+                if isinstance(candidate, dict):
+                    try:
+                        # If t_state is a pydantic model or something,
+                        # you might do 'parsed_state_from_metadata = t_state(**candidate)'
+                        # or a direct approach if it's just a type.
+                        parsed_state_from_metadata = (
+                            t_state(**candidate) if hasattr(t_state, "__fields__") else t_state()
+                        )
+                    except Exception as ex:
+                        raise KernelException(
+                            f"The initial state provided for step {self.name} is not valid JSON or cannot be parsed: {ex}"
+                        )
+                else:
+                    # If candidate is already an instance of t_state, we can just use it
+                    # or if it's some other type
+                    if isinstance(candidate, t_state):
+                        parsed_state_from_metadata = candidate
+                    else:
+                        raise KernelException(
+                            f"The initial state for step {self.name} is not the correct type. Expected {t_state.__name__}."
+                        )
+
+            # If we didn't get anything from state_metadata, fallback to self.initial_state
+            actual_state = parsed_state_from_metadata if parsed_state_from_metadata is not None else self.initial_state
+
+            # Validate the type of actual_state, if it is not None
+            if actual_state is not None and not isinstance(actual_state, t_state):
                 raise ProcessInvalidConfigurationException(
                     f"The initial state provided for step {self.name} is not of the correct type. "
                     f"The expected type is {t_state.__name__}."
                 )
 
-            # Create state_object as KernelProcessStepState[TState]
-            state_type = KernelProcessStepState[t_state]  # type: ignore
+            # If still None, create a fresh instance
+            if actual_state is None:
+                # We'll do the same: create a blank instance of t_state.
+                # If t_state is a pydantic model, we do t_state()
+                actual_state = t_state() if hasattr(t_state, "__fields__") else t_state
 
-            initial_state = self.initial_state or t_state()
-            state_object = state_type(name=self.name, id=self.id, state=initial_state, version=version)
+            # Now we create a KernelProcessStepStateGeneric[t_state]
+            # We pass name, id, version, and set .state = actual_state
+            # This is like the C# call: Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id)
+            state_object = KernelProcessStepState[t_state](
+                name=self.name, id=self.id, version=version, state=actual_state
+            )
         else:
-            # The step has no user-defined state; use the base KernelProcessStepState
+            # The step is a KernelProcessStep with no user-defined state
             if self.initial_state is not None:
                 raise ProcessInvalidConfigurationException(
                     f"An initial state was provided for step {self.name}, but the step does not accept a state."
                 )
-            state_object = KernelProcessStepState(name=self.name, id=self.id, state=None, version=version)
+            # If state_metadata is present, we might see if there's a state. But the step doesn't accept a user-defined TState
+            # so we can't do anything with it. We'll ignore or handle partial if you want to store a bit of data in .state
+            if state_metadata and state_metadata.state is not None:
+                # The step is stateless, but let's store it in .state anyway (like the base C# does).
+                # Up to you if you want to store or skip. We'll store for completeness:
+                state_object = KernelProcessStepState(
+                    name=self.name, id=self.id, version=version, state=state_metadata.state
+                )
+            else:
+                state_object = KernelProcessStepState(name=self.name, id=self.id, version=version, state=None)
 
-        # Build the edges based on the current step's edge definitions.
-        built_edges = {event_id: [edge.build() for edge in edges] for event_id, edges in self.edges.items()}
+        # 4. Build the edges from self.edges
+        built_edges = {event_id: [edge.build() for edge in edges_list] for event_id, edges_list in self.edges.items()}
 
-        # Return an instance of KernelProcessStepInfo with the built state and edges.
+        # 5. Return a KernelProcessStepInfo with the final state
         return KernelProcessStepInfo(inner_step_type=step_cls, state=state_object, output_edges=built_edges)
+
+    # def build_step(self, state_metadata: KernelProcessStepStateMetadata) -> "KernelProcessStepInfo":
+    #     """Builds the process step."""
+    #     from semantic_kernel.processes.process_builder import ProcessBuilder
+
+    #     # Determine the function type (the step class)
+    #     step_cls = self.function_type
+    #     if step_cls is None:
+    #         raise ProcessInvalidConfigurationException("function_type is not set.")
+
+    #     # Retrieve metadata (version)
+    #     step_metadata_attr = extract_process_step_metadata_from_type(step_cls)
+    #     version = step_metadata_attr.version
+
+    #     # Extract TState from step class (similar logic as before)
+    #     t_state = get_generic_state_type(step_cls)
+
+    #     if t_state is not None:
+    #         # The step is a subclass of KernelProcessStep[TState], so we need to create a KernelProcessStepState[TState]
+
+    #         # Validate that the initial state is of the correct type, if provided
+    #         if self.initial_state is not None and not isinstance(self.initial_state, t_state):
+    #             raise ProcessInvalidConfigurationException(
+    #                 f"The initial state provided for step {self.name} is not of the correct type. "
+    #                 f"The expected type is {t_state.__name__}."
+    #             )
+
+    #         # Create state_object as KernelProcessStepState[TState]
+    #         state_type = KernelProcessStepState[t_state]  # type: ignore
+
+    #         initial_state = self.initial_state or t_state()
+    #         state_object = state_type(name=self.name, id=self.id, state=initial_state, version=version)
+    #     else:
+    #         # The step has no user-defined state; use the base KernelProcessStepState
+    #         if self.initial_state is not None:
+    #             raise ProcessInvalidConfigurationException(
+    #                 f"An initial state was provided for step {self.name}, but the step does not accept a state."
+    #             )
+    #         state_object = KernelProcessStepState(name=self.name, id=self.id, state=None, version=version)
+
+    #     # Build the edges based on the current step's edge definitions.
+    #     built_edges = {event_id: [edge.build() for edge in edges] for event_id, edges in self.edges.items()}
+
+    #     # Return an instance of KernelProcessStepInfo with the built state and edges.
+    #     return KernelProcessStepInfo(inner_step_type=step_cls, state=state_object, output_edges=built_edges)
 
     def on_function_result(self, function_name: str) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the function result."""

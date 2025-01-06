@@ -49,8 +49,10 @@ class FriedFishProcess:
         return process_builder
 
     @staticmethod
-    def create_process_with_stateful_steps(process_name: str = "FriedFishWithStatefulStepsProcess") -> ProcessBuilder:
-        process_builder = ProcessBuilder(process_name)
+    def create_process_with_stateful_steps_v1(
+        process_name: str = "FriedFishWithStatefulStepsProcess",
+    ) -> ProcessBuilder:
+        process_builder = ProcessBuilder(name=process_name, version="FriedFishProcess.v1")
 
         gather_ingredients_step = process_builder.add_step(GatherFriedFishIngredientsWithStockStep)
         chop_step = process_builder.add_step(CutFoodWithSharpeningStep, name="chopStep")

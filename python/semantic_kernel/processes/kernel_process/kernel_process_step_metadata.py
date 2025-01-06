@@ -2,7 +2,7 @@
 
 
 class KernelProcessStepMetadataAttribute:
-    """Python equivalent of the C# KernelProcessStepMetadataAttribute."""
+    """The metadata attribute for a Kernel Process Step."""
 
     def __init__(self, version: str = "v1"):
         """Initializes a new instance of the KernelProcessStepMetadataAttribute class."""

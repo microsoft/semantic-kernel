@@ -1,0 +1,32 @@
+{
+    "$type": "Step",
+    "id": "04e9978192ee42a2a0d4cb2c48eb5da5",
+    "name": "FishSandwichProcess",
+    "versionInfo": "v1",
+    "stepsState": {
+        "FriedFishProcess": {
+            "$type": "Step",
+            "id": "d63360f63a464b3da356ae1ab3e22b04",
+            "name": "FriedFishProcess",
+            "versionInfo": "v1"
+        },
+        "AddBunStep": {
+            "$type": "Step",
+            "id": "a9bf4974e4dd47ce879a96bb1872c4a8",
+            "name": "AddBunStep",
+            "versionInfo": "v1"
+        },
+        "AddSpecialSauceStep": {
+            "$type": "Step",
+            "id": "249d18c78f4e4ea49cf0bb345be3e3a4",
+            "name": "AddSpecialSauceStep",
+            "versionInfo": "v1"
+        },
+        "ExternalFriedFishStep": {
+            "$type": "Step",
+            "id": "e394ae2ca902498181b9cd2287c2473c",
+            "name": "ExternalFriedFishStep",
+            "versionInfo": "v1"
+        }
+    }
+}

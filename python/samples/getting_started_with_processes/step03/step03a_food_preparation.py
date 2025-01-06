@@ -18,8 +18,8 @@ from semantic_kernel.processes.process_builder import ProcessBuilder
 
 ################################################################################################
 # Demonstrate creation of KernelProcess and eliciting different food-related events,           #
-# with additional load/save steps for state management, replicating the same approach used in  #
-# the C# samples.                                                                              #
+# including load/save steps for state management, mirroring the same approach used in          #
+# the C# sample.                                                                               #
 ################################################################################################
 
 # region Helper Methods
@@ -33,8 +33,10 @@ def _create_kernel_with_chat_completion(service_id: str = "sample") -> Kernel:
 
 async def use_prepare_specific_product(process: ProcessBuilder, external_trigger_event: str):
     """
-    Helper function that builds a KernelProcess from a ProcessBuilder,
-    starts it, and waits until completion.
+    Helper function that:
+     1. Builds a KernelProcess from a ProcessBuilder
+     2. Starts it with the given external event
+     3. Waits for completion
     """
     kernel = _create_kernel_with_chat_completion("sample")
 
@@ -51,7 +53,7 @@ async def use_prepare_specific_product(process: ProcessBuilder, external_trigger
 
 async def execute_process_with_state(
     process: KernelProcess, kernel: Kernel, external_trigger_event: str, order_label: str
-):
+) -> KernelProcess:
     """
     Starts the provided KernelProcess (with optional existing state),
     returns the updated state after the run.
@@ -67,46 +69,52 @@ async def execute_process_with_state(
 
 # endregion
 
+
 # region Local JSON file handling for process state
 
+# Compute the base directory of this file's grandparent folder:
+#  1) __file__  => current script
+#  2) .parent   => folder of current script
+#  3) .parent   => up one more level
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-def dump_process_state_metadata_locally(process_state: KernelProcessStateMetadata, json_filename: str):
-    """
-    Saves the ProcessStateMetadata to a local JSON file.
-    """
-    # In your actual environment, set the path as desired:
-    directory = Path("processesstates")  # or wherever you want to store these
-    directory.mkdir(exist_ok=True)
-    file_path = directory / json_filename
+# Build the path to "step03/processes_states"
+PROCESS_STATE_DIRECTORY = BASE_DIR / "step03" / "processes_states"
+PROCESS_STATE_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
+
+def dump_process_state_metadata_locally(process_state: KernelProcessStateMetadata, json_filename: str) -> None:
+    """
+    Saves the ProcessStateMetadata to a local JSON file in step03/processes_states,
+    relative to the current script's grandparent folder.
+    """
+    file_path = PROCESS_STATE_DIRECTORY / json_filename
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(process_state.dict(), f, indent=4)
+        json.dump(process_state.model_dump(exclude_none=True, by_alias=True), f, indent=4)
     print(f"Process state saved to '{file_path.resolve()}'")
 
 
 def load_process_state_metadata(json_filename: str) -> KernelProcessStateMetadata | None:
     """
-    Loads the ProcessStateMetadata from a local JSON file, if found.
-    Returns None if the file doesn't exist or can't be parsed.
+    Loads the ProcessStateMetadata from step03/processes_states if it exists.
+    Returns None if the file doesn't exist or fails to parse.
     """
-    directory = Path("processesstates")
-    file_path = directory / json_filename
+    file_path = PROCESS_STATE_DIRECTORY / json_filename
     if not file_path.exists():
-        print(f"Could not find '{file_path.resolve()}'")
+        print(f"No such file: '{file_path.resolve()}'")
         return None
 
-    with open(file_path, encoding="utf-8") as f:
-        data = json.load(f)
-
     try:
-        # Recreate a ProcessStateMetadata instance from the JSON
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
         return KernelProcessStateMetadata(**data)
-    except Exception as e:
-        print(f"Error parsing state file '{file_path}': {e}")
+    except Exception as ex:
+        print(f"Error reading state file '{file_path.resolve()}': {ex}")
         return None
 
 
 # endregion
+
 
 # region Stateless Processes
 
@@ -133,6 +141,7 @@ async def use_prepare_fish_and_chips_process():
 
 # endregion
 
+
 # region Stateful Processes
 
 
@@ -141,7 +150,7 @@ async def use_prepare_stateful_fried_fish_process_no_shared_state():
     Showcases building the stateful process multiple times.
     Each new build has fresh/independent state.
     """
-    builder = FriedFishProcess.create_process_with_stateful_steps()
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
     event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish.value
     kernel = _create_kernel_with_chat_completion()
 
@@ -155,9 +164,9 @@ async def use_prepare_stateful_fried_fish_process_no_shared_state():
 async def use_prepare_stateful_fried_fish_process_shared_state():
     """
     Showcases building the stateful process once and reusing it,
-    meaning runs 2 & 3 continue from the prior step's state.
+    meaning runs #2 and #3 continue from the prior run's state.
     """
-    builder = FriedFishProcess.create_process_with_stateful_steps()
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
     kernel = _create_kernel_with_chat_completion()
     event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish.value
 
@@ -184,7 +193,8 @@ async def use_prepare_stateful_potato_fries_process_shared_state():
 
 # endregion
 
-# region Loading / Storing state from local files
+
+# region Filenames for sample states
 
 STATEFUL_FRIED_FISH_PROCESS_FILENAME = "FriedFishProcessStateSuccess.json"
 STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME = "FriedFishProcessStateSuccessLowStock.json"
@@ -192,20 +202,24 @@ STATEFUL_FRIED_FISH_NOSTOCK_FILENAME = "FriedFishProcessStateSuccessNoStock.json
 STATEFUL_FISH_SANDWICH_PROCESS_FILENAME = "FishSandwichStateProcessSuccess.json"
 STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME = "FishSandwichStateProcessSuccessLowStock.json"
 
+# endregion
+
+
+# region Reading/Writing process state from/to file
+
 
 async def run_and_store_stateful_fried_fish_process_state():
     """
     Runs the FriedFish stateful process once, then stores its state to JSON.
     """
     kernel = _create_kernel_with_chat_completion()
-    builder = FriedFishProcess.create_process_with_stateful_steps()
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
     fried_fish_process = builder.build()
 
     print("=== Start run_and_store_stateful_fried_fish_process_state ===")
     final_state = await execute_process_with_state(
         fried_fish_process, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish.value, "Order 1"
     )
-    # Convert final state to metadata for saving
     process_state_metadata = final_state.to_process_state_metadata()
     dump_process_state_metadata_locally(process_state_metadata, STATEFUL_FRIED_FISH_PROCESS_FILENAME)
     print("=== End run_and_store_stateful_fried_fish_process_state ===\n")
@@ -216,9 +230,7 @@ async def run_and_store_stateful_fish_sandwich_process_state():
     Runs the FishSandwich stateful process once, then stores its state to JSON.
     """
     kernel = _create_kernel_with_chat_completion()
-    builder = FishSandwichProcess.create_process()  # Or a stateful method if you have it
-    # For demonstration, let's assume we want to store a regular FishSandwichProcess state
-    # If you have a "create_process_with_stateful_steps" for FishSandwich, use that instead.
+    builder = FishSandwichProcess.create_process()
     fish_sandwich_process = builder.build()
 
     print("=== Start run_and_store_stateful_fish_sandwich_process_state ===")
@@ -231,22 +243,20 @@ async def run_and_store_stateful_fish_sandwich_process_state():
 
 
 async def run_stateful_fried_fish_process_from_file():
-    """
-    Loads an existing JSON state file, rebuilds the process with that state,
-    then triggers the external event again.
-    """
     loaded_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_PROCESS_FILENAME)
     if not loaded_metadata:
         return
 
     kernel = _create_kernel_with_chat_completion()
-    builder = FriedFishProcess.create_process_with_stateful_steps()
-    # Build the process with the loaded metadata
-    process_from_file = builder.build(process_state_metadata=loaded_metadata)
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
+    process_from_file = builder.build(state_metadata=loaded_metadata)
 
     print("=== Start run_stateful_fried_fish_process_from_file ===")
     await execute_process_with_state(
-        process_from_file, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish.value, "Using Stored State"
+        process_from_file,
+        kernel,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        "Using Stored State",
     )
     print("=== End run_stateful_fried_fish_process_from_file ===\n")
 
@@ -257,12 +267,15 @@ async def run_stateful_fried_fish_process_with_low_stock_from_file():
         return
 
     kernel = _create_kernel_with_chat_completion()
-    builder = FriedFishProcess.create_process_with_stateful_steps()
-    process_from_file = builder.build(process_state_metadata=loaded_metadata)
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
+    process_from_file = builder.build(state_metadata=loaded_metadata)
 
     print("=== Start run_stateful_fried_fish_process_with_low_stock_from_file ===")
     await execute_process_with_state(
-        process_from_file, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish.value, "Using Low Stock State"
+        process_from_file,
+        kernel,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        "Using Low Stock State",
     )
     print("=== End run_stateful_fried_fish_process_with_low_stock_from_file ===\n")
 
@@ -273,12 +286,15 @@ async def run_stateful_fried_fish_process_with_no_stock_from_file():
         return
 
     kernel = _create_kernel_with_chat_completion()
-    builder = FriedFishProcess.create_process_with_stateful_steps()
-    process_from_file = builder.build(process_state_metadata=loaded_metadata)
+    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
+    process_from_file = builder.build(state_metadata=loaded_metadata)
 
     print("=== Start run_stateful_fried_fish_process_with_no_stock_from_file ===")
     await execute_process_with_state(
-        process_from_file, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish.value, "Using No Stock State"
+        process_from_file,
+        kernel,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        "Using No Stock State",
     )
     print("=== End run_stateful_fried_fish_process_with_no_stock_from_file ===\n")
 
@@ -290,11 +306,14 @@ async def run_stateful_fish_sandwich_process_from_file():
 
     kernel = _create_kernel_with_chat_completion()
     builder = FishSandwichProcess.create_process()
-    process_from_file = builder.build(process_state_metadata=loaded_metadata)
+    process_from_file = builder.build(state_metadata=loaded_metadata)
 
     print("=== Start run_stateful_fish_sandwich_process_from_file ===")
     await execute_process_with_state(
-        process_from_file, kernel, FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value, "Using Stored State"
+        process_from_file,
+        kernel,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        "Using Stored State",
     )
     print("=== End run_stateful_fish_sandwich_process_from_file ===\n")
 
@@ -306,50 +325,32 @@ async def run_stateful_fish_sandwich_process_with_low_stock_from_file():
 
     kernel = _create_kernel_with_chat_completion()
     builder = FishSandwichProcess.create_process()
-    process_from_file = builder.build(process_state_metadata=loaded_metadata)
+    process_from_file = builder.build(state_metadata=loaded_metadata)
 
     print("=== Start run_stateful_fish_sandwich_process_with_low_stock_from_file ===")
     await execute_process_with_state(
-        process_from_file, kernel, FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value, "Using Low Stock State"
+        process_from_file,
+        kernel,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        "Using Low Stock State",
     )
     print("=== End run_stateful_fish_sandwich_process_with_low_stock_from_file ===\n")
 
-
-# You can also demonstrate versioning compatibility by using the same V2 approach the C# code has,
-# but below is an example if you define a V2 process in Python:
-#
-# async def run_stateful_fried_fish_v2_process_with_low_stock_v1_state_from_file():
-#     loaded_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME)
-#     if not loaded_metadata:
-#         return
-#
-#     kernel = _create_kernel_with_chat_completion()
-#     builder = FriedFishProcess.create_process_with_stateful_steps_v2()  # hypothetically if you had a v2
-#     process_from_file = builder.build(process_state_metadata=loaded_metadata)
-#
-#     print("=== Start run_stateful_fried_fish_v2_process_with_low_stock_v1_state_from_file ===")
-#     await execute_process_with_state(
-#         process_from_file,
-#         kernel,
-#         FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
-#         "Using Low Stock V1 State"
-#     )
-#     print("=== End run_stateful_fried_fish_v2_process_with_low_stock_v1_state_from_file ===\n")
 
 # endregion
 
 
 async def main():
     # Show basic usage of "stateless" processes
-    await use_prepare_fried_fish_process()
-    await use_prepare_potato_fries_process()
-    await use_prepare_fish_sandwich_process()
-    await use_prepare_fish_and_chips_process()
+    # await use_prepare_fried_fish_process()
+    # await use_prepare_potato_fries_process()
+    # await use_prepare_fish_sandwich_process()
+    # await use_prepare_fish_and_chips_process()
 
-    # Show "stateful" processes, not storing or loading yet
-    await use_prepare_stateful_fried_fish_process_no_shared_state()
-    await use_prepare_stateful_fried_fish_process_shared_state()
-    await use_prepare_stateful_potato_fries_process_shared_state()
+    # # Show "stateful" processes, not storing or loading yet
+    # await use_prepare_stateful_fried_fish_process_no_shared_state()
+    # await use_prepare_stateful_fried_fish_process_shared_state()
+    # await use_prepare_stateful_potato_fries_process_shared_state()
 
     # Demonstration of storing then reloading state:
     await run_and_store_stateful_fried_fish_process_state()
@@ -358,11 +359,12 @@ async def main():
     await run_stateful_fried_fish_process_from_file()
     await run_stateful_fried_fish_process_with_low_stock_from_file()
     await run_stateful_fried_fish_process_with_no_stock_from_file()
+
     await run_stateful_fish_sandwich_process_from_file()
     await run_stateful_fish_sandwich_process_with_low_stock_from_file()
 
-    # If you define a "create_process_with_stateful_steps_v2()" in your Python code,
-    # you can similarly show how to load V1 states into V2 processes here.
+    # If you have a V2 version of the process, you can do "builderV2 = ..."
+    # and build it with loaded V1 metadata to demonstrate version migrations.
 
 
 if __name__ == "__main__":

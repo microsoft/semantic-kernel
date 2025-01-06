@@ -110,10 +110,10 @@ class ProcessBuilder(ProcessStepBuilder):
         self.external_event_target_map[event_id] = edge_builder.target
         super().link_to(event_id, edge_builder)
 
-    def build_step(self) -> KernelProcessStepInfo:
+    def build_step(self, state_metadata: KernelProcessStepStateMetadata | None = None) -> KernelProcessStepInfo:
         """Builds the process step."""
         # The process is a step so we can return the step info directly
-        return self.build()
+        return self.build(state_metadata=state_metadata)
 
     def build(self, state_metadata: KernelProcessStateMetadata | None = None) -> "KernelProcess":
         """Builds the KernelProcess."""

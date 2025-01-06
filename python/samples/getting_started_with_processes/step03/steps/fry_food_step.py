@@ -11,8 +11,10 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
 )
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import kernel_process_step_metadata
 
 
+@kernel_process_step_metadata("FryFoodStep.V1")
 class FryFoodStep(KernelProcessStep):
     class Functions(Enum):
         FryFood = "FryFood"
