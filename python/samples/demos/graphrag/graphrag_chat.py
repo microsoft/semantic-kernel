@@ -2,7 +2,7 @@
 
 import logging
 
-from graphrag_service import GraphRagChatCompletion, GraphRagPromptExecutionSettings
+from SKGraphRag import GraphRagChatCompletion, GraphRagPromptExecutionSettings
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
@@ -48,8 +48,6 @@ async def chat(service: ChatCompletionClientBase, chat_history: ChatHistory) -> 
 
 
 async def main():
-    print("Welcome to Graphrag, a chatbot that can answer questions about document(s) indexed using GraphRag.")
-    print("Type 'exit' to quit.")
     # Control whether the full context of the message is printed as well.
     print_context = False
 
@@ -57,6 +55,8 @@ async def main():
     if not graph_rag_chat_completion.has_loaded():
         await graph_rag_chat_completion.setup()
     chat_history = ChatHistory()
+    print("Welcome to Graphrag, a chatbot that can answer questions about document(s) indexed using GraphRag.")
+    print("Type 'exit' to quit.")
     while True:
         # The main function returns either the full message, including context or None.
         message = await chat(graph_rag_chat_completion, chat_history)

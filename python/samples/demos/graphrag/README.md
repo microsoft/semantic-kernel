@@ -4,9 +4,9 @@
 To setup this demo, make sure you are rooted in this root folder.
 
 Then run `setup-part-0` for the appropriate platform.
-This install uv, creates a venv with python 3.12 in .venv, activates the venv, and installs the dependencies.
+This installs uv, creates a venv with python 3.12 in .venv, activates the venv, and installs the dependencies.
 
-### Linux
+### Linux or MacOS
 ```bash
 ./setup-part-0-linux.sh
 ```
