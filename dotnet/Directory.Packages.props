@@ -20,7 +20,7 @@
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
-    <PackageVersion Include="OpenAI" Version="[2.1.0-beta.2]" />
+    <PackageVersion Include="OpenAI" Version="[2.1.0]" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[2.1.0-beta.2]" />
     <PackageVersion Include="Azure.Identity" Version="1.13.1" />
