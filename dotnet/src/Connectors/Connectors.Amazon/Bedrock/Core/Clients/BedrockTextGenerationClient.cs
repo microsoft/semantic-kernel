@@ -181,6 +181,7 @@ internal sealed class BedrockTextGenerationClient
 
             foreach (var streamingContent in this._ioTextService.GetTextStreamOutput(chunk))
             {
+                streamedContents?.Add(streamingContent);
                 yield return streamingContent;
             }
         }
