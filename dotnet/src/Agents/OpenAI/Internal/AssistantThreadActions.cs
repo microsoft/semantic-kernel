@@ -178,7 +178,7 @@ internal static class AssistantThreadActions
 
         FunctionCallsProcessor functionProcessor = new(logger);
         // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
-        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, AllowStrictSchemaAdherence = true };
+        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
@@ -412,7 +412,7 @@ internal static class AssistantThreadActions
 
         FunctionCallsProcessor functionProcessor = new(logger);
         // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
-        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, AllowStrictSchemaAdherence = true };
+        FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
 
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
         do
