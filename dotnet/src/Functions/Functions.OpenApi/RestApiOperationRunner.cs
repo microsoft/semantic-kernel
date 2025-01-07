@@ -89,6 +89,11 @@ internal sealed class RestApiOperationRunner
     private readonly HttpResponseContentReader? _httpResponseContentReader;
 
     /// <summary>
+    /// The external response factory for creating <see cref="RestApiOperationResponse"/>.
+    /// </summary>
+    private readonly RestApiOperationResponseFactory? _responseFactory;
+
+    /// <summary>
     /// The external URL factory to use if provided, instead of the default one.
     /// </summary>
     private readonly RestApiOperationUrlFactory? _urlFactory;
@@ -115,6 +120,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     /// <param name="httpResponseContentReader">Custom HTTP response content reader.</param>
+    /// <param name="responseFactory">The external response factory for creating <see cref="RestApiOperationResponse"/>.</param>
     /// <param name="urlFactory">The external URL factory to use if provided if provided instead of the default one.</param>
     /// <param name="headersFactory">The external headers factory to use if provided instead of the default one.</param>
     /// <param name="payloadFactory">The external payload factory to use if provided instead of the default one.</param>
@@ -125,6 +131,7 @@ internal sealed class RestApiOperationRunner
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false,
         HttpResponseContentReader? httpResponseContentReader = null,
+        RestApiOperationResponseFactory? responseFactory = null,
         RestApiOperationUrlFactory? urlFactory = null,
         RestApiOperationHeadersFactory? headersFactory = null,
         RestApiOperationPayloadFactory? payloadFactory = null)
@@ -134,6 +141,7 @@ internal sealed class RestApiOperationRunner
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
         this._httpResponseContentReader = httpResponseContentReader;
+        this._responseFactory = responseFactory;
         this._urlFactory = urlFactory;
         this._headersFactory = headersFactory;
         this._payloadFactory = payloadFactory;
@@ -577,11 +585,31 @@ internal sealed class RestApiOperationRunner
     /// <returns>The operation response.</returns>
     private async Task<RestApiOperationResponse> BuildResponseAsync(RestApiOperation operation, HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
-        var response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
+        async Task<RestApiOperationResponse> Build()
+        {
+            var response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
 
-        response.ExpectedSchema ??= GetExpectedSchema(operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), responseMessage.StatusCode);
+            response.ExpectedSchema ??= GetExpectedSchema(operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), responseMessage.StatusCode);
 
-        return response;
+            return response;
+        }
+
+        // Delegate the response building to the custom response factory if provided.
+        if (this._responseFactory is not null)
+        {
+            var response = await this._responseFactory(new(operation, requestMessage, responseMessage, Build), cancellationToken).ConfigureAwait(false);
+
+            // Handling the case when the content is a stream
+            if (response.Content is Stream stream and not HttpResponseStream)
+            {
+                // Wrap the stream content to capture the HTTP response message, delegating its disposal to the caller.
+                response.Content = new HttpResponseStream(stream, responseMessage);
+            }
+
+            return response;
+        }
+
+        return await Build().ConfigureAwait(false);
     }
 
     #endregion
