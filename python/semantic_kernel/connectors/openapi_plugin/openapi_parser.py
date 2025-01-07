@@ -215,7 +215,7 @@ class OpenApiParser:
 
         servers = parsed_document.get("servers", [])
 
-        server_urls: list[dict[str, Any]] = None
+        server_urls: list[dict[str, Any]] = []
 
         if execution_settings and execution_settings.server_url_override:
             # Override the servers with the provided URL
