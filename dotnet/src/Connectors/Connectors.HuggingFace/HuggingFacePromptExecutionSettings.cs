@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// <summary>
 /// HuggingFace Execution Settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
