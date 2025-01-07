@@ -609,7 +609,7 @@ internal sealed class RestApiOperationRunner
             return response;
         }
 
-        return await Build(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: null), cancellationToken).ConfigureAwait(false);
+        return await Build(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: null!), cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

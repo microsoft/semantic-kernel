@@ -617,7 +617,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         {
             restApiOperationResponseFactoryIsInvoked = true;
 
-            return await context.InternalFactory!(context, cancellationToken);
+            return await context.InternalFactory(context, cancellationToken);
         }
 
         using var messageHandlerStub = new HttpMessageHandlerStub();

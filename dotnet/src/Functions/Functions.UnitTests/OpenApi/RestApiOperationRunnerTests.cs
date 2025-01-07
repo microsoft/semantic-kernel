@@ -1757,7 +1757,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         async Task<RestApiOperationResponse> RestApiOperationResponseFactory(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
         {
             factoryContext = context;
-            factoryInternalResponse = await context.InternalFactory!(context, cancellationToken);
+            factoryInternalResponse = await context.InternalFactory(context, cancellationToken);
             factoryCancellationToken = cancellationToken;
 
             return factoryInternalResponse;

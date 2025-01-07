@@ -18,7 +18,7 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <param name="request">The HTTP request message.</param>
     /// <param name="response">The HTTP response message.</param>
     /// <param name="internalFactory">The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.</param>
-    internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, RestApiOperationResponseFactory? internalFactory)
+    internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, RestApiOperationResponseFactory internalFactory)
     {
         this.InternalFactory = internalFactory;
         this.Operation = operation;
@@ -44,5 +44,5 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <summary>
     /// The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.
     /// </summary>
-    public RestApiOperationResponseFactory? InternalFactory { get; }
+    public RestApiOperationResponseFactory InternalFactory { get; }
 }
