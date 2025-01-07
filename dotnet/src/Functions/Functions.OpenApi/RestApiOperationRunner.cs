@@ -585,11 +585,11 @@ internal sealed class RestApiOperationRunner
     /// <returns>The operation response.</returns>
     private async Task<RestApiOperationResponse> BuildResponseAsync(RestApiOperation operation, HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
-        async Task<RestApiOperationResponse> Build()
+        async Task<RestApiOperationResponse> Build(RestApiOperationResponseFactoryContext context, CancellationToken ct)
         {
-            var response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
+            var response = await this.ReadContentAndCreateOperationResponseAsync(context.Request, context.Response, payload, ct).ConfigureAwait(false);
 
-            response.ExpectedSchema ??= GetExpectedSchema(operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), responseMessage.StatusCode);
+            response.ExpectedSchema ??= GetExpectedSchema(context.Operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), context.Response.StatusCode);
 
             return response;
         }
@@ -597,7 +597,7 @@ internal sealed class RestApiOperationRunner
         // Delegate the response building to the custom response factory if provided.
         if (this._responseFactory is not null)
         {
-            var response = await this._responseFactory(new(operation, requestMessage, responseMessage, Build), cancellationToken).ConfigureAwait(false);
+            var response = await this._responseFactory(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: Build), cancellationToken).ConfigureAwait(false);
 
             // Handling the case when the content is a stream
             if (response.Content is Stream stream and not HttpResponseStream)
@@ -609,7 +609,7 @@ internal sealed class RestApiOperationRunner
             return response;
         }
 
-        return await Build().ConfigureAwait(false);
+        return await Build(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: null), cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

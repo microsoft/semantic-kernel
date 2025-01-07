@@ -56,7 +56,7 @@ public sealed class OpenApiPlugin_RestApiOperationResponseFactory(ITestOutputHel
     private static async Task<RestApiOperationResponse> IncludeHeadersIntoRestApiOperationResponseAsync(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
     {
         // Create the response using the internal factory
-        var response = await context.InternalFactory();
+        RestApiOperationResponse response = await context.InternalFactory!(context, cancellationToken);
 
         // Obtain the 'repair-id' header value from the HTTP response and include it in the operation response only for the 'createRepair' operation
         if (context.Operation.Id == "createRepair" && context.Response.Headers.TryGetValues("repair-id", out IEnumerable<string>? values))

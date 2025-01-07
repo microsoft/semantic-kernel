@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -20,7 +18,7 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <param name="request">The HTTP request message.</param>
     /// <param name="response">The HTTP response message.</param>
     /// <param name="internalFactory">The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.</param>
-    internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, Func<Task<RestApiOperationResponse>> internalFactory)
+    internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, RestApiOperationResponseFactory? internalFactory)
     {
         this.InternalFactory = internalFactory;
         this.Operation = operation;
@@ -46,5 +44,5 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <summary>
     /// The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.
     /// </summary>
-    public Func<Task<RestApiOperationResponse>> InternalFactory { get; }
+    public RestApiOperationResponseFactory? InternalFactory { get; }
 }
