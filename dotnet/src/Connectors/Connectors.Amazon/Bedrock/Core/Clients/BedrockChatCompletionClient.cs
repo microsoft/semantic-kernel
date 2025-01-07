@@ -129,7 +129,8 @@ internal sealed class BedrockChatCompletionClient
             new ChatMessageContent
             {
                 Role = BedrockClientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
-                Items = CreateChatMessageContentItemCollection(message.Content)
+                Items = CreateChatMessageContentItemCollection(message.Content),
+                InnerContent = response
             }
         ];
     }
@@ -192,11 +193,11 @@ internal sealed class BedrockChatCompletionClient
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
         foreach (var chunk in response.Stream.AsEnumerable())
         {
-            if (chunk is ContentBlockDeltaEvent)
+            if (chunk is ContentBlockDeltaEvent deltaEvent)
             {
                 // Convert output to semantic kernel's StreamingChatMessageContent
-                var c = (chunk as ContentBlockDeltaEvent)?.Delta.Text;
-                var content = new StreamingChatMessageContent(AuthorRole.Assistant, c);
+                var c = deltaEvent?.Delta.Text;
+                var content = new StreamingChatMessageContent(AuthorRole.Assistant, c, deltaEvent);
                 streamedContents?.Add(content);
                 yield return content;
             }

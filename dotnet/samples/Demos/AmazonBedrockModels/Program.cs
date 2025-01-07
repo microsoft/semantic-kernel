@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -28,12 +30,14 @@ switch (choice)
     case 4:
         await PerformStreamTextGeneration().ConfigureAwait(false);
         break;
+    default:
+        throw new InvalidOperationException("Invalid choice");
 }
 
 async Task PerformChatCompletion()
 {
     string userInput;
-    ChatHistory chatHistory = new();
+    ChatHistory chatHistory = [];
 
     // Get available chat completion models
     var availableChatModels = bedrockModels.Values
@@ -60,6 +64,8 @@ async Task PerformChatCompletion()
             {
                 output += message.Content;
                 Console.WriteLine($"Chat Completion Answer: {message.Content}");
+                var innerContent = message.InnerContent as ConverseResponse;
+                Console.WriteLine($"Usage Metadata: {JsonSerializer.Serialize(innerContent?.Usage)}");
                 Console.WriteLine();
             }
 
@@ -91,6 +97,7 @@ async Task PerformTextGeneration()
         if (firstTextContent != null)
         {
             Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
+            Console.WriteLine($"Metadata: {JsonSerializer.Serialize(firstTextContent.InnerContent)}");
         }
         else
         {
@@ -106,7 +113,7 @@ async Task PerformTextGeneration()
 async Task PerformStreamChatCompletion()
 {
     string userInput;
-    ChatHistory streamChatHistory = new();
+    ChatHistory streamChatHistory = [];
 
     // Get available streaming chat completion models
     var availableStreamingChatModels = bedrockModels.Values

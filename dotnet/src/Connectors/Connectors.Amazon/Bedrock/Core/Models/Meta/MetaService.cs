@@ -37,7 +37,7 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Generation))
         {
-            textContents.Add(new TextContent(responseBody!.Generation));
+            textContents.Add(new TextContent(responseBody!.Generation, innerContent: responseBody));
         }
 
         return textContents;
@@ -75,12 +75,12 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var generation = chunk["generation"]?.ToString();
         if (!string.IsNullOrEmpty(generation))
         {
-            yield return generation!;
+            yield return new StreamingTextContent(generation, innerContent: chunk)!;
         }
     }
 
