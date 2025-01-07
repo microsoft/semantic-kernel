@@ -9,9 +9,9 @@ from redis.asyncio.client import Redis
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
+from semantic_kernel.exceptions import (
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
 
 BASE_PATH = "redis.asyncio.client.Redis"
@@ -153,7 +153,7 @@ def test_vector_store_with_client(redis_unit_test_env):
 
 @mark.parametrize("exclude_list", [["REDIS_CONNECTION_STRING"]], indirect=True)
 def test_vector_store_fail(redis_unit_test_env):
-    with raises(MemoryConnectorInitializationError, match="Failed to create Redis settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Redis settings."):
         RedisStore(env_file_path="test.env")
 
 
@@ -223,14 +223,14 @@ def test_init_with_type(redis_unit_test_env, data_model_type, type_):
 
 @mark.parametrize("exclude_list", [["REDIS_CONNECTION_STRING"]], indirect=True)
 def test_collection_fail(redis_unit_test_env, data_model_definition):
-    with raises(MemoryConnectorInitializationError, match="Failed to create Redis settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Redis settings."):
         RedisHashsetCollection(
             data_model_type=dict,
             collection_name="test",
             data_model_definition=data_model_definition,
             env_file_path="test.env",
         )
-    with raises(MemoryConnectorInitializationError, match="Failed to create Redis settings."):
+    with raises(VectorStoreInitializationException, match="Failed to create Redis settings."):
         RedisJsonCollection(
             data_model_type=dict,
             collection_name="test",
@@ -326,5 +326,5 @@ async def test_create_index_manual(collection_hash, mock_create_collection):
 
 
 async def test_create_index_fail(collection_hash, mock_create_collection):
-    with raises(MemoryConnectorException, match="Invalid index type supplied."):
+    with raises(VectorStoreOperationException, match="Invalid index type supplied."):
         await collection_hash.create_collection(index_definition="index_definition", fields="fields")

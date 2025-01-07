@@ -96,6 +96,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -126,12 +127,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         inner_content=chunk,
                         ai_model_id=settings.ai_model_id,
                         metadata=chunk_metadata,
+                        function_invoke_attempt=function_invoke_attempt,
                     )
                     for i in range(settings.number_of_responses or 1)
                 ]
             else:
                 yield [
-                    self._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+                    self._create_streaming_chat_message_content(chunk, choice, chunk_metadata, function_invoke_attempt)
                     for choice in chunk.choices
                 ]
 
@@ -190,6 +192,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: dict[str, Any],
+        function_invoke_attempt: int,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -207,6 +210,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             role=(AuthorRole(choice.delta.role) if choice.delta and choice.delta.role else AuthorRole.ASSISTANT),
             finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
             items=items,
+            function_invoke_attempt=function_invoke_attempt,
         )
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:

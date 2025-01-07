@@ -6,9 +6,9 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorInitializationError,
-    MemoryConnectorResourceNotFound,
+from semantic_kernel.exceptions import (
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
@@ -63,10 +63,10 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
+            raise VectorStoreInitializationException("Failed to validate Azure Cosmos DB NoSQL settings.") from e
 
         if cosmos_db_nosql_settings.database_name is None:
-            raise MemoryConnectorInitializationError("The name of the Azure Cosmos DB NoSQL database is missing.")
+            raise VectorStoreInitializationException("The name of the Azure Cosmos DB NoSQL database is missing.")
 
         if cosmos_client is None:
             if cosmos_db_nosql_settings.key is not None:
@@ -94,7 +94,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
         except CosmosResourceNotFoundError:
             return False
         except Exception as e:
-            raise MemoryConnectorResourceNotFound(
+            raise VectorStoreOperationException(
                 f"Failed to check if database '{self.database_name}' exists, with message {e}"
             ) from e
 
@@ -106,9 +106,9 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
 
             if self.create_database:
                 return await self.cosmos_client.create_database(self.database_name, **kwargs)
-            raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
+            raise VectorStoreOperationException(f"Database '{self.database_name}' does not exist.")
         except Exception as e:
-            raise MemoryConnectorResourceNotFound(f"Failed to get database proxy for '{id}'.") from e
+            raise VectorStoreOperationException(f"Failed to get database proxy for '{id}'.") from e
 
     async def _get_container_proxy(self, container_name: str, **kwargs) -> ContainerProxy:
         """Gets the container proxy."""
@@ -116,4 +116,4 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
             database_proxy = await self._get_database_proxy(**kwargs)
             return database_proxy.get_container_client(container_name)
         except Exception as e:
-            raise MemoryConnectorResourceNotFound(f"Failed to get container proxy for '{container_name}'.") from e
+            raise VectorStoreOperationException(f"Failed to get container proxy for '{container_name}'.") from e

@@ -55,7 +55,7 @@ async def test_azure_summarize_conversation_using_plugin(kernel):
     )
     prompt_template_config = PromptTemplateConfig(
         description="Given a section of a conversation transcript, summarize the part of the conversation.",
-        execution_settings=execution_settings,
+        execution_settings={service_id: execution_settings},
     )
 
     kernel.add_service(sk_oai.OpenAIChatCompletion(service_id=service_id))

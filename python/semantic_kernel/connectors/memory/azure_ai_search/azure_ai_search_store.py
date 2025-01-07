@@ -19,7 +19,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collectio
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_client, get_search_index_client
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ class AzureAISearchStore(VectorStore):
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as exc:
-                raise MemoryConnectorInitializationError("Failed to create Azure AI Search settings.") from exc
+                raise VectorStoreInitializationException("Failed to create Azure AI Search settings.") from exc
             search_index_client = get_search_index_client(
                 azure_ai_search_settings=azure_ai_search_settings,
                 azure_credential=azure_credentials,

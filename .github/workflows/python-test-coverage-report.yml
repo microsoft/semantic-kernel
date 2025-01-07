@@ -6,6 +6,10 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   python-test-coverage-report:
     runs-on: ubuntu-latest
@@ -32,11 +36,12 @@ jobs:
         run: |
           PR_NUMBER=$(cat pr_number)
           echo "PR number: $PR_NUMBER"
-          echo "::set-env name=PR_NUMBER::$PR_NUMBER"
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           issue-number: ${{ env.PR_NUMBER }}
           pytest-coverage-path: python/python-coverage.txt
           title: "Python Test Coverage Report"

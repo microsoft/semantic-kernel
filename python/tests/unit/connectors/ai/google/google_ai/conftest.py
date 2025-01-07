@@ -128,8 +128,8 @@ async def mock_google_ai_streaming_chat_completion_response_with_tool_call() -> 
         parts=[
             protos.Part(
                 function_call=protos.FunctionCall(
-                    name="test_function",
-                    args={"test_arg": "test_value"},
+                    name="getLightStatus",
+                    args={"arg1": "test_value"},
                 )
             )
         ],

@@ -3,7 +3,7 @@
 import json
 import logging
 import sys
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, ClassVar
 
 if sys.version_info >= (3, 12):
@@ -26,6 +26,10 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.anthropic.services.utils import (
+    MESSAGE_CONVERTERS,
+    update_settings_from_function_call_configuration,
+)
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -34,7 +38,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -43,10 +46,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
+    ServiceInvalidRequestError,
     ServiceInvalidResponseError,
     ServiceResponseException,
 )
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
@@ -131,6 +134,19 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         return str(self.async_client.base_url)
 
     @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return update_settings_from_function_call_configuration
+
+    @override
+    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
+        if hasattr(settings, "tool_choice"):
+            settings.tool_choice = None
+        if hasattr(settings, "tools"):
+            settings.tools = None
+
+    @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
         self,
@@ -154,6 +170,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
@@ -164,13 +181,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
 
-        response = self._send_chat_stream_request(settings)
+        response = self._send_chat_stream_request(settings, function_invoke_attempt)
         if not isinstance(response, AsyncGenerator):
             raise ServiceInvalidResponseError("Expected an AsyncGenerator response.")
 
         async for message in response:
             yield message
 
+    @override
     def _prepare_chat_history_for_request(
         self,
         chat_history: "ChatHistory",
@@ -192,69 +210,48 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             A tuple containing the prepared chat history and the first SYSTEM message content.
         """
         system_message_content = None
-        remaining_messages: list[dict[str, Any]] = []
-        system_message_found = False
-        for message in chat_history.messages:
-            # Skip system messages after the first one is found
-            if message.role == AuthorRole.SYSTEM:
-                if not system_message_found:
-                    system_message_content = message.content
-                    system_message_found = True
-            elif message.role == AuthorRole.TOOL:
-                # if tool result message isn't the most recent message, add it to the remaining messages
-                if not remaining_messages or remaining_messages[-1][role_key] != AuthorRole.USER:
-                    remaining_messages.append({
-                        role_key: AuthorRole.USER,
-                        content_key: [],
-                    })
+        system_message_count = 0
+        formatted_messages: list[dict[str, Any]] = []
+        for i in range(len(chat_history)):
+            prev_message = chat_history[i - 1] if i > 0 else None
+            curr_message = chat_history[i]
+            if curr_message.role == AuthorRole.SYSTEM:
+                # Skip system messages after the first one is found
+                if system_message_count == 0:
+                    system_message_content = curr_message.content
+                system_message_count += 1
+            elif curr_message.role == AuthorRole.USER or curr_message.role == AuthorRole.ASSISTANT:
+                formatted_messages.append(MESSAGE_CONVERTERS[curr_message.role](curr_message))
+            elif curr_message.role == AuthorRole.TOOL:
+                if prev_message is None:
+                    # Under no circumstances should a tool message be the first message in the chat history
+                    raise ServiceInvalidRequestError("Tool message found without a preceding message.")
+                if prev_message.role == AuthorRole.USER or prev_message.role == AuthorRole.SYSTEM:
+                    # A tool message should not be found after a user or system message
+                    # Please NOTE that in SK there are the USER role and the TOOL role, but in Anthropic
+                    # the tool messages are considered as USER messages. We are checking against the SK roles.
+                    raise ServiceInvalidRequestError("Tool message found after a user or system message.")
 
-                # add the tool result to the most recent message
-                tool_results_message = remaining_messages[-1]
-                for item in message.items:
-                    if isinstance(item, FunctionResultContent):
-                        tool_results_message["content"].append({
-                            "type": "tool_result",
-                            "tool_use_id": item.id,
-                            content_key: str(item.result),
-                        })
-            elif message.finish_reason == SemanticKernelFinishReason.TOOL_CALLS:
-                if not stream:
-                    if not message.inner_content:
-                        raise ServiceInvalidResponseError(
-                            "Expected a message with an Anthropic Message as inner content."
-                        )
-
-                    remaining_messages.append({
-                        role_key: AuthorRole.ASSISTANT,
-                        content_key: [content_block.to_dict() for content_block in message.inner_content.content],
-                    })
+                formatted_message = MESSAGE_CONVERTERS[curr_message.role](curr_message)
+                if prev_message.role == AuthorRole.ASSISTANT:
+                    # The first tool message after an assistant message should be a new message
+                    formatted_messages.append(formatted_message)
                 else:
-                    content: list[TextBlock | ToolUseBlock] = []
-                    # for remaining items, add them to the content
-                    for item in message.items:
-                        if isinstance(item, TextContent):
-                            content.append(TextBlock(text=item.text, type="text"))
-                        elif isinstance(item, FunctionCallContent):
-                            item_arguments = (
-                                item.arguments if not isinstance(item.arguments, str) else json.loads(item.arguments)
-                            )
-
-                            content.append(
-                                ToolUseBlock(id=item.id, input=item_arguments, name=item.name, type="tool_use")
-                            )
-
-                    remaining_messages.append({
-                        role_key: AuthorRole.ASSISTANT,
-                        content_key: content,
-                    })
+                    # Append the tool message to the previous tool message.
+                    # This indicates that the assistant message requested multiple parallel tool calls.
+                    # Anthropic requires that parallel Tool messages are grouped together in a single message.
+                    formatted_messages[-1][content_key] += formatted_message[content_key]
             else:
-                # The API requires only role and content keys for the remaining messages
-                remaining_messages.append({
-                    role_key: getattr(message, role_key),
-                    content_key: getattr(message, content_key),
-                })
+                raise ServiceInvalidRequestError(f"Unsupported role in chat history: {curr_message.role}")
 
-        return remaining_messages, system_message_content
+        if system_message_count > 1:
+            logger.warning(
+                "Anthropic service only supports one system message, but %s system messages were found."
+                " Only the first system message will be included in the request.",
+                system_message_count,
+            )
+
+        return formatted_messages, system_message_content
 
     # endregion
 
@@ -286,6 +283,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         stream_event: TextEvent | ContentBlockStopEvent | RawMessageDeltaEvent,
         metadata: dict[str, Any] = {},
+        function_invoke_attempt: int = 0,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a content block."""
         items: list[STREAMING_ITEM_TYPES] = []
@@ -319,51 +317,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             role=AuthorRole.ASSISTANT,
             finish_reason=finish_reason,
             items=items,
+            function_invoke_attempt=function_invoke_attempt,
         )
-
-    def update_settings_from_function_call_configuration_anthropic(
-        self,
-        function_choice_configuration: FunctionCallChoiceConfiguration,
-        settings: "PromptExecutionSettings",
-        type: "FunctionChoiceType",
-    ) -> None:
-        """Update the settings from a FunctionChoiceConfiguration."""
-        if (
-            function_choice_configuration.available_functions
-            and hasattr(settings, "tools")
-            and hasattr(settings, "tool_choice")
-        ):
-            settings.tools = [
-                self.kernel_function_metadata_to_function_call_format_anthropic(f)
-                for f in function_choice_configuration.available_functions
-            ]
-
-            if (
-                settings.function_choice_behavior
-                and settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED
-            ) or type == FunctionChoiceType.REQUIRED:
-                settings.tool_choice = {"type": "any"}
-            else:
-                settings.tool_choice = {"type": type.value}
-
-    def kernel_function_metadata_to_function_call_format_anthropic(
-        self,
-        metadata: KernelFunctionMetadata,
-    ) -> dict[str, Any]:
-        """Convert the kernel function metadata to function calling format."""
-        return {
-            "name": metadata.fully_qualified_name,
-            "description": metadata.description or "",
-            "input_schema": {
-                "type": "object",
-                "properties": {p.name: p.schema_data for p in metadata.parameters},
-                "required": [p.name for p in metadata.parameters if p.is_required],
-            },
-        }
-
-    @override
-    def _update_function_choice_settings_callback(self):
-        return self.update_settings_from_function_call_configuration_anthropic
 
     async def _send_chat_request(self, settings: AnthropicChatPromptExecutionSettings) -> list["ChatMessageContent"]:
         """Send the chat request."""
@@ -382,7 +337,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         return [self._create_chat_message_content(response, response_metadata)]
 
     async def _send_chat_stream_request(
-        self, settings: AnthropicChatPromptExecutionSettings
+        self,
+        settings: AnthropicChatPromptExecutionSettings,
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
         """Send the chat stream request.
 
@@ -403,7 +360,9 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                         isinstance(stream_event, ContentBlockStopEvent)
                         and stream_event.content_block.type == "tool_use"
                     ):
-                        yield [self._create_streaming_chat_message_content(stream_event, metadata)]
+                        yield [
+                            self._create_streaming_chat_message_content(stream_event, metadata, function_invoke_attempt)
+                        ]
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the request",
@@ -426,10 +385,3 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
 
         return tool_calls
-
-    @override
-    def _reset_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
-        if hasattr(settings, "tool_choice"):
-            settings.tool_choice = None
-        if hasattr(settings, "tools"):
-            settings.tools = None

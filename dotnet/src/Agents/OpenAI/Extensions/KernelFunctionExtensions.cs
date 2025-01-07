@@ -81,6 +81,11 @@ internal static class KernelFunctionExtensions
             return "array";
         }
 
+        if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
+        {
+            return "date-time";
+        }
+
         return Type.GetTypeCode(type) switch
         {
             TypeCode.SByte or TypeCode.Byte or
