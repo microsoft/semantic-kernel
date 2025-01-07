@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
+from dotenv import load_dotenv
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.semconv.resource import ResourceAttributes
@@ -9,6 +11,8 @@ from opentelemetry.semconv.resource import ResourceAttributes
 from samples.demos.document_generator.agents.code_validation_agent import CodeValidationAgent
 from samples.demos.document_generator.agents.content_creation_agent import ContentCreationAgent
 from samples.demos.document_generator.agents.proofread_agent import ProofreadAgent
+from samples.demos.document_generator.agents.user_agent import UserAgent
+from samples.demos.document_generator.custom_selection_strategy import CustomSelectionStrategy
 from samples.demos.document_generator.custom_termination_strategy import CustomTerminationStrategy
 from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -30,8 +34,8 @@ semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py
 semantic_kernel/connectors/ai/chat_completion_client_base.py
 """
 
-AZURE_AI_INFERENCE_SERVICE_ID = "azure_chat_completion"
-AZURE_APP_INSIGHTS_CONNECTION_STRING = "InstrumentationKey=c9eb6284-0ee7-42fe-b17c-84d693d7ec8d;IngestionEndpoint=https://southcentralus-3.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=3927ed4d-8bd3-4d20-aa89-a797e7a3ddbf"
+load_dotenv()
+AZURE_APP_INSIGHTS_CONNECTION_STRING = os.getenv("AZURE_APP_INSIGHTS_CONNECTION_STRING")
 
 resource = Resource.create({ResourceAttributes.SERVICE_NAME: "Document Generator"})
 
@@ -59,12 +63,14 @@ async def main():
         agents = [
             ContentCreationAgent(),
             ProofreadAgent(),
+            UserAgent(),
             CodeValidationAgent(),
         ]
 
         group_chat = AgentGroupChat(
             agents=agents,
             termination_strategy=CustomTerminationStrategy(agents=agents),
+            selection_strategy=CustomSelectionStrategy(),
         )
         await group_chat.add_chat_message(
             ChatMessageContent(
@@ -73,8 +79,18 @@ async def main():
             )
         )
 
-        async for content in group_chat.invoke():
-            print(content)
+        async for response in group_chat.invoke():
+            print(f"==== {response.name} just responded ====")
+            # print(response.content)
+
+        content_history: list[ChatMessageContent] = []
+        async for message in group_chat.get_chat_messages(agent=agents[0]):
+            if message.name == agents[0].name:
+                # The chat history contains responses from other agents.
+                content_history.append(message)
+        # The chat history is in descending order.
+        print("Final content:")
+        print(content_history[0].content)
 
 
 if __name__ == "__main__":

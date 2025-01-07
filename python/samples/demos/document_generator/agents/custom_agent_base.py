@@ -53,6 +53,12 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
     @override
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         tracer = trace.get_tracer(__name__)
+        response_messages: list[ChatMessageContent] = []
         with tracer.start_as_current_span(self.name):
+            # Cache the messages within the span such that subsequent spans
+            # that process the message stream don't become children of this span
             async for response_message in super().invoke(history):
-                yield response_message
+                response_messages.append(response_message)
+
+        for response_message in response_messages:
+            yield response_message

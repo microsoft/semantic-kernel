@@ -6,7 +6,7 @@ from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 
 from samples.demos.document_generator.custom_chat_completion_client import CustomChatCompletionsClient
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
+from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -15,17 +15,17 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 )
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+    from semantic_kernel.agents import Agent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 
-TERMINATE_KEYWORD = "yes"
+@experimental_class
+class CustomSelectionStrategy(SelectionStrategy):
+    """A selection strategy that selects the next agent intelligently."""
 
-
-class CustomTerminationStrategy(TerminationStrategy):
-    maximum_iterations: int = 20
     chat_completion_service: AzureAIInferenceChatCompletion
 
     def __init__(self, **kwargs):
@@ -44,16 +44,22 @@ class CustomTerminationStrategy(TerminationStrategy):
 
         super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 
-    async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
-        """Check if the agent should terminate.
+    async def next(self, agents: list["Agent"], history: list["ChatMessageContent"]) -> "Agent":
+        """Select the next agent to interact with.
 
         Args:
-            agent: The agent to check.
+            agents: The list of agents to select from.
             history: The history of messages in the conversation.
+
+        Returns:
+            The next agent to interact with.
         """
+        if len(agents) == 0:
+            raise ValueError("No agents to select from")
+
         tracer = trace.get_tracer(__name__)
-        with tracer.start_as_current_span("terminate_strategy"):
-            chat_history = ChatHistory(system_message=self.get_system_message())
+        with tracer.start_as_current_span("selection_strategy"):
+            chat_history = ChatHistory(system_message=self.get_system_message(agents))
 
             for message in history:
                 content = message.content
@@ -65,22 +71,21 @@ class CustomTerminationStrategy(TerminationStrategy):
                 AzureAIInferenceChatPromptExecutionSettings(),
             )
 
-            return TERMINATE_KEYWORD in completion.content.lower()
+            return agents[int(completion.content)]
 
-    def get_system_message(self) -> str:
+    def get_system_message(self, agents: list["Agent"]) -> str:
         return f"""
-You will be given a chat history where there will be one user, one writer, and {len(self.agents) - 1} reviewers.
+You will be given a chat history where there will be one user, one writer, and {len(agents) - 1} reviewers.
 The writer is responsible for creating content.
 The reviewers are responsible for providing feedback and approving the content.
 The chat history may be empty at the beginning.
 
-Following are the names and descriptions of the participants in fullfilling the user's request:
-{"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
+Following are the indices, names and descriptions of the participants in fullfilling the user's request:
+{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-The content is considered approved only when all the reviewers agree that the content is ready for publication.
-The content is not approved when none of the reviewers have spoken yet.
-All participants must at least have spoken once.
+Pick the most appropriate participant to interact with based on the conversation history by its index.
+No participant should be picked consecutively.
 
-Determine if the content has been approved. If so, say "{TERMINATE_KEYWORD}".
-Otherwise, say "no".
+You response should be a number between 0 and {len(agents) - 1}.
+Only return the index of the participant and nothing else. Your response should be parsaable as an integer.
 """

@@ -5,11 +5,18 @@ from samples.demos.document_generator.plugins.code_execution_plugin import CodeE
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 
 INSTRUCTION = """
+You will be given a chat history where multiple agents (including yourself) are involved in creating a document.
+
 Your job is to validate Python code in techincal content and you're great at it!
 Read the document and extract the code snippets. Assemble the code snippets into a Python script.
 Validate the code snippets for correctness and and make sure the code runs without errors.
 If there are errors, don't try to correct them. Return the error messages so that the author can
 correct them.
+"""
+
+DESCRIPTION = """
+I am a code validation agent whose job is to validate Python code in technical content.
+Invoke me when there are code snippets in the document that need to be validated.
 """
 
 
@@ -27,6 +34,6 @@ class CodeValidationAgent(CustomAgentBase):
             kernel=kernel,
             execution_settings=settings,
             name="CodeValidationAgent",
-            instructions=INSTRUCTION,
-            description="Code Validation Agent",
+            instructions=INSTRUCTION.strip(),
+            description=DESCRIPTION.strip(),
         )
