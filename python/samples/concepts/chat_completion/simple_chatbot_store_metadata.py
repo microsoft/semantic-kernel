@@ -32,7 +32,7 @@ Your name is Mosscap and you have one goal: to answer questions about basketball
 
 # Create a chat history object with the system message.
 chat_history = ChatHistory(system_message=system_message)
-# Configure the store amd metadata settings for the chat completion service.
+# Configure the store and metadata settings for the chat completion service.
 request_settings.store = True
 request_settings.metadata = {"chatbot": "Mosscap"}
 

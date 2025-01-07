@@ -120,6 +120,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Equal(AuthorRole.Assistant, result[0].Role);
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
+        Assert.NotNull(result[0].InnerContent);
     }
 
     /// <summary>
@@ -160,6 +161,7 @@ public sealed class BedrockChatCompletionServiceTests
             Assert.NotNull(item);
             Assert.NotNull(item.Content);
             Assert.NotNull(item.Role);
+            Assert.NotNull(item.InnerContent);
             output.Add(item);
         }
         Assert.True(output.Count > 0);

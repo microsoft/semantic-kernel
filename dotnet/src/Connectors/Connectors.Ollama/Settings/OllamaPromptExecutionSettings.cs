@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Ollama Prompt Execution Settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>

@@ -518,10 +518,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
-        if isinstance(record, BaseModel):
-            return self._serialize_vectors(record.model_dump())
         if isinstance(record, ToDictMethodProtocol):
             return self._serialize_vectors(record.to_dict())
+        if isinstance(record, BaseModel):
+            return self._serialize_vectors(record.model_dump())
 
         store_model = {}
         for field_name in self.data_model_definition.field_names:
@@ -611,14 +611,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if issubclass(self.data_model_type, BaseModel):
-            if include_vectors:
-                record = self._deserialize_vector(record)
-            return self.data_model_type.model_validate(record)  # type: ignore
         if func := getattr(self.data_model_type, "from_dict", None):
             if include_vectors:
                 record = self._deserialize_vector(record)
             return func(record)
+        if issubclass(self.data_model_type, BaseModel):
+            if include_vectors:
+                record = self._deserialize_vector(record)
+            return self.data_model_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
         for field_name in self.data_model_definition.fields:
             if not include_vectors and field_name in self.data_model_definition.vector_field_names:

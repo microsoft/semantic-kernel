@@ -152,9 +152,8 @@ public static class CopilotAgentPluginKernelExtensions
                 ? parameters
                 : new OpenApiFunctionExecutionParameters()
                 {
-                    EnableDynamicPayload = true,
+                    EnableDynamicPayload = false,
                     EnablePayloadNamespacing = true,
-                    ParameterFilter = (RestApiParameterFilterContext context) => context.Parameter.Name == "@odata.type" ? null : context.Parameter,
                 };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
@@ -165,7 +164,7 @@ public static class CopilotAgentPluginKernelExtensions
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
