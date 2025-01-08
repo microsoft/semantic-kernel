@@ -71,6 +71,8 @@ Alternatively you can run the VSCode task `Python: Install` to run the same comm
 
 ## VSCode Setup
 
+Install the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) for VSCode.
+
 Open the workspace in [VSCode](https://code.visualstudio.com/docs/editor/workspaces).
 > The workspace for python should be rooted in the `./python` folder.
 
@@ -87,13 +89,19 @@ Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
 
 - We have removed the strict dependency on forcing `pytest` usage via the `.vscode/settings.json` file.
 - Developers are free to set up unit tests using their preferred framework, whether it is `pytest` or `unittest`.
-- If needed, adjust VSCode's local `settings.json` (accessed via the Command Palette: **Open User Settings (JSON)**) to configure the test framework. For example:
+- If needed, adjust VSCode's local `settings.json` (accessed via the Command Palette(`Ctrl+Shift+P`) and type `Preferences: Open User Settings (JSON)`) to configure the test framework. For example:
+
   ```json
-  "pythonTestExplorer.testFramework": "pytest"
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
   ```
+
   Or, for `unittest`:
+
   ```json
-  "pythonTestExplorer.testFramework": "unittest"
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  ```
 
 ## LLM setup
 
@@ -153,17 +161,6 @@ You can also run all the tests together under the [tests](tests/) folder.
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
 (`Ctrl+Shift+P`) and type `Tasks: Run Task`. Select `Python: Tests - All` from the list.
-
-If you would like to use the test explorer in VSCode, you can install the `Python` extension and add the following configurations to your users settings:
-
-```json
-{
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-}
-```
-
-> To open your user settings, you can use the command palette (`Ctrl+Shift+P`) and type `Preferences: Open User Settings (JSON)`.
 
 ## Implementation Decisions
 
