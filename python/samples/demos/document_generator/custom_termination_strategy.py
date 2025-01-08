@@ -20,7 +20,7 @@ TERMINATE_KEYWORD = "yes"
 
 
 class CustomTerminationStrategy(TerminationStrategy):
-    maximum_iterations: int = 2
+    maximum_iterations: int = 10
     chat_completion_service: AzureChatCompletion
 
     def __init__(self, **kwargs):
@@ -57,7 +57,7 @@ The writer is responsible for creating content.
 The reviewers are responsible for providing feedback and approving the content.
 The chat history may be empty at the beginning.
 
-Following are the names and descriptions of the participants in fullfilling the user's request:
+Following are the names and introductions of the participants in fullfilling the user's request:
 {"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
 
 The content is considered approved only when all the reviewers agree that the content is ready for publication.

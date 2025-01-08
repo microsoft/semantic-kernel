@@ -12,7 +12,7 @@ class RepoFilePlugin:
     This plugin assumes that the code is run within the Semantic Kernel repository.
     """
 
-    @kernel_function(description="Read a file given a relative to the root of the repository.")
+    @kernel_function(description="Read a file given a relative path to the root of the repository.")
     def read_file_by_path(
         self, path: Annotated[str, "The relative path to the file."]
     ) -> Annotated[str, "Returns the file content."]:
@@ -37,3 +37,13 @@ class RepoFilePlugin:
                 with open(os.path.join(root, file_name)) as file:
                     return file.read()
         raise FileNotFoundError(f"File {file_name} not found in repository.")
+
+    @kernel_function(description="List all files or subdirectories in a directory.")
+    def list_directory(
+        self, path: Annotated[str, "Path of a directory relative to the root of the repository."]
+    ) -> Annotated[str, "Returns a list of files and subdirectories."]:
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", path)
+        try:
+            return os.listdir(path)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Directory {path} not found in repository.")

@@ -64,11 +64,11 @@ The writer is responsible for creating content.
 The reviewers are responsible for providing feedback and approving the content.
 The chat history may be empty at the beginning.
 
-Following are the indices, names and descriptions of the participants in fullfilling the user's request:
+Following are the indices, names and introductions of the participants in fullfilling the user's request:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-Pick the most appropriate participant to interact with based on the conversation history by its index.
-No participant should be picked consecutively.
+Pick the most appropriate participant to speak next based on the conversation history by its index.
+No participant should speak more than once in a row.
 
 You response should be a number between 0 and {len(agents) - 1}.
 Only return the index of the participant and nothing else. Your response should be parsaable as an integer.

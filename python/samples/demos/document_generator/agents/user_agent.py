@@ -8,16 +8,16 @@ INSTRUCTION = """
 You will be given a chat history where multiple agents (including yourself) are involved in creating a document.
 
 Your job is to present the latest draft of the document to the user for feedback and suggestions.
-Once the user has responded, summarize the response and return it to the author.
+Once the user has responded, do NOT try to address the feedback or make changes to the document.
 
-DO NOT attemp to provide your own feedback or suggestions.
-DO NOT attemp to provide any corrections or modifications to the content.
+Simply summarize the response and return it to the author.
 """
 
 DESCRIPTION = """
 I am a user agent whose job is to request feedback from users.
 I can present the latest draft of the document to the user for feedback and suggestions.
-Invoke me when the document is almost ready for publication and you need final feedback.
+Invoke me when the document is verified, ready for publication and it needs final feedback.
+I will return the user's feedback when they respond.
 """
 
 

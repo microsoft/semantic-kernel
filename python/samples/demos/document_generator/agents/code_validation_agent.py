@@ -17,6 +17,8 @@ correct them.
 DESCRIPTION = """
 I am a code validation agent whose job is to validate Python code in technical content.
 Invoke me when there are code snippets in the document that need to be validated.
+If the code snippets are correct, I will return the output of the code.
+If the code snippets have errors, I will return the error messages so that the author can correct them.
 """
 
 
