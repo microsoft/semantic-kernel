@@ -58,6 +58,8 @@ async def main():
             enable_code_interpreter=True,
         )
 
+        assistant_id = agent.assistant.id
+
         retrieved_agent: AzureAssistantAgent = await AzureAssistantAgent.retrieve(
             id=assistant_id,
             kernel=kernel,
@@ -70,6 +72,8 @@ async def main():
             instructions=AGENT_INSTRUCTIONS,
             enable_code_interpreter=True,
         )
+
+        assistant_id = agent.assistant.id
 
         # Retrieve the agent using the assistant_id
         retrieved_agent: OpenAIAssistantAgent = await OpenAIAssistantAgent.retrieve(
