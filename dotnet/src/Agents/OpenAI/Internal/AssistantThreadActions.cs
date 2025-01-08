@@ -829,23 +829,6 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionCalls, CancellationToken cancellationToken)
-    {
-        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionCalls.Length];
-
-        for (int index = 0; index < functionCalls.Length; ++index)
-        {
-            functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
-        }
-
-        return functionTasks;
-    }
-
-    private static Task<FunctionResultContent> ExecuteFunctionStep(OpenAIAssistantAgent agent, FunctionCallContent functionCall, CancellationToken cancellationToken)
-    {
-        return functionCall.InvokeAsync(agent.Kernel, cancellationToken);
-    }
-
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
     {
         ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];

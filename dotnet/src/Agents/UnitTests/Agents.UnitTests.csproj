@@ -39,4 +39,8 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="OpenAI\Azure\" />
+  </ItemGroup>
+
 </Project>

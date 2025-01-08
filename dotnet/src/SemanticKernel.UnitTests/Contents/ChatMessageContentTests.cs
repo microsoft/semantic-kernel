@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
