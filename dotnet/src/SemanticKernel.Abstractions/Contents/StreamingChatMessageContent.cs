@@ -103,7 +103,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
     }
 
     /// <summary>
-    /// Request sequence index of function invocation process.
+    /// Index of the request that produced this message content
     /// </summary>
     public int RequestIndex { get; init; } = 0;
 
