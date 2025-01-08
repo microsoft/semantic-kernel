@@ -124,6 +124,7 @@ class FunctionCallContent(KernelContent):
             index=self.index or other.index,
             name=self.name or other.name,
             arguments=self.combine_arguments(self.arguments, other.arguments),
+            metadata=self.metadata | other.metadata,
         )
 
     def combine_arguments(

@@ -128,6 +128,12 @@ dapr = [
     "dapr-ext-fastapi>=1.14.0",
     "flask-dapr>=1.14.0"
 ]
+openai_realtime = [
+    "openai[realtime] ~= 1.0",
+    "pyaudio",
+    "pydub",
+    "sounddevice"
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
