@@ -30,9 +30,7 @@ class ProofreadAgent(CustomAgentBase):
     def __init__(self):
         kernel = self._create_kernel()
 
-        settings = kernel.get_prompt_execution_settings_from_service_id(
-            service_id=CustomAgentBase.AZURE_AI_INFERENCE_SERVICE_ID
-        )
+        settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.AZURE_SERVICE_ID)
         settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
         super().__init__(

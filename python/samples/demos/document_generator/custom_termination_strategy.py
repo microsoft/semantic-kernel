@@ -2,18 +2,13 @@
 
 from typing import TYPE_CHECKING
 
-from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 
-from samples.demos.document_generator.custom_chat_completion_client import CustomChatCompletionsClient
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
-    AzureAIInferenceChatPromptExecutionSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 
 if TYPE_CHECKING:
@@ -25,23 +20,11 @@ TERMINATE_KEYWORD = "yes"
 
 
 class CustomTerminationStrategy(TerminationStrategy):
-    maximum_iterations: int = 20
-    chat_completion_service: AzureAIInferenceChatCompletion
+    maximum_iterations: int = 2
+    chat_completion_service: AzureChatCompletion
 
     def __init__(self, **kwargs):
-        azure_openai_settings = AzureOpenAISettings.create()
-        endpoint = azure_openai_settings.endpoint
-        deployment_name = azure_openai_settings.chat_deployment_name
-
-        chat_completion_service = AzureAIInferenceChatCompletion(
-            ai_model_id=deployment_name,
-            client=CustomChatCompletionsClient(
-                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
-                credential=DefaultAzureCredential(),
-                credential_scopes=["https://cognitiveservices.azure.com/.default"],
-            ),
-        )
-
+        chat_completion_service = AzureChatCompletion()
         super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
@@ -53,7 +36,7 @@ class CustomTerminationStrategy(TerminationStrategy):
         """
         tracer = trace.get_tracer(__name__)
         with tracer.start_as_current_span("terminate_strategy"):
-            chat_history = ChatHistory(system_message=self.get_system_message())
+            chat_history = ChatHistory(system_message=self.get_system_message().strip())
 
             for message in history:
                 content = message.content
@@ -62,7 +45,7 @@ class CustomTerminationStrategy(TerminationStrategy):
 
             completion = await self.chat_completion_service.get_chat_message_content(
                 chat_history,
-                AzureAIInferenceChatPromptExecutionSettings(),
+                AzureChatPromptExecutionSettings(),
             )
 
             return TERMINATE_KEYWORD in completion.content.lower()

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -55,8 +56,32 @@ def set_up_tracing():
     set_tracer_provider(tracer_provider)
 
 
+def set_up_logging():
+    from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
+    from opentelemetry._logs import set_logger_provider
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+
+    # Create and set a global logger provider for the application.
+    logger_provider = LoggerProvider(resource=resource)
+    logger_provider.add_log_record_processor(
+        BatchLogRecordProcessor(AzureMonitorLogExporter(connection_string=AZURE_APP_INSIGHTS_CONNECTION_STRING))
+    )
+    # Sets the global default logger provider
+    set_logger_provider(logger_provider)
+
+    # Create a logging handler to write logging records, in OTLP format, to the exporter.
+    handler = LoggingHandler()
+    # Attach the handler to the root logger. `getLogger()` with no arguments returns the root logger.
+    # Events from all child loggers will be processed by this handler.
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+
 async def main():
     set_up_tracing()
+    set_up_logging()
 
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("main"):
@@ -75,7 +100,7 @@ async def main():
         await group_chat.add_chat_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
-                content=TASK,
+                content=TASK.strip(),
             )
         )
 

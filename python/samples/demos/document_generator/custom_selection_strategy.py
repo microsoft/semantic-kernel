@@ -2,18 +2,13 @@
 
 from typing import TYPE_CHECKING
 
-from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 
-from samples.demos.document_generator.custom_chat_completion_client import CustomChatCompletionsClient
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
-    AzureAIInferenceChatPromptExecutionSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -26,21 +21,10 @@ if TYPE_CHECKING:
 class CustomSelectionStrategy(SelectionStrategy):
     """A selection strategy that selects the next agent intelligently."""
 
-    chat_completion_service: AzureAIInferenceChatCompletion
+    chat_completion_service: AzureChatCompletion
 
     def __init__(self, **kwargs):
-        azure_openai_settings = AzureOpenAISettings.create()
-        endpoint = azure_openai_settings.endpoint
-        deployment_name = azure_openai_settings.chat_deployment_name
-
-        chat_completion_service = AzureAIInferenceChatCompletion(
-            ai_model_id=deployment_name,
-            client=CustomChatCompletionsClient(
-                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
-                credential=DefaultAzureCredential(),
-                credential_scopes=["https://cognitiveservices.azure.com/.default"],
-            ),
-        )
+        chat_completion_service = AzureChatCompletion()
 
         super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 
@@ -59,7 +43,7 @@ class CustomSelectionStrategy(SelectionStrategy):
 
         tracer = trace.get_tracer(__name__)
         with tracer.start_as_current_span("selection_strategy"):
-            chat_history = ChatHistory(system_message=self.get_system_message(agents))
+            chat_history = ChatHistory(system_message=self.get_system_message(agents).strip())
 
             for message in history:
                 content = message.content
@@ -68,7 +52,7 @@ class CustomSelectionStrategy(SelectionStrategy):
 
             completion = await self.chat_completion_service.get_chat_message_content(
                 chat_history,
-                AzureAIInferenceChatPromptExecutionSettings(),
+                AzureChatPromptExecutionSettings(),
             )
 
             return agents[int(completion.content)]

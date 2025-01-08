@@ -26,9 +26,7 @@ class UserAgent(CustomAgentBase):
         kernel = self._create_kernel()
         kernel.add_plugin(plugin=UserInputPlugin(), plugin_name="UserInputPlugin")
 
-        settings = kernel.get_prompt_execution_settings_from_service_id(
-            service_id=CustomAgentBase.AZURE_AI_INFERENCE_SERVICE_ID
-        )
+        settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.AZURE_SERVICE_ID)
         settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
         super().__init__(
