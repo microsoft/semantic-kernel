@@ -304,6 +304,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
               options:
                 allow_parallel_calls: true
                 allow_concurrent_invocation: true
+                allow_strict_schema_adherence: true
         """;
 
         var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
@@ -314,6 +315,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
         Assert.True(config.Options.AllowConcurrentInvocation);
+        Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
 
     [Fact]
@@ -326,6 +328,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
               options:
                 allow_parallel_calls: true
                 allow_concurrent_invocation: true
+                allow_strict_schema_adherence: true
         """;
 
         var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
@@ -336,6 +339,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
         Assert.True(config.Options.AllowConcurrentInvocation);
+        Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
 
     private readonly string _yaml = """

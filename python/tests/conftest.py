@@ -15,9 +15,6 @@ from pytest import fixture
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
@@ -651,10 +648,3 @@ def data_model_type_with_key_as_key_field(
         key: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
-
-
-@fixture
-def define_openai_predicate_context():
-    from semantic_kernel.connectors.openapi_plugin import OperationSelectionPredicateContext  # noqa: F401
-
-    OpenAIFunctionExecutionParameters.model_rebuild()

@@ -83,6 +83,18 @@ If prompted, install `ruff`. (It should have been installed as part of `uv sync 
 You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
 
+### Configuring Unit Testing in VSCode
+
+- We have removed the strict dependency on forcing `pytest` usage via the `.vscode/settings.json` file.
+- Developers are free to set up unit tests using their preferred framework, whether it is `pytest` or `unittest`.
+- If needed, adjust VSCode's local `settings.json` (accessed via the Command Palette: **Open User Settings (JSON)**) to configure the test framework. For example:
+  ```json
+  "pythonTestExplorer.testFramework": "pytest"
+  ```
+  Or, for `unittest`:
+  ```json
+  "pythonTestExplorer.testFramework": "unittest"
+
 ## LLM setup
 
 Make sure you have an
