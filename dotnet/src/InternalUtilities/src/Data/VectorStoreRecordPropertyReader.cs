@@ -119,12 +119,8 @@ internal sealed class VectorStoreRecordPropertyReader
         this._parameterlessConstructorInfo = new Lazy<ConstructorInfo>(() =>
         {
             var constructor = dataModelType.GetConstructor(Type.EmptyTypes);
-            if (constructor == null)
-            {
-                throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
-            }
-
-            return constructor;
+            return constructor
+                ?? throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
         });
 
         this._keyPropertyStoragePropertyNames = new Lazy<List<string>>(() =>
@@ -411,9 +407,9 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <returns>The categorized properties.</returns>
     private static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
-        List<PropertyInfo> keyProperties = new();
-        List<PropertyInfo> dataProperties = new();
-        List<PropertyInfo> vectorProperties = new();
+        List<PropertyInfo> keyProperties = [];
+        List<PropertyInfo> dataProperties = [];
+        List<PropertyInfo> vectorProperties = [];
 
         foreach (var property in type.GetProperties())
         {
@@ -449,42 +445,33 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <returns>The categorized properties.</returns>
     public static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
-        List<PropertyInfo> keyProperties = new();
-        List<PropertyInfo> dataProperties = new();
-        List<PropertyInfo> vectorProperties = new();
+        List<PropertyInfo> keyProperties = [];
+        List<PropertyInfo> dataProperties = [];
+        List<PropertyInfo> vectorProperties = [];
 
         foreach (VectorStoreRecordProperty property in vectorStoreRecordDefinition.Properties)
         {
             // Key.
             if (property is VectorStoreRecordKeyProperty keyPropertyInfo)
             {
-                var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
-                if (keyProperty == null)
-                {
-                    throw new ArgumentException($"Key property '{keyPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Key property '{keyPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 keyProperties.Add(keyProperty);
             }
             // Data.
             else if (property is VectorStoreRecordDataProperty dataPropertyInfo)
             {
-                var dataProperty = type.GetProperty(dataPropertyInfo.DataModelPropertyName);
-                if (dataProperty == null)
-                {
-                    throw new ArgumentException($"Data property '{dataPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var dataProperty = type.GetProperty(dataPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Data property '{dataPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 dataProperties.Add(dataProperty);
             }
             // Vector.
             else if (property is VectorStoreRecordVectorProperty vectorPropertyInfo)
             {
-                var vectorProperty = type.GetProperty(vectorPropertyInfo.DataModelPropertyName);
-                if (vectorProperty == null)
-                {
-                    throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
-                }
+                var vectorProperty = type.GetProperty(vectorPropertyInfo.DataModelPropertyName)
+                    ?? throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
 
                 vectorProperties.Add(vectorProperty);
             }

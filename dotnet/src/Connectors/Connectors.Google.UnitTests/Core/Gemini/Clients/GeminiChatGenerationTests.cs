@@ -425,7 +425,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         // Arrange
         var bearerTokenGenerator = new BearerTokenGenerator()
         {
-            BearerKeys = new List<string> { "key1", "key2", "key3" }
+            BearerKeys = ["key1", "key2", "key3"]
         };
 
         var responseContent = File.ReadAllText(ChatTestDataFilePath);
@@ -442,7 +442,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
             httpClient: httpClient,
             modelId: "fake-model",
             apiVersion: VertexAIVersion.V1,
-            bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
+            bearerTokenProvider: bearerTokenGenerator.GetBearerToken,
             location: "fake-location",
             projectId: "fake-project-id");
 

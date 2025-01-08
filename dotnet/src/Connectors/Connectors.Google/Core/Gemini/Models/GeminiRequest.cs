@@ -2,15 +2,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal sealed class GeminiRequest
 {
+    private static JsonSerializerOptions? s_options;
+    private static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
+    {
+        IncludeSchemaKeyword = false,
+        IncludeTypeInEnumSchemas = true,
+        RequireAllProperties = false,
+        DisallowAdditionalProperties = false,
+    };
+
     [JsonPropertyName("contents")]
     public IList<GeminiContent> Contents { get; set; } = null!;
 
@@ -249,8 +261,54 @@ internal sealed class GeminiRequest
             StopSequences = executionSettings.StopSequences,
             CandidateCount = executionSettings.CandidateCount,
             AudioTimestamp = executionSettings.AudioTimestamp,
-            ResponseMimeType = executionSettings.ResponseMimeType
+            ResponseMimeType = executionSettings.ResponseMimeType,
+            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema)
         };
+    }
+
+    private static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
+    {
+        if (responseSchemaSettings is null)
+        {
+            return null;
+        }
+
+        if (responseSchemaSettings is JsonElement jsonElement)
+        {
+            return jsonElement;
+        }
+
+        return responseSchemaSettings is Type type
+            ? CreateSchema(type, GetDefaultOptions())
+            : CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions());
+    }
+
+    private static JsonElement CreateSchema(
+        Type type,
+        JsonSerializerOptions options,
+        string? description = null,
+        AIJsonSchemaCreateOptions? configuration = null)
+    {
+        configuration ??= s_schemaOptions;
+        return AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
+    }
+
+    [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    private static JsonSerializerOptions GetDefaultOptions()
+    {
+        if (s_options is null)
+        {
+            JsonSerializerOptions options = new()
+            {
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                Converters = { new JsonStringEnumConverter() },
+            };
+            options.MakeReadOnly();
+            s_options = options;
+        }
+
+        return s_options;
     }
 
     private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
@@ -292,5 +350,9 @@ internal sealed class GeminiRequest
         [JsonPropertyName("responseMimeType")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? ResponseMimeType { get; set; }
+
+        [JsonPropertyName("responseSchema")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public JsonElement? ResponseSchema { get; set; }
     }
 }
