@@ -103,6 +103,11 @@ public class StreamingChatMessageContent : StreamingKernelContent
     }
 
     /// <summary>
+    /// Request sequence index of function invocation process.
+    /// </summary>
+    public int RequestIndex { get; init; } = 0;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>

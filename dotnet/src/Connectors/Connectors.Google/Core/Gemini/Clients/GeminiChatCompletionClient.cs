@@ -340,10 +340,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                         // This scenario should not happen but I leave it as a precaution
                         state.AutoInvoke = false;
                         // We return the first message
-                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent, state.Iteration);
                         // We return the second message
                         messageContent = chatResponsesEnumerator.Current;
-                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent, state.Iteration);
                         continue;
                     }
 
@@ -356,7 +356,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 state.AutoInvoke = false;
 
                 // If we don't want to attempt to invoke any functions, just return the result.
-                yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                yield return this.GetStreamingChatContentFromChatContent(messageContent, state.Iteration);
             }
         }
         finally
@@ -617,7 +617,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         return geminiRequest;
     }
 
-    private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
+    private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message, int requestIndex)
     {
         if (message.CalledToolResult is not null)
         {
@@ -627,7 +627,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata?.Index ?? 0);
+                choiceIndex: message.Metadata?.Index ?? 0)
+            {
+                RequestIndex = requestIndex
+            };
         }
 
         if (message.ToolCalls is not null)
@@ -638,7 +641,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata?.Index ?? 0);
+                choiceIndex: message.Metadata?.Index ?? 0)
+            {
+                RequestIndex = requestIndex
+            };
         }
 
         return new GeminiStreamingChatMessageContent(
@@ -646,7 +652,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             content: message.Content,
             modelId: this._modelId,
             choiceIndex: message.Metadata?.Index ?? 0,
-            metadata: message.Metadata);
+            metadata: message.Metadata)
+        {
+            RequestIndex = requestIndex
+        };
     }
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
