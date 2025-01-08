@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.Projects;
-using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
