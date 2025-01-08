@@ -2,6 +2,7 @@
 
 import functools
 import json
+import logging
 from collections.abc import AsyncGenerator, Callable
 from functools import reduce
 from typing import TYPE_CHECKING, Any
@@ -14,6 +15,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.experimental_decorator import experimental_function
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
@@ -39,6 +41,8 @@ TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
+
+logger = logging.getLogger(__name__)
 
 
 @experimental_function
@@ -99,7 +103,7 @@ def trace_chat_completion(model_provider: str) -> Callable:
             ) as current_span:
                 try:
                     completions: list[ChatMessageContent] = await completion_func(*args, **kwargs)
-                    _set_completion_response(current_span, completions)
+                    _set_completion_response(current_span, completions, model_provider)
                     return completions
                 except Exception as exception:
                     _set_completion_error(current_span, exception)
@@ -166,7 +170,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
                     all_messages_flattened = [
                         reduce(lambda x, y: x + y, messages) for messages in all_messages.values()
                     ]
-                    _set_completion_response(current_span, all_messages_flattened)
+                    _set_completion_response(current_span, all_messages_flattened, model_provider)
                 except Exception as exception:
                     _set_completion_error(current_span, exception)
                     raise
@@ -215,7 +219,7 @@ def trace_text_completion(model_provider: str) -> Callable:
             ) as current_span:
                 try:
                     completions: list[TextContent] = await completion_func(*args, **kwargs)
-                    _set_completion_response(current_span, completions)
+                    _set_completion_response(current_span, completions, model_provider)
                     return completions
                 except Exception as exception:
                     _set_completion_error(current_span, exception)
@@ -280,7 +284,7 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
                     all_text_contents_flattened = [
                         reduce(lambda x, y: x + y, messages) for messages in all_text_contents.values()
                     ]
-                    _set_completion_response(current_span, all_text_contents_flattened)
+                    _set_completion_response(current_span, all_text_contents_flattened, model_provider)
                 except Exception as exception:
                     _set_completion_error(current_span, exception)
                     raise
@@ -316,22 +320,47 @@ def _start_completion_activity(
     # TODO(@glahaye): we'll need to have a way to get these attributes from model
     # providers other than OpenAI (for example if the attributes are named differently)
     if execution_settings:
-        attribute = execution_settings.extension_data.get("max_tokens")
-        if attribute:
-            span.set_attribute(gen_ai_attributes.MAX_TOKENS, attribute)
-
-        attribute = execution_settings.extension_data.get("temperature")
-        if attribute:
-            span.set_attribute(gen_ai_attributes.TEMPERATURE, attribute)
-
-        attribute = execution_settings.extension_data.get("top_p")
-        if attribute:
-            span.set_attribute(gen_ai_attributes.TOP_P, attribute)
+        attribute_name_map = {
+            "seed": gen_ai_attributes.SEED,
+            "encoding_formats": gen_ai_attributes.ENCODING_FORMATS,
+            "frequency_penalty": gen_ai_attributes.FREQUENCY_PENALTY,
+            "max_tokens": gen_ai_attributes.MAX_TOKENS,
+            "stop_sequences": gen_ai_attributes.STOP_SEQUENCES,
+            "temperature": gen_ai_attributes.TEMPERATURE,
+            "top_k": gen_ai_attributes.TOP_K,
+            "top_p": gen_ai_attributes.TOP_P,
+        }
+        for attribute_name, attribute_key in attribute_name_map.items():
+            attribute = execution_settings.extension_data.get(attribute_name)
+            if attribute:
+                span.set_attribute(attribute_key, attribute)
 
     if are_sensitive_events_enabled():
         if isinstance(prompt, ChatHistory):
-            prompt = _messages_to_openai_format(prompt.messages)
-        span.add_event(gen_ai_attributes.PROMPT_EVENT, {gen_ai_attributes.PROMPT_EVENT_PROMPT: prompt})
+            role_event_map = {
+                AuthorRole.SYSTEM: gen_ai_attributes.SYSTEM_MESSAGE,
+                AuthorRole.USER: gen_ai_attributes.USER_MESSAGE,
+                AuthorRole.ASSISTANT: gen_ai_attributes.ASSISTANT_MESSAGE,
+                AuthorRole.TOOL: gen_ai_attributes.TOOL_MESSAGE,
+            }
+            for message in prompt.messages:
+                event_name = role_event_map.get(message.role)
+                if event_name:
+                    logger.info(
+                        json.dumps(message.to_dict()),
+                        extra={
+                            gen_ai_attributes.EVENT_NAME: event_name,
+                            gen_ai_attributes.SYSTEM: model_provider,
+                        },
+                    )
+        else:
+            logger.info(
+                prompt,
+                extra={
+                    gen_ai_attributes.EVENT_NAME: gen_ai_attributes.PROMPT,
+                    gen_ai_attributes.SYSTEM: model_provider,
+                },
+            )
 
     return span
 
@@ -342,6 +371,7 @@ def _set_completion_response(
     | list[TextContent]
     | list[StreamingChatMessageContent]
     | list[StreamingTextContent],
+    model_provider: str,
 ) -> None:
     """Set the a text or chat completion response for a given activity."""
     first_completion = completions[0]
@@ -362,33 +392,30 @@ def _set_completion_response(
     usage = first_completion.metadata.get("usage", None)
     if isinstance(usage, CompletionUsage):
         if usage.prompt_tokens:
-            current_span.set_attribute(gen_ai_attributes.PROMPT_TOKENS, usage.prompt_tokens)
+            current_span.set_attribute(gen_ai_attributes.INPUT_TOKENS, usage.prompt_tokens)
         if usage.completion_tokens:
-            current_span.set_attribute(gen_ai_attributes.COMPLETION_TOKENS, usage.completion_tokens)
+            current_span.set_attribute(gen_ai_attributes.OUTPUT_TOKENS, usage.completion_tokens)
 
     # Set the completion event
     if are_sensitive_events_enabled():
-        completion_text: str = _messages_to_openai_format(completions)
-        current_span.add_event(
-            gen_ai_attributes.COMPLETION_EVENT, {gen_ai_attributes.COMPLETION_EVENT_COMPLETION: completion_text}
-        )
+        for completion in completions:
+            full_response: dict[str, Any] = {
+                "message": completion.to_dict(),
+                "finish_reason": completion.finish_reason,
+            }
+            if hasattr(completion, "choice_index"):
+                full_response["index"] = completion.choice_index
+
+            logger.info(
+                json.dumps(full_response),
+                extra={
+                    gen_ai_attributes.EVENT_NAME: gen_ai_attributes.CHOICE,
+                    gen_ai_attributes.SYSTEM: model_provider,
+                },
+            )
 
 
 def _set_completion_error(span: Span, error: Exception) -> None:
     """Set an error for a text or chat completion ."""
     span.set_attribute(gen_ai_attributes.ERROR_TYPE, str(type(error)))
     span.set_status(StatusCode.ERROR, repr(error))
-
-
-def _messages_to_openai_format(
-    messages: list[ChatMessageContent]
-    | list[StreamingChatMessageContent]
-    | list[TextContent]
-    | list[StreamingTextContent],
-) -> str:
-    """Convert a list of ChatMessageContent to a string in the OpenAI format.
-
-    OpenTelemetry recommends formatting the messages in the OpenAI format
-    regardless of the actual model being used.
-    """
-    return json.dumps([message.to_dict() for message in messages])
