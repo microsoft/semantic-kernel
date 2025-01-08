@@ -3,7 +3,6 @@
 using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
