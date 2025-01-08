@@ -6,6 +6,7 @@ from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
 
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -20,6 +21,7 @@ from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions import ContentAdditionException
 
 ITEM_TYPES = Union[
+    AudioContent,
     ImageContent,
     StreamingTextContent,
     FunctionCallContent,

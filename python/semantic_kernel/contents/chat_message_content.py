@@ -10,6 +10,7 @@ from defusedxml import ElementTree
 from pydantic import Field
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
@@ -56,6 +57,7 @@ ITEM_TYPES = (
     | FileReferenceContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
+    | AudioContent
 )
 
 logger = logging.getLogger(__name__)
