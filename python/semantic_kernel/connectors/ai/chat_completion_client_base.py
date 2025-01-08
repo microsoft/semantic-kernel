@@ -222,7 +222,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
-                chat_history, settings
+                chat_history, settings, **kwargs
             ):
                 yield streaming_chat_message_contents
             return
@@ -247,7 +247,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
-                chat_history, settings
+                chat_history, settings, **kwargs
             ):
                 yield streaming_chat_message_contents
             return
@@ -259,12 +259,14 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 all_messages: list["StreamingChatMessageContent"] = []
                 function_call_returned = False
                 async for messages in self._inner_get_streaming_chat_message_contents(
-                    chat_history, settings, request_index
+                    chat_history, settings, request_index, **kwargs
                 ):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
-                            if any(isinstance(item, FunctionCallContent) for item in msg.items):
+                            if not function_call_returned and any(
+                                isinstance(item, FunctionCallContent) for item in msg.items
+                            ):
                                 function_call_returned = True
                     yield messages
 
@@ -310,6 +312,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     function_invoke_attempt=request_index,
                 )
                 if self._yield_function_result_messages(function_result_messages):
+                    await self._streaming_function_call_result_callback(function_result_messages)
                     yield function_result_messages
 
                 if any(result.terminate for result in results if result is not None):
@@ -432,7 +435,22 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         return getattr(settings, "ai_model_id", self.ai_model_id) or self.ai_model_id
 
     def _yield_function_result_messages(self, function_result_messages: list) -> bool:
-        """Determine if the function result messages should be yielded."""
+        """Determine if the function result messages should be yielded.
+
+        If there are messages and if the first message has items, then yield the messages.
+        """
         return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
+
+    async def _streaming_function_call_result_callback(
+        self, function_result_messages: list["ChatMessageContent"]
+    ) -> None:
+        """Callback to handle the streaming function call result messages.
+
+        Override this method to handle the streaming function call result messages.
+
+        Args:
+            function_result_messages (list): The streaming function call result messages.
+        """
+        return
 
     # endregion
