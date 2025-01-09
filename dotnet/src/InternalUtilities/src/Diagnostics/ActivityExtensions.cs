@@ -36,7 +36,7 @@ internal static class ActivityExtensions
     {
         activity.AddEvent(new ActivityEvent(
             name,
-            tags: [.. tags]
+            tags: new ActivityTagsCollection(tags)
         ));
 
         return activity;
