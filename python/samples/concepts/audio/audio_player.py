@@ -20,7 +20,7 @@ class AudioPlayer(BaseModel):
     # Audio replay parameters
     CHUNK: ClassVar[int] = 1024
 
-    audio_content: AudioContent | None = None
+    audio_content: AudioContent
 
     def play(self, text: str | None = None) -> None:
         """Play the audio content to the default audio output device.

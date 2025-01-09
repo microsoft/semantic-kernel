@@ -13,7 +13,7 @@ CHANNELS = 1
 
 
 class AudioPlayerAsync:
-    def __init__(self):
+    def __init__(self, device_id: int | None = None):
         self.queue = []
         self.lock = threading.Lock()
         self.stream = sd.OutputStream(
@@ -22,7 +22,7 @@ class AudioPlayerAsync:
             channels=CHANNELS,
             dtype=np.int16,
             blocksize=int(CHUNK_LENGTH_S * SAMPLE_RATE),
-            device=3,
+            device=device_id,
         )
         self.playing = False
         self._frame_count = 0
