@@ -222,7 +222,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
-                chat_history, settings, **kwargs
+                chat_history, settings
             ):
                 yield streaming_chat_message_contents
             return
@@ -247,7 +247,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
-                chat_history, settings, **kwargs
+                chat_history, settings
             ):
                 yield streaming_chat_message_contents
             return
@@ -259,7 +259,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 all_messages: list["StreamingChatMessageContent"] = []
                 function_call_returned = False
                 async for messages in self._inner_get_streaming_chat_message_contents(
-                    chat_history, settings, request_index, **kwargs
+                    chat_history, settings, request_index
                 ):
                     for msg in messages:
                         if msg is not None:
@@ -312,7 +312,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     function_invoke_attempt=request_index,
                 )
                 if self._yield_function_result_messages(function_result_messages):
-                    await self._streaming_function_call_result_callback(function_result_messages)
                     yield function_result_messages
 
                 if any(result.terminate for result in results if result is not None):
