@@ -180,7 +180,7 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
             };
         }
 
-        public class WeatherData
+        public sealed class WeatherData
         {
             [Description("Temp (°C)")]
             public double Data1 { get; set; }
