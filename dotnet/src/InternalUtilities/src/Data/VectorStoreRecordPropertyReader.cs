@@ -119,8 +119,12 @@ internal sealed class VectorStoreRecordPropertyReader
         this._parameterlessConstructorInfo = new Lazy<ConstructorInfo>(() =>
         {
             var constructor = dataModelType.GetConstructor(Type.EmptyTypes);
-            return constructor
-                ?? throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
+            if (constructor == null)
+            {
+                throw new ArgumentException($"Type {dataModelType.FullName} must have a parameterless constructor.");
+            }
+
+            return constructor;
         });
 
         this._keyPropertyStoragePropertyNames = new Lazy<List<string>>(() =>
