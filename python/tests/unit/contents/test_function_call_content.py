@@ -132,6 +132,20 @@ def test_parse_arguments_none():
     assert fc.parse_arguments() is None
 
 
+def test_parse_arguments_single_quotes():
+    # Test parsing arguments that are single quoted
+    fc = FunctionCallContent(id="test", name="Test-Function", arguments="{'input': 'world'}")
+    assert fc.parse_arguments() == {"input": "world"}
+
+    fc = FunctionCallContent(id="test", name="Test-Function", arguments="{'input': 'Let\\'s go'}")
+    assert fc.parse_arguments() == {"input": "Let's go"}
+
+    # Note this the below test is not a valid json string
+    fc = FunctionCallContent(id="test", name="Test-Function", arguments="{'input': 'Let's go'}")
+    with pytest.raises(FunctionCallInvalidArgumentsException):
+        fc.parse_arguments()
+
+
 def test_parse_arguments_fail():
     # Test parsing arguments to dictionary
     fc = FunctionCallContent(id=None, name="Test-Function", arguments="""{"input": "world}""")
