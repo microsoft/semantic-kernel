@@ -17,22 +17,22 @@ if TYPE_CHECKING:
 ####
 # TODO (eavanvalkenburg): Move to ADR
 # Receiving:
-# Option 1: Events and Contents split (current)
+# Option 1: Events and Contents split
 #    - content received through main receive_content method
 #    - events received through event callback handlers
 # Option 2: Everything is Content
 #    - content (events as new Content Type) received through main receive_content method
-# Option 3: Everything is Event
+# Option 3: Everything is Event (current)
 #    - receive_content method is removed
 #    - events received through main listen method
 #    - default event handlers added for things like errors and function calling
 #   - built-in vs custom event handling - separate or not?
 # Sending:
-# Option 1: Events and Contents split (current)
+# Option 1: Events and Contents split
 #    - send_content and send_event
 # Option 2: Everything is Content
 #    - single method needed, with EventContent type support
-# Option 3: Everything is Event
+# Option 3: Everything is Event (current)
 #    - send_event method only, Content is part of event data
 ####
 
