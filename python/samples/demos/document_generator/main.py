@@ -87,8 +87,9 @@ def set_up_logging():
 
 
 async def main():
-    set_up_tracing()
-    set_up_logging()
+    if AZURE_APP_INSIGHTS_CONNECTION_STRING:
+        set_up_tracing()
+        set_up_logging()
 
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("main"):
