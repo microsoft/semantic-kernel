@@ -28,6 +28,7 @@ class AudioRecorderStream(BaseModel):
     CHANNELS: ClassVar[int] = 1
     SAMPLE_RATE: ClassVar[int] = 24000
     CHUNK_LENGTH_S: ClassVar[float] = 0.05
+    device_id: int | None = None
 
     async def stream_audio_content(self) -> AsyncGenerator[AudioContent, None]:
         import sounddevice as sd  # type: ignore
@@ -41,7 +42,7 @@ class AudioRecorderStream(BaseModel):
             channels=self.CHANNELS,
             samplerate=self.SAMPLE_RATE,
             dtype="int16",
-            device=4,
+            device=self.device_id,
         )
         stream.start()
         try:
