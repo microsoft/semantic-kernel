@@ -441,16 +441,4 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
 
-    async def _streaming_function_call_result_callback(
-        self, function_result_messages: list["ChatMessageContent"]
-    ) -> None:
-        """Callback to handle the streaming function call result messages.
-
-        Override this method to handle the streaming function call result messages.
-
-        Args:
-            function_result_messages (list): The streaming function call result messages.
-        """
-        return
-
     # endregion

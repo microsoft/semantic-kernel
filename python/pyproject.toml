@@ -129,10 +129,7 @@ dapr = [
     "flask-dapr>=1.14.0"
 ]
 openai_realtime = [
-    "openai[realtime] ~= 1.0",
-    "pyaudio",
-    "pydub",
-    "sounddevice"
+    "openai[realtime] ~= 1.0"
 ]
 
 [tool.uv]

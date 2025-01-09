@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections import OrderedDict
+from collections.abc import Callable
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -15,6 +18,7 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.kernel import Kernel
 
 
 def update_settings_from_function_call_configuration(
@@ -134,3 +138,49 @@ def merge_streaming_function_results(
             function_invoke_attempt=function_invoke_attempt,
         )
     ]
+
+
+@experimental_function
+def prepare_settings_for_function_calling(
+    settings: "PromptExecutionSettings",
+    settings_class: type["PromptExecutionSettings"],
+    update_settings_callback: Callable[..., None],
+    kernel: "Kernel",
+) -> "PromptExecutionSettings":
+    """Prepare settings for the service.
+
+    Args:
+        settings: Prompt execution settings.
+        settings_class: The settings class.
+        update_settings_callback: The callback to update the settings.
+        kernel: Kernel instance.
+
+    Returns:
+        PromptExecutionSettings of type settings_class.
+    """
+    settings = deepcopy(settings)
+    if not isinstance(settings, settings_class):
+        settings = settings_class.from_prompt_execution_settings(settings)
+
+    # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+    # if this method is called with a `FunctionCallBehavior` object as part of the settings
+
+    from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+    if hasattr(settings, "function_call_behavior") and isinstance(
+        settings.function_call_behavior, FunctionCallBehavior
+    ):
+        settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+            settings.function_call_behavior
+        )
+
+    if settings.function_choice_behavior:
+        # Configure the function choice behavior into the settings object
+        # that will become part of the request to the AI service
+        settings.function_choice_behavior.configure(
+            kernel=kernel,
+            update_settings_callback=update_settings_callback,
+            settings=settings,
+        )
+    return settings
