@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -25,7 +26,8 @@ public sealed class GeminiRequestTests
             MaxTokens = 10,
             TopP = 0.9,
             AudioTimestamp = true,
-            ResponseMimeType = "application/json"
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
         };
 
         // Act
@@ -37,7 +39,56 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
+    }
+
+    [Fact]
+    public void JsonElementResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
+    }
+
+    [Theory]
+    [InlineData(typeof(int), "integer")]
+    [InlineData(typeof(bool), "boolean")]
+    [InlineData(typeof(string), "string")]
+    [InlineData(typeof(double), "number")]
+    [InlineData(typeof(GeminiRequest), "object")]
+    [InlineData(typeof(List<int>), "array")]
+    public void TypeResponseSchemaFromPromptReturnsAsExpected(Type type, string expectedSchemaType)
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = type
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        var schemaType = request.Configuration.ResponseSchema?.GetProperty("type").GetString();
+
+        Assert.Equal(expectedSchemaType, schemaType);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
     }
 
     [Fact]

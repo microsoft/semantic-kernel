@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -417,6 +418,27 @@ public sealed class GeminiChatGenerationTests : IDisposable
         var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
         Assert.NotNull(header);
         Assert.Equal(expectedVersion, header);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithResponseSchemaPropertyAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var settings = new GeminiPromptExecutionSettings { ResponseMimeType = "application/json", ResponseSchema = typeof(List<int>) };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+
+        var responseBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+
+        Assert.Contains("responseSchema", responseBody, StringComparison.Ordinal);
+        Assert.Contains("\"responseSchema\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}}", responseBody, StringComparison.Ordinal);
+        Assert.Contains("\"responseMimeType\":\"application/json\"", responseBody, StringComparison.Ordinal);
     }
 
     [Fact]
