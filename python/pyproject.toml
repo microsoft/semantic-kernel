@@ -57,7 +57,7 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,<0.6"
+    "chromadb >= 0.5,< 0.7"
 ]
 google = [
     "google-cloud-aiplatform ~= 1.60",

@@ -216,7 +216,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     Returns:
         ChatMessageContent: The chat message content containing the function call content as the items.
     """
-    return ChatMessageContent(role=AuthorRole.TOOL, name=agent_name, items=fccs)  # type: ignore
+    return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
 @experimental_function

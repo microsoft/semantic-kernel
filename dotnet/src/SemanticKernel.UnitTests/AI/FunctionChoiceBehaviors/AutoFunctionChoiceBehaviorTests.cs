@@ -280,6 +280,24 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.True(configuration.Options.AllowConcurrentInvocation);
     }
 
+    [Fact]
+    public void ItShouldPropagateAllowStrictSchemaAdherenceOptionToConfiguration()
+    {
+        // Arrange
+        var options = new FunctionChoiceBehaviorOptions
+        {
+            AllowStrictSchemaAdherence = true
+        };
+
+        // Act
+        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false, options: options);
+
+        // Assert
+        var configuration = choiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory: []));
+
+        Assert.True(configuration.Options.AllowStrictSchemaAdherence);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
