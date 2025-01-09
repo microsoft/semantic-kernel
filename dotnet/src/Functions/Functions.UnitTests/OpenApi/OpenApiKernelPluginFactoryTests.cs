@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -604,6 +605,42 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.NotNull(deserializedPayload);
 
         Assert.Equal(23.4f, deserializedPayload["float?parameter"]!.GetValue<float>());
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateRestApiOperationResponseFactoryToRunnerAsync()
+    {
+        // Arrange
+        bool restApiOperationResponseFactoryIsInvoked = false;
+
+        async Task<RestApiOperationResponse> RestApiOperationResponseFactory(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
+        {
+            restApiOperationResponseFactoryIsInvoked = true;
+
+            return await context.InternalFactory(context, cancellationToken);
+        }
+
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        this._executionParameters.HttpClient = httpClient;
+        this._executionParameters.RestApiOperationResponseFactory = RestApiOperationResponseFactory;
+
+        var openApiPlugins = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
+
+        var kernel = new Kernel();
+
+        var arguments = new KernelArguments
+        {
+            { "secret-name", "fake-secret-name" },
+            { "api-version", "fake-api-version" }
+        };
+
+        // Act
+        await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments);
+
+        // Assert
+        Assert.True(restApiOperationResponseFactoryIsInvoked);
     }
 
     /// <summary>

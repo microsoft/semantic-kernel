@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
@@ -52,19 +54,28 @@ namespace Plugins;
 /// <param name="output">The output helper to use to the test can emit status information</param>
 public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
+    private static readonly PromptExecutionSettings s_promptExecutionSettings = new()
+    {
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
+                    options: new FunctionChoiceBehaviorOptions
+                    {
+                        AllowStrictSchemaAdherence = true
+                    }
+                )
+    };
     public static readonly IEnumerable<object[]> s_parameters =
     [
         // function names are sanitized operationIds from the OpenAPI document
-        ["MessagesPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin"],
-        ["DriveItemPlugin", "drive_root_GetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
-        ["ContactsPlugin", "me_ListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
-        ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
+        ["MessagesPlugin", "me_ListMessages", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "MessagesPlugin"],
+        ["DriveItemPlugin", "drives_GetItemsContent", new KernelArguments(s_promptExecutionSettings) { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
+        ["ContactsPlugin", "me_ListContacts", new KernelArguments(s_promptExecutionSettings) { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
+        ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
         // Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
-        ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "me_ListMessages", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
-        ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "apod", new KernelArguments(s_promptExecutionSettings) { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
     ];
     [Theory, MemberData(nameof(s_parameters))]
     public async Task RunCopilotAgentPluginAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
@@ -87,6 +98,69 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         Console.WriteLine();
     }
+    private static readonly HashSet<string> s_fieldsToIgnore = new(
+        [
+            "bodyPreview",
+            "categories",
+            "conversationId",
+            "conversationIndex",
+            "inferenceClassification",
+            "internetMessageHeaders",
+            "isDeliveryReceiptRequested",
+            "multiValueExtendedProperties",
+            "singleValueExtendedProperties",
+            "uniqueBody",
+            "webLink",
+        ],
+        StringComparer.OrdinalIgnoreCase
+    );
+    private const string RequiredPropertyName = "required";
+    private const string PropertiesPropertyName = "properties";
+    /// <summary>
+    /// Trims the properties from the request body schema.
+    /// Most models in strict mode enforce a limit on the properties.
+    /// </summary>
+    /// <param name="schema">Source schema</param>
+    /// <returns>the trimmed schema for the request body</returns>
+    private static KernelJsonSchema? TrimPropertiesFromRequestBody(KernelJsonSchema? schema)
+    {
+        if (schema is null)
+        {
+            return null;
+        }
+
+        var originalSchema = JsonSerializer.Serialize(schema.RootElement);
+        var node = JsonNode.Parse(originalSchema);
+        if (node is not JsonObject jsonNode)
+        {
+            return schema;
+        }
+        if (jsonNode.TryGetPropertyValue(RequiredPropertyName, out var requiredRawValue) && requiredRawValue is JsonArray requiredArray)
+        {
+            jsonNode[RequiredPropertyName] = new JsonArray(requiredArray.Where(x => x is not null).Select(x => x!.GetValue<string>()).Where(x => !s_fieldsToIgnore.Contains(x)).Select(x => JsonValue.Create(x)).ToArray());
+        }
+
+        if (jsonNode.TryGetPropertyValue(PropertiesPropertyName, out var propertiesRawValue) && propertiesRawValue is JsonObject propertiesObject)
+        {
+            var properties = propertiesObject.Where(x => s_fieldsToIgnore.Contains(x.Key)).Select(x => x.Key).ToArray();
+            foreach (var property in properties)
+            {
+                propertiesObject.Remove(property);
+            }
+        }
+
+        return KernelJsonSchema.Parse(node.ToString());
+    }
+    private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
+    {
+        if ("me_CreateMessages".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
+            return context.Parameter;
+        }
+        return context.Parameter;
+    };
     internal static async Task<CopilotAgentPluginParameters> GetAuthenticationParametersAsync()
     {
         if (TestConfiguration.MSGraph.Scopes is null)
@@ -109,7 +183,12 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         // Microsoft Graph API execution parameters
         var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
             authCallback: authenticationProvider.AuthenticateRequestAsync,
-            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"));
+            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
+            enableDynamicOperationPayload: false,
+            enablePayloadNamespacing: false)
+        {
+            ParameterFilter = s_restApiParameterFilter
+        };
 
         // NASA API execution parameters
         var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -120,7 +199,9 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
                 query["api_key"] = "DEMO_KEY";
                 uriBuilder.Query = query.ToString();
                 request.RequestUri = uriBuilder.Uri;
-            });
+            },
+            enableDynamicOperationPayload: false,
+            enablePayloadNamespacing: false);
 
         var apiManifestPluginParameters = new CopilotAgentPluginParameters
         {

@@ -44,6 +44,10 @@ async def main():
     # Define a service_id for the sample
     service_id = "agent"
 
+    # Specify an assistant ID which is used
+    # to retrieve the agent
+    assistant_id: str = None
+
     # Create the agent configuration
     if use_azure_openai:
         agent = await AzureAssistantAgent.create(
@@ -52,6 +56,13 @@ async def main():
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
             enable_code_interpreter=True,
+        )
+
+        assistant_id = agent.assistant.id
+
+        retrieved_agent: AzureAssistantAgent = await AzureAssistantAgent.retrieve(
+            id=assistant_id,
+            kernel=kernel,
         )
     else:
         agent = await OpenAIAssistantAgent.create(
@@ -62,13 +73,13 @@ async def main():
             enable_code_interpreter=True,
         )
 
-    assistant_id = agent.assistant.id
+        assistant_id = agent.assistant.id
 
-    # Retrieve the agent using the assistant_id
-    retrieved_agent: OpenAIAssistantAgent = await OpenAIAssistantAgent.retrieve(
-        id=assistant_id,
-        kernel=kernel,
-    )
+        # Retrieve the agent using the assistant_id
+        retrieved_agent: OpenAIAssistantAgent = await OpenAIAssistantAgent.retrieve(
+            id=assistant_id,
+            kernel=kernel,
+        )
 
     # Define a thread and invoke the agent with the user input
     thread_id = await retrieved_agent.create_thread()
