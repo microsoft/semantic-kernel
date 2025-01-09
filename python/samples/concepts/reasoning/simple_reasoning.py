@@ -36,7 +36,6 @@ The following parameters are currently not supported:
 - logit_bias
 - max_tokens
 - stream
-- stream
 - tool_choice
 
 # .env examples
