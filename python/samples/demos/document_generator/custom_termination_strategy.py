@@ -20,7 +20,7 @@ TERMINATE_KEYWORD = "yes"
 
 
 class CustomTerminationStrategy(TerminationStrategy):
-    maximum_iterations: int = 10
+    maximum_iterations: int = 20
     chat_completion_service: AzureChatCompletion
 
     def __init__(self, **kwargs):
