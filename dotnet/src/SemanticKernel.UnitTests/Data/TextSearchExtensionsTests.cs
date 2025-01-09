@@ -149,6 +149,21 @@ public class TextSearchExtensionsTests
         Assert.Equal(5, results.Count());
     }
 
+    [Theory]
+    [MemberData(nameof(StandardFunctions))]
+    public async Task CountCanBeOverriddenInArgumentsWithStringAsync(KernelFunction function, string _)
+    {
+        // Act
+        var result = await function.InvokeAsync(new(), new() { ["query"] = "What is the Semantic Kernel?", ["count"] = "5" });
+
+        // Assert
+        Assert.NotNull(result);
+        var results = result.GetValue<IEnumerable<object>>();
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+        Assert.Equal(5, results.Count());
+    }
+
     #region private
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.

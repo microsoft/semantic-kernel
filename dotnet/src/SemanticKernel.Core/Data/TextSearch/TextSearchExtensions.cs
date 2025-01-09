@@ -390,9 +390,16 @@ public static class TextSearchExtensions
     /// <param name="defaultValue">Default value of the argument.</param>
     private static int GetArgumentValue(KernelArguments arguments, IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
     {
-        if (arguments.TryGetValue(name, out var value) && value is int argument)
+        if (arguments.TryGetValue(name, out var value))
         {
-            return argument;
+            if (value is int argument)
+            {
+                return argument;
+            }
+            else if (value is string argumentString && int.TryParse(argumentString, out var parsedArgument))
+            {
+                return parsedArgument;
+            }
         }
 
         value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
