@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using AzureAIP = Azure.AI.Projects;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 
