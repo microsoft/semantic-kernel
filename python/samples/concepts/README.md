@@ -22,6 +22,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Processes | Examples of using the [`Process Framework`](../../semantic_kernel/processes/) |
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
+| Reasoning | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning  |
 | Search | Using search services information |
 | Service Selector | Shows how to create and use a custom service selector class. |
 | Setup | How to setup environment variables for Semantic Kernel |
