@@ -48,6 +48,7 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
         // - Dew Point: 10°C
         // - Wind Speed: 15 km/h
     }
+
     [Fact]
     /// <summary>
     /// This sample demonstrates how to provide the return type schema of a function to the AI model using the function description attribute.
@@ -74,6 +75,7 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
         // - Dew Point: 10°C
         // - Wind Speed: 15 km/h
     }
+
     [Fact]
     /// <summary>
     /// This sample demonstrates how to provide the return type schema of a function to the AI model as part of the function's return value.
