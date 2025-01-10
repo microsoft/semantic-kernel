@@ -171,6 +171,7 @@ public class BedrockTextGenerationServiceTests
         // Assert
         Assert.Single(result);
         Assert.Equal("This is a mock output.", result[0].Text);
+        Assert.NotNull(result[0].InnerContent);
     }
 
     /// <summary>
@@ -210,6 +211,7 @@ public class BedrockTextGenerationServiceTests
             iterations += 1;
             Assert.NotNull(item);
             Assert.NotNull(item.Text);
+            Assert.NotNull(item.InnerContent);
             result.Add(item);
         }
         Assert.True(iterations > 0);

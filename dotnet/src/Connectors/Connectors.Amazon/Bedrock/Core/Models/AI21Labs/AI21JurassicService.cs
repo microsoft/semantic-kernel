@@ -38,17 +38,19 @@ internal sealed class AI21JurassicService : IBedrockTextGenerationService
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
-        List<TextContent> textContents = [];
+
         if (responseBody?.Completions is not { Count: > 0 })
         {
-            return textContents;
+            return [];
         }
-        textContents.AddRange(responseBody.Completions.Select(completion => new TextContent(completion.Data?.Text)));
-        return textContents;
+
+        return responseBody.Completions
+            .Select(completion => new TextContent(completion.Data?.Text, innerContent: responseBody))
+            .ToList();
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         throw new NotSupportedException("Streaming not supported by this model.");
     }

@@ -3,16 +3,11 @@
 import os
 from collections.abc import Callable
 from typing import Any
-from unittest.mock import AsyncMock, patch
 
-import httpx
 import pytest
 from pytest import raises
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
@@ -22,7 +17,6 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT
 
 
 @pytest.fixture
@@ -495,80 +489,6 @@ def test_from_object_class(custom_plugin_class):
     assert plugin is not None
     assert len(plugin.functions) == 1
     assert plugin.functions.get("getLightStatus") is not None
-
-
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_from_openai_from_file(mock_parse_openai_manifest, define_openai_predicate_context):
-    openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
-    with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json")) as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    plugin = await KernelPlugin.from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_str=openai_spec,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(spec=httpx.AsyncClient),
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-
-@patch("httpx.AsyncClient.get")
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, define_openai_predicate_context):
-    openai_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAIPlugin", "akv-openai.json"
-    )
-    with open(openai_spec_file_path) as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    request = httpx.Request(method="GET", url="http://fake-url.com/akv-openai.json")
-
-    response = httpx.Response(200, text=openai_spec, request=request)
-    mock_get.return_value = response
-
-    fake_plugin_url = "http://fake-url.com/akv-openai.json"
-    plugin = await KernelPlugin.from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_url=fake_plugin_url,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT})
-
-
-async def test_from_openai_fail(define_openai_predicate_context):
-    with raises(PluginInitializationError):
-        await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin")
-
-
-async def test_from_openai_fail_json_parsing(define_openai_predicate_context):
-    with raises(PluginInitializationError):
-        await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin", plugin_str="test")
 
 
 def test_from_openapi():
