@@ -37,7 +37,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
     [InlineData(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.Hamming, 0, 1, 3, new int[] { 0, 1, 2 })]
     [InlineData(DistanceFunction.ManhattanDistance, 0, 2, 3, new int[] { 0, 1, 2 })]
-    public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthoganalScore, int[] resultOrder)
+    public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthogonalScore, int[] resultOrder)
     {
         var keyDictionary = new Dictionary<int, TKey>
         {
@@ -49,7 +49,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         {
             { 0, expectedExactMatchScore },
             { 1, expectedOppositeScore },
-            { 2, expectedOrthoganalScore },
+            { 2, expectedOrthogonalScore },
         };
 
         // Don't test unsupported distance functions.
@@ -69,10 +69,10 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
 
         // Create two vectors that are opposite to each other and records that use these
-        // plus a further vector that is orthoganal to the base vector.
+        // plus a further vector that is orthogonal to the base vector.
         var baseVector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
         var oppositeVector = new ReadOnlyMemory<float>([-1, 0, 0, 0]);
-        var orthoganalVector = new ReadOnlyMemory<float>([0f, -1f, -1f, 0f]);
+        var orthogonalVector = new ReadOnlyMemory<float>([0f, -1f, -1f, 0f]);
 
         var baseRecord = new KeyWithVectorRecord<TKey>
         {
@@ -86,13 +86,13 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = oppositeVector,
         };
 
-        var orthoganalRecord = new KeyWithVectorRecord<TKey>
+        var orthogonalRecord = new KeyWithVectorRecord<TKey>
         {
             Key = this.Key3,
-            Vector = orthoganalVector,
+            Vector = orthogonalVector,
         };
 
-        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthoganalRecord]).ToListAsync();
+        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
