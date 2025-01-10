@@ -47,7 +47,7 @@ def check_audio_devices():
     print(sd.query_devices())
 
 
-# check_audio_devices()
+check_audio_devices()
 
 
 class Speaker:
@@ -106,6 +106,7 @@ class Microphone:
         self.realtime_client = realtime_client
 
     async def record_audio(self):
+        await self.realtime_client.send_event("response.create")
         with contextlib.suppress(asyncio.CancelledError):
             async for content in self.audio_recorder.stream_audio_content():
                 if content.data:
@@ -150,8 +151,8 @@ async def main() -> None:
     realtime_client.register_event_handler("response.created", response_created_callback)
 
     # create the speaker and microphone
-    speaker = Speaker(AudioPlayerAsync(device_id=7), realtime_client, kernel)
-    microphone = Microphone(AudioRecorderStream(device_id=2), realtime_client)
+    speaker = Speaker(AudioPlayerAsync(device_id=None), realtime_client, kernel)
+    microphone = Microphone(AudioRecorderStream(device_id=None), realtime_client)
 
     # Create the settings for the session
     # the key thing to decide on is to enable the server_vad turn detection
@@ -186,7 +187,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instruction: start speaking, when you stop the API should detect you finished and start responding."
+        "Instruction: start speaking, when you stop the API should detect you finished and start responding. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())
