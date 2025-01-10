@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+import json
+from unittest.mock import call, patch
 
 import pytest
 from opentelemetry.trace import StatusCode
@@ -14,7 +15,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceResponseExcepti
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     CHAT_COMPLETION_OPERATION,
-    _messages_to_openai_format,
+    ChatHistoryMessageTimestampFilter,
     trace_chat_completion,
 )
 from tests.unit.utils.model_diagnostics.conftest import MockChatCompletion
@@ -80,9 +81,11 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_chat_completion(
     mock_span,
+    mock_logger,
     execution_settings,
     mock_response,
     chat_history,
@@ -124,9 +127,18 @@ async def test_trace_chat_completion(
         if execution_settings.extension_data.get("top_p") is not None:
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.TOP_P, execution_settings.extension_data["top_p"])
 
-        mock_span.add_event.assert_any_call(
-            gen_ai_attributes.PROMPT_EVENT,
-            {gen_ai_attributes.PROMPT_EVENT_PROMPT: _messages_to_openai_format(chat_history)},
+        mock_logger.info.assert_has_calls(
+            [
+                call(
+                    json.dumps(message.to_dict()),
+                    extra={
+                        gen_ai_attributes.EVENT_NAME: gen_ai_attributes.ROLE_EVENT_MAP.get(message.role),
+                        gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
+                        ChatHistoryMessageTimestampFilter.INDEX_KEY: idx,
+                    },
+                )
+            ]
+            for idx, message in enumerate(chat_history)
         )
 
         # After the call to the model
@@ -139,15 +151,20 @@ async def test_trace_chat_completion(
                 ",".join([str(completion.finish_reason) for completion in mock_response]),
             )
 
-        mock_span.add_event.assert_any_call(
-            gen_ai_attributes.COMPLETION_EVENT,
-            {gen_ai_attributes.COMPLETION_EVENT_COMPLETION: _messages_to_openai_format(mock_response)},
+        mock_logger.info.assert_any_call(
+            json.dumps({"message": results[0].to_dict(), "finish_reason": results[0].finish_reason}),
+            extra={
+                gen_ai_attributes.EVENT_NAME: gen_ai_attributes.CHOICE,
+                gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
+            },
         )
 
 
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
 @patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
 async def test_trace_chat_completion_exception(
     mock_span,
+    mock_logger,
     execution_settings,
     mock_response,
     chat_history,
@@ -170,3 +187,17 @@ async def test_trace_chat_completion_exception(
         mock_span.set_status.assert_any_call(StatusCode.ERROR, repr(exception))
 
         mock_span.end.assert_any_call()
+
+        mock_logger.info.assert_has_calls(
+            [
+                call(
+                    json.dumps(message.to_dict()),
+                    extra={
+                        gen_ai_attributes.EVENT_NAME: gen_ai_attributes.ROLE_EVENT_MAP.get(message.role),
+                        gen_ai_attributes.SYSTEM: MockChatCompletion.MODEL_PROVIDER_NAME,
+                        ChatHistoryMessageTimestampFilter.INDEX_KEY: idx,
+                    },
+                )
+            ]
+            for idx, message in enumerate(chat_history)
+        )
