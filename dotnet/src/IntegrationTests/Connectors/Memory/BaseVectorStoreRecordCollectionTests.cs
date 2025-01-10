@@ -30,15 +30,28 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
     protected virtual int DelayAfterUploadInMilliseconds { get; } = 0;
 
     [Theory]
-    [InlineData(DistanceFunction.CosineDistance, 0, 2)]
-    [InlineData(DistanceFunction.CosineSimilarity, 1, -1)]
-    [InlineData(DistanceFunction.DotProductSimilarity, 1, -1)]
-    [InlineData(DistanceFunction.EuclideanDistance, 0, 2)]
-    [InlineData(DistanceFunction.EuclideanSquaredDistance, 0, 4)]
-    [InlineData(DistanceFunction.Hamming, 0, 1)]
-    [InlineData(DistanceFunction.ManhattanDistance, 0, 2)]
-    public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore)
+    [InlineData(DistanceFunction.CosineDistance, 0, 2, 1, new int[] { 0, 2, 1 })]
+    [InlineData(DistanceFunction.CosineSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
+    [InlineData(DistanceFunction.DotProductSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
+    [InlineData(DistanceFunction.EuclideanDistance, 0, 2, 1.73, new int[] { 0, 2, 1 })]
+    [InlineData(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, new int[] { 0, 2, 1 })]
+    [InlineData(DistanceFunction.Hamming, 0, 1, 3, new int[] { 0, 1, 2 })]
+    [InlineData(DistanceFunction.ManhattanDistance, 0, 2, 3, new int[] { 0, 1, 2 })]
+    public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthoganalScore, int[] resultOrder)
     {
+        var keyDictionary = new Dictionary<int, TKey>
+        {
+            { 0, this.Key1 },
+            { 1, this.Key2 },
+            { 2, this.Key3 },
+        };
+        var scoreDictionary = new Dictionary<int, double>
+        {
+            { 0, expectedExactMatchScore },
+            { 1, expectedOppositeScore },
+            { 2, expectedOrthoganalScore },
+        };
+
         // Don't test unsupported distance functions.
         var supportedDistanceFunctions = this.GetSupportedDistanceFunctions();
         if (!supportedDistanceFunctions.Contains(distanceFunction))
@@ -55,9 +68,11 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         await sut.CreateCollectionIfNotExistsAsync();
         await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
 
-        // Create two vectors that are opposite to each other and records that use these.
+        // Create two vectors that are opposite to each other and records that use these
+        // plus a further vector that is orthoganal to the base vector.
         var baseVector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
         var oppositeVector = new ReadOnlyMemory<float>([-1, 0, 0, 0]);
+        var orthoganalVector = new ReadOnlyMemory<float>([0f, -1f, -1f, 0f]);
 
         var baseRecord = new KeyWithVectorRecord<TKey>
         {
@@ -71,7 +86,13 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = oppositeVector,
         };
 
-        await sut.UpsertBatchAsync([baseRecord, oppositeRecord]).ToListAsync();
+        var orthoganalRecord = new KeyWithVectorRecord<TKey>
+        {
+            Key = this.Key3,
+            Vector = orthoganalVector,
+        };
+
+        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthoganalRecord]).ToListAsync();
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
@@ -79,13 +100,16 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
         // Assert
         var results = await searchResult.Results.ToListAsync();
-        Assert.Equal(2, results.Count);
+        Assert.Equal(3, results.Count);
 
-        Assert.Equal(this.Key1, results[0].Record.Key);
-        Assert.Equal(expectedExactMatchScore, results[0].Score);
+        Assert.Equal(keyDictionary[resultOrder[0]], results[0].Record.Key);
+        Assert.Equal(Math.Round(scoreDictionary[resultOrder[0]], 2), Math.Round(results[0].Score!.Value, 2));
 
-        Assert.Equal(this.Key2, results[1].Record.Key);
-        Assert.Equal(expectedOppositeScore, results[1].Score);
+        Assert.Equal(keyDictionary[resultOrder[1]], results[1].Record.Key);
+        Assert.Equal(Math.Round(scoreDictionary[resultOrder[1]], 2), Math.Round(results[1].Score!.Value, 2));
+
+        Assert.Equal(keyDictionary[resultOrder[2]], results[2].Record.Key);
+        Assert.Equal(Math.Round(scoreDictionary[resultOrder[2]], 2), Math.Round(results[2].Score!.Value, 2));
 
         // Cleanup
         await sut.DeleteCollectionAsync();
@@ -105,7 +129,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         return definition;
     }
 
-    private class KeyWithVectorRecord<TRecordKey>
+    private sealed class KeyWithVectorRecord<TRecordKey>
     {
         public required TRecordKey Key { get; set; }
 
