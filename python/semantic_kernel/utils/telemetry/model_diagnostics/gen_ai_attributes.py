@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.contents.utils.author_role import AuthorRole
+
 # Constants for tracing activities with semantic conventions.
 # Ideally, we should use the attributes from the semcov package.
 # However, many of the attributes are not yet available in the package,
@@ -36,3 +38,11 @@ PROMPT = "gen_ai.prompt"
 
 # Kernel specific attributes
 AVAILABLE_FUNCTIONS = "sk.available_functions"
+
+
+ROLE_EVENT_MAP = {
+    AuthorRole.SYSTEM: SYSTEM_MESSAGE,
+    AuthorRole.USER: USER_MESSAGE,
+    AuthorRole.ASSISTANT: ASSISTANT_MESSAGE,
+    AuthorRole.TOOL: TOOL_MESSAGE,
+}

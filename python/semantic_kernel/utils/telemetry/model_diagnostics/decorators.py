@@ -15,7 +15,6 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.experimental_decorator import experimental_function
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
@@ -376,14 +375,8 @@ def _set_completion_input(
     """
     if are_sensitive_events_enabled():
         if isinstance(prompt, ChatHistory):
-            role_event_map = {
-                AuthorRole.SYSTEM: gen_ai_attributes.SYSTEM_MESSAGE,
-                AuthorRole.USER: gen_ai_attributes.USER_MESSAGE,
-                AuthorRole.ASSISTANT: gen_ai_attributes.ASSISTANT_MESSAGE,
-                AuthorRole.TOOL: gen_ai_attributes.TOOL_MESSAGE,
-            }
             for idx, message in enumerate(prompt.messages):
-                event_name = role_event_map.get(message.role)
+                event_name = gen_ai_attributes.ROLE_EVENT_MAP.get(message.role)
                 if event_name:
                     logger.info(
                         json.dumps(message.to_dict()),
@@ -439,8 +432,10 @@ def _set_completion_response(
         for completion in completions:
             full_response: dict[str, Any] = {
                 "message": completion.to_dict(),
-                "finish_reason": completion.finish_reason,
             }
+
+            if hasattr(completion, "finish_reason"):
+                full_response["finish_reason"] = completion.finish_reason
             if hasattr(completion, "choice_index"):
                 full_response["index"] = completion.choice_index
 
