@@ -125,7 +125,6 @@ public sealed class GeminiRequestTests
         Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
     }
 
-
     [Theory]
     [InlineData(typeof(int), "integer")]
     [InlineData(typeof(bool), "boolean")]
