@@ -5,7 +5,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator, Callable
 from functools import reduce
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
 
@@ -39,10 +39,35 @@ CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
 TEXT_COMPLETION_OPERATION = "text.completions"
 TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 
+
+# We're recording multiple events for the chat history, some of them are emitted within (hundreds of)
+# nanoseconds of each other. The default timestamp resolution is not high enough to guarantee unique
+# timestamps for each message. Also Azure Monitor truncates resolution to microseconds and some other
+# backends truncate to milliseconds.
+#
+# But we need to give users a way to restore chat message order, so we're incrementing the timestamp
+# by 1 microsecond for each message.
+#
+# This is a workaround, we'll find a generic and better solution - see
+# https://github.com/open-telemetry/semantic-conventions/issues/1701
+class ChatHistoryMessageTimestampFilter(logging.Filter):
+    """A filter to increment the timestamp of INFO logs by 1 microsecond."""
+
+    INDEX_KEY: ClassVar[str] = "CHAT_MESSAGE_INDEX"
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Increment the timestamp of INFO logs by 1 microsecond."""
+        if hasattr(record, self.INDEX_KEY):
+            idx = getattr(record, self.INDEX_KEY)
+            record.created += idx * 1e-6
+        return True
+
+
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
 
 logger = logging.getLogger(__name__)
+logger.addFilter(ChatHistoryMessageTimestampFilter())
 
 
 @experimental_function
@@ -91,16 +116,16 @@ def trace_chat_completion(model_provider: str) -> Callable:
             settings: "PromptExecutionSettings" = kwargs.get("settings") or args[2]  # type: ignore
 
             with use_span(
-                _start_completion_activity(
+                _get_completion_span(
                     CHAT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
-                    chat_history,
                     settings,
                 ),
                 end_on_exit=True,
             ) as current_span:
+                _set_completion_input(model_provider, chat_history)
                 try:
                     completions: list[ChatMessageContent] = await completion_func(*args, **kwargs)
                     _set_completion_response(current_span, completions, model_provider)
@@ -148,16 +173,16 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
             all_messages: dict[int, list[StreamingChatMessageContent]] = {}
 
             with use_span(
-                _start_completion_activity(
+                _get_completion_span(
                     CHAT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
-                    chat_history,
                     settings,
                 ),
                 end_on_exit=True,
             ) as current_span:
+                _set_completion_input(model_provider, chat_history)
                 try:
                     async for streaming_chat_message_contents in completion_func(*args, **kwargs):
                         for streaming_chat_message_content in streaming_chat_message_contents:
@@ -207,16 +232,16 @@ def trace_text_completion(model_provider: str) -> Callable:
             settings: "PromptExecutionSettings" = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 
             with use_span(
-                _start_completion_activity(
+                _get_completion_span(
                     TEXT_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
-                    prompt,
                     settings,
                 ),
                 end_on_exit=True,
             ) as current_span:
+                _set_completion_input(model_provider, prompt)
                 try:
                     completions: list[TextContent] = await completion_func(*args, **kwargs)
                     _set_completion_response(current_span, completions, model_provider)
@@ -262,16 +287,16 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
             all_text_contents: dict[int, list["StreamingTextContent"]] = {}
 
             with use_span(
-                _start_completion_activity(
+                _get_completion_span(
                     TEXT_STREAMING_COMPLETION_OPERATION,
                     completion_service.ai_model_id,
                     model_provider,
                     completion_service.service_url(),
-                    prompt,
                     settings,
                 ),
                 end_on_exit=True,
             ) as current_span:
+                _set_completion_input(model_provider, prompt)
                 try:
                     async for streaming_text_contents in completion_func(*args, **kwargs):
                         for streaming_text_content in streaming_text_contents:
@@ -296,15 +321,18 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
     return inner_trace_streaming_text_completion
 
 
-def _start_completion_activity(
+def _get_completion_span(
     operation_name: str,
     model_name: str,
     model_provider: str,
     service_url: str | None,
-    prompt: str | ChatHistory,
     execution_settings: "PromptExecutionSettings | None",
 ) -> Span:
-    """Start a text or chat completion activity for a given model."""
+    """Start a text or chat completion span for a given model.
+
+    Note that `start_span` doesn't make the span the current span.
+    Use `use_span` to make it the current span as a context manager.
+    """
     span = tracer.start_span(f"{operation_name} {model_name}")
 
     # Set attributes on the span
@@ -335,6 +363,17 @@ def _start_completion_activity(
             if attribute:
                 span.set_attribute(attribute_key, attribute)
 
+    return span
+
+
+def _set_completion_input(
+    model_provider: str,
+    prompt: str | ChatHistory,
+) -> None:
+    """Set the input for a text or chat completion.
+
+    The logs will be associated to the current span.
+    """
     if are_sensitive_events_enabled():
         if isinstance(prompt, ChatHistory):
             role_event_map = {
@@ -343,7 +382,7 @@ def _start_completion_activity(
                 AuthorRole.ASSISTANT: gen_ai_attributes.ASSISTANT_MESSAGE,
                 AuthorRole.TOOL: gen_ai_attributes.TOOL_MESSAGE,
             }
-            for message in prompt.messages:
+            for idx, message in enumerate(prompt.messages):
                 event_name = role_event_map.get(message.role)
                 if event_name:
                     logger.info(
@@ -351,6 +390,7 @@ def _start_completion_activity(
                         extra={
                             gen_ai_attributes.EVENT_NAME: event_name,
                             gen_ai_attributes.SYSTEM: model_provider,
+                            ChatHistoryMessageTimestampFilter.INDEX_KEY: idx,
                         },
                     )
         else:
@@ -362,8 +402,6 @@ def _start_completion_activity(
                 },
             )
 
-    return span
-
 
 def _set_completion_response(
     current_span: Span,
@@ -373,7 +411,7 @@ def _set_completion_response(
     | list[StreamingTextContent],
     model_provider: str,
 ) -> None:
-    """Set the a text or chat completion response for a given activity."""
+    """Set the a text or chat completion response for a given span."""
     first_completion = completions[0]
 
     # Set the response ID
