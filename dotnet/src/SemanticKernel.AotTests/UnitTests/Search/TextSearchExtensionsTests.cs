@@ -83,11 +83,11 @@ internal sealed class TextSearchExtensionsTests
         // Assert return type schema
         var type = typeof(T).Name;
         var expectedSchema = type switch
-{
-    "String" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"string"}}},"required":["Results"]}""",
-    "TextSearchResult" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}""",
-    _ => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}"""
-};
+        {
+            "String" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"string"}}},"required":["Results"]}""",
+            "TextSearchResult" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}""",
+            _ => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}"""
+        };
         Assert.AreEqual(expectedSchema, metadata.ReturnParameter.Schema!.ToString());
     }
     #endregion
