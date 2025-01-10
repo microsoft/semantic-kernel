@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI;
@@ -273,14 +274,17 @@ internal sealed class GeminiRequest
             return null;
         }
 
-        if (responseSchemaSettings is JsonElement jsonElement)
+        var jsonElement = responseSchemaSettings switch
         {
-            return jsonElement;
-        }
+            JsonElement element => element,
+            Type type => CreateSchema(type, GetDefaultOptions()),
+            KernelJsonSchema kernelJsonSchema => kernelJsonSchema.RootElement,
+            JsonNode jsonNode => JsonSerializer.SerializeToElement(jsonNode, GetDefaultOptions()),
+            JsonDocument jsonDocument => JsonSerializer.SerializeToElement(jsonDocument, GetDefaultOptions()),
+            _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions())
+        };
 
-        return responseSchemaSettings is Type type
-            ? CreateSchema(type, GetDefaultOptions())
-            : CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions());
+        return jsonElement;
     }
 
     private static JsonElement CreateSchema(

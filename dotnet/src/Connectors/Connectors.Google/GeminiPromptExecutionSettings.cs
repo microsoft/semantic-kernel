@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
@@ -214,8 +215,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <remarks>
     /// Possible values are:
-    /// <para>- <see cref="object"/> object, which type will be used to automatically create a JSON schema;</para>
-    /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
+    /// <para>- <see cref="Type"/> which will be used to automatically generate a JSON schema.</para>
+    /// <para>- <see cref="JsonElement"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="JsonNode"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="JsonDocument"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="object"/> object, where none of the above matches which the type will be used to automatically generate a JSON schema.</para>
     /// </remarks>
     [JsonPropertyName("response_schema")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

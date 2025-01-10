@@ -51,7 +51,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
+            ResponseSchema = Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int))
         };
 
         // Act
@@ -62,6 +62,69 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
         Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
     }
+
+    [Fact]
+    public void KernelJsonSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = KernelJsonSchemaBuilder.Build(typeof(int))
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(((KernelJsonSchema)executionSettings.ResponseSchema).RootElement, request.Configuration.ResponseSchema);
+    }
+
+    [Fact]
+    public void JsonNodeResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonNode.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
+    [Fact]
+    public void JsonDocumentResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonDocument.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
 
     [Theory]
     [InlineData(typeof(int), "integer")]
