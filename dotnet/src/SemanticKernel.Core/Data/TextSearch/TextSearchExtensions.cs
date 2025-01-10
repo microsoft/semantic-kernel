@@ -381,30 +381,6 @@ public static class TextSearchExtensions
 
     #region private
     /// <summary>
-    /// Get the argument value from <see cref="KernelArguments"/> or users default value from
-    /// <see cref="KernelReturnParameterMetadata"/> or default to the provided value.
-    /// </summary>
-    /// <param name="arguments">KernelArguments instance.</param>
-    /// <param name="parameters">List of KernelReturnParameterMetadata.</param>
-    /// <param name="name">Name of the argument.</param>
-    /// <param name="defaultValue">Default value of the argument.</param>
-    /*private static int GetArgumentValue(KernelArguments arguments, IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
-    {
-        if (arguments.TryGetValue(name, out var value) && value is int argument)
-        {
-            return argument;
-        }
-
-        value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
-        if (value is int metadataDefault)
-        {
-            return metadataDefault;
-        }
-
-        return defaultValue;
-    }*/
-
-    /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// </summary>
     [RequiresUnreferencedCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
