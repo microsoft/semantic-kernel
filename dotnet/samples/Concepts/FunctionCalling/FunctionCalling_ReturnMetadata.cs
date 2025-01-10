@@ -38,10 +38,12 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
 
         // Import plugin that has a return type described in the function description.
         kernel.ImportPluginFromType<WeatherPlugin1>();
-        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
-        Console.WriteLine(result);
 
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
+
+        Console.WriteLine(result);
         // Output: The current weather is as follows:
         // - Temperature: 35°C
         // - Humidity: 20%
@@ -65,10 +67,12 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
 
         // Import plugin that has a return type schema in the function description.
         kernel.ImportPluginFromType<WeatherPlugin2>();
-        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
-        Console.WriteLine(result);
 
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
+
+        Console.WriteLine(result);
         // Output: The current weather details is as follows:
         // - Temperature: 35°C
         // - Humidity: 20%
@@ -99,10 +103,12 @@ public class FunctionCalling_ReturnMetadata(ITestOutputHelper output) : BaseTest
         // Import the plugin that provides descriptions for the return type properties.   
         // This additional information is used when extracting the schema from the return type.
         kernel.ImportPluginFromType<WeatherPlugin3>();
-        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
-        Console.WriteLine(result);
 
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        FunctionResult result = await kernel.InvokePromptAsync("What is the current weather?", new(settings));
+
+        Console.WriteLine(result);
         // Output: The current weather conditions are as follows:
         // - Temperature: 35°C
         // - Humidity: 20 %
