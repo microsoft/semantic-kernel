@@ -100,7 +100,7 @@ class ListenEvents(str, Enum):
     CONVERSATION_ITEM_TRUNCATED = "conversation.item.truncated"
     CONVERSATION_ITEM_DELETED = "conversation.item.deleted"
     RESPONSE_CREATED = "response.created"
-    RESPONSE_DONE = "response.done"
+    RESPONSE_DONE = "response.done"  # contains usage info -> log
     RESPONSE_OUTPUT_ITEM_ADDED = "response.output_item.added"
     RESPONSE_OUTPUT_ITEM_DONE = "response.output_item.done"
     RESPONSE_CONTENT_PART_ADDED = "response.content_part.added"
@@ -421,6 +421,8 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             chat_history = ChatHistory()
             await kernel.invoke_function_call(item, chat_history)
             await self.send_event(SendEvents.CONVERSATION_ITEM_CREATE, item=chat_history.messages[-1])
+            # The model doesn't start responding to the tool call automatically, so triggering it here.
+            await self.send_event(SendEvents.RESPONSE_CREATE)
         return chat_history.messages[-1], False
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
