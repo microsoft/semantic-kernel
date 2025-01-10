@@ -9,6 +9,12 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
+class InputAudioTranscription(KernelBaseModel):
+    """Input audio transcription settings."""
+
+    model: Literal["whisper-1"] | None = None
+
+
 class TurnDetection(KernelBaseModel):
     """Turn detection settings."""
 
@@ -28,7 +34,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     voice: str | None = None
     input_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
     output_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
-    input_audio_transcription: dict[str, Any] | None = None
+    input_audio_transcription: InputAudioTranscription | None = None
     turn_detection: TurnDetection | None = None
     tools: Annotated[
         list[dict[str, Any]] | None,
