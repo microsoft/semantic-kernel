@@ -70,19 +70,17 @@ class CustomTerminationStrategy(TerminationStrategy):
 
     def get_system_message(self) -> str:
         return f"""
-The following chat history contains messages from one user, one writer, and {len(self.agents) - 1} reviewers,
-who are working together to create a document.
+You are in a chat where multiple agents are involved in creating a document.
 
-The writer is responsible for creating content.
-The reviewers are responsible for providing feedback, validation the correctness, and approving the content.
 The chat history may be empty at the beginning as none of the agents have spoken yet.
 
 Following are the names and introductions of the agents in fullfilling the user's request:
 {"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
 
-The content is considered approved only when all the reviewers agree that the content is ready for publication.
-The content is not approved when none of the reviewers have spoken yet.
-All participants must at least have spoken once.
+The content is considered approved only when all the reviewers have agreed and validated that the content is
+ready for publication.
+Whenever the writer updates the document, the reviewers must reapprove and revalidate the content.
+All agents must at least have spoken once.
 
 Your job is NOT to continue the conversation, but to determine if the content has been approved based on the chat.
 If so, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".

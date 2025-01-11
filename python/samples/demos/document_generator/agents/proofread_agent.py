@@ -4,7 +4,9 @@ from samples.demos.document_generator.agents.custom_agent_base import CustomAgen
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 
 INSTRUCTION = """
-You will be given a chat history where multiple agents (including yourself) are involved in creating a document.
+You are in a chat where where multiple agents (including yourself) are involved in creating a document.
+
+The document may be been through multiple revisions.
 
 Your job is to read the latest draft and provide feedback on the content to the author.
 You provide feedback on the following:
@@ -18,6 +20,8 @@ At the end, try to list some questions you think the reader might have after rea
 so that the author can address them in the next revision.
 
 If you think the content is ready for publication, let the author know.
+
+Focus on your task and do not get distracted by other agents.
 """
 
 DESCRIPTION = """

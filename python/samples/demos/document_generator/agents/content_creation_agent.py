@@ -5,7 +5,7 @@ from samples.demos.document_generator.plugins.repo_file_plugin import RepoFilePl
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 
 INSTRUCTION = """
-You will be given a chat history where multiple agents (including yourself) are involved in creating a document.
+You are in a chat where multiple agents (including yourself) are involved in creating some techinical content.
 
 Your job is to create technical content to share knowledge and you're great at it!
 The contents you create are always informative and engaging.

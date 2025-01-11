@@ -70,15 +70,16 @@ class CustomSelectionStrategy(SelectionStrategy):
 
     def get_system_message(self, agents: list["Agent"]) -> str:
         return f"""
-The following chat history contains messages from one user, one writer, and {len(agents) - 1} reviewers,
-who are working together to create a document.
+You are in a chat where multiple agents are involved in creating a document.
 
-The writer is responsible for creating content.
-The reviewers are responsible for providing feedback, validation the correctness, and approving the content.
 The chat history may be empty at the beginning as none of the agents have spoken yet.
 
 Following are the indices, names and introductions of the agents in fullfilling the user's request:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
+
+Let the writer create the document first. Then let the reviewers will review and validate the content.
+Once the writer updates the document, the reviewers must reapprove and revalidate the content.
+If there is an agent that represents the user, only pick that agent when the other agents have given positive feedback.
 
 Your job is NOT to continue the conversation, but to pick the most appropriate agents to speak next based on
 the conversation history by its index. No agent should speak more than once in a row.
