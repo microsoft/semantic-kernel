@@ -31,12 +31,25 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
 
     @override
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
+        # Since the history contains internal messages from other agents,
+        # we will do our best to filter out those. Unfortunately, there will
+        # be a side effect of losing the context of the conversation internal
+        # to the agent when the conversation is handed back to the agent, i.e.
+        # previous function call results.
+        filtered_chat_history = ChatHistory()
+        for message in history:
+            content = message.content
+            # We don't want to add messages whose text content is empty.
+            # Those messages are likely messages from function calls and function results.
+            if content:
+                filtered_chat_history.add_message(message)
+
         tracer = trace.get_tracer(__name__)
         response_messages: list[ChatMessageContent] = []
         with tracer.start_as_current_span(self.name):
             # Cache the messages within the span such that subsequent spans
             # that process the message stream don't become children of this span
-            async for response_message in super().invoke(history):
+            async for response_message in super().invoke(filtered_chat_history):
                 response_messages.append(response_message)
 
         for response_message in response_messages:

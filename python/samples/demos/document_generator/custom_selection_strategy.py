@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
 
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 @experimental_class
 class CustomSelectionStrategy(SelectionStrategy):
     """A selection strategy that selects the next agent intelligently."""
+
+    NUM_OF_RETRIES: ClassVar[int] = 3
 
     chat_completion_service: AzureChatCompletion
 
@@ -47,29 +49,40 @@ class CustomSelectionStrategy(SelectionStrategy):
 
             for message in history:
                 content = message.content
+                # We don't want to add messages whose text content is empty.
+                # Those messages are likely messages from function calls and function results.
                 if content:
                     chat_history.add_message(message)
 
-            completion = await self.chat_completion_service.get_chat_message_content(
-                chat_history,
-                AzureChatPromptExecutionSettings(),
-            )
+            for _ in range(self.NUM_OF_RETRIES):
+                completion = await self.chat_completion_service.get_chat_message_content(
+                    chat_history,
+                    AzureChatPromptExecutionSettings(),
+                )
 
-            return agents[int(completion.content)]
+                try:
+                    return agents[int(completion.content)]
+                except ValueError as ex:
+                    chat_history.add_message(completion)
+                    chat_history.add_user_message_str(str(ex))
+
+            raise ValueError("Failed to select an agent since the model did not return a valid index")
 
     def get_system_message(self, agents: list["Agent"]) -> str:
         return f"""
-You will be given a chat history where there will be one user, one writer, and {len(agents) - 1} reviewers.
-The writer is responsible for creating content.
-The reviewers are responsible for providing feedback and approving the content.
-The chat history may be empty at the beginning.
+The following chat history contains messages from one user, one writer, and {len(agents) - 1} reviewers,
+who are working together to create a document.
 
-Following are the indices, names and introductions of the participants in fullfilling the user's request:
+The writer is responsible for creating content.
+The reviewers are responsible for providing feedback, validation the correctness, and approving the content.
+The chat history may be empty at the beginning as none of the agents have spoken yet.
+
+Following are the indices, names and introductions of the agents in fullfilling the user's request:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-Pick the most appropriate participant to speak next based on the conversation history by its index.
-No participant should speak more than once in a row.
+Your job is NOT to continue the conversation, but to pick the most appropriate agents to speak next based on
+the conversation history by its index. No agent should speak more than once in a row.
 
 You response should be a number between 0 and {len(agents) - 1}.
-Only return the index of the participant and nothing else. Your response should be parsaable as an integer.
+Only return the index of the agent and nothing else. Your response should be parsaable as an integer.
 """

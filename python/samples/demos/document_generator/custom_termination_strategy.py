@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
 
@@ -16,10 +16,13 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 
-TERMINATE_KEYWORD = "yes"
+TERMINATE_TRUE_KEYWORD = "yes"
+TERMINATE_FALSE_KEYWORD = "no"
 
 
 class CustomTerminationStrategy(TerminationStrategy):
+    NUM_OF_RETRIES: ClassVar[int] = 3
+
     maximum_iterations: int = 20
     chat_completion_service: AzureChatCompletion
 
@@ -40,30 +43,47 @@ class CustomTerminationStrategy(TerminationStrategy):
 
             for message in history:
                 content = message.content
+                # We don't want to add messages whose text content is empty.
+                # Those messages are likely messages from function calls and function results.
                 if content:
                     chat_history.add_message(message)
 
-            completion = await self.chat_completion_service.get_chat_message_content(
-                chat_history,
-                AzureChatPromptExecutionSettings(),
-            )
+            for _ in range(self.NUM_OF_RETRIES):
+                completion = await self.chat_completion_service.get_chat_message_content(
+                    chat_history,
+                    AzureChatPromptExecutionSettings(),
+                )
 
-            return TERMINATE_KEYWORD in completion.content.lower()
+                if TERMINATE_FALSE_KEYWORD in completion.content.lower():
+                    return False
+                if TERMINATE_TRUE_KEYWORD in completion.content.lower():
+                    return True
+
+                chat_history.add_message(completion)
+                chat_history.add_user_message_str(
+                    f"You must only say either '{TERMINATE_TRUE_KEYWORD}' or '{TERMINATE_FALSE_KEYWORD}'."
+                )
+
+            raise ValueError(
+                "Failed to determine if the agent should terminate because the model did not return a valid response."
+            )
 
     def get_system_message(self) -> str:
         return f"""
-You will be given a chat history where there will be one user, one writer, and {len(self.agents) - 1} reviewers.
-The writer is responsible for creating content.
-The reviewers are responsible for providing feedback and approving the content.
-The chat history may be empty at the beginning.
+The following chat history contains messages from one user, one writer, and {len(self.agents) - 1} reviewers,
+who are working together to create a document.
 
-Following are the names and introductions of the participants in fullfilling the user's request:
+The writer is responsible for creating content.
+The reviewers are responsible for providing feedback, validation the correctness, and approving the content.
+The chat history may be empty at the beginning as none of the agents have spoken yet.
+
+Following are the names and introductions of the agents in fullfilling the user's request:
 {"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
 
 The content is considered approved only when all the reviewers agree that the content is ready for publication.
 The content is not approved when none of the reviewers have spoken yet.
 All participants must at least have spoken once.
 
-Determine if the content has been approved. If so, say "{TERMINATE_KEYWORD}".
-Otherwise, say "no".
+Your job is NOT to continue the conversation, but to determine if the content has been approved based on the chat.
+If so, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".
 """
