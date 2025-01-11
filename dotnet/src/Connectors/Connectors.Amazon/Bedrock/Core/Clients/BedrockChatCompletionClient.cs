@@ -191,7 +191,7 @@ internal sealed class BedrockChatCompletionClient
             throw;
         }
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
-        foreach (var chunk in response.Stream.AsEnumerable())
+        foreach (var chunk in response.Stream)
         {
             if (chunk is ContentBlockDeltaEvent deltaEvent)
             {
