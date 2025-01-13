@@ -277,6 +277,12 @@ class OpenAIAssistantBase(Agent):
         if self.max_prompt_tokens:
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
 
+        if self.top_p:
+            execution_settings["top_p"] = self.top_p
+
+        if self.temperature:
+            execution_settings["temperature"] = self.temperature
+
         if self.parallel_tool_calls_enabled:
             execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
 
