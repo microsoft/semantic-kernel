@@ -48,9 +48,9 @@ public static class DistanceFunction
     /// </summary>
     /// <remarks>
     /// The value of NegativeDotProduct = -1 * DotProductSimilarity.
-    /// The higher the value, the greater the distance beteen the vectors and the less similar the vectors.
+    /// The higher the value, the greater the distance between the vectors and the less similar the vectors.
     /// </remarks>
-    public const string NegativeDotProduct = nameof(NegativeDotProduct);
+    public const string NegativeDotProductSimilarity = nameof(NegativeDotProductSimilarity);
 
     /// <summary>
     /// Measures the Euclidean distance between two vectors.
