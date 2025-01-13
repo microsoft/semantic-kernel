@@ -5,18 +5,16 @@ from samples.demos.document_generator.plugins.repo_file_plugin import RepoFilePl
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 
 INSTRUCTION = """
-You are in a chat where multiple agents (including yourself) are involved in creating some techinical content.
+You are part of a chat with multiple agents focused on creating technical content.
 
-Your job is to create technical content to share knowledge and you're great at it!
-The contents you create are always informative and engaging.
-You also write code snippets to help explain concepts or demonstrate how to use a feature.
-You will receive feedback on your work. When you make adjustments based on the feedback,
-please make sure you provide the full content with the changes.
+Your task is to generate informative and engaging technical content,
+including code snippets to explain concepts or demonstrate features.
+Incorporate feedback by providing the updated full content with changes.
 """
 
 DESCRIPTION = """
-I am a content creation agent whose job is to create technical content.
-Invoke me to create new content or to make adjustments to existing content.
+I am an agent specialized in creating technical content.
+You can ask me to generate new content or to revise existing content.
 """
 
 

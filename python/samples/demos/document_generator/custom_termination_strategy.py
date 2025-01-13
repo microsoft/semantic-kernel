@@ -70,18 +70,17 @@ class CustomTerminationStrategy(TerminationStrategy):
 
     def get_system_message(self) -> str:
         return f"""
-You are in a chat where multiple agents are involved in creating a document.
+You are in a chat with multiple agents collaborating to create a document.
 
-The chat history may be empty at the beginning as none of the agents have spoken yet.
+The chat history may start empty as no agents have spoken yet.
 
-Following are the names and introductions of the agents in fullfilling the user's request:
+Here are the agents' names and roles:
 {"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
 
-The content is considered approved only when all the reviewers have agreed and validated that the content is
-ready for publication.
-Whenever the writer updates the document, the reviewers must reapprove and revalidate the content.
-All agents must at least have spoken once.
+The document is approved only when all reviewers agree it is ready for publication.
+Reviewers must reapprove the document after each update.
+All agents must speak at least once.
 
-Your job is NOT to continue the conversation, but to determine if the content has been approved based on the chat.
-If so, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".
+Your task is NOT to continue the conversation. Determine if the latest content is approved by all agents.
+If approved, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".
 """

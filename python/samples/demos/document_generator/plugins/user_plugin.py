@@ -13,4 +13,6 @@ class UserPlugin:
         self, content: Annotated[str, "The content to present and request feedback on."]
     ) -> Annotated[str, "The feedback provided by the user."]:
         """Request user feedback on the content."""
-        return input(f"Please provide feedback on the content:\n\n{content}\n\n> ")
+        user_feedback = input(f"Please provide feedback on the content:\n\n{content}\n\n> ")
+
+        return f"User feedback: {user_feedback}"

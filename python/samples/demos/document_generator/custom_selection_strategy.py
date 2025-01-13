@@ -70,20 +70,18 @@ class CustomSelectionStrategy(SelectionStrategy):
 
     def get_system_message(self, agents: list["Agent"]) -> str:
         return f"""
-You are in a chat where multiple agents are involved in creating a document.
+You are in a multi-agent chat to create a document.
 
-The chat history may be empty at the beginning as none of the agents have spoken yet.
+Initially, the chat history may be empty.
 
-Following are the indices, names and introductions of the agents in fullfilling the user's request:
+Here are the agents with their indices, names, and descriptions:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-Let the writer create the document first. Then let the reviewers will review and validate the content.
-Once the writer updates the document, the reviewers must reapprove and revalidate the content.
-If there is an agent that represents the user, only pick that agent when the other agents have given positive feedback.
+First, let the writer create the document. Then, reviewers will review and validate the content.
+After each update, reviewers must reapprove and revalidate the content.
+Only select the user agent after all other agents have given positive feedback.
 
-Your job is NOT to continue the conversation, but to pick the most appropriate agents to speak next based on
-the conversation history by its index. No agent should speak more than once in a row.
-
-You response should be a number between 0 and {len(agents) - 1}.
-Only return the index of the agent and nothing else. Your response should be parsaable as an integer.
+Your task is to select the next agent to speak based on the conversation history.
+Respond with a single number between 0 and {len(agents) - 1}, representing the agent's index.
+Only return the index as an integer.
 """
