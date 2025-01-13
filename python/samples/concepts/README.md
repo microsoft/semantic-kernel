@@ -64,7 +64,7 @@
 
 ### Grounding - An example of how to perform LLM grounding
 
-- [Grounded](./concepts/grounding/grounded.py)
+- [Grounded](./grounding/grounded.py)
 
 ### Local Models - Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) and [`OnnxGenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) to talk to models hosted locally in Ollama, OnnxGenAI, and LM Studio
 
@@ -111,7 +111,6 @@
 
 ### Processes - Examples of using the [`Process Framework`](../../semantic_kernel/processes/)
 
-- [Autogen Cycles Fan-In](./processes/autogen_cycles_fan_in.py)
 - [Cycles with Fan-In](./processes/cycles_with_fan_in.py)
 - [Nested Process](./processes/nested_process.py)
 
@@ -147,8 +146,8 @@
 
 ### Structured Outputs - How to leverage OpenAI's json_schema [`Structured Outputs`](https://platform.openai.com/docs/guides/structured-outputs) functionality
 
-- [JSON Structured Output](./structured_output/json_structured_output.py)
-- [JSON Structured Output Function Calling](./structured_output/json_structured_output_function_calling.py)
+- [JSON Structured Outputs](./structured_outputs/json_structured_outputs.py)
+- [JSON Structured Outputs Function Calling](./structured_outputs/json_structured_outputs_function_calling.py)
 
 ### TextGeneration - Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models
 
