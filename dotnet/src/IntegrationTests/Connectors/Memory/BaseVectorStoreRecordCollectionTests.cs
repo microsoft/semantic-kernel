@@ -62,7 +62,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         // Arrange
         var definition = CreateKeyWithVectorRecordDefinition(4, distanceFunction);
         var sut = this.GetTargetRecordCollection<KeyWithVectorRecord<TKey>>(
-            $"scorebydistancefunction{distanceFunction}",
+            $"scorebydf{distanceFunction}",
             definition);
 
         await sut.CreateCollectionIfNotExistsAsync();
