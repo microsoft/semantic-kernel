@@ -361,7 +361,20 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
-        return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+        return AzureAssistantAgent(
+            kernel=kernel,
+            assistant=assistant,
+            client=client,
+            ad_token=ad_token,
+            api_key=api_key,
+            endpoint=endpoint,
+            api_version=api_version,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            token_endpoint=token_endpoint,
+            **assistant_definition,
+        )
 
     @staticmethod
     def _setup_client_and_token(
@@ -393,7 +406,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 
         # If we still have no credentials, we can't proceed
         if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+            raise AgentInitializationException(
+                "Please provide either a client, an api_key, ad_token or ad_token_provider."
+            )
 
         # Build the client if it's not supplied
         if not client:
