@@ -270,12 +270,20 @@ class OpenAIAssistantBase(Agent):
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
-        execution_settings = {}
+        execution_settings: dict[str, Any] = {}
         if self.max_completion_tokens:
             execution_settings["max_completion_tokens"] = self.max_completion_tokens
 
         if self.max_prompt_tokens:
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
+
+        if self.top_p is not None:
+            execution_settings["top_p"] = self.top_p
+            create_assistant_kwargs["top_p"] = self.top_p
+
+        if self.temperature is not None:
+            execution_settings["temperature"] = self.temperature
+            create_assistant_kwargs["temperature"] = self.temperature
 
         if self.parallel_tool_calls_enabled:
             execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
