@@ -287,7 +287,7 @@ internal sealed class MistralClient
                 IAsyncEnumerable<StreamingChatMessageContent> response;
                 try
                 {
-                    response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId, requestIndex, cancellationToken);
+                    response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId, cancellationToken);
                 }
                 catch (Exception e) when (activity is not null)
                 {
@@ -459,7 +459,7 @@ internal sealed class MistralClient
 
                     var lastChatMessage = chatHistory.Last();
 
-                    yield return new StreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content) { RequestIndex = requestIndex };
+                    yield return new StreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
                     yield break;
                 }
             }
@@ -498,7 +498,7 @@ internal sealed class MistralClient
         }
     }
 
-    private async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageContentsAsync(ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, ChatCompletionRequest chatRequest, string modelId, int requestIndex, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageContentsAsync(ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, ChatCompletionRequest chatRequest, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         this.ValidateChatHistory(chatHistory);
 
@@ -506,13 +506,13 @@ internal sealed class MistralClient
         using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: true);
         using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, requestIndex, cancellationToken).ConfigureAwait(false))
+        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingChatContent;
         }
     }
 
-    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, int requestIndex, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         IAsyncEnumerator<MistralChatCompletionChunk>? responseEnumerator = null;
 
@@ -536,10 +536,7 @@ internal sealed class MistralClient
                         modelId: modelId,
                         encoding: chunk.GetEncoding(),
                         innerContent: chunk,
-                        metadata: chunk.GetMetadata())
-                    {
-                        RequestIndex = requestIndex
-                    };
+                        metadata: chunk.GetMetadata());
                 }
             }
         }

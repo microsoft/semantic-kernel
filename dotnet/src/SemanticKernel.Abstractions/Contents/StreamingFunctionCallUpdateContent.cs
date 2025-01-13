@@ -30,6 +30,11 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     public int FunctionCallIndex { get; init; }
 
     /// <summary>
+    /// Index of the request that produced this message content
+    /// </summary>
+    public int RequestIndex { get; init; } = 0;
+
+    /// <summary>
     /// Creates a new instance of the <see cref="StreamingFunctionCallUpdateContent"/> class.
     /// </summary>
     /// <param name="callId">The function call ID.</param>

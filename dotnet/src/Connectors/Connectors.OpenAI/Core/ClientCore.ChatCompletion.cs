@@ -309,7 +309,7 @@ internal partial class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata) { RequestIndex = requestIndex };
+                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
 
                         if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
                         {
@@ -332,7 +332,10 @@ internal partial class ClientCore
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
                                     arguments: streamingArguments,
-                                    functionCallIndex: functionCallUpdate.Index));
+                                    functionCallIndex: functionCallUpdate.Index)
+                                {
+                                    RequestIndex = requestIndex,
+                                });
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
@@ -383,7 +386,7 @@ internal partial class ClientCore
 
             if (lastMessage != null)
             {
-                yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content) { RequestIndex = requestIndex };
+                yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
                 yield break;
             }
 
