@@ -178,7 +178,7 @@ public sealed class FunctionCallContentBuilder
             return;
         }
 
-        // Create index that is unique across many requests for a given streaming function call update content.
+        // Create index that is unique across many requests.
         var functionCallIndex = $"{update.RequestIndex}{update.FunctionCallIndex}";
 
         // If we have an call id, ensure the index is being tracked. Even if it's not a function update,
