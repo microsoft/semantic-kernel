@@ -136,6 +136,7 @@ dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary using directiv
 dotnet_diagnostic.IDE0009.severity = warning # Add this or Me qualification
 dotnet_diagnostic.IDE0011.severity = warning # Add braces
 dotnet_diagnostic.IDE0018.severity = warning # Inline variable declaration
+
 dotnet_diagnostic.IDE0032.severity = warning # Use auto-implemented property
 dotnet_diagnostic.IDE0034.severity = warning # Simplify 'default' expression
 dotnet_diagnostic.IDE0035.severity = warning # Remove unreachable code
@@ -221,20 +222,29 @@ dotnet_diagnostic.RCS1241.severity = none # Implement IComparable when implement
 dotnet_diagnostic.IDE0001.severity = none # Simplify name
 dotnet_diagnostic.IDE0002.severity = none # Simplify member access
 dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+dotnet_diagnostic.IDE0010.severity = none # Populate switch
+dotnet_diagnostic.IDE0021.severity = none # Use block body for constructors
+dotnet_diagnostic.IDE0022.severity = none # Use block body for methods
+dotnet_diagnostic.IDE0024.severity = none # Use block body for operator
 dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
 dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
 dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
 dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
 dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
 dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0061.severity = none # Use block body for local function
 dotnet_diagnostic.IDE0079.severity = none # Remove unnecessary suppression.
 dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator.
 dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
 dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
 dotnet_diagnostic.IDE0130.severity = none # Namespace does not match folder structure
+dotnet_diagnostic.IDE0290.severity = none # Use primary constructor
 dotnet_diagnostic.IDE0032.severity = none # Use auto property
 dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 dotnet_diagnostic.IDE1006.severity = warning # Naming rule violations
+dotnet_diagnostic.IDE0046.severity = suggestion # If statement can be simplified
+dotnet_diagnostic.IDE0056.severity = suggestion # Indexing can be simplified
+dotnet_diagnostic.IDE0057.severity = suggestion # Substring can be simplified
 
 ###############################
 # Naming Conventions          #
