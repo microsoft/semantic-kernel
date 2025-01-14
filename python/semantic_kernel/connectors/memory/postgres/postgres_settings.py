@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
+from psycopg_pool.abc import ACT
 from pydantic import Field, SecretStr
 
 from semantic_kernel.connectors.memory.postgres.constants import (
@@ -105,14 +106,32 @@ class PostgresSettings(KernelBaseSettings):
 
         return result
 
-    async def create_connection_pool(self) -> AsyncConnectionPool:
-        """Creates a connection pool based off of settings."""
+    async def create_connection_pool(
+        self, connection_class: type[ACT] | None = None, **kwargs: Any
+    ) -> AsyncConnectionPool:
+        """Creates a connection pool based off of settings.
+
+        Args:
+            connection_class: The connection class to use.
+            kwargs: Additional keyword arguments to pass to the connection class.
+
+        Returns:
+            The connection pool.
+        """
         try:
+            # Only pass connection_class if it specified, or else allow psycopg to use the default connection class
+            extra_args: dict[str, Any] = {} if connection_class is None else {"connection_class": connection_class}
+
             pool = AsyncConnectionPool(
                 min_size=self.min_pool,
                 max_size=self.max_pool,
                 open=False,
-                kwargs=self.get_connection_args(),
+                # kwargs are passed to the connection class
+                kwargs={
+                    **self.get_connection_args(),
+                    **kwargs,
+                },
+                **extra_args,
             )
             await pool.open()
         except Exception as e:
