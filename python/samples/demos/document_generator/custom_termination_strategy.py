@@ -8,7 +8,7 @@ from semantic_kernel.agents.strategies.termination.termination_strategy import T
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 
 if TYPE_CHECKING:
@@ -24,10 +24,10 @@ class CustomTerminationStrategy(TerminationStrategy):
     NUM_OF_RETRIES: ClassVar[int] = 3
 
     maximum_iterations: int = 20
-    chat_completion_service: AzureChatCompletion
+    chat_completion_service: OpenAIChatCompletion
 
     def __init__(self, **kwargs):
-        chat_completion_service = AzureChatCompletion()
+        chat_completion_service = OpenAIChatCompletion()
         super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:

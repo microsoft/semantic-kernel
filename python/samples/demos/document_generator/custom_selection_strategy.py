@@ -8,7 +8,7 @@ from semantic_kernel.agents.strategies.selection.selection_strategy import Selec
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -23,10 +23,10 @@ class CustomSelectionStrategy(SelectionStrategy):
 
     NUM_OF_RETRIES: ClassVar[int] = 3
 
-    chat_completion_service: AzureChatCompletion
+    chat_completion_service: OpenAIChatCompletion
 
     def __init__(self, **kwargs):
-        chat_completion_service = AzureChatCompletion()
+        chat_completion_service = OpenAIChatCompletion()
 
         super().__init__(chat_completion_service=chat_completion_service, **kwargs)
 

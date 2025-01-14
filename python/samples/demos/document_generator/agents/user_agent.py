@@ -33,7 +33,7 @@ class UserAgent(CustomAgentBase):
         kernel = self._create_kernel()
         kernel.add_plugin(plugin=UserPlugin(), plugin_name="UserPlugin")
 
-        settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.AZURE_SERVICE_ID)
+        settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.SERVICE_ID)
         settings.function_choice_behavior = FunctionChoiceBehavior.Auto(maximum_auto_invoke_attempts=1)
 
         super().__init__(
