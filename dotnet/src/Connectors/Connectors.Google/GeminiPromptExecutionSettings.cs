@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
@@ -25,6 +26,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private IList<string>? _stopSequences;
     private bool? _audioTimestamp;
     private string? _responseMimeType;
+    private object? _responseSchema;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -206,6 +208,32 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Optional. Output schema of the generated candidate text. Schemas must be a subset of the OpenAPI schema and can be objects, primitives or arrays.
+    /// If set, a compatible responseMimeType must also be set. Compatible MIME types: application/json: Schema for JSON response.
+    /// Refer to the https://ai.google.dev/gemini-api/docs/json-mode for more information.
+    /// </summary>
+    /// <remarks>
+    /// Possible values are:
+    /// <para>- <see cref="Type"/> which will be used to automatically generate a JSON schema.</para>
+    /// <para>- <see cref="JsonElement"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="JsonNode"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="JsonDocument"/> schema definition, which will be used as is.</para>
+    /// <para>- <see cref="object"/> object, where none of the above matches which the type will be used to automatically generate a JSON schema.</para>
+    /// </remarks>
+    [JsonPropertyName("response_schema")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ResponseSchema
+    {
+        get => this._responseSchema;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseSchema = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -243,7 +271,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
             AudioTimestamp = this.AudioTimestamp,
-            ResponseMimeType = this.ResponseMimeType
+            ResponseMimeType = this.ResponseMimeType,
+            ResponseSchema = this.ResponseSchema,
         };
     }
 
