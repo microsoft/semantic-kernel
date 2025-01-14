@@ -784,9 +784,16 @@ internal sealed class MistralClient
             {
                 content.Add(new TextChunk(textContent.Text!));
             }
-            else if (item is ImageContent imageContent && imageContent.Uri is not null)
+            else if (item is ImageContent imageContent)
             {
-                content.Add(new ImageUrlChunk(imageContent.Uri));
+                if (imageContent.Uri is not null)
+                {
+                    content.Add(new ImageUrlChunk(imageContent.Uri.ToString()));
+                }
+                else if (imageContent.DataUri is not null)
+                {
+                    content.Add(new ImageUrlChunk(imageContent.DataUri));
+                }
             }
             else
             {
