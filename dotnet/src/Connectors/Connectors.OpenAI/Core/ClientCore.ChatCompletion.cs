@@ -332,7 +332,10 @@ internal partial class ClientCore
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
                                     arguments: streamingArguments,
-                                    functionCallIndex: functionCallUpdate.Index));
+                                    functionCallIndex: functionCallUpdate.Index)
+                                {
+                                    RequestIndex = requestIndex,
+                                });
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
