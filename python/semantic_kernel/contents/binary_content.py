@@ -5,6 +5,7 @@ import os
 from typing import Annotated, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
+from numpy import ndarray
 from pydantic import Field, FilePath, UrlConstraints, computed_field
 from pydantic_core import Url
 
@@ -48,7 +49,7 @@ class BinaryContent(KernelContent):
         self,
         uri: Url | str | None = None,
         data_uri: DataUrl | str | None = None,
-        data: str | bytes | None = None,
+        data: str | bytes | ndarray | None = None,
         data_format: str | None = None,
         mime_type: str | None = None,
         **kwargs: Any,
@@ -76,14 +77,17 @@ class BinaryContent(KernelContent):
             else:
                 kwargs["metadata"] = _data_uri.parameters
         elif data:
-            if isinstance(data, str):
-                _data_uri = DataUri(
-                    data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
-                )
-            else:
-                _data_uri = DataUri(
-                    data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
-                )
+            match data:
+                case str():
+                    _data_uri = DataUri(
+                        data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    )
+                case bytes():
+                    _data_uri = DataUri(
+                        data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    )
+                case ndarray():
+                    _data_uri = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
 
         if uri is not None:
             if isinstance(uri, str) and os.path.exists(uri):
@@ -109,8 +113,10 @@ class BinaryContent(KernelContent):
         self.metadata.update(self._data_uri.parameters)
 
     @property
-    def data(self) -> bytes:
+    def data(self) -> bytes | ndarray:
         """Get the data."""
+        if self._data_uri and self._data_uri.data_array:
+            return self._data_uri.data_array
         if self._data_uri and self._data_uri.data_bytes:
             return self._data_uri.data_bytes
         if self._data_uri and self._data_uri.data_str:
@@ -118,15 +124,18 @@ class BinaryContent(KernelContent):
         return b""
 
     @data.setter
-    def data(self, value: str | bytes):
+    def data(self, value: str | bytes | ndarray):
         """Set the data."""
         if self._data_uri:
             self._data_uri.update_data(value)
         else:
-            if isinstance(value, str):
-                self._data_uri = DataUri(data_str=value, mime_type=self.mime_type)
-            else:
-                self._data_uri = DataUri(data_bytes=value, mime_type=self.mime_type)
+            match value:
+                case str():
+                    self._data_uri = DataUri(data_str=value, mime_type=self.mime_type)
+                case bytes():
+                    self._data_uri = DataUri(data_bytes=value, mime_type=self.mime_type)
+                case ndarray():
+                    self._data_uri = DataUri(data_array=value, mime_type=self.mime_type)
 
     @property
     def mime_type(self) -> str:

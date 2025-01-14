@@ -45,6 +45,7 @@ dependencies = [
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
+    "taskgroup >= 0.2.2; python_version < '3.11'",
 ]
 
 ### Optional dependencies

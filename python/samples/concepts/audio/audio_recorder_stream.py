@@ -2,9 +2,10 @@
 
 import asyncio
 import base64
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, ClassVar, cast
 
+import sounddevice as sd
 from pydantic import BaseModel
 
 from semantic_kernel.contents.audio_content import AudioContent
@@ -30,9 +31,25 @@ class AudioRecorderStream(BaseModel):
     CHUNK_LENGTH_S: ClassVar[float] = 0.05
     device_id: int | None = None
 
-    async def stream_audio_content(self) -> AsyncGenerator[AudioContent, None]:
-        import sounddevice as sd  # type: ignore
+    async def stream_audio_content_with_callback(self, callback: Callable[..., Any]) -> None:
+        stream = sd.InputStream(
+            channels=self.CHANNELS,
+            samplerate=self.SAMPLE_RATE,
+            dtype="int16",
+            device=self.device_id,
+            callback=callback,
+        )
+        stream.start()
+        try:
+            while True:
+                await asyncio.sleep(0)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            stream.stop()
+            stream.close()
 
+    async def stream_audio_content(self) -> AsyncGenerator[AudioContent, None]:
         # device_info = sd.query_devices()
         # print(device_info)
 

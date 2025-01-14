@@ -53,10 +53,10 @@ class AudioPlayerAsync:
     def get_frame_count(self):
         return self._frame_count
 
-    def add_data(self, data: bytes):
+    def add_data(self, data: bytes | np.ndarray):
         with self.lock:
             # bytes is pcm16 single channel audio data, convert to numpy array
-            np_data = np.frombuffer(data, dtype=np.int16)
+            np_data = np.frombuffer(data, dtype=np.int16) if isinstance(data, bytes) else data
             self.queue.append(np_data)
             if not self.playing:
                 self.start()

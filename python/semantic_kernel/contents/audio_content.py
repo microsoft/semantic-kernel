@@ -3,6 +3,7 @@
 import mimetypes
 from typing import Any, ClassVar, Literal, TypeVar
 
+from numpy import ndarray
 from pydantic import Field
 
 from semantic_kernel.contents.binary_content import BinaryContent
@@ -51,3 +52,8 @@ class AudioContent(BinaryContent):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "audio_url", "audio_url": {"uri": str(self)}}
+
+    @classmethod
+    def from_nd_array(cls: type[_T], data: ndarray, mime_type: str) -> "AudioContent":
+        """Create an instance from an nd array."""
+        return cls(data=data, mime_type=mime_type)
