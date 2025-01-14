@@ -68,8 +68,9 @@ def convert_row_to_dict(row: tuple[Any, ...], fields: list[tuple[str, VectorStor
     def _convert(v: Any | None, field: VectorStoreRecordField) -> Any | None:
         if v is None:
             return None
-        if isinstance(field, VectorStoreRecordVectorField):
-            # psycopg returns vector as a string
+        if isinstance(field, VectorStoreRecordVectorField) and isinstance(v, str):
+            # psycopg returns vector as a string if pgvector is not loaded.
+            # If pgvector is registered with the connection, no conversion is required.
             return json.loads(v)
         return v
 
@@ -109,6 +110,8 @@ def get_vector_index_ops_str(distance_function: DistanceFunction) -> str:
         >>> get_vector_index_ops_str(DistanceFunction.COSINE)
         'vector_cosine_ops'
     """
+    if distance_function == DistanceFunction.COSINE_DISTANCE:
+        return "vector_cosine_ops"
     if distance_function == DistanceFunction.COSINE_SIMILARITY:
         return "vector_cosine_ops"
     if distance_function == DistanceFunction.DOT_PROD:
@@ -118,6 +121,31 @@ def get_vector_index_ops_str(distance_function: DistanceFunction) -> str:
     if distance_function == DistanceFunction.MANHATTAN:
         return "vector_l1_ops"
 
+    raise ValueError(f"Unsupported distance function: {distance_function}")
+
+
+def get_vector_distance_ops_str(distance_function: DistanceFunction) -> str:
+    """Get the PostgreSQL distance operator string for a given distance function.
+
+    Args:
+        distance_function: The distance function for which the operator string is needed.
+
+    Returns:
+        The PostgreSQL distance operator string for the given distance function.
+
+    Raises:
+        ValueError: If the distance function is unsupported.
+    """
+    if distance_function == DistanceFunction.COSINE_DISTANCE:
+        return "<=>"
+    if distance_function == DistanceFunction.COSINE_SIMILARITY:
+        return "<=>"
+    if distance_function == DistanceFunction.DOT_PROD:
+        return "<#>"
+    if distance_function == DistanceFunction.EUCLIDEAN_DISTANCE:
+        return "<->"
+    if distance_function == DistanceFunction.MANHATTAN:
+        return "<+>"
     raise ValueError(f"Unsupported distance function: {distance_function}")
 
 
