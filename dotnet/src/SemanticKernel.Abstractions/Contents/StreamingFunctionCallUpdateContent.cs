@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -32,6 +33,7 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// <summary>
     /// Index of the request that produced this message content.
     /// </summary>
+    [Experimental("SKEXP0001")]
     public int RequestIndex { get; init; } = 0;
 
     /// <summary>
