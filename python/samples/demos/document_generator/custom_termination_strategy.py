@@ -48,6 +48,11 @@ class CustomTerminationStrategy(TerminationStrategy):
                 if content:
                     chat_history.add_message(message)
 
+            chat_history.add_user_message_str(
+                "Is the latest content approved by all agents? "
+                f"Answer with '{TERMINATE_TRUE_KEYWORD}' or '{TERMINATE_FALSE_KEYWORD}'."
+            )
+
             for _ in range(self.NUM_OF_RETRIES):
                 completion = await self.chat_completion_service.get_chat_message_content(
                     chat_history,
@@ -71,15 +76,12 @@ class CustomTerminationStrategy(TerminationStrategy):
     def get_system_message(self) -> str:
         return f"""
 You are in a chat with multiple agents collaborating to create a document.
+Each message in the chat history contains the agent's name and the message content.
 
 The chat history may start empty as no agents have spoken yet.
 
-Here are the agents' names and roles:
-{"\n".join(f"{agent.name}: {agent.description}" for agent in self.agents)}
-
-The document is approved only when all reviewers agree it is ready for publication.
-Reviewers must reapprove the document after each update.
-All agents must speak at least once.
+Here are the agents with their indices, names, and descriptions:
+{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(self.agents))}
 
 Your task is NOT to continue the conversation. Determine if the latest content is approved by all agents.
 If approved, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".

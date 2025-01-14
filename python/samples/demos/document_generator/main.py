@@ -11,7 +11,6 @@ from opentelemetry.semconv.resource import ResourceAttributes
 
 from samples.demos.document_generator.agents.code_validation_agent import CodeValidationAgent
 from samples.demos.document_generator.agents.content_creation_agent import ContentCreationAgent
-from samples.demos.document_generator.agents.proofread_agent import ProofreadAgent
 from samples.demos.document_generator.agents.user_agent import UserAgent
 from samples.demos.document_generator.custom_selection_strategy import CustomSelectionStrategy
 from samples.demos.document_generator.custom_termination_strategy import CustomTerminationStrategy
@@ -95,7 +94,7 @@ async def main():
     with tracer.start_as_current_span("main"):
         agents = [
             ContentCreationAgent(),
-            ProofreadAgent(),
+            # ProofreadAgent(),
             UserAgent(),
             CodeValidationAgent(),
         ]

@@ -13,8 +13,7 @@ Incorporate feedback by providing the updated full content with changes.
 """
 
 DESCRIPTION = """
-I am an agent specialized in creating technical content.
-You can ask me to generate new content or to revise existing content.
+Select me to generate new content or to revise existing content.
 """
 
 

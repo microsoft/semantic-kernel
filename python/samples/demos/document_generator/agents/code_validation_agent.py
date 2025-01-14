@@ -7,19 +7,16 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 INSTRUCTION = """
 You are a code validation agent in a collaborative document creation chat.
 
-Your task is to validate Python code in the latest document draft.
+Your task is to validate Python code in the latest document draft and summarize any errors.
 Extract and assemble the code snippets into a Python script.
-Check the code for errors and ensure it runs correctly.
-If there are errors, return the error messages for correction.
+Execute the code to validate it. If there are errors, summarize the error messages.
+Do not try to fix the errors.
 
 Stay focused on validating the code.
 """
 
 DESCRIPTION = """
-I am a code validation agent. My job is to check Python code in documents for correctness.
-Call me when you need to validate code snippets in a document.
-If the code is correct, I will return the output.
-If there are errors, I will return the error messages for correction.
+Select me to validate the Python code in the latest document draft.
 """
 
 
@@ -29,7 +26,7 @@ class CodeValidationAgent(CustomAgentBase):
         kernel.add_plugin(plugin=CodeExecutionPlugin(), plugin_name="CodeExecutionPlugin")
 
         settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.AZURE_SERVICE_ID)
-        settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+        settings.function_choice_behavior = FunctionChoiceBehavior.Auto(maximum_auto_invoke_attempts=1)
 
         super().__init__(
             kernel=kernel,

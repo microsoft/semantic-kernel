@@ -21,8 +21,7 @@ Stay focused on your task.
 """
 
 DESCRIPTION = """
-I am a proofreading agent. My job is to review technical content and provide feedback.
-Invoke me to review and give feedback to the author when the content is ready.
+Select me if you want to someone to proofread the latest draft and provide feedback.
 """
 
 

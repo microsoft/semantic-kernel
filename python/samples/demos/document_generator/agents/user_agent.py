@@ -7,20 +7,14 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 INSTRUCTION = """
 You are part of a chat with multiple agents working on a document.
 
-Your task is to ask the user for feedback on the latest draft from the author agent.
-Present the draft to the user and collect their feedback.
+Your task is to summarize the user's feedback on the latest draft from the author agent.
+Present the draft to the user and summarize their feedback.
 
-Do not attempt to address the user's feedback.
-Summarize the user's feedback and return it to the author agent.
-
-Stay focused on your task.
+Do not try to address the user's feedback in this chat.
 """
 
 DESCRIPTION = """
-I am a user agent responsible for gathering user feedback on document drafts.
-I present the latest draft to the user and collect their suggestions.
-Invoke me when the document is ready for final feedback before publication.
-I will return the user's feedback promptly.
+Select me if you want to ask the user to review the latest draft for publication.
 """
 
 
@@ -30,7 +24,7 @@ class UserAgent(CustomAgentBase):
         kernel.add_plugin(plugin=UserPlugin(), plugin_name="UserPlugin")
 
         settings = kernel.get_prompt_execution_settings_from_service_id(service_id=CustomAgentBase.AZURE_SERVICE_ID)
-        settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+        settings.function_choice_behavior = FunctionChoiceBehavior.Auto(maximum_auto_invoke_attempts=1)
 
         super().__init__(
             kernel=kernel,

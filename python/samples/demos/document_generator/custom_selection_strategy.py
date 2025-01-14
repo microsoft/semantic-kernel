@@ -60,28 +60,46 @@ class CustomSelectionStrategy(SelectionStrategy):
                     AzureChatPromptExecutionSettings(),
                 )
 
+                chat_history.add_user_message_str(
+                    "Now follow the istructions and select the next agent to speak by typing the agent's index."
+                )
+
                 try:
                     return agents[int(completion.content)]
                 except ValueError as ex:
                     chat_history.add_message(completion)
                     chat_history.add_user_message_str(str(ex))
+                    chat_history.add_user_message_str(f"You must only say a number between 0 and {len(agents) - 1}.")
 
             raise ValueError("Failed to select an agent since the model did not return a valid index")
 
     def get_system_message(self, agents: list["Agent"]) -> str:
         return f"""
 You are in a multi-agent chat to create a document.
+Each message in the chat history contains the agent's name and the message content.
 
 Initially, the chat history may be empty.
 
 Here are the agents with their indices, names, and descriptions:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-First, let the writer create the document. Then, reviewers will review and validate the content.
-After each update, reviewers must reapprove and revalidate the content.
-Only select the user agent after all other agents have given positive feedback.
-
 Your task is to select the next agent to speak based on the conversation history.
+
+The conversation must go like this:
+1. The content creation agent writes a draft.
+2. The code validation agent checks the code in the draft.
+3. The content creation agent updates the draft based on the feedback.
+4. The code validation agent checks the updated code.
+...
+At the end, select the user agent for final feedback.
+N: The user agent provides feedback. 
+(If the feedback is not positive, the conversation goes back to the content creation agent.)
+
+You need to make sure:
+1. After each update on the document, reviewers must reapprove and revalidate the content.
+2. All agents must speak at least once.
+3. No agent can speak twice in a row.
+
 Respond with a single number between 0 and {len(agents) - 1}, representing the agent's index.
 Only return the index as an integer.
 """
