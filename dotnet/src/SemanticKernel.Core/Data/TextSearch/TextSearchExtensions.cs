@@ -519,9 +519,9 @@ public static class TextSearchExtensions
     private static IEnumerable<KernelParameterMetadata> CreateDefaultKernelParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         return [
-            new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", IsRequired = true },
-            new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-            new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", ParameterType = typeof(string), IsRequired = true },
+            new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", ParameterType = typeof(int), IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", ParameterType = typeof(int), IsRequired = false, DefaultValue = 0 },
         ];
     }
 
@@ -530,9 +530,9 @@ public static class TextSearchExtensions
     private static IEnumerable<KernelParameterMetadata> GetDefaultKernelParameterMetadata()
     {
         return s_kernelParameterMetadata ??= [
-            new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-            new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-            new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+            new KernelParameterMetadata("query") { Description = "What to search for", ParameterType = typeof(string), IsRequired = true },
+            new KernelParameterMetadata("count") { Description = "Number of results", ParameterType = typeof(int), IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip") { Description = "Number of results to skip", ParameterType = typeof(int), IsRequired = false, DefaultValue = 0 },
         ];
     }
 

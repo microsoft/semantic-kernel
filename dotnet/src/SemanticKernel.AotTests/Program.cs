@@ -59,6 +59,11 @@ internal sealed class Program
 
         // Tests for text search
         VectorStoreTextSearchTests.GetTextSearchResultsAsync,
+        VectorStoreTextSearchTests.AddVectorStoreTextSearch,
+
+        TextSearchExtensionsTests.CreateWithSearch,
+        TextSearchExtensionsTests.CreateWithGetTextSearchResults,
+        TextSearchExtensionsTests.CreateWithGetSearchResults,
     ];
 
     private static async Task<bool> RunUnitTestsAsync(IEnumerable<Func<Task>> functionsToRun)
