@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import json
 import logging
 import sys
 from collections.abc import AsyncGenerator
@@ -14,6 +15,15 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from aiohttp import ClientSession
+from aiortc import (
+    MediaStreamTrack,
+    RTCConfiguration,
+    RTCDataChannel,
+    RTCIceServer,
+    RTCPeerConnection,
+    RTCSessionDescription,
+)
 from openai.resources.beta.realtime.realtime import AsyncRealtimeConnection
 from openai.types.beta.realtime.conversation_item_create_event_param import ConversationItemParam
 from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
@@ -152,7 +162,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         self.event_handlers.setdefault(event_type, []).append(handler)
 
     @override
-    async def event_listener(
+    async def start_listening(
         self,
         settings: "PromptExecutionSettings",
         chat_history: "ChatHistory | None" = None,
@@ -186,7 +196,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             logger.debug(f"Event type: {event_type}, count: {len(self.event_log[event_type])}")
 
     @override
-    async def send_event(self, event: str | SendEvents, **kwargs: Any) -> None:
+    async def start_sending(self, event: str | SendEvents, **kwargs: Any) -> None:
         await self.connected.wait()
         if not self.connection:
             raise ValueError("Connection is not established.")
@@ -299,10 +309,10 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                     self._update_function_choice_settings_callback(),
                     kernel=kwargs.get("kernel"),  # type: ignore
                 )
-            await self.send_event(SendEvents.SESSION_UPDATE, settings=settings)
+            await self.start_sending(SendEvents.SESSION_UPDATE, settings=settings)
         if chat_history and len(chat_history) > 0:
             await asyncio.gather(
-                *(self.send_event(SendEvents.CONVERSATION_ITEM_CREATE, item=msg) for msg in chat_history.messages)
+                *(self.start_sending(SendEvents.CONVERSATION_ITEM_CREATE, item=msg) for msg in chat_history.messages)
             )
 
     @override
@@ -312,6 +322,8 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             await self.connection.close()
             self.connection = None
             self.connected.clear()
+
+    # region Event callbacks
 
     def response_audio_delta_callback(
         self,
@@ -420,13 +432,392 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         if kernel:
             chat_history = ChatHistory()
             await kernel.invoke_function_call(item, chat_history)
-            await self.send_event(SendEvents.CONVERSATION_ITEM_CREATE, item=chat_history.messages[-1])
+            await self.start_sending(SendEvents.CONVERSATION_ITEM_CREATE, item=chat_history.messages[-1])
             # The model doesn't start responding to the tool call automatically, so triggering it here.
-            await self.send_event(SendEvents.RESPONSE_CREATE)
+            await self.start_sending(SendEvents.RESPONSE_CREATE)
         return chat_history.messages[-1], False
 
+    # region settings
+
+    @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
+        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (  # noqa
+            OpenAIRealtimeExecutionSettings,
+        )
+
+        return OpenAIRealtimeExecutionSettings
+
+
+@experimental_class
+class OpenAIRealtimeWebRTCBase(OpenAIHandler, RealtimeClientBase):
+    """OpenAI WebRTC Realtime service."""
+
+    SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
+    peer_connection: RTCPeerConnection | None = None
+    data_channel: RTCDataChannel | None = None
+    connection: AsyncRealtimeConnection | None = None
+    connected: asyncio.Event = Field(default_factory=asyncio.Event)
+    event_log: dict[str, list[RealtimeServerEvent]] = Field(default_factory=dict)
+    event_handlers: dict[str, list[EventCallBackProtocol | EventCallBackProtocolAsync]] = Field(default_factory=dict)
+
+    def model_post_init(self, *args, **kwargs) -> None:
+        """Post init method for the model."""
+        # Register the default event handlers
+        self.register_event_handler(
+            ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA, self.response_audio_transcript_delta_callback
+        )
+        self.register_event_handler(
+            ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DONE, self.response_audio_transcript_done_callback
+        )
+        self.register_event_handler(
+            ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, self.response_function_call_arguments_delta_callback
+        )
+        self.register_event_handler(ListenEvents.ERROR, self.error_callback)
+        self.register_event_handler(ListenEvents.SESSION_CREATED, self.session_callback)
+        self.register_event_handler(ListenEvents.SESSION_UPDATED, self.session_callback)
+
+    def register_event_handler(
+        self, event_type: str | ListenEvents, handler: EventCallBackProtocol | EventCallBackProtocolAsync
+    ) -> None:
+        """Register a event handler."""
+        if not isinstance(event_type, ListenEvents):
+            event_type = ListenEvents(event_type)
+        self.event_handlers.setdefault(event_type, []).append(handler)
+
+    @override
+    async def start_listening(
+        self,
+        settings: "PromptExecutionSettings",
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamingChatMessageContent, Any]:
+        ice_servers = [RTCIceServer(urls=["stun:stun.l.google.com:19302"])]
+        self.peer_connection = RTCPeerConnection(configuration=RTCConfiguration(iceServers=ice_servers))
+
+        @self.peer_connection.on("track")
+        async def on_track(track: MediaStreamTrack) -> None:
+            if track.kind == "audio":
+                while True:
+                    frame = await track.recv()
+                    await self.output_buffer.put(
+                        (
+                            ListenEvents.RESPONSE_AUDIO_DELTA,
+                            StreamingChatMessageContent(
+                                role=AuthorRole.ASSISTANT,
+                                items=[AudioContent(data=frame.to_ndarray(), data_format="base64")],
+                                choice_index=0,
+                                inner_content=frame,
+                            ),
+                        ),
+                    )
+
+        data_channel = self.peer_connection.createDataChannel("oai-events")
+
+        @data_channel.on("message")
+        async def on_data(data: bytes) -> None:
+            event = RealtimeServerEvent.model_validate_strings(data)
+            event_type = ListenEvents(event.type)
+            self.event_log.setdefault(event_type, []).append(event)
+            for handler in self.event_handlers.get(event_type, []):
+                task = handler(event=event, settings=settings)
+                if not task:
+                    continue
+                if isawaitable(task):
+                    async_result = await task
+                    if not async_result:
+                        continue
+                    result, should_return = async_result
+                else:
+                    result, should_return = task
+                if should_return:
+                    yield result
+                else:
+                    chat_history.add_message(result)
+
+        offer = await self.peer_connection.createOffer()
+        await self.peer_connection.setLocalDescription(offer)
+
+        try:
+            ephemeral_token = await self.get_ephemeral_token()
+            headers = {"Authorization": f"Bearer {ephemeral_token}", "Content-Type": "application/sdp"}
+
+            async with (
+                ClientSession() as session,
+                session.post(
+                    f"{self.client.beta.realtime._client.base_url}/realtime/sessions?model={self.ai_model_id}",
+                    headers=headers,
+                    data=offer.sdp,
+                ) as response,
+            ):
+                if response.status not in [200, 201]:
+                    error_text = await response.text()
+                    raise Exception(f"OpenAI WebRTC error: {error_text}")
+
+                sdp_answer = await response.text()
+                answer = RTCSessionDescription(sdp=sdp_answer, type="answer")
+                await self.peer_connection.setRemoteDescription(answer)
+
+        except Exception as e:
+            logger.error(f"Failed to connect to OpenAI: {e!s}")
+            raise
+
+    @override
+    async def start_sending(self, input_audio_track: MediaStreamTrack | None = None, **kwargs: Any) -> None:
+        if input_audio_track:
+            if not self.peer_connection:
+                raise ValueError("Peer connection is not established.")
+            self.peer_connection.addTransceiver(input_audio_track)
+
+        if not self.data_channel:
+            raise ValueError("Data channel is not established.")
+        while True:
+            item = await self.input_buffer.get()
+            if not item:
+                continue
+            if isinstance(item, tuple):
+                event, data = item
+            else:
+                event = item
+                data = None
+            if not isinstance(event, SendEvents):
+                event = SendEvents(event)
+            response: dict[str, Any] = {
+                "type": event,
+            }
+            match event:
+                case SendEvents.SESSION_UPDATE:
+                    if "settings" not in data:
+                        logger.error("Event data does not contain 'settings'")
+                    response["session"] = data["settings"].prepare_settings_dict()
+                case SendEvents.CONVERSATION_ITEM_CREATE:
+                    if "item" not in data:
+                        logger.error("Event data does not contain 'item'")
+                        return
+                    content = data["item"]
+                    for item in content.items:
+                        match item:
+                            case TextContent():
+                                response["item"] = ConversationItemParam(
+                                    type="message",
+                                    content=[
+                                        {
+                                            "type": "input_text",
+                                            "text": item.text,
+                                        }
+                                    ],
+                                    role="user",
+                                )
+
+                            case FunctionCallContent():
+                                call_id = item.metadata.get("call_id")
+                                if not call_id:
+                                    logger.error("Function call needs to have a call_id")
+                                    continue
+                                response["item"] = ConversationItemParam(
+                                    type="function_call",
+                                    name=item.name,
+                                    arguments=item.arguments,
+                                    call_id=call_id,
+                                )
+
+                            case FunctionResultContent():
+                                call_id = item.metadata.get("call_id")
+                                if not call_id:
+                                    logger.error("Function result needs to have a call_id")
+                                    continue
+                                response["item"] = ConversationItemParam(
+                                    type="function_call_output",
+                                    output=item.result,
+                                    call_id=call_id,
+                                )
+
+                case SendEvents.CONVERSATION_ITEM_TRUNCATE:
+                    if "item_id" not in data:
+                        logger.error("Event data does not contain 'item_id'")
+                        return
+                    response["item_id"] = data["item_id"]
+                    response["content_index"] = 0
+                    response["audio_end_ms"] = data.get("audio_end_ms", 0)
+
+                case SendEvents.CONVERSATION_ITEM_DELETE:
+                    if "item_id" not in data:
+                        logger.error("Event data does not contain 'item_id'")
+                        return
+                    response["item_id"] = data["item_id"]
+                case SendEvents.RESPONSE_CREATE:
+                    if "response" in data:
+                        response["response"] = data["response"]
+                case SendEvents.RESPONSE_CANCEL:
+                    if "response_id" in data:
+                        response["response_id"] = data["response_id"]
+
+            self.data_channel.send(json.dumps(response))
+
+    @override
+    async def create_session(
+        self,
+        settings: PromptExecutionSettings | None = None,
+        chat_history: ChatHistory | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Create a session in the service."""
+        if settings or chat_history or kwargs:
+            await self.update_session(settings=settings, chat_history=chat_history, **kwargs)
+
+    async def get_ephemeral_token(self) -> str:
+        """Get an ephemeral token from OpenAI."""
+        headers = {"Authorization": f"Bearer {self.client.api_key}", "Content-Type": "application/json"}
+        data = {"model": self.ai_model_id, "voice": "echo"}
+
+        try:
+            async with (
+                ClientSession() as session,
+                session.post(
+                    f"{self.client.beta.realtime._client.base_url}/realtime/sessions", headers=headers, json=data
+                ) as response,
+            ):
+                if response.status not in [200, 201]:
+                    error_text = await response.text()
+                    raise Exception(f"Failed to get ephemeral token: {error_text}")
+
+                result = await response.json()
+                return result["client_secret"]["value"]
+
+        except Exception as e:
+            logger.error(f"Failed to get ephemeral token: {e!s}")
+            raise
+
+    @override
+    async def update_session(
+        self, settings: PromptExecutionSettings | None = None, chat_history: ChatHistory | None = None, **kwargs: Any
+    ) -> None:
+        if settings:
+            if "kernel" in kwargs:
+                settings = prepare_settings_for_function_calling(
+                    settings,
+                    self.get_prompt_execution_settings_class(),
+                    self._update_function_choice_settings_callback(),
+                    kernel=kwargs.get("kernel"),  # type: ignore
+                )
+            await self.input_buffer.put((SendEvents.SESSION_UPDATE, {"settings": settings}))
+        if chat_history and len(chat_history) > 0:
+            for msg in chat_history.messages:
+                await self.input_buffer.put((SendEvents.CONVERSATION_ITEM_CREATE, {"item": msg}))
+
+    @override
+    async def close_session(self) -> None:
+        """Close the session in the service."""
+        if self.peer_connection:
+            await self.peer_connection.close()
+        if self.data_channel:
+            await self.data_channel.close()
+        self.peer_connection = None
+        self.data_channel = None
+
+    # region Event callbacks
+
+    def response_audio_transcript_delta_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> tuple[Any, bool]:
+        """Handle response audio transcript delta."""
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[StreamingTextContent(text=event.delta, choice_index=event.content_index)],
+            choice_index=event.content_index,
+            inner_content=event,
+        ), True
+
+    def response_audio_transcript_done_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> tuple[Any, bool]:
+        """Handle response audio transcript done."""
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[StreamingTextContent(text=event.transcript, choice_index=event.content_index)],
+            choice_index=event.content_index,
+            inner_content=event,
+        ), False
+
+    def response_function_call_arguments_delta_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> tuple[Any, bool]:
+        """Handle response function call arguments delta."""
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[
+                FunctionCallContent(
+                    id=event.item_id,
+                    name=event.call_id,
+                    arguments=event.delta,
+                    index=event.output_index,
+                    metadata={"call_id": event.call_id},
+                )
+            ],
+            choice_index=0,
+            inner_content=event,
+        ), True
+
+    def error_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Handle error."""
+        logger.error("Error received: %s", event.error)
+
+    def session_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Handle session."""
+        logger.debug("Session created or updated, session: %s", event.session)
+
+    async def response_function_call_arguments_done_callback(
+        self,
+        event: RealtimeServerEvent,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Handle response function call done."""
+        item = FunctionCallContent(
+            id=event.item_id,
+            name=event.call_id,
+            arguments=event.delta,
+            index=event.output_index,
+            metadata={"call_id": event.call_id},
+        )
+        kernel: Kernel | None = kwargs.get("kernel")
+        call_id = item.name
+        function_name = next(
+            output_item_event.item.name
+            for output_item_event in self.event_log[ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED]
+            if output_item_event.item.call_id == call_id
+        )
+        item.plugin_name, item.function_name = function_name.split("-", 1)
+        if kernel:
+            chat_history = ChatHistory()
+            await kernel.invoke_function_call(item, chat_history)
+            await self.input_buffer.put((SendEvents.CONVERSATION_ITEM_CREATE, {"item": chat_history.messages[-1]}))
+            # The model doesn't start responding to the tool call automatically, so triggering it here.
+            await self.input_buffer.put(SendEvents.RESPONSE_CREATE)
+        return chat_history.messages[-1], False
+
+    # region settings
+
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (  # noqa
             OpenAIRealtimeExecutionSettings,
         )
