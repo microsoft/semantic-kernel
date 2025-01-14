@@ -32,10 +32,12 @@ The content of the blog post should include the following:
 
 Here is the file that contains the source code for the base class of the AI connectors:
 semantic_kernel/connectors/ai/chat_completion_client_base.py
+semantic_kernel/services/ai_service_client_base.py
 
 Here are some files containing the source code that may be useful:
 semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py
 semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion_base.py
+semantic_kernel/contents/chat_history.py
 
 If you want to reference the implementations of other AI connectors, you can find them under the following directory:
 semantic_kernel/connectors/ai

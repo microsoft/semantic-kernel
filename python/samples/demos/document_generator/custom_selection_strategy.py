@@ -54,14 +54,14 @@ class CustomSelectionStrategy(SelectionStrategy):
                 if content:
                     chat_history.add_message(message)
 
+            chat_history.add_user_message_str(
+                "Now follow the rules and select the next agent by typing the agent's index."
+            )
+
             for _ in range(self.NUM_OF_RETRIES):
                 completion = await self.chat_completion_service.get_chat_message_content(
                     chat_history,
                     AzureChatPromptExecutionSettings(),
-                )
-
-                chat_history.add_user_message_str(
-                    "Now follow the istructions and select the next agent to speak by typing the agent's index."
                 )
 
                 try:
@@ -83,22 +83,17 @@ Initially, the chat history may be empty.
 Here are the agents with their indices, names, and descriptions:
 {"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
 
-Your task is to select the next agent to speak based on the conversation history.
+Your task is to select the next agent based on the conversation history.
 
-The conversation must go like this:
+The conversation must follow these steps:
 1. The content creation agent writes a draft.
 2. The code validation agent checks the code in the draft.
 3. The content creation agent updates the draft based on the feedback.
 4. The code validation agent checks the updated code.
 ...
-At the end, select the user agent for final feedback.
+If the code validation agent approves the code, the user agent can ask the user for final feedback.
 N: The user agent provides feedback. 
 (If the feedback is not positive, the conversation goes back to the content creation agent.)
-
-You need to make sure:
-1. After each update on the document, reviewers must reapprove and revalidate the content.
-2. All agents must speak at least once.
-3. No agent can speak twice in a row.
 
 Respond with a single number between 0 and {len(agents) - 1}, representing the agent's index.
 Only return the index as an integer.

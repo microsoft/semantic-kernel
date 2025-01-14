@@ -1,8 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
+from collections.abc import AsyncIterable
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from samples.demos.document_generator.agents.custom_agent_base import CustomAgentBase
 from samples.demos.document_generator.plugins.user_plugin import UserPlugin
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 INSTRUCTION = """
 You are part of a chat with multiple agents working on a document.
@@ -33,3 +43,13 @@ class UserAgent(CustomAgentBase):
             instructions=INSTRUCTION.strip(),
             description=DESCRIPTION.strip(),
         )
+
+    @override
+    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
+        cloned_history = history.model_copy(deep=True)
+        cloned_history.add_user_message_str(
+            "Now present the latest draft to the user for feedback and summarize their feedback."
+        )
+
+        async for response_message in super().invoke(cloned_history):
+            yield response_message
