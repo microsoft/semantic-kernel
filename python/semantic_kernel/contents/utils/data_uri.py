@@ -152,6 +152,8 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
     def to_string(self, metadata: dict[str, str] = {}) -> str:
         """Return the data uri as a string."""
+        if self.data_array:
+            data_str = self.data_array.tobytes().decode("utf-8")
         parameters = ";".join([f"{key}={val}" for key, val in metadata.items()])
         parameters = f";{parameters}" if parameters else ""
         data_format = f"{self.data_format}" if self.data_format else ""

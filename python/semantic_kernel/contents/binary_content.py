@@ -121,7 +121,7 @@ class BinaryContent(KernelContent):
         self.metadata.update(self._data_uri.parameters)
 
     @property
-    def data(self) -> bytes:
+    def data(self) -> bytes | ndarray:
         """Get the data."""
         if self._data_uri and self._data_uri.data_array:
             return self._data_uri.data_array.tobytes()

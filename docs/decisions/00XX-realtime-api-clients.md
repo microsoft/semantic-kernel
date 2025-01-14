@@ -14,13 +14,21 @@ informed:
 
 Multiple model providers are starting to enable realtime voice-to-voice communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's in different settings, which we want to enable with Semantic Kernel. The key addition that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. 
 
-The way these API's work at this time is through either websockets or WebRTC. In both cases there are events being sent to and from the service, some events contain content, text, audio, or video (so far only sending, not receiving), while some events are "control" events, like content created, function call requested, etc. Sending events include, sending content, either voice, text or function call output, or events, like committing the input audio and requesting a response. 
+The way these API's work at this time is through either Websockets or WebRTC. 
+
+In both cases there are events being sent to and from the service, some events contain content, text, audio, or video (so far only sending, not receiving), while some events are "control" events, like content created, function call requested, etc. Sending events include, sending content, either voice, text or function call output, or events, like committing the input audio and requesting a response. 
+
+### Websocket
+Websocket has been around for a while and is a well known technology, it is a full-duplex communication protocol over a single, long-lived connection. It is used for sending and receiving messages between client and server in real-time. Each event can contain a message, which might contain a content item, or a control event.
+
+### WebRTC
+WebRTC is a Mozilla project that provides web browsers and mobile applications with real-time communication via simple application programming interfaces (APIs). It allows audio and video communication to work inside web pages by allowing direct peer-to-peer communication, eliminating the need to install plugins or download native apps. It is used for sending and receiving audio and video streams, and can be used for sending messages as well. The big difference compared to websockets is that it does explicitly create a channel for audio and video, and a separate channel for "data", which are events but also things like Function calls.
 
 Both the OpenAI and Google realtime api's are in preview/beta, this means there might be breaking changes in the way they work coming in the future, therefore the clients built to support these API's are going to be experimental until the API's stabilize.
 
 One feature that we need to consider if and how to deal with is whether or not a service uses Voice Activated Detection, OpenAI supports turning that off and allows parameters for how it behaves, while Google has it on by default and it cannot be configured.
 
-### Event types
+### Event types (websocket and partially webrtc)
 
 Client side events:
 | **Content/Control event** | **Event Description**             | **OpenAI Event**             | **Google Event**                   |
@@ -48,8 +56,8 @@ Server side events:
 | Control                   | Input audio buffer speech started      | `input_audio_buffer.speech_started`                     | `-`                                       |
 | Control                   | Input audio buffer speech stopped      | `input_audio_buffer.speech_stopped`                     | `-`                                       |
 | Content                   | Conversation item created              | `conversation.item.created`                             | `-`                                       |
-| Content                   | Input audio transcription completed    | `conversation.item.input_audio_transcription.completed` |
-| Content                   | Input audio transcription failed       | `conversation.item.input_audio_transcription.failed`    |
+| Content                   | Input audio transcription completed    | `conversation.item.input_audio_transcription.completed` |                                           |
+| Content                   | Input audio transcription failed       | `conversation.item.input_audio_transcription.failed`    |                                           |
 | Control                   | Conversation item truncated            | `conversation.item.truncated`                           | `-`                                       |
 | Control                   | Conversation item deleted              | `conversation.item.deleted`                             | `-`                                       |
 | Control                   | Response created                       | `response.created`                                      | `-`                                       |
@@ -70,16 +78,15 @@ Server side events:
 | Control                   | Rate limits updated                    | `rate_limits.updated`                                   | `-`                                       |
 
 
-<!-- This is an optional element. Feel free to remove. -->
-
 ## Decision Drivers
 
 - Simple programming model that is likely able to handle future realtime api's and evolution of the existing ones.
 - Support for the most common scenario's and content, extensible for the rest.
 - Natively integrated with Semantic Kernel especially for content types and function calling.
 - Support multiple types of connections, like websocket and WebRTC
-
-- … <!-- numbers of drivers can vary -->
+  
+## Decision driver questions
+- For WebRTC, a audio device can be passed, should this be a requirement for the client also for websockets?
 
 ## Considered Options
 

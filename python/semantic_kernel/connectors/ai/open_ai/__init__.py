@@ -40,7 +40,7 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import A
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_image import AzureTextToImage
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtime
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtime, OpenAIRealtimeWebRTC
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
@@ -76,6 +76,7 @@ __all__ = [
     "OpenAIPromptExecutionSettings",
     "OpenAIRealtime",
     "OpenAIRealtimeExecutionSettings",
+    "OpenAIRealtimeWebRTC",
     "OpenAISettings",
     "OpenAITextCompletion",
     "OpenAITextEmbedding",
