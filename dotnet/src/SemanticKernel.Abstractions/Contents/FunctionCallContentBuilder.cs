@@ -179,7 +179,7 @@ public sealed class FunctionCallContentBuilder
         }
 
         // Create index that is unique across many requests.
-        var functionCallIndex = $"{update.RequestIndex}{update.FunctionCallIndex}";
+        var functionCallIndex = $"{update.RequestIndex}-{update.FunctionCallIndex}";
 
         // If we have an call id, ensure the index is being tracked. Even if it's not a function update,
         // we want to keep track of it so we can send back an error.

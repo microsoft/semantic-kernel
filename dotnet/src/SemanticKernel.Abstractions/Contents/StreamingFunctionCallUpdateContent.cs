@@ -30,7 +30,7 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     public int FunctionCallIndex { get; init; }
 
     /// <summary>
-    /// Index of the request that produced this message content
+    /// Index of the request that produced this message content.
     /// </summary>
     public int RequestIndex { get; init; } = 0;
 
