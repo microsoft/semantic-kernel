@@ -9,13 +9,17 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
+// Disable unused class warning, as this class is marked internal to disable the tests in the base class.
+#pragma warning disable CA1812
+#pragma warning disable CA1852
+
 /// <summary>
 /// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Pinecone setup and teardown.</param>
 [Collection("PineconeVectorStoreTests")]
 [PineconeApiKeySetCondition]
-public class CommonPineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>, IClassFixture<PineconeVectorStoreFixture>
+internal class CommonPineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>, IClassFixture<PineconeVectorStoreFixture>
 {
     protected override string Key1 => "1";
     protected override string Key2 => "2";
