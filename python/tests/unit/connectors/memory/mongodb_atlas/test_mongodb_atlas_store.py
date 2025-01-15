@@ -1,16 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from pymongo import MongoClient
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_store import MongoDBAtlasStore
+
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_store import MongoDBAtlasStore
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 
 
 @pytest.fixture
 def mock_mongo_client():
-    with patch("pymongo.MongoClient") as mock:
+    with patch("pymongo.AsyncMongoClient") as mock:
         yield mock
 
 
