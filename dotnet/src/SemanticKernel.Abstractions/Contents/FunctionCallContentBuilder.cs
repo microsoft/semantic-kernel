@@ -15,9 +15,9 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class FunctionCallContentBuilder
 {
-    private Dictionary<int, string>? _functionCallIdsByIndex = null;
-    private Dictionary<int, string>? _functionNamesByIndex = null;
-    private Dictionary<int, StringBuilder>? _functionArgumentBuildersByIndex = null;
+    private Dictionary<string, string>? _functionCallIdsByIndex = null;
+    private Dictionary<string, string>? _functionNamesByIndex = null;
+    private Dictionary<string, StringBuilder>? _functionArgumentBuildersByIndex = null;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>
@@ -70,7 +70,7 @@ public sealed class FunctionCallContentBuilder
 
             for (int i = 0; i < this._functionCallIdsByIndex.Count; i++)
             {
-                KeyValuePair<int, string> functionCallIndexAndId = this._functionCallIdsByIndex.ElementAt(i);
+                KeyValuePair<string, string> functionCallIndexAndId = this._functionCallIdsByIndex.ElementAt(i);
 
                 string? pluginName = null;
                 string functionName = string.Empty;
@@ -96,7 +96,7 @@ public sealed class FunctionCallContentBuilder
 
             [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
             [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
-            (KernelArguments? Arguments, Exception? Exception) GetFunctionArgumentsSafe(int functionCallIndex)
+            (KernelArguments? Arguments, Exception? Exception) GetFunctionArgumentsSafe(string functionCallIndex)
             {
                 if (this._jsonSerializerOptions is not null)
                 {
@@ -118,7 +118,7 @@ public sealed class FunctionCallContentBuilder
     /// <returns>A tuple containing the KernelArguments and an Exception if any.</returns>
     [RequiresUnreferencedCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
-    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
+    private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(string functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         if (this._functionArgumentBuildersByIndex is null ||
             !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
@@ -170,7 +170,7 @@ public sealed class FunctionCallContentBuilder
     /// <param name="functionCallIdsByIndex">The dictionary of function call IDs by function call index.</param>
     /// <param name="functionNamesByIndex">The dictionary of function names by function call index.</param>
     /// <param name="functionArgumentBuildersByIndex">The dictionary of function argument builders by function call index.</param>
-    private static void TrackStreamingFunctionCallUpdate(StreamingFunctionCallUpdateContent update, ref Dictionary<int, string>? functionCallIdsByIndex, ref Dictionary<int, string>? functionNamesByIndex, ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
+    private static void TrackStreamingFunctionCallUpdate(StreamingFunctionCallUpdateContent update, ref Dictionary<string, string>? functionCallIdsByIndex, ref Dictionary<string, string>? functionNamesByIndex, ref Dictionary<string, StringBuilder>? functionArgumentBuildersByIndex)
     {
         if (update is null)
         {
@@ -178,25 +178,28 @@ public sealed class FunctionCallContentBuilder
             return;
         }
 
+        // Create index that is unique across many requests.
+        var functionCallIndex = $"{update.RequestIndex}-{update.FunctionCallIndex}";
+
         // If we have an call id, ensure the index is being tracked. Even if it's not a function update,
         // we want to keep track of it so we can send back an error.
         if (update.CallId is string id && !string.IsNullOrEmpty(id))
         {
-            (functionCallIdsByIndex ??= [])[update.FunctionCallIndex] = id;
+            (functionCallIdsByIndex ??= [])[functionCallIndex] = id;
         }
 
         // Ensure we're tracking the function's name.
         if (update.Name is string name && !string.IsNullOrEmpty(name))
         {
-            (functionNamesByIndex ??= [])[update.FunctionCallIndex] = name;
+            (functionNamesByIndex ??= [])[functionCallIndex] = name;
         }
 
         // Ensure we're tracking the function's arguments.
         if (update.Arguments is string argumentsUpdate)
         {
-            if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(update.FunctionCallIndex, out StringBuilder? arguments))
+            if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(functionCallIndex, out StringBuilder? arguments))
             {
-                functionArgumentBuildersByIndex[update.FunctionCallIndex] = arguments = new();
+                functionArgumentBuildersByIndex[functionCallIndex] = arguments = new();
             }
 
             arguments.Append(argumentsUpdate);
