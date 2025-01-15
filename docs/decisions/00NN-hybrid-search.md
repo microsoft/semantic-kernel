@@ -41,6 +41,8 @@ More background information:
 - [Background article from Qdrant about using sparse vectors for Hybrid Search](https://qdrant.tech/articles/sparse-vectors)
 - [TF-IDF explainer for beginners](https://medium.com/@coldstart_coder/understanding-and-implementing-tf-idf-in-python-a325d1301484)
 
+ML.Net contains an implementation of TF-IDF that could be used to generate sparse vectors in .net. See [here](https://github.com/dotnet/machinelearning/blob/886e2ff125c0060f5a251056c7eb2a7d28738984/docs/samples/Microsoft.ML.Samples/Dynamic/Transforms/Text/ProduceWordBags.cs#L55-L105) for an example.
+
 ### Hybrid search support in different databases
 
 |Feature|Azure AI Search|Weaviate|Redis|Chroma|Pinecone|PostgreSql|Qdrant|Milvus|Elasticsearch|CosmosDB NoSql|MongoDB|
