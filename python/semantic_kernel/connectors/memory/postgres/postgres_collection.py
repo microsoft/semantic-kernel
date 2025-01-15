@@ -100,6 +100,9 @@ class PostgresCollection(
             data_model_definition=data_model_definition,
             connection_pool=connection_pool,
             db_schema=db_schema,
+            # This controls whether the connection pool is managed by the collection
+            # in the __aenter__ and __aexit__ methods.
+            managed_client=connection_pool is None,
         )
 
         self._settings = settings or PostgresSettings.create(
@@ -113,15 +116,15 @@ class PostgresCollection(
         # If the connection pool was not provided, create a new one.
         if not self.connection_pool:
             self.connection_pool = await self._settings.create_connection_pool()
-            self.managed_client = True
         return self
 
     @override
     async def __aexit__(self, *args):
+        # Only close the connection pool if it was created by the collection.
         if self.managed_client and self.connection_pool:
             await self.connection_pool.close()
             # If the pool was created by the collection, set it to None to enable reusing the collection.
-            if self._settings:
+            if self.managed_client:
                 self.connection_pool = None
 
     @override
