@@ -2892,7 +2892,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.57.2"
+version = "1.58.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -2904,9 +2904,9 @@ dependencies = [
     { name = "tqdm", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a9/b6/9a404e1d1043cabbffb020f9d850a44a31f30f284444a528d9a1f0eec9df/openai-1.57.2.tar.gz", hash = "sha256:5f49fd0f38e9f2131cda7deb45dafdd1aee4f52a637e190ce0ecf40147ce8cee", size = 315752 }
+sdist = { url = "https://files.pythonhosted.org/packages/51/8d/3a0ed3fa5d9e22568d497eb7bb46ae27753de78ccb5296f6ffac4554cc2b/openai-1.58.0.tar.gz", hash = "sha256:7e2659edb3c9ef101653f490f7faf7de710e8051d0860fc86b6eaae75a25a759", size = 343393 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/e7/95437fb676381e927d4cb3f9f8dd90ed24cfd264f572db4d395037428594/openai-1.57.2-py3-none-any.whl", hash = "sha256:f7326283c156fdee875746e7e54d36959fb198eadc683952ee05e3302fbd638d", size = 389873 },
+    { url = "https://files.pythonhosted.org/packages/f4/e5/41c3504059094e62ffb1cf719d4610c6b3792f351c032659f2f2bda35ce1/openai-1.58.0-py3-none-any.whl", hash = "sha256:c8ab24a7581383bb660d6fa8b241b84545598cb3ef0fdb7fff1bed28703223bc", size = 454300 },
 ]
 
 [[package]]
