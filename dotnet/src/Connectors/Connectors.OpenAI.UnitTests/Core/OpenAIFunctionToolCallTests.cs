@@ -126,6 +126,7 @@ public sealed class OpenAIFunctionToolCallTests
             """, functionArgumentBuildersByIndex![0].ToString());
         Assert.Null(exception);
     }
+
     [Fact]
     public void TrackStreamingToolingUpdateWithEmptyIdNameDoesNotThrowException()
     {
@@ -133,31 +134,24 @@ public sealed class OpenAIFunctionToolCallTests
         Dictionary<int, string>? toolCallIdsByIndex = null;
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
-        IReadOnlyList<StreamingChatToolCallUpdate>? updates = [];
-        //This is a sample of SSE updates from Qwen model
-        var sseUpdates = @"{""function"":{""name"":""WeatherPlugin-GetWeather"",""arguments"":""{\""addressCode""},""index"":0,""id"":""call_74f02d5863864109bae3d1"",""type"":""function""}
-{""function"":{""name"":"""",""arguments"":""\"": \""44""},""index"":0,""id"":"""",""type"":""function""}
-{""function"":{""name"":"""",""arguments"":""0100""},""index"":0,""id"":"""",""type"":""function""}";
 
-        var sseLines = sseUpdates.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        var sseUpdatesList = new List<StreamingChatToolCallUpdate>();
-        foreach (var item in sseLines)
-        {
-            sseUpdatesList.Add(GetUpdateChunkFromString(item));
-        }
         // Act
         var exception = Record.Exception(() =>
             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(
-                sseUpdatesList,
+                [
+                    GetUpdateChunkFromString("""{"function":{"name":"WeatherPlugin-GetWeather","arguments":"{\"addressCode"},"index":0,"id":"call_74f02d5863864109bae3d1","type":"function"}"""),
+                    GetUpdateChunkFromString("""{"function":{"name":"","arguments":"\": \"44"},"index":0,"id":"","type":"function"}"""),
+                    GetUpdateChunkFromString("""{"function":{"name":"","arguments":"0100"},"index":0,"id":"","type":"function"}"""),
+                ],
                 ref toolCallIdsByIndex,
                 ref functionNamesByIndex,
                 ref functionArgumentBuildersByIndex
             ));
 
         // Assert
+        Assert.Null(exception);
         Assert.False(string.IsNullOrEmpty(toolCallIdsByIndex![0]));
         Assert.False(string.IsNullOrEmpty(functionNamesByIndex![0]));
-        Assert.Null(exception);
     }
 
     private static StreamingChatToolCallUpdate GetUpdateChunkFromString(string jsonChunk)
