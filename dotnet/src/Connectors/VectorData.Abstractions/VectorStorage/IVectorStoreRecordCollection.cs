@@ -79,11 +79,10 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// Deletes a record from the vector store. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="key">The unique id associated with the record to remove.</param>
-    /// <param name="options">Optional options for removing the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the record.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that the record does not exit.</exception>
-    Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteAsync(TKey key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -92,11 +91,10 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// If any record cannot be deleted for any other reason, the operation will throw. Some records may have already been deleted, while others may not, so the entire operation should be retried.
     /// </summary>
     /// <param name="keys">The unique ids associated with the records to remove.</param>
-    /// <param name="options">Optional options for removing the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the records have been deleted.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that a record does not exist.</exception>
-    Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upserts a record into the vector store. Does not guarantee that the collection exists.
@@ -104,12 +102,11 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     ///     If the record does not exist, it will be created.
     /// </summary>
     /// <param name="record">The record to upsert.</param>
-    /// <param name="options">Optional options for upserting the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the record.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
-    Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upserts a group of records into the vector store. Does not guarantee that the collection exists.
@@ -118,10 +115,9 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// Upserts will be made in a single request or in a single parallel batch depending on the available store functionality.
     /// </summary>
     /// <param name="records">The records to upsert.</param>
-    /// <param name="options">Optional options for upserting the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifiers for the records.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
-    IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 }

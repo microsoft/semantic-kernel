@@ -514,10 +514,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             });
 
         // Act.
-        await sut.UpsertAsync(
-            model,
-            null,
-            this._testCancellationToken);
+        await sut.UpsertAsync(model, this._testCancellationToken);
 
         // Assert.
         mapperMock
