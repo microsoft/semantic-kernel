@@ -1,16 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from typing import Annotated, Any, Literal
 
 from mistralai import utils
-
-if sys.version_info >= (3, 11):
-    pass  # pragma: no cover
-else:
-    pass  # pragma: no cover
-
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
