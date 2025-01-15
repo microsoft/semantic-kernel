@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 from opentelemetry import trace
 
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -24,7 +25,7 @@ class CustomTerminationStrategy(TerminationStrategy):
     NUM_OF_RETRIES: ClassVar[int] = 3
 
     maximum_iterations: int = 20
-    chat_completion_service: OpenAIChatCompletion
+    chat_completion_service: ChatCompletionClientBase
 
     def __init__(self, **kwargs):
         chat_completion_service = OpenAIChatCompletion()

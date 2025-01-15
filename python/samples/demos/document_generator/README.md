@@ -40,7 +40,7 @@ To learn more about the Semantic Kernel Agent Framework, please refer to the [Se
     pip install AICodeSandbox
     ```
 
-    > You must also have `docker` installed and running on your machine. Simply run docker. Images will be pulled during runtime if not already present. Containers will be created and destroyed during code execution.
+    > You must also have `docker` installed and running on your machine. Follow the instructions [here](https://docs.docker.com/get-started/introduction/get-docker-desktop/) to install docker for your platform. Images will be pulled during runtime if not already present. Containers will be created and destroyed during code execution.
 
 ## Running the app
 
@@ -52,6 +52,10 @@ Make sure you have the following environment variables set:
 OPENAI_CHAT_MODEL_ID=<model-id>
 OPENAI_API_KEY=<your-key>
 ```
+
+> gpt-4o-2024-08-06 was used to generate [GENERATED_DOCUMENT.md](GENERATED_DOCUMENT.md).
+
+```env
 
 ### Step 2: Run the app
 

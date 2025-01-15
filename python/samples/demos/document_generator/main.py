@@ -96,7 +96,6 @@ async def main():
     with tracer.start_as_current_span("main"):
         agents = [
             ContentCreationAgent(),
-            # ProofreadAgent(),
             UserAgent(),
             CodeValidationAgent(),
         ]
