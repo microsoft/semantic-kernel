@@ -16,7 +16,7 @@ In addition to simple vector search, many databases also support Hybrid search.
 Hybrid search typically results in higher quality search results, and therefore the ability to do Hybrid search via VectorStore abstractions
 is an important feature to add.
 
-The way in which Hybrid search is suported varies by database. The two most common ways of supporting hybrid search is:
+The way in which Hybrid search is supported varies by database. The two most common ways of supporting hybrid search is:
 
 1. Using dense vector search and keyword/fulltext search in parallel, and then combining the results.
 1. Using dense vector search and sparse vector search in parallel, and then combining the results.
@@ -173,7 +173,7 @@ class SparseVectorizableTextHybridSearchOptions
     // The name of the property to target the dense vector search against.
     public string? DenseVectorPropertyName { get; init; }
     // The name of the property to target the sparse vector search against.
-    public string? SparseVectorPropertName { get; init; }
+    public string? SparseVectorPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
     public string FusionMethod { get; init; } = null;
 
