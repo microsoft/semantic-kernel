@@ -412,6 +412,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+        return OpenAIAssistantAgent(
+            kernel=kernel,
+            assistant=assistant,
+            client=client,
+            api_key=api_key,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            **assistant_definition,
+        )
 
     # endregion

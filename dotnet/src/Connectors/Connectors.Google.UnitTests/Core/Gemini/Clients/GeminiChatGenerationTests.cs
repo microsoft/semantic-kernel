@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -420,12 +421,33 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCreatesPostRequestWithResponseSchemaPropertyAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var settings = new GeminiPromptExecutionSettings { ResponseMimeType = "application/json", ResponseSchema = typeof(List<int>) };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+
+        var responseBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+
+        Assert.Contains("responseSchema", responseBody, StringComparison.Ordinal);
+        Assert.Contains("\"responseSchema\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}}", responseBody, StringComparison.Ordinal);
+        Assert.Contains("\"responseMimeType\":\"application/json\"", responseBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ItCanUseValueTasksSequentiallyForBearerTokenAsync()
     {
         // Arrange
         var bearerTokenGenerator = new BearerTokenGenerator()
         {
-            BearerKeys = new List<string> { "key1", "key2", "key3" }
+            BearerKeys = ["key1", "key2", "key3"]
         };
 
         var responseContent = File.ReadAllText(ChatTestDataFilePath);
@@ -442,7 +464,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
             httpClient: httpClient,
             modelId: "fake-model",
             apiVersion: VertexAIVersion.V1,
-            bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
+            bearerTokenProvider: bearerTokenGenerator.GetBearerToken,
             location: "fake-location",
             projectId: "fake-project-id");
 
