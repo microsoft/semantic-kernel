@@ -12,8 +12,6 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-DEFAULT_DB_NAME = "default"
-DEFAULT_SEARCH_INDEX_NAME = "default"
 NUM_CANDIDATES_SCALAR = 10
 
 MONGODB_FIELD_ID = "_id"

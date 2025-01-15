@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from importlib import metadata
 from typing import TYPE_CHECKING, Any, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -12,6 +13,7 @@ else:
 from pydantic import ValidationError
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
+from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import (
     MongoDBAtlasCollection,
@@ -61,18 +63,27 @@ class MongoDBAtlasStore(VectorStore):
             MongoDBAtlasSettings,
         )
 
+        if mongo_client and database_name:
+            super().__init__(
+                mongo_client=mongo_client,
+                managed_client=False,
+                database_name=database_name,
+            )
         managed_client: bool = False
+        try:
+            mongodb_atlas_settings = MongoDBAtlasSettings.create(
+                env_file_path=env_file_path,
+                connection_string=connection_string,
+                database_name=database_name,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
         if not mongo_client:
-            try:
-                mongodb_atlas_settings = MongoDBAtlasSettings.create(
-                    env_file_path=env_file_path,
-                    connection_string=connection_string,
-                    database_name=database_name,
-                    env_file_encoding=env_file_encoding,
-                )
-            except ValidationError as exc:
-                raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
-            mongo_client = AsyncMongoClient(mongodb_atlas_settings.connection_string)
+            mongo_client = AsyncMongoClient(
+                mongodb_atlas_settings.connection_string.get_secret_value(),
+                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
+            )
             managed_client = True
 
         super().__init__(
@@ -117,3 +128,8 @@ class MongoDBAtlasStore(VectorStore):
         """Exit the context manager."""
         if self.managed_client:
             await self.mongo_client.close()
+
+    async def __aenter__(self) -> "MongoDBAtlasStore":
+        """Enter the context manager."""
+        await self.mongo_client.aconnect()
+        return self

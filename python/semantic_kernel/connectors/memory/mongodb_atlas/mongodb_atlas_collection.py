@@ -3,6 +3,7 @@
 import logging
 import sys
 from collections.abc import Sequence
+from importlib import metadata
 from typing import Any, ClassVar, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -14,6 +15,7 @@ from pydantic import ValidationError
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.database import AsyncDatabase
+from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.const import MONGODB_ID_FIELD
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_index_definition
@@ -58,9 +60,8 @@ class MongoDBAtlasCollection(
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
-        database_name: str | None = None,
-        mongo_client: AsyncMongoClient | None = None,
         index_name: str | None = None,
+        mongo_client: AsyncMongoClient | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasCollection class.
@@ -69,12 +70,12 @@ class MongoDBAtlasCollection(
             data_model_type: The type of the data model.
             data_model_definition: The model definition, optional.
             collection_name: The name of the collection, optional.
-            database_name: The name of the database, will be filled from the env when this is not set.
             mongo_client: The MongoDB client for interacting with MongoDB Atlas,
                 used for creating and deleting collections.
             index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
             **kwargs: Additional keyword arguments, including:
                 The same keyword arguments used for MongoDBAtlasStore:
+                    database_name: The name of the database, will be filled from the env when this is not set.
                     connection_string: str | None = None,
                     env_file_path: str | None = None,
                     env_file_encoding: str | None = None
@@ -82,13 +83,13 @@ class MongoDBAtlasCollection(
         """
         if not collection_name:
             raise VectorStoreInitializationException("Collection name is required.")
-        if mongo_client and database_name:
+        if mongo_client and "database_name" in kwargs:
             super().__init__(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
-                database_name=database_name,
+                database_name=kwargs["database_name"],
                 index_name=index_name or f"{collection_name}_idx",
                 managed_client=False,
             )
@@ -99,15 +100,18 @@ class MongoDBAtlasCollection(
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings.create(
                 env_file_path=kwargs.get("env_file_path"),
-                connection_string=kwargs.get("connection_string"),
-                database_name=database_name,
                 env_file_encoding=kwargs.get("env_file_encoding"),
+                connection_string=kwargs.get("connection_string"),
+                database_name=kwargs.get("database_name"),
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
         managed_client = not mongo_client
         if not mongo_client:
-            mongo_client = AsyncMongoClient(mongodb_atlas_settings.connection_string)
+            mongo_client = AsyncMongoClient(
+                mongodb_atlas_settings.connection_string.get_secret_value(),
+                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
+            )
         if not mongodb_atlas_settings.database_name:
             raise VectorStoreInitializationException("Database name is required.")
 
@@ -122,11 +126,17 @@ class MongoDBAtlasCollection(
         )
 
     def _get_database(self) -> AsyncDatabase:
-        """Get the database."""
+        """Get the database.
+
+        If you need control over things like read preference, you can override this method.
+        """
         return self.mongo_client.get_database(self.database_name)
 
     def _get_collection(self) -> AsyncCollection:
-        """Get the collection."""
+        """Get the collection.
+
+        If you need control over things like read preference, you can override this method.
+        """
         return self.mongo_client.get_database(self.database_name).get_collection(self.collection_name)
 
     @override
@@ -203,6 +213,7 @@ class MongoDBAtlasCollection(
         collection = self._get_collection()
         vector_search_query: dict[str, Any] = {
             "limit": options.top + options.skip,
+            "index": self.index_name,
         }
         if options.filter.filters:
             vector_search_query["filter"] = self._build_filter_dict(options.filter)
@@ -253,5 +264,10 @@ class MongoDBAtlasCollection(
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
-        if self.managed_mongo_client:
+        if self.managed_client:
             await self.mongo_client.close()
+
+    async def __aenter__(self) -> "MongoDBAtlasCollection":
+        """Enter the context manager."""
+        await self.mongo_client.aconnect()
+        return self

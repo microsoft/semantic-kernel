@@ -1,63 +1,60 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import MagicMock, patch
 
-import pytest
-from pymongo import MongoClient
+from unittest.mock import AsyncMock, patch
+
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.cursor import AsyncCursor
+from pymongo.results import UpdateResult
 
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
 
 
-@pytest.fixture
-def mock_mongo_client():
-    with patch("pymongo.AsyncMongoClient") as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_mongo_db(mock_mongo_client):
-    mock_db = MagicMock()
-    mock_mongo_client.return_value.get_database.return_value = mock_db
-    yield mock_db
-
-
-def test_mongodb_atlas_collection_initialization(mock_mongo_client):
+def test_mongodb_atlas_collection_initialization(mongodb_atlas_unit_test_env, data_model_definition, mock_mongo_client):
     collection = MongoDBAtlasCollection(
         data_model_type=dict,
+        data_model_definition=data_model_definition,
         collection_name="test_collection",
         mongo_client=mock_mongo_client,
     )
     assert collection.mongo_client is not None
-    assert isinstance(collection.mongo_client, MongoClient)
+    assert isinstance(collection.mongo_client, AsyncMongoClient)
 
 
-def test_mongodb_atlas_collection_upsert(mock_mongo_db):
+async def test_mongodb_atlas_collection_upsert(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
         data_model_type=dict,
+        data_model_definition=data_model_definition,
         collection_name="test_collection",
-        mongo_client=mock_mongo_db,
     )
-    mock_mongo_db.get_collection.return_value.insert_one.return_value.inserted_id = "test_id"
-    result = collection._inner_upsert([{"_id": "test_id", "data": "test_data"}])
-    assert result == ["test_id"]
+    with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
+        result_mock = AsyncMock(spec=UpdateResult)
+        result_mock.upserted_id = ["test_id"]
+        mock_get.return_value.update_many.return_value = result_mock
+        result = await collection._inner_upsert([{"_id": "test_id", "data": "test_data"}])
+        assert result == ["test_id"]
 
 
-def test_mongodb_atlas_collection_get(mock_mongo_db):
+async def test_mongodb_atlas_collection_get(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
         data_model_type=dict,
+        data_model_definition=data_model_definition,
         collection_name="test_collection",
-        mongo_client=mock_mongo_db,
     )
-    mock_mongo_db.get_collection.return_value.find_one.return_value = {"_id": "test_id", "data": "test_data"}
-    result = collection._inner_get(["test_id"])
-    assert result == [{"_id": "test_id", "data": "test_data"}]
+    with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
+        result_mock = AsyncMock(spec=AsyncCursor)
+        result_mock.to_list.return_value = [{"_id": "test_id", "data": "test_data"}]
+        mock_get.return_value.find.return_value = result_mock
+        result = await collection._inner_get(["test_id"])
+        assert result == [{"_id": "test_id", "data": "test_data"}]
 
 
-def test_mongodb_atlas_collection_delete(mock_mongo_db):
+async def test_mongodb_atlas_collection_delete(mongodb_atlas_unit_test_env, data_model_definition, mock_get_collection):
     collection = MongoDBAtlasCollection(
         data_model_type=dict,
+        data_model_definition=data_model_definition,
         collection_name="test_collection",
-        mongo_client=mock_mongo_db,
     )
-    collection._inner_delete(["test_id"])
-    mock_mongo_db.get_collection.return_value.delete_one.assert_called_with({"_id": "test_id"})
+    with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
+        await collection._inner_delete(["test_id"])
+        mock_get.return_value.delete_many.assert_called_with({"_id": {"$in": ["test_id"]}})

@@ -10,3 +10,5 @@ DISTANCE_FUNCTION_MAPPING: Final[dict[DistanceFunction, str]] = {
     DistanceFunction.DOT_PROD: "dotProduct",
 }
 MONGODB_ID_FIELD: Final[str] = "_id"
+DEFAULT_DB_NAME = "default"
+DEFAULT_SEARCH_INDEX_NAME = "default"
