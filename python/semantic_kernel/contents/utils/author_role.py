@@ -9,3 +9,4 @@ class AuthorRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
     TOOL = "tool"
+    DEVELOPER = "developer"

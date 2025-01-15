@@ -128,6 +128,11 @@
 - [RAG with Text Memory Plugin](./rag/rag_with_text_memory_plugin.py)
 - [Self-Critique RAG](./rag/self-critique_rag.py)
 
+### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
+
+- [Simple Chatbot](./reasoning/simple_reasoning.py)
+- [Simple Function Calling](./reasoning/simple_reasoning_function_calling.py)
+
 ### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
 
 - [Bing Search Plugin](./search/bing_search_plugin.py)

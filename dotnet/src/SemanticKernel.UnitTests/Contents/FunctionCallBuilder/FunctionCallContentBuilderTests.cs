@@ -132,6 +132,58 @@ public class FunctionCallContentBuilderTests
 
     [Theory]
     [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
+    public void ItShouldBuildFunctionCallContentForManyFunctionsCameInDifferentRequests(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        var sut = jsos is not null ? new FunctionCallContentBuilder(jsos) : new FunctionCallContentBuilder();
+
+        // Act
+
+        // f1 call was streamed as part of the first request
+        var f1_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 0, callId: "f_1", name: "WeatherUtils-GetTemperature", arguments: null);
+        sut.Append(f1_update1);
+
+        var f1_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 0, callId: null, name: null, arguments: "{\"city\":");
+        sut.Append(f1_update2);
+
+        var f1_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 0, callId: null, name: null, arguments: "\"Seattle\"}");
+        sut.Append(f1_update3);
+
+        // f2 call was streamed as part of the second request
+        var f2_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 1, callId: null, name: "WeatherUtils-GetHumidity", arguments: null);
+        sut.Append(f2_update1);
+
+        var f2_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 1, callId: "f_2", name: null, arguments: null);
+        sut.Append(f2_update2);
+
+        var f2_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 1, callId: null, name: null, arguments: "{\"city\":");
+        sut.Append(f2_update3);
+
+        var f2_update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 0, requestIndex: 1, callId: null, name: null, arguments: "\"Georgia\"}");
+        sut.Append(f2_update4);
+
+        var functionCalls = sut.Build();
+
+        // Assert
+        Assert.Equal(2, functionCalls.Count);
+
+        var functionCall1 = functionCalls.ElementAt(0);
+        Assert.Equal("f_1", functionCall1.Id);
+        Assert.Equal("WeatherUtils", functionCall1.PluginName);
+        Assert.Equal("GetTemperature", functionCall1.FunctionName);
+        Assert.Equal("Seattle", functionCall1.Arguments?["city"]);
+        Assert.Null(functionCall1.Exception);
+
+        var functionCall2 = functionCalls.ElementAt(1);
+        Assert.Equal("f_2", functionCall2.Id);
+        Assert.Equal("WeatherUtils", functionCall2.PluginName);
+        Assert.Equal("GetHumidity", functionCall2.FunctionName);
+        Assert.Equal("Georgia", functionCall2.Arguments?["city"]);
+        Assert.Null(functionCall2.Exception);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
     public void ItShouldCaptureArgumentsDeserializationException(JsonSerializerOptions? jsos)
     {
         // Arrange
@@ -160,7 +212,7 @@ public class FunctionCallContentBuilderTests
         Assert.NotNull(functionCall.Exception);
     }
 
-    private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? callId, string? name, string? arguments)
+    private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? callId, string? name, string? arguments, int requestIndex = 0)
     {
         var content = new StreamingChatMessageContent(AuthorRole.Assistant, null);
 
@@ -171,6 +223,7 @@ public class FunctionCallContentBuilderTests
             CallId = callId,
             Name = name,
             Arguments = arguments,
+            RequestIndex = requestIndex
         });
 
         return content;
