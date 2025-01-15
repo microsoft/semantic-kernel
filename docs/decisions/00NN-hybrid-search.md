@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed | rejected | accepted | deprecated | … | superseded by [ADR-0001](0001-madr-architecture-decisions.md)}
+status: {proposed | rejected | accepted | deprecated | ï¿½ | superseded by [ADR-0001](0001-madr-architecture-decisions.md)}
 contact: westey-m
 date: 2024-11-27
 deciders: {list everyone involved in the decision}
@@ -43,16 +43,16 @@ More background information:
 
 ### Hybrid search support in different databases
 
-|Feature|Azure AI Search|Weaviate|Redis|Chroma|Pinecone|PostgreSql|Qdrant|Milvus|Elasticsearch|
-|-|-|-|-|-|-|-|-|-|-|
-|Hybrid search supported|Y|Y|N (No parallel execution with fusion)|N|Y||Y|Y|Y|
-|Hybrid search definition|Vector + FullText|[Vector + Keyword (BM25F)](https://weaviate.io/developers/weaviate/search/hybrid)|||[Vector + Sparse Vector for keywords](https://docs.pinecone.io/guides/get-started/key-features#hybrid-search)||[Vector + SparseVector / Keyword](https://qdrant.tech/documentation/concepts/hybrid-queries/)|[Vector + SparseVector](https://milvus.io/docs/multi-vector-search.md)|Vector + FullText|
-|Fusion method configurable|N|Y|||?||Y|Y|Y, but only one option|
-|Fusion methods|[RRF](https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking)|Ranked/RelativeScore|||?||RRF / DBSF|[RRF / Weighted](https://milvus.io/docs/multi-vector-search.md)|[RRF](https://www.elastic.co/search-labs/tutorials/search-tutorial/vector-search/hybrid-search)|
-|Hybrid Search Input Params|Vector + string|[Vector + string](https://weaviate.io/developers/weaviate/api/graphql/search-operators#hybrid)|||Vector + SparseVector||[Vector + SparseVector](https://qdrant.tech/documentation/concepts/hybrid-queries/)|[Vector + SparseVector](https://milvus.io/docs/multi-vector-search.md)|Vector + string|
-|Sparse Distance Function|n/a|n/a|||[dotproduct only for both dense and sparse, 1 setting for both](https://docs.pinecone.io/guides/data/understanding-hybrid-search#sparse-dense-workflow)||dotproduct|Inner Product|n/a|
-|Sparse Indexing options|n/a|n/a|||no separate config to dense||ondisk / inmemory  + IDF|[SPARSE_INVERTED_INDEX / SPARSE_WAND](https://milvus.io/docs/index.md?tab=sparse)|n/a|
-|Sparse data model|n/a|n/a|||[indices & values arrays](https://docs.pinecone.io/guides/data/upsert-sparse-dense-vectors)||indices & values arrays|[sparse matrix / List of dict / list of tuples](https://milvus.io/docs/sparse_vector.md#Use-sparse-vectors-in-Milvus)|n/a|
+|Feature|Azure AI Search|Weaviate|Redis|Chroma|Pinecone|PostgreSql|Qdrant|Milvus|Elasticsearch|CosmosDB NoSql|MongoDB|
+|-|-|-|-|-|-|-|-|-|-|-|-|
+|Hybrid search supported|Y|Y|N (No parallel execution with fusion)|N|Y||Y|Y|Y|Y|Y|
+|Hybrid search definition|Vector + FullText|[Vector + Keyword (BM25F)](https://weaviate.io/developers/weaviate/search/hybrid)|||[Vector + Sparse Vector for keywords](https://docs.pinecone.io/guides/get-started/key-features#hybrid-search)||[Vector + SparseVector / Keyword](https://qdrant.tech/documentation/concepts/hybrid-queries/)|[Vector + SparseVector](https://milvus.io/docs/multi-vector-search.md)|Vector + FullText|[Vector + Fulltext (BM25)](https://learn.microsoft.com/en-us/azure/cosmos-db/gen-ai/hybrid-search)|[Vector + FullText](https://www.mongodb.com/docs/atlas/atlas-search/tutorial/hybrid-search)|
+|Fusion method configurable|N|Y|||?||Y|Y|Y, but only one option|Y, but only one option|N|
+|Fusion methods|[RRF](https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking)|Ranked/RelativeScore|||?||RRF / DBSF|[RRF / Weighted](https://milvus.io/docs/multi-vector-search.md)|[RRF](https://www.elastic.co/search-labs/tutorials/search-tutorial/vector-search/hybrid-search)|[RRF](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/rrf)|[RRF](https://www.mongodb.com/docs/atlas/atlas-search/tutorial/hybrid-search)|
+|Hybrid Search Input Params|Vector + string|[Vector + string](https://weaviate.io/developers/weaviate/api/graphql/search-operators#hybrid)|||Vector + SparseVector||[Vector + SparseVector](https://qdrant.tech/documentation/concepts/hybrid-queries/)|[Vector + SparseVector](https://milvus.io/docs/multi-vector-search.md)|Vector + string|Vector + string array|Vector + string|
+|Sparse Distance Function|n/a|n/a|||[dotproduct only for both dense and sparse, 1 setting for both](https://docs.pinecone.io/guides/data/understanding-hybrid-search#sparse-dense-workflow)||dotproduct|Inner Product|n/a|n/a|n/a|
+|Sparse Indexing options|n/a|n/a|||no separate config to dense||ondisk / inmemory  + IDF|[SPARSE_INVERTED_INDEX / SPARSE_WAND](https://milvus.io/docs/index.md?tab=sparse)|n/a|n/a|n/a|
+|Sparse data model|n/a|n/a|||[indices & values arrays](https://docs.pinecone.io/guides/data/upsert-sparse-dense-vectors)||indices & values arrays|[sparse matrix / List of dict / list of tuples](https://milvus.io/docs/sparse_vector.md#Use-sparse-vectors-in-Milvus)|n/a|n/a|n/a|
 
 Glossary:
 
@@ -83,9 +83,14 @@ interface IKeywordVectorizedHybridSearch<TRecord>
 
 class KeywordVectorizedHybridSearchOptions
 {
-    public VectorSearchFilter? Filter { get; init; }
+    // The name of the property to target the vector search against.
     public string? DenseVectorPropertyName { get; init; }
+    // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
+    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
+    public string FusionMethod { get; init; } = null;
+
+    public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
     public int Skip { get; init; } = 0;
     public bool IncludeVectors { get; init; } = false;
@@ -107,9 +112,14 @@ interface ISparseVectorizedHybridSearch<TRecord>
 
 class SparseVectorizedHybridSearchOptions
 {
-    public VectorSearchFilter? Filter { get; init; }
+    // The name of the property to target the dense vector search against.
     public string? DenseVectorPropertyName { get; init; }
+    // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
+    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
+    public string FusionMethod { get; init; } = null;
+
+    public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
     public int Skip { get; init; } = 0;
     public bool IncludeVectors { get; init; } = false;
@@ -131,9 +141,14 @@ interface IKeywordVectorizableHybridSearch<TRecord>
 
 class KeywordVectorizableHybridSearchOptions
 {
-    public VectorSearchFilter? Filter { get; init; }
+    // The name of the property to target the dense vector search against.
     public string? DenseVectorPropertyName { get; init; }
+    // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
+    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
+    public string FusionMethod { get; init; } = null;
+
+    public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
     public int Skip { get; init; } = 0;
     public bool IncludeVectors { get; init; } = false;
@@ -155,9 +170,14 @@ interface ISparseVectorizableTextHybridSearch<TRecord>
 
 class SparseVectorizableTextHybridSearchOptions
 {
-    public VectorSearchFilter? Filter { get; init; }
+    // The name of the property to target the dense vector search against.
     public string? DenseVectorPropertyName { get; init; }
+    // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertName { get; init; }
+    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
+    public string FusionMethod { get; init; } = null;
+
+    public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
     public int Skip { get; init; } = 0;
     public bool IncludeVectors { get; init; } = false;
@@ -171,7 +191,7 @@ class SparseVectorizableTextHybridSearchOptions
 - Multiple vectors per record scenarios need to be supported.
 - No database in our evaluation set have been identified as supporting generating sparse vectors in the database.
 
-## Considered Options
+## Scoping Considered Options
 
 - 1 Keyword Hybrid Search Only
 
@@ -190,7 +210,25 @@ Create all four interfaces and implement an implementation of SparseVectorizable
 generates the sparse vector in the client code.
 This will require us to produce code that can generate sparse vectors from text.
 
+## PropertyName Naming Considered Options
+
+- 1 Explicit Dense naming
+
+DenseVectorPropertyName
+SparseVectorPropertyName
+
+DenseVectorPropertyName
+TextPropertyName
+
+- 2 Implicit Dense naming
+
+VectorPropertyName
+SparseVectorPropertyName
+
+VectorPropertyName
+TextPropertyName
+
 ## Decision Outcome
 
 Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | ï¿½ | comes out best (see below)}.
