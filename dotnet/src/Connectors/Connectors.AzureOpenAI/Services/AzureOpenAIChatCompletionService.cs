@@ -31,6 +31,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     public AzureOpenAIChatCompletionService(
         string deploymentName,
         string endpoint,
@@ -38,9 +39,10 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
-        this._client = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)), apiVersion);
+        this._client = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)), apiVersion, functionNamePolicy: functionNamePolicy);
 
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -55,6 +57,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     public AzureOpenAIChatCompletionService(
         string deploymentName,
         string endpoint,
@@ -62,9 +65,10 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
-        this._client = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)), apiVersion);
+        this._client = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)), apiVersion, functionNamePolicy: functionNamePolicy);
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -75,13 +79,15 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     public AzureOpenAIChatCompletionService(
         string deploymentName,
         AzureOpenAIClient azureOpenAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
-        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)), functionNamePolicy: functionNamePolicy);
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 

@@ -72,6 +72,11 @@ internal partial class ClientCore
     protected FunctionCallsProcessor FunctionCallsProcessor { get; set; }
 
     /// <summary>
+    /// The function name policy.
+    /// </summary>
+    protected FunctionNamePolicy FunctionNamePolicy { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
     /// </summary>
     /// <param name="modelId">Model name.</param>
@@ -80,17 +85,21 @@ internal partial class ClientCore
     /// <param name="endpoint">OpenAI compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     internal ClientCore(
         string? modelId = null,
         string? apiKey = null,
         string? organizationId = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         this.Logger = logger ?? NullLogger.Instance;
 
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+
+        this.FunctionNamePolicy = functionNamePolicy ?? FunctionNamePolicy.Default;
 
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
@@ -143,10 +152,12 @@ internal partial class ClientCore
     /// <param name="modelId">OpenAI model Id</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     internal ClientCore(
         string? modelId,
         OpenAIClient openAIClient,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         // Model Id may not be required when other services. i.e: File Service.
         if (modelId is not null)
@@ -160,6 +171,7 @@ internal partial class ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.Client = openAIClient;
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        this.FunctionNamePolicy = functionNamePolicy ?? FunctionNamePolicy.Default;
     }
 
     /// <summary>

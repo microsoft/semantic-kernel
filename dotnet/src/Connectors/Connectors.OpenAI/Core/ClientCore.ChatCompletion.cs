@@ -145,7 +145,7 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+            var chatForRequest = this.CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
             var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
@@ -177,7 +177,7 @@ internal partial class ClientCore
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, kernel);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
@@ -194,7 +194,7 @@ internal partial class ClientCore
                 chatMessageContent,
                 chatHistory,
                 requestIndex,
-                (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                (FunctionCallContent content) => this.IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 isStreaming: false,
@@ -237,7 +237,7 @@ internal partial class ClientCore
 
         for (int requestIndex = 0; ; requestIndex++)
         {
-            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+            var chatForRequest = this.CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
             var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
@@ -347,7 +347,7 @@ internal partial class ClientCore
                         ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
-                    functionCallContents = this.GetFunctionCallContents(toolCalls).ToArray();
+                    functionCallContents = this.GetFunctionCallContents(toolCalls, kernel).ToArray();
                 }
                 finally
                 {
@@ -378,7 +378,7 @@ internal partial class ClientCore
                 chatMessageContent,
                 chatHistory,
                 requestIndex,
-                (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                (FunctionCallContent content) => this.IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 isStreaming: true,
@@ -562,12 +562,12 @@ internal partial class ClientCore
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(IList<ChatTool> tools, FunctionCallContent functionCallContent)
+    private bool IsRequestableTool(IList<ChatTool> tools, FunctionCallContent functionCallContent)
     {
         for (int i = 0; i < tools.Count; i++)
         {
             if (tools[i].Kind == ChatToolKind.Function &&
-                string.Equals(tools[i].FunctionName, FunctionName.ToFullyQualifiedName(functionCallContent.FunctionName, functionCallContent.PluginName, OpenAIFunction.NameSeparator), StringComparison.OrdinalIgnoreCase))
+                string.Equals(tools[i].FunctionName, this.FunctionNamePolicy.GetFunctionFqn(new(functionCallContent.FunctionName) { PluginName = functionCallContent.PluginName }), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -603,7 +603,7 @@ internal partial class ClientCore
         return chat;
     }
 
-    private static List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
+    private List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
         List<ChatMessage> messages = [];
 
@@ -614,13 +614,13 @@ internal partial class ClientCore
 
         foreach (var message in chatHistory)
         {
-            messages.AddRange(CreateRequestMessages(message));
+            messages.AddRange(this.CreateRequestMessages(message));
         }
 
         return messages;
     }
 
-    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
+    private List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
     {
         if (message.Role == AuthorRole.System)
         {
@@ -740,9 +740,11 @@ internal partial class ClientCore
                     continue;
                 }
 
+                var fqn = this.FunctionNamePolicy.GetFunctionFqn(new(callRequest.FunctionName) { PluginName = callRequest.PluginName });
+
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, fqn, BinaryData.FromString(argument ?? string.Empty)));
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
@@ -804,11 +806,11 @@ internal partial class ClientCore
         return null;
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)
+    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel, Kernel? kernel)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
 
-        message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
+        message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls, kernel));
 
         return message;
     }
@@ -828,7 +830,7 @@ internal partial class ClientCore
         return message;
     }
 
-    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls)
+    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls, Kernel? kernel)
     {
         List<FunctionCallContent> result = [];
 
@@ -863,11 +865,11 @@ internal partial class ClientCore
                     }
                 }
 
-                var functionName = FunctionName.Parse(toolCall.FunctionName, OpenAIFunction.NameSeparator);
+                (string? pluginName, string functionName) = this.FunctionNamePolicy.ParseFunctionFqn(new(toolCall.FunctionName) { Kernel = kernel });
 
                 var functionCallContent = new FunctionCallContent(
-                    functionName: functionName.Name,
-                    pluginName: functionName.PluginName,
+                    functionName: functionName,
+                    pluginName: pluginName,
                     id: toolCall.Id,
                     arguments: arguments)
                 {
@@ -1023,7 +1025,8 @@ internal partial class ClientCore
 
             foreach (var function in functions)
             {
-                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition(config?.Options?.AllowStrictSchemaAdherence ?? false));
+                var fqn = this.FunctionNamePolicy.GetFunctionFqn(new(function.Name) { PluginName = function.PluginName });
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition(config?.Options?.AllowStrictSchemaAdherence ?? false, fqn));
             }
         }
 

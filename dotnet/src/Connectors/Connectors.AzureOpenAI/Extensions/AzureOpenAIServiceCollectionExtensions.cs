@@ -38,6 +38,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -46,7 +47,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         string apiKey,
         string? serviceId = null,
         string? modelId = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -60,7 +62,7 @@ public static class AzureOpenAIServiceCollectionExtensions
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 apiVersion);
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>(), functionNamePolicy: functionNamePolicy);
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -79,6 +81,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -87,7 +90,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         TokenCredential credentials,
         string? serviceId = null,
         string? modelId = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -101,7 +105,7 @@ public static class AzureOpenAIServiceCollectionExtensions
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 apiVersion);
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>(), functionNamePolicy: functionNamePolicy);
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -118,19 +122,21 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         string deploymentName,
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(deploymentName, azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+            new(deploymentName, azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>(), functionNamePolicy: functionNamePolicy);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);

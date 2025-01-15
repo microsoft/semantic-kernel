@@ -197,6 +197,61 @@ public sealed class OpenAIFunction
         );
     }
 
+    /// <summary>
+    /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
+    /// <see cref="ChatTool"/> representation.
+    /// </summary>
+    /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
+    internal ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence, string fullyQualifiedName)
+    {
+        BinaryData resultParameters = allowStrictSchemaAdherence ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
+
+        IReadOnlyList<OpenAIFunctionParameter>? parameters = this.Parameters;
+        if (parameters is { Count: > 0 })
+        {
+            var properties = new Dictionary<string, KernelJsonSchema>();
+            var required = new List<string>();
+
+            foreach (var parameter in parameters)
+            {
+                var parameterSchema = (parameter.Schema, allowStrictSchemaAdherence) switch
+                {
+                    (not null, true) => GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence),
+                    (not null, false) => parameter.Schema,
+                    (null, _) => GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence),
+                };
+                properties.Add(parameter.Name, parameterSchema);
+                if (parameter.IsRequired || allowStrictSchemaAdherence)
+                {
+                    required.Add(parameter.Name);
+                }
+            }
+
+            resultParameters = allowStrictSchemaAdherence
+                ? BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                    additionalProperties = false
+                })
+                : BinaryData.FromObjectAsJson(new
+                {
+                    type = "object",
+                    required,
+                    properties,
+                });
+        }
+
+        return ChatTool.CreateFunctionTool
+        (
+            functionName: fullyQualifiedName,
+            functionDescription: this.Description,
+            functionParameters: resultParameters,
+            functionSchemaIsStrict: allowStrictSchemaAdherence
+        );
+    }
+
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
     private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
     {

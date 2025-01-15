@@ -43,13 +43,15 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
         ILogger? logger = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -63,6 +65,7 @@ internal partial class AzureClientCore : ClientCore
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        this.FunctionNamePolicy = functionNamePolicy ?? FunctionNamePolicy.Default;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -76,13 +79,15 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
         ILogger? logger = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -95,6 +100,7 @@ internal partial class AzureClientCore : ClientCore
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        this.FunctionNamePolicy = functionNamePolicy ?? FunctionNamePolicy.Default;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -107,10 +113,12 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     internal AzureClientCore(
         string deploymentName,
         AzureOpenAIClient openAIClient,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
@@ -119,6 +127,7 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Client = openAIClient;
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        this.FunctionNamePolicy = functionNamePolicy ?? FunctionNamePolicy.Default;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }

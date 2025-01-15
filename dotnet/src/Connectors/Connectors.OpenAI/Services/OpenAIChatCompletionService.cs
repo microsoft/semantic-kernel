@@ -32,13 +32,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     public OpenAIChatCompletionService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
-)
+        ILoggerFactory? loggerFactory = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         this._client = new(
             modelId,
@@ -46,7 +47,8 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
             organization,
             endpoint: null,
             httpClient,
-            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)),
+            functionNamePolicy: functionNamePolicy);
     }
 
     /// <summary>
@@ -58,6 +60,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     [Experimental("SKEXP0010")]
     public OpenAIChatCompletionService(
             string modelId,
@@ -65,7 +68,8 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
             string? apiKey = null,
             string? organization = null,
             HttpClient? httpClient = null,
-            ILoggerFactory? loggerFactory = null)
+            ILoggerFactory? loggerFactory = null,
+            FunctionNamePolicy? functionNamePolicy = null)
     {
         this._client = new(
             modelId,
@@ -73,7 +77,8 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
             organization,
             endpoint ?? httpClient?.BaseAddress,
             httpClient,
-            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)),
+            functionNamePolicy: functionNamePolicy);
     }
 
     /// <summary>
@@ -82,15 +87,18 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     public OpenAIChatCompletionService(
         string modelId,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         this._client = new(
             modelId,
             openAIClient,
-            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)),
+            functionNamePolicy: functionNamePolicy);
     }
 
     /// <inheritdoc/>

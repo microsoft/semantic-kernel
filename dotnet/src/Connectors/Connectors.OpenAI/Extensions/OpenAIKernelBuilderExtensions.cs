@@ -277,6 +277,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
@@ -284,7 +285,8 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -295,7 +297,8 @@ public static class OpenAIKernelBuilderExtensions
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>());
+                serviceProvider.GetService<ILoggerFactory>(),
+                functionNamePolicy: functionNamePolicy);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
@@ -310,18 +313,20 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
         OpenAIChatCompletionService Factory(IServiceProvider serviceProvider, object? _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>(), functionNamePolicy: functionNamePolicy);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
@@ -339,6 +344,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIChatCompletion(
@@ -348,7 +354,8 @@ public static class OpenAIKernelBuilderExtensions
         string? apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -359,7 +366,8 @@ public static class OpenAIKernelBuilderExtensions
                 endpoint: endpoint,
                 organization: orgId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                functionNamePolicy: functionNamePolicy);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
