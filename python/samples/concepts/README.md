@@ -10,6 +10,7 @@
 - [Assistant Agent Retrieval](./agents/assistant_agent_retrieval.py)
 - [Assistant Agent Streaming](./agents/assistant_agent_streaming.py)
 - [Chat Completion Function Termination](./agents/chat_completion_function_termination.py)
+- [Chat Completion History Reducer](./agents/chat_completion_history_reducer.py)
 - [Mixed Chat Agents](./agents/mixed_chat_agents.py)
 - [Mixed Chat Agents Plugins](./agents/mixed_chat_agents_plugins.py)
 - [Mixed Chat Files](./agents/mixed_chat_files.py)
