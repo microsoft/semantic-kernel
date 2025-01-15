@@ -1,6 +1,12 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
+from typing import Any
+
+from pydantic import Field
 
 from semantic_kernel.agents.history.chat_history_reducer import ChatHistoryReducer
+from semantic_kernel.agents.history.chat_history_reducer_extensions import extract_range, locate_safe_reduction_index
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -13,15 +19,29 @@ class ChatHistoryTruncationReducer(KernelBaseModel, ChatHistoryReducer):
     Avoids orphaning user messages or function-calls/results within a threshold window.
     """
 
-    target_count: int
-    threshold_count: int | None = 0
+    target_count: int = Field(..., gt=0, description="The target message count to reduce the chat history to.")
+    threshold_count: int = Field(default=0, ge=0, description="The threshold count to avoid orphaning messages.")
 
-    def __init__(self, target_count: int, threshold_count: int | None = None, **data):
-        super().__init__(target_count=target_count, threshold_count=threshold_count or 0, **data)
-        if self.target_count <= 0:
-            raise ValueError("Target message count must be greater than zero.")
-        if self.threshold_count < 0:
-            raise ValueError("The threshold_count must be nonnegative.")
+    def __init__(self, target_count: int, threshold_count: int | None = None):
+        """Initialize the truncation reducer."""
+        args: dict[str, Any] = {
+            "target_count": target_count,
+        }
+
+        if threshold_count is not None:
+            args["threshold_count"] = threshold_count
+
+        super().__init__(**args)
+
+    def __eq__(self, other: object) -> bool:
+        """Return whether this instance is equal to another."""
+        if not isinstance(other, ChatHistoryTruncationReducer):
+            return False
+        return self.threshold_count == other.threshold_count and self.target_count == other.target_count
+
+    def __hash__(self) -> int:
+        """Return a hash code for this instance."""
+        return hash((self.__class__.__name__, self.threshold_count, self.target_count))
 
     async def reduce(self, history: list[ChatMessageContent]) -> list[ChatMessageContent] | None:
         """Reduce the chat history to the target message count."""
@@ -29,72 +49,15 @@ class ChatHistoryTruncationReducer(KernelBaseModel, ChatHistoryReducer):
             # No need to reduce
             return None
 
-        # 1. Figure out the safe index to start from, so we don't orphan function calls or the most recent user message.
-        logger.debug("Performing chat history truncation check...")
+        logger.info("Performing chat history truncation check...")
 
         truncation_index = locate_safe_reduction_index(history, self.target_count, self.threshold_count)
-        if truncation_index <= 0:
-            # No valid truncation point found
+        if truncation_index < 0:
+            logger.info(
+                f"No truncation index found. Target count: {self.target_count}, Threshold count: {self.threshold_count}"
+            )
             return None
 
-        # 2. Actually truncate the history
-        truncated_history = extract_range(history, start_index=truncation_index)
-        return truncated_history
+        logger.info(f"Valid truncation index found. Truncating history to {truncation_index} messages.")
 
-
-def locate_safe_reduction_index(
-    history: list[ChatMessageContent], target_count: int, threshold_count: int | None = None
-) -> int:
-    """Identify the first message at or beyond the specified target_count.
-
-    This will not orphan sensitive content (function calls/results).
-    Also tries to keep a user->assistant pairing within threshold_count range.
-    Returns -1 if no valid index is found.
-    """
-    threshold_count = threshold_count or 0
-    # The earliest point at which we can consider truncation:
-    # e.g., we allow target_count plus the threshold_count beyond it.
-    # If the history is shorter than that, no reduction needed.
-    threshold_index = len(history) - (target_count + threshold_count)
-    if threshold_index <= 0:
-        return -1
-
-    # The actual "ideal" truncation index is len(history) - target_count
-    message_index = len(history) - target_count
-    if message_index < 0:
-        return -1
-
-    # Skip function-call related messages backward
-    while message_index > 0 and is_function_related(history[message_index]):
-        message_index -= 1
-
-    if message_index < threshold_index:
-        # We tried to shift to avoid function calls, but ended up outside threshold
-        # fallback is to use the earliest (threshold_index).
-        message_index = threshold_index
-
-    return message_index
-
-
-def is_function_related(msg: ChatMessageContent) -> bool:
-    """In .NET, we test for function calls or function results.
-
-    Adjust this logic as needed for your usage.
-    """
-    return any(item.__class__.__name__ in ("FunctionCallContent", "FunctionResultContent") for item in msg.items)
-
-
-def extract_range(
-    history: list[ChatMessageContent],
-    start_index: int,
-    end_index: int | None = None,
-) -> list[ChatMessageContent]:
-    """Extract messages from start_index to end_index (inclusive).
-
-    If end_index is not specified, use the remainder of the list.
-    """
-    if start_index < 0:
-        start_index = 0
-    if end_index is None or end_index > len(history):
-        end_index = len(history)
-    return history[start_index:end_index]
+        return extract_range(history, start=truncation_index)

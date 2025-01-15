@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import Field
 
+from semantic_kernel.agents.history.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -33,6 +34,7 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
     function: KernelFunction
     kernel: Kernel
     result_parser: Callable[..., bool] = Field(default_factory=lambda: (lambda: True))
+    history_reducer: ChatHistoryReducer | None = None
 
     async def should_agent_terminate(
         self,
@@ -48,6 +50,9 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
         Returns:
             True if the agent should terminate, False otherwise
         """
+        if self.history_reducer is not None:
+            history = await self.history_reducer.reduce(history) or history
+
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 

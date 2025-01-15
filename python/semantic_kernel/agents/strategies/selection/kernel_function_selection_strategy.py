@@ -1,12 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from collections.abc import Callable
 from inspect import isawaitable
 from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import Field
 
+from semantic_kernel.agents.history.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
@@ -34,9 +42,11 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
     function: KernelFunction
     kernel: Kernel
     result_parser: Callable[..., str] = Field(default_factory=lambda: (lambda: ""))
+    history_reducer: ChatHistoryReducer | None = None
 
-    async def next(self, agents: list["Agent"], history: list[ChatMessageContent]) -> "Agent":
-        """Check if the agent should terminate.
+    @override
+    async def select_agent(self, agents: list["Agent"], history: list[ChatMessageContent]) -> "Agent":
+        """Select the next agent to interact with.
 
         Args:
             agents: The list of agents to select from.
@@ -48,6 +58,9 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
         Raises:
             AgentExecutionException: If the strategy fails to execute the function or select the next agent
         """
+        if self.history_reducer is not None:
+            history = await self.history_reducer.reduce(history) or history
+
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 
