@@ -65,9 +65,9 @@ Glossary:
 |Name|Parameters|Keyword Property Selector|Dense Vector Property Selector|
 |-|-|-|-|
 |KeywordVectorizedHybridSearch|string + Dense Vector|TextPropertyName|DenseVectorPropertyName|
-|SparseVectorizedHybridSearch|Sparse Vector + Dense Vector|SparseVectorPropertName|DenseVectorPropertyName|
+|SparseVectorizedHybridSearch|Sparse Vector + Dense Vector|SparseVectorPropertyName|DenseVectorPropertyName|
 |KeywordVectorizableTextHybridSearch|string + string / string|TextPropertyName|DenseVectorPropertyName|
-|SparseVectorizableTextHybridSearch|string + string / string|SparseVectorPropertName|DenseVectorPropertyName|
+|SparseVectorizableTextHybridSearch|string + string / string|SparseVectorPropertyName|DenseVectorPropertyName|
 
 ### Keyword based hybrid search
 
