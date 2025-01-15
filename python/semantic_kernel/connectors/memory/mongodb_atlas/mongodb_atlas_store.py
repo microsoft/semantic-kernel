@@ -9,9 +9,9 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pymongo import MongoClient
-from pymongo.collection import Collection
-from pymongo.database import Database
+from pydantic import ValidationError
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.database import AsyncDatabase
 
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import (
     MongoDBAtlasCollection,
@@ -34,13 +34,14 @@ TModel = TypeVar("TModel")
 class MongoDBAtlasStore(VectorStore):
     """MongoDB Atlas store implementation."""
 
-    mongo_client: MongoClient
+    mongo_client: AsyncMongoClient
+    database_name: str
 
     def __init__(
         self,
         connection_string: str | None = None,
         database_name: str | None = None,
-        mongo_client: MongoClient | None = None,
+        mongo_client: AsyncMongoClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -71,10 +72,14 @@ class MongoDBAtlasStore(VectorStore):
                 )
             except ValidationError as exc:
                 raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
-            mongo_client = MongoClient(mongodb_atlas_settings.connection_string)
+            mongo_client = AsyncMongoClient(mongodb_atlas_settings.connection_string)
             managed_client = True
 
-        super().__init__(mongo_client=mongo_client, managed_client=managed_client)
+        super().__init__(
+            mongo_client=mongo_client,
+            managed_client=managed_client,
+            database_name=mongodb_atlas_settings.database_name,
+        )
 
     @override
     def get_collection(
@@ -82,7 +87,6 @@ class MongoDBAtlasStore(VectorStore):
         collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
-        mongo_client: MongoClient | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Get a MongoDBAtlasCollection tied to a collection.
@@ -91,27 +95,25 @@ class MongoDBAtlasStore(VectorStore):
             collection_name (str): The name of the collection.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            mongo_client (MongoClient | None): The MongoDB client for interacting with MongoDB Atlas,
-                will be created if not supplied.
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         if collection_name not in self.vector_record_collections:
             self.vector_record_collections[collection_name] = MongoDBAtlasCollection(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
-                mongo_client=mongo_client or self.mongo_client,
+                mongo_client=self.mongo_client,
                 collection_name=collection_name,
-                managed_client=mongo_client is None,
+                database_name=self.database_name,
                 **kwargs,
             )
         return self.vector_record_collections[collection_name]
 
     @override
     async def list_collection_names(self, **kwargs: Any) -> list[str]:
-        database: Database = self.mongo_client.get_database()
+        database: AsyncDatabase = self.mongo_client.get_database(self.database_name)
         return await database.list_collection_names()
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
         if self.managed_client:
-            self.mongo_client.close()
+            await self.mongo_client.close()
