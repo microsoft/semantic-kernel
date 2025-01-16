@@ -79,82 +79,122 @@ Server side events:
 
 
 ## Decision Drivers
-
 - Simple programming model that is likely able to handle future realtime api's and evolution of the existing ones.
-- Support for the most common scenario's and content, extensible for the rest.
-- Natively integrated with Semantic Kernel especially for content types and function calling.
-- Support multiple types of connections, like websocket and WebRTC
-  
+- Whenever possible we transform incoming content into Semantic Kernel content, but surface everything, so it's extensible
+- Protocol agnostic, should be able to use different types of protocols under the covers, like websocket and WebRTC, without changing the client code (unless the protocol requires it).
+
 ## Decision driver questions
 - For WebRTC, a audio device can be passed, should this be a requirement for the client also for websockets?
 
-## Considered Options
+There are multiple areas where we need to make decisions, these are:
+- Content and Events
+- Programming model
+- Audio speaker/microphone handling
 
+# Content and Events
+
+## Considered Options - Content and Events
 Both the sending and receiving side of these integrations need to decide how to deal with the api's.
 
-- Treat content events separate from control events
-- Treat everything as content items
-- Treat everything as events
+1. Treat content events separate from control events
+1. Treat everything as content items
+1. Treat everything as events
 
-### Treat content events separate from control events
+### 1. Treat content events separate from control events
 This would mean there are two mechanisms in the clients, one deals with content, and one with control events.
 
 - Pro:
     - strongly typed responses for known content
     - easy to use as the main interactions are clear with familiar SK content types, the rest goes through a separate mechanism
-    - this might fit better with something like WebRTC that has distinct channels for audio and video vs a data stream for all other events
 - Con:
     - new content support requires updates in the codebase and can be considered breaking (potentially sending additional types back)
     - additional complexity in dealing with two streams of data
 
-### Treat everything as content items
+### 2. Treat everything as content items
+This would mean that all events are turned into Semantic Kernel content items, and would also mean that we need to define additional content types for the control events.
 
+- Pro:
+  - everything is a content item, so it's easy to deal with
+- Con:
+  - overkill for simple control events
 
-## Decision Outcome
+### 3. Treat everything as events
+This would mean that all events are retained and returned to the developer as is, without any transformation.
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+- Pro:
+  - no transformation needed
+  - easy to maintain
+- Con:
+  - nothing easing the burden on the developer, they need to deal with the raw events
+  - no way to easily switch between one provider and another
 
-<!-- This is an optional element. Feel free to remove. -->
+## Decision Outcome - Content and Events
 
-### Consequences
+Chosen option: ...
 
-- Good, because {positive consequence, e.g., improvement of one or more desired qualities, …}
-- Bad, because {negative consequence, e.g., compromising one or more desired qualities, …}
-- … <!-- numbers of consequences can vary -->
+# Programming model
 
-<!-- This is an optional element. Feel free to remove. -->
+## Considered Options - Programming model
+The programming model for the clients needs to be simple and easy to use, while also being able to handle the complexity of the realtime api's.
 
-## Validation
+_In this section we will refer to events for both content and events, regardless of the decision made in the previous section._
 
-{describe how the implementation of/compliance with the ADR is validated. E.g., by a review or an ArchUnit test}
+1. Async generator for receiving events, that yields contents, combined with a event handler/callback mechanism for receiving events and a function for sending events
+   - 1a: Single event handlers, where each event is passed to the handler
+   - 1b: Multiple event handlers, where each event type has its own handler
+2. Event buffers/queues that are exposed to the developer, start sending and start receiving methods, that just initiate the sending and receiving of events and thereby the filling of the buffers
 
-<!-- This is an optional element. Feel free to remove. -->
+### 1. Async generator for receiving events, that yields contents, combined with a event handler/callback mechanism for receiving events and a function for sending events
+This would mean that the client would have a mechanism to register event handlers, and the integration would call these handlers when an event is received. For sending events, a function would be created that sends the event to the service.
 
-## Pros and Cons of the Options
+- Pro:
+  - without any additional setup you get content back, just as with "regular" chat models
+  - event handlers are mostly for more complex interactions, so ok to be slightly more complex
+- Con:
+  - developer judgement needs to be made (or exposed with parameters) on what is returned through the async generator and what is passed to the event handlers
 
-### {title of option 1}
+### 2. Event buffers/queues that are exposed to the developer, start sending and start receiving methods, that just initiate the sending and receiving of events and thereby the filling of the buffers
+This would mean that the there are two queues, one for sending and one for receiving, and the developer can listen to the receiving queue and send to the sending queue. Internal things like auto-function calling can listen in on the same queue and act on it, and put a message back on the sending queue with ease.
 
-<!-- This is an optional element. Feel free to remove. -->
+- Pro:
+  - simple to use, just start sending and start receiving
+  - easy to understand, as queues are a well known concept
+  - developers can just skip events they are not interested in
+- Con:
+  - potentially causes audio delays because of the queueing mechanism
 
-{example | description | pointer to more information | …}
+## Decision Outcome - Programming model
 
-- Good, because {argument a}
-- Good, because {argument b}
-<!-- use "neutral" if the given argument weights neither for good nor bad -->
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- … <!-- numbers of pros and cons can vary -->
+Chosen option: ...
 
-### {title of other option}
+# Audio speaker/microphone handling
 
-{example | description | pointer to more information | …}
+## Considered Options - Audio speaker/microphone handling
 
-- Good, because {argument a}
-- Good, because {argument b}
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- …
+1. Create abstraction in SK for audio handlers, that can be passed into the realtime client to record and play audio
+2. Send and receive AudioContent (wrapped in StreamingChatMessageContent) to the client, and let the client handle the audio recording and playing
+
+### 1. Create abstraction in SK for audio handlers, that can be passed into the realtime client to record and play audio
+This would mean that the client would have a mechanism to register audio handlers, and the integration would call these handlers when audio is received or needs to be sent. A additional abstraction for this would have to be created in Semantic Kernel (or potentially taken from a standard).
+
+- Pro:
+  - simple/local audio handlers can be shipped with SK making it easy to use
+  - extensible by third parties to integrate into other systems (like Azure Communications Service)
+  - could mitigate buffer issues by prioritizing audio content being sent to the handlers
+- Con:
+  - extra code in SK that needs to be maintained, potentially relying on third party code
+
+### 2. Send and receive AudioContent (wrapped in StreamingChatMessageContent) to the client, and let the client handle the audio recording and playing
+This would mean that the client would receive AudioContent items, and would have to deal with them itself, including recording and playing the audio.
+
+- Pro:
+  - no extra code in SK that needs to be maintained
+- Con:
+  - extra burden on the developer to deal with the audio 
+
+## Decision Outcome - Audio speaker/microphone handling
+
+Chosen option: ...
 
 <!-- This is an optional element. Feel free to remove. -->
 
