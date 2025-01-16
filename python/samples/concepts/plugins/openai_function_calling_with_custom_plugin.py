@@ -127,7 +127,7 @@ async def main():
                 arguments=KernelArguments(),
                 function_call_count=1,
                 request_index=0,
-                function_call_behavior=settings.function_choice_behavior,
+                function_choice_behavior=settings.function_choice_behavior,
             )
 
 

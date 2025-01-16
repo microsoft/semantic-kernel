@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import Field
 
-from semantic_kernel.agents.history.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -59,7 +59,8 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
             AgentExecutionException: If the strategy fails to execute the function or select the next agent
         """
         if self.history_reducer is not None:
-            history = await self.history_reducer.reduce(history) or history
+            self.history_reducer.messages = history
+            history = await self.history_reducer.reduce() or history
 
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}

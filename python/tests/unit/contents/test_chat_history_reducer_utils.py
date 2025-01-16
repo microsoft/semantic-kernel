@@ -2,14 +2,14 @@
 
 import pytest
 
-from semantic_kernel.agents.history.chat_history_reducer_extensions import (
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (
     SUMMARY_METADATA_KEY,
     extract_range,
     locate_safe_reduction_index,
     locate_summarization_boundary,
 )
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 

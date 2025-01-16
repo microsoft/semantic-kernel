@@ -2,8 +2,8 @@
 
 import pytest
 
-from semantic_kernel.agents.history.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
@@ -42,7 +42,7 @@ def test_truncation_reducer_eq_and_hash():
 async def test_truncation_reducer_no_need(chat_messages):
     # If total <= target + threshold => returns None
     reducer = ChatHistoryTruncationReducer(target_count=5, threshold_count=0)
-    result = await reducer.reduce(chat_messages)
+    result = await reducer.reduce()
     assert result is None
 
 
@@ -53,14 +53,16 @@ async def test_truncation_reducer_no_truncation_index_found():
     msgs = [ChatMessageContent(role=AuthorRole.USER, content="Msg")] * 10
     # Suppose threshold_count is huge, so effectively we can't reduce
     reducer = ChatHistoryTruncationReducer(target_count=3, threshold_count=10)
-    result = await reducer.reduce(msgs)
+    reducer.messages = msgs
+    result = await reducer.reduce()
     assert result is None
 
 
 async def test_truncation_reducer_truncation(chat_messages):
     # Force a smaller target so we do need to reduce
     reducer = ChatHistoryTruncationReducer(target_count=2)
-    result = await reducer.reduce(chat_messages)
+    reducer.messages = chat_messages
+    result = await reducer.reduce()
     # We expect only 2 messages remain after truncation
     assert result is not None
     assert len(result) == 2

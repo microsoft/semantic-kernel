@@ -19,15 +19,12 @@ from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -46,6 +43,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
@@ -150,7 +148,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
     @override
@@ -279,15 +277,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments | None",
         function_call_count: int,
         request_index: int,
-        function_call_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
+        function_call_behavior: FunctionChoiceBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
-        # deprecated and might not even be used anymore, hard to trigger directly
-        if isinstance(function_call_behavior, FunctionCallBehavior):  # pragma: no cover
-            # We need to still support a `FunctionCallBehavior` input so it doesn't break current
-            # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
-            function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
-
         return await kernel.invoke_function_call(
             function_call=function_call,
             chat_history=chat_history,

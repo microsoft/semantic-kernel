@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from collections.abc import Callable
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -85,20 +86,29 @@ def locate_safe_reduction_index(
     return target_index
 
 
-def extract_range(history: list[ChatMessageContent], start: int, end: int | None = None) -> list[ChatMessageContent]:
+def extract_range(
+    history: list[ChatMessageContent],
+    start: int,
+    end: int | None = None,
+    filter_func: Callable[[ChatMessageContent], bool] | None = None,
+) -> list[ChatMessageContent]:
     """Extract a range of messages from the source history, skipping any message for which we do not want to keep.
 
     For example, function calls/results, if desired.
-
-    For demonstration simplicity, this version simply slices. You can expand filtering logic here
-    if you'd like to skip certain items.
 
     Args:
         history: The source history.
         start: The index of the first message to extract (inclusive).
         end: The index of the last message to extract (exclusive). If None, extracts through end.
+        filter_func: A function that takes a ChatMessageContent and returns True if the message should
+                        be skipped, False otherwise.
 
     Returns:
         A list of extracted messages.
     """
-    return history[start:end]
+    if end is None:
+        end = len(history)
+    sliced = history[start:end]
+    if filter_func is None:
+        return sliced
+    return [m for m in sliced if not filter_func(m)]

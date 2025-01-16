@@ -30,7 +30,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -46,6 +45,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutio
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -179,7 +179,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
     @override

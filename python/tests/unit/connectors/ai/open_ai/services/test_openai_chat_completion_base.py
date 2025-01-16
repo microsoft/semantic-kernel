@@ -12,7 +12,6 @@ from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from openai.types.chat.chat_completion_chunk import ChoiceDelta as ChunkChoiceDelta
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -167,7 +166,7 @@ async def test_cmc_function_call_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
+        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
     )
     with patch(
         "semantic_kernel.kernel.Kernel.invoke_function_call",
@@ -673,7 +672,7 @@ async def test_scmc_function_call_behavior(
     chat_history.add_user_message("hello world")
     orig_chat_history = deepcopy(chat_history)
     complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
-        service_id="test_service_id", function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
+        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_function_call",

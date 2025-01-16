@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 from pydantic import Field
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.agents.history.chat_history_reducer import ChatHistoryReducer
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -48,7 +48,9 @@ class Agent(KernelBaseModel):
         if self.history_reducer is None:
             return False
 
-        new_messages = await self.history_reducer.reduce(history.messages)
+        self.history_reducer.messages = history.messages
+
+        new_messages = await self.history_reducer.reduce()
         if new_messages is not None:
             history.messages.clear()
             history.messages.extend(new_messages)
