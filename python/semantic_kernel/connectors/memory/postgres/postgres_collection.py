@@ -450,7 +450,7 @@ class PostgresCollection(
             results = [convert_row_to_dict(row, return_fields) for row in rows]
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(results, options),
-                total_count=None,
+                total_count=len(results) if options.include_total_count else None,
             )
 
     def _construct_vector_query(
