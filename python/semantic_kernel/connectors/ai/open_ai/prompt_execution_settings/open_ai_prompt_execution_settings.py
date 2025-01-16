@@ -74,7 +74,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         list[dict[str, Any]] | None, Field(description="Do not set this manually. It is set by the service.")
     ] = None
     function_call_behavior: Annotated[FunctionCallBehavior | None, Field(exclude=True)] = None
-    parallel_tool_calls: bool = True
+    parallel_tool_calls: bool | None = True
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
@@ -95,6 +95,19 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     stream_options: Annotated[
         dict[str, Any] | None,
         Field(description="Additional options to pass when streaming is used. Do not set this manually."),
+    ] = None
+    max_completion_tokens: Annotated[
+        int | None,
+        Field(
+            gt=0,
+            description="A maximum limit on total tokens for completion, including both output and reasoning tokens.",
+        ),
+    ] = None
+    reasoning_effort: Annotated[
+        Literal["low", "medium", "high"] | None,
+        Field(
+            description="Adjusts reasoning effort (low/medium/high). Lower values reduce response time and token usage."
+        ),
     ] = None
 
     @field_validator("functions", "function_call", mode="after")
