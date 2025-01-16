@@ -94,29 +94,32 @@ public class FunctionCalling_FunctionNamePolicy(ITestOutputHelper output) : Base
         // Define a custom function FQN parser that can handle a hallucinated function name.
         static (string? PluginName, string FunctioName) ParseFunctionFqn(ParseFunctionFqnContext context)
         {
-            // Try to use use hyphen as separator.
-            var parts = context.FunctionFqn.Split('-');
-            if (parts.Length == 2)
+            static (string? PluginName, string FunctioName)? Parse(ParseFunctionFqnContext context, char separator)
             {
-                // Check if the function registered in the kernel
-                if (context.Kernel is { } kernel && kernel.Plugins.TryGetFunction(parts[0], parts[1], out _))
+                var parts = context.FunctionFqn.Split(separator);
+                if (parts.Length == 2)
                 {
-                    return (parts[0], parts[1]);
+                    // Check if the function registered in the kernel
+                    if (context.Kernel is { } kernel && kernel.Plugins.TryGetFunction(parts[0], parts[1], out _))
+                    {
+                        return (parts[0], parts[1]);
+                    }
                 }
+
+                return null;
             }
 
-            // If hyphen is not found, try to use underscore as separator. This approach presumes the underscore symbol is not used in function name.  
-            parts = context.FunctionFqn.Split('_');
-            if (parts.Length == 2)
+            // Try to use use hyphen, dot, and underscore sequentially as separators.
+            var result = Parse(context, '-') ??
+                         Parse(context, '.') ??
+                         Parse(context, '_');
+
+            if (result is not null)
             {
-                // Check if the function registered in the kernel
-                if (context.Kernel is { } kernel && kernel.Plugins.TryGetFunction(parts[0], parts[1], out _))
-                {
-                    return (parts[0], parts[1]);
-                }
+                return result.Value;
             }
 
-            // If no separator is found, return the function name as is.
+            // If no separator is found, return the function name as is allowing AI connector to apply default behavior.
             return (null, context.FunctionFqn);
         }
 
