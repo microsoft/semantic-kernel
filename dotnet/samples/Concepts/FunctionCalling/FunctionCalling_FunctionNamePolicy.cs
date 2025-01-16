@@ -92,9 +92,9 @@ public class FunctionCalling_FunctionNamePolicy(ITestOutputHelper output) : Base
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         // Define a custom function FQN parser that can handle a hallucinated function name.
-        static (string? PluginName, string FunctioName) ParseFunctionFqn(ParseFunctionFqnContext context)
+        static (string? PluginName, string FunctionName) ParseFunctionFqn(ParseFunctionFqnContext context)
         {
-            static (string? PluginName, string FunctioName)? Parse(ParseFunctionFqnContext context, char separator)
+            static (string? PluginName, string FunctionName)? Parse(ParseFunctionFqnContext context, char separator)
             {
                 var parts = context.FunctionFqn.Split(separator);
                 if (parts.Length == 2)
