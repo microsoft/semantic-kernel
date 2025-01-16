@@ -437,7 +437,7 @@ class PostgresCollection(
         fields = [(field.name, field) for field in self.data_model_definition.fields.values()]
 
         if vector is not None:
-            query, params = self._construct_vector_query(vector, fields, options, **kwargs)
+            query, params, return_fields = self._construct_vector_query(vector, fields, options, **kwargs)
         elif search_text:
             raise VectorSearchExecutionException("Text search not supported.")
         elif vectorizable_text:
@@ -446,7 +446,8 @@ class PostgresCollection(
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(query, params)
             rows = await cur.fetchall()
-            results = [convert_row_to_dict(row, fields) for row in rows]
+            # Add the distance to the results
+            results = [convert_row_to_dict(row, return_fields) for row in rows]
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(results, options),
                 total_count=None,
@@ -458,7 +459,7 @@ class PostgresCollection(
         fields: list[tuple[str, VectorStoreRecordField]],
         options: VectorSearchOptions,
         **kwargs: Any,
-    ) -> tuple[sql.Composed, list[Any]]:
+    ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreRecordField | None]]]:
         """Construct a vector search query.
 
         Args:
@@ -468,7 +469,7 @@ class PostgresCollection(
             **kwargs: Additional arguments.
 
         Returns:
-            The query and parameters.
+            The query, parameters, and the fields representing the columns in the result.
         """
         # Get the vector field we will be searching against,
         # defaulting to the first vector field if not specified
@@ -487,7 +488,8 @@ class PostgresCollection(
         ops_str = get_vector_distance_ops_str(distance_function)
 
         # Select all fields except all vector fields if include_vectors is False
-        select_list = [name for (name, _) in fields if (name != vector_field.name or options.include_vectors)]
+        select_fields = [(name, f) for (name, f) in fields if (name != vector_field.name or options.include_vectors)]
+        select_list = [name for (name, _) in select_fields]
 
         where_clause = self._build_where_clauses_from_filter(options.filter)
 
@@ -534,7 +536,7 @@ class PostgresCollection(
         # Convert the vector to a string for the query
         params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
 
-        return query, params
+        return query, params, [*select_fields, (DISTANCE_COLUMN_NAME, None)]
 
     def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> sql.Composed | None:
         """Build the WHERE clause for the search query from the filter in the search options.
@@ -572,7 +574,7 @@ class PostgresCollection(
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
-        return result.pop(DISTANCE_COLUMN_NAME, None)
+        return {k: v for (k, v) in result.items() if k != DISTANCE_COLUMN_NAME}
 
     @override
     def _get_score_from_result(self, result: Any) -> float | None:

@@ -52,7 +52,9 @@ def python_type_to_postgres(python_type_str: str) -> str | None:
     return None
 
 
-def convert_row_to_dict(row: tuple[Any, ...], fields: list[tuple[str, VectorStoreRecordField]]) -> dict[str, Any]:
+def convert_row_to_dict(
+    row: tuple[Any, ...], fields: list[tuple[str, VectorStoreRecordField | None]]
+) -> dict[str, Any]:
     """Convert a row from a PostgreSQL query to a dictionary.
 
     Uses the field information to map the row values to the corresponding field names.
@@ -65,7 +67,7 @@ def convert_row_to_dict(row: tuple[Any, ...], fields: list[tuple[str, VectorStor
         A dictionary representation of the row.
     """
 
-    def _convert(v: Any | None, field: VectorStoreRecordField) -> Any | None:
+    def _convert(v: Any | None, field: VectorStoreRecordField | None) -> Any | None:
         if v is None:
             return None
         if isinstance(field, VectorStoreRecordVectorField) and isinstance(v, str):
