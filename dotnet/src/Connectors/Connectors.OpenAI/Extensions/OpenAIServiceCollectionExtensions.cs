@@ -255,13 +255,15 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -272,7 +274,8 @@ public static class OpenAIServiceCollectionExtensions
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>());
+                serviceProvider.GetService<ILoggerFactory>(),
+                functionNamePolicy: functionNamePolicy);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
@@ -287,17 +290,19 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
 
         OpenAIChatCompletionService Factory(IServiceProvider serviceProvider, object? _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>(), functionNamePolicy: functionNamePolicy);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
@@ -314,6 +319,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="functionNamePolicy">The function name policy.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIChatCompletion(
@@ -322,7 +328,8 @@ public static class OpenAIServiceCollectionExtensions
         Uri endpoint,
         string? apiKey = null,
         string? orgId = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        FunctionNamePolicy? functionNamePolicy = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -333,7 +340,8 @@ public static class OpenAIServiceCollectionExtensions
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>());
+                serviceProvider.GetService<ILoggerFactory>(),
+                functionNamePolicy: functionNamePolicy);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
