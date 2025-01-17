@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Mapping
 from copy import copy
+from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import ConfigDict, Field, validate_call
@@ -30,6 +31,7 @@ class OpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncOpenAI | None = None,
         instruction_role: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -51,6 +53,7 @@ class OpenAIConfigBase(OpenAIHandler):
             client (AsyncOpenAI): An existing OpenAI client, optional.
             instruction_role (str): The role to use for 'instruction'
                 messages, for example, summarization prompts could use `developer` or `system`. (Optional)
+            kwargs: Additional keyword arguments.
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -76,7 +79,7 @@ class OpenAIConfigBase(OpenAIHandler):
             args["service_id"] = service_id
         if instruction_role:
             args["instruction_role"] = instruction_role
-        super().__init__(**args)
+        super().__init__(**args, **kwargs)
 
     def to_dict(self) -> dict[str, str]:
         """Create a dict of the service settings."""

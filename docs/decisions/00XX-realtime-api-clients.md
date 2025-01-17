@@ -12,7 +12,7 @@ informed:
 
 ## Context and Problem Statement
 
-Multiple model providers are starting to enable realtime voice-to-voice communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's in different settings, which we want to enable with Semantic Kernel. The key addition that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. 
+Multiple model providers are starting to enable realtime voice-to-voice communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's in different settings, which we want to enable with Semantic Kernel. The key addition that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. There are also options for Google to use video and images as input, so really it is multimodal, but for now we are focusing on the voice-to-voice part, while keeping in mind that video is coming.
 
 The way these API's work at this time is through either Websockets or WebRTC. 
 
@@ -154,7 +154,7 @@ This would mean that the client would have a mechanism to register event handler
   - developer judgement needs to be made (or exposed with parameters) on what is returned through the async generator and what is passed to the event handlers
 
 ### 2. Event buffers/queues that are exposed to the developer, start sending and start receiving methods, that just initiate the sending and receiving of events and thereby the filling of the buffers
-This would mean that the there are two queues, one for sending and one for receiving, and the developer can listen to the receiving queue and send to the sending queue. Internal things like auto-function calling can listen in on the same queue and act on it, and put a message back on the sending queue with ease.
+This would mean that the there are two queues, one for sending and one for receiving, and the developer can listen to the receiving queue and send to the sending queue. Internal things like parsing events to content types and auto-function calling are processed first, and the result is put in the queue, the content type should use inner_content to capture the full event and these might add a message to the send queue as well.
 
 - Pro:
   - simple to use, just start sending and start receiving

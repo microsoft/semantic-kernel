@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -82,6 +83,7 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize an OpenAITextCompletion service.
 
@@ -99,25 +101,27 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+            kwargs: Additional arguments.
         """
         try:
             openai_settings = OpenAISettings.create(
                 api_key=api_key,
                 org_id=org_id,
-                text_model_id=ai_model_id,
+                realtime_model_id=ai_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
-        if not openai_settings.text_model_id:
+        if not openai_settings.realtime_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")
         super().__init__(
-            ai_model_id=openai_settings.text_model_id,
+            ai_model_id=openai_settings.realtime_model_id,
             service_id=service_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
             org_id=openai_settings.org_id,
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,
             client=async_client,
+            **kwargs,
         )
