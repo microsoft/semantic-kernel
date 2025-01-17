@@ -195,18 +195,18 @@ class SparseVectorizableTextHybridSearchOptions
 
 ## Scoping Considered Options
 
-- 1 Keyword Hybrid Search Only
+### 1. Keyword Hybrid Search Only
 
 Only implement KeywordVectorizedHybridSearch & KeywordVectorizableTextHybridSearch for now, until
 we can add support for generating sparse vectors.
 
-- 2 Keyword and SparseVectorized Hybrid Search
+### 2. Keyword and SparseVectorized Hybrid Search
 
 Implement KeywordVectorizedHybridSearch & KeywordVectorizableTextHybridSearch but only
 KeywordVectorizableTextHybridSearch, since no database in our evaluation set supports generating sparse vectors in the database.
 This will require us to produce code that can generate sparse vectors from text.
 
-- 3 All Hybrid Search
+### 3. All Hybrid Search
 
 Create all four interfaces and implement an implementation of SparseVectorizableTextHybridSearch that
 generates the sparse vector in the client code.
@@ -214,7 +214,7 @@ This will require us to produce code that can generate sparse vectors from text.
 
 ## PropertyName Naming Considered Options
 
-- 1 Explicit Dense naming
+### 1. Explicit Dense naming
 
 DenseVectorPropertyName
 SparseVectorPropertyName
@@ -222,13 +222,49 @@ SparseVectorPropertyName
 DenseVectorPropertyName
 TextPropertyName
 
-- 2 Implicit Dense naming
+Pros: This is more explicit, considering that there are also sparse vectors involved.
+Cons: It is inconsistent with the naming in the non-hybrid vector search.
+
+### 2. Implicit Dense naming
 
 VectorPropertyName
 SparseVectorPropertyName
 
 VectorPropertyName
 TextPropertyName
+
+Pros: This is consistent with the naming in the non-hybrid vector search.
+Cons: It is internally inconsistent, i.e. we have sparse vector, but for dense it's just vector.
+
+## Keyword splitting Considered Options
+
+### 1. Accept Split keywords in interface
+
+Accept an IEnumerable of string where each value is a separate keyword.
+
+```csharp
+    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
+        TVector vector,
+        IEnumerable<string> keywords,
+        KeywordVectorizedHybridSearchOptions options,
+        CancellationToken cancellationToken);
+```
+
+Pros: Easier to use in the connector if the underlying DB requires split keywords
+
+### 2. Accept single string in interface
+
+Accept a single string containing all the keywords.
+
+```csharp
+    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
+        TVector vector,
+        string keywords,
+        KeywordVectorizedHybridSearchOptions options,
+        CancellationToken cancellationToken);
+```
+
+Pros: Easier for a user to use, since they don't need to do any keyword splitting themselves.
 
 ## Decision Outcome
 
