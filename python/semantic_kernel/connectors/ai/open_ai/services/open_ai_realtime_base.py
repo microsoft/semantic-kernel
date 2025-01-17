@@ -43,7 +43,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime_utils impor
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.connectors.ai.realtime_helpers import SKAudioTrack
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -682,6 +681,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIHandler, RealtimeClientBase):
         **kwargs: Any,
     ) -> None:
         """Create a session in the service."""
+        from semantic_kernel.connectors.ai.realtime_helpers import SKAudioTrack
+
         ice_servers = [RTCIceServer(urls=["stun:stun.l.google.com:19302"])]
         self.peer_connection = RTCPeerConnection(configuration=RTCConfiguration(iceServers=ice_servers))
 
