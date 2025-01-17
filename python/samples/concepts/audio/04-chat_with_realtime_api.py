@@ -156,6 +156,11 @@ async def main() -> None:
         await realtime_client.update_session(
             settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
         )
+        # you can also send other events to the service, like this
+        # await realtime_client.send_buffer.put((
+        #     SendEvents.CONVERSATION_ITEM_CREATE,
+        #     {"item": ChatMessageContent(role="user", content="Hi there, who are you?")},
+        # ))
         async with asyncio.TaskGroup() as tg:
             tg.create_task(realtime_client.start_streaming())
             tg.create_task(stream_handler.listen())
