@@ -15,7 +15,6 @@ else:
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -29,8 +28,8 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
-    input_buffer: Queue[tuple[str, dict[str, Any]] | str] = Field(default_factory=Queue)
-    output_buffer: Queue[tuple[str, StreamingChatMessageContent]] = Field(default_factory=Queue)
+    send_buffer: Queue[str | tuple[str, Any]] = Field(default_factory=Queue)
+    receive_buffer: Queue[tuple[str, Any]] = Field(default_factory=Queue)
 
     async def __aenter__(self) -> "RealtimeClientBase":
         """Enter the context manager.

@@ -77,7 +77,7 @@ class AudioContent(BinaryContent):
         )
 
     @classmethod
-    def from_audio_file(cls: type[_T], path: str) -> "AudioContent":
+    def from_audio_file(cls: type[_T], path: str) -> _T:
         """Create an instance from an audio file."""
         mime_type = mimetypes.guess_type(path)[0]
         with open(path, "rb") as audio_file:
@@ -88,6 +88,6 @@ class AudioContent(BinaryContent):
         return {"type": "audio_url", "audio_url": {"uri": str(self)}}
 
     @classmethod
-    def from_nd_array(cls: type[_T], data: ndarray, mime_type: str) -> "AudioContent":
+    def from_nd_array(cls: type[_T], data: ndarray, mime_type: str) -> _T:
         """Create an instance from an nd array."""
         return cls(data=data, mime_type=mime_type)

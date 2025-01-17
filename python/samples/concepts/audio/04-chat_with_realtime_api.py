@@ -1,17 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-import contextlib
 import logging
 import signal
-from typing import Any
+from random import randint
 
-import numpy as np
-from aiortc.mediastreams import MediaStreamError, MediaStreamTrack
-from av import AudioFrame
-from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
+import sounddevice as sd
 
-from samples.concepts.audio.audio_player_async import AudioPlayerAsync
-from samples.concepts.audio.audio_recorder_stream import AudioRecorderStream
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -19,12 +13,18 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIRealtimeWebRTC,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime_base import ListenEvents
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.contents import AudioContent, ChatHistory, StreamingTextContent
+from semantic_kernel.connectors.ai.realtime_helpers import SKSimplePlayer
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)
+aiortc_log = logging.getLogger("aiortc")
+aiortc_log.setLevel(logging.WARNING)
+aioice_log = logging.getLogger("aioice")
+aioice_log.setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # This simple sample demonstrates how to use the OpenAI Realtime API to create
@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 # - pyaudio
 # - sounddevice
 # - pydub
-# e.g. pip install semantic-kernel[openai_realtime] pyaudio sounddevice pydub
+# - aiortc
+# e.g. pip install pyaudio sounddevice pydub
 
 # The characterics of your speaker and microphone are a big factor in a smooth conversation
 # so you may need to try out different devices for each.
@@ -45,104 +46,49 @@ logger = logging.getLogger(__name__)
 
 
 def check_audio_devices():
-    import sounddevice as sd  # type: ignore
-
-    print(sd.query_devices())
+    logger.info(sd.query_devices())
 
 
 check_audio_devices()
 
 
-class Speaker:
-    """This is a simple class that opens the session with the realtime api and plays the audio response.
+class ReceivingStreamHandler:
+    """This is a simple class that listens to the received buffer of the RealtimeClientBase.
 
-    At the same time it prints the transcript of the conversation to the console.
+    It can be used to play audio and print the transcript of the conversation.
+
+    It can also be used to act on other events from the service.
     """
 
-    def __init__(self, audio_player: AudioPlayerAsync, realtime_client: RealtimeClientBase, kernel: Kernel):
+    def __init__(self, realtime_client: RealtimeClientBase, audio_player: SKSimplePlayer | None = None):
         self.audio_player = audio_player
         self.realtime_client = realtime_client
-        self.kernel = kernel
 
-    async def play(
+    async def listen(
         self,
-        chat_history: ChatHistory,
-        settings: OpenAIRealtimeExecutionSettings,
+        play_audio: bool = True,
         print_transcript: bool = True,
     ) -> None:
-        # reset the frame count for the audio player
-        self.audio_player.reset_frame_count()
         # print the start message of the transcript
         if print_transcript:
             print("Mosscap (transcript): ", end="")
         try:
             # start listening for events
             while True:
-                _, content = await self.realtime_client.output_buffer.get()
-                if not content:
-                    continue
-                # the contents returned should be StreamingChatMessageContent
-                # so we will loop through the items within it.
-                for item in content.items:
-                    match item:
-                        case StreamingTextContent():
-                            if print_transcript:
-                                print(item.text, end="")
-                            await asyncio.sleep(0.01)
-                            continue
-                        case AudioContent():
-                            self.audio_player.add_data(item.data)
-                            await asyncio.sleep(0.01)
-                            continue
+                event_type, event = await self.realtime_client.receive_buffer.get()
+                match event_type:
+                    case ListenEvents.RESPONSE_AUDIO_DELTA:
+                        if play_audio and self.audio_player and isinstance(event, StreamingChatMessageContent):
+                            await self.audio_player.add_audio(event.items[0])
+                    case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA:
+                        if print_transcript and isinstance(event, StreamingChatMessageContent):
+                            print(event.content, end="")
+                    case ListenEvents.RESPONSE_CREATED:
+                        if print_transcript:
+                            print("")
+                await asyncio.sleep(0.01)
         except asyncio.CancelledError:
             print("\nThanks for talking to Mosscap!")
-
-
-class Microphone(MediaStreamTrack):
-    """This is a simple class that opens the microphone and sends the audio to the realtime api."""
-
-    kind = "audio"
-
-    def __init__(self, audio_recorder: AudioRecorderStream, realtime_client: RealtimeClientBase):
-        self.audio_recorder = audio_recorder
-        self.realtime_client = realtime_client
-        self.queue = asyncio.Queue()
-        self.loop = asyncio.get_running_loop()
-        self._pts = 0
-
-    async def recv(self) -> Any:
-        # start the audio recording
-        try:
-            return await self.queue.get()
-        except Exception as e:
-            logger.error(f"Error receiving audio frame: {str(e)}")
-            raise MediaStreamError("Failed to receive audio frame")
-
-    async def record_audio(self):
-        def callback(indata, frames, time, status):
-            if status:
-                logger.warning(f"Audio input status: {status}")
-            audio_data = indata.copy()
-
-            if audio_data.dtype != np.int16:
-                audio_data = (audio_data * 32767).astype(np.int16)
-
-            # Create AudioFrame with incrementing pts
-            frame = AudioFrame(
-                samples=len(audio_data),
-                layout="mono",
-                format="s16",  # 16-bit signed integer
-            )
-            frame.rate = 48000
-            frame.pts = self._pts
-            self._pts += len(audio_data)  # Increment pts by frame size
-
-            frame.planes[0].update(audio_data.tobytes())
-
-            asyncio.run_coroutine_threadsafe(self.queue.put(frame), self.loop)
-
-        await self.realtime_client.input_buffer.put("response.create")
-        await self.audio_recorder.stream_audio_content_with_callback(callback=callback)
 
 
 # this function is used to stop the processes when ctrl + c is pressed
@@ -151,18 +97,15 @@ def signal_handler():
         task.cancel()
 
 
+weather_conditions = ["sunny", "hot", "cloudy", "raining", "freezing", "snowing"]
+
+
 @kernel_function
 def get_weather(location: str) -> str:
     """Get the weather for a location."""
-    logger.debug(f"Getting weather for {location}")
-    return f"The weather in {location} is sunny."
-
-
-def response_created_callback(
-    event: RealtimeServerEvent, settings: PromptExecutionSettings | None = None, **kwargs: Any
-) -> None:
-    """Add a empty print to start a new line for a new response."""
-    print("")
+    weather = weather_conditions[randint(0, len(weather_conditions))]  # nosec
+    logger.warning(f"Getting weather for {location}: {weather}")
+    return f"The weather in {location} is {weather}."
 
 
 async def main() -> None:
@@ -174,20 +117,20 @@ async def main() -> None:
     kernel = Kernel()
     kernel.add_function(plugin_name="weather", function_name="get_weather", function=get_weather)
 
-    # create the realtime client and register the response created callback
-    realtime_client = OpenAIRealtimeWebRTC(ai_model_id="gpt-4o-realtime-preview-2024-12-17")
-    realtime_client.register_event_handler("response.created", response_created_callback)
+    # create the realtime client and optionally add the audio output function, this is optional
+    audio_player = SKSimplePlayer()
+    realtime_client = OpenAIRealtimeWebRTC(audio_output=audio_player.realtime_client_callback)
 
-    # create the speaker and microphone
-    speaker = Speaker(AudioPlayerAsync(device_id=None), realtime_client, kernel)
-    microphone = Microphone(AudioRecorderStream(device_id=None), realtime_client)
+    # create stream receiver, this can play the audio, if the audio_player is passed
+    # and allows you to print the transcript of the conversation
+    # and review or act on other events from the service
+    stream_handler = ReceivingStreamHandler(realtime_client)  # SimplePlayer(device_id=None)
 
     # Create the settings for the session
     # the key thing to decide on is to enable the server_vad turn detection
     # if turn is turned off (by setting turn_detection=None), you will have to send
     # the "input_audio_buffer.commit" and "response.create" event to the realtime api
     # to signal the end of the user's turn and start the response.
-
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
     instructions = """
     You are a chat bot. Your name is Mosscap and
@@ -197,7 +140,7 @@ async def main() -> None:
     effectively, but you tend to answer with long
     flowery prose.
     """
-    # but we can add a chat history to conversation after starting it
+    # and we can add a chat history to conversation after starting it
     chat_history = ChatHistory()
     chat_history.add_user_message("Hi there, who are you?")
     chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
@@ -208,14 +151,14 @@ async def main() -> None:
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
-    async with realtime_client:
-        await realtime_client.update_session(settings=settings, chat_history=chat_history)
-        await realtime_client.start_listening(settings, chat_history)
-        await realtime_client.start_sending(input_audio_track=microphone)
-        # await realtime_client.start_streaming(settings, chat_history, input_audio_track=microphone)
-        # start the the speaker and the microphone
-        with contextlib.suppress(asyncio.CancelledError):
-            await speaker.play(chat_history, settings)
+    # the context manager calls the create_session method on the client and start listening to the audio stream
+    async with realtime_client, audio_player:
+        await realtime_client.update_session(
+            settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
+        )
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(realtime_client.start_streaming())
+            tg.create_task(stream_handler.listen())
 
 
 if __name__ == "__main__":
