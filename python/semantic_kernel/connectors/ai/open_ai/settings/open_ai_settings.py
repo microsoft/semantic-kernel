@@ -32,6 +32,9 @@ class OpenAISettings(KernelBaseSettings):
         (Env var OPENAI_AUDIO_TO_TEXT_MODEL_ID)
     - text_to_audio_model_id: str | None - The OpenAI text to audio model ID to use, for example, jukebox-1.
         (Env var OPENAI_TEXT_TO_AUDIO_MODEL_ID)
+    - realtime_model_id: str | None - The OpenAI realtime model ID to use,
+    for example, gpt-4o-realtime-preview-2024-12-17.
+        (Env var OPENAI_REALTIME_MODEL_ID)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
@@ -45,3 +48,4 @@ class OpenAISettings(KernelBaseSettings):
     text_to_image_model_id: str | None = None
     audio_to_text_model_id: str | None = None
     text_to_audio_model_id: str | None = None
+    realtime_model_id: str | None = None

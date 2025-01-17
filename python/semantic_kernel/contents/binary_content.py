@@ -69,25 +69,25 @@ class BinaryContent(KernelContent):
                 ai_model_id (str | None): The id of the AI model that generated this response.
                 metadata (dict[str, Any]): Any metadata that should be attached to the response.
         """
-        _data_uri = None
+        data_uri_ = None
         if data_uri:
-            _data_uri = DataUri.from_data_uri(data_uri, self.default_mime_type)
+            data_uri_ = DataUri.from_data_uri(data_uri, self.default_mime_type)
             if "metadata" in kwargs:
-                kwargs["metadata"].update(_data_uri.parameters)
+                kwargs["metadata"].update(data_uri_.parameters)
             else:
-                kwargs["metadata"] = _data_uri.parameters
-        elif data:
+                kwargs["metadata"] = data_uri_.parameters
+        elif data is not None:
             match data:
                 case str():
-                    _data_uri = DataUri(
+                    data_uri_ = DataUri(
                         data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                     )
                 case bytes():
-                    _data_uri = DataUri(
+                    data_uri_ = DataUri(
                         data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                     )
                 case ndarray():
-                    _data_uri = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
+                    data_uri_ = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
 
         if uri is not None:
             if isinstance(uri, str) and os.path.exists(uri):
@@ -96,7 +96,7 @@ class BinaryContent(KernelContent):
                 uri = Url(uri)
 
         super().__init__(uri=uri, **kwargs)
-        self._data_uri = _data_uri
+        self._data_uri = data_uri_
 
     @computed_field  # type: ignore
     @property
@@ -115,7 +115,7 @@ class BinaryContent(KernelContent):
     @property
     def data(self) -> bytes | ndarray:
         """Get the data."""
-        if self._data_uri and self._data_uri.data_array:
+        if self._data_uri and self._data_uri.data_array is not None:
             return self._data_uri.data_array
         if self._data_uri and self._data_uri.data_bytes:
             return self._data_uri.data_bytes

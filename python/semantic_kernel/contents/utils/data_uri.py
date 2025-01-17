@@ -48,8 +48,13 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     @classmethod
     def _validate_data(cls, values: Any) -> dict[str, Any]:
         """Validate the data."""
-        if isinstance(values, dict) and not values.get("data_bytes") and not values.get("data_str"):
-            raise ContentInitializationError("Either data_bytes or data_str must be provided.")
+        if (
+            isinstance(values, dict)
+            and not values.get("data_bytes")
+            and not values.get("data_str")
+            and values.get("data_array") is None
+        ):
+            raise ContentInitializationError("Either data_bytes, data_str or data_array must be provided.")
         return values
 
     @model_validator(mode="after")
@@ -59,7 +64,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         Will try to decode the data bytes to a string if it is not already set.
         However if the data array is used, it will not be converted to a string.
         """
-        if self.data_array:
+        if self.data_array is not None:
             return self
         if not self.data_str and self.data_bytes:
             if self.data_format and self.data_format.lower() == "base64":
