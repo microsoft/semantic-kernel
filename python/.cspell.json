@@ -76,7 +76,6 @@
         "SEMANTICKERNEL",
         "OTEL",
         "vectorizable",
-        "desync",
-        "nd"
+        "desync"
     ]
 }
