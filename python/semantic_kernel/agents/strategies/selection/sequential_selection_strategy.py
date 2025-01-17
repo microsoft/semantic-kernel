@@ -68,10 +68,6 @@ class SequentialSelectionStrategy(SelectionStrategy):
         # Main index increment
         self._increment_index(len(agents))
 
-        # If the index goes beyond the length of agents, reset to 0
-        if self._index > len(agents) - 1:
-            self._index = 0
-
         # Pick the agent
         agent = agents[self._index]
 

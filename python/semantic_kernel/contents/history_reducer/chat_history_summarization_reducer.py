@@ -98,6 +98,12 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
         # 1. Identify where existing summary messages end
         insertion_point = locate_summarization_boundary(history)
+        if insertion_point == len(history):
+            # fallback fix: force boundary to something reasonable
+            # This is an edge case and will only get triggered if all messages are summaries
+            logger.warning("All messages are summaries, forcing boundary to 0.")
+            # TODO(evmattso): This is a temporary fix, and should be replaced with a more robust solution.
+            insertion_point = 0
 
         # 2. Locate the safe reduction index
         truncation_index = locate_safe_reduction_index(

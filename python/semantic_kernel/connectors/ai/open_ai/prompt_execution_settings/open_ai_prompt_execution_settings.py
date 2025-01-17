@@ -1,13 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from typing import Annotated, Any, Literal
-
-if sys.version_info >= (3, 11):
-    pass  # pragma: no cover
-else:
-    pass  # pragma: no cover
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
