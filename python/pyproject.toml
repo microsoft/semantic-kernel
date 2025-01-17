@@ -130,7 +130,8 @@ dapr = [
 ]
 openai_realtime = [
     "openai[realtime] ~= 1.0",
-    "aiortc>=1.9.0"    
+    "aiortc>=1.9.0",
+    "sounddevice>=0.5.1",
 ]
 
 [tool.uv]

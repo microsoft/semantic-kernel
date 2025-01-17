@@ -5049,6 +5049,7 @@ onnx = [
 openai-realtime = [
     { name = "aiortc", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "openai", extra = ["realtime"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "sounddevice", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 pandas = [
     { name = "pandas", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -5345,6 +5346,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/67/70/8479d19ec0441279e773521928ad7cad91901c1a3eaf1fc3a0eb92e3cf6e/snoop-0.6.0.tar.gz", hash = "sha256:c615eddf84d8907f893dec7fde38768aa4b1d88d92d63055b6cfc07e5cde37ec", size = 95968 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a5/93/84a16940c44f6ec62cf334f25aed3128a514dffc361397eee09421a1c7f2/snoop-0.6.0-py3-none-any.whl", hash = "sha256:f5ea9060e65594bf404e6841086b4a964cc27bc30569109c91a470f948b0f729", size = 27461 },
+]
+
+[[package]]
+name = "sounddevice"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cffi", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/80/2d/b04ae180312b81dbb694504bee170eada5372242e186f6298139fd3a0513/sounddevice-0.5.1.tar.gz", hash = "sha256:09ca991daeda8ce4be9ac91e15a9a81c8f81efa6b695a348c9171ea0c16cb041", size = 52896 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/d1/464b5fca3decdd0cfec8c47f7b4161a0b12972453201c1bf03811f367c5e/sounddevice-0.5.1-py3-none-any.whl", hash = "sha256:e2017f182888c3f3c280d9fbac92e5dbddac024a7e3442f6e6116bd79dab8a9c", size = 32276 },
+    { url = "https://files.pythonhosted.org/packages/6f/f6/6703fe7cf3d7b7279040c792aeec6334e7305956aba4a80f23e62c8fdc44/sounddevice-0.5.1-py3-none-macosx_10_6_x86_64.macosx_10_6_universal2.whl", hash = "sha256:d16cb23d92322526a86a9490c427bf8d49e273d9ccc0bd096feecd229cde6031", size = 107916 },
+    { url = "https://files.pythonhosted.org/packages/57/a5/78a5e71f5ec0faedc54f4053775d61407bfbd7d0c18228c7f3d4252fd276/sounddevice-0.5.1-py3-none-win32.whl", hash = "sha256:d84cc6231526e7a08e89beff229c37f762baefe5e0cc2747cbe8e3a565470055", size = 312494 },
+    { url = "https://files.pythonhosted.org/packages/af/9b/15217b04f3b36d30de55fef542389d722de63f1ad81f9c72d8afc98cb6ab/sounddevice-0.5.1-py3-none-win_amd64.whl", hash = "sha256:4313b63f2076552b23ac3e0abd3bcfc0c1c6a696fc356759a13bd113c9df90f1", size = 363634 },
 ]
 
 [[package]]
