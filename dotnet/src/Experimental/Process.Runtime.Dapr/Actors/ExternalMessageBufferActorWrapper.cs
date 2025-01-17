@@ -13,7 +13,7 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
     private readonly IExternalMessageBuffer _actor;
 
     /// <summary>
-    /// Constructur to wrap <see cref="IExternalMessageBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+    /// Constructor to wrap <see cref="IExternalMessageBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
     /// </summary>
     /// <param name="actor">The actor host.</param>
     public ExternalMessageBufferActorWrapper(IExternalMessageBuffer actor)
