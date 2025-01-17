@@ -529,7 +529,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIHandler, RealtimeClientBase):
     async def _on_data(self, data: str) -> None:
         """This method is called whenever a data channel message is received.
 
-        The data is parsed into a RealtimeServerEvent (by OpenAI) and then processed.
+        The data is parsed into a RealtimeServerEvent (by OpenAI code) and then processed.
         """
         try:
             event = cast(
@@ -580,6 +580,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIHandler, RealtimeClientBase):
             case _:
                 logger.debug(f"Received event: {event}")
         # we put all event in the output buffer, but after the interpreted one.
+        # so when dealing with them, make sure to check the type of the event, since they
+        # might be of different types.
         await self.receive_buffer.put((event.type, event))
 
     @override

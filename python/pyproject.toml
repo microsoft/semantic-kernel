@@ -129,7 +129,8 @@ dapr = [
     "flask-dapr>=1.14.0"
 ]
 openai_realtime = [
-    "openai[realtime] ~= 1.0"
+    "openai[realtime] ~= 1.0",
+    "aiortc>=1.9.0"    
 ]
 
 [tool.uv]
@@ -228,5 +229,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-
