@@ -76,7 +76,9 @@ class BinaryContent(KernelContent):
                 kwargs["metadata"].update(data_uri_.parameters)
             else:
                 kwargs["metadata"] = data_uri_.parameters
-        elif data is not None:
+        elif isinstance(data, ndarray):
+            data_uri_ = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
+        elif data:
             match data:
                 case str():
                     data_uri_ = DataUri(
@@ -86,8 +88,6 @@ class BinaryContent(KernelContent):
                     data_uri_ = DataUri(
                         data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                     )
-                case ndarray():
-                    data_uri_ = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
 
         if uri is not None:
             if isinstance(uri, str) and os.path.exists(uri):
