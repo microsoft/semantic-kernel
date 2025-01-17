@@ -338,8 +338,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             this._functions.Add(f.Name, f);
         }
 
+        // Creating external process channel actor to be used for external messaging by some steps
+        IExternalKernelProcessMessageChannelEmitter? externalMessageChannelActor = null;
+        var scopedExternalMessageBufferId = this.ScopedActorId(new ActorId(this.Id.GetId()));
+        var actor = this.ProxyFactory.CreateActorProxy<IExternalMessageBuffer>(scopedExternalMessageBufferId, nameof(ExternalMessageBufferActor));
+        externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);
+
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
+        // TODO: only need to pass conditionally external channel to specific steps - new step type?
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
