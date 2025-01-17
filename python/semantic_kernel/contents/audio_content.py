@@ -88,6 +88,6 @@ class AudioContent(BinaryContent):
         return {"type": "audio_url", "audio_url": {"uri": str(self)}}
 
     @classmethod
-    def from_nd_array(cls: type[_T], data: ndarray, mime_type: str) -> _T:
-        """Create an instance from an nd array."""
+    def from_ndarray(cls: type[_T], data: ndarray, mime_type: str) -> _T:
+        """Create an instance from an ndarray."""
         return cls(data=data, mime_type=mime_type)
