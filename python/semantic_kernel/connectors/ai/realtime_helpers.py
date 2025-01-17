@@ -5,11 +5,11 @@ import logging
 from typing import Any, Final
 
 import numpy as np
-import sounddevice as sd
 from aiortc.mediastreams import MediaStreamError, MediaStreamTrack
 from av.audio.frame import AudioFrame
 from av.frame import Frame
 from pydantic import Field, PrivateAttr
+from sounddevice import InputStream, OutputStream
 
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -37,7 +37,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
     device: str | int | None = None
     queue: asyncio.Queue[Frame] = Field(default_factory=asyncio.Queue)
     is_recording: bool = False
-    stream: sd.InputStream | None = None
+    stream: InputStream | None = None
     frame_size: int = 0
     _recording_task: asyncio.Task | None = None
     _loop: asyncio.AbstractEventLoop | None = None
@@ -101,7 +101,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
                 if self._loop and self._loop.is_running():
                     asyncio.run_coroutine_threadsafe(self.queue.put(frame), self._loop)
 
-            self.stream = sd.InputStream(
+            self.stream = InputStream(
                 device=self.device,
                 channels=self.channels,
                 samplerate=self.sample_rate,
@@ -135,11 +135,11 @@ class SKSimplePlayer(KernelBaseModel):
     channels: int = PLAYER_CHANNELS
     frame_duration_ms: int = FRAME_DURATION
     queue: asyncio.Queue[np.ndarray] = Field(default_factory=asyncio.Queue)
-    _stream: sd.OutputStream | None = PrivateAttr(None)
+    _stream: OutputStream | None = PrivateAttr(None)
 
     def model_post_init(self, __context: Any) -> None:
         """Initialize the audio stream."""
-        self._stream = sd.OutputStream(
+        self._stream = OutputStream(
             callback=self.callback,
             samplerate=self.sample_rate,
             channels=self.channels,
