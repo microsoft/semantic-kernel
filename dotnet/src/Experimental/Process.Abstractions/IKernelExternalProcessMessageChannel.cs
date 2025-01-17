@@ -10,7 +10,15 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public interface IExternalKernelProcessMessageChannel : IExternalKernelProcessMessageChannelEmitter
 {
+    /// <summary>
+    /// Initialization of the external messaging channel used
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/></returns>
     public abstract ValueTask Initialize();
 
+    /// <summary>
+    /// Uninitialization of the external messaging channel used
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/></returns>
     public abstract ValueTask Uninitialize();
 }

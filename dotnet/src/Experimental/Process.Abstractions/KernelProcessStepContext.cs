@@ -58,7 +58,7 @@ public sealed class KernelProcessStepContext
 
     /// <summary>
     /// Emit an external event to through a <see cref="IExternalKernelProcessMessageChannelEmitter"/>
-    /// componenet if connected from within the SK process
+    /// component if connected from within the SK process
     /// </summary>
     /// <param name="externalTopicName"></param>
     /// <param name="processEventData"></param>

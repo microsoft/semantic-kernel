@@ -12,11 +12,16 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
 {
     private readonly IExternalMessageBuffer _actor;
 
+    /// <summary>
+    /// Constructur to wrap <see cref="IExternalMessageBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+    /// </summary>
+    /// <param name="actor">The actor host.</param>
     public ExternalMessageBufferActorWrapper(IExternalMessageBuffer actor)
     {
         this._actor = actor;
     }
 
+    /// <inheritdoc cref="IExternalMessageBuffer.EmitExternalEventAsync(string, object?)"/>
     public async Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
     {
         await this._actor.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
