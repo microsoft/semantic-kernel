@@ -160,7 +160,6 @@ async def chat() -> bool:
             fcc = []
             frc = []
             for msg in chat_history.messages[processed_count:]:
-                processed_count += 1
                 if msg.items:
                     for item in msg.items:
                         match item:
@@ -173,6 +172,8 @@ async def chat() -> bool:
             for i, item in enumerate(fcc):
                 summarization_reducer.add_assistant_message_list([fcc[i]])
                 summarization_reducer.add_tool_message_list([frc[i]])
+
+            # Figure out how to keep track of the index of the last FunctionResultContent we accessed
 
     return True
 
