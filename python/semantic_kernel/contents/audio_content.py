@@ -5,8 +5,9 @@ from typing import Any, ClassVar, Literal, TypeVar
 
 from numpy import ndarray
 from pydantic import Field
+from pydantic_core import Url
 
-from semantic_kernel.contents.binary_content import BinaryContent
+from semantic_kernel.contents.binary_content import BinaryContent, DataUrl
 from semantic_kernel.contents.const import AUDIO_CONTENT_TAG, ContentTypes
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -41,6 +42,32 @@ class AudioContent(BinaryContent):
 
     content_type: Literal[ContentTypes.AUDIO_CONTENT] = Field(AUDIO_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = AUDIO_CONTENT_TAG
+
+    def __init__(
+        self,
+        uri: Url | str | None = None,
+        data_uri: DataUrl | str | None = None,
+        data: str | bytes | ndarray | None = None,
+        data_format: str | None = None,
+        mime_type: str | None = None,
+        **kwargs: Any,
+    ):
+        """Create a Audio Content object, either from a data_uri or data.
+
+        Args:
+            uri (Url | str | None): The reference uri of the content.
+            data_uri (DataUrl | None): The data uri of the content.
+            data (str | bytes | ndarray | None): The data of the content.
+            data_format (str | None): The format of the data (e.g. base64).
+            mime_type (str | None): The mime type of the image, only used with data.
+            kwargs (Any): Any additional arguments:
+                inner_content (Any): The inner content of the response,
+                    this should hold all the information from the response so even
+                    when not creating a subclass a developer can leverage the full thing.
+                ai_model_id (str | None): The id of the AI model that generated this response.
+                metadata (dict[str, Any]): Any metadata that should be attached to the response.
+        """
+        super().__init__(uri=uri, data_uri=data_uri, data=data, data_format=data_format, mime_type=mime_type, **kwargs)
 
     @classmethod
     def from_audio_file(cls: type[_T], path: str) -> _T:
