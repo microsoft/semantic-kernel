@@ -9,11 +9,11 @@ import sounddevice as sd
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
-    OpenAIRealtimeWebRTC,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime_base import ListenEvents
+from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_websocket import ListenEvents
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.connectors.ai.realtime_helpers import SKSimplePlayer
 from semantic_kernel.contents import ChatHistory
@@ -26,6 +26,7 @@ aiortc_log.setLevel(logging.WARNING)
 aioice_log = logging.getLogger("aioice")
 aioice_log.setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # This simple sample demonstrates how to use the OpenAI Realtime API to create
 # a chat bot that can listen and respond directly through audio.
@@ -119,7 +120,7 @@ async def main() -> None:
 
     # create the realtime client and optionally add the audio output function, this is optional
     audio_player = SKSimplePlayer()
-    realtime_client = OpenAIRealtimeWebRTC(audio_output=audio_player.realtime_client_callback)
+    realtime_client = OpenAIRealtime(protocol="webrtc", audio_output=audio_player.realtime_client_callback)
 
     # create stream receiver, this can play the audio, if the audio_player is passed
     # and allows you to print the transcript of the conversation
