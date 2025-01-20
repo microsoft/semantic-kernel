@@ -28,59 +28,17 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
-    send_buffer: Queue[str | tuple[str, Any]] = Field(default_factory=Queue)
+    send_buffer: Queue[tuple[str, Any]] = Field(default_factory=Queue)
     receive_buffer: Queue[tuple[str, Any]] = Field(default_factory=Queue)
 
-    async def __aenter__(self) -> "RealtimeClientBase":
-        """Enter the context manager.
-
-        Default implementation calls the create session method.
-        """
-        await self.create_session()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        """Exit the context manager."""
-        await self.close_session()
-
-    @abstractmethod
-    async def close_session(self) -> None:
-        """Close the session in the service."""
-        pass
-
-    @abstractmethod
-    async def create_session(
-        self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
-        **kwargs: Any,
-    ) -> None:
-        """Create a session in the service.
+    async def send(self, event: str, **kwargs: Any) -> None:
+        """Send an event to the service.
 
         Args:
-            settings: Prompt execution settings.
-            chat_history: Chat history.
+            event: The event to send.
             kwargs: Additional arguments.
         """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def update_session(
-        self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
-        **kwargs: Any,
-    ) -> None:
-        """Update a session in the service.
-
-        Can be used when using the context manager instead of calling create_session with these same arguments.
-
-        Args:
-            settings: Prompt execution settings.
-            chat_history: Chat history.
-            kwargs: Additional arguments.
-        """
-        raise NotImplementedError
+        await self.send_buffer.put((event, kwargs))
 
     async def start_streaming(
         self,
@@ -126,6 +84,45 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
         """Start sending items from the input_buffer to the service."""
         raise NotImplementedError
 
+    @abstractmethod
+    async def create_session(
+        self,
+        settings: "PromptExecutionSettings | None" = None,
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        """Create a session in the service.
+
+        Args:
+            settings: Prompt execution settings.
+            chat_history: Chat history.
+            kwargs: Additional arguments.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_session(
+        self,
+        settings: "PromptExecutionSettings | None" = None,
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        """Update a session in the service.
+
+        Can be used when using the context manager instead of calling create_session with these same arguments.
+
+        Args:
+            settings: Prompt execution settings.
+            chat_history: Chat history.
+            kwargs: Additional arguments.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def close_session(self) -> None:
+        """Close the session in the service."""
+        pass
+
     def _update_function_choice_settings_callback(
         self,
     ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
@@ -135,3 +132,15 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
         update the settings from a function call configuration.
         """
         return lambda configuration, settings, choice_type: None
+
+    async def __aenter__(self) -> "RealtimeClientBase":
+        """Enter the context manager.
+
+        Default implementation calls the create session method.
+        """
+        await self.create_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Exit the context manager."""
+        await self.close_session()
