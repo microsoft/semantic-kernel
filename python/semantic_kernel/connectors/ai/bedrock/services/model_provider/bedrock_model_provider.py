@@ -37,6 +37,7 @@ class BedrockModelProvider(Enum):
     @classmethod
     def to_model_provider(cls, model_id: str) -> "BedrockModelProvider":
         """Convert a model ID to a model provider."""
+
         try:
             return next(provider for provider in cls if provider.value in model_id)
         except StopIteration:
