@@ -266,6 +266,40 @@ Accept a single string containing all the keywords.
 
 Pros: Easier for a user to use, since they don't need to do any keyword splitting themselves.
 
+### 3. Accept either in interface
+
+Accept either option.
+
+```csharp
+    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
+        TVector vector,
+        IEnumerable<string> keywords,
+        KeywordVectorizedHybridSearchOptions options,
+        CancellationToken cancellationToken);
+    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
+        TVector vector,
+        string keywords,
+        KeywordVectorizedHybridSearchOptions options,
+        CancellationToken cancellationToken);
+```
+
+Pros: Easier for a user to use, since they can pick whichever suits them better
+Cons: We have to still convert to/from the internal presentation by either combining keywords or splitting them.
+
+### 3. Accept either in interface but throw for not supported
+
+Accept either option but throw for the one not supported by the underly DB.
+
+Pros: Easier for us to implement.
+Cons: Harder for users to use.
+
+### 4. Separate interfaces for each
+
+Create a separate interface for the Enumerable and single string options, and only implement the one that is supported by the underlying system for each db.
+
+Pros: Easier for us to implement.
+Cons: Harder for users to use.
+
 ## Decision Outcome
 
 Chosen option: "{title of option 1}", because
