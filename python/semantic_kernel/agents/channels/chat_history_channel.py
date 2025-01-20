@@ -59,7 +59,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             An async iterable of ChatMessageContent.
         """
         message_count = len(self.messages)
-        mutated_history = set()
+        # mutated_history = set()
+        mutated_history = list()
         message_queue: Deque[ChatMessageContent] = deque()
 
         async for response in agent.invoke(
@@ -69,7 +70,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             # Capture all messages that have been included in the mutated history.
             for message_index in range(message_count, len(self.messages)):
                 mutated_message = self.messages[message_index]
-                mutated_history.add(mutated_message)
+                # mutated_history.add(mutated_message)
+                mutated_history.append(mutated_message)
                 message_queue.append(mutated_message)
 
             # Update the message count pointer to reflect the current history.
