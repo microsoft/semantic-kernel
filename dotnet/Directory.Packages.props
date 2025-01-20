@@ -15,7 +15,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
@@ -102,7 +102,7 @@
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.1.2.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.2.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.30.0" />
-    <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
+    <PackageVersion Include="Microsoft.Graph" Version="5.49.0" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.61.3" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.22" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.22" />
