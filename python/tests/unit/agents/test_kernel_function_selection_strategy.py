@@ -18,7 +18,7 @@ from semantic_kernel.kernel import Kernel
 class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
-    def __init__(self, id: str = None, name: str = "Test Agent", description: str = "A test agent"):
+    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
         args = {
             "name": name,
             "description": description,
@@ -37,14 +37,13 @@ class MockAgent(Agent):
 @pytest.fixture
 def agents():
     """Fixture that provides a list of mock agents."""
-    return [MockAgent(id=f"agent-{i}", name=f"Agent-{i}") for i in range(3)]
+    return [MockAgent(id=f"agent-{i}", name=f"Agent_{i}") for i in range(3)]
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_success(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
-    mock_function.invoke.return_value = MagicMock(value="Agent-1")
+    mock_function.invoke.return_value = MagicMock(value="Agent_1")
     mock_kernel = MagicMock(spec=Kernel)
 
     strategy = KernelFunctionSelectionStrategy(
@@ -53,11 +52,10 @@ async def test_kernel_function_selection_next_success(agents):
 
     selected_agent = await strategy.next(agents, history)
 
-    assert selected_agent.name == "Agent-1"
+    assert selected_agent.name == "Agent_1"
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_agent_not_found(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -75,7 +73,6 @@ async def test_kernel_function_selection_next_agent_not_found(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_result_is_none(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -93,7 +90,6 @@ async def test_kernel_function_selection_next_result_is_none(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_next_exception_during_invoke(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
@@ -111,11 +107,10 @@ async def test_kernel_function_selection_next_exception_during_invoke(agents):
     mock_function.invoke.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_kernel_function_selection_result_parser_is_async(agents):
     history = [MagicMock(spec=ChatMessageContent)]
     mock_function = AsyncMock(spec=KernelFunction)
-    mock_function.invoke.return_value = MagicMock(value="Agent-2")
+    mock_function.invoke.return_value = MagicMock(value="Agent_2")
     mock_kernel = MagicMock(spec=Kernel)
 
     async def async_result_parser(result):
@@ -127,5 +122,5 @@ async def test_kernel_function_selection_result_parser_is_async(agents):
 
     selected_agent = await strategy.next(agents, history)
 
-    assert selected_agent.name == "Agent-2"
+    assert selected_agent.name == "Agent_2"
     mock_function.invoke.assert_awaited_once()

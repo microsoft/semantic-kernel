@@ -50,11 +50,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        code_interpreter_file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = {},
+        metadata: dict[str, Any] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -125,11 +125,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "code_interpreter_file_ids": code_interpreter_file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids or [],
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
-            "metadata": metadata,
+            "metadata": metadata or {},
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
             "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
@@ -173,7 +173,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = {},
+        metadata: dict[str, Any] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -236,7 +236,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             temperature=temperature,
             top_p=top_p,
             vector_store_id=vector_store_id,
-            metadata=metadata,
+            metadata=metadata or {},
             max_completion_tokens=max_completion_tokens,
             max_prompt_tokens=max_prompt_tokens,
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
@@ -412,6 +412,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+        return OpenAIAssistantAgent(
+            kernel=kernel,
+            assistant=assistant,
+            client=client,
+            api_key=api_key,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            **assistant_definition,
+        )
 
     # endregion

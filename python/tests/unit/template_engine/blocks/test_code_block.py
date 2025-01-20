@@ -36,7 +36,6 @@ def test_init():
 
 
 class TestCodeBlockRendering:
-    @mark.asyncio
     async def test_it_throws_if_a_plugins_are_empty(self, kernel: Kernel):
         target = CodeBlock(
             content="functionName",
@@ -45,7 +44,6 @@ class TestCodeBlockRendering:
         with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(kernel, KernelArguments())
 
-    @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self, kernel: Kernel):
         target = CodeBlock(
             content="functionName",
@@ -55,7 +53,6 @@ class TestCodeBlockRendering:
         with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(kernel, KernelArguments())
 
-    @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self, kernel: Kernel):
         @kernel_function(name="funcName")
         def invoke():
@@ -75,7 +72,6 @@ class TestCodeBlockRendering:
         with raises(CodeBlockRenderException, match="test.funcName"):
             await target.render_code(kernel, KernelArguments())
 
-    @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_var_block1(self, kernel: Kernel):
         code_block = CodeBlock(
             content="$var",
@@ -84,7 +80,6 @@ class TestCodeBlockRendering:
 
         assert result == "foo"
 
-    @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self, kernel: Kernel):
         code_block = CodeBlock(
             content="'ciao'",
@@ -93,7 +88,6 @@ class TestCodeBlockRendering:
 
         assert result == "ciao"
 
-    @mark.asyncio
     async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
         # Set up initial context variables
         arguments = KernelArguments(input="zero", var1="uno", var2="due")
@@ -142,7 +136,6 @@ class TestCodeBlockRendering:
         assert arguments["var1"] == "uno"
         assert arguments["var2"] == "due"
 
-    @mark.asyncio
     async def test_it_invokes_function_with_custom_variable(self, kernel: Kernel):
         # Define custom variable name and value
         VAR_NAME = "varName"
@@ -188,7 +181,6 @@ class TestCodeBlockRendering:
         # Check that the canary value matches the custom variable value
         assert canary == VAR_VALUE
 
-    @mark.asyncio
     async def test_it_invokes_function_with_custom_value(self, kernel: Kernel):
         # Define a value to be used in the test
         VALUE = "value"
@@ -228,7 +220,6 @@ class TestCodeBlockRendering:
         # Check that the canary value matches the value
         assert canary == VALUE
 
-    @mark.asyncio
     async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
         # Define a value to be used in the test
         VALUE = "value"
@@ -269,7 +260,6 @@ class TestCodeBlockRendering:
         # Check that the canary value matches the value
         assert canary == f"{VALUE} arg1 arg2"
 
-    @mark.asyncio
     async def test_it_invokes_function_with_only_named_arguments(self, kernel: Kernel):
         code_block = CodeBlock(
             content=" ",
@@ -306,7 +296,6 @@ class TestCodeBlockRendering:
         # Check that the canary value matches the value
         assert canary == "arg1 arg2"
 
-    @mark.asyncio
     async def test_it_fails_on_function_without_args(self, kernel: Kernel):
         code_block = CodeBlock(
             content=" ",

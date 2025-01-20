@@ -1,55 +1,48 @@
 name: Python Test Coverage
 
 on:
-  pull_request_target:
+  pull_request:
     branches: ["main", "feature*"]
     paths:
-      - "python/**"
-  workflow_run:
-    workflows: ["Python Unit Tests"]
-    types: 
-      - in_progress
+      - "python/semantic_kernel/**"
+      - "python/tests/unit/**"
+env:
+  # Configure a constant location for the uv cache
+  UV_CACHE_DIR: /tmp/.uv-cache
 
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      pull-requests: write
-      contents: read
-      actions: read
+    continue-on-error: false
+    defaults:
+      run:
+        working-directory: python
+    env:
+      UV_PYTHON: "3.10"
     steps:
-      - name: Wait for unit tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Python Test Coverage'
-          repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          wait-interval: 90
-          allowed-conclusions: success
       - uses: actions/checkout@v4
-      - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
-      - name: Download Files
-        uses: actions/download-artifact@v4
+      # Save the PR number to a file since the workflow_run event
+      # in the coverage report workflow does not have access to it
+      - name: Save PR number
+        run: |
+          echo ${{ github.event.number }} > ./pr_number
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          run-id: ${{ github.event.workflow_run.id }}
-          path: python/
-          merge-multiple: true
-      - name: Display structure of downloaded files
-        run: ls python/
-      - name: Pytest coverage comment
-        id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@main
-        continue-on-error: true
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - name: Test with pytest
+        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          pytest-coverage-path: python-coverage.txt
-          coverage-path-prefix: "python/"
-          title: "Python Test Coverage Report"
-          badge-title: "Python Test Coverage"
-          junitxml-title: "Python Unit Test Overview"
-          junitxml-path: pytest.xml
-          default-branch: "main"
-          unique-id-for-comment: python-test-coverage
+          path: |
+            python/python-coverage.txt
+            python/pytest.xml
+            python/pr_number
+          overwrite: true
+          retention-days: 1
+          if-no-files-found: error

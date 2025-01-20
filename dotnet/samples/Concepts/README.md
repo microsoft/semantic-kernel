@@ -39,8 +39,10 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 
 ### FunctionCalling - Examples on `Function Calling` with function call capable models
 
-- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
 - [FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling.cs)
+- [FunctionCalling_ReturnMetadata](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/FunctionCalling_ReturnMetadata.cs)
+- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
+- [AzureAIInference_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/AzureAIInference_FunctionCalling.cs)
 - [NexusRaven_HuggingFaceTextGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/NexusRaven_FunctionCalling.cs)
 - [MultipleFunctionsVsParameters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/MultipleFunctionsVsParameters.cs)
 
@@ -123,6 +125,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 
 ### Memory - Using AI [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) concepts
 
+- [OpenAI_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/OpenAI_EmbeddingGeneration.cs)
 - [Ollama_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/Ollama_EmbeddingGeneration.cs)
 - [Onnx_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/Onnx_EmbeddingGeneration.cs)
 - [HuggingFace_EmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/HuggingFace_EmbeddingGeneration.cs)
@@ -167,6 +170,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [OpenApiPlugin_Customization](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/OpenApiPlugin_Customization.cs)
 - [OpenApiPlugin_Filtering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/OpenApiPlugin_Filtering.cs)
 - [OpenApiPlugin_Telemetry](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/OpenApiPlugin_Telemetry.cs)
+- [OpenApiPlugin_RestApiOperationResponseFactory](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/OpenApiPlugin_RestApiOperationResponseFactory.cs)
 - [CustomMutablePlugin](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/CustomMutablePlugin.cs)
 - [DescribeAllPluginsAndFunctions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/DescribeAllPluginsAndFunctions.cs)
 - [GroundednessChecks](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/GroundednessChecks.cs)
@@ -214,3 +218,85 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [OpenAI_TextToImage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/OpenAI_TextToImage.cs)
 - [OpenAI_TextToImageLegacy](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/OpenAI_TextToImageLegacy.cs)
 - [AzureOpenAI_TextToImage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/TextToImage/AzureOpenAI_TextToImage.cs)
+
+## Configuration
+
+### Option 1: Use Secret Manager
+
+Concept samples will require secrets and credentials, to access OpenAI, Azure OpenAI,
+Bing and other resources. 
+
+We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
+to avoid the risk of leaking secrets into the repository, branches and pull requests.
+You can also use environment variables if you prefer.
+
+To set your secrets with Secret Manager:
+
+```
+cd dotnet/src/samples/Concepts
+dotnet user-secrets init
+dotnet user-secrets set "OpenAI:ServiceId" "gpt-3.5-turbo-instruct"
+dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo-instruct"
+dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
+dotnet user-secrets set "OpenAI:ApiKey" "..."
+...
+```
+
+### Option 2: Use Configuration File
+1. Create a `appsettings.Development.json` file next to the `Concepts.csproj` file. This file will be ignored by git,
+   the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
+2. Edit `appsettings.Development.json` and set the appropriate configuration for the samples you are running.
+
+For example:
+
+```json
+{
+  "OpenAI": {
+    "ServiceId": "gpt-3.5-turbo-instruct",
+    "ModelId": "gpt-3.5-turbo-instruct",
+    "ChatModelId": "gpt-4",
+    "ApiKey": "sk-...."
+  },
+  "AzureOpenAI": {
+    "ServiceId": "azure-gpt-35-turbo-instruct",
+    "DeploymentName": "gpt-35-turbo-instruct",
+    "ChatDeploymentName": "gpt-4",
+    "Endpoint": "https://contoso.openai.azure.com/",
+    "ApiKey": "...."
+  },
+  // etc.
+}
+```
+
+### Option 3: Use Environment Variables
+You may also set the settings in your environment variables. The environment variables will override the settings in the `appsettings.Development.json` file.
+
+When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
+
+- bash:
+
+  ```bash
+  export OpenAI__ApiKey="sk-...."
+  export AzureOpenAI__ApiKey="...."
+  export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
+  export AzureOpenAI__ChatDeploymentName="gpt-4"
+  export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
+  export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
+  export HuggingFace__ApiKey="...."
+  export Bing__ApiKey="...."
+  export Postgres__ConnectionString="...."
+  ```
+
+- PowerShell:
+
+  ```ps
+  $env:OpenAI__ApiKey = "sk-...."
+  $env:AzureOpenAI__ApiKey = "...."
+  $env:AzureOpenAI__DeploymentName = "gpt-35-turbo-instruct"
+  $env:AzureOpenAI__ChatDeploymentName = "gpt-4"
+  $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
+  $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
+  $env:HuggingFace__ApiKey = "...."
+  $env:Bing__ApiKey = "...."
+  $env:Postgres__ConnectionString = "...."
+  ```

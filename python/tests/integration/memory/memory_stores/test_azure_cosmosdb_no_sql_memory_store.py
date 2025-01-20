@@ -58,7 +58,6 @@ async def azure_cosmosdb_no_sql_memory_store(cosmos_client, partition_key) -> Me
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_create_get_drop_exists_collection(azure_cosmosdb_no_sql_memory_store):
     store = await azure_cosmosdb_no_sql_memory_store()
@@ -74,7 +73,6 @@ async def test_create_get_drop_exists_collection(azure_cosmosdb_no_sql_memory_st
     assert result is False
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_upsert_and_get_and_remove(azure_cosmosdb_no_sql_memory_store):
     store = await azure_cosmosdb_no_sql_memory_store()
@@ -92,7 +90,6 @@ async def test_upsert_and_get_and_remove(azure_cosmosdb_no_sql_memory_store):
     await store.remove(container_name, record.id)
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_upsert_batch_and_get_batch_remove_batch(azure_cosmosdb_no_sql_memory_store):
     store = await azure_cosmosdb_no_sql_memory_store()
@@ -111,7 +108,6 @@ async def test_upsert_batch_and_get_batch_remove_batch(azure_cosmosdb_no_sql_mem
     await store.remove_batch(container_name, [record.id for record in records])
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_get_nearest_match(azure_cosmosdb_no_sql_memory_store):
     store = await azure_cosmosdb_no_sql_memory_store()
@@ -130,7 +126,6 @@ async def test_get_nearest_match(azure_cosmosdb_no_sql_memory_store):
     await store.remove_batch(container_name, [record.id for record in records])
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_get_nearest_matches(azure_cosmosdb_no_sql_memory_store):
     store = await azure_cosmosdb_no_sql_memory_store()

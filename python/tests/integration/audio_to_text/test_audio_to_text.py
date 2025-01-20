@@ -6,7 +6,7 @@ import pytest
 
 from semantic_kernel.connectors.ai.audio_to_text_client_base import AudioToTextClientBase
 from semantic_kernel.contents import AudioContent
-from tests.integration.audio_to_text.audio_to_text_test_base import AudioToTextTestBase
+from tests.integration.audio_to_text.audio_to_text_test_base import AudioToTextTestBase, azure_setup
 
 pytestmark = pytest.mark.parametrize(
     "service_id, audio_content, expected_text",
@@ -21,17 +21,16 @@ pytestmark = pytest.mark.parametrize(
             "azure_openai",
             AudioContent.from_audio_file(os.path.join(os.path.dirname(__file__), "../../", "assets/sample_audio.mp3")),
             ["hi", "how", "are", "you", "doing"],
+            marks=pytest.mark.skipif(not azure_setup, reason="Azure Audio to Text not setup."),
             id="azure_openai",
         ),
     ],
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestAudioToText(AudioToTextTestBase):
     """Test audio-to-text services."""
 
-    @pytest.mark.asyncio
     async def test_audio_to_text(
         self,
         services: dict[str, AudioToTextClientBase],
@@ -49,6 +48,8 @@ class TestAudioToText(AudioToTextTestBase):
         """
 
         service = services[service_id]
+        if not service:
+            pytest.mark.xfail("Azure Audio to Text not setup.")
         result = await service.get_text_content(audio_content)
 
         for word in expected_text:

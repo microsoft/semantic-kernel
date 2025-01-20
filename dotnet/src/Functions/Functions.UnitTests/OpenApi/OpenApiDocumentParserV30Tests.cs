@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -236,7 +237,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(6, restApi.Operations.Count);
+        Assert.Equal(8, restApi.Operations.Count);
     }
 
     [Fact]
@@ -498,6 +499,176 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         Assert.Equal("https://my-key-vault.vault.azure.net", restApi.Operations[0].Servers[0].Url);
         Assert.Equal("https://ppe.my-key-vault.vault.azure.net", restApi.Operations[0].Servers[1].Url);
+    }
+
+    [Fact]
+    public async Task ItCanParsePathItemPathParametersAsync()
+    {
+        var document =
+        """
+        {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/items/{itemId}/{format}": {
+                    "parameters": [
+                        {
+                            "name": "itemId",
+                            "in": "path",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "get": {
+                        "parameters": [
+                            {
+                                "name": "format",
+                                "in": "path",
+                                "required": true,
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "summary": "Get an item by ID",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """;
+
+        await using var steam = new MemoryStream(Encoding.UTF8.GetBytes(document));
+        var restApi = await this._sut.ParseAsync(steam);
+
+        Assert.NotNull(restApi);
+        Assert.NotNull(restApi.Operations);
+        Assert.NotEmpty(restApi.Operations);
+
+        var firstOperation = restApi.Operations[0];
+
+        Assert.NotNull(firstOperation);
+        Assert.Equal("Get an item by ID", firstOperation.Description);
+        Assert.Equal("/items/{itemId}/{format}", firstOperation.Path);
+
+        var parameters = firstOperation.GetParameters();
+        Assert.NotNull(parameters);
+        Assert.Equal(2, parameters.Count);
+
+        var pathParameter = parameters.Single(static p => "itemId".Equals(p.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(pathParameter);
+        Assert.True(pathParameter.IsRequired);
+        Assert.Equal(RestApiParameterLocation.Path, pathParameter.Location);
+        Assert.Null(pathParameter.DefaultValue);
+        Assert.NotNull(pathParameter.Schema);
+        Assert.Equal("string", pathParameter.Schema.RootElement.GetProperty("type").GetString());
+
+        var formatParameter = parameters.Single(static p => "format".Equals(p.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(formatParameter);
+        Assert.True(formatParameter.IsRequired);
+        Assert.Equal(RestApiParameterLocation.Path, formatParameter.Location);
+        Assert.Null(formatParameter.DefaultValue);
+        Assert.NotNull(formatParameter.Schema);
+        Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task ItCanParsePathItemPathParametersAndOverridesAsync()
+    {
+        var document =
+        """
+        {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/items/{itemId}/{format}": {
+                    "parameters": [
+                        {
+                            "name": "itemId",
+                            "in": "path",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "get": {
+                        "parameters": [
+                            {
+                                "name": "format",
+                                "in": "path",
+                                "required": true,
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "name": "itemId",
+                                "in": "path",
+                                "description": "item ID override",
+                                "required": true,
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "summary": "Get an item by ID",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """;
+
+        await using var steam = new MemoryStream(Encoding.UTF8.GetBytes(document));
+        var restApi = await this._sut.ParseAsync(steam);
+
+        Assert.NotNull(restApi);
+        Assert.NotNull(restApi.Operations);
+        Assert.NotEmpty(restApi.Operations);
+
+        var firstOperation = restApi.Operations[0];
+
+        Assert.NotNull(firstOperation);
+        Assert.Equal("Get an item by ID", firstOperation.Description);
+        Assert.Equal("/items/{itemId}/{format}", firstOperation.Path);
+
+        var parameters = firstOperation.GetParameters();
+        Assert.NotNull(parameters);
+        Assert.Equal(2, parameters.Count);
+
+        var pathParameter = parameters.Single(static p => "itemId".Equals(p.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(pathParameter);
+        Assert.True(pathParameter.IsRequired);
+        Assert.Equal(RestApiParameterLocation.Path, pathParameter.Location);
+        Assert.Null(pathParameter.DefaultValue);
+        Assert.NotNull(pathParameter.Schema);
+        Assert.Equal("string", pathParameter.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("item ID override", pathParameter.Description);
+
+        var formatParameter = parameters.Single(static p => "format".Equals(p.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(formatParameter);
+        Assert.True(formatParameter.IsRequired);
+        Assert.Equal(RestApiParameterLocation.Path, formatParameter.Location);
+        Assert.Null(formatParameter.DefaultValue);
+        Assert.NotNull(formatParameter.Schema);
+        Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)

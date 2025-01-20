@@ -118,6 +118,53 @@ internal static class RedisVectorStoreCollectionSearchMapping
     }
 
     /// <summary>
+    /// Resolve the distance function to use for a search by checking the distance function of the vector property specified in options
+    /// or by falling back to the distance function of the first vector property, or by falling back to the default distance function.
+    /// </summary>
+    /// <param name="options">The search options potentially containing a vector field to search.</param>
+    /// <param name="vectorProperties">The list of all vector properties.</param>
+    /// <param name="firstVectorProperty">The first vector property in the record.</param>
+    /// <returns>The distance function for the vector we want to search.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a user asked for a vector property that doesn't exist on the record.</exception>
+    public static string ResolveDistanceFunction(VectorSearchOptions options, IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties, VectorStoreRecordVectorProperty firstVectorProperty)
+    {
+        if (options.VectorPropertyName == null || vectorProperties.Count == 1)
+        {
+            return firstVectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
+        }
+
+        var vectorProperty = vectorProperties.FirstOrDefault(p => p.DataModelPropertyName == options.VectorPropertyName)
+            ?? throw new InvalidOperationException($"The collection does not have a vector field named '{options.VectorPropertyName}'.");
+
+        return vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
+    }
+
+    /// <summary>
+    /// Convert the score from redis into the appropriate output score based on the distance function.
+    /// Redis doesn't support Cosine Similarity, so we need to convert from distance to similarity if it was chosen.
+    /// </summary>
+    /// <param name="redisScore">The redis score to convert.</param>
+    /// <param name="distanceFunction">The distance function used in the search.</param>
+    /// <returns>The converted score.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the provided distance function is not supported by redis.</exception>
+    public static float? GetOutputScoreFromRedisScore(float? redisScore, string distanceFunction)
+    {
+        if (redisScore is null)
+        {
+            return null;
+        }
+
+        return distanceFunction switch
+        {
+            DistanceFunction.CosineSimilarity => 1 - redisScore,
+            DistanceFunction.CosineDistance => redisScore,
+            DistanceFunction.DotProductSimilarity => redisScore,
+            DistanceFunction.EuclideanSquaredDistance => redisScore,
+            _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported."),
+        };
+    }
+
+    /// <summary>
     /// Resolve the vector field name to use for a search by using the storage name for the field name from options
     /// if available, and falling back to the first vector field name if not.
     /// </summary>

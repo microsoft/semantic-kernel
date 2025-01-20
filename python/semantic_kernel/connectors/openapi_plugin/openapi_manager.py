@@ -21,9 +21,6 @@ from semantic_kernel.schema.kernel_json_schema_builder import TYPE_MAPPING
 from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-        OpenAIFunctionExecutionParameters,
-    )
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -36,7 +33,7 @@ def create_functions_from_openapi(
     plugin_name: str,
     openapi_document_path: str | None = None,
     openapi_parsed_spec: dict[str, Any] | None = None,
-    execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+    execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
 ) -> list[KernelFunctionFromMethod]:
     """Creates the functions from OpenAPI document.
 
@@ -106,7 +103,7 @@ def _create_function_from_operation(
     runner: OpenApiRunner,
     operation: RestApiOperation,
     plugin_name: str | None = None,
-    execution_parameters: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+    execution_parameters: "OpenAPIFunctionExecutionParameters | None" = None,
     document_uri: str | None = None,
     security: list[RestApiSecurityRequirement] | None = None,
 ) -> KernelFunctionFromMethod:

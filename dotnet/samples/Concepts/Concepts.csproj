@@ -102,6 +102,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\Plugins\ApiManifestPlugins\**\apimanifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -131,6 +134,9 @@
     <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\DeclarativeAgents\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\*">
@@ -148,6 +154,15 @@
     <None Remove="Resources\Plugins\PetsPlugin\oneOfV3.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Resources\Plugins\MoviePlugins\MoviePluginPrompt\TopMovies\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Plugins\MoviePlugins\MoviePluginPrompt\TopMovies\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Plugins\MoviePlugins\MoviePluginYaml\TopMovies.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -4,8 +4,7 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterable, Iterable
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
@@ -30,15 +29,12 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     get_function_call_contents,
     get_message_contents,
 )
+from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
     merge_function_results,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentExecutionException,
@@ -49,19 +45,12 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-@experimental_class
-@dataclass
-class FunctionActionResult:
-    """Function Action Result."""
-
-    function_call_content: ChatMessageContent | None
-    function_result_content: ChatMessageContent | None
-    tool_outputs: list[dict[str, str]] | None
 
 
 @experimental_class
@@ -77,19 +66,25 @@ class OpenAIAssistantBase(Agent):
     client: AsyncOpenAI
     assistant: Assistant | None = None
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
-    enable_code_interpreter: bool | None = Field(False)
-    enable_file_search: bool | None = Field(False)
-    enable_json_response: bool | None = Field(False)
-    code_interpreter_file_ids: list[str] | None = Field(default_factory=list, max_length=20)  # type: ignore
-    file_search_file_ids: list[str] | None = Field(default_factory=list, max_length=20)  # type: ignore
-    temperature: float | None = Field(None)
-    top_p: float | None = Field(None)
+    enable_code_interpreter: bool | None = False
+    enable_file_search: bool | None = False
+    enable_json_response: bool | None = False
+    code_interpreter_file_ids: Annotated[list[str] | None, Field(max_length=20)] = Field(default_factory=list)  # type: ignore
+    file_search_file_ids: Annotated[
+        list[str] | None,
+        Field(
+            description="There is a limit of 10000 files when using Azure Assistants API, "
+            "the OpenAI docs state no limit, hence this is not checked."
+        ),
+    ] = Field(default_factory=list)  # type: ignore
+    temperature: float | None = None
+    top_p: float | None = None
     vector_store_id: str | None = None
-    metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)  # type: ignore
-    max_completion_tokens: int | None = Field(None)
-    max_prompt_tokens: int | None = Field(None)
-    parallel_tool_calls_enabled: bool | None = Field(True)
-    truncation_message_count: int | None = Field(None)
+    metadata: Annotated[dict[str, Any] | None, Field(max_length=20)] = Field(default_factory=dict)  # type: ignore
+    max_completion_tokens: int | None = None
+    max_prompt_tokens: int | None = None
+    parallel_tool_calls_enabled: bool | None = True
+    truncation_message_count: int | None = None
 
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
@@ -115,11 +110,11 @@ class OpenAIAssistantBase(Agent):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        code_interpreter_file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = {},
+        metadata: dict[str, Any] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -163,11 +158,11 @@ class OpenAIAssistantBase(Agent):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "code_interpreter_file_ids": code_interpreter_file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids or [],
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
-            "metadata": metadata,
+            "metadata": metadata or {},
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
             "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
@@ -195,7 +190,7 @@ class OpenAIAssistantBase(Agent):
         code_interpreter_file_ids: list[str] | None = None,
         enable_file_search: bool | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, str] | None = {},
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> "Assistant":
         """Create the assistant.
@@ -209,7 +204,7 @@ class OpenAIAssistantBase(Agent):
             enable_file_search: Enable file search. Defaults to None. (optional)
             code_interpreter_file_ids: The file ids. Defaults to None. (optional)
             vector_store_id: The vector store id. Defaults to None. (optional)
-            metadata: The metadata. Defaults to {}. (optional)
+            metadata: The metadata. Defaults to None. (optional)
             kwargs: Extra keyword arguments.
 
         Returns:
@@ -275,12 +270,20 @@ class OpenAIAssistantBase(Agent):
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
-        execution_settings = {}
+        execution_settings: dict[str, Any] = {}
         if self.max_completion_tokens:
             execution_settings["max_completion_tokens"] = self.max_completion_tokens
 
         if self.max_prompt_tokens:
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
+
+        if self.top_p is not None:
+            execution_settings["top_p"] = self.top_p
+            create_assistant_kwargs["top_p"] = self.top_p
+
+        if self.temperature is not None:
+            execution_settings["temperature"] = self.temperature
+            create_assistant_kwargs["temperature"] = self.temperature
 
         if self.parallel_tool_calls_enabled:
             execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
@@ -304,7 +307,7 @@ class OpenAIAssistantBase(Agent):
 
         return self.assistant
 
-    async def modify_assistant(self, assistant_id: str, **kwargs: Any) -> Assistant:
+    async def modify_assistant(self, assistant_id: str, **kwargs: Any) -> "Assistant":
         """Modify the assistant.
 
         Args:
@@ -429,7 +432,7 @@ class OpenAIAssistantBase(Agent):
         self,
         *,
         code_interpreter_file_ids: list[str] | None = [],
-        messages: list[ChatMessageContent] | None = [],
+        messages: list["ChatMessageContent"] | None = [],
         vector_store_id: str | None = None,
         metadata: dict[str, str] = {},
     ) -> str:
@@ -494,7 +497,7 @@ class OpenAIAssistantBase(Agent):
             self._is_deleted = True
         return self._is_deleted
 
-    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "Message":
         """Add a chat message.
 
         Args:
@@ -506,7 +509,7 @@ class OpenAIAssistantBase(Agent):
         """
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 
-    async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
+    async def get_thread_messages(self, thread_id: str) -> AsyncIterable["ChatMessageContent"]:
         """Get the messages for the specified thread.
 
         Args:
@@ -527,7 +530,7 @@ class OpenAIAssistantBase(Agent):
             assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
             assistant_name = assistant_name or message.assistant_id
 
-            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+            content: "ChatMessageContent" = generate_message_content(str(assistant_name), message)
 
             if len(content.items) > 0:
                 yield content
@@ -617,7 +620,7 @@ class OpenAIAssistantBase(Agent):
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the chat assistant.
 
         The supplied arguments will take precedence over the specified assistant level attributes.
@@ -674,7 +677,7 @@ class OpenAIAssistantBase(Agent):
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+    ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Internal invoke method.
 
         The supplied arguments will take precedence over the specified assistant level attributes.
@@ -736,7 +739,7 @@ class OpenAIAssistantBase(Agent):
         )
 
         processed_step_ids = set()
-        function_steps: dict[str, FunctionCallContent] = {}
+        function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
             run = await self._poll_run_status(run=run, thread_id=thread_id)
@@ -755,6 +758,8 @@ class OpenAIAssistantBase(Agent):
                 fccs = get_function_call_contents(run, function_steps)
                 if fccs:
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+
+                    from semantic_kernel.contents.chat_history import ChatHistory
 
                     chat_history = ChatHistory()
                     _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
@@ -779,7 +784,7 @@ class OpenAIAssistantBase(Agent):
                     assert hasattr(completed_step.step_details, "tool_calls")  # nosec
                     for tool_call in completed_step.step_details.tool_calls:
                         is_visible = False
-                        content: ChatMessageContent | None = None
+                        content: "ChatMessageContent | None" = None
                         if tool_call.type == "code_interpreter":
                             content = generate_code_interpreter_content(
                                 self.name,
@@ -812,7 +817,7 @@ class OpenAIAssistantBase(Agent):
         self,
         thread_id: str,
         *,
-        messages: list[ChatMessageContent] | None = None,
+        messages: list["ChatMessageContent"] | None = None,
         ai_model_id: str | None = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
@@ -825,7 +830,7 @@ class OpenAIAssistantBase(Agent):
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the chat assistant with streaming."""
         async for content in self._invoke_internal_stream(
             thread_id=thread_id,
@@ -849,7 +854,7 @@ class OpenAIAssistantBase(Agent):
         self,
         thread_id: str,
         *,
-        messages: list[ChatMessageContent] | None = None,
+        messages: list["ChatMessageContent"] | None = None,
         ai_model_id: str | None = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
@@ -862,7 +867,7 @@ class OpenAIAssistantBase(Agent):
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["ChatMessageContent"]:
         """Internal invoke method with streaming."""
         if not self.assistant:
             raise AgentInitializationException("The assistant has not been created.")
@@ -901,7 +906,7 @@ class OpenAIAssistantBase(Agent):
             **run_options,
         )
 
-        function_steps: dict[str, FunctionCallContent] = {}
+        function_steps: dict[str, "FunctionCallContent"] = {}
         active_messages: dict[str, RunStep] = {}
 
         while True:
@@ -991,11 +996,13 @@ class OpenAIAssistantBase(Agent):
                     break
 
     async def _handle_streaming_requires_action(
-        self, run: Run, function_steps: dict[str, FunctionCallContent]
+        self, run: Run, function_steps: dict[str, "FunctionCallContent"]
     ) -> FunctionActionResult | None:
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
             function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
+
+            from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory()
             _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
@@ -1201,7 +1208,7 @@ class OpenAIAssistantBase(Agent):
 
         return tools
 
-    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(self, fccs: list["FunctionCallContent"], chat_history: "ChatHistory") -> list[Any]:
         """Invoke function calls and store results in chat history.
 
         Args:
@@ -1217,7 +1224,9 @@ class OpenAIAssistantBase(Agent):
         ]
         return await asyncio.gather(*tasks)
 
-    def _format_tool_outputs(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[dict[str, str]]:
+    def _format_tool_outputs(
+        self, fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+    ) -> list[dict[str, str]]:
         """Format tool outputs from chat history for submission.
 
         Args:
@@ -1227,6 +1236,8 @@ class OpenAIAssistantBase(Agent):
         Returns:
             The formatted tool outputs as a list of dictionaries.
         """
+        from semantic_kernel.contents.function_result_content import FunctionResultContent
+
         tool_call_lookup = {
             tool_call.id: tool_call
             for message in chat_history.messages

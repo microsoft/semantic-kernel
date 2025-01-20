@@ -78,6 +78,12 @@
       "VisionModelId": "gemini-1.5-flash"
     }
   },
+  "MistralAI": {
+    "EmbeddingModelId": "mistral-embed",
+    "ChatModelId": "mistral-large-latest",
+    "ImageModelId": "pixtral-12b-2409",
+    "ApiKey": ""
+  },
   "Bing": {
     "ApiKey": ""
   },
@@ -89,7 +95,8 @@
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
   },
   "AzureCosmosDBNoSQL": {
-    "ConnectionString": ""
+    "ConnectionString": "",
+    "Endpoint": ""
   },
   "AzureCosmosDBMongoDB": {
     "ConnectionString": ""

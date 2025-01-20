@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
-using System.Diagnostics;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using JsonSchemaMapper;
+using Microsoft.Extensions.AI;
+
+#pragma warning disable IDE0010 // Add missing cases
 
 namespace Microsoft.SemanticKernel;
 
@@ -22,16 +24,20 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static JsonSerializerOptions? s_options;
-    private static readonly JsonSchemaMapperConfiguration s_config = new()
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
     {
-        IncludeSchemaVersion = false,
-        IncludeTypeInEnums = true,
-        TreatNullObliviousAsNonNullable = true,
+        IncludeSchemaKeyword = false,
+        IncludeTypeInEnumSchemas = true,
+        RequireAllProperties = false,
+        DisallowAdditionalProperties = false,
     };
+
+    private static readonly JsonElement s_trueSchemaAsObject = JsonDocument.Parse("{}").RootElement;
+    private static readonly JsonElement s_falseSchemaAsObject = JsonDocument.Parse("""{"not":true}""").RootElement;
 
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
-    public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
+    public static KernelJsonSchema Build(Type type, string? description = null, AIJsonSchemaCreateOptions? configuration = null)
     {
         return Build(type, GetDefaultOptions(), description, configuration);
     }
@@ -40,27 +46,21 @@ internal static class KernelJsonSchemaBuilder
         Type type,
         JsonSerializerOptions options,
         string? description = null,
-        JsonSchemaMapperConfiguration? configuration = null)
+        AIJsonSchemaCreateOptions? configuration = null)
     {
-        var mapperConfiguration = configuration ?? s_config;
-
-        JsonNode jsonSchema = options.GetJsonSchema(type, mapperConfiguration);
-        Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
-
-        if (jsonSchema is not JsonObject jsonObj)
+        configuration ??= s_schemaOptions;
+        JsonElement schemaDocument = AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
+        switch (schemaDocument.ValueKind)
         {
-            // Transform boolean schemas into object equivalents.
-            jsonObj = jsonSchema.GetValue<bool>()
-                ? new JsonObject()
-                : new JsonObject { ["not"] = true };
+            case JsonValueKind.False:
+                schemaDocument = s_falseSchemaAsObject;
+                break;
+            case JsonValueKind.True:
+                schemaDocument = s_trueSchemaAsObject;
+                break;
         }
 
-        if (!string.IsNullOrWhiteSpace(description))
-        {
-            jsonObj["description"] = description;
-        }
-
-        return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
+        return KernelJsonSchema.Parse(schemaDocument.GetRawText());
     }
 
     [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]

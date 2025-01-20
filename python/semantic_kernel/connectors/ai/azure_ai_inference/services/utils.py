@@ -2,7 +2,7 @@
 
 import json
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from azure.ai.inference.models import (
     AssistantMessage,
@@ -39,6 +39,22 @@ def _format_system_message(message: ChatMessageContent) -> SystemMessage:
         The formatted system message.
     """
     return SystemMessage(content=message.content)
+
+
+def _format_developer_message(message: ChatMessageContent) -> ChatRequestMessage:
+    """Format a developer message to the expected object for the client.
+
+    Args:
+        message: The developer message.
+
+    Returns:
+        The formatted developer message.
+    """
+    # TODO(@ymuichiro): Add support when Azure AI Inference SDK implements developer role
+    raise NotImplementedError(
+        "Developer role is currently not supported by the Azure AI Inference SDK. "
+        "This feature will be implemented in a future update when SDK support is available."
+    )
 
 
 def _format_user_message(message: ChatMessageContent) -> UserMessage:
@@ -98,7 +114,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
                     function=FunctionCall(
                         name=item.name or "",
                         arguments=json.dumps(item.arguments)
-                        if isinstance(item.arguments, dict)
+                        if isinstance(item.arguments, Mapping)
                         else item.arguments or "",
                     ),
                 )
@@ -140,4 +156,5 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestM
     AuthorRole.USER: _format_user_message,
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
+    AuthorRole.DEVELOPER: _format_developer_message,
 }

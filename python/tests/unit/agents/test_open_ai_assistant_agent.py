@@ -113,7 +113,6 @@ def test_create_client_from_configuration_missing_api_key():
         OpenAIAssistantAgent._create_client(None)
 
 
-@pytest.mark.asyncio
 async def test_create_agent(kernel: Kernel, openai_unit_test_env):
     with patch.object(OpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
@@ -128,7 +127,6 @@ async def test_create_agent(kernel: Kernel, openai_unit_test_env):
         mock_create_assistant.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -159,7 +157,6 @@ async def test_create_agent_with_files(kernel: Kernel, openai_unit_test_env):
         mock_create_assistant.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -183,7 +180,6 @@ async def test_create_agent_with_code_files_not_found_raises_exception(kernel: K
             )
 
 
-@pytest.mark.asyncio
 async def test_create_agent_with_search_files_not_found_raises_exception(kernel: Kernel, openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -207,7 +203,6 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
             )
 
 
-@pytest.mark.asyncio
 async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=kernel,
@@ -246,7 +241,6 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
         }
 
 
-@pytest.mark.asyncio
 async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
@@ -324,7 +318,6 @@ async def test_list_definitions(kernel: Kernel, openai_unit_test_env):
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
-@pytest.mark.asyncio
 async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_test_env):
     with pytest.raises(AgentInitializationException, match="The OpenAI chat model ID is required."):
         _ = await OpenAIAssistantAgent.retrieve(
@@ -333,7 +326,6 @@ async def test_retrieve_agent_missing_chat_model_id_throws(kernel, openai_unit_t
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
-@pytest.mark.asyncio
 async def test_retrieve_agent_missing_api_key_throws(kernel, openai_unit_test_env):
     with pytest.raises(
         AgentInitializationException, match="The OpenAI API key is required, if a client is not provided."
@@ -426,7 +418,6 @@ def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_j
         }
 
 
-@pytest.mark.asyncio
 async def test_retrieve_agent(kernel, openai_unit_test_env):
     with (
         patch.object(
@@ -518,3 +509,93 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
         }
         mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")
         mock_create_def.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "exclude_list, client, api_key, should_raise, expected_exception_msg, should_create_client_call",
+    [
+        ([], None, "test_api_key", False, None, True),
+        ([], AsyncMock(spec=AsyncOpenAI), None, False, None, False),
+        ([], AsyncMock(spec=AsyncOpenAI), "test_api_key", False, None, False),
+        (
+            ["OPENAI_API_KEY"],
+            None,
+            None,
+            True,
+            "The OpenAI API key is required, if a client is not provided.",
+            False,
+        ),
+    ],
+    indirect=["exclude_list"],
+)
+async def test_retrieve_agent_handling_api_key_and_client(
+    openai_unit_test_env,
+    exclude_list,
+    kernel,
+    client,
+    api_key,
+    should_raise,
+    expected_exception_msg,
+    should_create_client_call,
+):
+    is_api_key_present = "OPENAI_API_KEY" not in exclude_list
+
+    with (
+        patch.object(
+            OpenAIAssistantAgent,
+            "_create_open_ai_settings",
+            return_value=MagicMock(
+                chat_model_id="test_model",
+                api_key=MagicMock(
+                    get_secret_value=MagicMock(return_value="test_api_key" if is_api_key_present else None)
+                )
+                if is_api_key_present
+                else None,
+            ),
+        ),
+        patch.object(
+            OpenAIAssistantAgent,
+            "_create_client",
+            return_value=AsyncMock(spec=AsyncOpenAI),
+        ) as mock_create_client,
+        patch.object(
+            OpenAIAssistantBase,
+            "_create_open_ai_assistant_definition",
+            return_value={
+                "ai_model_id": "test_model",
+                "description": "test_description",
+                "id": "test_id",
+                "name": "test_name",
+            },
+        ) as mock_create_def,
+    ):
+        if client:
+            client.beta = MagicMock()
+            client.beta.assistants = MagicMock()
+            client.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+        else:
+            mock_client_instance = mock_create_client.return_value
+            mock_client_instance.beta = MagicMock()
+            mock_client_instance.beta.assistants = MagicMock()
+            mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+
+        if should_raise:
+            with pytest.raises(AgentInitializationException, match=expected_exception_msg):
+                await OpenAIAssistantAgent.retrieve(id="test_id", kernel=kernel, api_key=api_key, client=client)
+            return
+
+        retrieved_agent = await OpenAIAssistantAgent.retrieve(
+            id="test_id", kernel=kernel, api_key=api_key, client=client
+        )
+
+        if should_create_client_call:
+            mock_create_client.assert_called_once()
+        else:
+            mock_create_client.assert_not_called()
+
+        assert retrieved_agent.ai_model_id == "test_model"
+        mock_create_def.assert_called_once()
+        if client:
+            client.beta.assistants.retrieve.assert_called_once_with("test_id")
+        else:
+            mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")

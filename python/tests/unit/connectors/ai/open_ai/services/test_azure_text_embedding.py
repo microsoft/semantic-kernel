@@ -87,7 +87,6 @@ def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_opena
         assert mock_get_token.call_count == 0
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_openai_unit_test_env) -> None:
     texts = ["hello world", "goodbye world"]
@@ -104,7 +103,6 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
     )
 
 
-@pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai_unit_test_env) -> None:
     texts = [i for i in range(0, 5)]

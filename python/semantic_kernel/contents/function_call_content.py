@@ -2,6 +2,8 @@
 
 import json
 import logging
+import re
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
@@ -39,7 +41,7 @@ class FunctionCallContent(KernelContent):
     name: str | None = None
     function_name: str
     plugin_name: str | None = None
-    arguments: str | dict[str, Any] | None = None
+    arguments: str | Mapping[str, Any] | None = None
 
     def __init__(
         self,
@@ -51,7 +53,7 @@ class FunctionCallContent(KernelContent):
         name: str | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        arguments: str | dict[str, Any] | None = None,
+        arguments: str | Mapping[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -125,13 +127,13 @@ class FunctionCallContent(KernelContent):
         )
 
     def combine_arguments(
-        self, arg1: str | dict[str, Any] | None, arg2: str | dict[str, Any] | None
-    ) -> str | dict[str, Any]:
+        self, arg1: str | Mapping[str, Any] | None, arg2: str | Mapping[str, Any] | None
+    ) -> str | Mapping[str, Any]:
         """Combine two arguments."""
-        if isinstance(arg1, dict) and isinstance(arg2, dict):
+        if isinstance(arg1, Mapping) and isinstance(arg2, Mapping):
             return {**arg1, **arg2}
         # when one of the two is a dict, and the other isn't, we raise.
-        if isinstance(arg1, dict) or isinstance(arg2, dict):
+        if isinstance(arg1, Mapping) or isinstance(arg2, Mapping):
             raise ContentAdditionException("Cannot combine a dict with a string.")
         if arg1 in EMPTY_VALUES and arg2 in EMPTY_VALUES:
             return "{}"
@@ -141,16 +143,25 @@ class FunctionCallContent(KernelContent):
             return arg1 or "{}"
         return (arg1 or "") + (arg2 or "")
 
-    def parse_arguments(self) -> dict[str, Any] | None:
+    def parse_arguments(self) -> Mapping[str, Any] | None:
         """Parse the arguments into a dictionary."""
         if not self.arguments:
             return None
-        if isinstance(self.arguments, dict):
+        if isinstance(self.arguments, Mapping):
             return self.arguments
         try:
             return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
-            raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
+            logger.debug("Function Call arguments are not valid JSON. Trying to preprocess.")
+            try:
+                # Python strings can be single quoted, but JSON strings should be double quoted.
+                # JSON keys and values should be enclosed in double quotes.
+                # Replace single quotes with double quotes, but not if it's an escaped single quote.
+                return json.loads(re.sub(r"(?<!\\)'", '"', self.arguments).replace("\\'", "'"))
+            except json.JSONDecodeError:
+                raise FunctionCallInvalidArgumentsException(
+                    "Function Call arguments are not valid JSON even after preprocessing."
+                ) from exc
 
     def to_kernel_arguments(self) -> "KernelArguments":
         """Return the arguments as a KernelArguments instance."""
@@ -192,7 +203,7 @@ class FunctionCallContent(KernelContent):
         if self.name:
             element.set("name", self.name)
         if self.arguments:
-            element.text = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
+            element.text = json.dumps(self.arguments) if isinstance(self.arguments, Mapping) else self.arguments
         return element
 
     @classmethod
@@ -205,7 +216,7 @@ class FunctionCallContent(KernelContent):
 
     def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
-        args = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
+        args = json.dumps(self.arguments) if isinstance(self.arguments, Mapping) else self.arguments
         return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": args}}
 
     def __hash__(self) -> int:

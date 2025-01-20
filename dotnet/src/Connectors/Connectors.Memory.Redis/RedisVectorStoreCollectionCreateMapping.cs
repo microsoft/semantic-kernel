@@ -177,8 +177,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
         return vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity => "COSINE",
+            DistanceFunction.CosineDistance => "COSINE",
             DistanceFunction.DotProductSimilarity => "IP",
-            DistanceFunction.EuclideanDistance => "L2",
+            DistanceFunction.EuclideanSquaredDistance => "L2",
             _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
         };
     }

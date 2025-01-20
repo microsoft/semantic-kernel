@@ -54,6 +54,11 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public KernelFunction Function { get; } = function;
 
     /// <summary>
+    /// Only include agent name in history when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// </summary>
+    public bool EvaluateNameOnly { get; init; }
+
+    /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
@@ -74,7 +79,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentVariableName, agent.Name ?? agent.Id },
-                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history, this.EvaluateNameOnly) },
             };
 
         this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);

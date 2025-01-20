@@ -79,12 +79,12 @@ public static class CopilotAgentPluginKernelExtensions
 
         var results = await PluginManifestDocument.LoadAsync(CopilotAgentFileJsonContents, new ReaderOptions
         {
-            ValidationRules = new() // Disable validation rules
+            ValidationRules = [] // Disable validation rules
         }).ConfigureAwait(false);
 
         if (!results.IsValid)
         {
-            var messages = results.Problems.Select(p => p.Message).Aggregate((a, b) => $"{a}, {b}");
+            var messages = results.Problems.Select(static p => p.Message).Aggregate(static (a, b) => $"{a}, {b}");
             throw new InvalidOperationException($"Error loading the manifest: {messages}");
         }
 
@@ -150,7 +150,11 @@ public static class CopilotAgentPluginKernelExtensions
 
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(server.Url, out var parameters) == true
                 ? parameters
-                : null;
+                : new OpenApiFunctionExecutionParameters()
+                {
+                    EnableDynamicPayload = false,
+                    EnablePayloadNamespacing = true,
+                };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -160,8 +164,8 @@ public static class CopilotAgentPluginKernelExtensions
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
@@ -173,11 +177,12 @@ public static class CopilotAgentPluginKernelExtensions
                     try
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                        TrimOperationDescriptions(operation);
                         functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
-                        //Logging the exception and keep registering other Rest functions
+                        // Logging the exception and keep registering other Rest functions
                         logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                             pluginName, operation.Id, ex.Message);
                     }
@@ -186,4 +191,20 @@ public static class CopilotAgentPluginKernelExtensions
         }
         return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
+
+    #region private
+    private const int MaximumDescription = 1000;
+
+    /// <summary>
+    /// Trims the operation descriptions to a maximum length.
+    /// </summary>
+    private static void TrimOperationDescriptions(RestApiOperation operation)
+    {
+        // Limit the description
+        if (operation.Description?.Length > MaximumDescription)
+        {
+            operation.Description = operation.Description.Substring(0, MaximumDescription);
+        }
+    }
+    #endregion
 }

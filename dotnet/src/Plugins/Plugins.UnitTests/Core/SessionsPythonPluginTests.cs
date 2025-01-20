@@ -70,6 +70,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new StringContent(responseContent),
         };
         var expectedResult = """
+                       Status:
+                       "Success"
                        Result:
                        ""
                        Stdout:

@@ -62,7 +62,6 @@ def test_extract_from_empty():
     assert len(blocks) == 0
 
 
-@pytest.mark.asyncio
 async def test_it_renders_code_using_input(kernel: Kernel):
     arguments = KernelArguments()
 
@@ -82,7 +81,6 @@ async def test_it_renders_code_using_input(kernel: Kernel):
     assert result == "foo-F(INPUT-BAR)-baz"
 
 
-@pytest.mark.asyncio
 async def test_it_renders_code_using_variables(kernel: Kernel):
     arguments = KernelArguments()
 
@@ -102,7 +100,6 @@ async def test_it_renders_code_using_variables(kernel: Kernel):
     assert result == "foo-F(BAR)-baz"
 
 
-@pytest.mark.asyncio
 async def test_it_renders_code_using_variables_async(kernel: Kernel):
     arguments = KernelArguments()
 
@@ -124,7 +121,6 @@ async def test_it_renders_code_using_variables_async(kernel: Kernel):
     assert result == "foo-BAR-baz"
 
 
-@pytest.mark.asyncio
 async def test_it_renders_code_error(kernel: Kernel):
     arguments = KernelArguments()
 

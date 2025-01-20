@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -24,7 +25,9 @@ public sealed class GeminiRequestTests
             Temperature = 1.5,
             MaxTokens = 10,
             TopP = 0.9,
-            AudioTimestamp = true
+            AudioTimestamp = true,
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
         };
 
         // Act
@@ -35,7 +38,119 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.Temperature, request.Configuration.Temperature);
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
+    }
+
+    [Fact]
+    public void JsonElementResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int))
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
+    }
+
+    [Fact]
+    public void KernelJsonSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = KernelJsonSchemaBuilder.Build(typeof(int))
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(((KernelJsonSchema)executionSettings.ResponseSchema).RootElement, request.Configuration.ResponseSchema);
+    }
+
+    [Fact]
+    public void JsonNodeResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonNode.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
+    [Fact]
+    public void JsonDocumentResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonDocument.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
+    [Theory]
+    [InlineData(typeof(int), "integer")]
+    [InlineData(typeof(bool), "boolean")]
+    [InlineData(typeof(string), "string")]
+    [InlineData(typeof(double), "number")]
+    [InlineData(typeof(GeminiRequest), "object")]
+    [InlineData(typeof(List<int>), "array")]
+    public void TypeResponseSchemaFromPromptReturnsAsExpected(Type type, string expectedSchemaType)
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = type
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        var schemaType = request.Configuration.ResponseSchema?.GetProperty("type").GetString();
+
+        Assert.Equal(expectedSchemaType, schemaType);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
     }
 
     [Fact]
@@ -87,7 +202,8 @@ public sealed class GeminiRequestTests
             Temperature = 1.5,
             MaxTokens = 10,
             TopP = 0.9,
-            AudioTimestamp = true
+            AudioTimestamp = true,
+            ResponseMimeType = "application/json"
         };
 
         // Act
@@ -98,6 +214,7 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.Temperature, request.Configuration.Temperature);
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
     }
 

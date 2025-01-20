@@ -36,7 +36,6 @@ def setup_milvus():
     default_server.cleanup()
 
 
-@pytest.mark.asyncio
 async def test_create_and_get_collection(setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -46,7 +45,6 @@ async def test_create_and_get_collection(setup_milvus):
     assert result == ["test_collection"]
 
 
-@pytest.mark.asyncio
 async def test_get_collections(setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -58,7 +56,6 @@ async def test_get_collections(setup_milvus):
     assert len(result) == 3
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -74,7 +71,6 @@ async def test_delete_collection(setup_milvus):
     assert len(result) == 0
 
 
-@pytest.mark.asyncio
 async def test_does_collection_exist(setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -87,7 +83,6 @@ async def test_does_collection_exist(setup_milvus):
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get(memory_record1, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -106,7 +101,6 @@ async def test_upsert_and_get(memory_record1, setup_milvus):
     assert result._additional_metadata == "additional metadata"
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_with_no_embedding(memory_record1, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -125,7 +119,6 @@ async def test_upsert_and_get_with_no_embedding(memory_record1, setup_milvus):
     assert result._additional_metadata == "additional metadata"
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get_batch(memory_record1, memory_record2, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -145,7 +138,6 @@ async def test_upsert_and_get_batch(memory_record1, memory_record2, setup_milvus
     assert result[0]._additional_metadata == "additional metadata"
 
 
-@pytest.mark.asyncio
 async def test_remove(memory_record1, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -160,7 +152,6 @@ async def test_remove(memory_record1, setup_milvus):
         await memory.get("test_collection", "test_id1", True)
 
 
-@pytest.mark.asyncio
 async def test_remove_batch(memory_record1, memory_record2, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -174,7 +165,6 @@ async def test_remove_batch(memory_record1, memory_record2, setup_milvus):
     assert result == []
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_matches(memory_record1, memory_record2, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
@@ -187,7 +177,6 @@ async def test_get_nearest_matches(memory_record1, memory_record2, setup_milvus)
     assert results[0][1] == pytest.approx(0.5, abs=1e-5)
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_match(memory_record1, memory_record2, setup_milvus):
     URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)

@@ -18,7 +18,7 @@ from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashse
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class RedisStore(VectorStore):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
+            raise VectorStoreInitializationException("Failed to create Redis settings.", ex) from ex
         super().__init__(redis_database=RedisWrapper.from_url(redis_settings.connection_string.get_secret_value()))
 
     @override

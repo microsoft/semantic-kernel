@@ -112,7 +112,6 @@ def test_prompt_execution_settings_class(mock_client, bedrock_unit_test_env) -> 
 # endregion
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",
@@ -150,7 +149,6 @@ async def test_bedrock_text_embedding(model_id, mock_bedrock_text_embedding_resp
         assert len(response) == 2
 
 
-@pytest.mark.asyncio
 async def test_bedrock_text_embedding_with_unsupported_model_input_modality(model_id) -> None:
     """Test Bedrock text embedding generation with unsupported model"""
     with patch.object(
@@ -167,7 +165,6 @@ async def test_bedrock_text_embedding_with_unsupported_model_input_modality(mode
             await bedrock_text_embedding.generate_embeddings(["hello", "world"])
 
 
-@pytest.mark.asyncio
 async def test_bedrock_text_embedding_with_unsupported_model_output_modality(model_id) -> None:
     """Test Bedrock text embedding generation with unsupported model"""
     with patch.object(
@@ -186,7 +183,6 @@ async def test_bedrock_text_embedding_with_unsupported_model_output_modality(mod
             await bedrock_text_embedding.generate_embeddings(["hello", "world"])
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     # These are fake model ids with the supported prefixes
     "model_id",

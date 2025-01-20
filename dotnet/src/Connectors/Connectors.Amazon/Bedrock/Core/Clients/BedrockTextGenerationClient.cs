@@ -178,12 +178,11 @@ internal sealed class BedrockTextGenerationClient
             {
                 continue;
             }
-            IEnumerable<string> texts = this._ioTextService.GetTextStreamOutput(chunk);
-            foreach (var text in texts)
+
+            foreach (var streamingContent in this._ioTextService.GetTextStreamOutput(chunk))
             {
-                var content = new StreamingTextContent(text);
-                streamedContents?.Add(content);
-                yield return new StreamingTextContent(text);
+                streamedContents?.Add(streamingContent);
+                yield return streamingContent;
             }
         }
         activity?.SetStatus(BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode));

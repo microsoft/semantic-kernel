@@ -20,7 +20,6 @@ def test_can_be_instantiated(connector):
     assert WebSearchEnginePlugin(connector)
 
 
-@pytest.mark.asyncio
 async def test_search(connector):
     plugin = WebSearchEnginePlugin(connector)
     results = await plugin.search("test")

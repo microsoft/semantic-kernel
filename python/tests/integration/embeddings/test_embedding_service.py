@@ -59,7 +59,10 @@ pytestmark = pytest.mark.parametrize(
             "ollama",
             {},
             768,
-            marks=pytest.mark.skipif(not ollama_setup, reason="Ollama environment variables not set"),
+            marks=(
+                pytest.mark.skipif(not ollama_setup, reason="Ollama not setup"),
+                pytest.mark.ollama,
+            ),
             id="ollama",
         ),
         pytest.param(
@@ -98,7 +101,6 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio(scope="module")
 class TestEmbeddingService(EmbeddingServiceTestBase):
     """Test embedding service with memory.
 

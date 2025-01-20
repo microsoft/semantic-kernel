@@ -2,11 +2,11 @@
 
 import logging
 from abc import ABC
+from collections.abc import Mapping, Sequence
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
-from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
@@ -18,9 +18,6 @@ from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateB
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-        OpenAIFunctionExecutionParameters,
-    )
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -126,7 +123,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         prompt: str | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
         prompt_execution_settings: (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+            PromptExecutionSettings | Sequence[PromptExecutionSettings] | Mapping[str, PromptExecutionSettings] | None
         ) = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
@@ -233,43 +230,6 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 openapi_document_path=openapi_document_path,
                 openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
-                description=description,
-            )
-        )
-
-    @deprecated(
-        "The `add_plugin_from_openai` method is deprecated; use the `add_plugin_from_openapi` method instead.",
-        category=None,
-    )
-    async def add_plugin_from_openai(
-        self,
-        plugin_name: str,
-        plugin_url: str | None = None,
-        plugin_str: str | None = None,
-        execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
-        description: str | None = None,
-    ) -> KernelPlugin:
-        """Add a plugin from an OpenAPI document.
-
-        Args:
-            plugin_name (str): The name of the plugin
-            plugin_url (str | None): The URL of the plugin
-            plugin_str (str | None): The JSON string of the plugin
-            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
-
-        Returns:
-            KernelPlugin: The imported plugin
-
-        Raises:
-            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
-        """
-        return self.add_plugin(
-            await KernelPlugin.from_openai(
-                plugin_name=plugin_name,
-                plugin_url=plugin_url,
-                plugin_str=plugin_str,
-                execution_parameters=execution_parameters,
                 description=description,
             )
         )

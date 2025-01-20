@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from pytest import mark
-
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -31,7 +29,6 @@ class MyPlugin:
         return input or ""
 
 
-@mark.asyncio
 async def test_it_supports_variables(kernel: Kernel):
     # Arrange
     input = "template tests"
@@ -46,7 +43,6 @@ async def test_it_supports_variables(kernel: Kernel):
     assert expected == result
 
 
-@mark.asyncio
 async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
     # Arrange
     template = "== {{ my_check123() }} =="
@@ -60,7 +56,6 @@ async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
     assert result == "== 123 ok =="
 
 
-@mark.asyncio
 async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
     # Arrange
     template = "== {{ my_check123(input=234) }} =="
@@ -73,7 +68,6 @@ async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
     assert result == "== 234 != 123 =="
 
 
-@mark.asyncio
 async def test_it_allows_to_pass_escaped_values1_to_functions(kernel: Kernel):
     # Arrange
     template = """== {{ my_check123(input="a'b") }} =="""
@@ -85,7 +79,6 @@ async def test_it_allows_to_pass_escaped_values1_to_functions(kernel: Kernel):
     assert result == "== a'b != 123 =="
 
 
-@mark.asyncio
 async def test_it_allows_to_pass_escaped_values2_to_functions(kernel: Kernel):
     # Arrange
     template = '== {{my_check123(input="a\\"b")}} =='
@@ -98,7 +91,6 @@ async def test_it_allows_to_pass_escaped_values2_to_functions(kernel: Kernel):
     assert result == '== a"b != 123 =='
 
 
-@mark.asyncio
 async def test_chat_history_round_trip(kernel: Kernel):
     template = """{% for item in chat_history %}{{ message(item) }}{% endfor %}"""
     target = create_jinja2_prompt_template(template)

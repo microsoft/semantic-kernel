@@ -42,13 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v5
         with:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Test with pytest
         env:
           PYTHON_GIL: ${{ matrix.gil }}
@@ -62,44 +62,3 @@ jobs:
           display-options: fEX
           fail-on-empty: true
           title: Test results
-  python-test-coverage:
-    name: Python Test Coverage
-    runs-on: [ubuntu-latest]
-    continue-on-error: true
-    permissions:
-      contents: write
-    defaults:
-      run:
-        working-directory: python
-    env:
-      UV_PYTHON: "3.10"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "0.5.x"
-          enable-cache: true
-          cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
-      - name: Install the project
-        run: uv sync --all-extras --dev
-      - name: Test with pytest
-        run: uv run --frozen pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
-          path: python/python-coverage.txt
-          overwrite: true
-          retention-days: 1
-      - name: Upload pytest.xml
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-${{ env.FILE_ID }}.xml
-          path: python/pytest.xml
-          overwrite: true
-          retention-days: 1

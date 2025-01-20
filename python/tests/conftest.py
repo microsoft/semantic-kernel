@@ -192,44 +192,6 @@ def prompt() -> str:
     return "test prompt"
 
 
-# @fixture(autouse=True)
-# def enable_debug_mode():
-#     """Set `autouse=True` to enable easy debugging for tests.
-
-#     How to debug:
-#     1. Ensure [snoop](https://github.com/alexmojaki/snoop) is installed
-#         (`pip install snoop`).
-#     2. If you're doing print based debugging, use `pr` instead of `print`.
-#         That is, convert `print(some_var)` to `pr(some_var)`.
-#     3. If you want a trace of a particular functions calls, just add `ss()` as the first
-#         line of the function.
-
-#     Note:
-#     ----
-#         It's completely fine to leave `autouse=True` in the fixture. It doesn't affect
-#         the tests unless you use `pr` or `ss` in any test.
-
-#     Note:
-#     ----
-#         When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
-#         because they don't know that we're adding these functions to the builtins. The
-#         tests will run fine though.
-#     """
-#     import builtins
-
-#     try:
-#         import snoop
-#     except ImportError:
-#         warnings.warn(
-#             "Install snoop to enable trace debugging. `pip install snoop`",
-#             ImportWarning,
-#         )
-#         return
-
-#     builtins.ss = snoop.snoop(depth=4).__enter__
-#     builtins.pr = snoop.pp
-
-
 @fixture
 def exclude_list(request):
     """Fixture that returns a list of environment variables to exclude."""

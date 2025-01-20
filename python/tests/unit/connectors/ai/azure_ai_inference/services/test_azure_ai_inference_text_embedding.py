@@ -74,7 +74,6 @@ def test_azure_ai_inference_text_embedding_init_with_empty_endpoint(azure_ai_inf
         AzureAIInferenceTextEmbedding(model_id, env_file_path="fake_path")
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceTextEmbedding.__name__],
@@ -98,7 +97,6 @@ async def test_azure_ai_inference_text_embedding(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceTextEmbedding.__name__],
@@ -125,7 +123,6 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "azure_ai_inference_service",
     [AzureAIInferenceTextEmbedding.__name__],

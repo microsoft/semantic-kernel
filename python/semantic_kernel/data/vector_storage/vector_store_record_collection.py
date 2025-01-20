@@ -7,14 +7,18 @@ from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from pydantic import model_validator
+from pydantic import BaseModel, model_validator
 
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
+from semantic_kernel.data.record_definition.vector_store_model_protocols import (
+    SerializeMethodProtocol,
+    ToDictMethodProtocol,
+)
+from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
     VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
@@ -96,6 +100,15 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         Returns:
             The keys of the upserted records.
+
+        Raises:
+            Exception: If an error occurs during the upsert.
+                There is no need to catch and parse exceptions in the inner functions,
+                they are handled by the public methods.
+                The only exception is raises exceptions yourself, such as a ValueError.
+                This is then caught and turned into the relevant exception by the public method.
+                This setup promotes a limited depth of the stack trace.
+
         """
         ...  # pragma: no cover
 
@@ -109,6 +122,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         Returns:
             The records from the store, not deserialized.
+
+        Raises:
+            Exception: If an error occurs during the upsert.
+                There is no need to catch and parse exceptions in the inner functions,
+                they are handled by the public methods.
+                The only exception is raises exceptions yourself, such as a ValueError.
+                This is then caught and turned into the relevant exception by the public method.
+                This setup promotes a limited depth of the stack trace.
         """
         ...  # pragma: no cover
 
@@ -119,6 +140,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         Args:
             keys: The keys.
             **kwargs: Additional arguments.
+
+        Raises:
+            Exception: If an error occurs during the upsert.
+                There is no need to catch and parse exceptions in the inner functions,
+                they are handled by the public methods.
+                The only exception is raises exceptions yourself, such as a ValueError.
+                This is then caught and turned into the relevant exception by the public method.
+                This setup promotes a limited depth of the stack trace.
         """
         ...  # pragma: no cover
 
@@ -184,17 +213,39 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     @abstractmethod
     async def create_collection(self, **kwargs: Any) -> None:
-        """Create the collection in the service."""
+        """Create the collection in the service.
+
+        This should be overridden by the child class.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+            This is different then the `_inner_x` methods, as this is a public method.
+
+        """
         ...  # pragma: no cover
 
     @abstractmethod
     async def does_collection_exist(self, **kwargs: Any) -> bool:
-        """Check if the collection exists."""
+        """Check if the collection exists.
+
+        This should be overridden by the child class.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+            This is different then the `_inner_x` methods, as this is a public method.
+        """
         ...  # pragma: no cover
 
     @abstractmethod
     async def delete_collection(self, **kwargs: Any) -> None:
-        """Delete the collection."""
+        """Delete the collection.
+
+        This should be overridden by the child class.
+
+        Raises:
+            Make sure the implementation of this function raises relevant exceptions with good descriptions.
+            This is different then the `_inner_x` methods, as this is a public method.
+        """
         ...  # pragma: no cover
 
     # region Public Methods
@@ -223,19 +274,24 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         Returns:
             The key of the upserted record or a list of keys, when a container type is used.
+
+        Raises:
+            VectorStoreModelSerializationException: If an error occurs during serialization.
+            VectorStoreOperationException: If an error occurs during upserting.
         """
         if embedding_generation_function:
             record = await embedding_generation_function(record, self.data_model_type, self.data_model_definition)
 
         try:
             data = self.serialize(record)
-        except Exception as exc:
-            raise MemoryConnectorException(f"Error serializing record: {exc}") from exc
+        # the serialize method will parse any exception into a VectorStoreModelSerializationException
+        except VectorStoreModelSerializationException:
+            raise
 
         try:
             results = await self._inner_upsert(data if isinstance(data, Sequence) else [data], **kwargs)
         except Exception as exc:
-            raise MemoryConnectorException(f"Error upserting record: {exc}") from exc
+            raise VectorStoreOperationException(f"Error upserting record: {exc}") from exc
 
         if self._container_mode:
             return results
@@ -266,19 +322,24 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         Returns:
             Sequence[TKey]: The keys of the upserted records, this is always a list,
             corresponds to the input or the items in the container.
+
+        Raises:
+            VectorStoreModelSerializationException: If an error occurs during serialization.
+            VectorStoreOperationException: If an error occurs during upserting.
         """
         if embedding_generation_function:
             records = await embedding_generation_function(records, self.data_model_type, self.data_model_definition)
 
         try:
             data = self.serialize(records)
-        except Exception as exc:
-            raise MemoryConnectorException(f"Error serializing records: {exc}") from exc
+        # the serialize method will parse any exception into a VectorStoreModelSerializationException
+        except VectorStoreModelSerializationException:
+            raise
 
         try:
             return await self._inner_upsert(data, **kwargs)  # type: ignore
         except Exception as exc:
-            raise MemoryConnectorException(f"Error upserting records: {exc}") from exc
+            raise VectorStoreOperationException(f"Error upserting records: {exc}") from exc
 
     async def get(self, key: TKey, include_vectors: bool = True, **kwargs: Any) -> TModel | None:
         """Get a record if the key exists.
@@ -293,19 +354,24 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         Returns:
             TModel: The record. None if the key does not exist.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
         """
         try:
             records = await self._inner_get([key], include_vectors=include_vectors, **kwargs)
         except Exception as exc:
-            raise MemoryConnectorException(f"Error getting record: {exc}") from exc
+            raise VectorStoreOperationException(f"Error getting record: {exc}") from exc
 
         if not records:
             return None
 
         try:
             model_records = self.deserialize(records[0], **kwargs)
-        except Exception as exc:
-            raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
+        # the deserialize method will parse any exception into a VectorStoreModelDeserializationException
+        except VectorStoreModelDeserializationException:
+            raise
 
         # there are many code paths within the deserialize method, some supplied by the developer,
         # and so depending on what is used,
@@ -316,7 +382,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return model_records
         if len(model_records) == 1:
             return model_records[0]
-        raise MemoryConnectorException(f"Error deserializing record, multiple records returned: {model_records}")
+        raise VectorStoreModelDeserializationException(
+            f"Error deserializing record, multiple records returned: {model_records}"
+        )
 
     async def get_batch(
         self, keys: Sequence[TKey], include_vectors: bool = True, **kwargs: Any
@@ -333,19 +401,24 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         Returns:
             The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
         """
         try:
             records = await self._inner_get(keys, include_vectors=include_vectors, **kwargs)
         except Exception as exc:
-            raise MemoryConnectorException(f"Error getting records: {exc}") from exc
+            raise VectorStoreOperationException(f"Error getting records: {exc}") from exc
 
         if not records:
             return None
 
         try:
             return self.deserialize(records, keys=keys, **kwargs)
-        except Exception as exc:
-            raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
+        # the deserialize method will parse any exception into a VectorStoreModelDeserializationException
+        except VectorStoreModelDeserializationException:
+            raise
 
     async def delete(self, key: TKey, **kwargs: Any) -> None:
         """Delete a record.
@@ -354,12 +427,12 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             key: The key.
             **kwargs: Additional arguments.
         Exceptions:
-            MemoryConnectorException: If an error occurs during deletion or the record does not exist.
+            VectorStoreOperationException: If an error occurs during deletion or the record does not exist.
         """
         try:
             await self._inner_delete([key], **kwargs)
         except Exception as exc:
-            raise MemoryConnectorException(f"Error deleting record: {exc}") from exc
+            raise VectorStoreOperationException(f"Error deleting record: {exc}") from exc
 
     async def delete_batch(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         """Delete a batch of records.
@@ -370,14 +443,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             keys: The keys.
             **kwargs: Additional arguments.
         Exceptions:
-            MemoryConnectorException: If an error occurs during deletion or a record does not exist.
+            VectorStoreOperationException: If an error occurs during deletion or a record does not exist.
         """
         try:
             await self._inner_delete(keys, **kwargs)
         except Exception as exc:
-            raise MemoryConnectorException(f"Error deleting records: {exc}") from exc
+            raise VectorStoreOperationException(f"Error deleting records: {exc}") from exc
 
-    # region Internal Serialization methods
+    # region Serialization methods
 
     def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any]:
         """Serialize the data model to the store model.
@@ -391,45 +464,31 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         If overriding this method, make sure to first try to serialize the data model to the store model,
         before doing the store specific version,
         the user supplied version should have precedence.
+
+        Raises:
+            VectorStoreModelSerializationException: If an error occurs during serialization.
+
         """
-        if serialized := self._serialize_data_model_to_store_model(records):
-            return serialized
+        try:
+            if serialized := self._serialize_data_model_to_store_model(records):
+                return serialized
 
-        if isinstance(records, Sequence):
-            dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
-            return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
+            if isinstance(records, Sequence):
+                dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
+                return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
 
-        dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
-        if isinstance(dict_records, Sequence):
-            # most likely this is a container, so we return all records as a list
-            # can also be a single record, but the to_dict returns a list
-            # hence we will treat it as a container.
-            return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
-        # this case is single record in, single record out
-        return self._serialize_dicts_to_store_models([dict_records], **kwargs)[0]
-
-    def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
-        """Deserialize the store model to the data model.
-
-        This method follows the following steps:
-        1. Check if the data model has a deserialize method.
-            Use that method to deserialize and return the result.
-        2. Deserialize the store model to a dict, using the store specific method.
-        3. Convert the dict to the data model, using the data model specific method.
-        """
-        if deserialized := self._deserialize_store_model_to_data_model(records, **kwargs):
-            return deserialized
-
-        if isinstance(records, Sequence):
-            dict_records = self._deserialize_store_models_to_dicts(records, **kwargs)
-            if self._container_mode:
-                return self._deserialize_dict_to_data_model(dict_records, **kwargs)
-            return [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
-
-        dict_record = self._deserialize_store_models_to_dicts([records], **kwargs)[0]
-        if not dict_record:
-            return None
-        return self._deserialize_dict_to_data_model(dict_record, **kwargs)
+            dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
+            if isinstance(dict_records, Sequence):
+                # most likely this is a container, so we return all records as a list
+                # can also be a single record, but the to_dict returns a list
+                # hence we will treat it as a container.
+                return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
+            # this case is single record in, single record out
+            return self._serialize_dicts_to_store_models([dict_records], **kwargs)[0]
+        except VectorStoreModelSerializationException:
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorStoreModelSerializationException(f"Error serializing records: {exc}") from exc
 
     def _serialize_data_model_to_store_model(self, record: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
         """Serialize the data model to the store model.
@@ -445,13 +504,74 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 return None
             return result
         if self.data_model_definition.serialize:
-            return self.data_model_definition.serialize(record, **kwargs)  # type: ignore
-        if hasattr(record, "serialize"):
-            try:
-                return record.serialize(**kwargs)
-            except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
+            return self.data_model_definition.serialize(record, **kwargs)
+        if isinstance(record, SerializeMethodProtocol):
+            return record.serialize(**kwargs)
         return None
+
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
+        """This function is used if no serialize method is found on the data model.
+
+        This will generally serialize the data model to a dict, should not be overridden by child classes.
+
+        The output of this should be passed to the serialize_dict_to_store_model method.
+        """
+        if self.data_model_definition.to_dict:
+            return self.data_model_definition.to_dict(record, **kwargs)
+        if isinstance(record, ToDictMethodProtocol):
+            return self._serialize_vectors(record.to_dict())
+        if isinstance(record, BaseModel):
+            return self._serialize_vectors(record.model_dump())
+
+        store_model = {}
+        for field_name in self.data_model_definition.field_names:
+            value = record[field_name] if isinstance(record, Mapping) else getattr(record, field_name)
+            if func := getattr(self.data_model_definition.fields[field_name], "serialize_function", None):
+                value = func(value)
+            store_model[field_name] = value
+        return store_model
+
+    def _serialize_vectors(self, record: dict[str, Any]) -> dict[str, Any]:
+        for field in self.data_model_definition.vector_fields:
+            if field.serialize_function:
+                record[field.name or ""] = field.serialize_function(record[field.name or ""])
+        return record
+
+    # region Deserialization methods
+
+    def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
+        """Deserialize the store model to the data model.
+
+        This method follows the following steps:
+        1. Check if the data model has a deserialize method.
+            Use that method to deserialize and return the result.
+        2. Deserialize the store model to a dict, using the store specific method.
+        3. Convert the dict to the data model, using the data model specific method.
+
+        Raises:
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        try:
+            if not records:
+                return None
+            if deserialized := self._deserialize_store_model_to_data_model(records, **kwargs):
+                return deserialized
+
+            if isinstance(records, Sequence):
+                dict_records = self._deserialize_store_models_to_dicts(records, **kwargs)
+                return (
+                    self._deserialize_dict_to_data_model(dict_records, **kwargs)
+                    if self._container_mode
+                    else [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
+                )
+
+            dict_record = self._deserialize_store_models_to_dicts([records], **kwargs)[0]
+            # regardless of mode, only 1 object is returned.
+            return self._deserialize_dict_to_data_model(dict_record, **kwargs)
+        except VectorStoreModelDeserializationException:
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorStoreModelDeserializationException(f"Error deserializing records: {exc}") from exc
 
     def _deserialize_store_model_to_data_model(self, record: OneOrMany[Any], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Deserialize the store model to the data model.
@@ -465,61 +585,11 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             if isinstance(record, Sequence):
                 return self.data_model_definition.deserialize(record, **kwargs)
             return self.data_model_definition.deserialize([record], **kwargs)
-        try:
-            if hasattr(self.data_model_type, "deserialize"):
-                if isinstance(record, Sequence):
-                    return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]  # type: ignore
-                return self.data_model_type.deserialize(record, **kwargs)  # type: ignore
-        except Exception as exc:
-            raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
+        if func := getattr(self.data_model_type, "deserialize", None):
+            if isinstance(record, Sequence):
+                return [func(rec, **kwargs) for rec in record]
+            return func(record, **kwargs)
         return None
-
-    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
-        """This function is used if no serialize method is found on the data model.
-
-        This will generally serialize the data model to a dict, should not be overridden by child classes.
-
-        The output of this should be passed to the serialize_dict_to_store_model method.
-        """
-        if self.data_model_definition.to_dict:
-            return self.data_model_definition.to_dict(record, **kwargs)
-        if hasattr(record, "model_dump"):
-            try:
-                ret = record.model_dump()  # type: ignore
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return ret
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        assert field.name is not None  # nosec
-                        ret[field.name] = field.serialize_function(ret[field.name])
-                return ret
-            except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
-        if hasattr(record, "to_dict"):
-            try:
-                ret = record.to_dict()  # type: ignore
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return ret
-                for field in self.data_model_definition.vector_fields:
-                    if field.serialize_function:
-                        assert field.name is not None  # nosec
-                        ret[field.name] = field.serialize_function(ret[field.name])
-                return ret
-            except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
-
-        store_model = {}
-        for field_name in self.data_model_definition.field_names:
-            try:
-                value = record[field_name] if isinstance(record, Mapping) else getattr(record, field_name)
-                if func := getattr(self.data_model_definition.fields[field_name], "serialize_function", None):
-                    value = func(value)
-                store_model[field_name] = value
-            except (AttributeError, KeyError) as exc:
-                raise VectorStoreModelSerializationException(
-                    f"Error serializing record, not able to get: {field_name}"
-                ) from exc
-        return store_model
 
     def _deserialize_dict_to_data_model(self, record: OneOrMany[dict[str, Any]], **kwargs: Any) -> TModel:
         """This function is used if no deserialize method is found on the data model.
@@ -541,44 +611,31 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if hasattr(self.data_model_type, "model_validate"):
-            try:
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return self.data_model_type.model_validate(record)  # type: ignore
-                if include_vectors:
-                    for field in self.data_model_definition.vector_fields:
-                        if field.serialize_function:
-                            record[field.name] = field.serialize_function(record[field.name])  # type: ignore
-                return self.data_model_type.model_validate(record)  # type: ignore
-            except Exception as exc:
-                raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
-        if hasattr(self.data_model_type, "from_dict"):
-            try:
-                if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return self.data_model_type.from_dict(record)  # type: ignore
-                if include_vectors:
-                    for field in self.data_model_definition.vector_fields:
-                        if field.serialize_function:
-                            record[field.name] = field.serialize_function(record[field.name])  # type: ignore
-                return self.data_model_type.from_dict(record)  # type: ignore
-            except Exception as exc:
-                raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
+        if func := getattr(self.data_model_type, "from_dict", None):
+            if include_vectors:
+                record = self._deserialize_vector(record)
+            return func(record)
+        if issubclass(self.data_model_type, BaseModel):
+            if include_vectors:
+                record = self._deserialize_vector(record)
+            return self.data_model_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
-        for field_name in self.data_model_definition.fields:  # type: ignore
+        for field_name in self.data_model_definition.fields:
             if not include_vectors and field_name in self.data_model_definition.vector_field_names:
                 continue
-            try:
-                value = record[field_name]
-                if func := getattr(self.data_model_definition.fields[field_name], "deserialize_function", None):
-                    value = func(value)
-                data_model_dict[field_name] = value
-            except KeyError as exc:
-                raise VectorStoreModelDeserializationException(
-                    f"Error deserializing record, not able to get: {field_name}"
-                ) from exc
+            value = record[field_name]
+            if func := getattr(self.data_model_definition.fields[field_name], "deserialize_function", None):
+                value = func(value)
+            data_model_dict[field_name] = value
         if self.data_model_type is dict:
             return data_model_dict  # type: ignore
         return self.data_model_type(**data_model_dict)
+
+    def _deserialize_vector(self, record: dict[str, Any]) -> dict[str, Any]:
+        for field in self.data_model_definition.vector_fields:
+            if field.deserialize_function:
+                record[field.name or ""] = field.deserialize_function(record[field.name or ""])
+        return record
 
     # region Internal Functions
 

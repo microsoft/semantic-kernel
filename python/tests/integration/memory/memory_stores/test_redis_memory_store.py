@@ -51,7 +51,6 @@ def test_constructor(memory_store):
     assert memory and memory._database.ping()
 
 
-@pytest.mark.asyncio
 async def test_create_and_does_collection_exist(memory_store):
     memory = memory_store
 
@@ -60,7 +59,6 @@ async def test_create_and_does_collection_exist(memory_store):
     assert exists
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(memory_store):
     memory = memory_store
 
@@ -74,7 +72,6 @@ async def test_delete_collection(memory_store):
     await memory.delete_collection(TEST_COLLECTION_NAME)
 
 
-@pytest.mark.asyncio
 async def test_get_collections(memory_store):
     memory = memory_store
 
@@ -88,7 +85,6 @@ async def test_get_collections(memory_store):
         await memory.delete_collection(c_n)
 
 
-@pytest.mark.asyncio
 async def test_does_collection_exist(memory_store):
     memory = memory_store
 
@@ -101,7 +97,6 @@ async def test_does_collection_exist(memory_store):
     assert not exists
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get(memory_store, memory_record1):
     memory = memory_store
 
@@ -131,7 +126,6 @@ async def test_upsert_and_get(memory_store, memory_record1):
     assert fetch_1._text == memory_record1._text, "Did not update record"
 
 
-@pytest.mark.asyncio
 async def test_upsert_batch_and_get_batch(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
@@ -147,7 +141,6 @@ async def test_upsert_batch_and_get_batch(memory_store, memory_record1, memory_r
         assert f._id in ids
 
 
-@pytest.mark.asyncio
 async def test_remove(memory_store, memory_record1):
     memory = memory_store
 
@@ -160,7 +153,6 @@ async def test_remove(memory_store, memory_record1):
     assert not get_record, "Record was not removed"
 
 
-@pytest.mark.asyncio
 async def test_remove_batch(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
@@ -174,7 +166,6 @@ async def test_remove_batch(memory_store, memory_record1, memory_record2):
     assert len(get_records) == 0, "Records were not removed"
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_match(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
@@ -202,7 +193,6 @@ async def test_get_nearest_match(memory_store, memory_record1, memory_record2):
         assert result[0]._embedding[i] == memory_record1._embedding[i]
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_matches(memory_store, memory_record1, memory_record2, memory_record3):
     memory = memory_store
 

@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JsonSchemaMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -27,17 +26,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    /// <summary>
-    /// <see cref="JsonSchemaMapperConfiguration"/> for JSON schema format for structured outputs.
-    /// </summary>
-    private static readonly JsonSchemaMapperConfiguration s_jsonSchemaMapperConfiguration = new()
-    {
-        IncludeSchemaVersion = false,
-        IncludeTypeInEnums = true,
-        TreatNullObliviousAsNonNullable = true,
-        TransformSchemaNode = OpenAIJsonSchemaTransformer.Transform
-    };
-
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
@@ -344,7 +332,10 @@ internal partial class ClientCore
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
                                     arguments: streamingArguments,
-                                    functionCallIndex: functionCallUpdate.Index));
+                                    functionCallIndex: functionCallUpdate.Index)
+                                {
+                                    RequestIndex = requestIndex,
+                                });
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
@@ -382,7 +373,7 @@ internal partial class ClientCore
 
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
-            // In such cases, we'll return the last message in the chat history.  
+            // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
                 chatHistory,
@@ -468,7 +459,8 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs
+            IncludeLogProbabilities = executionSettings.Logprobs,
+            StoredOutputEnabled = executionSettings.Store,
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -506,6 +498,14 @@ internal partial class ClientCore
         if (toolCallingConfig.Options?.AllowParallelCalls is not null)
         {
             options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
+        if (executionSettings.Metadata is not null)
+        {
+            foreach (var kvp in executionSettings.Metadata)
+            {
+                options.Metadata.Add(kvp.Key, kvp.Value);
+            }
         }
 
         return options;
@@ -552,49 +552,13 @@ internal partial class ClientCore
                     }
                 }
 
-                return ChatResponseFormat.CreateJsonSchemaFormat(
-                    "JsonSchema",
-                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatElement);
 
             case Type formatObjectType:
-                return GetJsonSchemaResponseFormat(formatObjectType);
+                return OpenAIChatResponseFormatBuilder.GetJsonSchemaResponseFormat(formatObjectType);
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
-    /// </summary>
-    private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
-    {
-        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
-
-        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
-        var schemaBinaryData = BinaryData.FromString(schema.ToString());
-
-        var typeName = GetTypeName(type);
-
-        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
-    }
-
-    /// <summary>
-    /// Returns a type name concatenated with generic argument type names if they exist.
-    /// </summary>
-    private static string GetTypeName(Type type)
-    {
-        if (!type.IsGenericType)
-        {
-            return type.Name;
-        }
-
-        // If type is generic, base name is followed by ` character.
-        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
-
-        Type[] typeArguments = type.GetGenericArguments();
-        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
-
-        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -727,8 +691,8 @@ internal partial class ClientCore
         {
             var toolCalls = new List<ChatToolCall>();
 
-            // Handling function calls supplied via either:  
-            // ChatCompletionsToolCall.ToolCalls collection items or  
+            // Handling function calls supplied via either:
+            // ChatCompletionsToolCall.ToolCalls collection items or
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
             IEnumerable<ChatToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
@@ -782,7 +746,7 @@ internal partial class ClientCore
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
-            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'  
+            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
             if (toolCalls.Count == 0)
             {
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
@@ -1059,7 +1023,7 @@ internal partial class ClientCore
 
             foreach (var function in functions)
             {
-                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition(config?.Options?.AllowStrictSchemaAdherence ?? false));
             }
         }
 

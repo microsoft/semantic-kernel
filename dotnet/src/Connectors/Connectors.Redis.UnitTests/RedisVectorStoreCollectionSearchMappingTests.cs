@@ -204,4 +204,60 @@ public class RedisVectorStoreCollectionSearchMappingTests
             var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(basicVectorSearchFilter, storagePropertyNames);
         });
     }
+
+    [Fact]
+    public void ResolveDistanceFunctionReturnsCosineSimilarityIfNoDistanceFunctionSpecified()
+    {
+        var property = new VectorStoreRecordVectorProperty("Prop", typeof(ReadOnlyMemory<float>));
+
+        // Act.
+        var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(new VectorSearchOptions(), [property], property);
+
+        // Assert.
+        Assert.Equal(DistanceFunction.CosineSimilarity, resolvedDistanceFunction);
+    }
+
+    [Fact]
+    public void ResolveDistanceFunctionReturnsDistanceFunctionFromFirstPropertyIfNoFieldChosen()
+    {
+        var property = new VectorStoreRecordVectorProperty("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
+
+        // Act.
+        var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(new VectorSearchOptions(), [property], property);
+
+        // Assert.
+        Assert.Equal(DistanceFunction.DotProductSimilarity, resolvedDistanceFunction);
+    }
+
+    [Fact]
+    public void ResolveDistanceFunctionReturnsDistanceFunctionFromChosenPropertyIfFieldChosen()
+    {
+        var property1 = new VectorStoreRecordVectorProperty("Prop1", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.CosineDistance };
+        var property2 = new VectorStoreRecordVectorProperty("Prop2", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
+
+        // Act.
+        var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(new VectorSearchOptions() { VectorPropertyName = "Prop2" }, [property1, property2], property1);
+
+        // Assert.
+        Assert.Equal(DistanceFunction.DotProductSimilarity, resolvedDistanceFunction);
+    }
+
+    [Fact]
+    public void GetOutputScoreFromRedisScoreConvertsCosineDistanceToSimilarity()
+    {
+        // Act & Assert.
+        Assert.Equal(-1, RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(2, DistanceFunction.CosineSimilarity));
+        Assert.Equal(0, RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(1, DistanceFunction.CosineSimilarity));
+        Assert.Equal(1, RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(0, DistanceFunction.CosineSimilarity));
+    }
+
+    [Theory]
+    [InlineData(DistanceFunction.CosineDistance, 2)]
+    [InlineData(DistanceFunction.DotProductSimilarity, 2)]
+    [InlineData(DistanceFunction.EuclideanSquaredDistance, 2)]
+    public void GetOutputScoreFromRedisScoreLeavesNonConsineSimilarityUntouched(string distanceFunction, float score)
+    {
+        // Act & Assert.
+        Assert.Equal(score, RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(score, distanceFunction));
+    }
 }

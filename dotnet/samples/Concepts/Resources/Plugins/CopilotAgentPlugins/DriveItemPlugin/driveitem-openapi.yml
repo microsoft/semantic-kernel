@@ -6,21 +6,14 @@ info:
 servers:
   - url: https://graph.microsoft.com/v1.0
 paths:
-  '/drive/root/children/{driveItem-id}/content':
+  "/me/drive/root/children/{driveItem-id}/content":
     get:
       tags:
-        - drive.driveItem
-      summary: Get content for the navigation property children from drive
-      description: 'The content stream, if the item represents a file.'
-      operationId: drive_root_GetChildrenContent
+        - drives.driveItem
+      summary: Get content for the navigation property items from drives
+      description: "The content stream, if the item represents a file."
+      operationId: drives_GetItemsContent
       parameters:
-        - name: driveItem-id
-          in: path
-          description: The unique identifier of driveItem
-          required: true
-          style: simple
-          schema:
-            type: string
         - name: $format
           in: query
           description: Format of the content
@@ -29,64 +22,19 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        2XX:
           description: Retrieved media content
           content:
             application/octet-stream:
               schema:
                 type: string
                 format: binary
-        default:
-          $ref: '#/components/responses/error'
-components:
-  schemas:
-    microsoft.graph.ODataErrors.ODataError:
-      required:
-        - error
-      type: object
-      properties:
-        error:
-          $ref: '#/components/schemas/microsoft.graph.ODataErrors.MainError'
-    microsoft.graph.ODataErrors.MainError:
-      required:
-        - code
-        - message
-      type: object
-      properties:
-        code:
+    parameters:
+      - name: driveItem-id
+        in: path
+        description: The unique identifier of driveItem
+        required: true
+        style: simple
+        schema:
           type: string
-        message:
-          type: string
-          x-ms-primary-error-message: true
-        target:
-          type: string
-          nullable: true
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/microsoft.graph.ODataErrors.ErrorDetails'
-        innerError:
-          $ref: '#/components/schemas/microsoft.graph.ODataErrors.InnerError'
-    microsoft.graph.ODataErrors.ErrorDetails:
-      required:
-        - code
-        - message
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        target:
-          type: string
-          nullable: true
-    microsoft.graph.ODataErrors.InnerError:
-      type: object
-      description: The structure of this object is service-specific
-  responses:
-    error:
-      description: error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/microsoft.graph.ODataErrors.ODataError'
+components: {}

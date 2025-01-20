@@ -75,7 +75,6 @@ def test_add_duplicate_agent(agents):
     assert len(group_chat.agent_ids) == 1
 
 
-@pytest.mark.asyncio
 async def test_invoke_single_turn(agents, termination_strategy):
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 
@@ -91,7 +90,6 @@ async def test_invoke_single_turn(agents, termination_strategy):
         termination_strategy.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_invoke_single_turn_sets_complete(agents, termination_strategy):
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 
@@ -108,7 +106,6 @@ async def test_invoke_single_turn_sets_complete(agents, termination_strategy):
         termination_strategy.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_invoke_with_agent_joining(agents, termination_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -132,7 +129,6 @@ async def test_invoke_with_agent_joining(agents, termination_strategy):
         mock_add_agent.assert_called_once_with(group_chat, agents[0])
 
 
-@pytest.mark.asyncio
 async def test_invoke_with_complete_chat(agents, termination_strategy):
     termination_strategy.automatic_reset = False
     group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
@@ -143,7 +139,6 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_agent_with_none_defined_errors(agents):
     group_chat = AgentGroupChat()
 
@@ -152,7 +147,6 @@ async def test_invoke_agent_with_none_defined_errors(agents):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_selection_strategy_error(agents, selection_strategy):
     group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
 
@@ -163,7 +157,6 @@ async def test_invoke_selection_strategy_error(agents, selection_strategy):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_iterations(agents, termination_strategy, selection_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -190,7 +183,6 @@ async def test_invoke_iterations(agents, termination_strategy, selection_strateg
         assert iteration_count == 2
 
 
-@pytest.mark.asyncio
 async def test_invoke_is_complete_then_reset(agents, termination_strategy, selection_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -225,7 +217,6 @@ async def test_invoke_is_complete_then_reset(agents, termination_strategy, selec
 # region Streaming
 
 
-@pytest.mark.asyncio
 async def test_invoke_streaming_single_turn(agents, termination_strategy):
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 
@@ -241,7 +232,6 @@ async def test_invoke_streaming_single_turn(agents, termination_strategy):
         termination_strategy.should_terminate.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_with_agent_joining(agents, termination_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -265,7 +255,6 @@ async def test_invoke_stream_with_agent_joining(agents, termination_strategy):
         mock_add_agent.assert_called_once_with(group_chat, agents[0])
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_with_complete_chat(agents, termination_strategy):
     termination_strategy.automatic_reset = False
     group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
@@ -276,7 +265,6 @@ async def test_invoke_stream_with_complete_chat(agents, termination_strategy):
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_selection_strategy_error(agents, selection_strategy):
     group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
 
@@ -287,7 +275,6 @@ async def test_invoke_stream_selection_strategy_error(agents, selection_strategy
             pass
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_iterations(agents, termination_strategy, selection_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -314,7 +301,6 @@ async def test_invoke_stream_iterations(agents, termination_strategy, selection_
         assert iteration_count == 2
 
 
-@pytest.mark.asyncio
 async def test_invoke_stream_is_complete_then_reset(agents, termination_strategy, selection_strategy):
     for agent in agents:
         agent.name = f"Agent {agent.id}"
@@ -344,7 +330,6 @@ async def test_invoke_stream_is_complete_then_reset(agents, termination_strategy
         assert iteration_count == 2
 
 
-@pytest.mark.asyncio
 async def test_invoke_streaming_agent_with_none_defined_errors(agents):
     group_chat = AgentGroupChat()
 

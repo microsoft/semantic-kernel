@@ -43,7 +43,6 @@ def mock_get_index_client():
         yield mock
 
 
-@pytest.mark.asyncio
 async def test_create_collection_without_encryption_key(
     azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
     mock_search_index_client,
@@ -59,7 +58,6 @@ async def test_create_collection_without_encryption_key(
     assert created_index.encryption_key is None, "Encryption key should be None"
 
 
-@pytest.mark.asyncio
 async def test_create_collection_with_encryption_key(
     azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
     mock_search_index_client,

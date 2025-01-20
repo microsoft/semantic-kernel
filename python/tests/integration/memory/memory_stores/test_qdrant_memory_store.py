@@ -21,7 +21,6 @@ def test_qdrant_constructor():
     assert qdrant_mem_store._qdrantclient is not None
 
 
-@pytest.mark.asyncio
 async def test_create_and_get_collection():
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -30,7 +29,6 @@ async def test_create_and_get_collection():
     assert result.status == "green"
 
 
-@pytest.mark.asyncio
 async def test_get_collections():
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -41,7 +39,6 @@ async def test_get_collections():
     assert len(result) == 3
 
 
-@pytest.mark.asyncio
 async def test_delete_collection():
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -55,7 +52,6 @@ async def test_delete_collection():
     assert len(result) == 0
 
 
-@pytest.mark.asyncio
 async def test_does_collection_exist():
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -66,7 +62,6 @@ async def test_does_collection_exist():
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_upsert_and_get(memory_record1):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -78,7 +73,6 @@ async def test_upsert_and_get(memory_record1):
     assert result._text == memory_record1._text
 
 
-@pytest.mark.asyncio
 async def test_overwrite(memory_record1):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -87,7 +81,6 @@ async def test_overwrite(memory_record1):
     await qdrant_mem_store.upsert("test_collection", memory_record1)
 
 
-@pytest.mark.asyncio
 async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -105,7 +98,6 @@ async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
     assert results[1]._id in [memory_record1._id, memory_record2._id]
 
 
-@pytest.mark.asyncio
 async def test_remove(memory_record1):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -121,7 +113,6 @@ async def test_remove(memory_record1):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_remove_batch(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -138,7 +129,6 @@ async def test_remove_batch(memory_record1, memory_record2):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_match(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
@@ -153,7 +143,6 @@ async def test_get_nearest_match(memory_record1, memory_record2):
     assert result[0]._text == memory_record1._text
 
 
-@pytest.mark.asyncio
 async def test_get_nearest_matches(memory_record1, memory_record2, memory_record3):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 

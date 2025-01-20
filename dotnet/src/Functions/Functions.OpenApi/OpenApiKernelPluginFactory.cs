@@ -216,7 +216,8 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters?.UserAgent,
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false,
-            executionParameters?.HttpResponseContentReader);
+            executionParameters?.HttpResponseContentReader,
+            executionParameters?.RestApiOperationResponseFactory);
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
@@ -264,7 +265,8 @@ public static partial class OpenApiKernelPluginFactory
     {
         IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
-            executionParameters?.EnablePayloadNamespacing ?? false
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            executionParameters?.ParameterFilter
         );
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;

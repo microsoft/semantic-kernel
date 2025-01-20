@@ -12,7 +12,10 @@ from opentelemetry.trace import Span, Tracer, get_tracer, use_span
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    merge_function_results,
+    merge_streaming_function_results,
+)
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -61,15 +64,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         """Send a streaming chat request to the AI service.
 
         Args:
-            chat_history (ChatHistory): The chat history to send.
-            settings (PromptExecutionSettings): The settings for the request.
+            chat_history: The chat history to send.
+            settings: The settings for the request.
+            function_invoke_attempt: The current attempt count for automatically invoking functions.
 
         Yields:
-            streaming_chat_message_contents (list[StreamingChatMessageContent]): The streaming chat message contents.
+            streaming_chat_message_contents: The streaming chat message contents.
         """
         raise NotImplementedError("The _inner_get_streaming_chat_message_contents method is not implemented.")
         # Below is needed for mypy: https://mypy.readthedocs.io/en/stable/more_types.html#asynchronous-iterators
@@ -99,6 +104,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalent settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             return await self._inner_get_chat_message_contents(chat_history, settings)
@@ -211,6 +219,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
+        # Later on, we already use the tools or equivalent settings, we cast here.
+        if not isinstance(settings, self.get_prompt_execution_settings_class()):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
@@ -259,7 +270,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 # Hold the messages, if there are more than one response, it will not be used, so we flatten
                 all_messages: list["StreamingChatMessageContent"] = []
                 function_call_returned = False
-                async for messages in self._inner_get_streaming_chat_message_contents(chat_history, settings):
+                async for messages in self._inner_get_streaming_chat_message_contents(
+                    chat_history, settings, request_index
+                ):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
@@ -297,8 +310,19 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     ],
                 )
 
+                # Merge and yield the function results, regardless of the termination status
+                # Include the ai_model_id so we can later add two streaming messages together
+                # Some settings may not have an ai_model_id, so we need to check for it
+                ai_model_id = self._get_ai_model_id(settings)
+                function_result_messages = merge_streaming_function_results(
+                    messages=chat_history.messages[-len(results) :],
+                    ai_model_id=ai_model_id,  # type: ignore
+                    function_invoke_attempt=request_index,
+                )
+                if self._yield_function_result_messages(function_result_messages):
+                    yield function_result_messages
+
                 if any(result.terminate for result in results if result is not None):
-                    yield merge_function_results(chat_history.messages[-len(results) :])  # type: ignore
                     break
 
     async def get_streaming_chat_message_content(
@@ -408,5 +432,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             )
 
         return span
+
+    def _get_ai_model_id(self, settings: "PromptExecutionSettings") -> str:
+        """Retrieve the AI model ID from settings if available.
+
+        Attempt to get ai_model_id from the settings object. If it doesn't exist or
+        is blank, fallback to self.ai_model_id (from AIServiceClientBase).
+        """
+        return getattr(settings, "ai_model_id", self.ai_model_id) or self.ai_model_id
+
+    def _yield_function_result_messages(self, function_result_messages: list) -> bool:
+        """Determine if the function result messages should be yielded."""
+        return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
 
     # endregion

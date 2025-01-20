@@ -44,6 +44,7 @@ public class BedrockChatCompletionTests
         foreach (var message in response)
         {
             output += message.Content;
+            Assert.NotNull(message.InnerContent);
         }
         chatHistory.AddAssistantMessage(output);
 
@@ -89,6 +90,7 @@ public class BedrockChatCompletionTests
         await foreach (var message in response)
         {
             output += message.Content;
+            Assert.NotNull(message.InnerContent);
         }
         chatHistory.AddAssistantMessage(output);
 

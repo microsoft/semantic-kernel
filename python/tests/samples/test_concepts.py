@@ -8,7 +8,9 @@ from typing import Any
 import pytest
 from pytest import mark, param
 
-from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
+from samples.concepts.auto_function_calling.chat_completion_with_auto_function_calling import (
+    main as chat_completion_with_function_calling,
+)
 from samples.concepts.auto_function_calling.functions_defined_in_json_prompt import (
     main as function_defined_in_json_prompt,
 )
@@ -42,8 +44,6 @@ from samples.concepts.planners.sequential_planner import main as sequential_plan
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
-from samples.concepts.plugins.openai_plugin_azure_key_vault import main as openai_plugin_azure_key_vault
-from samples.concepts.plugins.openai_plugin_klarna import main as openai_plugin_klarna
 from samples.concepts.plugins.plugins_from_dir import main as plugins_from_dir
 from samples.concepts.prompt_templates.azure_chat_gpt_api_handlebars import main as azure_chat_gpt_api_handlebars
 from samples.concepts.prompt_templates.azure_chat_gpt_api_jinja2 import main as azure_chat_gpt_api_jinja2
@@ -106,9 +106,9 @@ concepts = [
         ),
     ),
     param(
-        chat_gpt_api_function_calling,
+        chat_completion_with_function_calling,
         ["What is 3+3?", "exit"],
-        id="chat_gpt_api_function_calling",
+        id="chat_completion_with_function_calling",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
@@ -191,22 +191,6 @@ concepts = [
         id="openai_function_calling_with_custom_plugin",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        openai_plugin_azure_key_vault,
-        ["Create a secret with the name 'Foo' and value 'Bar'", "exit"],
-        id="openai_plugin_azure_key_vault",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        openai_plugin_klarna,
-        [],
-        id="openai_plugin_klarna",
-        marks=pytest.mark.skip(
-            reason="Temporarily: https://www.klarna.com/us/shopping/public/openai/v0/api-docs/ returns 404"
         ),
     ),
     param(
@@ -361,7 +345,6 @@ concepts = [
 ]
 
 
-@mark.asyncio
 @mark.parametrize("sample, responses", concepts)
 async def test_concepts(sample: Callable[..., Awaitable[Any]], responses: list[str], monkeypatch):
     saved_responses = copy.deepcopy(responses)

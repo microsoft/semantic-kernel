@@ -20,6 +20,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
+from semantic_kernel.kernel import Kernel
 
 
 # region init
@@ -75,7 +76,8 @@ def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
 
 
 # region chat completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion(
     mock_google_ai_model_generate_content_async,
@@ -108,7 +110,6 @@ async def test_google_ai_chat_completion(
     assert responses[0].inner_content == mock_google_ai_chat_completion_response
 
 
-@pytest.mark.asyncio
 async def test_google_ai_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
@@ -129,7 +130,6 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_fail_veri
         )
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion_with_function_choice_behavior(
     mock_google_ai_model_generate_content_async,
@@ -164,7 +164,6 @@ async def test_google_ai_chat_completion_with_function_choice_behavior(
     assert responses[0].finish_reason == FinishReason.STOP
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_google_ai_model_generate_content_async,
@@ -204,7 +203,8 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
 
 
 # region streaming chat completion
-@pytest.mark.asyncio
+
+
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion(
     mock_google_ai_model_generate_content_async,
@@ -234,7 +234,6 @@ async def test_google_ai_streaming_chat_completion(
     )
 
 
-@pytest.mark.asyncio
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
@@ -257,14 +256,14 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
             pass
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior(
     mock_google_ai_model_generate_content_async,
     google_ai_unit_test_env,
-    kernel,
+    kernel: Kernel,
     chat_history: ChatHistory,
     mock_google_ai_streaming_chat_completion_response_with_tool_call,
+    decorated_native_function,
 ) -> None:
     """Test streaming chat completion of GoogleAIChatCompletion with function choice behavior"""
     mock_google_ai_model_generate_content_async.return_value = (
@@ -278,23 +277,31 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
 
     google_ai_chat_completion = GoogleAIChatCompletion()
 
+    kernel.add_function(plugin_name="TestPlugin", function=decorated_native_function)
+
+    all_messages = []
     async for messages in google_ai_chat_completion.get_streaming_chat_message_contents(
         chat_history,
         settings,
         kernel=kernel,
     ):
-        assert len(messages) == 1
-        assert messages[0].role == "assistant"
-        assert messages[0].content == ""
-        # Google doesn't return STOP as the finish reason for tool calls
-        assert messages[0].finish_reason == FinishReason.STOP
+        all_messages.extend(messages)
 
-    # Streaming completion with tool call does not invoke the model
-    # after maximum_auto_invoke_attempts is reached
-    assert mock_google_ai_model_generate_content_async.call_count == 1
+    assert len(all_messages) == 2, f"Expected 2 messages, got {len(all_messages)}"
+
+    # Validate the first message
+    assert all_messages[0].role == "assistant", f"Unexpected role for first message: {all_messages[0].role}"
+    assert all_messages[0].content == "", f"Unexpected content for first message: {all_messages[0].content}"
+    assert all_messages[0].finish_reason == FinishReason.STOP, (
+        f"Unexpected finish reason for first message: {all_messages[0].finish_reason}"
+    )
+
+    # Validate the second message
+    assert all_messages[1].role == "tool", f"Unexpected role for second message: {all_messages[1].role}"
+    assert all_messages[1].content == "", f"Unexpected content for second message: {all_messages[1].content}"
+    assert all_messages[1].finish_reason is None
 
 
-@pytest.mark.asyncio
 @patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_google_ai_model_generate_content_async,

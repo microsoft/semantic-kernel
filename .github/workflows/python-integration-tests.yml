@@ -21,6 +21,7 @@ env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
   Python_Integration_Tests: Python_Integration_Tests
+  INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION: ${{ true }}
   AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
   AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
@@ -112,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v5
         with:
           version: "0.5.x"
           enable-cache: true
@@ -120,21 +121,6 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
-      - name: Install Ollama
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
-      - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
-          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
-          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
-          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -157,10 +143,59 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_ai_services
-        timeout-minutes: 25
         shell: bash
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+
+  python-merge-gate-ollama:
+    name: Python Pre-Merge Integration Tests - Ollama
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: python
+    runs-on: ${{ matrix.os }}
+    environment: "integration"
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+      COMPLETIONS_CONCEPT_SAMPLE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.x"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
+      - name: Run Integration Tests
+        id: run_tests_ai_services
+        shell: bash
+        run: |
+          uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal -m ollama --timeout=300 ./tests/integration/completions ./tests/integration/embeddings
 
   python-merge-gate-memory:
     name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
@@ -197,7 +232,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v5
         with:
           version: "0.5.x"
           enable-cache: true
@@ -214,10 +249,10 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_memory
-        timeout-minutes: 10
+        timeout-minutes: 15
         shell: bash
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/memory ./tests/samples
 
   python-integration-tests:
     name: Python Integration Tests - Scheduled run
@@ -255,7 +290,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v5
         with:
           version: "0.5.x"
           enable-cache: true
@@ -351,6 +386,7 @@ jobs:
     needs:
       [
         python-merge-gate-ai-services,
+        python-merge-gate-ollama,
         python-merge-gate-memory,
         python-integration-tests,
       ]

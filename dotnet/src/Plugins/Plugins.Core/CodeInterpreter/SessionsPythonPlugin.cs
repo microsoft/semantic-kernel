@@ -113,6 +113,8 @@ public partial class SessionsPythonPlugin
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
         return $"""
+            Status:
+            {jsonElementResult.GetProperty("status").GetRawText()}
             Result:
             {jsonElementResult.GetProperty("result").GetRawText()}
             Stdout:
