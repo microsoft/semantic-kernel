@@ -55,6 +55,7 @@ ML.Net contains an implementation of TF-IDF that could be used to generate spars
 |Sparse Distance Function|n/a|n/a|||[dotproduct only for both dense and sparse, 1 setting for both](https://docs.pinecone.io/guides/data/understanding-hybrid-search#sparse-dense-workflow)||dotproduct|Inner Product|n/a|n/a|n/a|
 |Sparse Indexing options|n/a|n/a|||no separate config to dense||ondisk / inmemory  + IDF|[SPARSE_INVERTED_INDEX / SPARSE_WAND](https://milvus.io/docs/index.md?tab=sparse)|n/a|n/a|n/a|
 |Sparse data model|n/a|n/a|||[indices & values arrays](https://docs.pinecone.io/guides/data/upsert-sparse-dense-vectors)||indices & values arrays|[sparse matrix / List of dict / list of tuples](https://milvus.io/docs/sparse_vector.md#Use-sparse-vectors-in-Milvus)|n/a|n/a|n/a|
+|Reranking supported|Yes|-|-|-|-|-|-|-|-|-|-|
 
 Glossary:
 
