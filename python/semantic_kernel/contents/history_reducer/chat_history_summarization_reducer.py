@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any
+
+if sys.version < "3.11":
+    from typing_extensions import Self  # pragma: no cover
+else:
+    from typing import Self  # type: ignore # pragma: no cover
 
 from pydantic import Field
 
@@ -47,8 +53,6 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
     """
 
     service: ChatCompletionClientBase
-    target_count: int = Field(..., gt=0, description="Target message count.")
-    threshold_count: int = Field(0, ge=0, description="Threshold count to avoid orphaning messages.")
     summarization_instructions: str = Field(
         default_factory=lambda: DEFAULT_SUMMARIZATION_PROMPT, description="The summarization instructions."
     )
@@ -56,6 +60,9 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
     fail_on_error: bool = Field(True, description="Raise error if summarization fails.")
     service_id: str = Field(
         default_factory=lambda: DEFAULT_SERVICE_NAME, description="The ID of the chat completion service."
+    )
+    include_function_content_in_summary: bool = Field(
+        False, description="Whether to include function calls/results in the summary."
     )
 
     def __init__(
@@ -67,6 +74,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         summarization_instructions: str | None = None,
         use_single_summary: bool | None = None,
         fail_on_error: bool | None = None,
+        include_function_content_in_summary: bool | None = None,
         **kwargs: Any,
     ):
         """Initialize the summarization reducer with summarization settings."""
@@ -85,10 +93,12 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
             args["use_single_summary"] = use_single_summary
         if fail_on_error is not None:
             args["fail_on_error"] = fail_on_error
+        if include_function_content_in_summary is not None:
+            args["include_function_content_in_summary"] = include_function_content_in_summary
 
         super().__init__(**args, **kwargs)
 
-    async def reduce(self) -> list[ChatMessageContent] | None:
+    async def reduce(self) -> Self | None:
         """Summarize the older messages past the target message count."""
         history = self.messages
         if len(history) <= self.target_count + (self.threshold_count or 0):
@@ -112,7 +122,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
             self.threshold_count,
             offset_count=insertion_point,
         )
-        if truncation_index < 0:
+        if truncation_index is None:
             logger.info("No valid truncation index found.")
             return None
 
@@ -127,7 +137,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
             history,
             older_range_start,
             older_range_end,
-            filter_func=_contains_function_call_or_result,
+            filter_func=_contains_function_call_or_result if not self.include_function_content_in_summary else None,
         )
         if not messages_to_summarize:
             logger.info("No messages to summarize.")
@@ -136,7 +146,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         try:
             # 4. Summarize the extracted messages
             summary_msg = await self._summarize(messages_to_summarize)
-            logger.info("Summarization completed.")
+            logger.info("Chat History Summarization completed.")
 
             if not summary_msg:
                 return None
@@ -154,7 +164,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
             # Update self.messages
             self.messages = new_history
-            return new_history
+            return self
 
         except Exception as ex:
             logger.warning("Summarization failed, continuing without summary.")

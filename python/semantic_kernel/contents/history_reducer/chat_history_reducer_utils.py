@@ -33,7 +33,7 @@ def locate_safe_reduction_index(
     target_count: int,
     threshold_count: int = 0,
     offset_count: int = 0,
-) -> int:
+) -> int | None:
     """Identify the index of the first message at or beyond the specified target_count.
 
     This index does not orphan sensitive content (function calls/results).
@@ -53,14 +53,14 @@ def locate_safe_reduction_index(
 
     Returns:
         The index that identifies the starting point for a reduced history that does not orphan
-        sensitive content. Returns -1 if reduction is not needed.
+        sensitive content. Returns None if reduction is not needed.
     """
     total_count = len(history)
     threshold_index = total_count - (threshold_count or 0) - target_count
 
     if threshold_index <= offset_count:
         # History is too short to truncate
-        return -1
+        return None
 
     # Start from the end to find a good cut
     message_index = total_count - target_count

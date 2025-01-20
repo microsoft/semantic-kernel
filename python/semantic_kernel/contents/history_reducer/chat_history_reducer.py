@@ -3,6 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from pydantic import Field
+
 from semantic_kernel.contents.chat_history import ChatHistory
 
 if TYPE_CHECKING:
@@ -11,6 +13,9 @@ if TYPE_CHECKING:
 
 class ChatHistoryReducer(ChatHistory, ABC):
     """Defines a contract for reducing chat history."""
+
+    target_count: int = Field(..., gt=0, description="Target message count.")
+    threshold_count: int = Field(0, ge=0, description="Threshold count to avoid orphaning messages.")
 
     @abstractmethod
     async def reduce(self) -> list["ChatMessageContent"] | None:

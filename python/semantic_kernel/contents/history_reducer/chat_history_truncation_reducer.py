@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any
 
-from pydantic import Field
+if sys.version < "3.11":
+    from typing_extensions import Self  # pragma: no cover
+else:
+    from typing import Self  # type: ignore # pragma: no cover
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (
     extract_range,
@@ -22,9 +25,6 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
     it can also be used anywhere a ChatHistory is expected, while adding truncation capability.
     """
 
-    target_count: int = Field(..., gt=0, description="Target message count to reduce to.")
-    threshold_count: int = Field(0, ge=0, description="Threshold to avoid orphaning messages.")
-
     def __init__(self, target_count: int, threshold_count: int | None = None, **kwargs: Any):
         """Initialize the truncation reducer."""
         args: dict[str, Any] = {
@@ -34,7 +34,7 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
             args["threshold_count"] = threshold_count
         super().__init__(**args, **kwargs)
 
-    async def reduce(self) -> list[ChatMessageContent] | None:
+    async def reduce(self) -> Self | None:
         """Truncate the chat history to the target message count, avoiding orphaned calls.
 
         Returns:
@@ -56,8 +56,8 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
 
         logger.info(f"Truncating history to {truncation_index} messages.")
         truncated_list = extract_range(history, start=truncation_index)
-        self.messages = truncated_list  # store the updated messages into self
-        return truncated_list
+        self.messages = truncated_list
+        return self
 
     def __eq__(self, other: object) -> bool:
         """Compare equality based on truncation settings.

@@ -7,7 +7,12 @@ from samples.concepts.setup.chat_completion_services import (
     get_chat_completion_service_and_request_settings,
 )
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents import ChatHistorySummarizationReducer
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
 # This sample shows how to create a chatbot using a kernel function and leverage a chat history
@@ -104,8 +109,16 @@ summarization_reducer = ChatHistorySummarizationReducer(
 
 summarization_reducer.add_system_message(system_message)
 
+kernel.add_plugin(plugin=TimePlugin(), plugin_name="TimePlugin")
+
+request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+
+
+processed_count = 0
+
 
 async def chat() -> bool:
+    global processed_count
     try:
         user_input = input("User:> ")
     except KeyboardInterrupt:
@@ -139,6 +152,27 @@ async def chat() -> bool:
         summarization_reducer.add_user_message(user_input)
         # Add the chat message to the chat history to keep track of the conversation.
         summarization_reducer.add_message(answer.value[0])
+
+        # extract chat history from kernel result
+        chat_history: ChatHistory = answer.metadata.get("messages")
+        if chat_history:
+            # Extract and count FunctionCallContent and FunctionResultContent items from chat history messages
+            fcc = []
+            frc = []
+            for msg in chat_history.messages[processed_count:]:
+                processed_count += 1
+                if msg.items:
+                    for item in msg.items:
+                        match item:
+                            case FunctionCallContent():
+                                fcc.append(item)
+                            case FunctionResultContent():
+                                frc.append(item)
+
+            # Update the reducer with the new assistant messages
+            for i, item in enumerate(fcc):
+                summarization_reducer.add_assistant_message_list([fcc[i]])
+                summarization_reducer.add_tool_message_list([frc[i]])
 
     return True
 
