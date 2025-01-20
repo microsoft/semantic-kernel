@@ -338,6 +338,73 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
+    /// Get the vector property with the provided name if a name is provided, and fall back
+    /// to the first vector property in the schema if not.
+    /// </summary>
+    /// <param name="vectorPropertyName">The vector property name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
+    public VectorStoreRecordVectorProperty GetVectorPropertyOrFirst(string? vectorPropertyName)
+    {
+        // If vector property name is provided, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorPropertyName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this.VectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorPropertyName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
+        }
+
+        // If vector property name is not provided, return first vector property from schema, or throw if there are no vectors.
+        if (this.VectorProperty is null)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any vector properties.");
+        }
+
+        return this.VectorProperty;
+    }
+
+    /// <summary>
+    /// Get the text data property with the provided name if a name is provided, and fall back
+    /// to the first text data property in the schema if not.
+    /// </summary>
+    /// <param name="propertyName">The property name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
+    public VectorStoreRecordDataProperty GetTextDataPropertyOrFirst(string? propertyName)
+    {
+        // If text data property name is provided, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(propertyName))
+        {
+            // Check string data properties by data model property name.
+            var dataProperty = this.DataProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(propertyName, StringComparison.Ordinal) && l.PropertyType == typeof(string));
+
+            if (dataProperty is not null)
+            {
+                return dataProperty;
+            }
+
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a text data property named '{propertyName}'.");
+        }
+
+        // If text data property name is not provided, return first text data property from schema or throw if none exist.
+        var firstTextDataProperty = this.DataProperties
+            .FirstOrDefault(l => l.PropertyType == typeof(string));
+
+        if (firstTextDataProperty is null)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any text data properties.");
+        }
+
+        return firstTextDataProperty;
+    }
+
+    /// <summary>
     /// Check if we have previously loaded the <see cref="PropertyInfo"/> objects from the data model and if not, load them.
     /// </summary>
     private void LoadPropertyInfoIfNeeded()
