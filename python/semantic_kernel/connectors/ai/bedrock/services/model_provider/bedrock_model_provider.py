@@ -37,7 +37,7 @@ class BedrockModelProvider(Enum):
     @classmethod
     def to_model_provider(cls, model_id: str) -> "BedrockModelProvider":
         """Convert a model ID to a model provider."""
-        provider = model_id.split(".")[0]
+        provider = model_id.split(".")[1]
         return cls(provider)
 
 
