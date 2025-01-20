@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from ast import TypeVar
 from collections.abc import Mapping
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar, Literal, TypeVar
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
