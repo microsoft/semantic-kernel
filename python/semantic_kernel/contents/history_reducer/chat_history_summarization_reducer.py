@@ -4,6 +4,8 @@ import logging
 import sys
 from typing import Any
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
@@ -64,6 +66,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
     include_function_content_in_summary: bool = Field(
         False, description="Whether to include function calls/results in the summary."
     )
+    execution_settings: PromptExecutionSettings | None = None
 
     def __init__(
         self,
@@ -75,6 +78,7 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         use_single_summary: bool | None = None,
         fail_on_error: bool | None = None,
         include_function_content_in_summary: bool | None = None,
+        execution_settings: PromptExecutionSettings | None = None,
         **kwargs: Any,
     ):
         """Initialize the summarization reducer with summarization settings."""
@@ -95,6 +99,8 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
             args["fail_on_error"] = fail_on_error
         if include_function_content_in_summary is not None:
             args["include_function_content_in_summary"] = include_function_content_in_summary
+        if execution_settings is not None:
+            args["execution_settings"] = execution_settings
 
         super().__init__(**args, **kwargs)
 
@@ -177,8 +183,9 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         chat_history = ChatHistory(messages=messages)
         chat_history.add_system_message(self.summarization_instructions)
 
-        settings = self.service.get_prompt_execution_settings_class()(service_id=self.service_id)
-        return await self.service.get_chat_message_content(chat_history=chat_history, settings=settings)
+        if self.execution_settings is None:
+            execution_settings = self.service.get_prompt_execution_settings_class()(service_id=self.service_id)
+        return await self.service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
     def __eq__(self, other: object) -> bool:
         """Compare equality based on summarization settings.

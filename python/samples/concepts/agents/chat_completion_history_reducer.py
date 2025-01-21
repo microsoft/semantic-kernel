@@ -141,11 +141,15 @@ class HistoryReducerExample:
                 chat_history.messages.append(response)
                 print(f"# {response.role} - {response.name}: '{response.content}'")
 
+            # The index is incremented by 2 because the agent is told to:
+            # "Add one to the latest user number and spell it in Spanish without explanation."
+            # The agent sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
             index += 2
             print(f"@ Message Count: {len(chat_history.messages)}\n")
 
-            # If history was reduced, print summaries
-            if is_reduced:
+            # If history was reduced, and the chat history is of type `ChatHistorySummarizationReducer`,
+            # print summaries as it will contain the __summary__ metadata key.
+            if is_reduced and isinstance(chat_history, ChatHistorySummarizationReducer):
                 self._print_summaries_from_front(chat_history.messages)
 
     async def invoke_chat(self, agent: ChatCompletionAgent, message_count: int):
@@ -170,6 +174,9 @@ class HistoryReducerExample:
             async for message in chat.invoke(agent):
                 print(f"# {message.role} - {message.name or '*'}: '{message.content}'")
 
+            # The index is incremented by 2 because the agent is told to:
+            # "Add one to the latest user number and spell it in Spanish without explanation."
+            # The agent sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
             index += 2
 
             # Retrieve chat messages in descending order (newest first)

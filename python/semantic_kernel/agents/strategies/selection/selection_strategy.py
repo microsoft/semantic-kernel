@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import TYPE_CHECKING
 
 from semantic_kernel.agents import Agent
@@ -23,7 +23,7 @@ class SelectionStrategy(KernelBaseModel, ABC):
         self,
         agents: list[Agent],
         history: list["ChatMessageContent"],
-    ) -> "Agent":
+    ) -> Agent:
         """Select the next agent to interact with.
 
         Args:
@@ -45,11 +45,13 @@ class SelectionStrategy(KernelBaseModel, ABC):
         self.has_selected = True
         return agent
 
-    @abstractmethod
     async def select_agent(
         self,
         agents: list[Agent],
         history: list["ChatMessageContent"],
-    ) -> "Agent":
-        """Abstract method to determine which agent goes next."""
-        raise NotImplementedError
+    ) -> Agent:
+        """Determines which agent goes next. Override for custom logic.
+
+        By default, this fallback returns the first agent in the list.
+        """
+        return agents[0]

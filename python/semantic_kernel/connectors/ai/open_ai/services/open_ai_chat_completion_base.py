@@ -2,7 +2,14 @@
 
 import sys
 from collections.abc import AsyncGenerator, Callable
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+
+from semantic_kernel.connectors.ai.open_ai.const import (
+    AZURE_DEVELOPER_ROLE_CUTOFF_DATE,
+    OPENAI_SUPPORTED_REASONING_MODELS,
+)
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -75,9 +82,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> list["ChatMessageContent"]:
+        from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+        from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+
+        match self:
+            case AzureChatCompletion():
+                if hasattr(self.client, "_api_version"):
+                    self._validate_azure_developer_role_api_version(self.client._api_version, chat_history)
+            case OpenAIChatCompletion():
+                self._validate_openai_developer_role(chat_history)
 
         settings.stream = False
         settings.messages = self._prepare_chat_history_for_request(chat_history)
@@ -96,9 +113,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+        from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+        from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+
+        match self:
+            case AzureChatCompletion():
+                if hasattr(self.client, "_api_version"):
+                    self._validate_azure_developer_role_api_version(self.client._api_version, chat_history)
+            case OpenAIChatCompletion():
+                self._validate_openai_developer_role(chat_history)
 
         settings.stream = True
         settings.stream_options = {"include_usage": True}
@@ -264,6 +291,40 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             ]
         # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
         return []
+
+    def _validate_azure_developer_role_api_version(
+        self, configured_api_version: str, chat_history: ChatHistory
+    ) -> None:
+        """Validate the configured API version for the Developer role."""
+        if "-preview" in configured_api_version:
+            configured_api_version = configured_api_version.replace("-preview", "")
+
+        try:
+            api_version_date = datetime.strptime(configured_api_version, "%Y-%m-%d")
+
+            if (
+                any(msg.role == AuthorRole.DEVELOPER for msg in chat_history.messages)
+                and api_version_date < AZURE_DEVELOPER_ROLE_CUTOFF_DATE
+            ):
+                raise ServiceInvalidRequestError(
+                    f"The current Azure OpenAI API version `{self.client._api_version}` does not support the "
+                    "Developer Author Role. Please update the API version to at least `2024-12-01-preview` and use it "
+                    " with a supported reasoning model (e.g., 'o1')."
+                )
+        except ValueError:
+            raise ServiceInvalidRequestError(
+                f"Invalid API version date format: {configured_api_version}. Expected format is `YYYY-MM-DD(-preview)`."
+            )
+
+    def _validate_openai_developer_role(self, chat_history: ChatHistory) -> None:
+        """Validate the configured API version and model for the Developer role."""
+        if not any(model in self.ai_model_id for model in OPENAI_SUPPORTED_REASONING_MODELS) and any(
+            msg.role == AuthorRole.DEVELOPER for msg in chat_history.messages
+        ):
+            raise ServiceInvalidRequestError(
+                "The current OpenAI model or API version does not support the Developer Author Role. "
+                "Please configure an appropriate model (e.g., 'o1') or remove Developer role messages."
+            )
 
     # endregion
 
