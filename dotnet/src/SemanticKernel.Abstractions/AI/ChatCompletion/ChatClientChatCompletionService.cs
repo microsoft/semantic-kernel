@@ -162,7 +162,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                     {
                         "text" => ChatResponseFormat.Text,
                         "json_object" => ChatResponseFormat.Json,
-                        JsonElement e => ChatResponseFormat.ForJsonSchema(e.ToString()),
+                        JsonElement e => ChatResponseFormat.ForJsonSchema(e),
                         _ => null,
                     };
                 }
