@@ -409,6 +409,35 @@ def mock_run_step_tool_call():
 
 
 @pytest.fixture
+def mock_run_step_function_tool_call():
+    class MockToolCall:
+        def __init__(self):
+            self.type = "function"
+
+    return RunStep(
+        id="step_id_1",
+        type="tool_calls",
+        completed_at=int(datetime.now(timezone.utc).timestamp()),
+        created_at=int((datetime.now(timezone.utc) - timedelta(minutes=1)).timestamp()),
+        step_details=ToolCallsStepDetails(
+            tool_calls=[
+                FunctionToolCall(
+                    type="function",
+                    id="tool_call_id",
+                    function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
+                ),
+            ],
+            type="tool_calls",
+        ),
+        assistant_id="assistant_id",
+        object="thread.run.step",
+        run_id="run_id",
+        status="completed",
+        thread_id="thread_id",
+    )
+
+
+@pytest.fixture
 def mock_run_step_message_creation():
     class MockMessageCreation:
         def __init__(self):
@@ -1204,6 +1233,64 @@ async def test_invoke(
             side_effect=mock_get_function_call_contents,
         ):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+
+
+async def test_invoke_order(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_run_required_action,
+    mock_run_step_function_tool_call,
+    mock_run_step_message_creation,
+    mock_thread_messages,
+    mock_function_call_content,
+):
+    poll_count = 0
+
+    async def mock_poll_run_status(run, thread_id):
+        nonlocal poll_count
+        if run.status == "requires_action":
+            if poll_count == 0:
+                pass
+            else:
+                run.status = "completed"
+            poll_count += 1
+        return run
+
+    def mock_get_function_call_contents(run, function_steps):
+        function_call_content = mock_function_call_content
+        function_call_content.id = "tool_call_id"
+        function_steps[function_call_content.id] = function_call_content
+        return [function_call_content]
+
+    azure_openai_assistant_agent.assistant = mock_assistant
+    azure_openai_assistant_agent._poll_run_status = AsyncMock(side_effect=mock_poll_run_status)
+    azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
+        side_effect=mock_get_function_call_contents,
+    ):
+        client = azure_openai_assistant_agent.client
+
+        with patch.object(client.beta.threads.runs, "create", new_callable=AsyncMock) as mock_runs_create:
+            mock_runs_create.return_value = mock_run_required_action
+
+            with (
+                patch.object(client.beta.threads.runs, "submit_tool_outputs", new_callable=AsyncMock),
+                patch.object(client.beta.threads.runs.steps, "list", new_callable=AsyncMock) as mock_steps_list,
+            ):
+                mock_steps_list.return_value = MagicMock(
+                    data=[mock_run_step_message_creation, mock_run_step_function_tool_call]
+                )
+
+                messages = []
+                async for _, content in azure_openai_assistant_agent._invoke_internal("thread_id"):
+                    messages.append(content)
+
+    assert len(messages) == 3
+    assert isinstance(messages[0].items[0], FunctionCallContent)
+    assert isinstance(messages[1].items[0], FunctionResultContent)
+    assert isinstance(messages[2].items[0], TextContent)
 
 
 async def test_invoke_stream(

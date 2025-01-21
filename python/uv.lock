@@ -4710,7 +4710,6 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.18.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
