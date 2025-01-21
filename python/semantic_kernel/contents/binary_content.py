@@ -176,6 +176,9 @@ class BinaryContent(KernelContent):
 
     def write_to_file(self, path: str | FilePath) -> None:
         """Write the data to a file."""
+        if isinstance(self.data, ndarray):
+            self.data.tofile(path)  # codespell:ignore tofile
+            return
         with open(path, "wb") as file:
             file.write(self.data)
 

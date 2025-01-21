@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 import logging
-import signal
+from datetime import datetime
 from random import randint
 
 import sounddevice as sd
@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_websocket import ListenEvents
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.connectors.ai.realtime_helpers import SKSimplePlayer
+from semantic_kernel.connectors.ai.utils.realtime_helpers import SKAudioPlayer
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.functions import kernel_function
@@ -61,7 +61,7 @@ class ReceivingStreamHandler:
     It can also be used to act on other events from the service.
     """
 
-    def __init__(self, realtime_client: RealtimeClientBase, audio_player: SKSimplePlayer | None = None):
+    def __init__(self, realtime_client: RealtimeClientBase, audio_player: SKAudioPlayer | None = None):
         self.audio_player = audio_player
         self.realtime_client = realtime_client
 
@@ -92,12 +92,6 @@ class ReceivingStreamHandler:
             print("\nThanks for talking to Mosscap!")
 
 
-# this function is used to stop the processes when ctrl + c is pressed
-def signal_handler():
-    for task in asyncio.all_tasks():
-        task.cancel()
-
-
 weather_conditions = ["sunny", "hot", "cloudy", "raining", "freezing", "snowing"]
 
 
@@ -109,20 +103,26 @@ def get_weather(location: str) -> str:
     return f"The weather in {location} is {weather}."
 
 
-async def main() -> None:
-    # setup the asyncio loop with the signal event handler
-    loop = asyncio.get_event_loop()
-    loop.add_signal_handler(signal.SIGINT, signal_handler)
+@kernel_function
+def get_date_time() -> str:
+    """Get the current date and time."""
+    return f"The current date and time is {datetime.now().isoformat()}."
 
+
+async def main() -> None:
     # create the Kernel and add a simple function for function calling.
     kernel = Kernel()
     kernel.add_function(plugin_name="weather", function_name="get_weather", function=get_weather)
+    kernel.add_function(plugin_name="time", function_name="get_date_time", function=get_date_time)
 
     # create the realtime client and optionally add the audio output function, this is optional
-    audio_player = SKSimplePlayer()
-    realtime_client = OpenAIRealtime(protocol="webrtc", audio_output=audio_player.realtime_client_callback)
+    audio_player = SKAudioPlayer()
+    # you can define the protocol to use, either "websocket" or "webrtc"
+    # they will behave the same way, even though the underlying protocol is quite different
+    realtime_client = OpenAIRealtime(protocol="webrtc", audio_output_callback=audio_player.client_callback)
 
-    # create stream receiver, this can play the audio, if the audio_player is passed
+    # create stream receiver (defined above), this can play the audio,
+    # if the audio_player is passed (commented out here)
     # and allows you to print the transcript of the conversation
     # and review or act on other events from the service
     stream_handler = ReceivingStreamHandler(realtime_client)  # SimplePlayer(device_id=None)
@@ -148,7 +148,7 @@ async def main() -> None:
 
     settings = OpenAIRealtimeExecutionSettings(
         instructions=instructions,
-        voice="sage",
+        voice="alloy",
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
@@ -157,11 +157,12 @@ async def main() -> None:
         await realtime_client.update_session(
             settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
         )
-        # you can also send other events to the service, like this
-        # await realtime_client.send_buffer.put((
+        # you can also send other events to the service, like this (the first has content, the second does not)
+        # await realtime_client.send(
         #     SendEvents.CONVERSATION_ITEM_CREATE,
-        #     {"item": ChatMessageContent(role="user", content="Hi there, who are you?")},
-        # ))
+        #     item=ChatMessageContent(role="user", content="Hi there, who are you?")},
+        # )
+        # await realtime_client.send(SendEvents.RESPONSE_CREATE)
         async with asyncio.TaskGroup() as tg:
             tg.create_task(realtime_client.start_streaming())
             tg.create_task(stream_handler.listen())
