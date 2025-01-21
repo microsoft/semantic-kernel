@@ -5,8 +5,6 @@ import contextlib
 import json
 import logging
 import sys
-from collections.abc import Callable, Coroutine
-from inspect import isawaitable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
@@ -55,7 +53,6 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     protocol: ClassVar[Literal["webrtc"]] = "webrtc"
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
-    audio_output: Callable[[AudioFrame], Coroutine[Any, Any, None] | None] | None = None
 
     # region public methods
 
@@ -168,7 +165,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     ) -> None:
         """Create a session in the service."""
         if not audio_track:
-            from semantic_kernel.connectors.ai.realtime_helpers import SKAudioTrack
+            from semantic_kernel.connectors.ai.utils.realtime_helpers import SKAudioTrack
 
             audio_track = SKAudioTrack()
 
@@ -245,10 +242,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                 break
 
             try:
-                if self.audio_output:
-                    out = self.audio_output(frame)
-                    if isawaitable(out):
-                        await out
+                if self.audio_output_callback:
+                    await self.audio_output_callback(frame.to_ndarray())
 
             except Exception as e:
                 logger.error(f"Error playing remote audio frame: {e!s}")
