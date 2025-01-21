@@ -208,7 +208,7 @@ Possible implementation:
  chatHistory.AddUserMessage("<prompt>");
 
 
-// In funciton calls processor
+// In function calls processor
 if (!checkIfFunctionAdvertised(functionCall))
 {
     // errorMessage = "Error: Function call request for a function that wasn't defined.";
