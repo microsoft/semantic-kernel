@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 
 public interface ITestCondition
 {
