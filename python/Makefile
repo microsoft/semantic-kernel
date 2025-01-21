@@ -42,8 +42,8 @@ ifndef UV_VERSION
 	echo "Installing uv"
 	curl -LsSf https://astral.sh/uv/install.sh | sh
 	echo "uv installed"
-	echo "Please restart your shell."
-	exit 1
+	# Re-exec the shell so the newly installed uv is available immediately
+    exec $$SHELL
 else
 	echo "uv found $(UV_VERSION)"
 	echo "running uv update"
