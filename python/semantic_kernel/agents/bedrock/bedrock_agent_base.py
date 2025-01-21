@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from functools import partial
-from typing import Any
+from typing import Any, ClassVar
 
 import boto3
 from botocore.exceptions import ClientError
@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 @experimental_class
 class BedrockAgentBase(KernelBaseModel):
     """Bedrock Agent Base Class to provide common functionalities for Bedrock Agents."""
+
+    # There is a default alias created by Bedrock for the working draft version of the agent.
+    # https://docs.aws.amazon.com/bedrock/latest/userguide/agents-deploy.html
+    WORKING_DRAFT_AGENT_ALIAS: ClassVar[str] = "TSTALIASID"
 
     # Amazon Bedrock Clients
     # Runtime Client: Use for inference
@@ -87,11 +91,29 @@ class BedrockAgentBase(KernelBaseModel):
             logger.error(f"Failed to create agent {agent_name}.")
             raise e
 
+    async def _create_agent_alias(self, alias_name: str, **kwargs) -> dict[str, Any]:
+        """Create an agent alias asynchronously.
+
+        Creating an alias is similar to taking a snapshot of the agent's current settings.
+        Later, users can switch between aliases to use different configurations.
+        """
+        try:
+            return await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.create_client_alias,
+                    agentAliasName=alias_name,
+                    agentId=self.agent_model.agent_id,
+                    **kwargs,
+                ),
+            )
+        except ClientError as e:
+            logger.error(f"Failed to create alias {alias_name} for agent {self.agent_model.agent_id}.")
+            raise e
+
     async def _update_agent(
         self,
-        agent_id: str,
         agent_name: str,
-        role_arn: str,
         foundational_model: str,
         **kwargs,
     ) -> BedrockAgentModel:
@@ -104,9 +126,9 @@ class BedrockAgentBase(KernelBaseModel):
                 None,
                 partial(
                     self.bedrock_client.update_client,
-                    agentId=agent_id,
+                    agentId=self.agent_model.agent_id,
+                    agentResourceRoleArn=self.agent_model.role_arn,
                     agentName=agent_name,
-                    agentResourceRoleArn=role_arn,
                     foundationalModel=foundational_model,
                     **kwargs,
                 ),
@@ -114,24 +136,38 @@ class BedrockAgentBase(KernelBaseModel):
 
             return self.agent_model
         except ClientError as e:
-            logger.error(f"Failed to update agent {agent_id}.")
+            logger.error(f"Failed to update agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _delete_agent(self, agent_id: str, **kwargs) -> None:
+    async def _delete_agent(self, **kwargs) -> None:
         """Delete an agent asynchronously."""
         try:
             await self._run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.delete_client,
-                    agentId=agent_id,
+                    agentId=self.agent_model.agent_id,
                     **kwargs,
                 ),
             )
 
             self.agent_model = None
         except ClientError as e:
-            logger.error(f"Failed to delete agent {agent_id}.")
+            logger.error(f"Failed to delete agent {self.agent_model.agent_id}.")
+            raise e
+
+    async def _get_agent(self) -> BedrockAgentModel:
+        """Get an agent."""
+        try:
+            return await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.get_agent,
+                    agentId=self.agent_model.agent_id,
+                ),
+            )
+        except ClientError as e:
+            logger.error(f"Failed to get agent {self.agent_model.agent_id}.")
             raise e
 
     # endregion Agent Management
@@ -259,3 +295,29 @@ class BedrockAgentBase(KernelBaseModel):
             logger.error(f"Failed to list associated knowledge bases for agent {self.agent_model.agent_id}.")
 
     # endregion Knowledge Base Management
+
+    async def _invoke_agent(
+        self,
+        session_id: str,
+        input_text: str,
+        agent_alias: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """Invoke an agent."""
+        agent_alias = agent_alias or self.WORKING_DRAFT_AGENT_ALIAS
+
+        try:
+            return await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_runtime_client.invoke_agent,
+                    agentAliasId=agent_alias,
+                    agentId=self.agent_model.agent_id,
+                    sessionId=session_id,
+                    inputText=input_text,
+                    **kwargs,
+                ),
+            )
+        except ClientError as e:
+            logger.error(f"Failed to invoke agent {self.agent_model.agent_id}.")
+            raise e

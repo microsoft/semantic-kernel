@@ -90,3 +90,27 @@ class BedrockAgent(BedrockAgentBase, Agent):
     async def list_associated_agent_knowledge_bases(self, **kwargs) -> dict[str, Any]:
         """List associated agent knowledge bases."""
         return await self._list_associated_agent_knowledge_bases(**kwargs)
+
+    async def invoke(
+        self,
+        session_id: str,
+        input_text: str,
+        agent_alias: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """Invoke an agent."""
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+
+        return await self._invoke(session_id, input_text, agent_alias, **kwargs)
+
+    async def invoke_stream(
+        self,
+        session_id: str,
+        input_text: str,
+        agent_alias: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """Invoke an agent."""
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
+
+        return await self._invoke(session_id, input_text, agent_alias, **kwargs)
