@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Mapping
+from collections.abc import Callable, Coroutine, Mapping
 from typing import Any, ClassVar, Literal, TypeVar
 
+from numpy import ndarray
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
@@ -31,6 +32,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
     def __init__(
         self,
         protocol: Literal["websocket", "webrtc"] = "websocket",
+        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
@@ -45,6 +47,13 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
 
         Args:
             protocol: The protocol to use, can be either "websocket" or "webrtc".
+            audio_output_callback: The audio output callback, optional.
+                This should be a coroutine, that takes a ndarray with audio as input.
+                The goal of this function is to allow you to play the audio with the
+                least amount of latency possible.
+                It is called first in both websockets and webrtc.
+                Even when passed, the audio content will still be
+                added to the receiving queue.
             ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id (str | None): Service ID tied to the execution settings.
@@ -74,6 +83,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
             raise ServiceInitializationError("The OpenAI text model ID is required.")
         super().__init__(
             protocol=protocol,
+            audio_output_callback=audio_output_callback,
             ai_model_id=openai_settings.realtime_model_id,
             service_id=service_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,

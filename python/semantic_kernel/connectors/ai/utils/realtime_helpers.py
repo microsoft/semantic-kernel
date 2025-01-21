@@ -5,6 +5,7 @@ import logging
 from typing import Any, Final
 
 import numpy as np
+import numpy.typing as npt
 from aiortc.mediastreams import MediaStreamError, MediaStreamTrack
 from av.audio.frame import AudioFrame
 from av.frame import Frame
@@ -20,25 +21,25 @@ SAMPLE_RATE: Final[int] = 48000
 TRACK_CHANNELS: Final[int] = 1
 PLAYER_CHANNELS: Final[int] = 2
 FRAME_DURATION: Final[int] = 20
-DTYPE: Final[np.dtype] = np.int16
+DTYPE: Final[npt.DTypeLike] = np.int16
 
 
 class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
-    """A simple class using sounddevice to record audio from the default input device.
+    """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice.
 
-    And implementing the MediaStreamTrack interface for use with aiortc.
+    Make sure the device_id is set to the correct device for your system.
     """
 
     kind: str = "audio"
     sample_rate: int = SAMPLE_RATE
     channels: int = TRACK_CHANNELS
     frame_duration: int = FRAME_DURATION
-    dtype: np.dtype = DTYPE
+    dtype: npt.DTypeLike = DTYPE
     device: str | int | None = None
     queue: asyncio.Queue[Frame] = Field(default_factory=asyncio.Queue)
     is_recording: bool = False
-    stream: InputStream | None = None
     frame_size: int = 0
+    _stream: InputStream | None = None
     _recording_task: asyncio.Task | None = None
     _loop: asyncio.AbstractEventLoop | None = None
     _pts: int = 0  # Add this to track the pts
@@ -62,10 +63,35 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
             self._recording_task = asyncio.create_task(self.start_recording())
 
         try:
-            return await self.queue.get()
+            frame = await self.queue.get()
+            self.queue.task_done()
+            return frame
         except Exception as e:
             logger.error(f"Error receiving audio frame: {e!s}")
             raise MediaStreamError("Failed to receive audio frame")
+
+    def _sounddevice_callback(self, indata: np.ndarray, frames: int, time: Any, status: Any) -> None:
+        if status:
+            logger.warning(f"Audio input status: {status}")
+        if self._loop and self._loop.is_running():
+            asyncio.run_coroutine_threadsafe(self.queue.put(self._create_frame(indata)), self._loop)
+
+    def _create_frame(self, indata: np.ndarray) -> Frame:
+        audio_data = indata.copy()
+        if audio_data.dtype != self.dtype:
+            audio_data = (
+                (audio_data * 32767).astype(self.dtype) if self.dtype == np.int16 else audio_data.astype(self.dtype)
+            )
+        frame = AudioFrame(
+            format="s16",
+            layout="mono",
+            samples=len(audio_data),
+        )
+        frame.rate = self.sample_rate
+        frame.pts = self._pts
+        frame.planes[0].update(audio_data.tobytes())
+        self._pts += len(audio_data)
+        return frame
 
     async def start_recording(self):
         """Start recording audio from the input device."""
@@ -77,39 +103,15 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
         self._pts = 0  # Reset pts when starting recording
 
         try:
-
-            def callback(indata: np.ndarray, frames: int, time: Any, status: Any) -> None:
-                if status:
-                    logger.warning(f"Audio input status: {status}")
-
-                audio_data = indata.copy()
-                if audio_data.dtype != self.dtype:
-                    if self.dtype == np.int16:
-                        audio_data = (audio_data * 32767).astype(self.dtype)
-                    else:
-                        audio_data = audio_data.astype(self.dtype)
-
-                frame = AudioFrame(
-                    format="s16",
-                    layout="mono",
-                    samples=len(audio_data),
-                )
-                frame.rate = self.sample_rate
-                frame.pts = self._pts
-                frame.planes[0].update(audio_data.tobytes())
-                self._pts += len(audio_data)
-                if self._loop and self._loop.is_running():
-                    asyncio.run_coroutine_threadsafe(self.queue.put(frame), self._loop)
-
-            self.stream = InputStream(
+            self._stream = InputStream(
                 device=self.device,
                 channels=self.channels,
                 samplerate=self.sample_rate,
                 dtype=self.dtype,
                 blocksize=self.frame_size,
-                callback=callback,
+                callback=self._sounddevice_callback,
             )
-            self.stream.start()
+            self._stream.start()
 
             while self.is_recording:
                 await asyncio.sleep(0.1)
@@ -121,7 +123,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
             self.is_recording = False
 
 
-class SKSimplePlayer(KernelBaseModel):
+class SKAudioPlayer(KernelBaseModel):
     """Simple class that plays audio using sounddevice.
 
     Make sure the device_id is set to the correct device for your system.
@@ -132,21 +134,11 @@ class SKSimplePlayer(KernelBaseModel):
 
     device_id: int | None = None
     sample_rate: int = SAMPLE_RATE
+    dtype: npt.DTypeLike = DTYPE
     channels: int = PLAYER_CHANNELS
     frame_duration_ms: int = FRAME_DURATION
-    queue: asyncio.Queue[np.ndarray] = Field(default_factory=asyncio.Queue)
+    _queue: asyncio.Queue[np.ndarray] | None = None
     _stream: OutputStream | None = PrivateAttr(None)
-
-    def model_post_init(self, __context: Any) -> None:
-        """Initialize the audio stream."""
-        self._stream = OutputStream(
-            callback=self.callback,
-            samplerate=self.sample_rate,
-            channels=self.channels,
-            dtype=np.int16,
-            blocksize=int(self.sample_rate * self.frame_duration_ms / 1000),
-            device=self.device_id,
-        )
 
     async def __aenter__(self):
         """Start the audio stream when entering a context."""
@@ -159,32 +151,68 @@ class SKSimplePlayer(KernelBaseModel):
 
     def start(self):
         """Start the audio stream."""
-        if self._stream:
+        self._queue = asyncio.Queue()
+        self._stream = OutputStream(
+            callback=self._sounddevice_callback,
+            samplerate=self.sample_rate,
+            channels=self.channels,
+            dtype=self.dtype,
+            blocksize=int(self.sample_rate * self.frame_duration_ms / 1000),
+            device=self.device_id,
+        )
+        if self._stream and self._queue:
             self._stream.start()
 
     def stop(self):
         """Stop the audio stream."""
         if self._stream:
             self._stream.stop()
+        self._stream = None
+        self._queue = None
 
-    def callback(self, outdata, frames, time, status):
+    def _sounddevice_callback(self, outdata, frames, time, status):
         """This callback is called by sounddevice when it needs more audio data to play."""
         if status:
             logger.info(f"Audio output status: {status}")
-        if self.queue.empty():
-            return
-        data: np.ndarray = self.queue.get_nowait()
-        outdata[:] = data.reshape(outdata.shape)
+        if self._queue:
+            if self._queue.empty():
+                return
+            data: np.ndarray = self._queue.get_nowait()
+            outdata[:] = data.reshape(outdata.shape)
+            self._queue.task_done()
 
-    async def realtime_client_callback(self, frame: AudioFrame):
-        """This function is used by the RealtimeClientBase to play audio."""
-        await self.queue.put(frame.to_ndarray())
+    async def client_callback(self, content: np.ndarray):
+        """This function can be passed to the audio_output_callback field of the RealtimeClientBase."""
+        if self._queue:
+            await self._queue.put(content)
+        else:
+            logger.error(
+                "Audio queue not initialized, make sure to call start before "
+                "using the player, or use the context manager."
+            )
 
-    async def add_audio(self, audio_content: AudioContent):
+    async def add_audio(self, audio_content: AudioContent) -> None:
         """This function is used to add audio to the queue for playing.
 
-        It uses a shortcut for this sample, because we know a AudioFrame is in the inner_content field.
+        It first checks if there is a AudioFrame in the inner_content of the AudioContent.
+        If not, it checks if the data is a numpy array, bytes, or a string and converts it to a numpy array.
         """
+        if not self._queue:
+            logger.error(
+                "Audio queue not initialized, make sure to call start before "
+                "using the player, or use the context manager."
+            )
+            return
         if audio_content.inner_content and isinstance(audio_content.inner_content, AudioFrame):
-            await self.queue.put(audio_content.inner_content.to_ndarray())
-        # TODO (eavanvalkenburg): check ndarray
+            await self._queue.put(audio_content.inner_content.to_ndarray())
+            return
+        if isinstance(audio_content.data, np.ndarray):
+            await self._queue.put(audio_content.data)
+            return
+        if isinstance(audio_content.data, bytes):
+            await self._queue.put(np.frombuffer(audio_content.data, dtype=self.dtype))
+            return
+        if isinstance(audio_content.data, str):
+            await self._queue.put(np.frombuffer(audio_content.data.encode(), dtype=self.dtype))
+            return
+        logger.error(f"Unknown audio content: {audio_content}")

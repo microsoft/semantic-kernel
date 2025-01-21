@@ -5,8 +5,9 @@ import base64
 import json
 import logging
 import sys
-from inspect import isawaitable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
+
+import numpy as np
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 
@@ -62,10 +63,8 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
 
         async for event in self.connection:
             if event.type == ListenEvents.RESPONSE_AUDIO_DELTA.value:
-                if self.audio_output:
-                    out = self.audio_output(event)
-                    if isawaitable(out):
-                        await out
+                if self.audio_output_callback:
+                    await self.audio_output_callback(np.frombuffer(base64.b64decode(event.delta), dtype=np.int16))
                 try:
                     await self.receive_buffer.put((
                         event.type,

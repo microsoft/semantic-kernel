@@ -10,6 +10,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from numpy import ndarray
 from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
 from openai.types.beta.realtime.response_function_call_arguments_done_event import (
     ResponseFunctionCallArgumentsDoneEvent,
@@ -49,7 +50,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
     protocol: ClassVar[Literal["websocket", "webrtc"]] = "websocket"
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
-    audio_output: Callable[[Any], Coroutine[Any, Any, None] | None] | None = None
+    audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
     kernel: Kernel | None = None
 
     _current_settings: PromptExecutionSettings | None = PrivateAttr(None)
@@ -60,8 +61,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
         Audio delta has to be handled by the implementation of the protocol as some
         protocols have different ways of handling audio.
-
-
         """
         match event.type:
             case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
