@@ -131,7 +131,8 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
                 Temperature = settings.Temperature,
                 TopP = settings.TopP,
                 TopK = settings.TopK,
-                Stop = settings.Stop?.ToArray()
+                Stop = settings.Stop?.ToArray(),
+                NumPredict = settings.NumPredict
             },
             Model = selectedModel,
             Stream = true
