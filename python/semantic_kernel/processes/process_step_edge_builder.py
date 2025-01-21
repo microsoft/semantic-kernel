@@ -45,7 +45,9 @@ class ProcessStepEdgeBuilder:
             )
 
         if isinstance(target, ProcessStepBuilder):
-            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name"))
+            target = ProcessFunctionTargetBuilder(
+                step=target, parameter_name=kwargs.get("parameter_name"), function_name=kwargs.get("function_name")
+            )
 
         self.target = target
         self.source.link_to(self.event_id, self)
