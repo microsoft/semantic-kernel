@@ -36,6 +36,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # Connectors that support function calling should set this to True
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
+    instruction_role: str = "system"
 
     # region Internal methods to be implemented by the derived classes
 

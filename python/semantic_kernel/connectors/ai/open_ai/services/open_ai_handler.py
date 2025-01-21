@@ -10,7 +10,7 @@ from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.images_response import ImagesResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from semantic_kernel.connectors.ai.open_ai import (
     OpenAIAudioToTextExecutionSettings,
@@ -51,6 +51,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
+    instruction_role: str = Field(default="system")
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the OpenAI API."""

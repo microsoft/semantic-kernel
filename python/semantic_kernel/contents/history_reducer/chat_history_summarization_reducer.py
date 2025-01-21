@@ -180,11 +180,22 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
     async def _summarize(self, messages: list[ChatMessageContent]) -> ChatMessageContent | None:
         """Use the ChatCompletion service to generate a single summary message."""
-        chat_history = ChatHistory(messages=messages)
-        chat_history.add_system_message(self.summarization_instructions)
+        from semantic_kernel.contents.utils.author_role import AuthorRole
 
-        if self.execution_settings is None:
-            execution_settings = self.service.get_prompt_execution_settings_class()(service_id=self.service_id)
+        chat_history = ChatHistory(messages=messages)
+
+        role = (
+            getattr(self.execution_settings, "instruction_role", AuthorRole.SYSTEM)
+            if self.execution_settings
+            else AuthorRole.SYSTEM
+        )
+
+        chat_history.add_message(ChatMessageContent(role=role, content=self.summarization_instructions))
+
+        execution_settings = self.execution_settings or self.service.get_prompt_execution_settings_class()(
+            service_id=self.service_id
+        )
+
         return await self.service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
     def __eq__(self, other: object) -> bool:
