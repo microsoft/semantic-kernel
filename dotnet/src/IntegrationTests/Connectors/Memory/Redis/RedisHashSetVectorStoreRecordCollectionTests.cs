@@ -22,7 +22,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
-    private const string SkipReason = "Requires Redis docker container up and running";
+    private const string SkipReason = "Redis tests fail intermittently on build server";
 
     private const string TestCollectionName = "hashhotels";
 

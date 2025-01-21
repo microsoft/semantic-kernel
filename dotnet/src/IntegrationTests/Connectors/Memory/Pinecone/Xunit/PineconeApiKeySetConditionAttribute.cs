@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
 
