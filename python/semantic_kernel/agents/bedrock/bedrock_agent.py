@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import Any
+
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
+from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -64,14 +67,26 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Delete an agent asynchronously."""
         await self._delete_agent(agent_id, **kwargs)
 
-    async def create_code_interpreter_action_group(self, **kwargs):
+    async def create_code_interpreter_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Enable code interpretation."""
         return await self._create_code_interpreter_action_group(**kwargs)
 
-    async def create_user_input_action_group(self, **kwargs):
+    async def create_user_input_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Enable user input."""
         return await self._create_user_input_action_group(**kwargs)
 
-    async def create_kernel_function_action_group(self, **kwargs):
+    async def create_kernel_function_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Enable kernel function."""
         return await self._create_kernel_function_action_group(self.kernel, **kwargs)
+
+    async def associate_agent_knowledge_base(self, knowledge_base_id, **kwargs) -> dict[str, Any]:
+        """Associate an agent with a knowledge base."""
+        return await self._associate_agent_knowledge_base(knowledge_base_id, **kwargs)
+
+    async def disassociate_agent_knowledge_base(self, knowledge_base_id, **kwargs) -> None:
+        """Disassociate an agent with a knowledge base."""
+        return await self._disassociate_agent_knowledge_base(knowledge_base_id, **kwargs)
+
+    async def list_associated_agent_knowledge_bases(self, **kwargs) -> dict[str, Any]:
+        """List associated agent knowledge bases."""
+        return await self._list_associated_agent_knowledge_bases(**kwargs)

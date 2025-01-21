@@ -84,7 +84,7 @@ class BedrockAgentBase(KernelBaseModel):
             )
             return self.agent_model
         except ClientError as e:
-            logger.error(f"Failed to create agent {agent_name}. Error: {e}")
+            logger.error(f"Failed to create agent {agent_name}.")
             raise e
 
     async def _update_agent(
@@ -114,7 +114,7 @@ class BedrockAgentBase(KernelBaseModel):
 
             return self.agent_model
         except ClientError as e:
-            logger.error(f"Failed to update agent {agent_id}. Error: {e}")
+            logger.error(f"Failed to update agent {agent_id}.")
             raise e
 
     async def _delete_agent(self, agent_id: str, **kwargs) -> None:
@@ -131,7 +131,7 @@ class BedrockAgentBase(KernelBaseModel):
 
             self.agent_model = None
         except ClientError as e:
-            logger.error(f"Failed to delete agent {agent_id}. Error: {e}")
+            logger.error(f"Failed to delete agent {agent_id}.")
             raise e
 
     # endregion Agent Management
@@ -152,9 +152,7 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
         except ClientError as e:
-            logger.error(
-                f"Failed to create code interpreter action group for agent {self.agent_model.agent_id}. Error: {e}"
-            )
+            logger.error(f"Failed to create code interpreter action group for agent {self.agent_model.agent_id}.")
             raise e
 
     async def _create_user_input_action_group(self, **kwargs) -> BedrockActionGroupModel:
@@ -172,7 +170,7 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
         except ClientError as e:
-            logger.error(f"Failed to create user input action group for agent {self.agent_model.agent_id}. Error: {e}")
+            logger.error(f"Failed to create user input action group for agent {self.agent_model.agent_id}.")
             raise e
 
     async def _create_kernel_function_action_group(self, kernel: Kernel, **kwargs) -> BedrockActionGroupModel | None:
@@ -200,7 +198,64 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
         except ClientError as e:
+            logger.error(f"Failed to create kernel function action group for agent {self.agent_model.agent_id}.")
+            raise e
+
+    # endregion Action Group Management
+
+    # region Knowledge Base Management
+
+    async def _associate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> dict[str, Any]:
+        """Associate an agent with a knowledge base."""
+        try:
+            return await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.associate_client_knowledge_base,
+                    agentId=self.agent_model.agent_id,
+                    agentVersion=self.agent_model.agent_version,
+                    knowledgeBaseId=knowledge_base_id,
+                    **kwargs,
+                ),
+            )
+        except ClientError as e:
             logger.error(
-                f"Failed to create kernel function action group for agent {self.agent_model.agent_id}. Error: {e}"
+                f"Failed to associate agent {self.agent_model.agent_id} with knowledge base {knowledge_base_id}."
             )
             raise e
+
+    async def _disassociate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> None:
+        """Disassociate an agent with a knowledge base."""
+        try:
+            await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.disassociate_client_knowledge_base,
+                    agentId=self.agent_model.agent_id,
+                    agentVersion=self.agent_model.agent_version,
+                    knowledgeBaseId=knowledge_base_id,
+                    **kwargs,
+                ),
+            )
+        except ClientError as e:
+            logger.error(
+                f"Failed to disassociate agent {self.agent_model.agent_id} with knowledge base {knowledge_base_id}."
+            )
+            raise e
+
+    async def _list_associated_agent_knowledge_bases(self, **kwargs) -> dict[str, Any]:
+        """List associated knowledge bases with an agent."""
+        try:
+            return await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.list_client_knowledge_bases,
+                    agentId=self.agent_model.agent_id,
+                    agentVersion=self.agent_model.agent_version,
+                    **kwargs,
+                ),
+            )
+        except ClientError:
+            logger.error(f"Failed to list associated knowledge bases for agent {self.agent_model.agent_id}.")
+
+    # endregion Knowledge Base Management
