@@ -14,6 +14,8 @@ using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+
 // Ensure you follow the preparation steps provided in the README.md
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
