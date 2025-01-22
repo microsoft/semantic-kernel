@@ -4,11 +4,6 @@ import logging
 import sys
 from typing import Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from psycopg import sql
 from psycopg_pool import AsyncConnectionPool
 
@@ -18,6 +13,12 @@ from semantic_kernel.data.record_definition.vector_store_model_definition import
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
