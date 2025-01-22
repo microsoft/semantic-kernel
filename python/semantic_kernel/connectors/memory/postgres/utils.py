@@ -132,6 +132,13 @@ def get_vector_distance_ops_str(distance_function: DistanceFunction) -> str:
     Args:
         distance_function: The distance function for which the operator string is needed.
 
+    Note:
+        For the COSINE_SIMILARITY and DOT_PROD distance functions,
+        there is additional query steps to retrieve the correct distance.
+        For dot product, take -1 * inner product, as <#> returns the negative inner product
+        since Postgres only supports ASC order index scans on operators
+        For cosine similarity, take 1 - cosine distance.
+
     Returns:
         The PostgreSQL distance operator string for the given distance function.
 
