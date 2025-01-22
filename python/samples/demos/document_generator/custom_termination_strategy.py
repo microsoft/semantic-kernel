@@ -49,7 +49,7 @@ class CustomTerminationStrategy(TerminationStrategy):
                 if content:
                     chat_history.add_message(message)
 
-            chat_history.add_user_message_str(
+            chat_history.add_user_message(
                 "Is the latest content approved by all agents? "
                 f"Answer with '{TERMINATE_TRUE_KEYWORD}' or '{TERMINATE_FALSE_KEYWORD}'."
             )
@@ -66,7 +66,7 @@ class CustomTerminationStrategy(TerminationStrategy):
                     return True
 
                 chat_history.add_message(completion)
-                chat_history.add_user_message_str(
+                chat_history.add_user_message(
                     f"You must only say either '{TERMINATE_TRUE_KEYWORD}' or '{TERMINATE_FALSE_KEYWORD}'."
                 )
 

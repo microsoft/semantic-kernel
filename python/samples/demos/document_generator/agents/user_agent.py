@@ -47,7 +47,7 @@ class UserAgent(CustomAgentBase):
     @override
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         cloned_history = history.model_copy(deep=True)
-        cloned_history.add_user_message_str(
+        cloned_history.add_user_message(
             "Now present the latest draft to the user for feedback and summarize their feedback."
         )
 

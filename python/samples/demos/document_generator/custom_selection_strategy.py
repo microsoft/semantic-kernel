@@ -55,9 +55,7 @@ class CustomSelectionStrategy(SelectionStrategy):
                 if content:
                     chat_history.add_message(message)
 
-            chat_history.add_user_message_str(
-                "Now follow the rules and select the next agent by typing the agent's index."
-            )
+            chat_history.add_user_message("Now follow the rules and select the next agent by typing the agent's index.")
 
             for _ in range(self.NUM_OF_RETRIES):
                 completion = await self.chat_completion_service.get_chat_message_content(
@@ -69,8 +67,8 @@ class CustomSelectionStrategy(SelectionStrategy):
                     return agents[int(completion.content)]
                 except ValueError as ex:
                     chat_history.add_message(completion)
-                    chat_history.add_user_message_str(str(ex))
-                    chat_history.add_user_message_str(f"You must only say a number between 0 and {len(agents) - 1}.")
+                    chat_history.add_user_message(str(ex))
+                    chat_history.add_user_message(f"You must only say a number between 0 and {len(agents) - 1}.")
 
             raise ValueError("Failed to select an agent since the model did not return a valid index")
 

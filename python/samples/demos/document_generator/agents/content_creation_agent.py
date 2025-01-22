@@ -46,9 +46,7 @@ class ContentCreationAgent(CustomAgentBase):
     @override
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         cloned_history = history.model_copy(deep=True)
-        cloned_history.add_user_message_str(
-            "Now generate new content or revise existing content to incorporate feedback."
-        )
+        cloned_history.add_user_message("Now generate new content or revise existing content to incorporate feedback.")
 
         async for response_message in super().invoke(cloned_history):
             yield response_message

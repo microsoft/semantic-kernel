@@ -49,7 +49,7 @@ class CodeValidationAgent(CustomAgentBase):
     @override
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         cloned_history = history.model_copy(deep=True)
-        cloned_history.add_user_message_str(
+        cloned_history.add_user_message(
             "Now validate the Python code in the latest document draft and summarize any errors."
         )
 
