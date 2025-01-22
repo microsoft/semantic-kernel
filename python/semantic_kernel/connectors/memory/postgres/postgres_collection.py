@@ -65,6 +65,7 @@ class PostgresCollection(
     db_schema: str = DEFAULT_SCHEMA
     supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
     supported_vector_types: ClassVar[list[str] | None] = ["float"]
+    _distance_column_name: str = PrivateAttr(DISTANCE_COLUMN_NAME)
 
     _settings: PostgresSettings = PrivateAttr()
     """Postgres settings"""
@@ -107,6 +108,29 @@ class PostgresCollection(
         self._settings = settings or PostgresSettings.create(
             env_file_path=env_file_path, env_file_encoding=env_file_encoding
         )
+
+    @override
+    def model_post_init(self, __context: object | None = None) -> None:
+        """Post-initialization of the model.
+
+        In addition to the base class implementation, this method resets the distance column name
+        to avoid collisions if necessary.
+        """
+        super().model_post_init(__context)
+
+        if DISTANCE_COLUMN_NAME in self.data_model_definition.fields:
+            # Reset the distance column name, ensuring no collision with existing model fields
+            distance_column_name = DISTANCE_COLUMN_NAME
+            i = 0
+            max_sep = 63 - len(distance_column_name)  # Max length of column name is 63
+            max_sep -= len(str(i))  # Account for the number suffix
+            while distance_column_name in self.data_model_definition.fields:
+                sep = ["_"] * i
+                distance_column_name = f"{DISTANCE_COLUMN_NAME}{''.join(sep)}{i}"
+                i += 1
+                if i > max_sep:
+                    raise VectorStoreModelValidationError("Unable to generate a unique distance column name.")
+            self._distance_column_name = distance_column_name
 
     # region: VectorStoreRecordCollection implementation
 
@@ -496,7 +520,7 @@ class PostgresCollection(
             sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
             sql.Identifier(vector_field.name),
             sql.SQL(ops_str),
-            sql.Identifier(DISTANCE_COLUMN_NAME),
+            sql.Identifier(self._distance_column_name),
             sql.Identifier(self.db_schema),
             sql.Identifier(self.collection_name),
         )
@@ -505,7 +529,7 @@ class PostgresCollection(
             query += where_clause
 
         query += sql.SQL(" ORDER BY {} LIMIT {}").format(
-            sql.Identifier(DISTANCE_COLUMN_NAME),
+            sql.Identifier(self._distance_column_name),
             sql.Literal(options.top),
         )
 
@@ -517,8 +541,8 @@ class PostgresCollection(
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if distance_function == DistanceFunction.COSINE_SIMILARITY:
             query = sql.SQL("SELECT subquery.*, 1 - subquery.{} AS {} FROM ({}) AS subquery").format(
-                sql.Identifier(DISTANCE_COLUMN_NAME),
-                sql.Identifier(DISTANCE_COLUMN_NAME),
+                sql.Identifier(self._distance_column_name),
+                sql.Identifier(self._distance_column_name),
                 query,
             )
 
@@ -527,15 +551,15 @@ class PostgresCollection(
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if distance_function == DistanceFunction.DOT_PROD:
             query = sql.SQL("SELECT subquery.*, -1 * subquery.{} AS {} FROM ({}) AS subquery").format(
-                sql.Identifier(DISTANCE_COLUMN_NAME),
-                sql.Identifier(DISTANCE_COLUMN_NAME),
+                sql.Identifier(self._distance_column_name),
+                sql.Identifier(self._distance_column_name),
                 query,
             )
 
         # Convert the vector to a string for the query
         params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
 
-        return query, params, [*select_fields, (DISTANCE_COLUMN_NAME, None)]
+        return query, params, [*select_fields, (self._distance_column_name, None)]
 
     def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> sql.Composed | None:
         """Build the WHERE clause for the search query from the filter in the search options.
@@ -573,10 +597,10 @@ class PostgresCollection(
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
-        return {k: v for (k, v) in result.items() if k != DISTANCE_COLUMN_NAME}
+        return {k: v for (k, v) in result.items() if k != self._distance_column_name}
 
     @override
     def _get_score_from_result(self, result: Any) -> float | None:
-        return result.pop(DISTANCE_COLUMN_NAME, None)
+        return result.pop(self._distance_column_name, None)
 
     # endregion

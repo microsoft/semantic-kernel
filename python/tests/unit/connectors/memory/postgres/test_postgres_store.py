@@ -312,6 +312,42 @@ async def test_vector_search(
     assert statement_str == expected_statement
 
 
+async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
+    @vectorstoremodel
+    @dataclass
+    class ConflictingDataModel:
+        id: Annotated[int, VectorStoreRecordKeyField()]
+        sk_pg_distance: Annotated[
+            float, VectorStoreRecordDataField()
+        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
+        sk_pg_distance0: Annotated[
+            float, VectorStoreRecordDataField()
+        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
+        sk_pg_distance_1: Annotated[
+            float, VectorStoreRecordDataField()
+        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
+        embedding: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                index_kind=IndexKind.HNSW,
+                dimensions=1536,
+                distance_function=DistanceFunction.COSINE_SIMILARITY,
+                property_type="float",
+            ),
+        ]
+        data: Annotated[
+            dict[str, Any],
+            VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
+        ]
+
+    collection = vector_store.get_collection("test_collection", ConflictingDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    # Ensure that the distance column name has been changed to avoid conflict
+    assert collection._distance_column_name == f"{DISTANCE_COLUMN_NAME}__2"
+
+
 # endregion
 
 # region Settings tests
