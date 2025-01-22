@@ -468,10 +468,8 @@ class PostgresCollection(
                 "Connection pool is not available, use the collection as a context manager."
             )
 
-        fields = [(field.name, field) for field in self.data_model_definition.fields.values()]
-
         if vector is not None:
-            query, params, return_fields = self._construct_vector_query(vector, fields, options, **kwargs)
+            query, params, return_fields = self._construct_vector_query(vector, options, **kwargs)
         elif search_text:
             raise VectorSearchExecutionException("Text search not supported.")
         elif vectorizable_text:
@@ -490,7 +488,6 @@ class PostgresCollection(
     def _construct_vector_query(
         self,
         vector: list[float | int],
-        fields: list[tuple[str, VectorStoreRecordField]],
         options: VectorSearchOptions,
         **kwargs: Any,
     ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreRecordField | None]]]:
@@ -498,7 +495,6 @@ class PostgresCollection(
 
         Args:
             vector: The vector to search for.
-            fields: The fields.
             options: The search options.
             **kwargs: Additional arguments.
 
@@ -522,7 +518,10 @@ class PostgresCollection(
         ops_str = get_vector_distance_ops_str(distance_function)
 
         # Select all fields except all vector fields if include_vectors is False
-        select_fields = [(name, f) for (name, f) in fields if (name != vector_field.name or options.include_vectors)]
+        skip_vector_field_names = set() if options.include_vectors else {f.name for f in vector_fields}
+        select_fields = [
+            (name, f) for (name, f) in self.data_model_definition.fields.items() if name not in skip_vector_field_names
+        ]
         select_list = [name for (name, _) in select_fields]
 
         where_clause = self._build_where_clauses_from_filter(options.filter)
