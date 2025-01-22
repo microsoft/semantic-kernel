@@ -1066,7 +1066,7 @@ internal partial class ClientCore
     /// <summary>
     /// Sanitizes function names by replacing disallowed characters.
     /// </summary>
-    /// <param name="toolCalls">The function calls containing the function which names need to be sanitized.</param>
+    /// <param name="toolCalls">The function calls containing the function names which need to be sanitized.</param>
     /// <returns>The function calls with sanitized function names.</returns>
     private static List<ChatToolCall> SanitizeFunctionNames(List<ChatToolCall> toolCalls)
     {
