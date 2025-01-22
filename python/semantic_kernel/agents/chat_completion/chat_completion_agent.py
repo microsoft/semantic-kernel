@@ -16,6 +16,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -76,6 +77,7 @@ class ChatCompletionAgent(Agent):
             args["kernel"] = kernel
         super().__init__(**args)
 
+    @trace_agent_invocation
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat history handler.
 
@@ -129,6 +131,7 @@ class ChatCompletionAgent(Agent):
             message.name = self.name
             yield message
 
+    @trace_agent_invocation
     async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 

@@ -155,8 +155,8 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                settings.ExtensionData["response_format"] = json.Schema is not null ?
-                    JsonSerializer.Deserialize(json.Schema, AbstractionsJsonContext.Default.JsonElement) :
+                settings.ExtensionData["response_format"] = json.Schema is JsonElement schema ?
+                    JsonSerializer.Deserialize(schema, AbstractionsJsonContext.Default.JsonElement) :
                     "json_object";
             }
         }
