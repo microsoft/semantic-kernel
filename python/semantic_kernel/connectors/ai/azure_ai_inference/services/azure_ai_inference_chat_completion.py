@@ -20,6 +20,7 @@ from azure.ai.inference.models import (
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
 )
+from pydantic import Field
 
 from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
@@ -56,7 +57,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     """Azure AI Inference Chat Completion Service."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
-    instruction_role: str | None = "system"
+    instruction_role: str | None = Field(
+        default_factory=lambda: "system", description="The role to use for 'instruction' messages."
+    )
 
     def __init__(
         self,
@@ -90,17 +93,23 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
         """
-        super().__init__(
-            ai_model_id=ai_model_id,
-            service_id=service_id or ai_model_id,
-            client_type=AzureAIInferenceClientType.ChatCompletions,
-            api_key=api_key,
-            endpoint=endpoint,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-            client=client,
-            instruction_role=instruction_role,
-        )
+        args: dict[str, Any] = {
+            "ai_model_id": ai_model_id,
+            "api_key": api_key,
+            "client_type": AzureAIInferenceClientType.ChatCompletions,
+            "client": client,
+            "endpoint": endpoint,
+            "env_file_path": env_file_path,
+            "env_file_encoding": env_file_encoding,
+        }
+
+        if service_id:
+            args["service_id"] = service_id
+
+        if instruction_role:
+            args["instruction_role"] = instruction_role
+
+        super().__init__(**args)
 
     # region Overriding base class methods
 

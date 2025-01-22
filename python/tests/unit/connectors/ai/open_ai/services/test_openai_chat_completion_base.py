@@ -115,6 +115,30 @@ async def test_cmc_singular(
 
 
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_singular_with_developer_instruction_propagates(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+    openai_unit_test_env,
+):
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+
+    openai_chat_completion = OpenAIChatCompletion(instruction_role="developer")
+    await openai_chat_completion.get_chat_message_content(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=False,
+        messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+    assert openai_chat_completion.instruction_role == "developer"
+
+
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_prompt_execution_settings(
     mock_create,
     kernel: Kernel,

@@ -193,6 +193,30 @@ async def test_cmc(
 
 
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_with_developer_instruction_role_propagates(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+) -> None:
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
+
+    azure_chat_completion = AzureChatCompletion(instruction_role="developer")
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        stream=False,
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+    assert azure_chat_completion.instruction_role == "developer"
+
+
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_with_logit_bias(
     mock_create,
     kernel: Kernel,
