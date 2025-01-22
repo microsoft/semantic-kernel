@@ -99,19 +99,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-        from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-
         if not isinstance(settings, OpenAIChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
-
-        match self:
-            case AzureChatCompletion():
-                if hasattr(self.client, "_api_version"):
-                    self._validate_azure_developer_role_api_version(self.client._api_version, chat_history)
-            case OpenAIChatCompletion():
-                self._validate_openai_developer_role(chat_history)
 
         settings.stream = True
         settings.stream_options = {"include_usage": True}
@@ -303,7 +293,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             prepared_chat_history (Any): The prepared chat history for a request.
         """
         return [
-            message.to_dict(role_key=role_key, content_key=content_key)
+            {
+                **message.to_dict(role_key=role_key, content_key=content_key),
+                role_key: "developer"
+                if self.instruction_role == "developer" and message.to_dict(role_key=role_key)[role_key] == "system"
+                else message.to_dict(role_key=role_key)[role_key],
+            }
             for message in chat_history.messages
             if not isinstance(message, (AnnotationContent, FileReferenceContent))
         ]

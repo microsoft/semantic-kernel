@@ -4,6 +4,8 @@ import logging
 import sys
 from typing import Any
 
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
@@ -18,6 +20,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
 logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class ChatHistoryTruncationReducer(ChatHistoryReducer):
     """A ChatHistory that supports truncation logic.
 
@@ -48,7 +51,7 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
         logger.info("Performing chat history truncation check...")
 
         truncation_index = locate_safe_reduction_index(history, self.target_count, self.threshold_count)
-        if truncation_index < 0:
+        if truncation_index is None:
             logger.info(
                 f"No truncation index found. Target count: {self.target_count}, Threshold: {self.threshold_count}"
             )

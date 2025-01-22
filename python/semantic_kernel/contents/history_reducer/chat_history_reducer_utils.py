@@ -7,6 +7,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,37 @@ logger = logging.getLogger(__name__)
 SUMMARY_METADATA_KEY = "__summary__"
 
 
+@experimental_function
+def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, int]]:
+    """Identify all (FunctionCallContent, FunctionResultContent) pairs in the history.
+
+    Return a list of (call_index, result_index) pairs for safe referencing.
+    """
+    pairs: list[tuple[int, int]] = []  # Correct type: list of tuples with integers
+    call_ids_seen: dict[str, int] = {}  # Map call IDs (str) to their indices (int)
+
+    # Gather all function-call IDs and their indices.
+    for i, msg in enumerate(history):
+        for item in msg.items:
+            if isinstance(item, FunctionCallContent) and item.id is not None:
+                call_ids_seen[item.id] = i
+
+    # Now, match each FunctionResultContent to the earliest call ID with the same ID.
+    for j, msg in enumerate(history):
+        for item in msg.items:
+            if isinstance(item, FunctionResultContent) and item.id is not None:
+                call_id = item.id
+                if call_id in call_ids_seen:
+                    call_index = call_ids_seen[call_id]
+                    pairs.append((call_index, j))
+                    # Remove the call ID so we don't match it a second time
+                    del call_ids_seen[call_id]
+                    break
+
+    return pairs
+
+
+@experimental_function
 def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     """Identify the index of the first message that is not a summary message.
 
@@ -28,6 +60,7 @@ def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     return len(history)
 
 
+@experimental_function
 def locate_safe_reduction_index(
     history: list[ChatMessageContent],
     target_count: int,
@@ -57,17 +90,13 @@ def locate_safe_reduction_index(
     """
     total_count = len(history)
     threshold_index = total_count - (threshold_count or 0) - target_count
-
     if threshold_index <= offset_count:
-        # History is too short to truncate
         return None
 
-    # Start from the end to find a good cut
     message_index = total_count - target_count
 
-    # Move backward to avoid cutting through function call/results
+    # Move backward to avoid cutting function calls / results
     while message_index >= offset_count:
-        # If this message is not a function call/result, we can break
         if not any(
             isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in history[message_index].items
         ):
@@ -86,11 +115,13 @@ def locate_safe_reduction_index(
     return target_index
 
 
+@experimental_function
 def extract_range(
     history: list[ChatMessageContent],
     start: int,
     end: int | None = None,
     filter_func: Callable[[ChatMessageContent], bool] | None = None,
+    preserve_pairs: bool = False,
 ) -> list[ChatMessageContent]:
     """Extract a range of messages from the source history, skipping any message for which we do not want to keep.
 
@@ -102,13 +133,79 @@ def extract_range(
         end: The index of the last message to extract (exclusive). If None, extracts through end.
         filter_func: A function that takes a ChatMessageContent and returns True if the message should
                         be skipped, False otherwise.
+        preserve_pairs: If True, ensures that function call and result pairs are either both kept or both skipped.
 
     Returns:
         A list of extracted messages.
     """
     if end is None:
         end = len(history)
-    sliced = history[start:end]
-    if filter_func is None:
-        return sliced
-    return [m for m in sliced if not filter_func(m)]
+
+    sliced = list(range(start, end))
+
+    # If we need to preserve call->result pairs, gather them
+    pair_map = {}
+    if preserve_pairs:
+        pairs = get_call_result_pairs(history)
+        # store in a dict for quick membership checking
+        # call_idx -> result_idx, and also result_idx -> call_idx
+        for cidx, ridx in pairs:
+            pair_map[cidx] = ridx
+            pair_map[ridx] = cidx
+
+    extracted: list[ChatMessageContent] = []
+    i = 0
+    while i < len(sliced):
+        idx = sliced[i]
+        msg = history[idx]
+
+        # If filter_func excludes it, skip it
+        if filter_func and filter_func(msg):
+            i += 1
+            continue
+
+        # If preserve_pairs is on, and there's a paired index, skip or include them both
+        if preserve_pairs and idx in pair_map:
+            paired_idx = pair_map[idx]
+            # If the pair is within [start, end), we must keep or skip them together
+            if start <= paired_idx < end:
+                # Check if the pair or itself fails filter_func
+                if filter_func and (filter_func(history[paired_idx]) or filter_func(msg)):
+                    # skip both
+                    i += 1
+                    # Also skip the paired index if it's in our current slice
+                    if paired_idx in sliced:
+                        # remove it from the slice so we don't process it again
+                        sliced.remove(paired_idx)
+                    continue
+                # keep both
+                extracted.append(msg)
+                if paired_idx > idx:
+                    # We'll skip the pair in the normal iteration by removing from slice
+                    # but add it to extracted right now
+                    extracted.append(history[paired_idx])
+                    if paired_idx in sliced:
+                        sliced.remove(paired_idx)
+                else:
+                    # if paired_idx < idx, it might appear later, so skip for now
+                    # but we may have already processed it if i was the 2nd item
+                    # either way, do not add duplicates
+                    pass
+                i += 1
+                continue
+            # If the paired_idx is outside [start, end), there's no conflict
+            # so we can just do normal logic
+            extracted.append(msg)
+            i += 1
+        else:
+            # keep it if filter_func not triggered
+            extracted.append(msg)
+            i += 1
+
+    return extracted
+
+
+@experimental_function
+def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
+    """Return True if the message has any function call or function result."""
+    return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)

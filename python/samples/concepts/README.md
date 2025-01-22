@@ -46,6 +46,7 @@
 - [Simple Chatbot Store Metadata](./chat_completion/simple_chatbot_store_metadata.py)
 - [Simple Chatbot Streaming](./chat_completion/simple_chatbot_streaming.py)
 - [Simple Chatbot with Image](./chat_completion/simple_chatbot_with_image.py)
+- [Simple Chatbot with Summary History Reducer Keeping Function Content](./chat_completion/simple_chatbot_with_summary_history_reducer_keep_func_content.py)
 - [Simple Chatbot with Summary History Reducer](./chat_completion/simple_chatbot_with_summary_history_reducer.py)
 - [Simple Chatbot with Truncation History Reducer](./chat_completion/simple_chatbot_with_truncation_history_reducer.py)
 

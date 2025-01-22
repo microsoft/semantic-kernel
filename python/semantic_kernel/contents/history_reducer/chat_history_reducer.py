@@ -1,16 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if sys.version < "3.11":
+    from typing_extensions import Self  # pragma: no cover
+else:
+    from typing import Self  # type: ignore # pragma: no cover
 
 from pydantic import Field
 
 from semantic_kernel.contents.chat_history import ChatHistory
 
 if TYPE_CHECKING:
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    pass
 
 
+@experimental_class
 class ChatHistoryReducer(ChatHistory, ABC):
     """Defines a contract for reducing chat history."""
 
@@ -18,7 +27,7 @@ class ChatHistoryReducer(ChatHistory, ABC):
     threshold_count: int = Field(0, ge=0, description="Threshold count to avoid orphaning messages.")
 
     @abstractmethod
-    async def reduce(self) -> list["ChatMessageContent"] | None:
+    async def reduce(self) -> Self | None:
         """Reduce the chat history in some way (e.g., truncate, summarize).
 
         Returns:

@@ -9,6 +9,9 @@ from samples.concepts.setup.chat_completion_services import (
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents import ChatHistorySummarizationReducer
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
@@ -19,6 +22,8 @@ from semantic_kernel.functions import KernelArguments
 # - a Chat History Reducer: This component is responsible for keeping track and reducing the chat history.
 #                           A Chat History Reducer is a subclass of ChatHistory that provides additional
 #                           functionality to reduce the history.
+#    - The Chat History Reducer configuration includes a flag `include_function_content_in_summary` that
+#      allows the reducer to include function call and result content in the summary.
 # - a KernelFunction: This function will be a prompt function, meaning the function is composed of
 #                     a prompt and will be invoked by Semantic Kernel.
 # The chatbot in this sample is called Mosscap, who responds to user messages with long flowery prose.
@@ -102,6 +107,7 @@ summarization_reducer = ChatHistorySummarizationReducer(
     # - Larger values: Use when you want to minimize the risk of cutting a critical part of the conversation,
     #   especially for sensitive interactions like API function calls or complex responses.
     threshold_count=2,
+    include_function_content_in_summary=True,
 )
 
 summarization_reducer.add_system_message(system_message)
@@ -111,7 +117,15 @@ kernel.add_plugin(plugin=TimePlugin(), plugin_name="TimePlugin")
 request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 
+# The following sets are used to hold on to FunctionCallContent and FunctionResultContent items
+# that have been previously added to the chat history.
+processed_fccs: set[FunctionCallContent] = set()
+processed_frcs: set[FunctionResultContent] = set()
+
+
 async def chat() -> bool:
+    global processed_fccs, processed_frcs
+
     try:
         user_input = input("User:> ")
     except (KeyboardInterrupt, EOFError):
@@ -135,6 +149,36 @@ async def chat() -> bool:
         print(f"Mosscap:> {answer}")
         summarization_reducer.add_user_message(user_input)
         summarization_reducer.add_message(answer.value[0])
+
+        # Get the chat history from the FunctionResult's metadata
+        chat_history: ChatHistory = answer.metadata.get("messages")
+        if chat_history:
+            # Process the chat history to extract FunctionCallContent and FunctionResultContent items
+            # that we haven't previously added to the chat history
+            fcc: list[FunctionCallContent] = []
+            frc: list[FunctionResultContent] = []
+            for msg in chat_history.messages:
+                if msg.items:
+                    for item in msg.items:
+                        match item:
+                            case FunctionCallContent():
+                                if item.id not in processed_fccs:
+                                    fcc.append(item)
+                            case FunctionResultContent():
+                                if item.id not in processed_frcs:
+                                    frc.append(item)
+
+            for i, item in enumerate(fcc):
+                summarization_reducer.add_assistant_message_list([item])
+                processed_fccs.add(item.id)
+                # Safely check if there's a matching FunctionResultContent
+                if i < len(frc):
+                    assert fcc[i].id == frc[i].id  # nosec
+                    summarization_reducer.add_tool_message_list([frc[i]])
+                    processed_frcs.add(item.id)
+
+        # Since this example is showing how to include FunctionCallContent and FunctionResultContent
+        # in the summary, we need to add them to the chat history and also to the processed sets.
 
     return True
 

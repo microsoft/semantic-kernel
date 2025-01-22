@@ -56,6 +56,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     """Azure AI Inference Chat Completion Service."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
+    instruction_role: str | None = "system"
 
     def __init__(
         self,
@@ -66,6 +67,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
@@ -82,6 +84,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
+                prompts could use `developer` or `system`. (Optional)
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -95,6 +99,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
             client=client,
+            instruction_role=instruction_role,
         )
 
     # region Overriding base class methods
@@ -199,7 +204,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         chat_request_messages: list[ChatRequestMessage] = []
 
         for message in chat_history.messages:
-            chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
+            # If instruction_role is 'developer' and the message role is 'system', change it to 'developer'
+            role = (
+                AuthorRole.DEVELOPER
+                if self.instruction_role == "developer" and message.role == AuthorRole.SYSTEM
+                else message.role
+            )
+            chat_request_messages.append(MESSAGE_CONVERTERS[role](message))
 
         return chat_request_messages
 

@@ -52,7 +52,9 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
         """
         if self.history_reducer is not None:
             self.history_reducer.messages = history
-            history = await self.history_reducer.reduce() or history
+            reduced_history = await self.history_reducer.reduce()
+            if reduced_history is not None:
+                history = reduced_history.messages
 
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
