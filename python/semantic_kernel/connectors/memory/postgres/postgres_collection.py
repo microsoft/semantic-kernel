@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import AsyncGenerator, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
 from psycopg import sql
@@ -475,14 +475,28 @@ class PostgresCollection(
         elif vectorizable_text:
             raise VectorSearchExecutionException("Vectorizable text search not supported.")
 
-        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
-            await cur.execute(query, params)
-            rows = await cur.fetchall()
-            # Add the distance to the results
-            results = [convert_row_to_dict(row, return_fields) for row in rows]
+        if options.include_total_count:
+            async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+                await cur.execute(query, params)
+                # Fetch all results to get total count.
+                rows = await cur.fetchall()
+                row_dicts = [convert_row_to_dict(row, return_fields) for row in rows]
+                return KernelSearchResults(
+                    results=self._get_vector_search_results_from_results(row_dicts, options), total_count=len(row_dicts)
+                )
+        else:
+            # Use an asynchronous generator to fetch and yield results
+            connection_pool = self.connection_pool
+
+            async def fetch_results() -> AsyncGenerator[dict[str, Any], None]:
+                async with connection_pool.connection() as conn, conn.cursor() as cur:
+                    await cur.execute(query, params)
+                    async for row in cur:
+                        yield convert_row_to_dict(row, return_fields)
+
             return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(results, options),
-                total_count=len(results) if options.include_total_count else None,
+                results=self._get_vector_search_results_from_results(fetch_results(), options),
+                total_count=None,
             )
 
     def _construct_vector_query(
