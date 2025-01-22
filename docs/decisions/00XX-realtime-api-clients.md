@@ -12,25 +12,26 @@ informed:
 
 ## Context and Problem Statement
 
-Multiple model providers are starting to enable realtime voice-to-voice communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's in different settings, which we want to enable with Semantic Kernel. The key addition that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. There are also options for Google to use video and images as input, so really it is multimodal, but for now we are focusing on the voice-to-voice part, while keeping in mind that video is coming.
+Multiple model providers are starting to enable realtime voice-to-voice or even multi-model-to-voice communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's in different settings, which we want to enable with Semantic Kernel.
+ The key feature that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. There are also options for Google to use video and images as input, but for now we are focusing on the voice-to-voice part, while keeping in mind that video is coming.
 
-The way these API's work at this time is through either Websockets or WebRTC. 
+The protocols that these API's use at this time are Websockets and WebRTC.
 
 In both cases there are events being sent to and from the service, some events contain content, text, audio, or video (so far only sending, not receiving), while some events are "control" events, like content created, function call requested, etc. Sending events include, sending content, either voice, text or function call output, or events, like committing the input audio and requesting a response. 
 
 ### Websocket
-Websocket has been around for a while and is a well known technology, it is a full-duplex communication protocol over a single, long-lived connection. It is used for sending and receiving messages between client and server in real-time. Each event can contain a message, which might contain a content item, or a control event.
+Websocket has been around for a while and is a well known technology, it is a full-duplex communication protocol over a single, long-lived connection. It is used for sending and receiving messages between client and server in real-time. Each event can contain a message, which might contain a content item, or a control event. Audio is sent as a base64 encoded string.
 
 ### WebRTC
-WebRTC is a Mozilla project that provides web browsers and mobile applications with real-time communication via simple application programming interfaces (APIs). It allows audio and video communication to work inside web pages by allowing direct peer-to-peer communication, eliminating the need to install plugins or download native apps. It is used for sending and receiving audio and video streams, and can be used for sending messages as well. The big difference compared to websockets is that it does explicitly create a channel for audio and video, and a separate channel for "data", which are events but also things like Function calls.
+WebRTC is a Mozilla project that provides web browsers and mobile applications with real-time communication via simple application programming interfaces (APIs). It allows audio and video communication to work inside web pages and other applications by allowing direct peer-to-peer communication, eliminating the need to install plugins or download native apps. It is used for sending and receiving audio and video streams, and can be used for sending (data-)messages as well. The big difference compared to websockets is that it explicitly create a channel for audio and video, and a separate channel for "data", which are events but in this space also things like Function calls.
 
 Both the OpenAI and Google realtime api's are in preview/beta, this means there might be breaking changes in the way they work coming in the future, therefore the clients built to support these API's are going to be experimental until the API's stabilize.
 
 One feature that we need to consider if and how to deal with is whether or not a service uses Voice Activated Detection, OpenAI supports turning that off and allows parameters for how it behaves, while Google has it on by default and it cannot be configured.
 
-### Event types (websocket and partially webrtc)
+### Event types (Websocket and partially WebRTC)
 
-Client side events:
+#### Client side events:
 | **Content/Control event** | **Event Description**             | **OpenAI Event**             | **Google Event**                   |
 | ------------------------- | --------------------------------- | ---------------------------- | ---------------------------------- |
 | Control                   | Configure session                 | `session.update`             | `BidiGenerateContentSetup`         |
@@ -44,7 +45,7 @@ Client side events:
 | Control                   | Ask for response                  | `response.create`            | `-`                                |
 | Control                   | Cancel response                   | `response.cancel`            | `-`                                |
 
-Server side events:
+#### Server side events:
 | **Content/Control event** | **Event Description**                  | **OpenAI Event**                                        | **Google Event**                          |
 | ------------------------- | -------------------------------------- | ------------------------------------------------------- | ----------------------------------------- |
 | Control                   | Error                                  | `error`                                                 | `-`                                       |
@@ -78,13 +79,10 @@ Server side events:
 | Control                   | Rate limits updated                    | `rate_limits.updated`                                   | `-`                                       |
 
 
-## Decision Drivers
-- Simple programming model that is likely able to handle future realtime api's and evolution of the existing ones.
+## Overall Decision Drivers
+- Simple programming model that is likely able to handle future realtime api's and the evolution of the existing ones.
 - Whenever possible we transform incoming content into Semantic Kernel content, but surface everything, so it's extensible
-- Protocol agnostic, should be able to use different types of protocols under the covers, like websocket and WebRTC, without changing the client code (unless the protocol requires it).
-
-## Decision driver questions
-- For WebRTC, a audio device can be passed, should this be a requirement for the client also for websockets?
+- Protocol agnostic, should be able to use different types of protocols under the covers, like websocket and WebRTC, without changing the client code (unless the protocol requires it), there will be slight differences in behavior depending on the protocol.
 
 There are multiple areas where we need to make decisions, these are:
 - Content and Events
@@ -94,7 +92,7 @@ There are multiple areas where we need to make decisions, these are:
 # Content and Events
 
 ## Considered Options - Content and Events
-Both the sending and receiving side of these integrations need to decide how to deal with the api's.
+Both the sending and receiving side of these integrations need to decide how to deal with the events.
 
 1. Treat content events separate from control events
 1. Treat everything as content items
@@ -163,6 +161,16 @@ This would mean that the there are two queues, one for sending and one for recei
 - Con:
   - potentially causes audio delays because of the queueing mechanism
 
+### 2b. Same as option 2, but with priority handling of audio content
+This would mean that the audio content is handled, and passed to the developer code, and then all other events are processed.
+
+- Pro:
+  - mitigates audio delays
+  - easy to understand, as queues are a well known concept
+  - developers can just skip events they are not interested in
+- Con:
+  - Two separate mechanisms used for audio content and events
+
 ## Decision Outcome - Programming model
 
 Chosen option: ...
@@ -172,7 +180,7 @@ Chosen option: ...
 ## Considered Options - Audio speaker/microphone handling
 
 1. Create abstraction in SK for audio handlers, that can be passed into the realtime client to record and play audio
-2. Send and receive AudioContent (wrapped in StreamingChatMessageContent) to the client, and let the client handle the audio recording and playing
+2. Send and receive AudioContent (potentially wrapped in StreamingChatMessageContent) to the client, and let the client handle the audio recording and playing
 
 ### 1. Create abstraction in SK for audio handlers, that can be passed into the realtime client to record and play audio
 This would mean that the client would have a mechanism to register audio handlers, and the integration would call these handlers when audio is received or needs to be sent. A additional abstraction for this would have to be created in Semantic Kernel (or potentially taken from a standard).
@@ -191,17 +199,8 @@ This would mean that the client would receive AudioContent items, and would have
   - no extra code in SK that needs to be maintained
 - Con:
   - extra burden on the developer to deal with the audio 
+  - harder to get started with
 
 ## Decision Outcome - Audio speaker/microphone handling
 
 Chosen option: ...
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## More Information
-
-{You might want to provide additional evidence/confidence for the decision outcome here and/or
-document the team agreement on the decision and/or
-define when this decision when and how the decision should be realized and if/when it should be re-visited and/or
-how the decision is validated.
-Links to other decisions and resources might appear here as well.}
