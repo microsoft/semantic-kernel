@@ -134,6 +134,70 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
+    /// This example shows how to use Azure OpenAI Chat Completion with data and function calling.
+    /// Note: Data source and function calling are not supported in a single request. Enabling both features
+    /// will result in the function calling information being ignored and the operation behaving as if only the data source was provided.
+    /// To address this limitation, consider separating function calling and data source across multiple requests in your solution design.
+    /// </summary>
+    [Fact]
+    public async Task ExampleWithFunctionCallingAsync()
+    {
+        Console.WriteLine("=== Example with Function Calling ===");
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        // Import plugin.
+        kernel.ImportPluginFromType<DataPlugin>();
+
+        var chatHistory = new ChatHistory();
+
+        // First question without previous context based on uploaded content.
+        var ask = "How did Emily and David meet?";
+        chatHistory.AddUserMessage(ask);
+
+        // Enable data source.
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
+
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings, kernel);
+
+        var response = chatMessage.Content!;
+
+        // Output
+        // Ask: How did Emily and David meet?
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
+
+        // Chat history maintenance.
+        chatHistory.AddAssistantMessage(response);
+
+        // Disable data source and enable function calling.
+        promptExecutionSettings.AzureChatDataSource = null;
+        promptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+        ask = "Can I have their emails?";
+        chatHistory.AddUserMessage(ask);
+
+        chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings, kernel);
+
+        response = chatMessage.Content!;
+
+        // Output
+        // Ask: Can I have their emails?
+        // Response: Emily's email is emily@test.com and David's email is david@test.com.
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -186,6 +250,31 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
                 Console.WriteLine($"URL: {citation.Url}");
                 Console.WriteLine($"Content: {citation.Content}");
             }
+        }
+    }
+
+    private sealed class DataPlugin
+    {
+        private readonly Dictionary<string, string> _emails = new()
+        {
+            ["Emily"] = "emily@test.com",
+            ["David"] = "david@test.com",
+        };
+
+        [KernelFunction]
+        public List<string> GetEmails(List<string> users)
+        {
+            var emails = new List<string>();
+
+            foreach (var user in users)
+            {
+                if (this._emails.TryGetValue(user, out var email))
+                {
+                    emails.Add(email);
+                }
+            }
+
+            return emails;
         }
     }
 
