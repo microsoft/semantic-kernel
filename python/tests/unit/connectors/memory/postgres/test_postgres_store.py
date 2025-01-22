@@ -249,13 +249,13 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
 
 
 @pytest.mark.parametrize(
-    "distance_function, operator, subquery_distance",
+    "distance_function, operator, subquery_distance, include_vectors, include_total_count",
     [
-        (DistanceFunction.COSINE_SIMILARITY, "<=>", f'1 - subquery."{DISTANCE_COLUMN_NAME}"'),
-        (DistanceFunction.COSINE_DISTANCE, "<=>", None),
-        (DistanceFunction.DOT_PROD, "<#>", f'-1 * subquery."{DISTANCE_COLUMN_NAME}"'),
-        (DistanceFunction.EUCLIDEAN_DISTANCE, "<->", None),
-        (DistanceFunction.MANHATTAN, "<+>", None),
+        (DistanceFunction.COSINE_SIMILARITY, "<=>", f'1 - subquery."{DISTANCE_COLUMN_NAME}"', False, False),
+        (DistanceFunction.COSINE_DISTANCE, "<=>", None, False, False),
+        (DistanceFunction.DOT_PROD, "<#>", f'-1 * subquery."{DISTANCE_COLUMN_NAME}"', True, False),
+        (DistanceFunction.EUCLIDEAN_DISTANCE, "<->", None, False, True),
+        (DistanceFunction.MANHATTAN, "<+>", None, True, True),
     ],
 )
 async def test_vector_search(
@@ -264,6 +264,8 @@ async def test_vector_search(
     distance_function: DistanceFunction,
     operator: str,
     subquery_distance: str | None,
+    include_vectors: bool,
+    include_total_count: bool,
 ) -> None:
     @vectorstoremodel
     @dataclass
@@ -287,17 +289,26 @@ async def test_vector_search(
     collection = vector_store.get_collection("test_collection", SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
 
-    await collection.vectorized_search(
-        [1.0, 2.0, 3.0], options=VectorSearchOptions(top=10, skip=5, include_vectors=False)
+    search_results = await collection.vectorized_search(
+        [1.0, 2.0, 3.0],
+        options=VectorSearchOptions(
+            top=10, skip=5, include_vectors=include_vectors, include_total_count=include_total_count
+        ),
     )
     assert mock_cursor.execute.call_count == 1
     execute_args, _ = mock_cursor.execute.call_args
 
+    assert (search_results.total_count is not None) == include_total_count
+
     statement = execute_args[0]
     statement_str = statement.as_string()
 
+    expected_columns = '"id", "data"'
+    if include_vectors:
+        expected_columns = '"id", "embedding", "data"'
+
     expected_statement = (
-        f'SELECT "id", "data", "embedding" {operator} %s as "{DISTANCE_COLUMN_NAME}" '
+        f'SELECT {expected_columns}, "embedding" {operator} %s as "{DISTANCE_COLUMN_NAME}" '
         'FROM "public"."test_collection" '
         f'ORDER BY "{DISTANCE_COLUMN_NAME}" LIMIT 10 OFFSET 5'
     )
