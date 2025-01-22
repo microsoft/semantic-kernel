@@ -295,7 +295,16 @@ async def test_vector_search(
             top=10, skip=5, include_vectors=include_vectors, include_total_count=include_total_count
         ),
     )
-    assert mock_cursor.execute.call_count == 1
+    if include_total_count:
+        # Including total count issues query directly
+        assert mock_cursor.execute.call_count == 1
+    else:
+        # Total count is not included, query is issued when iterating over results
+        assert mock_cursor.execute.call_count == 0
+        async for _ in search_results.results:
+            pass
+        assert mock_cursor.execute.call_count == 1
+
     execute_args, _ = mock_cursor.execute.call_args
 
     assert (search_results.total_count is not None) == include_total_count
