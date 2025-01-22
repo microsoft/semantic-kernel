@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.VectorSearch;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Xunit;
 

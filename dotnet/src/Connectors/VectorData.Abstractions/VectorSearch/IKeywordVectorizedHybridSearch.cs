@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.VectorData.VectorSearch;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains a method for doing a hybrid search using a vector and keywords.

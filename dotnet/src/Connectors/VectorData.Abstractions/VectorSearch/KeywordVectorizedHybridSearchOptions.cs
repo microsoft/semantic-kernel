@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.Extensions.VectorData.VectorSearch;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Options for hybrid search when using a dense vector and string keywords to do the search.

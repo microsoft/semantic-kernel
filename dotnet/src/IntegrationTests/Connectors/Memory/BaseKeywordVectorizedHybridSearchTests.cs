@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.VectorSearch;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
@@ -25,6 +25,8 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
     protected virtual int DelayAfterUploadInMilliseconds { get; } = 0;
 
+    protected virtual string? IndexKind { get; } = null;
+
     protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition);
 
     [Fact]
@@ -33,7 +35,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         // Arrange
         var sut = this.GetTargetRecordCollection<KeyWithVectorAndStringRecord<TKey>>(
             "kwhybrid",
-            null);
+            this.KeyWithVectorAndStringRecordDefinition);
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
@@ -61,7 +63,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         // Arrange
         var sut = this.GetTargetRecordCollection<KeyWithVectorAndStringRecord<TKey>>(
             "kwfilteredhybrid",
-            null);
+            this.KeyWithVectorAndStringRecordDefinition);
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
@@ -93,7 +95,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         // Arrange
         var sut = this.GetTargetRecordCollection<KeyWithVectorAndStringRecord<TKey>>(
             "kwtophybrid",
-            null);
+            this.KeyWithVectorAndStringRecordDefinition);
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
@@ -121,7 +123,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         // Arrange
         var sut = this.GetTargetRecordCollection<KeyWithVectorAndStringRecord<TKey>>(
             "kwskiphybrid",
-            null);
+            this.KeyWithVectorAndStringRecordDefinition);
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
@@ -174,18 +176,25 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
     }
 
+    private VectorStoreRecordDefinition KeyWithVectorAndStringRecordDefinition => new()
+    {
+        Properties = new List<VectorStoreRecordProperty>()
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
+            new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+        }
+    };
+
     private sealed class KeyWithVectorAndStringRecord<TRecordKey>
     {
-        [VectorStoreRecordKey]
         public TRecordKey Key { get; set; } = default!;
 
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
         public string Text { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsFilterable = true)]
         public int Code { get; set; }
 
-        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }
