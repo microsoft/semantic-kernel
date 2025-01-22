@@ -5,8 +5,6 @@ from abc import ABC
 from collections.abc import AsyncIterable
 from typing import ClassVar
 
-from opentelemetry import trace
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -43,13 +41,5 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
             if content:
                 filtered_chat_history.add_message(message)
 
-        tracer = trace.get_tracer(__name__)
-        response_messages: list[ChatMessageContent] = []
-        with tracer.start_as_current_span(self.name):
-            # Cache the messages within the span such that subsequent spans
-            # that process the message stream don't become children of this span
-            async for response_message in super().invoke(filtered_chat_history):
-                response_messages.append(response_message)
-
-        for response_message in response_messages:
-            yield response_message
+        async for response in super().invoke(filtered_chat_history):
+            yield response
