@@ -123,10 +123,10 @@ class PostgresCollection(
             distance_column_name = DISTANCE_COLUMN_NAME
             i = 0
             max_sep = 63 - len(distance_column_name)  # Max length of column name is 63
-            max_sep -= len(str(i))  # Account for the number suffix
+            max_sep -= len(str(max_sep))  # Account for the number suffix
             while distance_column_name in self.data_model_definition.fields:
-                sep = ["_"] * i
-                distance_column_name = f"{DISTANCE_COLUMN_NAME}{''.join(sep)}{i}"
+                sep = "_" * i
+                distance_column_name = f"{DISTANCE_COLUMN_NAME}{sep}{i}"
                 i += 1
                 if i > max_sep:
                     raise VectorStoreModelValidationError("Unable to generate a unique distance column name.")
