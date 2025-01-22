@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
@@ -29,7 +30,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected virtual int DelayAfterUploadInMilliseconds { get; } = 0;
 
-    [Theory]
+    [VectorStoreTheory]
     [InlineData(DistanceFunction.CosineDistance, 0, 2, 1, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.CosineSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.DotProductSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
@@ -62,7 +63,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         // Arrange
         var definition = CreateKeyWithVectorRecordDefinition(4, distanceFunction);
         var sut = this.GetTargetRecordCollection<KeyWithVectorRecord<TKey>>(
-            $"scorebydistancefunction{distanceFunction}",
+            $"scorebydf{distanceFunction}",
             definition);
 
         await sut.CreateCollectionIfNotExistsAsync();
