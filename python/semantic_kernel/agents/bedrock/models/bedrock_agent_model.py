@@ -20,4 +20,4 @@ class BedrockAgentModel(KernelBaseModel):
     agent_arn: str = Field(..., alias="agentArn", description="The Amazon Resource Name (ARN) of the agent.")
     agent_id: str = Field(..., alias="agentId", description="The unique identifier of the agent.")
     agent_name: str = Field(..., alias="agentName", description="The name of the agent.")
-    agent_version: str = Field(..., alias="agentVersion", description="The version of the agent.")
+    agent_version: str | None = Field(None, alias="agentVersion", description="The version of the agent.")

@@ -20,7 +20,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
     async def create_agent(
         self,
         agent_name: str,
-        foundational_model: str,
+        foundation_model: str,
         role_arn: str,
         instruction: str,
         enable_code_interpreter: bool | None = None,
@@ -31,11 +31,12 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Create an agent asynchronously."""
         await self._create_agent(
             agent_name,
-            foundational_model,
+            foundation_model,
             role_arn,
             instruction,
             **kwargs,
         )
+        await self._prepare_agent()
 
         if enable_code_interpreter:
             await self.create_code_interpreter_action_group()
@@ -46,12 +47,27 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
         return self.agent_model
 
+    @classmethod
+    async def use_existing_agent(cls, agent_arn: str, agent_id: str, agent_name: str) -> "BedrockAgent":
+        """Use an existing agent asynchronously."""
+        bedrock_agent_model = BedrockAgentModel(
+            agent_arn=agent_arn,
+            agent_id=agent_id,
+            agent_name=agent_name,
+        )
+
+        bedrock_agent = cls(agent_model=bedrock_agent_model)
+        bedrock_agent_model = await bedrock_agent._get_agent()
+        bedrock_agent.agent_model = bedrock_agent_model
+
+        return bedrock_agent
+
     async def update_agent(
         self,
         agent_id,
         agent_name,
         role_arn,
-        foundational_model,
+        foundation_model,
         **kwargs,
     ) -> BedrockAgentModel:
         """Update an agent asynchronously."""
@@ -59,7 +75,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             agent_id,
             agent_name,
             role_arn,
-            foundational_model,
+            foundation_model,
             **kwargs,
         )
 
@@ -99,9 +115,14 @@ class BedrockAgent(BedrockAgentBase, Agent):
         **kwargs,
     ) -> Any:
         """Invoke an agent."""
-        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+        response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
-        return await self._invoke(session_id, input_text, agent_alias, **kwargs)
+        completion = ""
+        for event in response.get("completion", []):
+            chunk = event["chunk"]
+            completion += chunk["bytes"].decode()
+
+        return completion
 
     async def invoke_stream(
         self,
@@ -111,6 +132,4 @@ class BedrockAgent(BedrockAgentBase, Agent):
         **kwargs,
     ) -> Any:
         """Invoke an agent."""
-        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
-
-        return await self._invoke(session_id, input_text, agent_alias, **kwargs)
+        return await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)

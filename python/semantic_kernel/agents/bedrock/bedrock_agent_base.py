@@ -11,6 +11,7 @@ from botocore.exceptions import ClientError
 from semantic_kernel.agents.bedrock.action_group_utils import kernel_function_to_bedrock_function_schema
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -56,16 +57,20 @@ class BedrockAgentBase(KernelBaseModel):
             **kwargs,
         )
 
-    async def _run_in_executor(executor, func, *args, **kwargs) -> Any:
+    async def _run_in_executor(self, executor, func, *args, **kwargs) -> Any:
         """Run a function in an executor."""
         return await asyncio.get_event_loop().run_in_executor(executor, partial(func, *args, **kwargs))
+
+    def __repr__(self):
+        """Return the string representation of the Bedrock Agent."""
+        return f"{self.agent_model}"
 
     # region Agent Management
 
     async def _create_agent(
         self,
         agent_name: str,
-        foundational_model: str,
+        foundation_model: str,
         role_arn: str,
         instruction: str,
         **kwargs,
@@ -75,20 +80,45 @@ class BedrockAgentBase(KernelBaseModel):
             raise ValueError("Agent already exists. Please delete the agent before creating a new one.")
 
         try:
-            self.agent_model = await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.create_client,
+                    self.bedrock_client.create_agent,
                     agentName=agent_name,
-                    foundationalModel=foundational_model,
+                    foundationModel=foundation_model,
                     agentResourceRoleArn=role_arn,
                     instruction=instruction,
                     **kwargs,
                 ),
             )
+            self.agent_model = response["agent"]
+
+            # The agent will first enter the CREATING status.
+            # When the agent is created, it will enter the NOT_PREPARED status.
+            await self._wait_for_agent_status(BedrockAgentStatus.NOT_PREPARED)
+
             return self.agent_model
         except ClientError as e:
             logger.error(f"Failed to create agent {agent_name}.")
+            raise e
+
+    async def _prepare_agent(self) -> None:
+        """Prepare the agent for use."""
+        if not self.agent_model:
+            raise ValueError("Agent does not exist. Please create the agent before preparing it.")
+
+        try:
+            await self._run_in_executor(
+                None,
+                partial(
+                    self.bedrock_client.prepare_agent,
+                    agentId=self.agent_model.agent_id,
+                ),
+            )
+
+            await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
+        except ClientError as e:
+            logger.error(f"Failed to prepare agent {self.agent_model.agent_id}.")
             raise e
 
     async def _create_agent_alias(self, alias_name: str, **kwargs) -> dict[str, Any]:
@@ -114,7 +144,7 @@ class BedrockAgentBase(KernelBaseModel):
     async def _update_agent(
         self,
         agent_name: str,
-        foundational_model: str,
+        foundation_model: str,
         **kwargs,
     ) -> BedrockAgentModel:
         """Update an agent asynchronously."""
@@ -129,10 +159,12 @@ class BedrockAgentBase(KernelBaseModel):
                     agentId=self.agent_model.agent_id,
                     agentResourceRoleArn=self.agent_model.role_arn,
                     agentName=agent_name,
-                    foundationalModel=foundational_model,
+                    foundationModel=foundation_model,
                     **kwargs,
                 ),
             )
+
+            await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
 
             return self.agent_model
         except ClientError as e:
@@ -159,16 +191,34 @@ class BedrockAgentBase(KernelBaseModel):
     async def _get_agent(self) -> BedrockAgentModel:
         """Get an agent."""
         try:
-            return await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.get_agent,
                     agentId=self.agent_model.agent_id,
                 ),
             )
+
+            return response["agent"]
         except ClientError as e:
             logger.error(f"Failed to get agent {self.agent_model.agent_id}.")
             raise e
+
+    async def _wait_for_agent_status(
+        self,
+        status: BedrockAgentStatus,
+        interval: int = 2,
+        max_attempts: int = 5,
+    ) -> None:
+        """Wait for the agent to reach a specific status."""
+        for _ in range(max_attempts):
+            agent = await self._get_agent()
+            if agent["agentStatus"] == status:
+                return
+
+            await asyncio.sleep(interval)
+
+        raise TimeoutError(f"Agent did not reach status {status} within the specified time.")
 
     # endregion Agent Management
 
