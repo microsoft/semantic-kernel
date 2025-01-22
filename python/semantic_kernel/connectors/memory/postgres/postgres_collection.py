@@ -202,13 +202,16 @@ class PostgresCollection(
 
                 # Execute the INSERT statement for each batch
                 await cur.executemany(
-                    sql.SQL("INSERT INTO {}.{} ({}) VALUES ({}) ON CONFLICT ({}) DO UPDATE SET {}").format(
-                        sql.Identifier(self.db_schema),
-                        sql.Identifier(self.collection_name),
-                        sql.SQL(", ").join(sql.Identifier(field.name) for _, field in fields),
-                        sql.SQL(", ").join(sql.Placeholder() * len(fields)),
-                        sql.Identifier(self.data_model_definition.key_field.name),
-                        sql.SQL(", ").join(
+                    sql.SQL(
+                        "INSERT INTO {schema}.{table} ({col_names}) VALUES ({placeholders}) "
+                        "ON CONFLICT ({key_name}) DO UPDATE SET {update_columns}"
+                    ).format(
+                        schema=sql.Identifier(self.db_schema),
+                        table=sql.Identifier(self.collection_name),
+                        col_names=sql.SQL(", ").join(sql.Identifier(field.name) for _, field in fields),
+                        placeholders=sql.SQL(", ").join(sql.Placeholder() * len(fields)),
+                        key_name=sql.Identifier(self.data_model_definition.key_field.name),
+                        update_columns=sql.SQL(", ").join(
                             sql.SQL("{field} = EXCLUDED.{field}").format(field=sql.Identifier(field.name))
                             for _, field in fields
                             if field.name != self.data_model_definition.key_field.name
@@ -238,12 +241,12 @@ class PostgresCollection(
         fields = [(field.name, field) for field in self.data_model_definition.fields.values()]
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(
-                sql.SQL("SELECT {} FROM {}.{} WHERE {} IN ({})").format(
-                    sql.SQL(", ").join(sql.Identifier(name) for (name, _) in fields),
-                    sql.Identifier(self.db_schema),
-                    sql.Identifier(self.collection_name),
-                    sql.Identifier(self.data_model_definition.key_field.name),
-                    sql.SQL(", ").join(sql.Literal(key) for key in keys),
+                sql.SQL("SELECT {select_list} FROM {schema}.{table} WHERE {key_name} IN ({keys})").format(
+                    select_list=sql.SQL(", ").join(sql.Identifier(name) for (name, _) in fields),
+                    schema=sql.Identifier(self.db_schema),
+                    table=sql.Identifier(self.collection_name),
+                    key_name=sql.Identifier(self.data_model_definition.key_field.name),
+                    keys=sql.SQL(", ").join(sql.Literal(key) for key in keys),
                 )
             )
             rows = await cur.fetchall()
@@ -276,11 +279,11 @@ class PostgresCollection(
 
                 # Execute the DELETE statement for each batch
                 await cur.execute(
-                    sql.SQL("DELETE FROM {}.{} WHERE {} IN ({})").format(
-                        sql.Identifier(self.db_schema),
-                        sql.Identifier(self.collection_name),
-                        sql.Identifier(self.data_model_definition.key_field.name),
-                        sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
+                    sql.SQL("DELETE FROM {schema}.{table} WHERE {name} IN ({keys})").format(
+                        schema=sql.Identifier(self.db_schema),
+                        table=sql.Identifier(self.collection_name),
+                        name=sql.Identifier(self.data_model_definition.key_field.name),
+                        keys=sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
                     )
                 )
 
@@ -329,21 +332,29 @@ class PostgresCollection(
             # but would need to be created outside of this method.
             if isinstance(field, VectorStoreRecordVectorField) and field.dimensions:
                 column_definitions.append(
-                    sql.SQL("{} VECTOR({})").format(sql.Identifier(field_name), sql.Literal(field.dimensions))
+                    sql.SQL("{name} VECTOR({dimensions})").format(
+                        name=sql.Identifier(field_name), dimensions=sql.Literal(field.dimensions)
+                    )
                 )
             elif isinstance(field, VectorStoreRecordKeyField):
                 # Use the property_type directly for key fields
                 column_definitions.append(
-                    sql.SQL("{} {} PRIMARY KEY").format(sql.Identifier(field_name), sql.SQL(property_type))
+                    sql.SQL("{name} {col_type} PRIMARY KEY").format(
+                        name=sql.Identifier(field_name), col_type=sql.SQL(property_type)
+                    )
                 )
             else:
                 # Use the property_type directly for other types
-                column_definitions.append(sql.SQL("{} {}").format(sql.Identifier(field_name), sql.SQL(property_type)))
+                column_definitions.append(
+                    sql.SQL("{name} {col_type}").format(
+                        name=sql.Identifier(field_name), col_type=sql.SQL(property_type)
+                    )
+                )
 
         columns_str = sql.SQL(", ").join(column_definitions)
 
-        create_table_query = sql.SQL("CREATE TABLE {}.{} ({})").format(
-            sql.Identifier(self.db_schema), sql.Identifier(table_name), columns_str
+        create_table_query = sql.SQL("CREATE TABLE {schema}.{table} ({columns})").format(
+            schema=sql.Identifier(self.db_schema), table=sql.Identifier(table_name), columns=columns_str
         )
 
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
@@ -387,8 +398,8 @@ class PostgresCollection(
 
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(
-                sql.SQL("DROP TABLE {scm}.{tbl} CASCADE").format(
-                    scm=sql.Identifier(self.db_schema), tbl=sql.Identifier(self.collection_name)
+                sql.SQL("DROP TABLE {schema}.{table} CASCADE").format(
+                    schema=sql.Identifier(self.db_schema), table=sql.Identifier(self.collection_name)
                 ),
             )
             await conn.commit()
@@ -427,13 +438,13 @@ class PostgresCollection(
 
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(
-                sql.SQL("CREATE INDEX {} ON {}.{} USING {} ({} {})").format(
-                    sql.Identifier(index_name),
-                    sql.Identifier(self.db_schema),
-                    sql.Identifier(table_name),
-                    sql.SQL(vector_field.index_kind),
-                    sql.Identifier(column_name),
-                    sql.SQL(ops_str),
+                sql.SQL("CREATE INDEX {index_name} ON {schema}.{table} USING {index_kind} ({column_name} {op})").format(
+                    index_name=sql.Identifier(index_name),
+                    schema=sql.Identifier(self.db_schema),
+                    table=sql.Identifier(table_name),
+                    index_kind=sql.SQL(vector_field.index_kind),
+                    column_name=sql.Identifier(column_name),
+                    op=sql.SQL(ops_str),
                 )
             )
             await conn.commit()
@@ -516,44 +527,48 @@ class PostgresCollection(
 
         where_clause = self._build_where_clauses_from_filter(options.filter)
 
-        query = sql.SQL("SELECT {}, {} {} %s as {} FROM {}.{}").format(
-            sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
-            sql.Identifier(vector_field.name),
-            sql.SQL(ops_str),
-            sql.Identifier(self._distance_column_name),
-            sql.Identifier(self.db_schema),
-            sql.Identifier(self.collection_name),
+        query = sql.SQL("SELECT {select_list}, {vec_col} {dist_op} %s as {dist_col} FROM {schema}.{table}").format(
+            select_list=sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
+            vec_col=sql.Identifier(vector_field.name),
+            dist_op=sql.SQL(ops_str),
+            dist_col=sql.Identifier(self._distance_column_name),
+            schema=sql.Identifier(self.db_schema),
+            table=sql.Identifier(self.collection_name),
         )
 
         if where_clause:
             query += where_clause
 
-        query += sql.SQL(" ORDER BY {} LIMIT {}").format(
-            sql.Identifier(self._distance_column_name),
-            sql.Literal(options.top),
+        query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
+            dist_col=sql.Identifier(self._distance_column_name),
+            limit=sql.Literal(options.top),
         )
 
         if options.skip:
-            query += sql.SQL(" OFFSET {}").format(sql.Literal(options.skip))
+            query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(options.skip))
 
         # For cosine similarity, we need to take 1 - cosine distance.
         # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if distance_function == DistanceFunction.COSINE_SIMILARITY:
-            query = sql.SQL("SELECT subquery.*, 1 - subquery.{} AS {} FROM ({}) AS subquery").format(
-                sql.Identifier(self._distance_column_name),
-                sql.Identifier(self._distance_column_name),
-                query,
+            query = sql.SQL(
+                "SELECT subquery.*, 1 - subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
+            ).format(
+                subquery_dist_col=sql.Identifier(self._distance_column_name),
+                dist_col=sql.Identifier(self._distance_column_name),
+                subquery=query,
             )
 
         # For inner product, we need to take -1 * inner product.
         # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if distance_function == DistanceFunction.DOT_PROD:
-            query = sql.SQL("SELECT subquery.*, -1 * subquery.{} AS {} FROM ({}) AS subquery").format(
-                sql.Identifier(self._distance_column_name),
-                sql.Identifier(self._distance_column_name),
-                query,
+            query = sql.SQL(
+                "SELECT subquery.*, -1 * subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
+            ).format(
+                subquery_dist_col=sql.Identifier(self._distance_column_name),
+                dist_col=sql.Identifier(self._distance_column_name),
+                subquery=query,
             )
 
         # Convert the vector to a string for the query
@@ -593,7 +608,7 @@ class PostgresCollection(
                 case _:
                     raise ValueError(f"Unsupported filter: {filter}")
 
-        return sql.SQL("WHERE {}").format(sql.SQL(" AND ").join(where_clauses))
+        return sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
