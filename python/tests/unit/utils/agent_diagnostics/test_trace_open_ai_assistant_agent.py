@@ -10,7 +10,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentInitializationExcep
 
 
 @patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
-async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history):
+async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history, openai_unit_test_env):
     # Arrange
     open_ai_assistant_agent = OpenAIAssistantAgent()
     # Act
@@ -22,7 +22,7 @@ async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history):
 
 
 @patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
-async def test_open_ai_assistant_agent_invoke_stream(mock_tracer, chat_history):
+async def test_open_ai_assistant_agent_invoke_stream(mock_tracer, chat_history, openai_unit_test_env):
     # Arrange
     open_ai_assistant_agent = OpenAIAssistantAgent()
     # Act
