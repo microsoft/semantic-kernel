@@ -43,6 +43,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
     AgentInvokeException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -604,6 +605,7 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Invoke Methods
 
+    @trace_agent_invocation
     async def invoke(
         self,
         thread_id: str,
@@ -856,6 +858,7 @@ class OpenAIAssistantBase(Agent):
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
+    @trace_agent_invocation
     async def invoke_stream(
         self,
         thread_id: str,
