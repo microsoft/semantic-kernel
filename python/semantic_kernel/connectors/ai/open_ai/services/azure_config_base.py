@@ -36,6 +36,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
@@ -56,6 +57,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             token_endpoint (str): Azure AD token endpoint use to get the token. (Optional)
             default_headers (Union[Mapping[str, str], None]): Default headers for HTTP requests. (Optional)
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
+                prompts could use `developer` or `system`. (Optional)
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -95,6 +98,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         }
         if service_id:
             args["service_id"] = service_id
+        if instruction_role:
+            args["instruction_role"] = instruction_role
         super().__init__(**args)
 
     def to_dict(self) -> dict[str, str]:
