@@ -11,6 +11,15 @@ from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvali
 from semantic_kernel.kernel import Kernel
 from tests.unit.connectors.ai.onnx.conftest import gen_ai_config, gen_ai_config_vision
 
+try:
+    import onnxruntime_genai  # noqa: F401
+
+    ready = True
+except ImportError:
+    ready = False
+
+pytestmark = pytest.mark.skipif(not ready, reason="ONNX Runtime is not installed.")
+
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
 @patch("onnxruntime_genai.Model")

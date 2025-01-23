@@ -11,8 +11,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import torch
-from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -26,6 +24,15 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+try:
+    import torch
+    from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
+
+    ready = True
+except ImportError:
+    ready = False
+    logger.warning("torch is not installed, HuggingFaceTextCompletion will not work.")
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
@@ -69,6 +76,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        if not ready:
+            raise ImportError("torch is required to use HuggingFaceTextCompletion.")
         generator = pipeline(
             task=task,
             model=ai_model_id,

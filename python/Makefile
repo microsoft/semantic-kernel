@@ -87,7 +87,7 @@ install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
 	echo "Installing Semantic Kernel and all dependencies"
-	uv sync --all-extras --dev
+	uv sync --all-extras --dev --prerelease=if-necessary-or-explicit
 
 ##############################
 #  CLEAN
