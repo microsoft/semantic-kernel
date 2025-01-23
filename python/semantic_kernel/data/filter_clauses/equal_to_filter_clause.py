@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pydantic import Field
+from typing import ClassVar
 
 from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -16,4 +16,4 @@ class EqualTo(FilterClauseBase):
 
     """
 
-    filter_clause_type: str = Field("equal_to", init=False)  # type: ignore
+    filter_clause_type: ClassVar[str] = "equal_to"

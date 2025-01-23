@@ -121,8 +121,10 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return v
 
     @model_validator(mode="before")
-    def validate_response_format_and_set_flag(cls, values) -> Any:
+    def validate_response_format_and_set_flag(cls, values: Any) -> Any:
         """Validate the response_format and set structured_json_response accordingly."""
+        if not isinstance(values, dict):
+            return values
         response_format = values.get("response_format", None)
 
         if response_format is None:
@@ -153,7 +155,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_function_calling_behaviors(cls, data) -> Any:
+    def validate_function_calling_behaviors(cls, data: Any) -> Any:
         """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
         # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
         # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
