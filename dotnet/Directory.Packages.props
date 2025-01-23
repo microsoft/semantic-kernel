@@ -13,6 +13,7 @@
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />

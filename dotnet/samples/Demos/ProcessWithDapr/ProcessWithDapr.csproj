@@ -6,9 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>
       $(NoWarn);CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0110</NoWarn>
+    <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\Experimental\Process.Core\Process.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Experimental\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
@@ -17,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Dapr.Actors" />
     <PackageReference Include="Dapr.Actors.AspNetCore" />
+    <PackageReference Include="Dapr.AspNetCore" />
   </ItemGroup>
 
 </Project>

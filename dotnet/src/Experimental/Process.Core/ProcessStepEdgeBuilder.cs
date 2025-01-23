@@ -84,4 +84,13 @@ public sealed class ProcessStepEdgeBuilder
         this.Target = outputTarget;
         this.Source.LinkTo(ProcessConstants.EndStepName, this);
     }
+
+    public ProcessStepEdgeBuilder EmitToProxy<TProxyStep, TProcessEvents>(ProcessStepBuilder<TProxyStep, TProcessEvents> proxyStep, TProcessEvents processEvent)
+        where TProxyStep : KernelProcessProxyStep<TProcessEvents>
+        where TProcessEvents : Enum
+    {
+        // estenori-TODO: Add proper find specific function routing
+        var targetBuilder = new ProcessFunctionTargetBuilder(proxyStep);
+        return this.SendEventTo(targetBuilder);
+    }
 }
