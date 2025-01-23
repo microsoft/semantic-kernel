@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import random
+import string
 import sys
 from collections.abc import AsyncGenerator, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
@@ -118,19 +120,17 @@ class PostgresCollection(
         """
         super().model_post_init(__context)
 
-        if DISTANCE_COLUMN_NAME in self.data_model_definition.fields:
+        distance_column_name = DISTANCE_COLUMN_NAME
+        tries = 0
+        while distance_column_name in self.data_model_definition.fields:
             # Reset the distance column name, ensuring no collision with existing model fields
-            distance_column_name = DISTANCE_COLUMN_NAME
-            i = 0
-            max_sep = 63 - len(distance_column_name)  # Max length of column name is 63
-            max_sep -= len(str(max_sep))  # Account for the number suffix
-            while distance_column_name in self.data_model_definition.fields:
-                sep = "_" * i
-                distance_column_name = f"{DISTANCE_COLUMN_NAME}{sep}{i}"
-                i += 1
-                if i > max_sep:
-                    raise VectorStoreModelValidationError("Unable to generate a unique distance column name.")
-            self._distance_column_name = distance_column_name
+            # Avoid bandit B311 - random is not used for a security/cryptographic purpose
+            suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))  # nosec B311
+            distance_column_name = f"{DISTANCE_COLUMN_NAME}_{suffix}"
+            tries += 1
+            if tries > 10:
+                raise VectorStoreModelValidationError("Unable to generate a unique distance column name.")
+        self._distance_column_name = distance_column_name
 
     # region: VectorStoreRecordCollection implementation
 

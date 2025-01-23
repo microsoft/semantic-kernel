@@ -340,12 +340,7 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
         sk_pg_distance: Annotated[
             float, VectorStoreRecordDataField()
         ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
-        sk_pg_distance0: Annotated[
-            float, VectorStoreRecordDataField()
-        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
-        sk_pg_distance_1: Annotated[
-            float, VectorStoreRecordDataField()
-        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
+
         embedding: Annotated[
             list[float],
             VectorStoreRecordVectorField(
@@ -365,7 +360,8 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
     assert isinstance(collection, PostgresCollection)
 
     # Ensure that the distance column name has been changed to avoid conflict
-    assert collection._distance_column_name == f"{DISTANCE_COLUMN_NAME}__2"
+    assert collection._distance_column_name != DISTANCE_COLUMN_NAME
+    assert collection._distance_column_name.startswith(f"{DISTANCE_COLUMN_NAME}_")
 
 
 # endregion
