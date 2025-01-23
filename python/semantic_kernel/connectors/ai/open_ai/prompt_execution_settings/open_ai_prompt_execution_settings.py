@@ -113,8 +113,10 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         return v
 
     @model_validator(mode="before")
-    def validate_response_format_and_set_flag(cls, values) -> Any:
+    def validate_response_format_and_set_flag(cls, values: Any) -> Any:
         """Validate the response_format and set structured_json_response accordingly."""
+        if not isinstance(values, dict):
+            return values
         response_format = values.get("response_format", None)
 
         if response_format is None:
