@@ -63,6 +63,13 @@ Glossary:
 - DBSF = Distribution-Based Score Fusion
 - IDF = Inverse Document Frequency
 
+### Language required for full text search configuration
+
+Some DBs require a specific language to be specified for full text search and they require full text search indexing for hybrid search to be enabled.
+We therefore need to support specifying the language when creating the index.
+
+To be expanded with more detail.
+
 ### Naming
 
 |Name|Parameters|Keyword Property Selector|Dense Vector Property Selector|
@@ -91,7 +98,7 @@ class KeywordVectorizedHybridSearchOptions
     // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string FusionMethod { get; init; } = null;
+    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -106,9 +113,9 @@ class KeywordVectorizedHybridSearchOptions
 ```csharp
 interface ISparseVectorizedHybridSearch<TRecord>
 {
-    Task<VectorSearchResults<TRecord>> SparseVectorizedHybridSearch(
-        TVector denseVector,
-        TVector sparsevector,
+    Task<VectorSearchResults<TRecord>> SparseVectorizedHybridSearch<TDenseVector, TSparseVector>(
+        TDenseVector denseVector,
+        TSparseVector sparsevector,
         SparseVectorizedHybridSearchOptions options,
         CancellationToken cancellationToken);
 }
@@ -120,7 +127,7 @@ class SparseVectorizedHybridSearchOptions
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string FusionMethod { get; init; } = null;
+    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -149,7 +156,7 @@ class KeywordVectorizableHybridSearchOptions
     // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string FusionMethod { get; init; } = null;
+    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -178,7 +185,7 @@ class SparseVectorizableTextHybridSearchOptions
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string FusionMethod { get; init; } = null;
+    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -192,7 +199,7 @@ class SparseVectorizableTextHybridSearchOptions
 
 - Support for generating sparse vectors is required to make sparse vector based hybrid search viable.
 - Multiple vectors per record scenarios need to be supported.
-- No database in our evaluation set have been identified as supporting generating sparse vectors in the database.
+- No database in our evaluation set have been identified as supporting converting text to sparse vectors in the database on upsert and storing those sparse vectors in a retrievable field. Of course some of these DBs may use sparse vectors internally to implement keyword search, without exposing them to the caller.
 
 ## Scoping Considered Options
 
@@ -207,11 +214,17 @@ Implement KeywordVectorizedHybridSearch & KeywordVectorizableTextHybridSearch bu
 KeywordVectorizableTextHybridSearch, since no database in our evaluation set supports generating sparse vectors in the database.
 This will require us to produce code that can generate sparse vectors from text.
 
-### 3. All Hybrid Search
+### 3. All abovementioned Hybrid Search
 
 Create all four interfaces and implement an implementation of SparseVectorizableTextHybridSearch that
 generates the sparse vector in the client code.
 This will require us to produce code that can generate sparse vectors from text.
+
+### 4. Generalized Hybrid Search
+
+Some databases support a more generalized version of hybrid search, where you can take two (or sometimes more) searches of any type and combine the results of these using your chosen fusion method.
+You can implement Vector + Keyword search using this more generalized search.
+For databases that support only Vector + Keyword hybrid search though, it is not possible to implement the generalized hybrid search on top of those databases.
 
 ## PropertyName Naming Considered Options
 
@@ -287,14 +300,14 @@ Accept either option.
 Pros: Easier for a user to use, since they can pick whichever suits them better
 Cons: We have to still convert to/from the internal presentation by either combining keywords or splitting them.
 
-### 3. Accept either in interface but throw for not supported
+### 4. Accept either in interface but throw for not supported
 
 Accept either option but throw for the one not supported by the underly DB.
 
 Pros: Easier for us to implement.
 Cons: Harder for users to use.
 
-### 4. Separate interfaces for each
+### 5. Separate interfaces for each
 
 Create a separate interface for the Enumerable and single string options, and only implement the one that is supported by the underlying system for each db.
 
