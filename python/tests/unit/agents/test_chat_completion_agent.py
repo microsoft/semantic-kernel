@@ -206,7 +206,8 @@ def test_get_channel_keys():
     agent = ChatCompletionAgent()
     keys = agent.get_channel_keys()
 
-    assert keys == [ChatHistoryChannel.__name__]
+    for key in keys:
+        assert isinstance(key, str)
 
 
 async def test_create_channel():

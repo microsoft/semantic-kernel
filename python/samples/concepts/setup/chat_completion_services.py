@@ -32,27 +32,49 @@ service_id = "default"
 
 def get_chat_completion_service_and_request_settings(
     service_name: Services,
+    instruction_role: str | None = None,
 ) -> tuple["ChatCompletionClientBase", "PromptExecutionSettings"]:
-    """Return service and request settings."""
+    """Return service and request settings.
+
+    Args:
+        service_name (Services): The service name.
+        instruction_role (str | None): The role to use for 'instruction' messages, for example,
+            'system' or 'developer'. Defaults to 'system'. Currently only supported for OpenAI reasoning models.
+    """
+    # Use lambdas or functions to delay instantiation
     chat_services = {
-        Services.OPENAI: get_openai_chat_completion_service_and_request_settings,
-        Services.AZURE_OPENAI: get_azure_openai_chat_completion_service_and_request_settings,
-        Services.AZURE_AI_INFERENCE: get_azure_ai_inference_chat_completion_service_and_request_settings,
-        Services.ANTHROPIC: get_anthropic_chat_completion_service_and_request_settings,
-        Services.BEDROCK: get_bedrock_chat_completion_service_and_request_settings,
-        Services.GOOGLE_AI: get_google_ai_chat_completion_service_and_request_settings,
-        Services.MISTRAL_AI: get_mistral_ai_chat_completion_service_and_request_settings,
-        Services.OLLAMA: get_ollama_chat_completion_service_and_request_settings,
-        Services.ONNX: get_onnx_chat_completion_service_and_request_settings,
-        Services.VERTEX_AI: get_vertex_ai_chat_completion_service_and_request_settings,
+        Services.OPENAI: lambda: get_openai_chat_completion_service_and_request_settings(
+            instruction_role=instruction_role
+        ),
+        Services.AZURE_OPENAI: lambda: get_azure_openai_chat_completion_service_and_request_settings(
+            instruction_role=instruction_role
+        ),
+        Services.AZURE_AI_INFERENCE: lambda: get_azure_ai_inference_chat_completion_service_and_request_settings(
+            instruction_role=instruction_role
+        ),
+        Services.ANTHROPIC: lambda: get_anthropic_chat_completion_service_and_request_settings(),
+        Services.BEDROCK: lambda: get_bedrock_chat_completion_service_and_request_settings(),
+        Services.GOOGLE_AI: lambda: get_google_ai_chat_completion_service_and_request_settings(),
+        Services.MISTRAL_AI: lambda: get_mistral_ai_chat_completion_service_and_request_settings(),
+        Services.OLLAMA: lambda: get_ollama_chat_completion_service_and_request_settings(),
+        Services.ONNX: lambda: get_onnx_chat_completion_service_and_request_settings(),
+        Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
     }
+
+    # Call the appropriate lambda or function based on the service name
+    if service_name not in chat_services:
+        raise ValueError(f"Unsupported service name: {service_name}")
     return chat_services[service_name]()
 
 
-def get_openai_chat_completion_service_and_request_settings() -> tuple[
-    "ChatCompletionClientBase", "PromptExecutionSettings"
-]:
+def get_openai_chat_completion_service_and_request_settings(
+    instruction_role: str | None = None,
+) -> tuple["ChatCompletionClientBase", "PromptExecutionSettings"]:
     """Return OpenAI chat completion service and request settings.
+
+    Args:
+        instruction_role (str | None): The role to use for 'instruction' messages, for example,
+            'developer' or 'system'. (Optional)
 
     The service credentials can be read by 3 ways:
     1. Via the constructor
@@ -70,7 +92,7 @@ def get_openai_chat_completion_service_and_request_settings() -> tuple[
         OpenAIChatPromptExecutionSettings,
     )
 
-    chat_service = OpenAIChatCompletion(service_id=service_id)
+    chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role)
     request_settings = OpenAIChatPromptExecutionSettings(
         service_id=service_id, max_tokens=2000, temperature=0.7, top_p=0.8
     )
@@ -78,10 +100,14 @@ def get_openai_chat_completion_service_and_request_settings() -> tuple[
     return chat_service, request_settings
 
 
-def get_azure_openai_chat_completion_service_and_request_settings() -> tuple[
-    "ChatCompletionClientBase", "PromptExecutionSettings"
-]:
+def get_azure_openai_chat_completion_service_and_request_settings(
+    instruction_role: str | None = None,
+) -> tuple["ChatCompletionClientBase", "PromptExecutionSettings"]:
     """Return Azure OpenAI chat completion service and request settings.
+
+    Args:
+        instruction_role (str | None): The role to use for 'instruction' messages, for example,
+            'developer' or 'system'. (Optional)
 
     The service credentials can be read by 3 ways:
     1. Via the constructor
@@ -99,15 +125,15 @@ def get_azure_openai_chat_completion_service_and_request_settings() -> tuple[
         AzureChatPromptExecutionSettings,
     )
 
-    chat_service = AzureChatCompletion(service_id=service_id)
+    chat_service = AzureChatCompletion(service_id=service_id, instruction_role=instruction_role)
     request_settings = AzureChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
 
 
-def get_azure_ai_inference_chat_completion_service_and_request_settings() -> tuple[
-    "ChatCompletionClientBase", "PromptExecutionSettings"
-]:
+def get_azure_ai_inference_chat_completion_service_and_request_settings(
+    instruction_role: str | None = None,
+) -> tuple["ChatCompletionClientBase", "PromptExecutionSettings"]:
     """Return Azure AI Inference chat completion service and request settings.
 
     The service credentials can be read by 3 ways:
@@ -129,6 +155,7 @@ def get_azure_ai_inference_chat_completion_service_and_request_settings() -> tup
     chat_service = AzureAIInferenceChatCompletion(
         service_id=service_id,
         ai_model_id="id",  # The model ID is simply an identifier as the model id cannot be obtained programmatically.
+        instruction_role=instruction_role,
     )
     request_settings = AzureAIInferenceChatPromptExecutionSettings(service_id=service_id)
 

@@ -23,6 +23,9 @@ class MockChatHistoryHandler:
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
 
+    async def reduce_history(self, history: list[ChatMessageContent]) -> list[ChatMessageContent]:
+        return history
+
 
 class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
