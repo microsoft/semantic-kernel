@@ -36,7 +36,7 @@ public class Step13_Azure_Chat(ITestOutputHelper output) : BaseAgentsTest(output
         """;
 
     [Fact]
-    public async Task UseAgentGroupChatWithTwoAgentsAsync()
+    public async Task UseGroupChatWithTwoAgentsAsync()
     {
         // Define the agents
         AzureAIClientProvider clientProvider = this.GetAzureProvider();

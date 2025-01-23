@@ -14,12 +14,13 @@ namespace GettingStarted;
 /// and <see cref="ChatCompletionAgent"/> (see: Step 2).
 /// </summary>
 /// <remarks>
-/// %%% Doesn't involve kernel function calling or kernel filters.
+/// Note: Open API invocation does not involve kernel function calling or kernel filters.
+/// Azure Function invocation is managed entirely by the Azure AI Agent service.
 /// </remarks>
-public class Step12b_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseSingleAssistantAgentAsync()
+    public async Task UseOpenAPIToolWithAgentAsync()
     {
         // Retrieve Open API specifications
         string apiCountries = EmbeddedResource.Read("countries.json");

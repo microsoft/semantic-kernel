@@ -77,7 +77,7 @@ internal static class AgentThreadActions
             threadId,
             role: message.Role == AuthorRole.User ? AzureAIP.MessageRole.User : AzureAIP.MessageRole.Agent,
             content,
-            attachments: message.Items.OfType<FileReferenceContent>().Select(fileContent => new MessageAttachment(fileContent.FileId, [])).ToArray(),
+            attachments: AgentMessageFactory.GetAttachments(message).ToArray(),
             metadata: AgentMessageFactory.GetMetadata(message),
             cancellationToken).ConfigureAwait(false);
     }

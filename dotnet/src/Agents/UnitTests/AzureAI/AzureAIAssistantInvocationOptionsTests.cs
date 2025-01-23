@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.Agents.UnitTests.Test;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
+namespace SemanticKernel.Agents.UnitTests.AzureAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIAssistantInvocationOptions"/>.
+/// Unit testing of <see cref="AzureAIInvocationOptions"/>.
 /// </summary>
-public class OpenAIAssistantInvocationOptionsTests
+public class AzureAIAssistantInvocationOptionsTests
 {
     /// <summary>
     /// Verify initial state.
@@ -21,7 +21,7 @@ public class OpenAIAssistantInvocationOptionsTests
     public void OpenAIAssistantInvocationOptionsInitialState()
     {
         // Arrange
-        OpenAIAssistantInvocationOptions options = new();
+        AzureAIInvocationOptions options = new();
 
         // Assert
         Assert.Null(options.ModelName);
@@ -49,7 +49,7 @@ public class OpenAIAssistantInvocationOptionsTests
     public void OpenAIAssistantInvocationOptionsAssignment()
     {
         // Arrange
-        OpenAIAssistantInvocationOptions options =
+        AzureAIInvocationOptions options =
             new()
             {
                 ModelName = "testmodel",
@@ -88,12 +88,12 @@ public class OpenAIAssistantInvocationOptionsTests
         ValidateSerialization(options);
     }
 
-    private static void ValidateSerialization(OpenAIAssistantInvocationOptions source)
+    private static void ValidateSerialization(AzureAIInvocationOptions source)
     {
         // Act
         string json = JsonSerializer.Serialize(source);
 
-        OpenAIAssistantInvocationOptions? target = JsonSerializer.Deserialize<OpenAIAssistantInvocationOptions>(json);
+        AzureAIInvocationOptions? target = JsonSerializer.Deserialize<AzureAIInvocationOptions>(json);
 
         // Assert
         Assert.NotNull(target);

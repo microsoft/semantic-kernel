@@ -25,6 +25,15 @@ internal static class AgentMessageFactory
     }
 
     /// <summary>
+    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// </summary>
+    /// <param name="message">The message content.</param>
+    public static IEnumerable<MessageAttachment> GetAttachments(ChatMessageContent message)
+    {
+        return message.Items.OfType<FileReferenceContent>().Select(fileContent => new MessageAttachment(fileContent.FileId, []));
+    }
+
+    /// <summary>
     /// Translates a set of <see cref="ChatMessageContent"/> to a set of <see cref="ThreadMessageOptions"/>."/>
     /// </summary>
     /// <param name="messages">A list of <see cref="ChatMessageContent"/> objects/</param>
@@ -44,7 +53,7 @@ internal static class AgentMessageFactory
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
                     content: message.Content)
                 {
-                    Attachments = message.Items.OfType<FileReferenceContent>().Select(fileContent => new MessageAttachment(fileContent.FileId, [])).ToArray(),
+                    Attachments = GetAttachments(message).ToArray(),
                 };
 
                 if (message.Metadata != null)

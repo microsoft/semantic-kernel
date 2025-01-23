@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
+namespace SemanticKernel.Agents.UnitTests.Test;
 
 internal static class AssertCollection
 {

@@ -17,7 +17,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task UseSingleAssistantAgentAsync()
+    public async Task UseImageContentWithAssistantAsync()
     {
         // Define the agent
         OpenAIClientProvider provider = this.GetClientProvider();

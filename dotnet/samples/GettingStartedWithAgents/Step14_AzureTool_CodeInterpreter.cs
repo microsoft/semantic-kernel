@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Resources;
 using AzureAIP = Azure.AI.Projects;
 
 namespace GettingStarted;
@@ -12,48 +10,34 @@ namespace GettingStarted;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-public class Step16_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step14_AzureTool_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseFileSearchToolWithAssistantAgentAsync()
+    public async Task UseCodeInterpreterToolWithAgentAsync()
     {
         // Define the agent
-        await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
-
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.AgentFile fileInfo = await client.UploadFileAsync(stream, AzureAIP.AgentFilePurpose.Agents, "employees.pdf");
-        AzureAIP.VectorStore fileStore = await client.CreateVectorStoreAsync([fileInfo.Id], "step16-test");
-        //await client.CreateVectorStoreFileAsync(fileStore.Id, fileInfo.Id);
-        //Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
-        AzureAIP.Agent agentModel = await client.CreateAgentAsync(
+        AzureAIP.Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new AzureAIP.FileSearchToolDefinition()],
-            toolResources: new()
-            {
-                FileSearch = new()
-                {
-                    VectorStoreIds = { fileStore.Id },
-                }
-            });
-        AzureAIAgent agent = new(agentModel, clientProvider);
+            tools: [new AzureAIP.CodeInterpreterToolDefinition()]);
+        AzureAIAgent agent = new(definition, clientProvider)
+        {
+            Kernel = new Kernel(),
+        };
 
-        // Create a thread associated for the agent conversation.
+        // Create a thread for the agent conversation.
         AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Who is the youngest employee?");
-            await InvokeAgentAsync("Who works in sales?");
-            await InvokeAgentAsync("I have a customer request, who can help me?");
+            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
         }
         finally
         {
             await client.DeleteThreadAsync(thread.Id);
             await client.DeleteAgentAsync(agent.Id);
-            await client.DeleteVectorStoreAsync(fileStore.Id);
-            await client.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
