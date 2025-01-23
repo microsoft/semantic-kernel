@@ -17,7 +17,11 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.driver_info import DriverInfo
 
-from semantic_kernel.connectors.memory.mongodb_atlas.const import MONGODB_ID_FIELD
+from semantic_kernel.connectors.memory.mongodb_atlas.const import (
+    DEFAULT_DB_NAME,
+    DEFAULT_SEARCH_INDEX_NAME,
+    MONGODB_ID_FIELD,
+)
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_index_definition
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
@@ -57,9 +61,9 @@ class MongoDBAtlasCollection(
 
     def __init__(
         self,
+        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
-        collection_name: str | None = None,
         index_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
         **kwargs: Any,
@@ -81,17 +85,16 @@ class MongoDBAtlasCollection(
                     env_file_encoding: str | None = None
 
         """
-        if not collection_name:
-            raise VectorStoreInitializationException("Collection name is required.")
-        if mongo_client and "database_name" in kwargs:
+        managed_client = not mongo_client
+        if mongo_client:
             super().__init__(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
-                database_name=kwargs["database_name"],
-                index_name=index_name or f"{collection_name}_idx",
-                managed_client=False,
+                database_name=kwargs.get("database_name", DEFAULT_DB_NAME),
+                index_name=index_name or DEFAULT_SEARCH_INDEX_NAME,
+                managed_client=managed_client,
             )
             return
 
@@ -103,17 +106,15 @@ class MongoDBAtlasCollection(
                 env_file_encoding=kwargs.get("env_file_encoding"),
                 connection_string=kwargs.get("connection_string"),
                 database_name=kwargs.get("database_name"),
+                index_name=index_name,
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
-        managed_client = not mongo_client
         if not mongo_client:
             mongo_client = AsyncMongoClient(
                 mongodb_atlas_settings.connection_string.get_secret_value(),
                 driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
             )
-        if not mongodb_atlas_settings.database_name:
-            raise VectorStoreInitializationException("Database name is required.")
 
         super().__init__(
             data_model_type=data_model_type,
@@ -122,7 +123,7 @@ class MongoDBAtlasCollection(
             mongo_client=mongo_client,
             managed_client=managed_client,
             database_name=mongodb_atlas_settings.database_name,
-            index_name=index_name or f"{collection_name}_idx",
+            index_name=mongodb_atlas_settings.index_name,
         )
 
     def _get_database(self) -> AsyncDatabase:
@@ -186,16 +187,18 @@ class MongoDBAtlasCollection(
     async def create_collection(self, **kwargs) -> None:
         """Create a new collection in MongoDB Atlas.
 
+        This first creates a collection, with the kwargs.
+        Then creates a search index based on the data model definition.
+
         Args:
             **kwargs: Additional keyword arguments.
         """
-        database = self._get_database()
-        collection = await database.create_collection(self.collection_name, **kwargs)
+        collection = await self._get_database().create_collection(self.collection_name, **kwargs)
         await collection.create_search_index(create_index_definition(self.data_model_definition, self.index_name))
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
-        return self.collection_name in await self._get_database().list_collection_names()
+        return bool(await self._get_database().list_collection_names(filter={"name": self.collection_name}))
 
     @override
     async def delete_collection(self, **kwargs) -> None:
