@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Azure.AI.OpenAI.Chat;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -138,63 +140,83 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// Note: Data source and function calling are not supported in a single request. Enabling both features
     /// will result in the function calling information being ignored and the operation behaving as if only the data source was provided.
     /// To address this limitation, consider separating function calling and data source across multiple requests in your solution design.
+    /// The example uses <see cref="IFunctionInvocationFilter"/> to try Azure Data Source and function calling sequentially until the requested
+    /// information is provided.
     /// </summary>
     [Fact]
     public async Task ExampleWithFunctionCallingAsync()
     {
         Console.WriteLine("=== Example with Function Calling ===");
 
-        var kernel = Kernel.CreateBuilder()
+        var builder = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
+                TestConfiguration.AzureOpenAI.ApiKey);
+
+        // Add retry filter.
+        // This filter will evaluate if the model provided the answer to user's question.
+        // If yes, it will return the result. Otherwise it will try to use Azure Data Source and function calling sequentially until
+        // the requested information is provided. If both sources doesn't contain the requested information, the model will explain that in response.
+        builder.Services.AddSingleton<IFunctionInvocationFilter, FunctionInvocationRetryFilter>();
+
+        var kernel = builder.Build();
 
         // Import plugin.
         kernel.ImportPluginFromType<DataPlugin>();
 
-        var chatHistory = new ChatHistory();
+        // Define response schema.
+        // The model evaluates its own answer and provides a boolean flag,
+        // which allows to understand whether the user's question was actually answered or not.
+        // Based on that, it's possible to make a decision whether the source of information should be changed or the response
+        // should be provided back to the user.
+        var responseSchema =
+            """
+            {
+                "type": "object",
+                "properties": {
+                    "Message": { "type": "string" },
+                    "IsAnswered": { "type": "boolean" },
+                }
+            }
+            """;
+
+        // Define execution settings with response format and initial instructions.
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            ChatSystemPrompt =
+                "Provide concrete answers to user questions. " +
+                "If you don't have an information - do not generate it, but respond accordingly. " +
+                $"Use following JSON schema for all the responses: {responseSchema}. "
+        };
 
         // First question without previous context based on uploaded content.
         var ask = "How did Emily and David meet?";
-        chatHistory.AddUserMessage(ask);
 
-        // Enable data source.
-        var dataSource = GetAzureSearchDataSource();
-        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
-
-        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
-
-        var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings, kernel);
-
-        var response = chatMessage.Content!;
+        // The answer to the first question is expected to be fetched from Azure Data Source (in this example Azure AI Search).
+        // Azure Data Source is not enabled in initial execution settings, but is configured in retry filter.
+        var response = await kernel.InvokePromptAsync(ask, new(promptExecutionSettings));
+        var modelResult = ModelResult.Parse(response.ToString());
 
         // Output
         // Ask: How did Emily and David meet?
-        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica [doc1].
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {modelResult?.Message}");
 
-        // Chat history maintenance.
-        chatHistory.AddAssistantMessage(response);
+        ask = "Can I have Emily's and David's emails?";
 
-        // Disable data source and enable function calling.
-        promptExecutionSettings.AzureChatDataSource = null;
-        promptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto();
-
-        ask = "Can I have their emails?";
-        chatHistory.AddUserMessage(ask);
-
-        chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings, kernel);
-
-        response = chatMessage.Content!;
+        // The answer to the second question is expected to be fetched from DataPlugin-GetEmails function using function calling.
+        // Function calling is not enabled in initial execution settings, but is configured in retry filter.
+        response = await kernel.InvokePromptAsync(ask, new(promptExecutionSettings));
+        modelResult = ModelResult.Parse(response.ToString());
 
         // Output
         // Ask: Can I have their emails?
         // Response: Emily's email is emily@test.com and David's email is david@test.com.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {modelResult?.Message}");
     }
 
     /// <summary>
@@ -253,6 +275,114 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         }
     }
 
+    /// <summary>
+    /// Filter which performs a retry logic to answer user's question using different sources.
+    /// Initially, if the model doesn't provide an answer, the filter will enable Azure Data Source and retry the same request.
+    /// If Azure Data Source doesn't contain the requested information, the filter will disable it and enable function calling instead.
+    /// If the answer is provided from the model itself or any source, it is returned back to the user.
+    /// </summary>
+    private sealed class FunctionInvocationRetryFilter : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            // Retry logic for Azure Data Source and function calling is enabled only for Azure OpenAI prompt execution settings.
+            if (context.Arguments.ExecutionSettings is not null &&
+                context.Arguments.ExecutionSettings.TryGetValue(PromptExecutionSettings.DefaultServiceId, out var executionSettings) &&
+                executionSettings is AzureOpenAIPromptExecutionSettings azureOpenAIPromptExecutionSettings)
+            {
+                // Store the initial data source and function calling configuration to reset it after filter execution.
+                var initialAzureChatDataSource = azureOpenAIPromptExecutionSettings.AzureChatDataSource;
+                var initialFunctionChoiceBehavior = azureOpenAIPromptExecutionSettings.FunctionChoiceBehavior;
+
+                // Track which source of information was used during the execution to try both sources sequentially.
+                var dataSourceUsed = initialAzureChatDataSource is not null;
+                var functionCallingUsed = initialFunctionChoiceBehavior is not null;
+
+                // Perform a request.
+                await next(context);
+
+                // Get and parse the result.
+                var result = context.Result.GetValue<string>();
+                var modelResult = ModelResult.Parse(result);
+
+                // Try to perform a request again until the answer is provided or both sources of information are used.
+                while (modelResult?.IsAnswered is false || (!dataSourceUsed && !functionCallingUsed))
+                {
+                    // If Azure Data Source wasn't used - enable it.
+                    if (azureOpenAIPromptExecutionSettings.AzureChatDataSource is null)
+                    {
+                        var dataSource = GetAzureSearchDataSource();
+
+                        // Since Azure Data Source is enabled, the function calling should be disabled,
+                        // because they are not supported together.
+                        azureOpenAIPromptExecutionSettings.AzureChatDataSource = dataSource;
+                        azureOpenAIPromptExecutionSettings.FunctionChoiceBehavior = null;
+
+                        dataSourceUsed = true;
+                    }
+                    // Otherwise, if function calling wasn't used - enable it.
+                    else if (azureOpenAIPromptExecutionSettings.FunctionChoiceBehavior is null)
+                    {
+                        // Since function calling is enabled, the Azure Data Source should be disabled,
+                        // because they are not supported together.
+                        azureOpenAIPromptExecutionSettings.AzureChatDataSource = null;
+                        azureOpenAIPromptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+                        functionCallingUsed = true;
+                    }
+
+                    // Perform a request.
+                    await next(context);
+
+                    // Get and parse the result.
+                    result = context.Result.GetValue<string>();
+                    modelResult = ModelResult.Parse(result);
+                }
+
+                // Reset prompt execution setting properties to the initial state.
+                azureOpenAIPromptExecutionSettings.AzureChatDataSource = initialAzureChatDataSource;
+                azureOpenAIPromptExecutionSettings.FunctionChoiceBehavior = initialFunctionChoiceBehavior;
+            }
+            // Otherwise, perform a default function invocation.
+            else
+            {
+                await next(context);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a model result with actual message and boolean flag which shows if user's question was answered or not.
+    /// </summary>
+    private sealed class ModelResult
+    {
+        public string Message { get; set; }
+
+        public bool IsAnswered { get; set; }
+
+        /// <summary>
+        /// Parses model result.
+        /// </summary>
+        public static ModelResult? Parse(string? result)
+        {
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                return null;
+            }
+
+            // With response format as "json_object", sometimes the JSON response string is coming together with annotation.
+            // The following line normalizes the response string in order to deserialize it later.
+            var normalized = result
+                .Replace("```json", string.Empty)
+                .Replace("```", string.Empty);
+
+            return JsonSerializer.Deserialize<ModelResult>(normalized);
+        }
+    }
+
+    /// <summary>
+    /// Example of data plugin that provides a user information for demonstration purposes.
+    /// </summary>
     private sealed class DataPlugin
     {
         private readonly Dictionary<string, string> _emails = new()
