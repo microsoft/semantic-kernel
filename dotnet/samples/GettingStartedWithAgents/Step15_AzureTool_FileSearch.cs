@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAIP = Azure.AI.Projects;
+using AzureAgent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -21,14 +20,14 @@ public class Step15_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsT
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
 
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.AgentFile fileInfo = await client.UploadFileAsync(stream, AzureAIP.AgentFilePurpose.Agents, "employees.pdf");
-        AzureAIP.VectorStore fileStore = await client.CreateVectorStoreAsync([fileInfo.Id], "step16-test");
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentFile fileInfo = await client.UploadFileAsync(stream, AgentFilePurpose.Agents, "employees.pdf");
+        VectorStore fileStore = await client.CreateVectorStoreAsync([fileInfo.Id], "step16-test");
         //await client.CreateVectorStoreFileAsync(fileStore.Id, fileInfo.Id);
         //Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
-        AzureAIP.Agent agentModel = await client.CreateAgentAsync(
+        AzureAgent agentModel = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new AzureAIP.FileSearchToolDefinition()],
+            tools: [new FileSearchToolDefinition()],
             toolResources: new()
             {
                 FileSearch = new()

@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAIP = Azure.AI.Projects;
+using AzureAgent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -28,13 +28,13 @@ public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(out
 
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AzureAgent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools:
             [
-                new AzureAIP.OpenApiToolDefinition("RestCountries", "Retrieve country information", BinaryData.FromString(apiCountries), new AzureAIP.OpenApiAnonymousAuthDetails()),
-                new AzureAIP.OpenApiToolDefinition("Weather", "Retrieve weather by location", BinaryData.FromString(apiWeather), new AzureAIP.OpenApiAnonymousAuthDetails())
+                new OpenApiToolDefinition("RestCountries", "Retrieve country information", BinaryData.FromString(apiCountries), new OpenApiAnonymousAuthDetails()),
+                new OpenApiToolDefinition("Weather", "Retrieve weather by location", BinaryData.FromString(apiWeather), new OpenApiAnonymousAuthDetails())
             ]);
         AzureAIAgent agent = new(definition, clientProvider)
         {

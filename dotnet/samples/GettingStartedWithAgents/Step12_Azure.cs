@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAIP = Azure.AI.Projects;
+using AzureAgent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -23,12 +23,12 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task DeleteAllAgentsAsync()
     {
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.PageableList<AzureAIP.Agent>? agents = null;
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        PageableList<AzureAgent>? agents = null;
         do
         {
             agents = await client.GetAgentsAsync(after: agents?.LastId);
-            foreach (AzureAIP.Agent agent in agents)
+            foreach (AzureAgent agent in agents)
             {
                 Console.WriteLine($"# {agent.Id}");
                 await client.DeleteAgentAsync(agent.Id);
@@ -41,12 +41,12 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task DeleteAllStoresAsync()
     {
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.AgentPageableListOfVectorStore? stores = null;
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentPageableListOfVectorStore? stores = null;
         do
         {
             stores = await client.GetVectorStoresAsync(after: stores?.LastId);
-            foreach (AzureAIP.VectorStore store in stores.Data)
+            foreach (VectorStore store in stores.Data)
             {
                 Console.WriteLine($"# {store.Id}");
                 await client.DeleteVectorStoreAsync(store.Id);
@@ -59,9 +59,9 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task DeleteAllFilesAsync()
     {
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
         var files = await client.GetFilesAsync();
-        foreach (AzureAIP.AgentFile file in files.Value)
+        foreach (AgentFile file in files.Value)
         {
             Console.WriteLine($"# {file.Id}");
             await client.DeleteFileAsync(file.Id);
@@ -73,9 +73,9 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     {
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
 
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        AzureAgent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             HostName,
             null,
@@ -128,8 +128,8 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
 
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AzureAgent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
         AzureAIAgent agent = new(definition, clientProvider, new KernelPromptTemplateFactory())
         {
