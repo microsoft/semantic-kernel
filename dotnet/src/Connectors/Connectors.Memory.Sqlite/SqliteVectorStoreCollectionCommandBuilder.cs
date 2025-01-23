@@ -159,6 +159,8 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         IReadOnlyList<string> leftTablePropertyNames,
         IReadOnlyList<string> rightTablePropertyNames,
         List<SqliteWhereCondition> conditions,
+        string? extraWhereFilter = null,
+        Dictionary<string, object>? extraParameters = null,
         string? orderByPropertyName = null)
     {
         var builder = new StringBuilder();
@@ -169,7 +171,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
             .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
         ];
 
-        var (command, whereClause) = this.GetCommandWithWhereClause(conditions);
+        var (command, whereClause) = this.GetCommandWithWhereClause(conditions, extraWhereFilter, extraParameters);
 
         builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
         builder.AppendLine($"FROM {leftTable} ");
@@ -238,7 +240,10 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return string.Join(" ", columnDefinitionParts);
     }
 
-    private (DbCommand Command, string WhereClause) GetCommandWithWhereClause(List<SqliteWhereCondition> conditions)
+    private (DbCommand Command, string WhereClause) GetCommandWithWhereClause(
+        List<SqliteWhereCondition> conditions,
+        string? extraWhereFilter = null,
+        Dictionary<string, object>? extraParameters = null)
     {
         const string WhereClauseOperator = " AND ";
 
@@ -262,6 +267,21 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         }
 
         var whereClause = string.Join(WhereClauseOperator, whereClauseParts);
+
+        if (extraWhereFilter is not null)
+        {
+            if (conditions.Count > 0)
+            {
+                whereClause += " AND ";
+            }
+
+            whereClause += extraWhereFilter;
+
+            foreach (var p in extraParameters!)
+            {
+                command.Parameters.Add(new SqliteParameter(p.Key, p.Value));
+            }
+        }
 
         return (command, whereClause);
     }

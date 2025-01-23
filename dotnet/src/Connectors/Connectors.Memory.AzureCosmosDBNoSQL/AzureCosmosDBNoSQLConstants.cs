@@ -13,5 +13,5 @@ internal static class AzureCosmosDBNoSQLConstants
     /// Variable name for table in Azure CosmosDB NoSQL queries.
     /// Can be any string. Example: "SELECT x.Name FROM x".
     /// </summary>
-    internal const string TableQueryVariableName = "x";
+    internal const char ContainerAlias = 'x';
 }

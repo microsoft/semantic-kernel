@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.VectorData;
 /// to request that the underlying service filter the search results.
 /// All clauses are combined with and.
 /// </remarks>
+[Obsolete("Use VectorSearchOptions.NewFilter instead of VectorSearchOptions.Filter")]
 public sealed class VectorSearchFilter
 {
     /// <summary>The filter clauses to and together.</summary>

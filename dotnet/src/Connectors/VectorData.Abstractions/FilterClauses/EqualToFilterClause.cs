@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// <see cref="FilterClause"/> which filters using equality of a field value.
 /// </summary>
+[Obsolete("Use VectorSearchOptions.NewFilter instead of VectorSearchOptions.Filter")]
 public sealed class EqualToFilterClause : FilterClause
 {
     /// <summary>

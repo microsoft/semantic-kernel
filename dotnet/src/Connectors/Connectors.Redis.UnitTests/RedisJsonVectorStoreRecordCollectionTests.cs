@@ -16,6 +16,8 @@ using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Contains tests for the <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>

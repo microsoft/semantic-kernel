@@ -12,13 +12,15 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
     private const string? SkipReason = "The tests are for manual verification.";
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData("sk-test-hotels", true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)

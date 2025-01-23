@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("PostgresVectorStoreCollection")]
 public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStoreFixture fixture)
 {
