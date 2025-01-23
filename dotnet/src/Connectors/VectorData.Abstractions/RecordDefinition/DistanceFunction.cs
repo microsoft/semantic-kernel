@@ -39,9 +39,18 @@ public static class DistanceFunction
     /// Measures both the length and angle between two vectors.
     /// </summary>
     /// <remarks>
-    /// Same as cosine similarity if the vectors are the same length, but more performant.
+    /// The higher the value, the more similar the vectors.
     /// </remarks>
     public const string DotProductSimilarity = nameof(DotProductSimilarity);
+
+    /// <summary>
+    /// Measures both the length and angle between two vectors.
+    /// </summary>
+    /// <remarks>
+    /// The value of NegativeDotProduct = -1 * DotProductSimilarity.
+    /// The higher the value, the greater the distance between the vectors and the less similar the vectors.
+    /// </remarks>
+    public const string NegativeDotProductSimilarity = nameof(NegativeDotProductSimilarity);
 
     /// <summary>
     /// Measures the Euclidean distance between two vectors.

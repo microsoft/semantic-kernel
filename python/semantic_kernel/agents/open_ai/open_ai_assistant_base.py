@@ -43,6 +43,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
     AgentInvokeException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -270,12 +271,20 @@ class OpenAIAssistantBase(Agent):
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
-        execution_settings = {}
+        execution_settings: dict[str, Any] = {}
         if self.max_completion_tokens:
             execution_settings["max_completion_tokens"] = self.max_completion_tokens
 
         if self.max_prompt_tokens:
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
+
+        if self.top_p is not None:
+            execution_settings["top_p"] = self.top_p
+            create_assistant_kwargs["top_p"] = self.top_p
+
+        if self.temperature is not None:
+            execution_settings["temperature"] = self.temperature
+            create_assistant_kwargs["temperature"] = self.temperature
 
         if self.parallel_tool_calls_enabled:
             execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
@@ -596,6 +605,7 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Invoke Methods
 
+    @trace_agent_invocation
     async def invoke(
         self,
         thread_id: str,
@@ -722,6 +732,8 @@ class OpenAIAssistantBase(Agent):
         # Filter out None values to avoid passing them as kwargs
         run_options = {k: v for k, v in run_options.items() if v is not None}
 
+        logger.debug(f"Starting invoke for agent `{self.name}` and thread `{thread_id}`")
+
         run = await self.client.beta.threads.runs.create(
             assistant_id=self.assistant.id,
             thread_id=thread_id,
@@ -747,8 +759,13 @@ class OpenAIAssistantBase(Agent):
 
             # Check if function calling required
             if run.status == "requires_action":
+                logger.debug(f"Run [{run.id}] requires action for agent `{self.name}` and thread `{thread_id}`")
                 fccs = get_function_call_contents(run, function_steps)
                 if fccs:
+                    logger.debug(
+                        f"Yielding `generate_function_call_content` for agent `{self.name}` and "
+                        f"thread `{thread_id}`, visibility False"
+                    )
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 
                     from semantic_kernel.contents.chat_history import ChatHistory
@@ -762,28 +779,52 @@ class OpenAIAssistantBase(Agent):
                         thread_id=thread_id,
                         tool_outputs=tool_outputs,  # type: ignore
                     )
+                    logger.debug(f"Submitted tool outputs for agent `{self.name}` and thread `{thread_id}`")
 
             steps_response = await self.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
+            logger.debug(f"Called for steps_response for run [{run.id}] agent `{self.name}` and thread `{thread_id}`")
             steps: list[RunStep] = steps_response.data
-            completed_steps_to_process: list[RunStep] = sorted(
-                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids],
-                key=lambda s: s.created_at,
+
+            def sort_key(step: RunStep):
+                # Put tool_calls first, then message_creation
+                # If multiple steps share a type, break ties by completed_at
+                return (0 if step.type == "tool_calls" else 1, step.completed_at)
+
+            completed_steps_to_process = sorted(
+                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids], key=sort_key
+            )
+
+            logger.debug(
+                f"Completed steps to process for run [{run.id}] agent `{self.name}` and thread `{thread_id}` "
+                f"with length `{len(completed_steps_to_process)}`"
             )
 
             message_count = 0
             for completed_step in completed_steps_to_process:
                 if completed_step.type == "tool_calls":
+                    logger.debug(
+                        f"Entering step type tool_calls for run [{run.id}], agent `{self.name}` and "
+                        f"thread `{thread_id}`"
+                    )
                     assert hasattr(completed_step.step_details, "tool_calls")  # nosec
                     for tool_call in completed_step.step_details.tool_calls:
                         is_visible = False
                         content: "ChatMessageContent | None" = None
                         if tool_call.type == "code_interpreter":
+                            logger.debug(
+                                f"Entering step type tool_calls for run [{run.id}], [code_interpreter] for "
+                                f"agent `{self.name}` and thread `{thread_id}`"
+                            )
                             content = generate_code_interpreter_content(
                                 self.name,
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
                             is_visible = True
                         elif tool_call.type == "function":
+                            logger.debug(
+                                f"Entering step type tool_calls for run [{run.id}], [function] for agent `{self.name}` "
+                                f"and thread `{thread_id}`"
+                            )
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
                             content = generate_function_result_content(
@@ -792,8 +833,16 @@ class OpenAIAssistantBase(Agent):
 
                         if content:
                             message_count += 1
+                            logger.debug(
+                                f"Yielding tool_message for run [{run.id}], agent `{self.name}` and thread "
+                                f"`{thread_id}` and message count `{message_count}`, is_visible `{is_visible}`"
+                            )
                             yield is_visible, content
                 elif completed_step.type == "message_creation":
+                    logger.debug(
+                        f"Entering step type message_creation for run [{run.id}], agent `{self.name}` and "
+                        f"thread `{thread_id}`"
+                    )
                     message = await self._retrieve_message(
                         thread_id=thread_id,
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
@@ -802,9 +851,14 @@ class OpenAIAssistantBase(Agent):
                         content = generate_message_content(self.name, message)
                         if content and len(content.items) > 0:
                             message_count += 1
+                            logger.debug(
+                                f"Yielding message_creation for run [{run.id}], agent `{self.name}` and "
+                                f"thread `{thread_id}` and message count `{message_count}`, is_visible `{True}`"
+                            )
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
+    @trace_agent_invocation
     async def invoke_stream(
         self,
         thread_id: str,

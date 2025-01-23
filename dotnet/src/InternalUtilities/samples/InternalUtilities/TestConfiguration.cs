@@ -213,6 +213,7 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
         public string ChatModelId { get; set; }
         public string EmbeddingModelId { get; set; }
+        public string ImageModelId { get; set; }
     }
 
     public class GoogleAIConfig

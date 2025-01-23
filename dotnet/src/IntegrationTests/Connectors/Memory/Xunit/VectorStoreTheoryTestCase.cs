@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 
-public sealed class PineconeTheoryTestCase : XunitTheoryTestCase
+public sealed class VectorStoreTheoryTestCase : XunitTheoryTestCase
 {
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public PineconeTheoryTestCase()
+    public VectorStoreTheoryTestCase()
     {
     }
 
-    public PineconeTheoryTestCase(
+    public VectorStoreTheoryTestCase(
         IMessageSink diagnosticMessageSink,
         TestMethodDisplay defaultMethodDisplay,
         TestMethodDisplayOptions defaultMethodDisplayOptions,
