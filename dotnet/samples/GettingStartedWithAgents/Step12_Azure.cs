@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -19,13 +20,63 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
+    public async Task DeleteAllAgentsAsync()
+    {
+        AzureAIClientProvider clientProvider = this.GetAzureProvider();
+        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AzureAIP.PageableList<AzureAIP.Agent>? agents = null;
+        do
+        {
+            agents = await client.GetAgentsAsync(after: agents?.LastId);
+            foreach (AzureAIP.Agent agent in agents)
+            {
+                Console.WriteLine($"# {agent.Id}");
+                await client.DeleteAgentAsync(agent.Id);
+            }
+        }
+        while (agents?.HasMore ?? false);
+    }
+
+    [Fact]
+    public async Task DeleteAllStoresAsync()
+    {
+        AzureAIClientProvider clientProvider = this.GetAzureProvider();
+        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AzureAIP.AgentPageableListOfVectorStore? stores = null;
+        do
+        {
+            stores = await client.GetVectorStoresAsync(after: stores?.LastId);
+            foreach (AzureAIP.VectorStore store in stores.Data)
+            {
+                Console.WriteLine($"# {store.Id}");
+                await client.DeleteVectorStoreAsync(store.Id);
+            }
+        }
+        while (stores?.HasMore ?? false);
+    }
+
+    [Fact]
+    public async Task DeleteAllFilesAsync()
+    {
+        AzureAIClientProvider clientProvider = this.GetAzureProvider();
+        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        var files = await client.GetFilesAsync();
+        foreach (AzureAIP.AgentFile file in files.Value)
+        {
+            Console.WriteLine($"# {file.Id}");
+            await client.DeleteFileAsync(file.Id);
+        }
+    }
+
+    [Fact]
     public async Task UseSingleAssistantAgentAsync()
     {
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+
         AzureAIP.Agent definition = await client.CreateAgentAsync(
-            this.Model,
+            TestConfiguration.AzureAI.ChatModelId,
             HostName,
             null,
             HostInstructions);
@@ -39,7 +90,7 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new AzureAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
 
         // Respond to user input
         try
@@ -51,18 +102,18 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await client.DeleteThreadAsync(thread.Id);
+            await client.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(threadId, message);
+            await agent.AddChatMessageAsync(thread.Id, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
             {
                 this.WriteAgentChatMessage(response);
             }
@@ -75,11 +126,12 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
-        IPromptTemplate promptTemplate = new KernelPromptTemplateFactory().Create(templateConfig);
+
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.Agent definition = await clientProvider.Client.GetAgentsClient().CreateAgentAsync(this.Model);
+        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AzureAIP.Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, clientProvider, promptTemplate)
+        AzureAIAgent agent = new(definition, clientProvider, new KernelPromptTemplateFactory())
         {
             Kernel = new Kernel(),
             Arguments = new KernelArguments()
@@ -90,7 +142,7 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
         };
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new AzureAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
 
         try
         {
@@ -101,20 +153,20 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
             await InvokeAgentAsync(
                         new()
                         {
-                { "topic", "Cat" },
-                { "length", "3" },
+                            { "topic", "Cat" },
+                            { "length", "3" },
                         });
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await client.DeleteThreadAsync(thread.Id);
+            await client.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id, arguments))
             {
                 WriteAgentChatMessage(response);
             }

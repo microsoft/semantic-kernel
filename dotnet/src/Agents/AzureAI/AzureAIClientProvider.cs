@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides an <see cref="AIProjectClient"/> for use by <see cref="AzureAIAgent"/>.
 /// </summary>
-public sealed class AzureAIClientProvider // $$$ NEEDED ???
+public sealed class AzureAIClientProvider
 {
     /// <summary>
     /// An active client instance.
@@ -31,12 +31,15 @@ public sealed class AzureAIClientProvider // $$$ NEEDED ???
     }
 
     /// <summary>
-    /// Produce a <see cref="AzureAIClientProvider"/> based on <see cref="AIProjectClient"/>.
+    /// Produce a <see cref="AzureAIClientProvider"/>.
     /// </summary>
-    /// <param name="connectionString">The service endpoint</param>
-    /// <param name="credential">The credentials</param>
+    /// <param name="connectionString">The Azure AI Foundry project connection string, in the form `endpoint;subscription_id;resource_group_name;project_name`.</param>
+    /// <param name="credential"> A credential used to authenticate to an Azure Service. </param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static AzureAIClientProvider ForAzureOpenAI(string connectionString, TokenCredential credential, HttpClient? httpClient = null)
+    public static AzureAIClientProvider FromConnectionString(
+        string connectionString,
+        TokenCredential credential,
+        HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
         Verify.NotNull(credential, nameof(credential));
@@ -56,39 +59,24 @@ public sealed class AzureAIClientProvider // $$$ NEEDED ???
 
     private static AIProjectClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        AIProjectClientOptions options = new()
-        {
-            Diagnostics = { // %%% LOGGING ???
-                ApplicationId = HttpHeaderConstant.Values.UserAgent
-            },
-        };
+        AIProjectClientOptions options =
+            new()
+            {
+                Diagnostics = {
+                    ApplicationId = HttpHeaderConstant.Values.UserAgent,
+                }
+            };
 
-        ConfigureClientOptions(httpClient, options);
-
-        return options;
-    }
-
-    private static void ConfigureClientOptions(HttpClient? httpClient, ClientOptions options)
-    {
-        //options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureAIAgent))), HttpPipelinePosition.PerCall);
+        options.AddPolicy(new SemanticKernelHeadersPolicy(), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            // Disable retry policy if and only if a custom HttpClient is provided.
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
         }
-    }
 
-    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
-    {
-        return
-            new((message) =>
-            {
-                if (message?.Request?.Headers.TryGetValue(headerName, out string? _) == false)
-                {
-                    message.Request.Headers.Add(headerName, headerValue);
-                }
-            });
+        return options;
     }
 
     private static IEnumerable<string> CreateConfigurationKeys(string connectionString, HttpClient? httpClient)
@@ -106,6 +94,16 @@ public sealed class AzureAIClientProvider // $$$ NEEDED ???
             {
                 yield return header;
             }
+        }
+    }
+
+    private class SemanticKernelHeadersPolicy : HttpPipelineSynchronousPolicy
+    {
+        public override void OnSendingRequest(HttpMessage message)
+        {
+            message.Request.Headers.Add(
+                HttpHeaderConstant.Names.SemanticKernelVersion,
+                HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureAIAgent)));
         }
     }
 }

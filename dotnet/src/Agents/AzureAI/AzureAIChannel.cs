@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
@@ -29,21 +27,13 @@ internal sealed class AzureAIChannel(AzureAIP.AgentsClient client, string thread
         AzureAIAgent agent,
         CancellationToken cancellationToken)
     {
-        agent.ThrowIfDeleted();
-
-        // %%%
-        //return AgentThreadActions.InvokeAsync(agent, client, threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
-        return Array.Empty<(bool, ChatMessageContent)>().ToAsyncEnumerable();
+        return AgentThreadActions.InvokeAsync(agent, client, threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AzureAIAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
-        agent.ThrowIfDeleted();
-
-        // %%%
-        //return AgentThreadActions.InvokeStreamingAsync(agent, client, threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
-        return Array.Empty<StreamingChatMessageContent>().ToAsyncEnumerable();
+        return AgentThreadActions.InvokeStreamingAsync(agent, client, threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
     /// <inheritdoc/>

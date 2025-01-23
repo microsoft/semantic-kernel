@@ -3,6 +3,7 @@
 using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -45,12 +46,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     /// </summary>
     protected AzureAIClientProvider GetAzureProvider()
     {
-        //if (this.UseOpenAIConfig) // %%%
-        //{
-        //    throw new InvalidOperationException("Azure provider is not available when using OpenAI configuration.");
-        //}
-
-        return AzureAIClientProvider.ForAzureOpenAI("eastus.api.azureml.ms;5b742c40-bc2b-4a4f-902f-ee9f644d8844;rg-crickman-ai;sc-xx8889760-8651", new AzureCliCredential()); // %%% CONFIG
+        return AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
     }
 
     /// <summary>
@@ -110,13 +106,17 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             {
                 WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
             }
+            else if (usage is RunStepCompletionUsage agentUsage)
+            {
+                WriteUsage(agentUsage.TotalTokens, agentUsage.PromptTokens, agentUsage.CompletionTokens);
+            }
             else if (usage is ChatTokenUsage chatUsage)
             {
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
             }
         }
 
-        void WriteUsage(int totalTokens, int inputTokens, int outputTokens)
+        void WriteUsage(long totalTokens, long inputTokens, long outputTokens)
         {
             Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
         }

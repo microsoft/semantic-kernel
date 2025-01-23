@@ -14,6 +14,8 @@ namespace GettingStarted;
 /// </summary>
 public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 {
+    //protected override bool ForceOpenAI => true;
+
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
 

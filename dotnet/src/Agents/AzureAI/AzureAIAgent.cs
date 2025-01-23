@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.Projects;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AzureAIP = Azure.AI.Projects;
+using AzureAgent = Azure.AI.Projects.Agent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -20,66 +19,21 @@ public sealed class AzureAIAgent : KernelAgent
     /// <summary>
     /// Metadata key that identifies code-interpreter content.
     /// </summary>
-    public const string CodeInterpreterMetadataKey = "code"; // %%%% RE-EVALUATE
+    public const string CodeInterpreterMetadataKey = "code";
 
     private readonly AzureAIClientProvider _provider;
-    private readonly AzureAIP.AgentsClient _client;
+    private readonly AgentsClient _client;
     private readonly string[] _channelKeys;
 
     /// <summary>
     /// The assistant definition.
     /// </summary>
-    public AzureAIP.Agent Definition { get; private init; }
-
-    /// <summary>
-    /// Set when the assistant has been deleted via <see cref="DeleteAsync(CancellationToken)"/>.
-    /// An assistant removed by other means will result in an exception when invoked.
-    /// </summary>
-    public bool IsDeleted { get; private set; }
+    public AzureAgent Definition { get; private init; }
 
     /// <summary>
     /// Defines polling behavior for run processing
     /// </summary>
     public RunPollingOptions PollingOptions { get; } = new();
-
-    /// <summary>
-    /// Create a new assistant thread.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The thread identifier</returns>
-    public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default) // %%% STATIC
-    {
-        return AgentThreadActions.CreateThreadAsync(this._client, options: null, cancellationToken);
-    }
-
-    /// <summary>
-    /// Create a new assistant thread.
-    /// </summary>
-    /// <param name="options">The options for creating the thread</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The thread identifier</returns>
-    public Task<string> CreateThreadAsync(AzureAIThreadCreationOptions? options, CancellationToken cancellationToken = default) // %%% STATIC
-    {
-        return AgentThreadActions.CreateThreadAsync(this._client, options, cancellationToken);
-    }
-
-    /// <summary>
-    /// Create a new assistant thread.
-    /// </summary>
-    /// <param name="threadId">The thread identifier</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The thread identifier</returns>
-    public async Task<bool> DeleteThreadAsync(
-        string threadId,
-        CancellationToken cancellationToken = default)
-    {
-        // Validate input
-        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
-
-        bool isDeleted = await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
-
-        return isDeleted;
-    }
 
     /// <summary>
     /// Adds a message to the specified thread.
@@ -88,13 +42,11 @@ public sealed class AzureAIAgent : KernelAgent
     /// <param name="message">A non-system message with which to append to the conversation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <remarks>
-    /// Only supports messages with role = User or Assistant:
+    /// Only supports messages with role = User or agent:
     /// https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
     /// </remarks>
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
-
         return AgentThreadActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
     }
 
@@ -106,28 +58,7 @@ public sealed class AzureAIAgent : KernelAgent
     /// <returns>Asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
-
         return AgentThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
-    }
-
-    /// <summary>
-    /// Delete the assistant definition.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>True if assistant definition has been deleted</returns>
-    /// <remarks>
-    /// Assistant based agent will not be useable after deletion.
-    /// </remarks>
-    public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
-    {
-        if (!this.IsDeleted)
-        {
-            bool isDeleted = await this._client.DeleteAgentAsync(this.Id, cancellationToken).ConfigureAwait(false);
-            this.IsDeleted = isDeleted;
-        }
-
-        return this.IsDeleted;
     }
 
     /// <summary>
@@ -169,8 +100,6 @@ public sealed class AzureAIAgent : KernelAgent
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
-
         kernel ??= this.Kernel;
         arguments = this.MergeArguments(arguments);
 
@@ -226,14 +155,10 @@ public sealed class AzureAIAgent : KernelAgent
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
-
         kernel ??= this.Kernel;
         arguments = this.MergeArguments(arguments);
 
-        // %%% STREAMING
-        //return AgentThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
-        return Array.Empty<StreamingChatMessageContent>().ToAsyncEnumerable();
+        return AgentThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -251,9 +176,9 @@ public sealed class AzureAIAgent : KernelAgent
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        //this.Logger.LogAzureAIAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel)); // %%%
+        this.Logger.LogAzureAIAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel));
 
-        string threadId = await AgentThreadActions.CreateThreadAsync(this._client, options: null, cancellationToken).ConfigureAwait(false);
+        string threadId = await AgentThreadActions.CreateThreadAsync(this._client, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), threadId);
 
@@ -263,17 +188,9 @@ public sealed class AzureAIAgent : KernelAgent
                 Logger = this.LoggerFactory.CreateLogger<AzureAIChannel>()
             };
 
-        //this.Logger.LogAzureAIAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel), thread.Id); // %%%
+        this.Logger.LogAzureAIAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel), threadId);
 
         return channel;
-    }
-
-    internal void ThrowIfDeleted()
-    {
-        if (this.IsDeleted)
-        {
-            throw new KernelException($"Agent Failure - {nameof(AzureAIAgent)} agent is deleted: {this.Id}.");
-        }
     }
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
@@ -286,11 +203,11 @@ public sealed class AzureAIAgent : KernelAgent
     {
         string threadId = channelState;
 
-        //this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
+        this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        AzureAIP.AgentThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        AgentThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        //this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
+        this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
         return new AzureAIChannel(this._client, thread.Id);
     }
@@ -298,10 +215,13 @@ public sealed class AzureAIAgent : KernelAgent
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
     /// </summary>
+    /// <param name="model">The agent model definition.</param>
+    /// <param name="clientProvider">A <see cref="AzureAIClientProvider"/> instance.</param>
+    /// <param name="templateFactory">An optional template factory</param>
     public AzureAIAgent(
-        AzureAIP.Agent model,
+        AzureAgent model,
         AzureAIClientProvider clientProvider,
-        IPromptTemplate? template = null) // %%% CONFLICTS WITH model
+        IPromptTemplateFactory? templateFactory = null)
     {
         this._provider = clientProvider;
         this._client = clientProvider.Client.GetAgentsClient();
@@ -312,6 +232,11 @@ public sealed class AzureAIAgent : KernelAgent
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
         this.Instructions = this.Definition.Instructions;
-        this.Template = template;
+
+        if (templateFactory != null)
+        {
+            PromptTemplateConfig templateConfig = new(this.Instructions);
+            this.Template = templateFactory.Create(templateConfig);
+        }
     }
 }
