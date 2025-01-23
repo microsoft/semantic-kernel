@@ -47,7 +47,7 @@ public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(out
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the name and population of the country that uses currenty with abbreviation THB");
+            await InvokeAgentAsync("What is the name and population of the country that uses currency with abbreviation THB");
             await InvokeAgentAsync("What is the weather in the capitol city of that country?");
         }
         finally
