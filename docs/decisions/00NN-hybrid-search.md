@@ -55,7 +55,6 @@ ML.Net contains an implementation of TF-IDF that could be used to generate spars
 |Sparse Distance Function|n/a|n/a|||[dotproduct only for both dense and sparse, 1 setting for both](https://docs.pinecone.io/guides/data/understanding-hybrid-search#sparse-dense-workflow)||dotproduct|Inner Product|n/a|n/a|n/a|
 |Sparse Indexing options|n/a|n/a|||no separate config to dense||ondisk / inmemory  + IDF|[SPARSE_INVERTED_INDEX / SPARSE_WAND](https://milvus.io/docs/index.md?tab=sparse)|n/a|n/a|n/a|
 |Sparse data model|n/a|n/a|||[indices & values arrays](https://docs.pinecone.io/guides/data/upsert-sparse-dense-vectors)||indices & values arrays|[sparse matrix / List of dict / list of tuples](https://milvus.io/docs/sparse_vector.md#Use-sparse-vectors-in-Milvus)|n/a|n/a|n/a|
-|Reranking supported|[Yes](https://learn.microsoft.com/en-us/azure/search/semantic-search-overview)|-|-|-|-|-|-|-|-|-|-|
 
 Glossary:
 
@@ -63,12 +62,17 @@ Glossary:
 - DBSF = Distribution-Based Score Fusion
 - IDF = Inverse Document Frequency
 
-### Language required for full text search configuration
+### Language required for Cosmos DB NoSQL full text search configuration
 
-Some DBs require a specific language to be specified for full text search and they require full text search indexing for hybrid search to be enabled.
-We therefore need to support specifying the language when creating the index.
+Cosmos DB NoSQL requires a language to be specified for full text search and it requires full text search indexing for hybrid search to be enabled.
+We therefore need to support a way of specifying the language when creating the index.
 
-To be expanded with more detail.
+Cosmos DB NoSQL is the only database from our sample that has a required setting of this type.
+
+|Feature|Azure AI Search|Weaviate|Redis|Chroma|Pinecone|PostgreSql|Qdrant|Milvus|Elasticsearch|CosmosDB NoSql|MongoDB|
+|-|-|-|-|-|-|-|-|-|-|-|-|
+|Requires FullTextSearch indexing for hybrid search|Y|Y|n/a|n/a|n/a||N [optional](https://qdrant.tech/documentation/concepts/filtering/#full-text-match)|n/a|Y|Y|[Y](https://www.mongodb.com/docs/atlas/atlas-search/tutorial/hybrid-search/?msockid=04b550d92f2f619c271a45a42e066050#create-the-atlas-vector-search-and-fts-indexes)|
+|Required FullTextSearch index options|None required, [many optional](https://learn.microsoft.com/en-us/rest/api/searchservice/indexes/create?view=rest-searchservice-2024-07-01&tabs=HTTP)|None required, [none optional](https://weaviate.io/developers/weaviate/concepts/indexing#collections-without-indexes)|||||none required, [some optional](https://qdrant.tech/documentation/concepts/indexing/#full-text-index)||None required, [many optional](https://elastic.github.io/elasticsearch-net/8.16.3/api/Elastic.Clients.Elasticsearch.Mapping.TextProperty.html)|Language Required|None required, [many optional](https://www.mongodb.com/docs/atlas/atlas-search/field-types/string-type/#configure-fts-field-type-field-properties)|
 
 ### Naming
 
@@ -236,8 +240,8 @@ SparseVectorPropertyName
 DenseVectorPropertyName
 TextPropertyName
 
-Pros: This is more explicit, considering that there are also sparse vectors involved.
-Cons: It is inconsistent with the naming in the non-hybrid vector search.
+- Pros: This is more explicit, considering that there are also sparse vectors involved.
+- Cons: It is inconsistent with the naming in the non-hybrid vector search.
 
 ### 2. Implicit Dense naming
 
@@ -247,8 +251,8 @@ SparseVectorPropertyName
 VectorPropertyName
 TextPropertyName
 
-Pros: This is consistent with the naming in the non-hybrid vector search.
-Cons: It is internally inconsistent, i.e. we have sparse vector, but for dense it's just vector.
+- Pros: This is consistent with the naming in the non-hybrid vector search.
+- Cons: It is internally inconsistent, i.e. we have sparse vector, but for dense it's just vector.
 
 ## Keyword splitting Considered Options
 
@@ -264,7 +268,7 @@ Accept an IEnumerable of string where each value is a separate keyword.
         CancellationToken cancellationToken);
 ```
 
-Pros: Easier to use in the connector if the underlying DB requires split keywords
+- Pros: Easier to use in the connector if the underlying DB requires split keywords
 
 ### 2. Accept single string in interface
 
@@ -278,7 +282,7 @@ Accept a single string containing all the keywords.
         CancellationToken cancellationToken);
 ```
 
-Pros: Easier for a user to use, since they don't need to do any keyword splitting themselves.
+- Pros: Easier for a user to use, since they don't need to do any keyword splitting themselves.
 
 ### 3. Accept either in interface
 
@@ -297,22 +301,47 @@ Accept either option.
         CancellationToken cancellationToken);
 ```
 
-Pros: Easier for a user to use, since they can pick whichever suits them better
-Cons: We have to still convert to/from the internal presentation by either combining keywords or splitting them.
+- Pros: Easier for a user to use, since they can pick whichever suits them better
+- Cons: We have to still convert to/from the internal presentation by either combining keywords or splitting them.
 
 ### 4. Accept either in interface but throw for not supported
 
 Accept either option but throw for the one not supported by the underly DB.
 
-Pros: Easier for us to implement.
-Cons: Harder for users to use.
+- Pros: Easier for us to implement.
+- Cons: Harder for users to use.
 
 ### 5. Separate interfaces for each
 
 Create a separate interface for the Enumerable and single string options, and only implement the one that is supported by the underlying system for each db.
 
-Pros: Easier for us to implement.
-Cons: Harder for users to use.
+- Pros: Easier for us to implement.
+- Cons: Harder for users to use.
+
+## Full text search index mandatory configuration Considered Options
+
+Cosmos DB NoSQL requires a language to be specified when creating a full text search index.
+Other DBs have optional values that can be set.
+
+### 1. Pass option in via collection options
+
+This option does the minimum by just adding a language option to the collection's options class.
+This language would then be used for all full text search indexes created by the collection.
+
+- Pros: Simplest to implement
+- Cons: Doesn't allow multiple languages to be used for different fields in one record
+- Cons: Doesn't add support for all full text search options for all dbs
+
+### 2. Add extensions for RecordDefinition and data model Attributes
+
+Add a property bag to the VectorStoreRecordProperty allowing database specific metadata to be provided.
+Add an abstract base attribute that can be inherited from that allows extra metadata to be added to the data model,
+where each database has their own attributes to specificy their settings, with a method to conver the contents to
+the property bag required by VectorStoreRecordProperty.
+
+- Pros: Allows multiple languages to be used for different fields in one record
+- Pros: Allows other DBs to add their own settings via their own attributes
+- Cons: More work to implement
 
 ## Decision Outcome
 
