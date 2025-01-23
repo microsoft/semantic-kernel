@@ -21,3 +21,4 @@ class BedrockAgentModel(KernelBaseModel):
     agent_id: str = Field(..., alias="agentId", description="The unique identifier of the agent.")
     agent_name: str = Field(..., alias="agentName", description="The name of the agent.")
     agent_version: str | None = Field(None, alias="agentVersion", description="The version of the agent.")
+    foundation_model: str | None = Field(None, alias="foundationModel", description="The foundation model.")

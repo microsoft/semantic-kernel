@@ -116,7 +116,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 aws = [
-    "boto3>=1.28.57",
+    "boto3>=1.36.4",
 ]
 dapr = [
     "dapr>=1.14.0",

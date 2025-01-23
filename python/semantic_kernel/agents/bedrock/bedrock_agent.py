@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from collections.abc import AsyncIterable
 from typing import Any
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
@@ -17,8 +21,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
     Manages the interaction with Amazon Bedrock Agent Service.
     """
 
-    async def create_agent(
-        self,
+    @classmethod
+    async def create_new_agent(
+        cls,
         agent_name: str,
         foundation_model: str,
         role_arn: str,
@@ -27,25 +32,29 @@ class BedrockAgent(BedrockAgentBase, Agent):
         enable_user_input: bool | None = None,
         enable_kernel_function: bool | None = None,
         **kwargs,
-    ) -> BedrockAgentModel:
-        """Create an agent asynchronously."""
-        await self._create_agent(
+    ) -> "BedrockAgent":
+        """Create a new agent asynchronously."""
+        bedrock_agent = cls()
+        await bedrock_agent._create_agent(
             agent_name,
             foundation_model,
             role_arn,
             instruction,
             **kwargs,
         )
-        await self._prepare_agent()
+        await bedrock_agent._prepare_agent()
 
         if enable_code_interpreter:
-            await self.create_code_interpreter_action_group()
+            await bedrock_agent._create_code_interpreter_action_group()
         if enable_user_input:
-            await self.create_user_input_action_group()
+            await bedrock_agent._create_user_input_action_group()
         if enable_kernel_function:
-            await self.create_kernel_function_action_group()
+            await bedrock_agent._create_kernel_function_action_group()
 
-        return self.agent_model
+        bedrock_agent.id = bedrock_agent.agent_model.agent_id
+        bedrock_agent.name = bedrock_agent.agent_model.agent_name
+
+        return bedrock_agent
 
     @classmethod
     async def use_existing_agent(cls, agent_arn: str, agent_id: str, agent_name: str) -> "BedrockAgent":
@@ -57,8 +66,10 @@ class BedrockAgent(BedrockAgentBase, Agent):
         )
 
         bedrock_agent = cls(agent_model=bedrock_agent_model)
-        bedrock_agent_model = await bedrock_agent._get_agent()
-        bedrock_agent.agent_model = bedrock_agent_model
+        bedrock_agent.agent_model = await bedrock_agent._get_agent()
+
+        bedrock_agent.id = bedrock_agent.agent_model.agent_id
+        bedrock_agent.name = bedrock_agent.agent_model.agent_name
 
         return bedrock_agent
 
@@ -113,16 +124,27 @@ class BedrockAgent(BedrockAgentBase, Agent):
         input_text: str,
         agent_alias: str | None = None,
         **kwargs,
-    ) -> Any:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke an agent."""
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+
         response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
         completion = ""
+        events = []
+        # When streaming is disabled, the response will be a single completion event.
         for event in response.get("completion", []):
+            events.append(event)
             chunk = event["chunk"]
             completion += chunk["bytes"].decode()
 
-        return completion
+        yield ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            content=completion,
+            name=self.name,
+            inner_content=events,
+            ai_model_id=self.agent_model.foundation_model,
+        )
 
     async def invoke_stream(
         self,
@@ -130,6 +152,20 @@ class BedrockAgent(BedrockAgentBase, Agent):
         input_text: str,
         agent_alias: str | None = None,
         **kwargs,
-    ) -> Any:
+    ) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke an agent."""
-        return await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
+
+        response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+
+        # When streaming is enabled, the response will be a list of completion events.
+        for event in response.get("completion", []):
+            chunk = event["chunk"]
+            completion = chunk["bytes"].decode()
+
+            yield StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                content=completion,
+                choice_index=0,
+                inner_content=event,
+            )

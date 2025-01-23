@@ -352,7 +352,7 @@ class BedrockAgentBase(KernelBaseModel):
         input_text: str,
         agent_alias: str | None = None,
         **kwargs,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Invoke an agent."""
         agent_alias = agent_alias or self.WORKING_DRAFT_AGENT_ALIAS
 
