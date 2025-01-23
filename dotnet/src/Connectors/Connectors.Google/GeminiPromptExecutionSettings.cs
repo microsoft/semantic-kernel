@@ -27,6 +27,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private bool? _audioTimestamp;
     private string? _responseMimeType;
     private object? _responseSchema;
+    private string? _cachedContent;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -231,6 +232,22 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._responseSchema = value;
+        }
+    }
+
+    /// <summary>
+    /// Optional. The name of the cached content used as context to serve the prediction.
+    /// Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings.
+    /// Format: projects/{project}/locations/{location}/cachedContents/{cachedContent}
+    /// </summary>
+    [JsonPropertyName("cached_content")]
+    public string? CachedContent
+    {
+        get => this._cachedContent;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._cachedContent = value;
         }
     }
 
