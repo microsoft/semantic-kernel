@@ -1,23 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 import logging
 from datetime import datetime
 from random import randint
 
-import sounddevice as sd
-
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    ListenEvents,
     OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_websocket import ListenEvents
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.connectors.ai.utils.realtime_helpers import SKAudioPlayer
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.connectors.ai.utils import SKAudioPlayer
+from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)
@@ -47,7 +45,9 @@ logger.setLevel(logging.INFO)
 
 
 def check_audio_devices():
-    logger.info(sd.query_devices())
+    import sounddevice as sd
+
+    logger.debug(sd.query_devices())
 
 
 check_audio_devices()
@@ -87,25 +87,26 @@ class ReceivingStreamHandler:
                     case ListenEvents.RESPONSE_CREATED:
                         if print_transcript:
                             print("")
+                    # case ....:
+                    #     # add other event handling here
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
             print("\nThanks for talking to Mosscap!")
 
 
-weather_conditions = ["sunny", "hot", "cloudy", "raining", "freezing", "snowing"]
-
-
 @kernel_function
 def get_weather(location: str) -> str:
     """Get the weather for a location."""
-    weather = weather_conditions[randint(0, len(weather_conditions))]  # nosec
-    logger.warning(f"Getting weather for {location}: {weather}")
+    weather_conditions = ("sunny", "hot", "cloudy", "raining", "freezing", "snowing")
+    weather = weather_conditions[randint(0, len(weather_conditions) - 1)]  # nosec
+    logger.info(f"Getting weather for {location}: {weather}")
     return f"The weather in {location} is {weather}."
 
 
 @kernel_function
 def get_date_time() -> str:
     """Get the current date and time."""
+    logger.info("Getting current datetime")
     return f"The current date and time is {datetime.now().isoformat()}."
 
 
@@ -128,10 +129,6 @@ async def main() -> None:
     stream_handler = ReceivingStreamHandler(realtime_client)  # SimplePlayer(device_id=None)
 
     # Create the settings for the session
-    # the key thing to decide on is to enable the server_vad turn detection
-    # if turn is turned off (by setting turn_detection=None), you will have to send
-    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
-    # to signal the end of the user's turn and start the response.
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
     instructions = """
     You are a chat bot. Your name is Mosscap and
@@ -141,17 +138,22 @@ async def main() -> None:
     effectively, but you tend to answer with long
     flowery prose.
     """
-    # and we can add a chat history to conversation after starting it
-    chat_history = ChatHistory()
-    chat_history.add_user_message("Hi there, who are you?")
-    chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
-
+    # the key thing to decide on is to enable the server_vad turn detection
+    # if turn is turned off (by setting turn_detection=None), you will have to send
+    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
+    # to signal the end of the user's turn and start the response.
+    # manual VAD is not part of this sample
     settings = OpenAIRealtimeExecutionSettings(
         instructions=instructions,
         voice="alloy",
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
+    # and we can add a chat history to conversation after starting it
+    chat_history = ChatHistory()
+    chat_history.add_user_message("Hi there, who are you?")
+    chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+
     # the context manager calls the create_session method on the client and start listening to the audio stream
     async with realtime_client, audio_player:
         await realtime_client.update_session(
