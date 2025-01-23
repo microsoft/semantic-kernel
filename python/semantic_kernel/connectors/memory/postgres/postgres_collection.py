@@ -532,11 +532,8 @@ class PostgresCollection(
         ops_str = get_vector_distance_ops_str(distance_function)
 
         # Select all fields except all vector fields if include_vectors is False
-        skip_vector_field_names = set() if options.include_vectors else {f.name for f in vector_fields}
-        select_fields = [
-            (name, f) for (name, f) in self.data_model_definition.fields.items() if name not in skip_vector_field_names
-        ]
-        select_list = [name for (name, _) in select_fields]
+        select_list = self.data_model_definition.get_field_names(include_vector_fields=options.include_vectors)
+        select_fields = [(name, f) for (name, f) in self.data_model_definition.fields.items() if name in select_list]
 
         where_clause = self._build_where_clauses_from_filter(options.filter)
 
