@@ -30,6 +30,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install the project
         run: uv sync --all-extras --dev
       - uses: pre-commit/action@v3.0.1

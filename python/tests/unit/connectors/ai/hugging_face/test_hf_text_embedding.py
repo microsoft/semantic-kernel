@@ -10,6 +10,13 @@ from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding impor
 )
 from semantic_kernel.exceptions import ServiceResponseException
 
+try:
+    import torch
+except ImportError:
+    torch = None
+
+pytestmark = pytest.mark.skipif(not torch, reason="Pytorch is not installed.")
+
 
 def test_huggingface_text_embedding_initialization():
     model_name = "sentence-transformers/all-MiniLM-L6-v2"

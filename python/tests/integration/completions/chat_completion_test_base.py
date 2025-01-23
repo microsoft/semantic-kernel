@@ -5,6 +5,11 @@ import os
 import sys
 from typing import Annotated
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
@@ -40,11 +45,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
