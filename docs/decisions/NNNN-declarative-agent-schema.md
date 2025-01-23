@@ -22,19 +22,31 @@ Here is some pseudo code to illustrate what we need to be able to do:
 ```csharp
 Kernel kernel = ...
 string agentYaml = EmbeddedResource.Read("MyAgent.yaml");
+Agent agent = kernel.CreateAgentFromYaml(agentYaml);
+
+agent.InvokeAsync(input);
+```
+
+The above code represents the simplest case would work as follows:
+
+1. The Agent runtime is responsible for creating a `Kernel` instance which comes fully configured with all services, functions, etc.
+2. The `CreateAgentFromYaml` will create one of the built-in Agent instances (currently just `ChatCompletionAgent`).
+3. The new Agent instance is initialized with it's own `Kernel` instance configured the services and tools it requires and a default initial state.
+4. The `Agent` abstraction contains a method to allow the Agent instance to be invoked with user input.
+
+```csharp
+Kernel kernel = ...
+string agentYaml = EmbeddedResource.Read("MyAgent.yaml");
 AgentFactory agentFactory = new AggregatorAgentFactory(
-    new ChatCompletionFactory(),
+    new ChatCompletionAgentFactory(),
     new OpenAIAssistantAgentFactory(),
     new XXXAgentFactory());
-Agent agent = kernel.LoadAgentFromYaml(agentYaml);
+Agent agent = kernel.CreateAgentFromYaml(agentYaml, agentFactory, agentState);
 
-ChatHistory chatHistory = new();
-chatHistory.AddUserMessage(input);
-await foreach (ChatMessageContent content in agent.InvokeAsync(chatHistory))
-{
-    chatHistory.Add(content);
-}
+agent.InvokeAsync(input);
 ```
+
+The above example shows how different Agent types are supported and also how the initial Agent state can be specified.
 
 **Note:**
 
@@ -90,10 +102,69 @@ For Agent properties that define behaviors e.g. `HistoryReducer` the Semantic Ke
 
 ## Considered Options
 
-- Use same semantics as the [Semantic Kernel Prompt Schema](https://learn.microsoft.com/en-us/semantic-kernel/concepts/prompts/yaml-schema#sample-yaml-prompt)
-- {title of option 2}
+- Use the [Declarative agent schema 1.2 for Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/declarative-agent-manifest-1.2)
+- Extend the Declarative agent schema 1.2 for Microsoft 365 Copilot
+- Extend the [Semantic Kernel prompt schema](https://learn.microsoft.com/en-us/semantic-kernel/concepts/prompts/yaml-schema#sample-yaml-prompt)
 
-### Use Same Semantics as the Semantic Kernel Prompt Schema
+## Pros and Cons of the Options
+
+### Use the Declarative agent schema 1.2 for Microsoft 365 Copilot
+
+Semantic Kernel already has support this, see the [declarative Agent concept sample](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/DeclarativeAgents.cs).
+
+- Good, this is an existing standard adopted by the Microsoft 365 Copilot.
+- Neutral, the schema splits tools into two properties i.e. `capabilities` which includes code interpreter and `actions` which specifies an API plugin manifest.
+- Bad, because it does support different types of Agents.
+- Bad, because it doesn't provide a way to specific and configure the AI Model to associate with the Agent.
+- Bad, because it doesn't provide a way to use a Prompt Template for the Agent instructions.
+- Bad, because `actions` property is focussed on calling REST API's and cater for native and semantic functions.
+
+### Extend the Declarative agent schema 1.2 for Microsoft 365 Copilot
+
+Some of the possible extensions include:
+
+1. Agent instructions can be created using a Prompt Template.
+2. Agent Model settings can be specified including fallbacks based on the available models.
+3. Better definition of functions e.g. support for native and semantic.
+
+- Good, because {argument a}
+- Good, because {argument b}
+- Neutral, because {argument c}
+- Bad, because {argument d}
+- …
+
+### Extend the Semantic Kernel Prompt Schema
+
+- Good, because {argument a}
+- Good, because {argument b}
+- Neutral, because {argument c}
+- Bad, because {argument d}
+- …
+
+## Decision Outcome
+
+Chosen option: "{title of option 1}", because
+{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+
+<!-- This is an optional element. Feel free to remove. -->
+
+### Consequences
+
+- Good, because {positive consequence, e.g., improvement of one or more desired qualities, …}
+- Bad, because {negative consequence, e.g., compromising one or more desired qualities, …}
+- … <!-- numbers of consequences can vary -->
+
+<!-- This is an optional element. Feel free to remove. -->
+
+## Validation
+
+{describe how the implementation of/compliance with the ADR is validated. E.g., by a review or an ArchUnit test}
+
+<!-- This is an optional element. Feel free to remove. -->
+
+## More Information
+
+Below are examples showing the code first and equivalent declarative syntax fot creating different types of Agents.
 
 Consider the following use cases:
 
@@ -117,14 +188,17 @@ ChatCompletionAgent agent =
     };
 ```
 
-Declarative:
+Declarative using M365 or Semantic Kernel schema:
 
 ```yml
 name: Parrot
 instructions: Repeat the user message in the voice of a pirate and then end with a parrot sound.
 ```
 
-**Note**: `ChatCompletionAgent` could be the default agent type hence no explicit `type` property is required.
+**Note**:
+
+- Both M365 and Semantic Kernel schema would be identical
+- `ChatCompletionAgent` could be the default agent type hence no explicit `type` property is required.
 
 #### `ChatCompletionAgent` using Prompt Template
 
@@ -146,8 +220,16 @@ ChatCompletionAgent agent =
     };
 ```
 
-Declarative:
+Declarative using M365 Agent schema:
 
+```yml
+name: GenerateStory
+instructions: ${file['./GenerateStory.yaml']}
+```
+
+Agent YAML points to another file, the Declarative Agent implementation in Semantic Kernel already uses this technique to load a separate instructions file.
+
+Prompt template which is used to define the instructions.
 ```yml
 name: GenerateStory
 template: |
@@ -165,7 +247,7 @@ input_variables:
     default: 3
 ```
 
-**Note**: Only elements from the prompt template schema are needed.
+**Note**: Semantic Kernel could load this file directly.
 
 #### `ChatCompletionAgent` with Function Calling
 
@@ -186,7 +268,23 @@ KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 agent.Kernel.Plugins.Add(plugin);
 ```
 
-Declarative:
+Declarative using M365 Agent schema:
+
+```yml
+name: RestaurantHost
+instructions: Answer questions about the menu.
+description: This agent answers questions about the menu.
+actions:
+    - id: MenuPlugin
+```
+
+**Note**:
+
+- There is no way to specify `Temperature`
+- There is no way to specify the function choice behavior (e.g. could not specify required)
+- All functions in the Plugin would be used.
+
+Declarative using Semantic Kernel schema:
 
 ```yml
 name: RestaurantHost
@@ -222,7 +320,22 @@ KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 agent.Kernel.Plugins.Add(plugin);
 ```
 
-Declarative:
+Declarative using M365 Agent schema:
+
+```yml
+name: RestaurantHost
+type: openai_assistant
+instructions: Answer questions about the menu.
+description: This agent answers questions about the menu.
+metadata:
+    sksample: true
+actions:
+    - id: MenuPlugin
+```
+
+**Note**: `type` and `metadata` properties need to be added somehow
+
+Declarative using Semantic Kernel schema:
 
 ```yml
 name: RestaurantHost
@@ -230,7 +343,7 @@ type: openai_assistant
 instructions: Answer questions about the menu.
 description: This agent answers questions about the menu.
 execution_settings:
-  gpt_4o:
+  default:
     function_choice_behavior:
       type: auto
       functions:
@@ -261,7 +374,25 @@ OpenAIAssistantAgent agent =
         kernel: new Kernel());
 ```
 
-Declarative:
+Declarative using M365 Agent schema:
+
+```yml
+name: RestaurantHost
+type: openai_assistant
+instructions: Answer questions about the menu.
+description: This agent answers questions about the menu.
+metadata:
+    sksample: true
+capabilities:
+    - name: CodeInterpreter
+    - name: FileSearch
+actions:
+    - id: MenuPlugin
+```
+
+**Note**: `FileSearch` capability needs to be added
+
+Declarative using Semantic Kernel:
 
 ```yml
 name: Coder
@@ -274,59 +405,3 @@ execution_settings:
     metadata:
       sksample: true
 ```
-
-## Decision Outcome
-
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
-
-<!-- This is an optional element. Feel free to remove. -->
-
-### Consequences
-
-- Good, because {positive consequence, e.g., improvement of one or more desired qualities, …}
-- Bad, because {negative consequence, e.g., compromising one or more desired qualities, …}
-- … <!-- numbers of consequences can vary -->
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## Validation
-
-{describe how the implementation of/compliance with the ADR is validated. E.g., by a review or an ArchUnit test}
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## Pros and Cons of the Options
-
-### {title of option 1}
-
-<!-- This is an optional element. Feel free to remove. -->
-
-{example | description | pointer to more information | …}
-
-- Good, because {argument a}
-- Good, because {argument b}
-<!-- use "neutral" if the given argument weights neither for good nor bad -->
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- … <!-- numbers of pros and cons can vary -->
-
-### {title of other option}
-
-{example | description | pointer to more information | …}
-
-- Good, because {argument a}
-- Good, because {argument b}
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- …
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## More Information
-
-{You might want to provide additional evidence/confidence for the decision outcome here and/or
-document the team agreement on the decision and/or
-define when this decision when and how the decision should be realized and if/when it should be re-visited and/or
-how the decision is validated.
-Links to other decisions and resources might appear here as well.}
