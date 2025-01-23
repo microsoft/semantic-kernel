@@ -18,5 +18,5 @@ public abstract class ProcessTestFixture
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="initialEvent">An optional initial event.</param>
     /// <returns>A <see cref="Task{KernelProcessContext}"/></returns>
-    public abstract Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent);
+    public abstract Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null);
 }
