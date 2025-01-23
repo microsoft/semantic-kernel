@@ -31,13 +31,15 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
 
+    internal readonly IExternalKernelProcessMessageChannel? _externalMessageChannel;
+
     /// <summary>
     /// Represents a step in a process that is running in-process.
     /// </summary>
     /// <param name="stepInfo">An instance of <see cref="KernelProcessStepInfo"/></param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists.</param>
-    public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null)
+    public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(stepInfo, nameof(stepInfo));
@@ -58,6 +60,13 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+
+        this._externalMessageChannel = externalMessageChannel;
+    }
+
+    ~LocalStep()
+    {
+        this._externalMessageChannel?.Uninitialize().GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -231,6 +240,13 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <exception cref="KernelException"></exception>
     protected virtual async ValueTask InitializeStepAsync()
     {
+        if (this._externalMessageChannel != null)
+        {
+            // initialize external message channel
+            // TODO: in LocalRuntime need to ensure initialization only happens once
+            await this._externalMessageChannel.Initialize().ConfigureAwait(false);
+        }
+
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
@@ -242,7 +258,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this._externalMessageChannel);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed

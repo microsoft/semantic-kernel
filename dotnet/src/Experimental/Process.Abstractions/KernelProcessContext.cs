@@ -27,4 +27,6 @@ public abstract class KernelProcessContext
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
     public abstract Task<KernelProcess> GetStateAsync();
+
+    public abstract Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync();
 }

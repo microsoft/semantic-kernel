@@ -10,14 +10,14 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelProcessStepContext
 {
     private readonly IKernelProcessMessageChannel _stepMessageChannel;
-    private readonly IExternalKernelProcessMessageChannelEmitter? _externalMessageChannel;
+    private readonly IExternalKernelProcessMessageChannel? _externalMessageChannel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
     /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
-    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannelEmitter"/></param>
-    public KernelProcessStepContext(IKernelProcessMessageChannel channel, IExternalKernelProcessMessageChannelEmitter? externalMessageChannel = null)
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
+    public KernelProcessStepContext(IKernelProcessMessageChannel channel, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         this._stepMessageChannel = channel;
         this._externalMessageChannel = externalMessageChannel;
@@ -57,7 +57,7 @@ public sealed class KernelProcessStepContext
     }
 
     /// <summary>
-    /// Emit an external event to through a <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+    /// Emit an external event to through a <see cref="IExternalKernelProcessMessageChannel"/>
     /// component if connected from within the SK process
     /// </summary>
     /// <param name="externalTopicName"></param>

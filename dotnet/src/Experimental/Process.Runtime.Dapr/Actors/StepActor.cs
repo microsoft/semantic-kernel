@@ -339,7 +339,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Creating external process channel actor to be used for external messaging by some steps
-        IExternalKernelProcessMessageChannelEmitter? externalMessageChannelActor = null;
+        IExternalKernelProcessMessageChannel? externalMessageChannelActor = null;
         var scopedExternalMessageBufferId = this.ScopedActorId(new ActorId(this.Id.GetId()));
         var actor = this.ProxyFactory.CreateActorProxy<IExternalMessageBuffer>(scopedExternalMessageBufferId, nameof(ExternalMessageBufferActor));
         externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);

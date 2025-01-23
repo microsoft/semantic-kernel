@@ -101,14 +101,14 @@ internal static class StepExtensions
     /// <param name="channel">The source channel to evaluate</param>
     /// <param name="functions">A dictionary of KernelFunction instances.</param>
     /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
-    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannelEmitter"/></param>
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
     /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public static Dictionary<string, Dictionary<string, object?>?> FindInputChannels(
         this IKernelProcessMessageChannel channel,
         Dictionary<string, KernelFunction> functions,
         ILogger? logger,
-        IExternalKernelProcessMessageChannelEmitter? externalMessageChannel = null)
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         if (functions is null)
         {

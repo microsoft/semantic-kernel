@@ -67,4 +67,9 @@ public class DaprKernelProcessContext : KernelProcessContext
         var daprProcessInfo = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
         return daprProcessInfo.ToKernelProcess();
     }
+
+    public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// Class used to allow using <see cref="IExternalEventBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
 /// in SK Process shared abstractions
 /// </summary>
-public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageChannelEmitter
+public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageChannel
 {
     private readonly IExternalMessageBuffer _actor;
 
@@ -25,5 +25,17 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
     public async Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
     {
         await this._actor.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
+    }
+
+    public ValueTask Initialize()
+    {
+        // When using Dapr initialization is already taken care of by Dapr Actors
+        throw new System.NotImplementedException();
+    }
+
+    public ValueTask Uninitialize()
+    {
+        // When using Dapr uninitialization is already taken care of by Dapr Actors
+        throw new System.NotImplementedException();
     }
 }

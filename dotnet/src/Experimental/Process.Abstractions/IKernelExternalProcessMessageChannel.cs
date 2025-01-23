@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// An interface that provides a channel for emitting external messages from a step.
 /// In addition provide common methods like initialization and Uninitialization
 /// </summary>
-public interface IExternalKernelProcessMessageChannel : IExternalKernelProcessMessageChannelEmitter
+public interface IExternalKernelProcessMessageChannel
 {
     /// <summary>
     /// Initialization of the external messaging channel used
@@ -21,4 +21,12 @@ public interface IExternalKernelProcessMessageChannel : IExternalKernelProcessMe
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
     public abstract ValueTask Uninitialize();
+
+    /// <summary>
+    /// Emits the specified event from the step outside the SK process
+    /// </summary>
+    /// <param name="externalTopicEvent">name of the topic to be used externally as the event name</param>
+    /// <param name="eventData">data to be transmitted externally</param>
+    /// <returns></returns>
+    public abstract Task EmitExternalEventAsync(string externalTopicEvent, object? eventData);
 }
