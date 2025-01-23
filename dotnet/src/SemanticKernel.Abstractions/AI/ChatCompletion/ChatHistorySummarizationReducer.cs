@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Agents.History;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Reduce the chat history by summarizing message past the target message count.
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
+[Experimental("SKEXP0001")]
 public class ChatHistorySummarizationReducer : IChatHistoryReducer
 {
     /// <summary>

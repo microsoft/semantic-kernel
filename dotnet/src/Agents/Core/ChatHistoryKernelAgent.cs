@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;

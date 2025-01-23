@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Agents.History;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Truncate the chat history to the target message count.
@@ -15,6 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
+[Experimental("SKEXP0001")]
 public class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
     /// <inheritdoc/>

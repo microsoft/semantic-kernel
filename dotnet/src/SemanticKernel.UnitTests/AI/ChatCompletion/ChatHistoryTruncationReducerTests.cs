@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.Core.History;
+namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 
 /// <summary>
 /// Unit testing of <see cref="ChatHistoryTruncationReducer"/>.
