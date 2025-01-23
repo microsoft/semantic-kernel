@@ -7,7 +7,6 @@ using Azure.AI.Projects;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AzureAgent = Azure.AI.Projects.Agent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -28,7 +27,7 @@ public sealed class AzureAIAgent : KernelAgent
     /// <summary>
     /// The assistant definition.
     /// </summary>
-    public AzureAgent Definition { get; private init; }
+    public Azure.AI.Projects.Agent Definition { get; private init; }
 
     /// <summary>
     /// Defines polling behavior for run processing
@@ -219,7 +218,7 @@ public sealed class AzureAIAgent : KernelAgent
     /// <param name="clientProvider">A <see cref="AzureAIClientProvider"/> instance.</param>
     /// <param name="templateFactory">An optional template factory</param>
     public AzureAIAgent(
-        AzureAgent model,
+        Azure.AI.Projects.Agent model,
         AzureAIClientProvider clientProvider,
         IPromptTemplateFactory? templateFactory = null)
     {

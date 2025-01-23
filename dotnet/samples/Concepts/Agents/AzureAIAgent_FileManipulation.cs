@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics;
+using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAIP = Azure.AI.Projects;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace Agents;
 
@@ -18,15 +19,15 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAgent
     public async Task AnalyzeCSVFileUsingAzureAIAgentAsync()
     {
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
 
         await using Stream stream = EmbeddedResource.ReadStream("sales.csv")!;
-        AzureAIP.AgentFile fileInfo = await client.UploadFileAsync(stream, AzureAIP.AgentFilePurpose.Agents, "sales.csv");
+        AgentFile fileInfo = await client.UploadFileAsync(stream, AgentFilePurpose.Agents, "sales.csv");
 
         // Define the agent
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new AzureAIP.CodeInterpreterToolDefinition()],
+            tools: [new CodeInterpreterToolDefinition()],
             toolResources:
                 new()
                 {
@@ -68,7 +69,7 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAgent
         }
     }
 
-    private async Task DownloadContentAsync(AzureAIP.AgentsClient client, ChatMessageContent message)
+    private async Task DownloadContentAsync(AgentsClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -79,10 +80,10 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAgent
         }
     }
 
-    private async Task DownloadFileAsync(AzureAIP.AgentsClient client, string fileId, bool launchViewer = false)
+    private async Task DownloadFileAsync(AgentsClient client, string fileId, bool launchViewer = false)
     {
-        AzureAIP.AgentFile fileInfo = client.GetFile(fileId);
-        if (fileInfo.Purpose == AzureAIP.AgentFilePurpose.AgentsOutput)
+        AgentFile fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == AgentFilePurpose.AgentsOutput)
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)

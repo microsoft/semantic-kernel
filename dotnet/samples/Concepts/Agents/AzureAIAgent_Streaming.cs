@@ -4,7 +4,7 @@ using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AzureAIP = Azure.AI.Projects;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace Agents;
 
@@ -21,8 +21,8 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
 
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
@@ -49,8 +49,8 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
 
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
@@ -83,13 +83,13 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
 
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AzureAIP.AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAIP.Agent definition = await client.CreateAgentAsync(
+        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions,
-            [new AzureAIP.CodeInterpreterToolDefinition()]);
+            [new CodeInterpreterToolDefinition()]);
         AzureAIAgent agent = new(definition, clientProvider)
         {
             Kernel = new Kernel(),

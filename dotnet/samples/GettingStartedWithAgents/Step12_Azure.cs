@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAgent = Azure.AI.Projects.Agent;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -20,62 +20,13 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task DeleteAllAgentsAsync()
-    {
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        PageableList<AzureAgent>? agents = null;
-        do
-        {
-            agents = await client.GetAgentsAsync(after: agents?.LastId);
-            foreach (AzureAgent agent in agents)
-            {
-                Console.WriteLine($"# {agent.Id}");
-                await client.DeleteAgentAsync(agent.Id);
-            }
-        }
-        while (agents?.HasMore ?? false);
-    }
-
-    [Fact]
-    public async Task DeleteAllStoresAsync()
-    {
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AgentPageableListOfVectorStore? stores = null;
-        do
-        {
-            stores = await client.GetVectorStoresAsync(after: stores?.LastId);
-            foreach (VectorStore store in stores.Data)
-            {
-                Console.WriteLine($"# {store.Id}");
-                await client.DeleteVectorStoreAsync(store.Id);
-            }
-        }
-        while (stores?.HasMore ?? false);
-    }
-
-    [Fact]
-    public async Task DeleteAllFilesAsync()
-    {
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        var files = await client.GetFilesAsync();
-        foreach (AgentFile file in files.Value)
-        {
-            Console.WriteLine($"# {file.Id}");
-            await client.DeleteFileAsync(file.Id);
-        }
-    }
-
-    [Fact]
     public async Task UseSingleAssistantAgentAsync()
     {
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
 
-        AzureAgent definition = await client.CreateAgentAsync(
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             HostName,
             null,
@@ -129,7 +80,7 @@ public class Step12_Azure(ITestOutputHelper output) : BaseAgentsTest(output)
 
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAgent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
         AzureAIAgent agent = new(definition, clientProvider, new KernelPromptTemplateFactory())
         {

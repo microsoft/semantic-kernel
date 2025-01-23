@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAgent = Azure.AI.Projects.Agent;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -29,7 +29,7 @@ public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(out
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAgent definition = await client.CreateAgentAsync(
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools:
             [

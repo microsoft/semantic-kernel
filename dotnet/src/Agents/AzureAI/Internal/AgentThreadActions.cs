@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
-using AzureAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -23,18 +22,18 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 /// </summary>
 internal static class AgentThreadActions
 {
-    private static readonly HashSet<AzureAIP.RunStatus> s_pollingStatuses =
+    private static readonly HashSet<RunStatus> s_pollingStatuses =
     [
-        AzureAIP.RunStatus.Queued,
-        AzureAIP.RunStatus.InProgress,
-        AzureAIP.RunStatus.Cancelling,
+        RunStatus.Queued,
+        RunStatus.InProgress,
+        RunStatus.Cancelling,
     ];
 
-    private static readonly HashSet<AzureAIP.RunStatus> s_failureStatuses =
+    private static readonly HashSet<RunStatus> s_failureStatuses =
     [
-        AzureAIP.RunStatus.Expired,
-        AzureAIP.RunStatus.Failed,
-        AzureAIP.RunStatus.Cancelled,
+        RunStatus.Expired,
+        RunStatus.Failed,
+        RunStatus.Cancelled,
     ];
 
     /// <summary>
@@ -43,9 +42,9 @@ internal static class AgentThreadActions
     /// <param name="client">The assistant client</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public static async Task<string> CreateThreadAsync(AzureAIP.AgentsClient client, CancellationToken cancellationToken = default)
+    public static async Task<string> CreateThreadAsync(AgentsClient client, CancellationToken cancellationToken = default)
     {
-        AzureAIP.AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -58,7 +57,7 @@ internal static class AgentThreadActions
     /// <param name="message">The message to add</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
-    public static async Task CreateMessageAsync(AzureAIP.AgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
+    public static async Task CreateMessageAsync(AgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
         if (message.Items.Any(i => i is FunctionCallContent))
         {
@@ -73,7 +72,7 @@ internal static class AgentThreadActions
 
         await client.CreateMessageAsync(
             threadId,
-            role: message.Role == AuthorRole.User ? AzureAIP.MessageRole.User : AzureAIP.MessageRole.Agent,
+            role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
             content,
             attachments: AgentMessageFactory.GetAttachments(message).ToArray(),
             metadata: AgentMessageFactory.GetMetadata(message),
@@ -87,16 +86,16 @@ internal static class AgentThreadActions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AzureAIP.AgentsClient client, string threadId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
         string? lastId = null;
-        AzureAIP.PageableList<AzureAIP.ThreadMessage>? messages = null;
+        PageableList<ThreadMessage>? messages = null;
         do
         {
-            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, AzureAIP.ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
-            foreach (AzureAIP.ThreadMessage message in messages)
+            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
+            foreach (ThreadMessage message in messages)
             {
                 Console.WriteLine(message.Id);
                 lastId = message.Id;
@@ -104,7 +103,7 @@ internal static class AgentThreadActions
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                     !agentNames.TryGetValue(message.AssistantId, out assistantName))
                 {
-                    AzureAIP.Agent assistant = await client.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                    Azure.AI.Projects.Agent assistant = await client.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(assistant.Name))
                     {
                         agentNames.Add(assistant.Id, assistant.Name);
@@ -139,7 +138,7 @@ internal static class AgentThreadActions
     /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         AzureAIAgent agent,
-        AzureAIP.AgentsClient client,
+        AgentsClient client,
         string threadId,
         AzureAIInvocationOptions? invocationOptions,
         ILogger logger,
@@ -149,11 +148,11 @@ internal static class AgentThreadActions
     {
         logger.LogAzureAIAgentCreatingRun(nameof(InvokeAsync), threadId);
 
-        AzureAIP.ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        AzureAIP.ThreadRun run = await client.CreateAsync(threadId, agent, instructions, tools, invocationOptions, cancellationToken).ConfigureAwait(false);
+        ThreadRun run = await client.CreateAsync(threadId, agent, instructions, tools, invocationOptions, cancellationToken).ConfigureAwait(false);
 
         logger.LogAzureAIAgentCreatedRun(nameof(InvokeAsync), run.Id, threadId);
 
@@ -178,10 +177,10 @@ internal static class AgentThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            AzureAIP.RunStep[] steps = await client.GetStepsAsync(run, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
-            if (run.Status == AzureAIP.RunStatus.RequiresAction)
+            if (run.Status == RunStatus.RequiresAction)
             {
                 logger.LogAzureAIAgentProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
 
@@ -210,7 +209,7 @@ internal static class AgentThreadActions
                     }
 
                     // Process tool output
-                    AzureAIP.ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
+                    ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
 
                     await client.SubmitToolOutputsToRunAsync(run, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
@@ -221,30 +220,30 @@ internal static class AgentThreadActions
             // Enumerate completed messages
             logger.LogAzureAIAgentProcessingRunMessages(nameof(InvokeAsync), run.Id, threadId);
 
-            IEnumerable<AzureAIP.RunStep> completedStepsToProcess =
+            IEnumerable<RunStep> completedStepsToProcess =
                 steps
                     .Where(s => s.CompletedAt.HasValue && !processedStepIds.Contains(s.Id))
                     .OrderBy(s => s.CreatedAt);
 
             int messageCount = 0;
-            foreach (AzureAIP.RunStep completedStep in completedStepsToProcess)
+            foreach (RunStep completedStep in completedStepsToProcess)
             {
-                if (completedStep.Type == AzureAIP.RunStepType.ToolCalls)
+                if (completedStep.Type == RunStepType.ToolCalls)
                 {
-                    AzureAIP.RunStepToolCallDetails toolDetails = (AzureAIP.RunStepToolCallDetails)completedStep.StepDetails;
-                    foreach (AzureAIP.RunStepToolCall toolCall in toolDetails.ToolCalls)
+                    RunStepToolCallDetails toolDetails = (RunStepToolCallDetails)completedStep.StepDetails;
+                    foreach (RunStepToolCall toolCall in toolDetails.ToolCalls)
                     {
                         bool isVisible = false;
                         ChatMessageContent? content = null;
 
                         // Process code-interpreter content
-                        if (toolCall is AzureAIP.RunStepCodeInterpreterToolCall codeTool)
+                        if (toolCall is RunStepCodeInterpreterToolCall codeTool)
                         {
                             content = GenerateCodeInterpreterContent(agent.GetName(), codeTool.Input, completedStep);
                             isVisible = true;
                         }
                         // Process function result content
-                        else if (toolCall is AzureAIP.RunStepFunctionToolCall functionTool)
+                        else if (toolCall is RunStepFunctionToolCall functionTool)
                         {
                             FunctionResultContent functionStep = functionSteps[functionTool.Id]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), [functionStep], completedStep);
@@ -258,11 +257,11 @@ internal static class AgentThreadActions
                         }
                     }
                 }
-                else if (completedStep.Type == AzureAIP.RunStepType.MessageCreation)
+                else if (completedStep.Type == RunStepType.MessageCreation)
                 {
                     // Retrieve the message
-                    AzureAIP.RunStepMessageCreationDetails messageDetails = (AzureAIP.RunStepMessageCreationDetails)completedStep.StepDetails;
-                    AzureAIP.ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageDetails.MessageCreation.MessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+                    RunStepMessageCreationDetails messageDetails = (RunStepMessageCreationDetails)completedStep.StepDetails;
+                    ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageDetails.MessageCreation.MessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message is not null)
                     {
@@ -282,7 +281,7 @@ internal static class AgentThreadActions
 
             logger.LogAzureAIAgentProcessedRunMessages(nameof(InvokeAsync), messageCount, run.Id, threadId);
         }
-        while (AzureAIP.RunStatus.Completed != run.Status);
+        while (RunStatus.Completed != run.Status);
 
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run.Id, threadId);
 
@@ -363,7 +362,7 @@ internal static class AgentThreadActions
     /// </remarks>
     public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         AzureAIAgent agent,
-        AzureAIP.AgentsClient client,
+        AgentsClient client,
         string threadId,
         IList<ChatMessageContent>? messages,
         AzureAIInvocationOptions? invocationOptions,
@@ -374,21 +373,21 @@ internal static class AgentThreadActions
     {
         logger.LogAzureAIAgentCreatingRun(nameof(InvokeAsync), threadId);
 
-        AzureAIP.ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent[]> stepFunctionResults = [];
-        List<AzureAIP.RunStep> stepsToProcess = [];
+        List<RunStep> stepsToProcess = [];
 
         FunctionCallsProcessor functionProcessor = new(logger);
         // This matches current behavior.  Will be configurable upon integrating with `FunctionChoice` (#6795/#5200)
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true };
 
-        AzureAIP.ThreadRun? run = null;
-        IAsyncEnumerable<AzureAIP.StreamingUpdate> asyncUpdates = client.CreateStreamingAsync(threadId, agent, instructions, tools, invocationOptions, cancellationToken);
+        ThreadRun? run = null;
+        IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateStreamingAsync(threadId, agent, instructions, tools, invocationOptions, cancellationToken);
         do
         {
             // Check for cancellation
@@ -396,22 +395,22 @@ internal static class AgentThreadActions
 
             stepsToProcess.Clear();
 
-            await foreach (AzureAIP.StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
+            await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
             {
-                if (update is AzureAIP.RunUpdate runUpdate)
+                if (update is RunUpdate runUpdate)
                 {
                     run = runUpdate.Value;
                 }
-                else if (update is AzureAIP.MessageContentUpdate contentUpdate)
+                else if (update is MessageContentUpdate contentUpdate)
                 {
                     switch (contentUpdate.UpdateKind)
                     {
-                        case AzureAIP.StreamingUpdateReason.MessageUpdated:
+                        case StreamingUpdateReason.MessageUpdated:
                             yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
                             break;
                     }
                 }
-                else if (update is AzureAIP.RunStepDetailsUpdate detailsUpdate)
+                else if (update is RunStepDetailsUpdate detailsUpdate)
                 {
                     StreamingChatMessageContent? toolContent = GenerateStreamingCodeInterpreterContent(agent.GetName(), detailsUpdate);
                     if (toolContent != null)
@@ -428,11 +427,11 @@ internal static class AgentThreadActions
                             };
                     }
                 }
-                else if (update is AzureAIP.RunStepUpdate stepUpdate)
+                else if (update is RunStepUpdate stepUpdate)
                 {
                     switch (stepUpdate.UpdateKind)
                     {
-                        case AzureAIP.StreamingUpdateReason.RunStepCompleted:
+                        case StreamingUpdateReason.RunStepCompleted:
                             stepsToProcess.Add(stepUpdate.Value);
                             break;
                         default:
@@ -452,19 +451,19 @@ internal static class AgentThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            if (run.Status == AzureAIP.RunStatus.RequiresAction)
+            if (run.Status == RunStatus.RequiresAction)
             {
-                AzureAIP.RunStep[] activeSteps =
+                RunStep[] activeSteps =
                     await client.GetStepsAsync(run, cancellationToken)
-                    .Where(step => step.Status == AzureAIP.RunStepStatus.InProgress)
+                    .Where(step => step.Status == RunStepStatus.InProgress)
                     .ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                 // Capture map between the tool call and its associated step
                 Dictionary<string, string> toolMap = [];
-                foreach (AzureAIP.RunStep step in activeSteps)
+                foreach (RunStep step in activeSteps)
                 {
-                    AzureAIP.RunStepToolCallDetails toolCallDetails = (AzureAIP.RunStepToolCallDetails)step.StepDetails;
-                    foreach (AzureAIP.RunStepToolCall stepDetails in toolCallDetails.ToolCalls)
+                    RunStepToolCallDetails toolCallDetails = (RunStepToolCallDetails)step.StepDetails;
+                    foreach (RunStepToolCall stepDetails in toolCallDetails.ToolCalls)
                     {
                         toolMap[stepDetails.Id] = step.Id;
                     }
@@ -488,10 +487,10 @@ internal static class AgentThreadActions
                             cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
                     // Process tool output
-                    AzureAIP.ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
+                    ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
                     asyncUpdates = client.SubmitToolOutputsToStreamAsync(run, toolOutputs, cancellationToken);
 
-                    foreach (AzureAIP.RunStep step in activeSteps)
+                    foreach (RunStep step in activeSteps)
                     {
                         stepFunctionResults.Add(step.Id, functionResults.Where(result => step.Id == toolMap[result.CallId!]).ToArray());
                     }
@@ -502,11 +501,11 @@ internal static class AgentThreadActions
             {
                 logger.LogAzureAIAgentProcessingRunMessages(nameof(InvokeAsync), run!.Id, threadId);
 
-                foreach (AzureAIP.RunStep step in stepsToProcess)
+                foreach (RunStep step in stepsToProcess)
                 {
-                    if (step.StepDetails is AzureAIP.RunStepMessageCreationDetails messageDetails)
+                    if (step.StepDetails is RunStepMessageCreationDetails messageDetails)
                     {
-                        AzureAIP.ThreadMessage? message =
+                        ThreadMessage? message =
                             await RetrieveMessageAsync(
                                 client,
                                 threadId,
@@ -520,18 +519,18 @@ internal static class AgentThreadActions
                             messages?.Add(content);
                         }
                     }
-                    else if (step.StepDetails is AzureAIP.RunStepToolCallDetails toolDetails)
+                    else if (step.StepDetails is RunStepToolCallDetails toolDetails)
                     {
-                        foreach (AzureAIP.RunStepToolCall toolCall in toolDetails.ToolCalls)
+                        foreach (RunStepToolCall toolCall in toolDetails.ToolCalls)
                         {
-                            if (toolCall is AzureAIP.RunStepFunctionToolCall functionCall)
+                            if (toolCall is RunStepFunctionToolCall functionCall)
                             {
                                 messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
                                 stepFunctionResults.Remove(step.Id);
                                 break;
                             }
 
-                            if (toolCall is AzureAIP.RunStepCodeInterpreterToolCall codeCall)
+                            if (toolCall is RunStepCodeInterpreterToolCall codeCall)
                             {
                                 messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), codeCall.Input, step));
                             }
@@ -542,29 +541,29 @@ internal static class AgentThreadActions
                 logger.LogAzureAIAgentProcessedRunMessages(nameof(InvokeAsync), stepsToProcess.Count, run!.Id, threadId);
             }
         }
-        while (run?.Status != AzureAIP.RunStatus.Completed);
+        while (run?.Status != RunStatus.Completed);
 
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
     }
 
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, AzureAIP.ThreadMessage message, AzureAIP.RunStep? completedStep = null)
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
     {
         AuthorRole role = new(message.Role.ToString());
 
         Dictionary<string, object?>? metadata =
             new()
             {
-                { nameof(AzureAIP.ThreadMessage.CreatedAt), message.CreatedAt },
-                { nameof(AzureAIP.ThreadMessage.AssistantId), message.AssistantId },
-                { nameof(AzureAIP.ThreadMessage.ThreadId), message.ThreadId },
-                { nameof(AzureAIP.ThreadMessage.RunId), message.RunId },
-                { nameof(AzureAIP.MessageContentUpdate.MessageId), message.Id },
+                { nameof(ThreadMessage.CreatedAt), message.CreatedAt },
+                { nameof(ThreadMessage.AssistantId), message.AssistantId },
+                { nameof(ThreadMessage.ThreadId), message.ThreadId },
+                { nameof(ThreadMessage.RunId), message.RunId },
+                { nameof(MessageContentUpdate.MessageId), message.Id },
             };
 
         if (completedStep != null)
         {
-            metadata[nameof(AzureAIP.RunStepDetailsUpdate.StepId)] = completedStep.Id;
-            metadata[nameof(AzureAIP.RunStep.Usage)] = completedStep.Usage;
+            metadata[nameof(RunStepDetailsUpdate.StepId)] = completedStep.Id;
+            metadata[nameof(RunStep.Usage)] = completedStep.Usage;
         }
 
         ChatMessageContent content =
@@ -574,20 +573,20 @@ internal static class AgentThreadActions
                 Metadata = metadata,
             };
 
-        foreach (AzureAIP.MessageContent itemContent in message.ContentItems)
+        foreach (MessageContent itemContent in message.ContentItems)
         {
             // Process text content
-            if (itemContent is AzureAIP.MessageTextContent textContent)
+            if (itemContent is MessageTextContent textContent)
             {
                 content.Items.Add(new TextContent(textContent.Text));
 
-                foreach (AzureAIP.MessageTextAnnotation annotation in textContent.Annotations)
+                foreach (MessageTextAnnotation annotation in textContent.Annotations)
                 {
                     content.Items.Add(GenerateAnnotationContent(annotation));
                 }
             }
             // Process image content
-            else if (itemContent is AzureAIP.MessageImageFileContent imageContent)
+            else if (itemContent is MessageImageFileContent imageContent)
             {
                 content.Items.Add(new FileReferenceContent(imageContent.FileId));
             }
@@ -596,7 +595,7 @@ internal static class AgentThreadActions
         return content;
     }
 
-    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, AzureAIP.MessageContentUpdate update)
+    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
     {
         StreamingChatMessageContent content =
             new(AuthorRole.Assistant, content: null)
@@ -620,7 +619,7 @@ internal static class AgentThreadActions
             content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
         }
 
-        if (update.Role.HasValue && update.Role.Value != AzureAIP.MessageRole.User)
+        if (update.Role.HasValue && update.Role.Value != MessageRole.User)
         {
             content.Role = new(update.Role.Value.ToString() ?? MessageRole.Agent.ToString());
         }
@@ -628,7 +627,7 @@ internal static class AgentThreadActions
         return content;
     }
 
-    private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, AzureAIP.RunStepDetailsUpdate update)
+    private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, RunStepDetailsUpdate update)
     {
         StreamingChatMessageContent content =
             new(AuthorRole.Assistant, content: null)
@@ -645,9 +644,9 @@ internal static class AgentThreadActions
 
         if ((update.CodeInterpreterOutputs?.Count ?? 0) > 0)
         {
-            foreach (AzureAIP.RunStepDeltaCodeInterpreterOutput output in update.CodeInterpreterOutputs!)
+            foreach (RunStepDeltaCodeInterpreterOutput output in update.CodeInterpreterOutputs!)
             {
-                if (output is AzureAIP.RunStepDeltaCodeInterpreterImageOutput imageOutput)
+                if (output is RunStepDeltaCodeInterpreterImageOutput imageOutput)
                 {
                     content.Items.Add(new StreamingFileReferenceContent(imageOutput.Image.FileId));
                 }
@@ -657,15 +656,15 @@ internal static class AgentThreadActions
         return content.Items.Count > 0 ? content : null;
     }
 
-    private static AnnotationContent GenerateAnnotationContent(AzureAIP.MessageTextAnnotation annotation)
+    private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
         string? fileId = null;
 
-        if (annotation is AzureAIP.MessageTextFileCitationAnnotation fileCitationAnnotation)
+        if (annotation is MessageTextFileCitationAnnotation fileCitationAnnotation)
         {
             fileId = fileCitationAnnotation.FileId;
         }
-        else if (annotation is AzureAIP.MessageTextFilePathAnnotation filePathAnnotation)
+        else if (annotation is MessageTextFilePathAnnotation filePathAnnotation)
         {
             fileId = filePathAnnotation.FileId;
         }
@@ -678,7 +677,7 @@ internal static class AgentThreadActions
             };
     }
 
-    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(AzureAIP.TextAnnotationUpdate annotation)
+    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
         string? fileId = null;
 
@@ -700,7 +699,7 @@ internal static class AgentThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string pythonCode, AzureAIP.RunStep completedStep)
+    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string pythonCode, RunStep completedStep)
     {
         Dictionary<string, object?> metadata = GenerateToolCallMetadata(completedStep);
         metadata[AzureAIAgent.CodeInterpreterMetadataKey] = true;
@@ -717,14 +716,14 @@ internal static class AgentThreadActions
             };
     }
 
-    private static IEnumerable<FunctionCallContent> ParseFunctionStep(AzureAIAgent agent, AzureAIP.RunStep step)
+    private static IEnumerable<FunctionCallContent> ParseFunctionStep(AzureAIAgent agent, RunStep step)
     {
-        if (step.Status == AzureAIP.RunStepStatus.InProgress && step.Type == AzureAIP.RunStepType.ToolCalls)
+        if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
         {
-            AzureAIP.RunStepToolCallDetails toolCallDetails = (AzureAIP.RunStepToolCallDetails)step.StepDetails;
-            foreach (AzureAIP.RunStepToolCall toolCall in toolCallDetails.ToolCalls)
+            RunStepToolCallDetails toolCallDetails = (RunStepToolCallDetails)step.StepDetails;
+            foreach (RunStepToolCall toolCall in toolCallDetails.ToolCalls)
             {
-                if (toolCall is AzureAIP.RunStepFunctionToolCall functionCall)
+                if (toolCall is RunStepFunctionToolCall functionCall)
                 {
                     (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(functionCall.Name, functionCall.Arguments);
 
@@ -765,7 +764,7 @@ internal static class AgentThreadActions
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, IEnumerable<FunctionResultContent> functionResults, AzureAIP.RunStep completedStep)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, IEnumerable<FunctionResultContent> functionResults, RunStep completedStep)
     {
         ChatMessageContent functionResultContent = new(AuthorRole.Tool, content: null)
         {
@@ -786,22 +785,22 @@ internal static class AgentThreadActions
         return functionResultContent;
     }
 
-    private static Dictionary<string, object?> GenerateToolCallMetadata(AzureAIP.RunStep completedStep)
+    private static Dictionary<string, object?> GenerateToolCallMetadata(RunStep completedStep)
     {
         return new()
             {
-                { nameof(AzureAIP.RunStep.CreatedAt), completedStep.CreatedAt },
-                { nameof(AzureAIP.RunStep.AssistantId), completedStep.AssistantId },
-                { nameof(AzureAIP.RunStep.ThreadId), completedStep.ThreadId },
-                { nameof(AzureAIP.RunStep.RunId), completedStep.RunId },
-                { nameof(AzureAIP.RunStepDetailsUpdate.StepId), completedStep.Id },
-                { nameof(AzureAIP.RunStep.Usage), completedStep.Usage },
+                { nameof(RunStep.CreatedAt), completedStep.CreatedAt },
+                { nameof(RunStep.AssistantId), completedStep.AssistantId },
+                { nameof(RunStep.ThreadId), completedStep.ThreadId },
+                { nameof(RunStep.RunId), completedStep.RunId },
+                { nameof(RunStepDetailsUpdate.StepId), completedStep.Id },
+                { nameof(RunStep.Usage), completedStep.Usage },
             };
     }
 
-    private static AzureAIP.ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
     {
-        AzureAIP.ToolOutput[] toolOutputs = new AzureAIP.ToolOutput[functionResults.Length];
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
 
         for (int index = 0; index < functionResults.Length; ++index)
         {
@@ -814,15 +813,15 @@ internal static class AgentThreadActions
                 textResult = JsonSerializer.Serialize(resultValue);
             }
 
-            toolOutputs[index] = new AzureAIP.ToolOutput(functionResult.CallId, textResult!);
+            toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);
         }
 
         return toolOutputs;
     }
 
-    private static async Task<AzureAIP.ThreadMessage?> RetrieveMessageAsync(AzureAIP.AgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
+    private static async Task<ThreadMessage?> RetrieveMessageAsync(AgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
     {
-        AzureAIP.ThreadMessage? message = null;
+        ThreadMessage? message = null;
 
         bool retry = false;
         int count = 0;

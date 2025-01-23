@@ -3,7 +3,7 @@ using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AzureAgent = Azure.AI.Projects.Agent;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -18,7 +18,7 @@ public class Step14_AzureTool_CodeInterpreter(ITestOutputHelper output) : BaseAg
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAgent definition = await client.CreateAgentAsync(
+        Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()]);
         AzureAIAgent agent = new(definition, clientProvider)

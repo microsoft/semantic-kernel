@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AzureAgent = Azure.AI.Projects.Agent;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -42,13 +42,13 @@ public class Step13_Azure_Chat(ITestOutputHelper output) : BaseAgentsTest(output
         // Define the agents
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AzureAgent reviewerModel = await client.CreateAgentAsync(
+        Agent reviewerModel = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             ReviewerName,
             null,
             ReviewerInstructions);
         AzureAIAgent agentReviewer = new(reviewerModel, clientProvider);
-        AzureAgent writerModel = await client.CreateAgentAsync(
+        Agent writerModel = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             CopyWriterName,
             null,

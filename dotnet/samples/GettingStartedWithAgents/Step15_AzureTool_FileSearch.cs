@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using AzureAgent = Azure.AI.Projects.Agent;
+using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
@@ -25,7 +25,7 @@ public class Step15_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsT
         VectorStore fileStore = await client.CreateVectorStoreAsync([fileInfo.Id], "step16-test");
         //await client.CreateVectorStoreFileAsync(fileStore.Id, fileInfo.Id);
         //Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
-        AzureAgent agentModel = await client.CreateAgentAsync(
+        Agent agentModel = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new FileSearchToolDefinition()],
             toolResources: new()
