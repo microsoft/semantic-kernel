@@ -64,11 +64,6 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._externalMessageChannel = externalMessageChannel;
     }
 
-    ~LocalStep()
-    {
-        this._externalMessageChannel?.Uninitialize().GetAwaiter().GetResult();
-    }
-
     /// <summary>
     /// The Id of the parent process if one exists.
     /// </summary>

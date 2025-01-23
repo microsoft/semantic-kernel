@@ -74,7 +74,7 @@ public class ProcessTestController : Controller
     }
 
     /// <summary>
-    /// Retrieves information about a process.
+    /// Retrieves current state of the MockCloudEventClient used in the running process
     /// </summary>
     /// <param name="processId">The Id of the process.</param>
     /// <param name="cloudClient">Mock Cloud client ingested via dependency injection</param>
