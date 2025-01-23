@@ -143,7 +143,7 @@ class HistoryReducerExample:
 
             # The index is incremented by 2 because the agent is told to:
             # "Add one to the latest user number and spell it in Spanish without explanation."
-            # The agent sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
+            # The user sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
             index += 2
             print(f"@ Message Count: {len(chat_history.messages)}\n")
 
@@ -176,7 +176,7 @@ class HistoryReducerExample:
 
             # The index is incremented by 2 because the agent is told to:
             # "Add one to the latest user number and spell it in Spanish without explanation."
-            # The agent sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
+            # The user sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
             index += 2
 
             # Retrieve chat messages in descending order (newest first)

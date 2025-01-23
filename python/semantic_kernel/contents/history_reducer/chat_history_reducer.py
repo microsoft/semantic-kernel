@@ -3,8 +3,6 @@
 import sys
 from abc import ABC, abstractmethod
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
@@ -13,6 +11,7 @@ else:
 from pydantic import Field
 
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class

@@ -49,8 +49,6 @@ flowery prose.
 # Create a chat history object with the system message.
 chat_history = ChatHistory(system_message=system_message)
 
-chat_history.add_developer_message("This is a developer message.")
-
 # Create a kernel and register a prompt function.
 # The prompt here contains two variables: chat_history and user_input.
 # They will be replaced by the kernel with the actual values when the function is invoked.
