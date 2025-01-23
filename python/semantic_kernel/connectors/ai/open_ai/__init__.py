@@ -45,6 +45,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
+from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 
@@ -68,6 +69,7 @@ __all__ = [
     "DataSourceFieldsMapping",
     "DataSourceFieldsMapping",
     "ExtraBody",
+    "ListenEvents",
     "OpenAIAudioToText",
     "OpenAIAudioToTextExecutionSettings",
     "OpenAIChatCompletion",
@@ -84,5 +86,6 @@ __all__ = [
     "OpenAITextToAudioExecutionSettings",
     "OpenAITextToImage",
     "OpenAITextToImageExecutionSettings",
+    "SendEvents",
     "TurnDetection",
 ]
