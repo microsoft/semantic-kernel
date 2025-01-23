@@ -9,6 +9,7 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from opentelemetry.trace import Span, Tracer, get_tracer, use_span
+from pydantic import Field
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
@@ -36,7 +37,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # Connectors that support function calling should set this to True
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
-    instruction_role: str = "system"
+    instruction_role: str = Field(default_factory=lambda: "system", description="The role for instructions.")
 
     # region Internal methods to be implemented by the derived classes
 

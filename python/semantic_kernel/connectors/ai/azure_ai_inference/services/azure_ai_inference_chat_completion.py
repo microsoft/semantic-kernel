@@ -20,7 +20,6 @@ from azure.ai.inference.models import (
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
 )
-from pydantic import Field
 
 from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import (
@@ -57,9 +56,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     """Azure AI Inference Chat Completion Service."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
-    instruction_role: str | None = Field(
-        default_factory=lambda: "system", description="The role to use for 'instruction' messages."
-    )
 
     def __init__(
         self,

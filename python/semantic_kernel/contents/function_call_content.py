@@ -221,7 +221,7 @@ class FunctionCallContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function call content."""
-        args_hashable = frozenset(self.arguments.items()) if self.arguments else None
+        args_hashable = frozenset(self.arguments.items()) if isinstance(self.arguments, Mapping) else None
         return hash((
             self.tag,
             self.id,

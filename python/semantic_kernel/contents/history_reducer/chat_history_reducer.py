@@ -2,7 +2,6 @@
 
 import sys
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -14,9 +13,6 @@ else:
 from pydantic import Field
 
 from semantic_kernel.contents.chat_history import ChatHistory
-
-if TYPE_CHECKING:
-    pass
 
 
 @experimental_class
