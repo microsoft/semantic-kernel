@@ -276,6 +276,7 @@ class BedrockAgentBase(KernelBaseModel):
                 partial(
                     self.bedrock_client.create_agent_action_group,
                     agentId=self.agent_model.agent_id,
+                    agentVersion=self.agent_model.agent_version or "DRAFT",
                     actionGroupName=f"{self.agent_model.agent_name}_kernel_function",
                     actionGroupState="ENABLED",
                     actionGroupExecutor={"customControl": "RETURN_CONTROL"},

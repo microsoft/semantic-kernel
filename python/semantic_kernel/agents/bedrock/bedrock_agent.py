@@ -34,30 +34,27 @@ class BedrockAgent(BedrockAgentBase, Agent):
         **kwargs,
     ) -> "BedrockAgent":
         """Create a new agent asynchronously."""
-        bedrock_agent = cls()
-        await bedrock_agent._create_agent(
-            agent_name,
+        agent_base_class_kwargs = {}
+        if "kernel" in kwargs:
+            agent_base_class_kwargs["kernel"] = kwargs.pop("kernel")
+        if "function_choice_behavior" in kwargs:
+            agent_base_class_kwargs["function_choice_behavior"] = kwargs.pop("function_choice_behavior")
+
+        bedrock_agent = cls(name=agent_name, instructions=instruction, **agent_base_class_kwargs)
+
+        await bedrock_agent.create_agent(
             foundation_model,
             role_arn,
-            instruction,
+            enable_code_interpreter,
+            enable_user_input,
+            enable_kernel_function,
             **kwargs,
         )
-        await bedrock_agent._prepare_agent()
-
-        if enable_code_interpreter:
-            await bedrock_agent._create_code_interpreter_action_group()
-        if enable_user_input:
-            await bedrock_agent._create_user_input_action_group()
-        if enable_kernel_function:
-            await bedrock_agent._create_kernel_function_action_group()
-
-        bedrock_agent.id = bedrock_agent.agent_model.agent_id
-        bedrock_agent.name = bedrock_agent.agent_model.agent_name
 
         return bedrock_agent
 
     @classmethod
-    async def use_existing_agent(cls, agent_arn: str, agent_id: str, agent_name: str) -> "BedrockAgent":
+    async def use_existing_agent(cls, agent_arn: str, agent_id: str, agent_name: str, **kwargs) -> "BedrockAgent":
         """Use an existing agent asynchronously."""
         bedrock_agent_model = BedrockAgentModel(
             agent_arn=agent_arn,
@@ -65,13 +62,47 @@ class BedrockAgent(BedrockAgentBase, Agent):
             agent_name=agent_name,
         )
 
-        bedrock_agent = cls(agent_model=bedrock_agent_model)
+        agent_base_class_kwargs = {}
+        if "kernel" in kwargs:
+            agent_base_class_kwargs["kernel"] = kwargs.pop("kernel")
+        if "function_choice_behavior" in kwargs:
+            agent_base_class_kwargs["function_choice_behavior"] = kwargs.pop("function_choice_behavior")
+
+        bedrock_agent = cls(agent_model=bedrock_agent_model, **agent_base_class_kwargs)
         bedrock_agent.agent_model = await bedrock_agent._get_agent()
 
         bedrock_agent.id = bedrock_agent.agent_model.agent_id
         bedrock_agent.name = bedrock_agent.agent_model.agent_name
 
         return bedrock_agent
+
+    async def create_agent(
+        self,
+        foundation_model: str,
+        role_arn: str,
+        enable_code_interpreter: bool | None = None,
+        enable_user_input: bool | None = None,
+        enable_kernel_function: bool | None = None,
+        **kwargs,
+    ) -> None:
+        """Create an agent asynchronously."""
+        await self._create_agent(
+            self.name,
+            foundation_model,
+            role_arn,
+            self.instructions,
+            **kwargs,
+        )
+        await self._prepare_agent()
+
+        if enable_code_interpreter:
+            await self._create_code_interpreter_action_group()
+        if enable_user_input:
+            await self._create_user_input_action_group()
+        if enable_kernel_function:
+            await self._create_kernel_function_action_group()
+
+        self.id = self.agent_model.agent_id
 
     async def update_agent(
         self,

@@ -7,8 +7,12 @@ import uuid
 import dotenv
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.kernel import Kernel
 
 dotenv.load_dotenv()
+
 
 # By default, this sample will create a new agent.
 # If you want to use an existing agent, set this to False and fill in required parameters.
@@ -20,7 +24,7 @@ STREAMING = False
 
 # Common parameters whether creating a new agent or using an existing agent
 AGENT_ROLE_AMAZON_RESOURCE_NAME = os.getenv("AGENT_ROLE_AMAZON_RESOURCE_NAME")
-AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-sample"
+AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-kernel-function-sample"
 
 # If creating a new agent, you need to specify the following:
 FOUNDATION_MODEL = os.getenv("FOUNDATION_MODEL")
@@ -30,30 +34,47 @@ INSTRUCTION = "You are a fridenly assistant. You help people find information."
 AGENT_ID = ""
 
 
-async def use_new_agent():
+def get_kernel() -> Kernel:
+    kernel = Kernel()
+    kernel.add_plugin(TimePlugin(), plugin_name="time")
+
+    return kernel
+
+
+async def use_new_agent(kernel: Kernel):
     """Create a new bedrock agent."""
     return await BedrockAgent.create_new_agent(
         agent_name=AGENT_NAME,
         foundation_model=FOUNDATION_MODEL,
         role_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
         instruction=INSTRUCTION,
+        kernel=kernel,
+        function_choice_behavior=FunctionChoiceBehavior(),
     )
 
 
-async def use_existing_agent():
+async def use_existing_agent(kernel: Kernel):
     """Use an existing bedrock agent that has been created and prepared."""
     return await BedrockAgent.use_existing_agent(
         agent_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
         agent_id=AGENT_ID,
         agent_name=AGENT_NAME,
+        kernel=kernel,
+        function_choice_behavior=FunctionChoiceBehavior(),
     )
 
 
 async def main():
+    # Create a kernel
+    kernel = get_kernel()
+
     if CREATE_NEW_AGENT:
-        bedrock_agent = await use_new_agent()
+        bedrock_agent = await use_new_agent(kernel)
     else:
-        bedrock_agent = await use_existing_agent()
+        bedrock_agent = await use_existing_agent(kernel)
+
+    # Create a kernel function action group on the Bedrock agent service.
+    await bedrock_agent.create_kernel_function_action_group()
 
     # Use an uiud as the session id
     new_session_id = str(uuid.uuid4())
@@ -63,13 +84,13 @@ async def main():
         print("Response: ")
         async for response in bedrock_agent.invoke_stream(
             session_id=new_session_id,
-            input_text="Why is the sky blue?",
+            input_text="What date is it today?",
         ):
             print(response, end="")
     else:
         async for response in bedrock_agent.invoke(
             session_id=new_session_id,
-            input_text="Why is the sky blue?",
+            input_text="What date is it today?",
         ):
             print(f"Response:\n{response}")
 
