@@ -36,11 +36,12 @@ def vectorstoremodel(
         cls: The class to be decorated.
 
     Raises:
-        DataModelException: If the class does not implement the serialize and deserialize methods.
-        DataModelException: If there are no fields with a VectorStoreRecordField annotation.
-        DataModelException: If there are fields with no name.
-        DataModelException: If there is no key field.
-        DataModelException: If there is a field with an embedding property name but no corresponding vector field.
+        VectorStoreModelException: If the class does not implement the serialize and deserialize methods.
+        VectorStoreModelException: If there are no fields with a VectorStoreRecordField annotation.
+        VectorStoreModelException: If there are fields with no name.
+        VectorStoreModelException: If there is no key field.
+        VectorStoreModelException: If there is a field with an embedding property name but no corresponding field.
+        VectorStoreModelException: If there is a ndarray field without a serialize or deserialize function.
     """
 
     def wrap(cls: Any):
@@ -74,16 +75,20 @@ def _parse_signature_to_definition(parameters: MappingProxyType[str, Parameter])
 
 
 def _parse_parameter_to_field(field: Parameter) -> VectorStoreRecordField | None:
-    for field_annotation in getattr(field.annotation, "__metadata__", []):
-        if isinstance(field_annotation, VectorStoreRecordField):
-            return _parse_vector_store_record_field_instance(field_annotation, field)
-        if isinstance(field_annotation, type(VectorStoreRecordField)):
-            return _parse_vector_store_record_field_class(field_annotation, field)
-
-    # This means there are no annotations or non VectorStoreRecordField annotations
+    # first check if there are any annotations
+    if field.annotation is not _empty and hasattr(field.annotation, "__metadata__"):
+        for field_annotation in field.annotation.__metadata__:
+            # the first annotations of the right type found is used.
+            if isinstance(field_annotation, VectorStoreRecordField):
+                return _parse_vector_store_record_field_instance(field_annotation, field)
+            if isinstance(field_annotation, type(VectorStoreRecordField)):
+                return _parse_vector_store_record_field_class(field_annotation, field)
+    # This means there are no annotations or that all annotations are of other types.
+    # we will check if there is a default, otherwise this will cause a runtime error.
+    # because it will not be stored, and retrieving this object will fail without a default for this field.
     if field.default is _empty:
         raise VectorStoreModelException(
-            "Fields that do not have a VectorStoreRecord* annotation must have a default value."
+            "Fields that do not have a VectorStoreRecordField annotation must have a default value."
         )
     logger.debug(
         f'Field "{field.name}" does not have a VectorStoreRecordField annotation, will not be part of the record.'
@@ -96,18 +101,37 @@ def _parse_vector_store_record_field_instance(
 ) -> VectorStoreRecordField:
     if not record_field.name or record_field.name != field.name:
         record_field.name = field.name
-    if not record_field.property_type:
+    if not record_field.property_type and hasattr(field.annotation, "__origin__"):
         property_type = field.annotation.__origin__
         if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
             property_type = args[0]
         if hasattr(property_type, "__args__"):
             if isinstance(record_field, VectorStoreRecordVectorField):
+                # this means a list and we are then interested in the type of the items in the list
                 record_field.property_type = property_type.__args__[0].__name__
             elif property_type.__name__ == "list":
                 record_field.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
             else:
                 record_field.property_type = property_type.__name__
         else:
+            if isinstance(record_field, VectorStoreRecordVectorField):
+                property_type_name = property_type.__name__
+                if property_type_name == "ndarray":
+                    if record_field.serialize_function is None:
+                        raise VectorStoreModelException(
+                            "When using a numpy array as a property type, a serialize function must be provided."
+                            "usually: serialize_function=np.ndarray.tolist"
+                        )
+                    if record_field.deserialize_function is None:
+                        raise VectorStoreModelException(
+                            "When using a numpy array as a property type, a deserialize function must be provided."
+                            "usually: deserialize_function=np.array"
+                        )
+                else:
+                    logger.warning(
+                        "Usually the property type of a VectorStoreRecordVectorField "
+                        "is a list of numbers or a numpy array."
+                    )
             record_field.property_type = property_type.__name__
     return record_field
 
