@@ -311,6 +311,20 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
         pytest.param({"type": "access_token"}, marks=pytest.mark.xfail),
         pytest.param({"type": "invalid"}, marks=pytest.mark.xfail),
     ],
+    ids=[
+        "APIKey",
+        "api_key",
+        "api_key_no_key",
+        "SystemAssignedManagedIdentity",
+        "system_assigned_managed_identity",
+        "UserAssignedManagedIdentity",
+        "user_assigned_managed_identity",
+        "user_assigned_managed_identity_no_id",
+        "AccessToken",
+        "access_token",
+        "access_token_no_token",
+        "invalid",
+    ],
 )
 def test_aisearch_data_source_parameters(authentication) -> None:
     AzureAISearchDataSourceParameters(index_name="test_index", authentication=authentication)
