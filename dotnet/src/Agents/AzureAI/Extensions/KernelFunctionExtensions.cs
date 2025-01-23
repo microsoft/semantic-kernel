@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AzureAIP = Azure.AI.Projects;
+using Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -14,7 +14,7 @@ internal static class KernelFunctionExtensions
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static AzureAIP.FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
     {
         var metadata = function.Metadata;
         if (metadata.Parameters.Count > 0)
@@ -46,10 +46,10 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new AzureAIP.FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description, BinaryData.FromObjectAsJson(spec));
         }
 
-        return new AzureAIP.FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description);
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName), function.Description);
     }
 
     private static string ConvertType(Type? type)
