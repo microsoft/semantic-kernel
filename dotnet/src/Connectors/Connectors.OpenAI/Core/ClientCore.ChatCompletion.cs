@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+#if NET
+    [GeneratedRegex("[^a-zA-Z0-9_-]")]
+    private static partial Regex DisallowedFunctionNameCharactersRegex();
+#else
+    private static Regex DisallowedFunctionNameCharactersRegex() => new("[^a-zA-Z0-9_-]", RegexOptions.Compiled);
+#endif
+
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
@@ -332,7 +340,10 @@ internal partial class ClientCore
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
                                     arguments: streamingArguments,
-                                    functionCallIndex: functionCallUpdate.Index));
+                                    functionCallIndex: functionCallUpdate.Index)
+                                {
+                                    RequestIndex = requestIndex,
+                                });
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
@@ -749,7 +760,7 @@ internal partial class ClientCore
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
-            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+            var assistantMessage = new AssistantChatMessage(SanitizeFunctionNames(toolCalls)) { ParticipantName = message.AuthorName };
 
             // If message content is null, adding it as empty string,
             // because chat message content must be string.
@@ -1050,5 +1061,28 @@ internal partial class ClientCore
 
             chatHistory.Add(message);
         }
+    }
+
+    /// <summary>
+    /// Sanitizes function names by replacing disallowed characters.
+    /// </summary>
+    /// <param name="toolCalls">The function calls containing the function names which need to be sanitized.</param>
+    /// <returns>The function calls with sanitized function names.</returns>
+    private static List<ChatToolCall> SanitizeFunctionNames(List<ChatToolCall> toolCalls)
+    {
+        for (int i = 0; i < toolCalls.Count; i++)
+        {
+            ChatToolCall tool = toolCalls[i];
+
+            // Check if function name contains disallowed characters and replace them with '_'.
+            if (DisallowedFunctionNameCharactersRegex().IsMatch(tool.FunctionName))
+            {
+                var sanitizedName = DisallowedFunctionNameCharactersRegex().Replace(tool.FunctionName, "_");
+
+                toolCalls[i] = ChatToolCall.CreateFunctionToolCall(tool.Id, sanitizedName, tool.FunctionArguments);
+            }
+        }
+
+        return toolCalls;
     }
 }

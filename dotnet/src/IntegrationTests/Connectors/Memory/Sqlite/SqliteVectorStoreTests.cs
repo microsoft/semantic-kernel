@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
@@ -14,18 +15,11 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 /// Integration tests for <see cref="SqliteVectorStore"/> class.
 /// </summary>
 [Collection("SqliteVectorStoreCollection")]
+[DisableVectorStoreTests(Skip = "SQLite vector search extension is required")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
     : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.Connection!))
 {
-    private const string? SkipReason = "SQLite vector search extension is required";
-
-    [Fact(Skip = SkipReason)]
-    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
-    {
-        await base.ItCanGetAListOfExistingCollectionNamesAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanGetAListOfExistingCollectionNamesWhenRegisteredWithDIAsync()
     {
         // Arrange

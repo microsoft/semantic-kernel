@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 
 public static class XunitTestCaseExtensions
 {
