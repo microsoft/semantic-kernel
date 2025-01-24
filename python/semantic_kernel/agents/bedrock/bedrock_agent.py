@@ -3,6 +3,7 @@
 
 import asyncio
 from collections.abc import AsyncIterable
+from functools import reduce
 from typing import Any
 
 from semantic_kernel.agents.agent import Agent
@@ -225,19 +226,56 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
 
-        response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+        if not self.function_choice_behavior.auto_invoke_kernel_functions:
+            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+            # When streaming is disabled, the response will be a single event.
+            for event in response.get("completion", []):
+                yield self._create_streaming_chat_message_content(event)
+        else:
+            session_state: dict[str, Any] | None = None
+            for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+                if session_state:
+                    # Session state is used to send function call results back to the agent.
+                    kwargs["sessionState"] = session_state
+                response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
-        # When streaming is enabled, the response will be a list of completion events.
-        for event in response.get("completion", []):
-            chunk = event["chunk"]
-            completion = chunk["bytes"].decode()
+                all_messages: list[StreamingChatMessageContent] = []
+                for event in response.get("completion", []):
+                    message = self._create_streaming_chat_message_content(event)
+                    all_messages.append(message)
+                    if not any(isinstance(item, FunctionCallContent) for item in message.items):
+                        # Only streaming back the messages that contain text content
+                        yield message
 
-            yield StreamingChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                content=completion,
-                choice_index=0,
-                inner_content=event,
-            )
+                full_message: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+                function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
+
+                if not function_calls:
+                    return
+
+                chat_history = ChatHistory()
+                await asyncio.gather(
+                    *[
+                        self.kernel.invoke_function_call(
+                            function_call=function_call,
+                            chat_history=chat_history,
+                            function_call_count=len(function_calls),
+                            request_index=request_index,
+                        )
+                        for function_call in function_calls
+                    ],
+                )
+                function_result_contents = [
+                    item
+                    for chat_message in chat_history.messages
+                    for item in chat_message.items
+                    if isinstance(item, FunctionResultContent)
+                ]
+
+                session_state = {
+                    "invocationId": function_calls[0].id,
+                    "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
+                }
 
     def _create_chat_message_content(self, event: dict[str, Any]) -> ChatMessageContent:
         """Create a chat message content."""
@@ -260,6 +298,36 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
             return ChatMessageContent(
                 role=AuthorRole.ASSISTANT,
+                items=function_calls,
+                name=self.name,
+                inner_content=event,
+                ai_model_id=self.agent_model.foundation_model,
+            )
+        raise ValueError(f"Unknown event type: {event}")
+
+    def _create_streaming_chat_message_content(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Create a streaming chat message content."""
+        if "chunk" in event:
+            # Text response
+            chunk = event["chunk"]
+            completion = chunk["bytes"].decode()
+
+            return StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                choice_index=0,
+                content=completion,
+                name=self.name,
+                inner_content=event,
+                ai_model_id=self.agent_model.foundation_model,
+            )
+        if "returnControl" in event:
+            # Tool call response
+            return_control_payload = event["returnControl"]
+            function_calls = parse_return_control_payload(return_control_payload)
+
+            return StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                choice_index=0,
                 items=function_calls,
                 name=self.name,
                 inner_content=event,
