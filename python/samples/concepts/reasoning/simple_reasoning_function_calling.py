@@ -70,7 +70,9 @@ AZURE_OPENAI_API_VERSION="2024-12-01-preview"
 Note: Unsupported features may be added in future updates.
 """
 
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(
+    Services.OPENAI, instruction_role="developer"
+)
 
 # This is the system message that gives the chatbot its personality.
 developer_message = """

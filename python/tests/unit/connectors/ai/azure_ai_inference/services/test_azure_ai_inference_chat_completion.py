@@ -27,11 +27,12 @@ from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGEN
 # region init
 def test_azure_ai_inference_chat_completion_init(azure_ai_inference_unit_test_env, model_id) -> None:
     """Test initialization of AzureAIInferenceChatCompletion"""
-    azure_ai_inference = AzureAIInferenceChatCompletion(model_id)
+    azure_ai_inference = AzureAIInferenceChatCompletion(model_id, instruction_role="developer")
 
     assert azure_ai_inference.ai_model_id == model_id
     assert azure_ai_inference.service_id == model_id
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
+    assert azure_ai_inference.instruction_role == "developer"
 
 
 @patch("azure.ai.inference.aio.ChatCompletionsClient.__init__", return_value=None)
