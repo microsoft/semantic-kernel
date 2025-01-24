@@ -137,11 +137,11 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
     /// <summary>
     /// This example shows how to use Azure OpenAI Chat Completion with data and function calling.
-    /// Note: Data source and function calling are not supported in a single request. Enabling both features
+    /// Note: Using a data source and function calling is currently not supported in a single request. Enabling both features
     /// will result in the function calling information being ignored and the operation behaving as if only the data source was provided.
+    /// More information about this limitation here: <see href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/README.md#use-your-own-data-with-azure-openai"/>.
     /// To address this limitation, consider separating function calling and data source across multiple requests in your solution design.
-    /// The example uses <see cref="IFunctionInvocationFilter"/> to try Azure Data Source and function calling sequentially until the requested
-    /// information is provided.
+    /// The example demonstrates how to implement a retry mechanism for unanswered queries. If the current request uses an Azure Data Source, the logic retries using function calling, and vice versa.
     /// </summary>
     [Fact]
     public async Task ExampleWithFunctionCallingAsync()
@@ -187,7 +187,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             ResponseFormat = "json_object",
             ChatSystemPrompt =
                 "Provide concrete answers to user questions. " +
-                "If you don't have an information - do not generate it, but respond accordingly. " +
+                "If you don't have the information - do not generate it, but respond accordingly. " +
                 $"Use following JSON schema for all the responses: {responseSchema}. "
         };
 
@@ -276,7 +276,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
-    /// Filter which performs a retry logic to answer user's question using different sources.
+    /// Filter which performs the retry logic to answer user's question using different sources.
     /// Initially, if the model doesn't provide an answer, the filter will enable Azure Data Source and retry the same request.
     /// If Azure Data Source doesn't contain the requested information, the filter will disable it and enable function calling instead.
     /// If the answer is provided from the model itself or any source, it is returned back to the user.
@@ -305,7 +305,9 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
                 var result = context.Result.GetValue<string>();
                 var modelResult = ModelResult.Parse(result);
 
-                // Try to perform a request again until the answer is provided or both sources of information are used.
+                // If the model could not answer the question, then retry the request using an alternate technique:
+                // - If the Azure Data Source was used then disable it and enable function calling.
+                // - If function calling was used then disable it and enable the Azure Data Source.
                 while (modelResult?.IsAnswered is false || (!dataSourceUsed && !functionCallingUsed))
                 {
                     // If Azure Data Source wasn't used - enable it.
