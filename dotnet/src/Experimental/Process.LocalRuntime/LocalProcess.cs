@@ -37,6 +37,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
+    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/> for external messaging</param>
     internal LocalProcess(KernelProcess process, Kernel kernel, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
         : base(process, kernel, null, externalMessageChannel)
     {
