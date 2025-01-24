@@ -7,7 +7,7 @@ from typing import Any, ClassVar
 
 import boto3
 from botocore.exceptions import ClientError
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from semantic_kernel.agents.bedrock.action_group_utils import kernel_function_to_bedrock_function_schema
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
@@ -38,7 +38,7 @@ class BedrockAgentBase(KernelBaseModel):
     # This is primarily used to control the behavior of the kernel when the agent requests functions,
     # and to configure the kernel function action group (i.e. via filters). When this is None, users
     # won't be able to create a kernel function action groups.
-    function_choice_behavior: FunctionChoiceBehavior | None = None
+    function_choice_behavior: FunctionChoiceBehavior = Field(default=FunctionChoiceBehavior.Auto())
     # Agent Model
     agent_model: BedrockAgentModel | None = None
 
@@ -278,10 +278,6 @@ class BedrockAgentBase(KernelBaseModel):
 
     async def _create_kernel_function_action_group(self, kernel: Kernel, **kwargs) -> BedrockActionGroupModel | None:
         """Create a kernel function action group."""
-        if not self.function_choice_behavior:
-            logger.warning("Function Choice Behavior is not set. Skipping kernel function action group creation.")
-            return None
-
         function_call_choice_config = self.function_choice_behavior.get_config(kernel)
         if not function_call_choice_config.available_functions:
             logger.warning("No available functions. Skipping kernel function action group creation.")

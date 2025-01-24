@@ -64,13 +64,13 @@ async def main():
         print("Response: ")
         async for response in bedrock_agent.invoke_stream(
             session_id=new_session_id,
-            input_text="Why is the sky blue?",
+            input_text="Hi, how are you?",
         ):
             print(response, end="")
     else:
         async for response in bedrock_agent.invoke(
             session_id=new_session_id,
-            input_text="Why is the sky blue?",
+            input_text="Hi, how are you?",
         ):
             print(f"Response:\n{response}")
 
