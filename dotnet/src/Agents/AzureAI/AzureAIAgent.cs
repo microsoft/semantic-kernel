@@ -16,6 +16,23 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 public sealed class AzureAIAgent : KernelAgent
 {
     /// <summary>
+    /// Tool definitions used when associating a file attachment to an input message:
+    /// <see cref="FileReferenceContent.Tools"/>.
+    /// </summary>
+    public static class Tools
+    {
+        /// <summary>
+        /// The code-interpreter tool.
+        /// </summary>
+        public static readonly string CodeInterpreter = "code_interpreter";
+
+        /// <summary>
+        /// The file-search tool.
+        /// </summary>
+        public const string FileSearch = "file_search";
+    }
+
+    /// <summary>
     /// Metadata key that identifies code-interpreter content.
     /// </summary>
     public const string CodeInterpreterMetadataKey = "code";

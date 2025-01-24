@@ -30,7 +30,12 @@ internal static class AgentMessageFactory
     /// <param name="message">The message content.</param>
     public static IEnumerable<MessageAttachment> GetAttachments(ChatMessageContent message)
     {
-        return message.Items.OfType<FileReferenceContent>().Select(fileContent => new MessageAttachment(fileContent.FileId, []));
+        return
+            message.Items
+                .OfType<FileReferenceContent>()
+                .Select(
+                    fileContent =>
+                        new MessageAttachment(fileContent.FileId, GetToolDefinition(fileContent.Tools).ToList()));
     }
 
     /// <summary>
@@ -65,6 +70,28 @@ internal static class AgentMessageFactory
                 }
 
                 yield return threadMessage;
+            }
+        }
+    }
+
+    private static readonly Dictionary<string, ToolDefinition> s_toolMetadata = new()
+    {
+        { AzureAIAgent.Tools.CodeInterpreter, new CodeInterpreterToolDefinition() },
+        { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() },
+    };
+
+    private static IEnumerable<ToolDefinition> GetToolDefinition(IEnumerable<string>? tools)
+    {
+        if (tools is null)
+        {
+            yield break;
+        }
+
+        foreach (string tool in tools)
+        {
+            if (s_toolMetadata.TryGetValue(tool, out ToolDefinition? toolDefinition))
+            {
+                yield return toolDefinition;
             }
         }
     }
