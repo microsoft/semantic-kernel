@@ -23,28 +23,32 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     /// </summary>
     public static QueryDefinition BuildSearchQuery<TVector>(
         TVector vector,
+        string? text,
         List<string> fields,
         Dictionary<string, string> storagePropertyNames,
         string vectorPropertyName,
+        string? textPropertyName,
         string scorePropertyName,
-        VectorSearchOptions searchOptions)
+        VectorSearchFilter? vectorSearchFilter,
+        int top,
+        int skip)
     {
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        const string OffsetVariableName = "@offset";
-        const string LimitVariableName = "@limit";
-        const string TopVariableName = "@top";
+        const string TextVariableName = "@text";
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.TableQueryVariableName;
 
         var fieldsArgument = fields.Select(field => $"{tableVariableName}.{field}");
         var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
+        var fullTextScoreArgument = textPropertyName is not null && text is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, [{TextVariableName}])" : null;
+        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
-        var filter = BuildSearchFilter(searchOptions.Filter, storagePropertyNames);
+        var filter = BuildSearchFilter(vectorSearchFilter, storagePropertyNames);
 
         var filterQueryParameters = filter?.QueryParameters;
         var filterWhereClauseArguments = filter?.WhereClauseArguments;
@@ -58,8 +62,9 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
             string.Empty;
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
-        // since it's more optimized.
-        var topArgument = searchOptions.Skip == 0 ? $"TOP {TopVariableName} " : string.Empty;
+        // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
+        // so direclty add it to the query here.
+        var topArgument = skip == 0 ? $"TOP {top} " : string.Empty;
 
         var builder = new StringBuilder();
 
@@ -71,17 +76,18 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
             builder.AppendLine($"WHERE {string.Join(AndConditionDelimiter, filterWhereClauseArguments)}");
         }
 
-        builder.AppendLine($"ORDER BY {vectorDistanceArgument}");
+        builder.AppendLine($"ORDER BY {rankingArgument}");
 
-        if (!string.IsNullOrEmpty(topArgument))
+        if (string.IsNullOrEmpty(topArgument))
         {
-            queryParameters.Add(TopVariableName, searchOptions.Top);
+            // Hybrid search doesn't allow offset and limit to be passed as parameters
+            // so direclty add it to the query here.
+            builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
-        else
+
+        if (fullTextScoreArgument is not null)
         {
-            builder.AppendLine($"OFFSET {OffsetVariableName} LIMIT {LimitVariableName}");
-            queryParameters.Add(OffsetVariableName, searchOptions.Skip);
-            queryParameters.Add(LimitVariableName, searchOptions.Top);
+            queryParameters.Add(TextVariableName, text!);
         }
 
         var queryDefinition = new QueryDefinition(builder.ToString());

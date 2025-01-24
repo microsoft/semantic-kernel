@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
@@ -29,7 +30,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
     protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition);
 
-    [Fact]
+    [VectorStoreFact]
     public async Task SearchShouldReturnExpectedResultsAsync()
     {
         // Arrange
@@ -57,7 +58,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         await sut.DeleteCollectionAsync();
     }
 
-    [Fact]
+    [VectorStoreFact]
     public async Task SearchWithFilterShouldReturnExpectedResultsAsync()
     {
         // Arrange
@@ -89,7 +90,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         await sut.DeleteCollectionAsync();
     }
 
-    [Fact]
+    [VectorStoreFact]
     public async Task SearchWithTopShouldReturnExpectedResultsAsync()
     {
         // Arrange
@@ -117,7 +118,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         await sut.DeleteCollectionAsync();
     }
 
-    [Fact]
+    [VectorStoreFact]
     public async Task SearchWithSkipShouldReturnExpectedResultsAsync()
     {
         // Arrange

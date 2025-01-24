@@ -24,10 +24,11 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(
                 path: "testsettings.development.json",
-                optional: false,
+                optional: true,
                 reloadOnChange: true
             )
             .AddEnvironmentVariables()
+            .AddUserSecrets<AzureCosmosDBNoSQLVectorStoreFixture>()
             .Build();
 
         var connectionString = GetConnectionString(configuration);
