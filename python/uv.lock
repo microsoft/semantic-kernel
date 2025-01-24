@@ -4873,7 +4873,7 @@ requires-dist = [
     { name = "torch", marker = "python_full_version < '3.13' and extra == 'hugging-face'", specifier = "==2.5.1" },
     { name = "transformers", extras = ["torch"], marker = "python_full_version < '3.13' and extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
-    { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.9" },
+    { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.16" },
     { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.7,<5.0" },
 ]
 
