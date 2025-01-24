@@ -1,14 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import asyncio
 from collections.abc import AsyncIterable
 from typing import Any
 
 from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.bedrock.action_group_utils import (
+    parse_function_result_contents,
+    parse_return_control_payload,
+)
 from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -159,23 +167,53 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
 
-        response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+        if not self.function_choice_behavior.auto_invoke_kernel_functions:
+            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+            # When streaming is disabled, the response will be a single event.
+            for event in response.get("completion", []):
+                yield self._create_chat_message_content(event)
+        else:
+            session_state: dict[str, Any] | None = None
+            for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+                if session_state:
+                    # Session state is used to send function call results back to the agent.
+                    kwargs["sessionState"] = session_state
+                response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
-        completion = ""
-        events = []
-        # When streaming is disabled, the response will be a single completion event.
-        for event in response.get("completion", []):
-            events.append(event)
-            chunk = event["chunk"]
-            completion += chunk["bytes"].decode()
+                # When streaming is disabled, the response will be a single event.
+                for event in response.get("completion", []):
+                    chat_message_content = self._create_chat_message_content(event)
+                    function_calls = [
+                        item for item in chat_message_content.items if isinstance(item, FunctionCallContent)
+                    ]
 
-        yield ChatMessageContent(
-            role=AuthorRole.ASSISTANT,
-            content=completion,
-            name=self.name,
-            inner_content=events,
-            ai_model_id=self.agent_model.foundation_model,
-        )
+                    if not function_calls:
+                        yield chat_message_content
+                        return
+
+                    chat_history = ChatHistory()
+                    await asyncio.gather(
+                        *[
+                            self.kernel.invoke_function_call(
+                                function_call=function_call,
+                                chat_history=chat_history,
+                                function_call_count=len(function_calls),
+                                request_index=request_index,
+                            )
+                            for function_call in function_calls
+                        ],
+                    )
+                    function_result_contents = [
+                        item
+                        for chat_message in chat_history.messages
+                        for item in chat_message.items
+                        if isinstance(item, FunctionResultContent)
+                    ]
+
+                    session_state = {
+                        "invocationId": function_calls[0].id,
+                        "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
+                    }
 
     async def invoke_stream(
         self,
@@ -200,3 +238,31 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 choice_index=0,
                 inner_content=event,
             )
+
+    def _create_chat_message_content(self, event: dict[str, Any]) -> ChatMessageContent:
+        """Create a chat message content."""
+        if "chunk" in event:
+            # Text response
+            chunk = event["chunk"]
+            completion = chunk["bytes"].decode()
+
+            return ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                content=completion,
+                name=self.name,
+                inner_content=event,
+                ai_model_id=self.agent_model.foundation_model,
+            )
+        if "returnControl" in event:
+            # Tool call response
+            return_control_payload = event["returnControl"]
+            function_calls = parse_return_control_payload(return_control_payload)
+
+            return ChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                items=function_calls,
+                name=self.name,
+                inner_content=event,
+                ai_model_id=self.agent_model.foundation_model,
+            )
+        raise ValueError(f"Unknown event type: {event}")

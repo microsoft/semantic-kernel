@@ -7,12 +7,13 @@ from typing import Any, ClassVar
 
 import boto3
 from botocore.exceptions import ClientError
+from pydantic import field_validator
 
 from semantic_kernel.agents.bedrock.action_group_utils import kernel_function_to_bedrock_function_schema
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -34,6 +35,9 @@ class BedrockAgentBase(KernelBaseModel):
     # Client: Use for model management
     bedrock_client: Any
     # Function Choice Behavior
+    # This is primarily used to control the behavior of the kernel when the agent requests functions,
+    # and to configure the kernel function action group (i.e. via filters). When this is None, users
+    # won't be able to create a kernel function action groups.
     function_choice_behavior: FunctionChoiceBehavior | None = None
     # Agent Model
     agent_model: BedrockAgentModel | None = None
@@ -56,6 +60,19 @@ class BedrockAgentBase(KernelBaseModel):
             bedrock_client=client or boto3.client("bedrock-agent"),
             **kwargs,
         )
+
+    @field_validator("function_choice_behavior", mode="after")
+    @classmethod
+    def validate_function_choice_behavior(
+        cls, function_choice_behavior: FunctionChoiceBehavior | None
+    ) -> FunctionChoiceBehavior | None:
+        """Validate the function choice behavior."""
+        if function_choice_behavior and function_choice_behavior.type_ != FunctionChoiceType.AUTO:
+            # Users cannot specify REQUIRED or NONE for the Bedrock agents.
+            # Please note that the function choice behavior only control if the kernel will automatically
+            # execute the functions the agent requests. It does not control the behavior of the agent.
+            raise ValueError("Only FunctionChoiceType.AUTO is supported.")
+        return function_choice_behavior
 
     async def _run_in_executor(self, executor, func, *args, **kwargs) -> Any:
         """Run a function in an executor."""

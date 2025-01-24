@@ -12,7 +12,7 @@ dotenv.load_dotenv()
 
 # By default, this sample will create a new agent.
 # If you want to use an existing agent, set this to False and fill in required parameters.
-CREATE_NEW_AGENT = False
+CREATE_NEW_AGENT = True
 
 # If you want to enable streaming, set this to True.
 # In order to perform streaming, you need to have the permission on action: bedrock:InvokeModelWithResponseStream
@@ -23,6 +23,7 @@ AGENT_ROLE_AMAZON_RESOURCE_NAME = os.getenv("AGENT_ROLE_AMAZON_RESOURCE_NAME")
 AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-sample"
 
 # If creating a new agent, you need to specify the following:
+# [Note] You may have to request access to the foundation model if you don't have it.
 FOUNDATION_MODEL = os.getenv("FOUNDATION_MODEL")
 INSTRUCTION = "You are a fridenly assistant. You help people find information."
 
