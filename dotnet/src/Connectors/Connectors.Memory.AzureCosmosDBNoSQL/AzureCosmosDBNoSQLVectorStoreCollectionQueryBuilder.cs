@@ -63,7 +63,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
         // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
-        // so direclty add it to the query here.
+        // so directly add it to the query here.
         var topArgument = skip == 0 ? $"TOP {top} " : string.Empty;
 
         var builder = new StringBuilder();
@@ -81,7 +81,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         if (string.IsNullOrEmpty(topArgument))
         {
             // Hybrid search doesn't allow offset and limit to be passed as parameters
-            // so direclty add it to the query here.
+            // so directly add it to the query here.
             builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
 

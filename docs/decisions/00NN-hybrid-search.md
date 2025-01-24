@@ -336,7 +336,7 @@ This language would then be used for all full text search indexes created by the
 
 Add a property bag to the VectorStoreRecordProperty allowing database specific metadata to be provided.
 Add an abstract base attribute that can be inherited from that allows extra metadata to be added to the data model,
-where each database has their own attributes to specificy their settings, with a method to conver the contents to
+where each database has their own attributes to specificy their settings, with a method to convert the contents to
 the property bag required by VectorStoreRecordProperty.
 
 - Pros: Allows multiple languages to be used for different fields in one record
