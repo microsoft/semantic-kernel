@@ -4803,7 +4803,7 @@ redis = [
 ]
 usearch = [
     { name = "pyarrow", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "usearch", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "usearch", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
 ]
 weaviate = [
     { name = "weaviate-client", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4876,7 +4876,7 @@ requires-dist = [
     { name = "torch", marker = "extra == 'hugging-face'", specifier = "==2.6.0" },
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
-    { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.16" },
+    { name = "usearch", marker = "python_full_version < '3.13' and extra == 'usearch'", specifier = "~=2.16" },
     { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.7,<5.0" },
 ]
 
@@ -5528,9 +5528,9 @@ name = "usearch"
 version = "2.16.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "simsimd", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "tqdm", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "numpy", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
+    { name = "simsimd", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
+    { name = "tqdm", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/60/de451e5900682beb59d935a4b2b688078cc0a77b1ffa703c65b857984e2f/usearch-2.16.9-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:b0faa487d1ec864e8603bf8dbbe4b9cf77f5751db595a4164867d421e46e5dbb", size = 726579 },

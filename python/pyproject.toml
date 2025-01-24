@@ -108,7 +108,7 @@ redis = [
     "redisvl >= 0.3.6",
 ]
 usearch = [
-    "usearch ~= 2.16; python_version != '3.13t'",
+    "usearch ~= 2.16; python_full_version < '3.13'",
     "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
