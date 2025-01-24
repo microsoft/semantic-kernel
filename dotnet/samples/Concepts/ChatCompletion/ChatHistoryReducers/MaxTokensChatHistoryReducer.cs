@@ -47,10 +47,11 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
     }
 
     #region private
+
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="history"><see cref="ChatHistory" /> instance to be truncated.</param>
+    /// <param name="history">Chat history to be truncated.</param>
     /// <param name="systemMessage">The system message</param>
     private int ComputeTruncationIndex(IReadOnlyList<ChatMessageContent> history, ChatMessageContent? systemMessage)
     {
@@ -83,5 +84,6 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
 
         return truncationIndex;
     }
+
     #endregion
 }

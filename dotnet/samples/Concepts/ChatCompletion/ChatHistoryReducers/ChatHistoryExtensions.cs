@@ -73,7 +73,7 @@ internal static class ChatHistoryExtensions
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="history"><see cref="ChatHistory" /> instance to be truncated.</param>
+    /// <param name="history">The source history.</param>
     /// <param name="truncatedSize">Truncated size.</param>
     /// <param name="truncationThreshold">Truncation threshold.</param>
     /// <param name="hasSystemMessage">Flag indicating whether or not the chat history contains a system messageContent</param>
