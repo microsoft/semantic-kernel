@@ -141,6 +141,7 @@ dev-dependencies = [
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
     "ruff ~= 0.7",
+    "pyright>=1.1.392.post0",
 ]
 environments = [
     "sys_platform == 'darwin'",
