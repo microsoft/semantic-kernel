@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from collections.abc import MutableMapping, Sequence
+from collections.abc import MutableMapping, MutableSequence, Sequence
 from typing import TypeVar
 
 from pydantic import Field, field_validator, model_validator
@@ -39,7 +39,7 @@ class PromptTemplateConfig(KernelBaseModel):
     description: str | None = ""
     template: str | None = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
-    input_variables: Sequence[InputVariable] = Field(default_factory=list)
+    input_variables: MutableSequence[InputVariable] = Field(default_factory=list)
     allow_dangerously_set_content: bool = False
     execution_settings: MutableMapping[str, PromptExecutionSettings] = Field(default_factory=dict)
 
@@ -109,7 +109,7 @@ class PromptTemplateConfig(KernelBaseModel):
         description: str,
         template: str,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        input_variables: Sequence[InputVariable] = [],
+        input_variables: MutableSequence[InputVariable] = [],
         execution_settings: MutableMapping[str, PromptExecutionSettings] = {},
         allow_dangerously_set_content: bool = False,
     ) -> _T:
