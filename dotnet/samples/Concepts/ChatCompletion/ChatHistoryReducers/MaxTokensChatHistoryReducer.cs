@@ -30,17 +30,17 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(ChatHistory chatHistory, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        var systemMessage = chatHistory.GetSystemMessage();
+        var systemMessage = history.GetSystemMessage();
 
-        var truncationIndex = ComputeTruncationIndex(chatHistory, systemMessage);
+        var truncationIndex = ComputeTruncationIndex(history, systemMessage);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
         if (truncationIndex > 0)
         {
-            truncatedHistory = chatHistory.Extract(truncationIndex, systemMessage: systemMessage);
+            truncatedHistory = history.Extract(truncationIndex, systemMessage: systemMessage);
         }
 
         return Task.FromResult<IEnumerable<ChatMessageContent>?>(truncatedHistory);
@@ -50,17 +50,17 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="chatHistory">ChatHistory instance to be truncated</param>
+    /// <param name="history"><see cref="ChatHistory" /> instance to be truncated.</param>
     /// <param name="systemMessage">The system message</param>
-    private int ComputeTruncationIndex(ChatHistory chatHistory, ChatMessageContent? systemMessage)
+    private int ComputeTruncationIndex(IReadOnlyList<ChatMessageContent> history, ChatMessageContent? systemMessage)
     {
         var truncationIndex = -1;
 
         var totalTokenCount = (int)(systemMessage?.Metadata?["TokenCount"] ?? 0);
-        for (int i = chatHistory.Count - 1; i >= 0; i--)
+        for (int i = history.Count - 1; i >= 0; i--)
         {
             truncationIndex = i;
-            var tokenCount = (int)(chatHistory[i].Metadata?["TokenCount"] ?? 0);
+            var tokenCount = (int)(history[i].Metadata?["TokenCount"] ?? 0);
             if (tokenCount + totalTokenCount > this._maxTokenCount)
             {
                 break;
@@ -69,9 +69,9 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
         }
 
         // Skip function related content
-        while (truncationIndex < chatHistory.Count)
+        while (truncationIndex < history.Count)
         {
-            if (chatHistory[truncationIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (history[truncationIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
                 truncationIndex++;
             }

@@ -19,27 +19,29 @@ internal static class ChatHistoryExtensions
     /// <remarks>
     /// For simplicity only a single system message is supported in these examples.
     /// </remarks>
-    internal static ChatMessageContent? GetSystemMessage(this ChatHistory chatHistory)
+    internal static ChatMessageContent? GetSystemMessage(this IReadOnlyList<ChatMessageContent> history)
     {
-        return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
+        return history.FirstOrDefault(m => m.Role == AuthorRole.System);
     }
 
     /// <summary>
     /// Extract a range of messages from the provided <see cref="ChatHistory"/>.
     /// </summary>
-    /// <param name="chatHistory">The source history</param>
+    /// <param name="history">The source history</param>
     /// <param name="startIndex">The index of the first messageContent to extract</param>
     /// <param name="endIndex">The index of the first messageContent to extract, if null extract up to the end of the chat history</param>
     /// <param name="systemMessage">An optional system messageContent to include</param>
     /// <param name="summaryMessage">An optional summary messageContent to include</param>
     /// <param name="messageFilter">An optional message filter</param>
     public static IEnumerable<ChatMessageContent> Extract(
-        this ChatHistory chatHistory, int startIndex, int? endIndex = null,
+        this IReadOnlyList<ChatMessageContent> history,
+        int startIndex,
+        int? endIndex = null,
         ChatMessageContent? systemMessage = null,
         ChatMessageContent? summaryMessage = null,
         Func<ChatMessageContent, bool>? messageFilter = null)
     {
-        endIndex ??= chatHistory.Count - 1;
+        endIndex ??= history.Count - 1;
         if (startIndex > endIndex)
         {
             yield break;
@@ -57,7 +59,7 @@ internal static class ChatHistoryExtensions
 
         for (int index = startIndex; index <= endIndex; ++index)
         {
-            var messageContent = chatHistory[index];
+            var messageContent = history[index];
 
             if (messageFilter?.Invoke(messageContent) ?? false)
             {
@@ -71,24 +73,24 @@ internal static class ChatHistoryExtensions
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="chatHistory">ChatHistory instance to be truncated</param>
-    /// <param name="truncatedSize"></param>
-    /// <param name="truncationThreshold"></param>
+    /// <param name="history"><see cref="ChatHistory" /> instance to be truncated.</param>
+    /// <param name="truncatedSize">Truncated size.</param>
+    /// <param name="truncationThreshold">Truncation threshold.</param>
     /// <param name="hasSystemMessage">Flag indicating whether or not the chat history contains a system messageContent</param>
-    public static int ComputeTruncationIndex(this ChatHistory chatHistory, int truncatedSize, int truncationThreshold, bool hasSystemMessage)
+    public static int ComputeTruncationIndex(this IReadOnlyList<ChatMessageContent> history, int truncatedSize, int truncationThreshold, bool hasSystemMessage)
     {
-        if (chatHistory.Count <= truncationThreshold)
+        if (history.Count <= truncationThreshold)
         {
             return -1;
         }
 
         // Compute the index of truncation target
-        var truncationIndex = chatHistory.Count - (truncatedSize - (hasSystemMessage ? 1 : 0));
+        var truncationIndex = history.Count - (truncatedSize - (hasSystemMessage ? 1 : 0));
 
         // Skip function related content
-        while (truncationIndex < chatHistory.Count)
+        while (truncationIndex < history.Count)
         {
-            if (chatHistory[truncationIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (history[truncationIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
                 truncationIndex++;
             }

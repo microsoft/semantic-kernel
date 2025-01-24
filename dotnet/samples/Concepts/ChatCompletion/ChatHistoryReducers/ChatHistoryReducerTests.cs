@@ -27,7 +27,7 @@ public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output
     {
         // Arrange
         var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes);
-        var reducer = new TruncatingChatHistoryReducer(truncatedSize);
+        var reducer = new ChatHistoryTruncationReducer(truncatedSize);
 
         // Act
         var reducedHistory = await reducer.ReduceAsync(chatHistory);
@@ -70,7 +70,7 @@ public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output
         IChatCompletionService chatClient = new FakeChatCompletionService("The dialog consists of repetitive interaction where both the user and assistant exchange identical phrases in Latin.");
 
         var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes, true);
-        var reducer = new SummarizingChatHistoryReducer(chatClient, truncatedSize, truncationThreshold);
+        var reducer = new ChatHistorySummarizationReducer(chatClient, truncatedSize, truncationThreshold);
 
         // Act
         var reducedHistory = await reducer.ReduceAsync(chatHistory);
