@@ -16,6 +16,9 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHi
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
@@ -48,6 +51,8 @@ class ChatCompletionAgent(Agent):
         instructions: str | None = None,
         execution_settings: PromptExecutionSettings | None = None,
         history_reducer: ChatHistoryReducer | None = None,
+        arguments: KernelArguments | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
     ) -> None:
         """Initialize a new instance of ChatCompletionAgent.
 
@@ -62,6 +67,8 @@ class ChatCompletionAgent(Agent):
             instructions: The instructions for the agent. (optional)
             execution_settings: The execution settings for the agent. (optional)
             history_reducer: The history reducer for the agent. (optional)
+            arguments: The kernel arguments for the agent. (optional)
+            prompt_template_config: The prompt template configuration for the agent. (optional)
         """
         if not service_id:
             service_id = DEFAULT_SERVICE_NAME
@@ -69,7 +76,6 @@ class ChatCompletionAgent(Agent):
         args: dict[str, Any] = {
             "service_id": service_id,
             "description": description,
-            "instructions": instructions,
             "execution_settings": execution_settings,
         }
         if name is not None:
@@ -80,27 +86,59 @@ class ChatCompletionAgent(Agent):
             args["kernel"] = kernel
         if history_reducer is not None:
             args["history_reducer"] = history_reducer
+        if arguments is not None:
+            args["arguments"] = arguments
+
+        if instructions and prompt_template_config and instructions != prompt_template_config.template:
+            logger.warning(
+                f"Both `instructions` ({instructions}) and `prompt_template_config` "
+                f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
+                "and ignoring `instructions`."
+            )
+
+        # TODO need to improve logic around instructions
+        if prompt_template_config is not None:
+            args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )
+        if instructions is not None:
+            args["instructions"] = instructions
         super().__init__(**args)
 
     @trace_agent_invocation
-    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
+    async def invoke(
+        self,
+        history: ChatHistory,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat history handler.
 
         Args:
-            kernel: The kernel instance.
             history: The chat history.
+            arguments: The kernel arguments. (optional)
+            kernel: The kernel instance. (optional)
+            kwargs: The keyword arguments. (optional)
 
         Returns:
             An async iterable of ChatMessageContent.
         """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         # Get the chat completion service
-        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
         if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
+        # TODO: do we handle passing in execution settings and kernel arguments execution settings?
         settings = (
             self.execution_settings
             or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
@@ -109,7 +147,11 @@ class ChatCompletionAgent(Agent):
             )
         )
 
-        chat = self._setup_agent_chat_history(history)
+        chat = await self._setup_agent_chat_history(
+            history=history,
+            kernel=kernel,
+            arguments=arguments,
+        )
 
         message_count = len(chat)
 
@@ -137,16 +179,30 @@ class ChatCompletionAgent(Agent):
             yield message
 
     @trace_agent_invocation
-    async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(
+        self,
+        history: ChatHistory,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Args:
-            kernel: The kernel instance.
             history: The chat history.
+            arguments: The kernel arguments. (optional)
+            kernel: The kernel instance. (optional)
+            kwargs: The keyword arguments. (optional)
 
         Returns:
             An async generator of StreamingChatMessageContent.
         """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         # Get the chat completion service
         chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
@@ -163,7 +219,11 @@ class ChatCompletionAgent(Agent):
             )
         )
 
-        chat = self._setup_agent_chat_history(history)
+        chat = await self._setup_agent_chat_history(
+            history=history,
+            kernel=kernel,
+            arguments=arguments,
+        )
 
         message_count = len(chat)
 
@@ -204,12 +264,16 @@ class ChatCompletionAgent(Agent):
                 )
             )
 
-    def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
+    async def _setup_agent_chat_history(
+        self, history: ChatHistory, kernel: "Kernel", arguments: KernelArguments
+    ) -> ChatHistory:
         """Setup the agent chat history."""
         chat = []
 
-        if self.instructions is not None:
-            chat.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=self.instructions, name=self.name))
+        instructions = await self.format_instructions(kernel, arguments)
+
+        if instructions is not None:
+            chat.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=instructions, name=self.name))
 
         chat.extend(history.messages if history.messages else [])
 
