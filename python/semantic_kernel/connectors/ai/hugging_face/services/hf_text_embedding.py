@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     try:
         from torch import Tensor
     except ImportError:
-        Tensor = None
+        Tensor = Any
 
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
