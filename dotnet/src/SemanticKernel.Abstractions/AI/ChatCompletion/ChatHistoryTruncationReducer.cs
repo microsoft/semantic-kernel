@@ -20,23 +20,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 [Experimental("SKEXP0001")]
 public class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
-    /// <inheritdoc/>
-    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
-    {
-        // First pass to determine the truncation index
-        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
-
-        IEnumerable<ChatMessageContent>? truncatedHistory = null;
-
-        if (truncationIndex > 0)
-        {
-            // Second pass to truncate the history
-            truncatedHistory = history.Extract(truncationIndex);
-        }
-
-        return Task.FromResult(truncatedHistory);
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryTruncationReducer"/> class.
     /// </summary>
@@ -54,6 +37,23 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         this._targetCount = targetCount;
 
         this._thresholdCount = thresholdCount ?? 0;
+    }
+
+    /// <inheritdoc/>
+    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    {
+        // First pass to determine the truncation index
+        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
+
+        IEnumerable<ChatMessageContent>? truncatedHistory = null;
+
+        if (truncationIndex > 0)
+        {
+            // Second pass to truncate the history
+            truncatedHistory = history.Extract(truncationIndex);
+        }
+
+        return Task.FromResult(truncatedHistory);
     }
 
     /// <inheritdoc/>

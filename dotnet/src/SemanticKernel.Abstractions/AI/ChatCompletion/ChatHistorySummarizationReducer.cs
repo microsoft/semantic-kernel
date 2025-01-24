@@ -65,6 +65,27 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </remarks>
     public bool UseSingleSummary { get; init; } = true;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatHistorySummarizationReducer"/> class.
+    /// </summary>
+    /// <param name="service">A <see cref="IChatCompletionService"/> instance to be used for summarization.</param>
+    /// <param name="targetCount">The desired number of target messages after reduction.</param>
+    /// <param name="thresholdCount">An optional number of messages beyond the 'targetCount' that must be present in order to trigger reduction/</param>
+    /// <remarks>
+    /// While the 'thresholdCount' is optional, it is recommended to provided so that reduction is not triggered
+    /// for every incremental addition to the chat history beyond the 'targetCount'.
+    /// </remarks>>
+    public ChatHistorySummarizationReducer(IChatCompletionService service, int targetCount, int? thresholdCount = null)
+    {
+        Verify.NotNull(service, nameof(service));
+        Verify.True(targetCount > 0, "Target message count must be greater than zero.");
+        Verify.True(!thresholdCount.HasValue || thresholdCount > 0, "The reduction threshold length must be greater than zero.");
+
+        this._service = service;
+        this._targetCount = targetCount;
+        this._thresholdCount = thresholdCount ?? 0;
+    }
+
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
@@ -127,27 +148,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 yield return history[index];
             }
         }
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatHistorySummarizationReducer"/> class.
-    /// </summary>
-    /// <param name="service">A <see cref="IChatCompletionService"/> instance to be used for summarization.</param>
-    /// <param name="targetCount">The desired number of target messages after reduction.</param>
-    /// <param name="thresholdCount">An optional number of messages beyond the 'targetCount' that must be present in order to trigger reduction/</param>
-    /// <remarks>
-    /// While the 'thresholdCount' is optional, it is recommended to provided so that reduction is not triggered
-    /// for every incremental addition to the chat history beyond the 'targetCount'.
-    /// </remarks>>
-    public ChatHistorySummarizationReducer(IChatCompletionService service, int targetCount, int? thresholdCount = null)
-    {
-        Verify.NotNull(service, nameof(service));
-        Verify.True(targetCount > 0, "Target message count must be greater than zero.");
-        Verify.True(!thresholdCount.HasValue || thresholdCount > 0, "The reduction threshold length must be greater than zero.");
-
-        this._service = service;
-        this._targetCount = targetCount;
-        this._thresholdCount = thresholdCount ?? 0;
     }
 
     /// <inheritdoc/>
