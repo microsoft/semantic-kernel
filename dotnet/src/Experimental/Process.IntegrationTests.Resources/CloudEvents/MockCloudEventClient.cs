@@ -27,13 +27,12 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
         this.CloudEvents = [];
     }
 
-    public static MockCloudEventClient GetInstance()
+    public static MockCloudEventClient? Instance
     {
-        if (s_instance == null)
+        get
         {
-            s_instance = new MockCloudEventClient();
+            return s_instance ??= new MockCloudEventClient();
         }
-        return s_instance;
     }
 
     /// <inheritdoc/>

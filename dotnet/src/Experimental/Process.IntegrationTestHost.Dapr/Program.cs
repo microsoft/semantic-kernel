@@ -17,8 +17,8 @@ builder.Services.AddLogging((logging) =>
 builder.Services.AddKernel();
 
 // Configure IExternalKernelProcessMessageChannel used for testing purposes
-builder.Services.AddSingleton<IExternalKernelProcessMessageChannel>(MockCloudEventClient.GetInstance());
-builder.Services.AddSingleton(MockCloudEventClient.GetInstance());
+builder.Services.AddSingleton<IExternalKernelProcessMessageChannel>(MockCloudEventClient.Instance);
+builder.Services.AddSingleton(MockCloudEventClient.Instance);
 
 // Configure Dapr
 builder.Services.AddActors(static options =>
