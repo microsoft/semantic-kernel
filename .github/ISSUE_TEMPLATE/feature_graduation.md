@@ -1,10 +1,8 @@
 ---
 name: Feature graduation
 about: Plan the graduation of an experimental feature
-title: 'Graduate XXX feature'
-labels: ["feature_graduation"]
-type: 'feature'
-projects: ["semantic-kernel"]
+title: Graduate XXX feature
+labels: feature_graduation
 assignees: ''
 
 ---
