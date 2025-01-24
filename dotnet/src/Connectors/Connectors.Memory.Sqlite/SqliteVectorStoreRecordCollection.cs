@@ -219,27 +219,27 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<ulong> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        return this.InternalUpsertAsync<ulong>(record, options, cancellationToken);
+        return this.InternalUpsertAsync<ulong>(record, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
-        return this.InternalUpsertBatchAsync<ulong>(records, options, cancellationToken);
+        return this.InternalUpsertBatchAsync<ulong>(records, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(ulong key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
     {
-        return this.InternalDeleteAsync(key, options, cancellationToken);
+        return this.InternalDeleteAsync(key, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<ulong> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
-        return this.InternalDeleteBatchAsync(keys, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(keys, cancellationToken);
     }
 
     #endregion
@@ -259,27 +259,27 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    Task<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    Task<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(TRecord record, CancellationToken cancellationToken)
     {
-        return this.InternalUpsertAsync<string>(record, options, cancellationToken);
+        return this.InternalUpsertAsync<string>(record, cancellationToken);
     }
 
     /// <inheritdoc />
-    IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken)
     {
-        return this.InternalUpsertBatchAsync<string>(records, options, cancellationToken);
+        return this.InternalUpsertBatchAsync<string>(records, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
-        return this.InternalDeleteAsync(key, options, cancellationToken);
+        return this.InternalDeleteAsync(key, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        return this.InternalDeleteBatchAsync(keys, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(keys, cancellationToken);
     }
 
     #endregion
@@ -475,10 +475,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private async Task<TKey> InternalUpsertAsync<TKey>(
-        TRecord record,
-        UpsertRecordOptions? options,
-        CancellationToken cancellationToken)
+    private async Task<TKey> InternalUpsertAsync<TKey>(TRecord record, CancellationToken cancellationToken)
     {
         const string OperationName = "Upsert";
 
@@ -494,17 +491,14 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var condition = new SqliteWhereEqualsCondition(this._propertyReader.KeyPropertyStoragePropertyName, key);
 
-        var upsertedRecordKey = await this.InternalUpsertBatchAsync<TKey>([storageModel], condition, options, cancellationToken)
+        var upsertedRecordKey = await this.InternalUpsertBatchAsync<TKey>([storageModel], condition, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
         return upsertedRecordKey ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
-    private IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
-        IEnumerable<TRecord> records,
-        UpsertRecordOptions? options,
-        CancellationToken cancellationToken)
+    private IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(IEnumerable<TRecord> records, CancellationToken cancellationToken)
     {
         const string OperationName = "UpsertBatch";
 
@@ -518,13 +512,12 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var condition = new SqliteWhereInCondition(this._propertyReader.KeyPropertyStoragePropertyName, keys);
 
-        return this.InternalUpsertBatchAsync<TKey>(storageModels, condition, options, cancellationToken);
+        return this.InternalUpsertBatchAsync<TKey>(storageModels, condition, cancellationToken);
     }
 
     private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
         List<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
-        UpsertRecordOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(storageModels);
@@ -571,22 +564,16 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private Task InternalDeleteAsync<TKey>(
-        TKey key,
-        DeleteRecordOptions? options,
-        CancellationToken cancellationToken)
+    private Task InternalDeleteAsync<TKey>(TKey key, CancellationToken cancellationToken)
     {
         Verify.NotNull(key);
 
         var condition = new SqliteWhereEqualsCondition(this._propertyReader.KeyPropertyStoragePropertyName, key);
 
-        return this.InternalDeleteBatchAsync(condition, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(condition, cancellationToken);
     }
 
-    private Task InternalDeleteBatchAsync<TKey>(
-        IEnumerable<TKey> keys,
-        DeleteRecordOptions? options,
-        CancellationToken cancellationToken)
+    private Task InternalDeleteBatchAsync<TKey>(IEnumerable<TKey> keys, CancellationToken cancellationToken)
     {
         Verify.NotNull(keys);
 
@@ -598,13 +585,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             this._propertyReader.KeyPropertyStoragePropertyName,
             keysList);
 
-        return this.InternalDeleteBatchAsync(condition, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(condition, cancellationToken);
     }
 
-    private Task InternalDeleteBatchAsync(
-        SqliteWhereCondition condition,
-        DeleteRecordOptions? options,
-        CancellationToken cancellationToken)
+    private Task InternalDeleteBatchAsync(SqliteWhereCondition condition, CancellationToken cancellationToken)
     {
         const string OperationName = "Delete";
 

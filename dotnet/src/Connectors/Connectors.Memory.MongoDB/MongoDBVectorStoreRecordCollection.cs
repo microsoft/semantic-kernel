@@ -120,7 +120,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -129,7 +129,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -202,7 +202,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -228,14 +228,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(
-        IEnumerable<TRecord> records,
-        UpsertRecordOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
-        var tasks = records.Select(record => this.UpsertAsync(record, options, cancellationToken));
+        var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         foreach (var result in results)
@@ -281,7 +278,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
             this._storagePropertyNames);
 
         // Constructing a query to fetch "skip + top" total items
-        // to perform skip logic locally, since skip option is not part of API. 
+        // to perform skip logic locally, since skip option is not part of API.
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
