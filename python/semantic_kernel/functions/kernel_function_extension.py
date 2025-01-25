@@ -86,6 +86,8 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             return self.plugins[plugin.name]
         if not plugin_name:
             raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+        if not isinstance(plugin_name, str):
+            raise TypeError("plugin_name must be a string.")
         if plugin:
             self.plugins[plugin_name] = KernelPlugin.from_object(
                 plugin_name=plugin_name, plugin_instance=plugin, description=description

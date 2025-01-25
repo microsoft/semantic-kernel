@@ -312,14 +312,14 @@ internal sealed class FunctionCallsProcessor
         // Check if the function call has an exception.
         if (functionCall.Exception is not null)
         {
-            errorMessage = $"Error: Function call processing failed. {functionCall.Exception.Message}";
+            errorMessage = $"Error: Function call processing failed. Correct yourself. {functionCall.Exception.Message}";
             return false;
         }
 
         // Make sure the requested function is one of the functions that was advertised to the AI model.
         if (!checkIfFunctionAdvertised(functionCall))
         {
-            errorMessage = "Error: Function call request for a function that wasn't defined.";
+            errorMessage = "Error: Function call request for a function that wasn't defined. Correct yourself.";
             return false;
         }
 
@@ -330,7 +330,7 @@ internal sealed class FunctionCallsProcessor
             return true;
         }
 
-        errorMessage = "Error: Requested function could not be found.";
+        errorMessage = "Error: Requested function could not be found. Correct yourself.";
         return false;
     }
 
