@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 public static class ChatHistoryExtensions
 {
     /// <summary>
-    /// Process history reduction and mutate the provided history.
+    /// Process history reduction and mutate the provided history in place.
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="reducer">The target reducer</param>
@@ -25,7 +25,7 @@ public static class ChatHistoryExtensions
     /// Using the existing <see cref="ChatHistory"/> for a reduction in collection size eliminates the need
     /// for re-allocation (of memory).
     /// </remarks>
-    public static async Task<bool> ReduceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    public static async Task<bool> ReduceInPlaceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
         if (reducer == null)
         {
@@ -48,7 +48,7 @@ public static class ChatHistoryExtensions
     }
 
     /// <summary>
-    /// Reduce the history using the provided reducer without mutating the source history.
+    /// Returns the reduced history using the provided reducer without mutating the source history.
     /// </summary>
     /// <param name="history">The source history</param>
     /// <param name="reducer">The target reducer</param>
@@ -59,6 +59,23 @@ public static class ChatHistoryExtensions
         {
             IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
             history = reducedHistory?.ToArray() ?? history;
+        }
+
+        return history;
+    }
+
+    /// <summary>
+    /// Returns the reduced history using the provided reducer without mutating the source history.
+    /// </summary>
+    /// <param name="history">The source history</param>
+    /// <param name="reducer">The target reducer</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<ChatHistory> ReduceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    {
+        if (reducer != null)
+        {
+            IEnumerable<ChatMessageContent>? reduced = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
+            return new ChatHistory(reduced ?? history);
         }
 
         return history;

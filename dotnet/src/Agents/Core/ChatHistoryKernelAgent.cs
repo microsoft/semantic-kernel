@@ -62,7 +62,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True if reduction has occurred.</returns>
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
-        history.ReduceAsync(this.HistoryReducer, cancellationToken);
+        history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
 
     /// <inheritdoc/>
     protected sealed override IEnumerable<string> GetChannelKeys()

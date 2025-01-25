@@ -89,14 +89,14 @@ public class ChatHistoryReducerExtensionsTests
         mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
 
         // Act
-        bool isReduced = await history.ReduceAsync(null, default);
+        bool isReduced = await history.ReduceInPlaceAsync(null, default);
 
         // Assert
         Assert.False(isReduced);
         Assert.Empty(history);
 
         // Act
-        isReduced = await history.ReduceAsync(mockReducer.Object, default);
+        isReduced = await history.ReduceInPlaceAsync(mockReducer.Object, default);
 
         // Assert
         Assert.False(isReduced);
@@ -116,7 +116,7 @@ public class ChatHistoryReducerExtensionsTests
         ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(10)];
 
         // Act
-        bool isReduced = await history.ReduceAsync(mockReducer.Object, default);
+        bool isReduced = await history.ReduceInPlaceAsync(mockReducer.Object, default);
 
         // Assert
         Assert.True(isReduced);
