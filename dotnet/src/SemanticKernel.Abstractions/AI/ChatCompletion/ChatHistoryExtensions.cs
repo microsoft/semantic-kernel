@@ -17,7 +17,7 @@ public static class ChatHistoryExtensions
     /// <summary>
     /// Process history reduction and mutate the provided history in place.
     /// </summary>
-    /// <param name="history">The source history</param>
+    /// <param name="chatHistory">The source history</param>
     /// <param name="reducer">The target reducer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True if reduction has occurred.</returns>
@@ -25,24 +25,24 @@ public static class ChatHistoryExtensions
     /// Using the existing <see cref="ChatHistory"/> for a reduction in collection size eliminates the need
     /// for re-allocation (of memory).
     /// </remarks>
-    public static async Task<bool> ReduceInPlaceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    public static async Task<bool> ReduceInPlaceAsync(this ChatHistory chatHistory, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
-        if (reducer == null)
+        if (reducer is null)
         {
             return false;
         }
 
-        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(chatHistory, cancellationToken).ConfigureAwait(false);
 
-        if (reducedHistory == null)
+        if (reducedHistory is null)
         {
             return false;
         }
 
         // Mutate the history in place
         ChatMessageContent[] reduced = reducedHistory.ToArray();
-        history.Clear();
-        history.AddRange(reduced);
+        chatHistory.Clear();
+        chatHistory.AddRange(reduced);
 
         return true;
     }
@@ -50,34 +50,34 @@ public static class ChatHistoryExtensions
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
     /// </summary>
-    /// <param name="history">The source history</param>
+    /// <param name="chatHistory">The source history</param>
     /// <param name="reducer">The target reducer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<IReadOnlyList<ChatMessageContent>> ReduceAsync(this IReadOnlyList<ChatMessageContent> history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    public static async Task<IReadOnlyList<ChatMessageContent>> ReduceAsync(this IReadOnlyList<ChatMessageContent> chatHistory, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
-        if (reducer != null)
+        if (reducer is not null)
         {
-            IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
-            history = reducedHistory?.ToArray() ?? history;
+            IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(chatHistory, cancellationToken).ConfigureAwait(false);
+            chatHistory = reducedHistory?.ToArray() ?? chatHistory;
         }
 
-        return history;
+        return chatHistory;
     }
 
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
     /// </summary>
-    /// <param name="history">The source history</param>
+    /// <param name="chatHistory">The source history</param>
     /// <param name="reducer">The target reducer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<ChatHistory> ReduceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    public static async Task<ChatHistory> ReduceAsync(this ChatHistory chatHistory, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
-        if (reducer != null)
+        if (reducer is not null)
         {
-            IEnumerable<ChatMessageContent>? reduced = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
-            return new ChatHistory(reduced ?? history);
+            IEnumerable<ChatMessageContent>? reduced = await reducer.ReduceAsync(chatHistory, cancellationToken).ConfigureAwait(false);
+            return new ChatHistory(reduced ?? chatHistory);
         }
 
-        return history;
+        return chatHistory;
     }
 }

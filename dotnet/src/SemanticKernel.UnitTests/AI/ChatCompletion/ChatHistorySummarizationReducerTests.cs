@@ -133,7 +133,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService(throwException: true);
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10) { FailOnError = false };
 
         // Act
@@ -151,7 +151,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService(throwException: true);
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
 
         // Act and Assert
@@ -166,7 +166,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 20);
 
         // Act
@@ -184,7 +184,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
 
         // Act
@@ -203,7 +203,7 @@ public class ChatHistorySummarizationReducerTests
     {
         // Arrange
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
 
         // Act

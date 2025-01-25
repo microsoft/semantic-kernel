@@ -31,7 +31,7 @@ public class ChatHistoryReducerExtensionsTests
     public void VerifyChatHistoryExtraction(int messageCount, int startIndex, int? endIndex = null, int? expectedCount = null)
     {
         // Arrange
-        ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
+        ChatHistory history = [.. MockChatHistoryGenerator.CreateSimpleHistory(messageCount)];
 
         // Act
         ChatMessageContent[] extractedHistory = history.Extract(startIndex, endIndex).ToArray();
@@ -62,14 +62,14 @@ public class ChatHistoryReducerExtensionsTests
     public void VerifyGetFinalSummaryIndex(int summaryCount, int regularCount)
     {
         // Arrange
-        ChatHistory summaries = [.. MockHistoryGenerator.CreateSimpleHistory(summaryCount)];
+        ChatHistory summaries = [.. MockChatHistoryGenerator.CreateSimpleHistory(summaryCount)];
         foreach (ChatMessageContent summary in summaries)
         {
             summary.Metadata = new Dictionary<string, object?>() { { "summary", true } };
         }
 
         // Act
-        ChatHistory history = [.. summaries, .. MockHistoryGenerator.CreateSimpleHistory(regularCount)];
+        ChatHistory history = [.. summaries, .. MockChatHistoryGenerator.CreateSimpleHistory(regularCount)];
 
         int finalSummaryIndex = history.LocateSummarizationBoundary("summary");
 
@@ -113,7 +113,7 @@ public class ChatHistoryReducerExtensionsTests
         Mock<IChatHistoryReducer> mockReducer = new();
         mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)[]);
 
-        ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(10)];
+        ChatHistory history = [.. MockChatHistoryGenerator.CreateSimpleHistory(10)];
 
         // Act
         bool isReduced = await history.ReduceInPlaceAsync(mockReducer.Object, default);
@@ -139,7 +139,7 @@ public class ChatHistoryReducerExtensionsTests
     public void VerifyLocateSafeReductionIndexNone(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Arrange: Shape of history doesn't matter since reduction is not expected
-        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
+        ChatHistory sourceHistory = [.. MockChatHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
         // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
@@ -163,7 +163,7 @@ public class ChatHistoryReducerExtensionsTests
     public void VerifyLocateSafeReductionIndexFound(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Arrange: Generate history with only assistant messages
-        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
+        ChatHistory sourceHistory = [.. MockChatHistoryGenerator.CreateSimpleHistory(messageCount)];
 
         // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
@@ -189,7 +189,7 @@ public class ChatHistoryReducerExtensionsTests
     public void VerifyLocateSafeReductionIndexFoundWithUser(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Arrange: Generate history with alternating user and assistant messages
-        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
+        ChatHistory sourceHistory = [.. MockChatHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
         // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
@@ -224,7 +224,7 @@ public class ChatHistoryReducerExtensionsTests
     {
         // Arrange: Generate a history with function call on index 5 and 9 and
         // function result on index 6 and 10 (total length: 14)
-        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithFunctionContent()];
+        ChatHistory sourceHistory = [.. MockChatHistoryGenerator.CreateHistoryWithFunctionContent()];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
