@@ -13,13 +13,16 @@ from semantic_kernel.agents.bedrock.action_group_utils import (
 )
 from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
+from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
@@ -102,7 +105,6 @@ class BedrockAgent(BedrockAgentBase, Agent):
             self.instructions,
             **kwargs,
         )
-        await self._prepare_agent()
 
         if enable_code_interpreter:
             await self._create_code_interpreter_action_group()
@@ -111,6 +113,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         if enable_kernel_function:
             await self._create_kernel_function_action_group()
 
+        await self._prepare_agent()
         self.id = self.agent_model.agent_id
 
     async def update_agent(
@@ -168,53 +171,48 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
 
-        if not self.function_choice_behavior.auto_invoke_kernel_functions:
+        session_state: dict[str, Any] | None = None
+        for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+            if session_state:
+                # Session state is used to send function call results back to the agent.
+                kwargs["sessionState"] = session_state
             response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
-            # When streaming is disabled, the response will be a single event.
+
+            events: list[dict[str, Any]] = []
             for event in response.get("completion", []):
-                yield self._create_chat_message_content(event)
-        else:
-            session_state: dict[str, Any] | None = None
-            for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-                if session_state:
-                    # Session state is used to send function call results back to the agent.
-                    kwargs["sessionState"] = session_state
-                response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+                events.append(event)
 
-                # When streaming is disabled, the response will be a single event.
-                for event in response.get("completion", []):
-                    chat_message_content = self._create_chat_message_content(event)
-                    function_calls = [
-                        item for item in chat_message_content.items if isinstance(item, FunctionCallContent)
-                    ]
+            if any(BedrockAgentEventType.RETURN_CONTROL in event for event in events):
+                # Check if there is function call requests. If there are function calls,
+                # parse and invoke them and return the results back to the agent.
+                # Not yielding the function call results back to the user.
+                session_state = await self._handle_return_control_event(
+                    next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event)
+                )
+            else:
+                # For the rest of the events, the chunk will become the chat message content.
+                # If there are files or trace, they will be added to the chat message content.
+                file_items: list[BinaryContent] | None = None
+                trace_metadata: dict[str, Any] | None = None
+                chat_message_content: ChatMessageContent | None = None
+                for event in events:
+                    if BedrockAgentEventType.CHUNK in event:
+                        chat_message_content = self._handle_chunk_event(event)
+                    elif BedrockAgentEventType.FILES in event:
+                        file_items = self._handle_files_event(event)
+                    elif BedrockAgentEventType.TRACE in event:
+                        trace_metadata = self._handle_trace_event(event)
 
-                    if not function_calls:
-                        yield chat_message_content
-                        return
+                if not chat_message_content:
+                    raise AgentInvokeException("Chat message content is expected but not found in the response.")
 
-                    chat_history = ChatHistory()
-                    await asyncio.gather(
-                        *[
-                            self.kernel.invoke_function_call(
-                                function_call=function_call,
-                                chat_history=chat_history,
-                                function_call_count=len(function_calls),
-                                request_index=request_index,
-                            )
-                            for function_call in function_calls
-                        ],
-                    )
-                    function_result_contents = [
-                        item
-                        for chat_message in chat_history.messages
-                        for item in chat_message.items
-                        if isinstance(item, FunctionResultContent)
-                    ]
+                if file_items:
+                    chat_message_content.items.extend(file_items)
+                if trace_metadata:
+                    chat_message_content.metadata.update({"trace": trace_metadata})
 
-                    session_state = {
-                        "invocationId": function_calls[0].id,
-                        "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
-                    }
+                yield chat_message_content
+                return
 
     async def invoke_stream(
         self,
@@ -226,111 +224,184 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
 
-        if not self.function_choice_behavior.auto_invoke_kernel_functions:
+        session_state: dict[str, Any] | None = None
+        for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+            if session_state:
+                # Session state is used to send function call results back to the agent.
+                kwargs["sessionState"] = session_state
             response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
-            # When streaming is disabled, the response will be a single event.
+
+            all_function_call_messages: list[StreamingChatMessageContent] = []
             for event in response.get("completion", []):
-                yield self._create_streaming_chat_message_content(event)
-        else:
-            session_state: dict[str, Any] | None = None
-            for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-                if session_state:
-                    # Session state is used to send function call results back to the agent.
-                    kwargs["sessionState"] = session_state
-                response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+                if BedrockAgentEventType.CHUNK in event:
+                    yield self._handle_streaming_chunk_event(event)
+                    continue
+                if BedrockAgentEventType.FILES in event:
+                    yield self._handle_streaming_files_event(event)
+                    continue
+                if BedrockAgentEventType.TRACE in event:
+                    yield self._handle_streaming_trace_event(event)
+                    continue
+                if BedrockAgentEventType.RETURN_CONTROL in event:
+                    all_function_call_messages.append(self._handle_streaming_return_control_event(event))
+                    continue
 
-                all_messages: list[StreamingChatMessageContent] = []
-                for event in response.get("completion", []):
-                    message = self._create_streaming_chat_message_content(event)
-                    all_messages.append(message)
-                    if not any(isinstance(item, FunctionCallContent) for item in message.items):
-                        # Only streaming back the messages that contain text content
-                        yield message
+            if not all_function_call_messages:
+                return
 
-                full_message: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-                function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
+            full_message: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_function_call_messages)
+            function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
 
-                if not function_calls:
-                    return
+            chat_history = ChatHistory()
+            await asyncio.gather(
+                *[
+                    self.kernel.invoke_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        function_call_count=len(function_calls),
+                        request_index=request_index,
+                    )
+                    for function_call in function_calls
+                ],
+            )
+            function_result_contents = [
+                item
+                for chat_message in chat_history.messages
+                for item in chat_message.items
+                if isinstance(item, FunctionResultContent)
+            ]
 
-                chat_history = ChatHistory()
-                await asyncio.gather(
-                    *[
-                        self.kernel.invoke_function_call(
-                            function_call=function_call,
-                            chat_history=chat_history,
-                            function_call_count=len(function_calls),
-                            request_index=request_index,
-                        )
-                        for function_call in function_calls
-                    ],
-                )
-                function_result_contents = [
-                    item
-                    for chat_message in chat_history.messages
-                    for item in chat_message.items
-                    if isinstance(item, FunctionResultContent)
-                ]
+            session_state = {
+                "invocationId": function_calls[0].id,
+                "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
+            }
 
-                session_state = {
-                    "invocationId": function_calls[0].id,
-                    "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
-                }
+    # region non streaming Event Handlers
 
-    def _create_chat_message_content(self, event: dict[str, Any]) -> ChatMessageContent:
+    def _handle_chunk_event(self, event: dict[str, Any]) -> ChatMessageContent:
         """Create a chat message content."""
-        if "chunk" in event:
-            # Text response
-            chunk = event["chunk"]
-            completion = chunk["bytes"].decode()
+        chunk = event[BedrockAgentEventType.CHUNK]
+        completion = chunk["bytes"].decode()
 
-            return ChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                content=completion,
-                name=self.name,
-                inner_content=event,
-                ai_model_id=self.agent_model.foundation_model,
+        return ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            content=completion,
+            name=self.name,
+            inner_content=event,
+            ai_model_id=self.agent_model.foundation_model,
+            metadata=chunk,
+        )
+
+    async def _handle_return_control_event(self, event: dict[str, Any]) -> dict[str, Any]:
+        """Handle return control event."""
+        return_control_payload = event[BedrockAgentEventType.RETURN_CONTROL]
+        function_calls = parse_return_control_payload(return_control_payload)
+        if not function_calls:
+            raise AgentInvokeException("Function call is expected but not found in the response.")
+
+        chat_history = ChatHistory()
+        await asyncio.gather(
+            *[
+                self.kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    function_call_count=len(function_calls),
+                )
+                for function_call in function_calls
+            ],
+        )
+        function_result_contents = [
+            item
+            for chat_message in chat_history.messages
+            for item in chat_message.items
+            if isinstance(item, FunctionResultContent)
+        ]
+
+        return {
+            "invocationId": function_calls[0].id,
+            "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
+        }
+
+    def _handle_files_event(self, event: dict[str, Any]) -> list[BinaryContent]:
+        """Handle file event."""
+        files_event = event[BedrockAgentEventType.FILES]
+        return [
+            BinaryContent(
+                data=file["bytes"],
+                data_format="base64",
+                mime_type=file["type"],
+                metadata={"name": file["name"]},
             )
-        if "returnControl" in event:
-            # Tool call response
-            return_control_payload = event["returnControl"]
-            function_calls = parse_return_control_payload(return_control_payload)
+            for file in files_event["files"]
+        ]
 
-            return ChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                items=function_calls,
-                name=self.name,
-                inner_content=event,
-                ai_model_id=self.agent_model.foundation_model,
+    def _handle_trace_event(self, event: dict[str, Any]) -> dict[str, Any]:
+        """Handle trace event."""
+        return event[BedrockAgentEventType.TRACE]
+
+    # endregion
+
+    # region streaming Event Handlers
+
+    def _handle_streaming_chunk_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Handle streaming chunk event."""
+        chunk = event[BedrockAgentEventType.CHUNK]
+        completion = chunk["bytes"].decode()
+
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            choice_index=0,
+            content=completion,
+            name=self.name,
+            inner_content=event,
+            ai_model_id=self.agent_model.foundation_model,
+        )
+
+    def _handle_streaming_return_control_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Handle streaming return control event."""
+        return_control_payload = event[BedrockAgentEventType.RETURN_CONTROL]
+        function_calls = parse_return_control_payload(return_control_payload)
+
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            choice_index=0,
+            items=function_calls,
+            name=self.name,
+            inner_content=event,
+            ai_model_id=self.agent_model.foundation_model,
+        )
+
+    def _handle_streaming_files_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Handle streaming file event."""
+        files_event = event[BedrockAgentEventType.FILES]
+        items = [
+            BinaryContent(
+                data=file["bytes"],
+                data_format="base64",
+                mime_type=file["type"],
+                metadata={"name": file["name"]},
             )
-        raise ValueError(f"Unknown event type: {event}")
+            for file in files_event["files"]
+        ]
 
-    def _create_streaming_chat_message_content(self, event: dict[str, Any]) -> StreamingChatMessageContent:
-        """Create a streaming chat message content."""
-        if "chunk" in event:
-            # Text response
-            chunk = event["chunk"]
-            completion = chunk["bytes"].decode()
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            choice_index=0,
+            items=items,
+            name=self.name,
+            inner_content=event,
+            ai_model_id=self.agent_model.foundation_model,
+        )
 
-            return StreamingChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                choice_index=0,
-                content=completion,
-                name=self.name,
-                inner_content=event,
-                ai_model_id=self.agent_model.foundation_model,
-            )
-        if "returnControl" in event:
-            # Tool call response
-            return_control_payload = event["returnControl"]
-            function_calls = parse_return_control_payload(return_control_payload)
+    def _handle_streaming_trace_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
+        """Handle streaming trace event."""
+        return StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            choice_index=0,
+            name=self.name,
+            inner_content=event,
+            ai_model_id=self.agent_model.foundation_model,
+            metadata=event[BedrockAgentEventType.TRACE],
+        )
 
-            return StreamingChatMessageContent(
-                role=AuthorRole.ASSISTANT,
-                choice_index=0,
-                items=function_calls,
-                name=self.name,
-                inner_content=event,
-                ai_model_id=self.agent_model.foundation_model,
-            )
-        raise ValueError(f"Unknown event type: {event}")
+    # endregion
