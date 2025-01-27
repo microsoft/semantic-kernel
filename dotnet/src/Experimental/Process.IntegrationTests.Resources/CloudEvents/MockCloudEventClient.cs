@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.IntegrationTests.CloudEvents;
+/// <summary>
+/// Class used for testing purposes to mock emitting external cloud events
+/// </summary>
 public class MockCloudEventClient : IExternalKernelProcessMessageChannel
 {
     /// <summary>
@@ -25,7 +28,7 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     /// <summary>
     /// Instance of <see cref="MockCloudEventClient"/> when used as singleton
     /// </summary>
-    public static MockCloudEventClient? Instance
+    public static MockCloudEventClient Instance
     {
         get
         {
@@ -36,7 +39,11 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     /// <inheritdoc/>
     public Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
     {
-        this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = (string)eventData });
+        if (eventData != null)
+        {
+            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = (string)eventData });
+        }
+
         return Task.CompletedTask;
     }
 
