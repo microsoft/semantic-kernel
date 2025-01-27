@@ -52,6 +52,7 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAgent
         {
             await client.DeleteAgentAsync(agent.Id);
             await client.DeleteFileAsync(fileInfo.Id);
+            await chat.ResetAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.

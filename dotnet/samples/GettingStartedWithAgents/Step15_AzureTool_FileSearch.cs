@@ -22,9 +22,10 @@ public class Step15_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsT
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
         AgentFile fileInfo = await client.UploadFileAsync(stream, AgentFilePurpose.Agents, "employees.pdf");
-        VectorStore fileStore = await client.CreateVectorStoreAsync([fileInfo.Id], "step16-test");
-        //await client.CreateVectorStoreFileAsync(fileStore.Id, fileInfo.Id);
-        //Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
+        VectorStore fileStore =
+            await client.CreateVectorStoreAsync(
+                [fileInfo.Id],
+                metadata: new Dictionary<string, string>() { { AssistantSampleMetadataKey, bool.TrueString } });
         Agent agentModel = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new FileSearchToolDefinition()],
@@ -34,7 +35,8 @@ public class Step15_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsT
                 {
                     VectorStoreIds = { fileStore.Id },
                 }
-            });
+            },
+            metadata: new Dictionary<string, string>() { { AssistantSampleMetadataKey, bool.TrueString } });
         AzureAIAgent agent = new(agentModel, clientProvider);
 
         // Create a thread associated for the agent conversation.

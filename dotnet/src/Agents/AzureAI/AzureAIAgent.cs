@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
+/// A <see cref="KernelAgent"/> specialization based on Azure AI Agent.
 /// </summary>
 public sealed class AzureAIAgent : KernelAgent
 {
@@ -248,6 +248,7 @@ public sealed class AzureAIAgent : KernelAgent
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
         this.Instructions = this.Definition.Instructions;
+        this.Kernel = new();
 
         if (templateFactory != null)
         {

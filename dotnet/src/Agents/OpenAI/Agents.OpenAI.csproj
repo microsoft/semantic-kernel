@@ -15,7 +15,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - OpenAI</Title>
-    <Description>Defines core a concrete Agent based on the OpenAI Assistant API.</Description>
+    <Description>Defines a concrete Agent based on the OpenAI Assistant API.</Description>
   </PropertyGroup>
 
   <ItemGroup>
