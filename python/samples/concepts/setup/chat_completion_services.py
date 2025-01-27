@@ -3,6 +3,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -383,8 +385,13 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
     )
 
     openai_settings = OpenAISettings.create()
+    if not openai_settings.api_key:
+        raise ServiceInitializationError("The DeepSeek API key is required.")
+    if not openai_settings.chat_model_id:
+        raise ServiceInitializationError("The DeepSeek model ID is required.")
 
     chat_service = OpenAIChatCompletion(
+        ai_model_id=openai_settings.chat_model_id,
         service_id=service_id,
         async_client=AsyncOpenAI(
             api_key=openai_settings.api_key.get_secret_value(),
