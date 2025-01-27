@@ -4,8 +4,6 @@ import logging
 import sys
 from typing import Any
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
 if sys.version < "3.11":
     from typing_extensions import Self, override  # pragma: no cover
 else:
@@ -16,6 +14,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     extract_range,
     locate_safe_reduction_index,
 )
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
 
