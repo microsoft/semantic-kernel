@@ -533,7 +533,6 @@ class PostgresCollection(
 
         # Select all fields except all vector fields if include_vectors is False
         select_list = self.data_model_definition.get_field_names(include_vector_fields=options.include_vectors)
-        select_fields = [(name, f) for (name, f) in self.data_model_definition.fields.items() if name in select_list]
 
         where_clause = self._build_where_clauses_from_filter(options.filter)
 
@@ -584,7 +583,14 @@ class PostgresCollection(
         # Convert the vector to a string for the query
         params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
 
-        return query, params, [*select_fields, (self._distance_column_name, None)]
+        return (
+            query,
+            params,
+            [
+                *((name, f) for (name, f) in self.data_model_definition.fields.items() if name in select_list),
+                (self._distance_column_name, None),
+            ],
+        )
 
     def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> sql.Composed | None:
         """Build the WHERE clause for the search query from the filter in the search options.
