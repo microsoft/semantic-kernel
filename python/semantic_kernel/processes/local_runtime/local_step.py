@@ -50,20 +50,20 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def parse_initial_configuration(cls, data: dict[str, Any]) -> dict[str, Any]:
+    def parse_initial_configuration(cls, data: Any) -> Any:
         """Parses the initial configuration of the step."""
-        from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
+        if isinstance(data, dict):
+            from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-        step_info = data.get("step_info")
-        assert step_info is not None  # nosec
+            step_info = data.get("step_info")
+            assert step_info is not None  # nosec
 
-        if step_info and isinstance(step_info, KernelProcess) and step_info.state.id is None:
-            step_info.state.id = str(uuid.uuid4().hex)
+            if step_info and isinstance(step_info, KernelProcess) and step_info.state.id is None:
+                step_info.state.id = str(uuid.uuid4().hex)
 
-        data["step_state"] = step_info.state
-        data["output_edges"] = {k: v for k, v in step_info.edges.items()}
-        data["event_namespace"] = f"{step_info.state.name}_{step_info.state.id}"
-
+            data["step_state"] = step_info.state
+            data["output_edges"] = {k: v for k, v in step_info.edges.items()}
+            data["event_namespace"] = f"{step_info.state.name}_{step_info.state.id}"
         return data
 
     @property

@@ -398,7 +398,16 @@ class KernelPlugin(KernelBaseModel):
         for name, cls_instance in inspect.getmembers(module, inspect.isclass):
             if cls_instance.__module__ != module_name:
                 continue
-            instance = getattr(module, name)(**class_init_arguments.get(name, {}) if class_init_arguments else {})
+            # Check whether this class has at least one @kernel_function decorated method
+            has_kernel_function = False
+            for _, method in inspect.getmembers(cls_instance, inspect.isfunction):
+                if getattr(method, "__kernel_function__", False):
+                    has_kernel_function = True
+                    break
+            if not has_kernel_function:
+                continue
+            init_args = class_init_arguments.get(name, {}) if class_init_arguments else {}
+            instance = getattr(module, name)(**init_args)
             return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
 

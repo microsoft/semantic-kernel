@@ -135,7 +135,14 @@
         {
             "label": "Python: Tests - Code Coverage",
             "type": "shell",
-            "command": "uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "--cov=semantic_kernel",
+                "--cov-report=term-missing:skip-covered",
+                "tests/unit/"
+            ],
             "group": "test",
             "presentation": {
                 "reveal": "always",
