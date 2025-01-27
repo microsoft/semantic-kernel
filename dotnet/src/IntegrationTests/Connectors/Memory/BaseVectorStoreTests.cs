@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
@@ -14,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorStore)
     where TKey : notnull
 {
-    [Fact]
+    [VectorStoreFact]
     public virtual async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange

@@ -80,7 +80,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
 
     [Theory]
     [InlineData(DistanceFunction.CosineDistance, "cosine")]
-    [InlineData(DistanceFunction.DotProductSimilarity, "dot")]
+    [InlineData(DistanceFunction.NegativeDotProductSimilarity, "dot")]
     [InlineData(DistanceFunction.EuclideanSquaredDistance, "l2-squared")]
     [InlineData(DistanceFunction.Hamming, "hamming")]
     [InlineData(DistanceFunction.ManhattanDistance, "manhattan")]

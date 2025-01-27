@@ -41,6 +41,22 @@ def _format_system_message(message: ChatMessageContent) -> SystemMessage:
     return SystemMessage(content=message.content)
 
 
+def _format_developer_message(message: ChatMessageContent) -> ChatRequestMessage:
+    """Format a developer message to the expected object for the client.
+
+    Args:
+        message: The developer message.
+
+    Returns:
+        The formatted developer message.
+    """
+    # TODO(@ymuichiro): Add support when Azure AI Inference SDK implements developer role
+    raise NotImplementedError(
+        "Developer role is currently not supported by the Azure AI Inference SDK. "
+        "This feature will be implemented in a future update when SDK support is available."
+    )
+
+
 def _format_user_message(message: ChatMessageContent) -> UserMessage:
     """Format a user message to the expected object for the client.
 
@@ -140,4 +156,5 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestM
     AuthorRole.USER: _format_user_message,
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
+    AuthorRole.DEVELOPER: _format_developer_message,
 }

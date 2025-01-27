@@ -326,7 +326,7 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
     with pytest.raises(
-        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
     ):
         _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
@@ -352,7 +352,7 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
     with pytest.raises(
-        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
     ):
         AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
 
@@ -462,7 +462,7 @@ async def test_setup_client_and_token_no_credentials_raises_exception():
     mock_settings.token_endpoint = None
 
     with pytest.raises(
-        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
     ):
         _ = AzureAssistantAgent._setup_client_and_token(
             azure_openai_settings=mock_settings,
@@ -471,3 +471,100 @@ async def test_setup_client_and_token_no_credentials_raises_exception():
             client=None,
             default_headers=None,
         )
+
+
+@pytest.mark.parametrize(
+    "exclude_list, client, api_key, should_raise, expected_exception_msg, should_create_client_call",
+    [
+        ([], None, "test_api_key", False, None, True),
+        ([], AsyncMock(spec=AsyncAzureOpenAI), None, False, None, False),
+        (
+            [],
+            AsyncMock(spec=AsyncAzureOpenAI),
+            "test_api_key",
+            False,
+            None,
+            False,
+        ),
+        (
+            ["AZURE_OPENAI_API_KEY"],
+            None,
+            None,
+            True,
+            "Please provide either a client, an api_key, ad_token or ad_token_provider.",
+            False,
+        ),
+    ],
+    indirect=["exclude_list"],
+)
+async def test_retrieve_agent_handling_api_key_and_client(
+    azure_openai_unit_test_env,
+    exclude_list,
+    kernel,
+    client,
+    api_key,
+    should_raise,
+    expected_exception_msg,
+    should_create_client_call,
+):
+    is_api_key_present = "AZURE_OPENAI_API_KEY" not in exclude_list
+
+    with (
+        patch.object(
+            AzureAssistantAgent,
+            "_create_azure_openai_settings",
+            return_value=MagicMock(
+                chat_model_id="test_model",
+                api_key=MagicMock(
+                    get_secret_value=MagicMock(return_value="test_api_key" if is_api_key_present else None)
+                )
+                if is_api_key_present
+                else None,
+            ),
+        ),
+        patch.object(
+            AzureAssistantAgent,
+            "_create_client",
+            return_value=AsyncMock(spec=AsyncAzureOpenAI),
+        ) as mock_create_client,
+        patch.object(
+            OpenAIAssistantBase,
+            "_create_open_ai_assistant_definition",
+            return_value={
+                "ai_model_id": "test_model",
+                "description": "test_description",
+                "id": "test_id",
+                "name": "test_name",
+            },
+        ) as mock_create_def,
+    ):
+        if client:
+            client.beta = MagicMock()
+            client.beta.assistants = MagicMock()
+            client.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+        else:
+            mock_client_instance = mock_create_client.return_value
+            mock_client_instance.beta = MagicMock()
+            mock_client_instance.beta.assistants = MagicMock()
+            mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+
+        if should_raise:
+            with pytest.raises(AgentInitializationException, match=expected_exception_msg):
+                await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, api_key=api_key, client=client)
+            return
+
+        retrieved_agent = await AzureAssistantAgent.retrieve(
+            id="test_id", kernel=kernel, api_key=api_key, client=client
+        )
+
+        if should_create_client_call:
+            mock_create_client.assert_called_once()
+        else:
+            mock_create_client.assert_not_called()
+
+        assert retrieved_agent.ai_model_id == "test_model"
+        mock_create_def.assert_called_once()
+        if client:
+            client.beta.assistants.retrieve.assert_called_once_with("test_id")
+        else:
+            mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")

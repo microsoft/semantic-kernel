@@ -127,6 +127,33 @@ public sealed class OpenAIFunctionToolCallTests
         Assert.Null(exception);
     }
 
+    [Fact]
+    public void TrackStreamingToolingUpdateWithEmptyIdNameDoesNotThrowException()
+    {
+        // Arrange
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
+
+        // Act
+        var exception = Record.Exception(() =>
+            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(
+                [
+                    GetUpdateChunkFromString("""{"function":{"name":"WeatherPlugin-GetWeather","arguments":"{\"addressCode"},"index":0,"id":"call_74f02d5863864109bae3d1","type":"function"}"""),
+                    GetUpdateChunkFromString("""{"function":{"name":"","arguments":"\": \"44"},"index":0,"id":"","type":"function"}"""),
+                    GetUpdateChunkFromString("""{"function":{"name":"","arguments":"0100"},"index":0,"id":"","type":"function"}"""),
+                ],
+                ref toolCallIdsByIndex,
+                ref functionNamesByIndex,
+                ref functionArgumentBuildersByIndex
+            ));
+
+        // Assert
+        Assert.Null(exception);
+        Assert.False(string.IsNullOrEmpty(toolCallIdsByIndex![0]));
+        Assert.False(string.IsNullOrEmpty(functionNamesByIndex![0]));
+    }
+
     private static StreamingChatToolCallUpdate GetUpdateChunkFromString(string jsonChunk)
         => ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString(jsonChunk))!;
 }

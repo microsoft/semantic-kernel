@@ -108,8 +108,10 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 generator.GenerateNextToken();
 
                 var outputTokens = generator.GetSequence(0);
-                var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
-                string output = this.GetTokenizer().Decode(newToken);
+                var newToken = outputTokens[outputTokens.Length - 1];
+
+                using var tokenizerStream = this.GetTokenizer().CreateStream();
+                string output = tokenizerStream.Decode(newToken);
 
                 if (removeNextTokenStartingWithSpace && output[0] == ' ')
                 {

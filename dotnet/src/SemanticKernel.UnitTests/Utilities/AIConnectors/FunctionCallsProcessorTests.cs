@@ -164,7 +164,7 @@ public class FunctionCallsProcessorTests
 
         Assert.Equal("MyPlugin", functionResult.PluginName);
         Assert.Equal("Function1", functionResult.FunctionName);
-        Assert.Equal("Error: Function call processing failed. Deserialization failed.", functionResult.Result);
+        Assert.Equal("Error: Function call processing failed. Correct yourself. Deserialization failed.", functionResult.Result);
     }
 
     [Fact]
@@ -225,7 +225,7 @@ public class FunctionCallsProcessorTests
 
         Assert.Equal("MyPlugin", functionResult.PluginName);
         Assert.Equal("Function1", functionResult.FunctionName);
-        Assert.Equal("Error: Function call request for a function that wasn't defined.", functionResult.Result);
+        Assert.Equal("Error: Function call request for a function that wasn't defined. Correct yourself.", functionResult.Result);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public class FunctionCallsProcessorTests
 
         Assert.Equal("MyPlugin", functionResult.PluginName);
         Assert.Equal("Function1", functionResult.FunctionName);
-        Assert.Equal("Error: Requested function could not be found.", functionResult.Result);
+        Assert.Equal("Error: Requested function could not be found. Correct yourself.", functionResult.Result);
     }
 
     [Theory]

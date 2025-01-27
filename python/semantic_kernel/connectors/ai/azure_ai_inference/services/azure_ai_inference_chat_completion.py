@@ -30,7 +30,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -46,6 +45,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutio
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -66,6 +66,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
@@ -82,20 +83,29 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
+                prompts could use `developer` or `system`. (Optional)
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
         """
-        super().__init__(
-            ai_model_id=ai_model_id,
-            service_id=service_id or ai_model_id,
-            client_type=AzureAIInferenceClientType.ChatCompletions,
-            api_key=api_key,
-            endpoint=endpoint,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-            client=client,
-        )
+        args: dict[str, Any] = {
+            "ai_model_id": ai_model_id,
+            "api_key": api_key,
+            "client_type": AzureAIInferenceClientType.ChatCompletions,
+            "client": client,
+            "endpoint": endpoint,
+            "env_file_path": env_file_path,
+            "env_file_encoding": env_file_encoding,
+        }
+
+        if service_id:
+            args["service_id"] = service_id
+
+        if instruction_role:
+            args["instruction_role"] = instruction_role
+
+        super().__init__(**args)
 
     # region Overriding base class methods
 
@@ -179,7 +189,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
     @override
@@ -199,7 +209,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         chat_request_messages: list[ChatRequestMessage] = []
 
         for message in chat_history.messages:
-            chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
+            # If instruction_role is 'developer' and the message role is 'system', change it to 'developer'
+            role = (
+                AuthorRole.DEVELOPER
+                if self.instruction_role == "developer" and message.role == AuthorRole.SYSTEM
+                else message.role
+            )
+            chat_request_messages.append(MESSAGE_CONVERTERS[role](message))
 
         return chat_request_messages
 
