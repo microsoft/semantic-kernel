@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Flag to determine whether to use Azure OpenAI services or OpenAI
 # Set this to True if using Azure OpenAI (requires appropriate configuration)
-use_azure_openai = False
+use_azure_openai = True
 
 
 # Helper function to create and configure a Kernel with the desired chat completion service
@@ -49,14 +49,16 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 class HistoryReducerExample:
     """
-    Demonstrates how to create a ChatCompletionAgent with a ChatHistoryReducer
+    Demonstrates how to create a ChatCompletionAgent with both types of ChatHistoryReducer
     (either truncation or summarization) and how to invoke that agent
     multiple times while applying the history reduction.
+
+    This can be done both directly on the agent itself, or through a group chat.
     """
 
     # Agent-specific settings
-    TRANSLATOR_NAME = "NumeroTranslator"  # Name of the agent
-    TRANSLATOR_INSTRUCTIONS = "Add one to the latest user number and spell it in Spanish without explanation."
+    AGENT_NAME = "NumeroTranslator"
+    AGENT_INSTRUCTIONS = "Add one to the latest user number and spell it in Spanish without explanation."
 
     def create_truncating_agent(self, reducer_msg_count: int, reducer_threshold: int) -> ChatCompletionAgent:
         """
@@ -70,8 +72,8 @@ class HistoryReducerExample:
         - A configured ChatCompletionAgent instance with truncation enabled.
         """
         return ChatCompletionAgent(
-            name=self.TRANSLATOR_NAME,
-            instructions=self.TRANSLATOR_INSTRUCTIONS,
+            name=self.AGENT_NAME,
+            instructions=self.AGENT_INSTRUCTIONS,
             kernel=_create_kernel_with_chat_completion("truncate_agent"),
             history_reducer=ChatHistoryTruncationReducer(
                 target_count=reducer_msg_count, threshold_count=reducer_threshold
@@ -89,14 +91,15 @@ class HistoryReducerExample:
         Returns:
         - A configured ChatCompletionAgent instance with summarization enabled.
         """
-        kernel = _create_kernel_with_chat_completion("summarize_agent")
+        service_id = "summarize_agent"
+        kernel = _create_kernel_with_chat_completion(service_id)
 
         return ChatCompletionAgent(
-            name=self.TRANSLATOR_NAME,
-            instructions=self.TRANSLATOR_INSTRUCTIONS,
+            name=self.AGENT_NAME,
+            instructions=self.AGENT_INSTRUCTIONS,
             kernel=kernel,
             history_reducer=ChatHistorySummarizationReducer(
-                service=kernel.get_service(service_id="summarize_agent"),
+                service=kernel.get_service(service_id=service_id),
                 target_count=reducer_msg_count,
                 threshold_count=reducer_threshold,
             ),
@@ -191,50 +194,52 @@ async def main():
     # Initialize the example class
     example = HistoryReducerExample()
 
-    # Demonstrate truncation-based reduction
+    # Demonstrate truncation-based reduction, there are two important settings to consider:
+    # reducer_msg_count:
+    #   Purpose: Defines the target number of messages to retain after applying truncation or summarization.
+    #   What it controls: This parameter determines how much of the most recent conversation history
+    #                   is preserved while discarding or summarizing older messages.
+    #   Why change it?:
+    #   - Smaller values: Use when memory constraints are tight, or the assistant only needs a brief history
+    #   to maintain context.
+    #   - Larger values: Use when retaining more conversational context is critical for accurate responses
+    #   or maintaining a richer dialogue.
+    # reducer_threshold:
+    #   Purpose: Acts as a buffer to avoid reducing history prematurely when the current message count exceeds
+    #          reducer_msg_count by a small margin.
+    #   What it controls: Helps ensure that essential paired messages (like a user query and the assistant’s response)
+    #                   are not "orphaned" or lost during truncation or summarization.
+    #   Why change it?:
+    #   - Smaller values: Use when you want stricter reduction criteria and are okay with possibly cutting older
+    #   pairs of messages sooner.
+    #   - Larger values: Use when you want to minimize the risk of cutting a critical part of the conversation,
+    #   especially for sensitive interactions like API function calls or complex responses.
+    reducer_msg_count = 10
+    reducer_threshold = 10
+    # create both agents with the same configuration
     trunc_agent = example.create_truncating_agent(
-        # reducer_msg_count:
-        # Purpose: Defines the target number of messages to retain after applying truncation or summarization.
-        # What it controls: This parameter determines how much of the most recent conversation history
-        #                   is preserved while discarding or summarizing older messages.
-        # Why change it?:
-        # - Smaller values: Use when memory constraints are tight, or the assistant only needs a brief history
-        #   to maintain context.
-        # - Larger values: Use when retaining more conversational context is critical for accurate responses
-        #   or maintaining a richer dialogue.
-        reducer_msg_count=10,
-        # reducer_threshold:
-        # Purpose: Acts as a buffer to avoid reducing history prematurely when the current message count exceeds
-        #          reducer_msg_count by a small margin.
-        # What it controls: Helps ensure that essential paired messages (like a user query and the assistant’s response)
-        #                   are not "orphaned" or lost during truncation or summarization.
-        # Why change it?:
-        # - Smaller values: Use when you want stricter reduction criteria and are okay with possibly cutting older
-        #   pairs of messages sooner.
-        # - Larger values: Use when you want to minimize the risk of cutting a critical part of the conversation,
-        #   especially for sensitive interactions like API function calls or complex responses.
-        reducer_threshold=10,
+        reducer_msg_count=reducer_msg_count, reducer_threshold=reducer_threshold
     )
+    sum_agent = example.create_summarizing_agent(
+        reducer_msg_count=reducer_msg_count, reducer_threshold=reducer_threshold
+    )
+
+    # Demonstrate truncation-based reduction
     print("===TruncatedAgentReduction Demo===")
     await example.invoke_agent(trunc_agent, chat_history=ChatHistory(), message_count=50)
 
     # # Demonstrate group chat with truncation
     print("\n===TruncatedChatReduction Demo===")
-    trunc_agent.history_reducer.messages.clear()
+    trunc_agent.history_reducer.clear()
     await example.invoke_chat(trunc_agent, message_count=50)
 
     # Demonstrate summarization-based reduction
-    sum_agent = example.create_summarizing_agent(
-        # Same configuration for summarization-based reduction
-        reducer_msg_count=10,  # Target number of messages to retain
-        reducer_threshold=10,  # Buffer to avoid premature reduction
-    )
     print("\n===SummarizedAgentReduction Demo===")
     await example.invoke_agent(sum_agent, chat_history=ChatHistory(), message_count=50)
 
     # Demonstrate group chat with summarization
     print("\n===SummarizedChatReduction Demo===")
-    sum_agent.history_reducer.messages.clear()
+    sum_agent.history_reducer.clear()
     await example.invoke_chat(sum_agent, message_count=50)
 
 
