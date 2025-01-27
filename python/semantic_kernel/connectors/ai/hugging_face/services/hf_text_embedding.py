@@ -16,12 +16,13 @@ from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
     try:
         from torch import Tensor
     except ImportError:
-        Tensor = Any
+        Tensor = Any  # type: ignore
 
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
