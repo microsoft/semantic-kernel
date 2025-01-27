@@ -64,12 +64,12 @@ class HistoryReducerExample:
         """
         Creates a ChatCompletionAgent with a truncation-based history reducer.
 
-        Parameters:
-        - reducer_msg_count: Target number of messages to retain after truncation.
-        - reducer_threshold: Threshold number of messages to trigger truncation.
+        Args:
+            reducer_msg_count: Target number of messages to retain after truncation.
+            reducer_threshold: Threshold number of messages to trigger truncation.
 
         Returns:
-        - A configured ChatCompletionAgent instance with truncation enabled.
+            A configured ChatCompletionAgent instance with truncation enabled.
         """
         return ChatCompletionAgent(
             name=self.AGENT_NAME,
@@ -84,12 +84,12 @@ class HistoryReducerExample:
         """
         Creates a ChatCompletionAgent with a summarization-based history reducer.
 
-        Parameters:
-        - reducer_msg_count: Target number of messages to retain after summarization.
-        - reducer_threshold: Threshold number of messages to trigger summarization.
+        Args:
+            reducer_msg_count: Target number of messages to retain after summarization.
+            reducer_threshold: Threshold number of messages to trigger summarization.
 
         Returns:
-        - A configured ChatCompletionAgent instance with summarization enabled.
+            A configured ChatCompletionAgent instance with summarization enabled.
         """
         service_id = "summarize_agent"
         kernel = _create_kernel_with_chat_completion(service_id)
@@ -142,9 +142,9 @@ class HistoryReducerExample:
         """
         Demonstrates agent invocation within a group chat.
 
-        Parameters:
-        - agent: The ChatCompletionAgent to invoke.
-        - message_count: The number of messages to simulate in the conversation.
+        Args:
+            agent: The ChatCompletionAgent to invoke.
+            message_count: The number of messages to simulate in the conversation.
         """
         chat = AgentGroupChat()  # Initialize a new group chat
         last_history_count = 0
@@ -180,8 +180,8 @@ class HistoryReducerExample:
         This assumes that the ChatHistorySummarizationReducer uses the default value for:
         `use_single_summary` which is True, and there is therefor only one summary message.
 
-        Parameters:
-        - messages: List of chat messages to process.
+        Args:
+            messages: List of chat messages to process.
         """
         for msg in messages:
             if msg.metadata and msg.metadata.get("__summary__"):
