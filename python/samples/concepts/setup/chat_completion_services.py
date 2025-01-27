@@ -25,6 +25,7 @@ class Services(str, Enum):
     OLLAMA = "ollama"
     ONNX = "onnx"
     VERTEX_AI = "vertex_ai"
+    DEEPSEEK = "deepseek"
 
 
 service_id = "default"
@@ -45,6 +46,7 @@ def get_chat_completion_service_and_request_settings(
         Services.OLLAMA: get_ollama_chat_completion_service_and_request_settings,
         Services.ONNX: get_onnx_chat_completion_service_and_request_settings,
         Services.VERTEX_AI: get_vertex_ai_chat_completion_service_and_request_settings,
+        Services.DEEPSEEK: get_deepseek_chat_completion_service_and_request_settings,
     }
     return chat_services[service_name]()
 
@@ -65,10 +67,7 @@ def get_openai_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
     """
-    from semantic_kernel.connectors.ai.open_ai import (
-        OpenAIChatCompletion,
-        OpenAIChatPromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 
     chat_service = OpenAIChatCompletion(service_id=service_id)
     request_settings = OpenAIChatPromptExecutionSettings(
@@ -94,10 +93,7 @@ def get_azure_openai_chat_completion_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.open_ai import (
-        AzureChatCompletion,
-        AzureChatPromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
 
     chat_service = AzureChatCompletion(service_id=service_id)
     request_settings = AzureChatPromptExecutionSettings(service_id=service_id)
@@ -326,5 +322,47 @@ def get_vertex_ai_chat_completion_service_and_request_settings() -> tuple[
 
     chat_service = VertexAIChatCompletion(service_id=service_id)
     request_settings = VertexAIChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return DeepSeek chat completion service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The DeepSeek endpoint can be accessed via the OpenAI connector as the DeepSeek API is compatible with OpenAI API.
+    Set the `OPENAI_API_KEY` environment variable to the DeepSeek API key.
+    Set the `OPENAI_CHAT_MODEL_ID` environment variable to the DeepSeek model ID (deepseek-chat or deepseek-reasoner).
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from openai import AsyncOpenAI
+
+    from semantic_kernel.connectors.ai.open_ai import (
+        OpenAIChatCompletion,
+        OpenAIChatPromptExecutionSettings,
+        OpenAISettings,
+    )
+
+    openai_settings = OpenAISettings.create()
+
+    chat_service = OpenAIChatCompletion(
+        service_id=service_id,
+        async_client=AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value(),
+            base_url="https://api.deepseek.com",
+        ),
+    )
+    request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
