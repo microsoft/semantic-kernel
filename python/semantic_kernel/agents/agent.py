@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import uuid
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar
@@ -20,6 +21,9 @@ from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
+
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
@@ -46,7 +50,7 @@ class Agent(KernelBaseModel):
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None
     history_reducer: ChatHistoryReducer | None = None
-    arguments: KernelArguments | None = Field(default_factory=KernelArguments)
+    arguments: KernelArguments = Field(default_factory=KernelArguments)
     prompt_template: PromptTemplateBase | None = None
 
     async def reduce_history(self, history: "ChatHistory") -> bool:
@@ -106,7 +110,7 @@ class Agent(KernelBaseModel):
             )
         return await self.prompt_template.render(kernel, arguments)
 
-    def merge_arguments(self, override_args: KernelArguments | None) -> KernelArguments | None:
+    def merge_arguments(self, override_args: KernelArguments) -> KernelArguments:
         """Merge the arguments with the override arguments.
 
         Args:

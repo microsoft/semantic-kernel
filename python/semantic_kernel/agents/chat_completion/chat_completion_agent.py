@@ -96,13 +96,15 @@ class ChatCompletionAgent(Agent):
                 "and ignoring `instructions`."
             )
 
-        # TODO need to improve logic around instructions
+        if instructions is not None:
+            args["instructions"] = instructions
         if prompt_template_config is not None:
             args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
             )
-        if instructions is not None:
-            args["instructions"] = instructions
+            if prompt_template_config.template is not None:
+                # Use the template from the prompt_template_config if it is provided
+                args["instructions"] = prompt_template_config.template
         super().__init__(**args)
 
     @trace_agent_invocation
@@ -126,26 +128,20 @@ class ChatCompletionAgent(Agent):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
 
         kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
-        # Get the chat completion service
-        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
+            kernel=kernel, arguments=arguments
+        )
 
         if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
-
-        # TODO: do we handle passing in execution settings and kernel arguments execution settings?
-        settings = (
-            self.execution_settings
-            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
-            or chat_completion_service.instantiate_prompt_execution_settings(
-                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
-            )
-        )
 
         chat = await self._setup_agent_chat_history(
             history=history,
@@ -199,24 +195,14 @@ class ChatCompletionAgent(Agent):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
 
         kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
-        # Get the chat completion service
-        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
-
-        if not chat_completion_service:
-            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
-
-        assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
-
-        settings = (
-            self.execution_settings
-            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
-            or chat_completion_service.instantiate_prompt_execution_settings(
-                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
-            )
+        chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
+            kernel=kernel, arguments=arguments
         )
 
         chat = await self._setup_agent_chat_history(
@@ -278,3 +264,28 @@ class ChatCompletionAgent(Agent):
         chat.extend(history.messages if history.messages else [])
 
         return ChatHistory(messages=chat)
+
+    async def _get_chat_completion_service_and_settings(
+        self, kernel: "Kernel", arguments: KernelArguments
+    ) -> tuple[ChatCompletionClientBase, PromptExecutionSettings]:
+        """Get the chat completion service and settings."""
+        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+
+        if not chat_completion_service:
+            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+
+        assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
+
+        settings = (
+            arguments.execution_settings.get(self.service_id)
+            if arguments.execution_settings and self.service_id in arguments.execution_settings
+            else self.execution_settings
+            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or chat_completion_service.instantiate_prompt_execution_settings(
+                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
+            )
+        )
+
+        assert settings is not None  # nosec
+
+        return chat_completion_service, settings
