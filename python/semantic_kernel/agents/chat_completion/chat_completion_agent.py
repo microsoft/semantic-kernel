@@ -38,7 +38,6 @@ class ChatCompletionAgent(Agent):
     """
 
     service_id: str
-    execution_settings: PromptExecutionSettings | None = None
     channel_type: ClassVar[type[AgentChannel]] = ChatHistoryChannel
 
     def __init__(
@@ -49,7 +48,6 @@ class ChatCompletionAgent(Agent):
         id: str | None = None,
         description: str | None = None,
         instructions: str | None = None,
-        execution_settings: PromptExecutionSettings | None = None,
         history_reducer: ChatHistoryReducer | None = None,
         arguments: KernelArguments | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
@@ -65,9 +63,9 @@ class ChatCompletionAgent(Agent):
                 a unique GUID will be generated.
             description: The description of the agent. (optional)
             instructions: The instructions for the agent. (optional)
-            execution_settings: The execution settings for the agent. (optional)
             history_reducer: The history reducer for the agent. (optional)
-            arguments: The kernel arguments for the agent. (optional)
+            arguments: The kernel arguments for the agent. (optional) Invoke method arguments take precedence over
+                the arguments provided here.
             prompt_template_config: The prompt template configuration for the agent. (optional)
         """
         if not service_id:
@@ -76,7 +74,6 @@ class ChatCompletionAgent(Agent):
         args: dict[str, Any] = {
             "service_id": service_id,
             "description": description,
-            "execution_settings": execution_settings,
         }
         if name is not None:
             args["name"] = name
@@ -90,7 +87,7 @@ class ChatCompletionAgent(Agent):
             args["arguments"] = arguments
 
         if instructions and prompt_template_config and instructions != prompt_template_config.template:
-            logger.warning(
+            logger.info(
                 f"Both `instructions` ({instructions}) and `prompt_template_config` "
                 f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
                 "and ignoring `instructions`."
@@ -269,23 +266,12 @@ class ChatCompletionAgent(Agent):
         self, kernel: "Kernel", arguments: KernelArguments
     ) -> tuple[ChatCompletionClientBase, PromptExecutionSettings]:
         """Get the chat completion service and settings."""
-        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service, settings = kernel.select_ai_service(arguments=arguments, type=ChatCompletionClientBase)
 
         if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
-
-        settings = (
-            arguments.execution_settings.get(self.service_id)
-            if arguments.execution_settings and self.service_id in arguments.execution_settings
-            else self.execution_settings
-            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
-            or chat_completion_service.instantiate_prompt_execution_settings(
-                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
-            )
-        )
-
         assert settings is not None  # nosec
 
         return chat_completion_service, settings

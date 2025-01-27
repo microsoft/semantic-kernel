@@ -60,10 +60,10 @@ class Agent(KernelBaseModel):
 
         self.history_reducer.messages = history.messages
 
-        new_messages = await self.history_reducer.reduce()
-        if new_messages is not None:
+        reducer = await self.history_reducer.reduce()
+        if reducer is not None:
             history.messages.clear()
-            history.messages.extend(new_messages)
+            history.messages.extend(reducer.messages)
             return True
 
         return False

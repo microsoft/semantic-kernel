@@ -185,7 +185,7 @@ class OpenAIAssistantBase(Agent):
             args["kernel"] = kernel
 
         if instructions and prompt_template_config and instructions != prompt_template_config.template:
-            logger.warning(
+            logger.info(
                 f"Both `instructions` ({instructions}) and `prompt_template_config` "
                 f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
                 "and ignoring `instructions`."

@@ -72,7 +72,6 @@ async def invoke_agent_with_template(
 
     agent = ChatCompletionAgent(
         kernel=kernel,
-        service_id="agent",
         name="MyPoetAgent",
         instructions=instructions,
         prompt_template_config=prompt_config,
