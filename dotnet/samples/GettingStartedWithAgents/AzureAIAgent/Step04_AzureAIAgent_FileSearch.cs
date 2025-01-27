@@ -11,7 +11,7 @@ namespace GettingStarted;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-public class Step15_AzureTool_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step04_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseFileSearchToolWithAgentAsync()

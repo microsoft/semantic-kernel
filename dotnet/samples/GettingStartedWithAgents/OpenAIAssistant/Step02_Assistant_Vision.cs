@@ -9,7 +9,7 @@ namespace GettingStarted;
 /// <summary>
 /// Demonstrate providing image input to <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step02_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
     /// Azure currently only supports message of type=text.

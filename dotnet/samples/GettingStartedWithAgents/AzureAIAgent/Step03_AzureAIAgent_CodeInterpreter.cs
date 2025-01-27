@@ -1,41 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Resources;
 using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="AzureAIAgent"/>
-/// and <see cref="ChatCompletionAgent"/> (see: Step 2).
+/// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-/// <remarks>
-/// Note: Open API invocation does not involve kernel function calling or kernel filters.
-/// Azure Function invocation is managed entirely by the Azure AI Agent service.
-/// </remarks>
-public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step03_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseOpenAPIToolWithAgentAsync()
+    public async Task UseCodeInterpreterToolWithAgentAsync()
     {
-        // Retrieve Open API specifications
-        string apiCountries = EmbeddedResource.Read("countries.json");
-        string apiWeather = EmbeddedResource.Read("weather.json");
-
         // Define the agent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
         Agent definition = await client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools:
-            [
-                new OpenApiToolDefinition("RestCountries", "Retrieve country information", BinaryData.FromString(apiCountries), new OpenApiAnonymousAuthDetails()),
-                new OpenApiToolDefinition("Weather", "Retrieve weather by location", BinaryData.FromString(apiWeather), new OpenApiAnonymousAuthDetails())
-            ]);
+            tools: [new CodeInterpreterToolDefinition()]);
         AzureAIAgent agent = new(definition, clientProvider)
         {
             Kernel = new Kernel(),
@@ -47,8 +32,7 @@ public class Step16_Azure_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(out
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the name and population of the country that uses currency with abbreviation THB");
-            await InvokeAgentAsync("What is the weather in the capitol city of that country?");
+            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
         }
         finally
         {
