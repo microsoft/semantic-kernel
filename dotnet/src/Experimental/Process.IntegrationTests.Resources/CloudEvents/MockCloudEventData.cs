@@ -10,7 +10,7 @@ public class MockCloudEventData
     /// <summary>
     /// Name of the mock topic
     /// </summary>
-    public string TopicName { get; set; }
+    public required string TopicName { get; set; }
 
     /// <summary>
     /// Data emitted in the mock cloud event

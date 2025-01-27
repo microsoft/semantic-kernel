@@ -29,7 +29,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
             .AddUserSecrets<OpenAIConfiguration>()
             .Build();
 
-    private readonly IExternalKernelProcessMessageChannel _externalMessageChannel = MockCloudEventClient.Instance;
+    private readonly IExternalKernelProcessMessageChannel _externalMessageChannel = MockCloudEventClient.Instance!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessTests"/> class. This is called by the test framework.

@@ -27,12 +27,14 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
         await this._actor.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public ValueTask Initialize()
     {
         // When using Dapr initialization is already taken care of by Dapr Actors
         throw new System.NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ValueTask Uninitialize()
     {
         // When using Dapr uninitialization is already taken care of by Dapr Actors

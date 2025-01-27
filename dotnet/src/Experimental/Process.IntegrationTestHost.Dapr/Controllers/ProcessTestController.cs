@@ -80,14 +80,14 @@ public class ProcessTestController : Controller
     /// <param name="cloudClient">Mock Cloud client ingested via dependency injection</param>
     /// <returns></returns>
     [HttpGet("processes/{processId}/mockCloudClient")]
-    public async Task<IActionResult> GetMockCloudClientAsync(string processId, MockCloudEventClient cloudClient)
+    public Task<IActionResult> GetMockCloudClient(string processId, MockCloudEventClient cloudClient)
     {
         if (!s_processes.TryGetValue(processId, out DaprKernelProcessContext? context))
         {
-            return this.NotFound();
+            return Task.FromResult<IActionResult>(this.NotFound());
         }
 
-        return this.Ok(cloudClient);
+        return Task.FromResult<IActionResult>(this.Ok(cloudClient));
     }
 
     /// <summary>

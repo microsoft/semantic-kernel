@@ -39,6 +39,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="stepInfo">An instance of <see cref="KernelProcessStepInfo"/></param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists.</param>
+    /// <param name="externalMessageChannel">Optional. An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
     public LocalStep(KernelProcessStepInfo stepInfo, Kernel kernel, string? parentProcessId = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
         Verify.NotNull(kernel, nameof(kernel));

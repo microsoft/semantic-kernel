@@ -18,15 +18,13 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     /// <summary>
     /// Captures cloud events emitted for testing
     /// </summary>
-    public List<MockCloudEventData> CloudEvents { get; set; }
+    public List<MockCloudEventData> CloudEvents { get; set; } = [];
 
     private static MockCloudEventClient? s_instance = null;
 
-    public MockCloudEventClient()
-    {
-        this.CloudEvents = [];
-    }
-
+    /// <summary>
+    /// Instance of <see cref="MockCloudEventClient"/> when used as singleton
+    /// </summary>
     public static MockCloudEventClient? Instance
     {
         get
