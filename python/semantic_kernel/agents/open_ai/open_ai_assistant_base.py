@@ -15,7 +15,8 @@ from openai.types.beta.threads.runs import RunStep
 from pydantic import Field
 
 from semantic_kernel.agents import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import (
     create_chat_message,
     generate_code_interpreter_content,
@@ -29,7 +30,6 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     get_message_contents,
 )
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,

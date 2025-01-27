@@ -11,7 +11,7 @@ else:
 
 from openai import AsyncOpenAI
 
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent

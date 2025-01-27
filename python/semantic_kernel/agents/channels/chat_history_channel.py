@@ -12,7 +12,7 @@ else:
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Deque, Protocol, runtime_checkable
 
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent

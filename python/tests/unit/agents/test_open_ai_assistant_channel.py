@@ -98,7 +98,7 @@ def mock_assistant():
 
 
 async def test_receive_messages():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     client.beta = AsyncMock()
@@ -113,7 +113,7 @@ async def test_receive_messages():
 
 
 async def test_invoke_agent():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -138,7 +138,7 @@ async def test_invoke_agent():
 
 
 async def test_invoke_agent_invalid_instance_throws():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -152,7 +152,7 @@ async def test_invoke_agent_invalid_instance_throws():
 
 
 async def test_invoke_streaming_agent():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -179,7 +179,7 @@ async def test_invoke_streaming_agent():
 
 
 async def test_invoke_streaming_agent_invalid_instance_throws():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -193,7 +193,7 @@ async def test_invoke_streaming_agent_invalid_instance_throws():
 
 
 async def test_invoke_agent_deleted():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -207,7 +207,7 @@ async def test_invoke_agent_deleted():
 
 
 async def test_invoke_streaming_agent_deleted():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -221,7 +221,7 @@ async def test_invoke_streaming_agent_deleted():
 
 
 async def test_invoke_agent_wrong_type():
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     client = MagicMock(spec=AsyncOpenAI)
     thread_id = "test_thread"
@@ -234,7 +234,7 @@ async def test_invoke_agent_wrong_type():
 
 
 async def test_get_history(mock_thread_messages, mock_assistant, openai_unit_test_env):
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     async def mock_list_messages(*args, **kwargs) -> Any:
         return MagicMock(data=mock_thread_messages)
@@ -262,7 +262,7 @@ async def test_get_history(mock_thread_messages, mock_assistant, openai_unit_tes
 
 
 async def test_reset_channel(mock_thread_messages, mock_assistant, openai_unit_test_env):
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     async def mock_list_messages(*args, **kwargs) -> Any:
         return MagicMock(data=mock_thread_messages)
@@ -295,7 +295,7 @@ async def test_reset_channel(mock_thread_messages, mock_assistant, openai_unit_t
 
 
 async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_assistant, openai_unit_test_env):
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     async def mock_list_messages(*args, **kwargs) -> Any:
         return MagicMock(data=mock_thread_messages)
@@ -327,7 +327,7 @@ async def test_reset_channel_error_throws_exception(mock_thread_messages, mock_a
 
 
 async def test_channel_receive_fcc_skipped(openai_unit_test_env):
-    from semantic_kernel.agents.open_ai.open_ai_assistant_channel import OpenAIAssistantChannel
+    from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
     message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(function_name="test_function")])
 

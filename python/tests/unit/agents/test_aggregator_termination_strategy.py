@@ -3,7 +3,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.termination.aggregator_termination_strategy import (
     AggregateTerminationCondition,
     AggregatorTerminationStrategy,

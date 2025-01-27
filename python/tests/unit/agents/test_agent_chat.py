@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.group_chat.agent_chat import AgentChat
 from semantic_kernel.agents.group_chat.broadcast_queue import ChannelReference
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

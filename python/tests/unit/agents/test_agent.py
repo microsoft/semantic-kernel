@@ -4,7 +4,7 @@ import uuid
 from unittest.mock import AsyncMock
 
 from semantic_kernel.agents import Agent
-from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 
 
 class MockAgent(Agent):
