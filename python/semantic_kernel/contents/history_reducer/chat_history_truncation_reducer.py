@@ -5,9 +5,13 @@ import sys
 from typing import Any
 
 if sys.version < "3.11":
-    from typing_extensions import Self, override  # pragma: no cover
+    from typing_extensions import Self  # pragma: no cover
 else:
-    from typing import Self, override  # type: ignore # pragma: no cover
+    from typing import Self  # type: ignore # pragma: no cover
+if sys.version < "3.12":
+    from typing_extensions import override  # pragma: no cover
+else:
+    from typing import override  # pragma: no cover
 
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (
