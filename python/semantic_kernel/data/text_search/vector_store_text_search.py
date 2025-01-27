@@ -52,18 +52,19 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_stores(cls, data: dict[str, Any]) -> dict[str, Any]:
+    def _validate_stores(cls, data: Any) -> dict[str, Any]:
         """Validate the capabilities."""
-        if (
-            not data.get("vectorizable_text_search")
-            and not data.get("vectorized_search")
-            and not data.get("vector_text_search")
-        ):
-            raise VectorStoreInitializationException(
-                "At least one of vectorizable_text_search, vectorized_search or vector_text_search is required."
-            )
-        if data.get("vectorized_search") and not data.get("embedding_service"):
-            raise VectorStoreInitializationException("embedding_service is required when using vectorized_search.")
+        if isinstance(data, dict):
+            if (
+                not data.get("vectorizable_text_search")
+                and not data.get("vectorized_search")
+                and not data.get("vector_text_search")
+            ):
+                raise VectorStoreInitializationException(
+                    "At least one of vectorizable_text_search, vectorized_search or vector_text_search is required."
+                )
+            if data.get("vectorized_search") and not data.get("embedding_service"):
+                raise VectorStoreInitializationException("embedding_service is required when using vectorized_search.")
         return data
 
     @classmethod

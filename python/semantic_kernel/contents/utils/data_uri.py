@@ -41,9 +41,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_data(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def _validate_data(cls, values: Any) -> dict[str, Any]:
         """Validate the data."""
-        if not values.get("data_bytes") and not values.get("data_str"):
+        if isinstance(values, dict) and not values.get("data_bytes") and not values.get("data_str"):
             raise ContentInitializationError("Either data_bytes or data_str must be provided.")
         return values
 

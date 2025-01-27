@@ -107,7 +107,7 @@ redis = [
 ]
 usearch = [
     "usearch ~= 2.9",
-    "pyarrow >= 12.0,< 19.0"
+    "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
     "weaviate-client>=4.7,<5.0",

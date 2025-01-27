@@ -3,9 +3,6 @@
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
@@ -15,6 +12,8 @@ if TYPE_CHECKING:
         FunctionChoiceType,
     )
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 
@@ -80,13 +79,16 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
 
 
 def merge_function_results(
-    messages: list[ChatMessageContent],
-) -> list[ChatMessageContent]:
+    messages: list["ChatMessageContent"],
+) -> list["ChatMessageContent"]:
     """Combine multiple function result content types to one chat message content type.
 
     This method combines the FunctionResultContent items from separate ChatMessageContent messages,
     and is used in the event that the `context.terminate = True` condition is met.
     """
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+
     items: list[Any] = []
     for message in messages:
         items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
@@ -99,10 +101,10 @@ def merge_function_results(
 
 
 def merge_streaming_function_results(
-    messages: list[ChatMessageContent | StreamingChatMessageContent],
+    messages: list["ChatMessageContent | StreamingChatMessageContent"],
     ai_model_id: str,
     function_invoke_attempt: int,
-) -> list[StreamingChatMessageContent]:
+) -> list["StreamingChatMessageContent"]:
     """Combine multiple streaming function result content types to one streaming chat message content type.
 
     This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
@@ -116,6 +118,9 @@ def merge_streaming_function_results(
     Returns:
         The combined streaming chat message content type.
     """
+    from semantic_kernel.contents.function_result_content import FunctionResultContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+
     items: list[Any] = []
     for message in messages:
         items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
