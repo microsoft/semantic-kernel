@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Class used to allow using <see cref="IExternalEventBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+/// Class used to allow using <see cref="IExternalEventBuffer"/> as <see cref="IExternalKernelProcessMessageChannel"/>
 /// in SK Process shared abstractions
 /// </summary>
 public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageChannel
@@ -13,7 +13,7 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
     private readonly IExternalMessageBuffer _actor;
 
     /// <summary>
-    /// Constructor to wrap <see cref="IExternalMessageBuffer"/> as <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+    /// Constructor to wrap <see cref="IExternalMessageBuffer"/> as <see cref="IExternalKernelProcessMessageChannel"/>
     /// </summary>
     /// <param name="actor">The actor host.</param>
     public ExternalMessageBufferActorWrapper(IExternalMessageBuffer actor)

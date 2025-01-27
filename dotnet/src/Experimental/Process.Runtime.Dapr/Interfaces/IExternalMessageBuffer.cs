@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 // is added in StepActor logic to make use of FindInputChannels
 
 /// <summary>
-/// An interface for <see cref="IExternalKernelProcessMessageChannelEmitter"/>
+/// An interface for <see cref="IExternalKernelProcessMessageChannel"/>
 /// </summary>
 public interface IExternalMessageBuffer : IActor
 {

@@ -57,6 +57,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// </summary>
     public void Dispose() => this._localProcess.Dispose();
 
+    /// <inheritdoc/>
     public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
     {
         return Task.FromResult(this._localProcess._externalMessageChannel);
