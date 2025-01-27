@@ -11,7 +11,7 @@ else:
 if sys.version < "3.12":
     from typing_extensions import override  # pragma: no cover
 else:
-    from typing import override  # pragma: no cover
+    from typing import override  # type: ignore # pragma: no cover
 
 from pydantic import Field
 
