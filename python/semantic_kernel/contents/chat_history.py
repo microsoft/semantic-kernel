@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import Generator, Iterable, MutableSequence
+from collections.abc import Generator, Iterable
 from functools import singledispatchmethod
 from html import unescape
 from typing import Any, TypeVar
@@ -33,7 +33,7 @@ class ChatHistory(KernelBaseModel):
         messages: The list of chat messages in the history.
     """
 
-    messages: MutableSequence[ChatMessageContent]
+    messages: list[ChatMessageContent]
 
     def __init__(self, **data: Any):
         """Initializes a new instance of the ChatHistory class.
@@ -74,7 +74,7 @@ class ChatHistory(KernelBaseModel):
 
     @field_validator("messages", mode="before")
     @classmethod
-    def _validate_messages(cls, messages: MutableSequence[ChatMessageContent]) -> MutableSequence[ChatMessageContent]:
+    def _validate_messages(cls, messages: list[ChatMessageContent]) -> list[ChatMessageContent]:
         if not messages:
             return messages
         out_msgs: list[ChatMessageContent] = []
