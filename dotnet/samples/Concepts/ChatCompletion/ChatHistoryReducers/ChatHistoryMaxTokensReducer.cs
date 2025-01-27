@@ -11,15 +11,15 @@ namespace ChatCompletion;
 /// <remarks>
 /// This reducer requires that the ChatMessageContent.MetaData contains a TokenCount property.
 /// </remarks>
-public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
+public sealed class ChatHistoryMaxTokensReducer : IChatHistoryReducer
 {
     private readonly int _maxTokenCount;
 
     /// <summary>
-    /// Creates a new instance of <see cref="MaxTokensChatHistoryReducer"/>.
+    /// Creates a new instance of <see cref="ChatHistoryMaxTokensReducer"/>.
     /// </summary>
     /// <param name="maxTokenCount">Max token count to send to the model.</param>
-    public MaxTokensChatHistoryReducer(int maxTokenCount)
+    public ChatHistoryMaxTokensReducer(int maxTokenCount)
     {
         if (maxTokenCount <= 0)
         {
@@ -30,7 +30,7 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(ChatHistory chatHistory, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
         var systemMessage = chatHistory.GetSystemMessage();
 
@@ -47,12 +47,13 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
     }
 
     #region private
+
     /// <summary>
     /// Compute the index truncation where truncation should begin using the current truncation threshold.
     /// </summary>
-    /// <param name="chatHistory">ChatHistory instance to be truncated</param>
+    /// <param name="chatHistory">Chat history to be truncated.</param>
     /// <param name="systemMessage">The system message</param>
-    private int ComputeTruncationIndex(ChatHistory chatHistory, ChatMessageContent? systemMessage)
+    private int ComputeTruncationIndex(IReadOnlyList<ChatMessageContent> chatHistory, ChatMessageContent? systemMessage)
     {
         var truncationIndex = -1;
 
@@ -83,5 +84,6 @@ public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
 
         return truncationIndex;
     }
+
     #endregion
 }

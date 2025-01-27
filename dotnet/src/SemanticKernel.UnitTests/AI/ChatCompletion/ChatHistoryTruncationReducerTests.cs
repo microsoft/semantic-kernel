@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.Core.History;
+namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 
 /// <summary>
 /// Unit testing of <see cref="ChatHistoryTruncationReducer"/>.
@@ -91,7 +92,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryNotReducedAsync()
     {
         // Arrange
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(10).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(10).ToArray();
         ChatHistoryTruncationReducer reducer = new(20);
 
         // Act
@@ -108,7 +109,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryReducedAsync()
     {
         // Arrange
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistoryTruncationReducer reducer = new(10);
 
         // Act
@@ -125,7 +126,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryRereducedAsync()
     {
         // Arrange
-        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20).ToArray();
         ChatHistoryTruncationReducer reducer = new(10);
 
         // Act
