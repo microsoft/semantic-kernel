@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import Generator
+from collections.abc import Generator, Iterable, MutableSequence
 from functools import singledispatchmethod
 from html import unescape
-from typing import Any
+from typing import Any, TypeVar
 from xml.etree.ElementTree import Element, tostring  # nosec
 
 from defusedxml.ElementTree import XML, ParseError
@@ -19,6 +19,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
+_T = TypeVar("_T", bound="ChatHistory")
+
 
 class ChatHistory(KernelBaseModel):
     """This class holds the history of chat messages from a chat conversation.
@@ -28,10 +30,10 @@ class ChatHistory(KernelBaseModel):
     as a keyword argument, but not be part of the class definition.
 
     Attributes:
-        messages (List[ChatMessageContent]): The list of chat messages in the history.
+        messages: The list of chat messages in the history.
     """
 
-    messages: list[ChatMessageContent]
+    messages: MutableSequence[ChatMessageContent]
 
     def __init__(self, **data: Any):
         """Initializes a new instance of the ChatHistory class.
@@ -52,8 +54,8 @@ class ChatHistory(KernelBaseModel):
         Args:
             **data: Arbitrary keyword arguments.
                 The constructor looks for two optional keys:
-                - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
-                - 'system_message' Optional[str]: An optional string representing a system-generated message to be
+                - 'messages': List[ChatMessageContent], a list of chat messages to include in the history.
+                - 'system_message' str: An optional string representing a system-generated message to be
                     included at the start of the chat history.
 
         """
@@ -72,7 +74,7 @@ class ChatHistory(KernelBaseModel):
 
     @field_validator("messages", mode="before")
     @classmethod
-    def _validate_messages(cls, messages: list[ChatMessageContent]) -> list[ChatMessageContent]:
+    def _validate_messages(cls, messages: MutableSequence[ChatMessageContent]) -> MutableSequence[ChatMessageContent]:
         if not messages:
             return messages
         out_msgs: list[ChatMessageContent] = []
@@ -89,12 +91,12 @@ class ChatHistory(KernelBaseModel):
         raise NotImplementedError
 
     @add_system_message.register
-    def add_system_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, content=content, **kwargs))
 
     @add_system_message.register(list)
-    def add_system_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, items=content, **kwargs))
 
@@ -104,12 +106,12 @@ class ChatHistory(KernelBaseModel):
         raise NotImplementedError
 
     @add_developer_message.register
-    def add_developer_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, content=content, **kwargs))
 
     @add_developer_message.register(list)
-    def add_developer_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, items=content, **kwargs))
 
@@ -119,12 +121,12 @@ class ChatHistory(KernelBaseModel):
         raise NotImplementedError
 
     @add_user_message.register
-    def add_user_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, content=content, **kwargs))
 
     @add_user_message.register(list)
-    def add_user_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, items=content, **kwargs))
 
@@ -134,12 +136,12 @@ class ChatHistory(KernelBaseModel):
         raise NotImplementedError
 
     @add_assistant_message.register
-    def add_assistant_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, content=content, **kwargs))
 
     @add_assistant_message.register(list)
-    def add_assistant_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, items=content, **kwargs))
 
@@ -149,12 +151,12 @@ class ChatHistory(KernelBaseModel):
         raise NotImplementedError
 
     @add_tool_message.register
-    def add_tool_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, content=content, **kwargs))
 
     @add_tool_message.register(list)
-    def add_tool_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, items=content, **kwargs))
 
@@ -244,6 +246,31 @@ class ChatHistory(KernelBaseModel):
         for message in self.messages:
             chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
+
+    def clear(self) -> None:
+        """Clear the chat history."""
+        self.messages.clear()
+
+    def extend(self, messages: Iterable[ChatMessageContent]) -> None:
+        """Extend the chat history with a list of messages.
+
+        Args:
+            messages: The messages to add to the history.
+                Can be a list of ChatMessageContent instances or a ChatHistory itself.
+        """
+        self.messages.extend(messages)
+
+    def replace(self, messages: Iterable[ChatMessageContent]) -> None:
+        """Replace the chat history with a list of messages.
+
+        This calls clear() and then extend(messages=messages).
+
+        Args:
+            messages: The messages to add to the history.
+                Can be a list of ChatMessageContent instances or a ChatHistory itself.
+        """
+        self.clear()
+        self.extend(messages=messages)
 
     def to_prompt(self) -> str:
         """Return a string representation of the history."""

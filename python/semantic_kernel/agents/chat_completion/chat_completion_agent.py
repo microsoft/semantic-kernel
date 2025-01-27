@@ -248,16 +248,11 @@ class ChatCompletionAgent(Agent):
         self, history: ChatHistory, kernel: "Kernel", arguments: KernelArguments
     ) -> ChatHistory:
         """Setup the agent chat history."""
-        chat = []
-
-        instructions = await self.format_instructions(kernel, arguments)
-
-        if instructions is not None:
-            chat.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=instructions, name=self.name))
-
-        chat.extend(history.messages if history.messages else [])
-
-        return ChatHistory(messages=chat)
+        return (
+            ChatHistory(messages=history.messages)
+            if self.instructions is None
+            else ChatHistory(system_message=self.instructions, messages=history.messages)
+        )
 
     async def _get_chat_completion_service_and_settings(
         self, kernel: "Kernel", arguments: KernelArguments

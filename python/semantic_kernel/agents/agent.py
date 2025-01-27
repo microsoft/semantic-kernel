@@ -25,9 +25,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-logger: logging.Logger = logging.getLogger(__name__)
-
-
 @experimental_class
 class Agent(KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
@@ -62,16 +59,14 @@ class Agent(KernelBaseModel):
 
         if self.history_reducer is history:
             logger.info("You're reducing the same object, you can call `history.reduce()` instead.")
-            initial_len = len(history.messages)
-            await history.reduce()
-            return len(history.messages) < initial_len
+            initial_len = len(self.history_reducer)
+            await self.history_reducer.reduce()
+            return len(self.history_reducer) < initial_len
 
         self.history_reducer.messages = history.messages
-
-        reducer = await self.history_reducer.reduce()
-        if reducer is not None:
-            history.messages.clear()
-            history.messages.extend(reducer.messages)
+        new_messages = await self.history_reducer.reduce()
+        if new_messages is not None:
+            history.replace(new_messages)
             return True
 
         return False
