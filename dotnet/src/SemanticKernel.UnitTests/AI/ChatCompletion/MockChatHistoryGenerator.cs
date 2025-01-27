@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace SemanticKernel.Agents.UnitTests.Core.History;
+namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 
 /// <summary>
 /// Factory for generating chat history for various test scenarios.
 /// </summary>
-internal static class MockHistoryGenerator
+internal static class MockChatHistoryGenerator
 {
     /// <summary>
     /// Create a homogeneous list of assistant messages.
