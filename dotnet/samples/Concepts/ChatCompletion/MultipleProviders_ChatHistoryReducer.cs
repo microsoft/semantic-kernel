@@ -151,7 +151,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new MaxTokensChatHistoryReducer(100));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new ChatHistoryMaxTokensReducer(100));
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessageWithTokenCount("You are an expert on the best restaurants in the world. Keep responses short.");

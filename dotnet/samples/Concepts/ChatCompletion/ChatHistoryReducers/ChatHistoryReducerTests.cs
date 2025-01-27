@@ -22,7 +22,7 @@ public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output
     {
         // Arrange
         var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes, true);
-        var reducer = new MaxTokensChatHistoryReducer(maxTokens);
+        var reducer = new ChatHistoryMaxTokensReducer(maxTokens);
 
         // Act
         var reducedHistory = await reducer.ReduceAsync(chatHistory);

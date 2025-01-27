@@ -11,15 +11,15 @@ namespace ChatCompletion;
 /// <remarks>
 /// This reducer requires that the ChatMessageContent.MetaData contains a TokenCount property.
 /// </remarks>
-public sealed class MaxTokensChatHistoryReducer : IChatHistoryReducer
+public sealed class ChatHistoryMaxTokensReducer : IChatHistoryReducer
 {
     private readonly int _maxTokenCount;
 
     /// <summary>
-    /// Creates a new instance of <see cref="MaxTokensChatHistoryReducer"/>.
+    /// Creates a new instance of <see cref="ChatHistoryMaxTokensReducer"/>.
     /// </summary>
     /// <param name="maxTokenCount">Max token count to send to the model.</param>
-    public MaxTokensChatHistoryReducer(int maxTokenCount)
+    public ChatHistoryMaxTokensReducer(int maxTokenCount)
     {
         if (maxTokenCount <= 0)
         {
