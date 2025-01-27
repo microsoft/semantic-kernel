@@ -54,7 +54,7 @@ class AgentChat(KernelBaseModel):
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
-    async def get_messages_in_descending_order(self):
+    async def get_messages_in_descending_order(self) -> AsyncGenerator[ChatMessageContent, None]:
         """Get messages in descending order asynchronously."""
         for index in range(len(self.history.messages) - 1, -1, -1):
             yield self.history.messages[index]

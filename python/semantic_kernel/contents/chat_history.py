@@ -87,7 +87,13 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_system_message(self, content: str | list[KernelContent], **kwargs) -> None:
-        """Add a system message to the chat history."""
+        """Add a system message to the chat history.
+
+        Args:
+            content: The content of the system message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_system_message.register
@@ -102,7 +108,13 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_developer_message(self, content: str | list[KernelContent], **kwargs) -> None:
-        """Add a system message to the chat history."""
+        """Add a system message to the chat history.
+
+        Args:
+            content: The content of the developer message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_developer_message.register
@@ -117,7 +129,14 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_user_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add a user message to the chat history."""
+        """Add a user message to the chat history.
+
+        Args:
+            content: The content of the user message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+
+        """
         raise NotImplementedError
 
     @add_user_message.register
@@ -132,7 +151,13 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_assistant_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add an assistant message to the chat history."""
+        """Add an assistant message to the chat history.
+
+        Args:
+            content: The content of the assistant message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_assistant_message.register
@@ -147,7 +172,13 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_tool_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add a tool message to the chat history."""
+        """Add a tool message to the chat history.
+
+        Args:
+            content: The content of the tool message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_tool_message.register

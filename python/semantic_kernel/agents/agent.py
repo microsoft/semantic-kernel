@@ -39,7 +39,7 @@ class Agent(KernelBaseModel):
         description: The description of the agent (optional).
         id: The unique identifier of the agent (optional). If no id is provided,
             a new UUID will be generated.
-        instructions: The instructions for the agent (optional
+        instructions: The instructions for the agent (optional)
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -53,7 +53,21 @@ class Agent(KernelBaseModel):
     prompt_template: PromptTemplateBase | None = None
 
     async def reduce_history(self, history: "ChatHistory") -> bool:
-        """Perform the reduction on the provided history, returning True if reduction occurred."""
+        """Perform the reduction on the provided history, returning True if reduction occurred.
+
+        If the history_reducer is not set, this method will return False.
+        If the history_reducer is the same object as the history, then it will just call `history.reduce()`,
+        you could also do that manually in this case.
+        Otherwise the settings of the history_reducer are used and applied
+        to the history provided and the history_reducer will be used to reduce the history.
+
+        Args:
+            history: The history to reduce.
+
+        Returns:
+            True if the history was reduced, False otherwise.
+            The provided history will have been updated if True.
+        """
         if self.history_reducer is None:
             return False
 
@@ -63,13 +77,12 @@ class Agent(KernelBaseModel):
             await self.history_reducer.reduce()
             return len(self.history_reducer) < initial_len
 
-        self.history_reducer.messages = history.messages
+        self.history_reducer.replace(history)
         new_messages = await self.history_reducer.reduce()
-        if new_messages is not None:
-            history.replace(new_messages)
-            return True
-
-        return False
+        if new_messages is None:
+            return False
+        history.replace(new_messages)
+        return True
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Flag to determine whether to use Azure OpenAI services or OpenAI
 # Set this to True if using Azure OpenAI (requires appropriate configuration)
-use_azure_openai = True
+use_azure_openai = False
 
 
 # Helper function to create and configure a Kernel with the desired chat completion service
@@ -117,7 +117,7 @@ class HistoryReducerExample:
         # The index is incremented by 2 because the agent is told to:
         # "Add one to the latest user number and spell it in Spanish without explanation."
         # The user sends 1, 3, 5, etc., and the agent responds with 2, 4, 6, etc. (in Spanish)
-        for index in range(0, message_count, 2):
+        for index in range(1, message_count + 1, 2):
             # Provide user input
             chat_history.add_user_message(str(index))
             print(f"# User: '{index}'")

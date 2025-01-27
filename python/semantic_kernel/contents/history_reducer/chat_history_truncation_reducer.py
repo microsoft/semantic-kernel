@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any
+from typing import Any, override
 
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -37,12 +37,8 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
             args["threshold_count"] = threshold_count
         super().__init__(**args, **kwargs)
 
+    @override
     async def reduce(self) -> Self | None:
-        """Truncate the chat history to the target message count, avoiding orphaned calls.
-
-        Returns:
-            The truncated list of messages if truncation occurred, or None otherwise.
-        """
         history = self.messages
         if len(history) <= self.target_count + (self.threshold_count or 0):
             # No need to reduce
