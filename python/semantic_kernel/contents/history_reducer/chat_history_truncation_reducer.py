@@ -2,14 +2,14 @@
 
 import logging
 import sys
-from typing import Any, override
+from typing import Any
 
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
+    from typing_extensions import Self, override  # pragma: no cover
 else:
-    from typing import Self  # type: ignore # pragma: no cover
+    from typing import Self, override  # type: ignore # pragma: no cover
 
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (

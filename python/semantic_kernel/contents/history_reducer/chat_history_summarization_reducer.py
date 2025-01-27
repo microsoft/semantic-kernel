@@ -2,19 +2,17 @@
 
 import logging
 import sys
-from typing import Any, override
-
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from typing import Any
 
 if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
+    from typing_extensions import Self, override  # pragma: no cover
 else:
-    from typing import Self  # type: ignore # pragma: no cover
+    from typing import Self, override  # type: ignore # pragma: no cover
 
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -27,6 +25,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     locate_summarization_boundary,
 )
 from semantic_kernel.exceptions.content_exceptions import ChatHistoryReducerException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
 
