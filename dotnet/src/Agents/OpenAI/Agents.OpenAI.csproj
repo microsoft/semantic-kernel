@@ -29,6 +29,8 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/agents/AgentUtilities.props" />
+
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
   </ItemGroup>

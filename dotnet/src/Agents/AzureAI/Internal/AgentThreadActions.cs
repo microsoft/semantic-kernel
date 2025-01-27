@@ -12,6 +12,7 @@ using Azure;
 using Azure.AI.Projects;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 

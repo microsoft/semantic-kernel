@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.AzureAI;
+namespace Microsoft.SemanticKernel.Agents.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="Agent"/>.
