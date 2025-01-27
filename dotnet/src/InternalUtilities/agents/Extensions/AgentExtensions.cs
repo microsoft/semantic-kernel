@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+namespace Microsoft.SemanticKernel.Agents.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="Agent"/>.
@@ -12,5 +12,8 @@ internal static class AgentExtensions
     /// </summary>
     /// <param name="agent">The target agent</param>
     /// <returns>The agent name as a non-empty string</returns>
-    public static string GetName(this Agent agent) => agent.Name ?? agent.Id;
+    public static string GetName(this Agent agent)
+    {
+        return agent.Name ?? agent.Id;
+    }
 }
