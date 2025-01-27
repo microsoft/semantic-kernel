@@ -56,13 +56,13 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         default_factory=lambda: DEFAULT_SUMMARIZATION_PROMPT,
         description="The summarization instructions.",
     )
-    use_single_summary: bool = Field(True, description="Whether to use a single summary message.")
-    fail_on_error: bool = Field(True, description="Raise error if summarization fails.")
+    use_single_summary: bool = Field(default=True, description="Whether to use a single summary message.")
+    fail_on_error: bool = Field(default=True, description="Raise error if summarization fails.")
     service_id: str = Field(
         default_factory=lambda: DEFAULT_SERVICE_NAME, description="The ID of the chat completion service."
     )
     include_function_content_in_summary: bool = Field(
-        False, description="Whether to include function calls/results in the summary."
+        default=False, description="Whether to include function calls/results in the summary."
     )
     execution_settings: PromptExecutionSettings | None = None
 
@@ -82,16 +82,17 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         """Initialize the ChatHistorySummarizationReducer.
 
         Args:
-            service (ChatCompletionClientBase): The chat completion service.
-            target_count (int): The target number of messages to retain after applying summarization.
-            service_id (str | None): The ID of the chat completion service.
-            threshold_count (int | None): The threshold beyond target_count required to trigger reduction.
-            summarization_instructions (str | None): The summarization instructions.
-            use_single_summary (bool | None): Whether to use a single summary message.
-            fail_on_error (bool | None): Raise error if summarization fails.
-            include_function_content_in_summary (bool | None): Whether to include function calls/results in the summary.
-            execution_settings (PromptExecutionSettings | None): The prompt execution settings.
-            **kwargs (Any): Additional keyword arguments.
+            service: The chat completion service.
+            target_count: The target number of messages to retain after applying summarization.
+            service_id: The ID of the chat completion service.
+            threshold_count: The threshold beyond target_count required to trigger reduction.
+            summarization_instructions: The summarization instructions.
+            use_single_summary: Whether to use a single summary message, default is True.
+            fail_on_error: Raise error if summarization fails, default is True.
+            include_function_content_in_summary: Whether to include function calls/results in the summary,
+                default is False.
+            execution_settings: The prompt execution settings.
+            **kwargs: Additional keyword arguments.
         """
         args: dict[str, Any] = {
             "service": service,
