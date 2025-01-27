@@ -22,6 +22,8 @@ from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -57,6 +59,12 @@ class Agent(KernelBaseModel):
         """Perform the reduction on the provided history, returning True if reduction occurred."""
         if self.history_reducer is None:
             return False
+
+        if self.history_reducer is history:
+            logger.info("You're reducing the same object, you can call `history.reduce()` instead.")
+            initial_len = len(history.messages)
+            await history.reduce()
+            return len(history.messages) < initial_len
 
         self.history_reducer.messages = history.messages
 

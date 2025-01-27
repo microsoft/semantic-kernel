@@ -9,7 +9,7 @@ from semantic_kernel.agents import (
     ChatCompletionAgent,
 )
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
-from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.contents.history_reducer.chat_history_summarization_reducer import ChatHistorySummarizationReducer
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.kernel import Kernel
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Flag to determine whether to use Azure OpenAI services or OpenAI
 # Set this to True if using Azure OpenAI (requires appropriate configuration)
-use_azure_openai = True
+use_azure_openai = False
 
 
 # Helper function to create and configure a Kernel with the desired chat completion service
@@ -110,7 +110,7 @@ class HistoryReducerExample:
             history_reducer=summarization_reducer,
         ), summarization_reducer
 
-    async def invoke_agent(self, agent: ChatCompletionAgent, chat_history: ChatHistory, message_count: int):
+    async def invoke_agent(self, agent: ChatCompletionAgent, chat_history: "ChatHistoryReducer", message_count: int):
         """
         Demonstrates agent invocation with direct history management and reduction.
 
@@ -127,14 +127,14 @@ class HistoryReducerExample:
             print(f"# User: '{index}'")
 
             # Attempt history reduction if a reducer is present
-            is_reduced = False
-            if agent.history_reducer is not None:
-                reduced = await agent.history_reducer.reduce()
-                if reduced is not None:
-                    chat_history.messages.clear()
-                    chat_history.messages.extend(reduced)
-                    is_reduced = True
-                    print("@ (History was reduced!)")
+            # is_reduced = False
+            is_reduced = await agent.reduce_history(chat_history)
+
+            # reduced_history = await chat_history.reduce()
+            # is_reduced = reduced_history is not None
+            if is_reduced:
+                # chat_history = reduced_history
+                print(f"@ History reduced to {len(chat_history.messages)} messages.")
 
             # Invoke the agent and display its response
             async for response in agent.invoke(chat_history):
@@ -254,8 +254,8 @@ async def main():
         #   especially for sensitive interactions like API function calls or complex responses.
         reducer_threshold=10,
     )
-    # print("===TruncatedAgentReduction Demo===")
-    # await example.invoke_agent(trunc_agent, chat_history=history_reducer, message_count=50)
+    print("===TruncatedAgentReduction Demo===")
+    await example.invoke_agent(trunc_agent, chat_history=history_reducer, message_count=50)
 
     # Demonstrate summarization-based reduction
     sum_agent, history_reducer = example.create_summarizing_agent(
