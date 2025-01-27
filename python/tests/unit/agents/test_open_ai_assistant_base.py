@@ -1372,12 +1372,11 @@ async def test_invoke_instructions_non_streaming(
                 thread_id="abc123",
                 additional_instructions="My Additional",
             )
-            _ = [m async for m in gen]  # Consume the generator
+            _ = [m async for m in gen]
 
             mock_runs_create.assert_called_once()
             _, call_kwargs = mock_runs_create.call_args
             instructions_used = call_kwargs["instructions"]
-            # Expect template + additional instructions
             assert instructions_used == "Template instructions\n\nMy Additional", (
                 "Should append additional instructions to the template instructions."
             )
@@ -1389,12 +1388,11 @@ async def test_invoke_instructions_non_streaming(
                 thread_id="abc123",
                 instructions_override="Fully Overridden!",
             )
-            _ = [m async for m in gen]  # Consume the generator
+            _ = [m async for m in gen]
 
             mock_runs_create.assert_called_once()
             _, call_kwargs = mock_runs_create.call_args
             instructions_used = call_kwargs["instructions"]
-            # Expect only the override
             assert instructions_used == "Fully Overridden!", (
                 "If instructions_override is present, it should ignore the template and additional instructions."
             )
