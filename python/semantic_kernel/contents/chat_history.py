@@ -99,6 +99,21 @@ class ChatHistory(KernelBaseModel):
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, items=content, **kwargs))
 
     @singledispatchmethod
+    def add_developer_message(self, content: str | list[KernelContent], **kwargs) -> None:
+        """Add a system message to the chat history."""
+        raise NotImplementedError
+
+    @add_developer_message.register
+    def add_developer_message_str(self, content: str, **kwargs: Any) -> None:
+        """Add a system message to the chat history."""
+        self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, content=content, **kwargs))
+
+    @add_developer_message.register(list)
+    def add_developer_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+        """Add a system message to the chat history."""
+        self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, items=content, **kwargs))
+
+    @singledispatchmethod
     def add_user_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
         """Add a user message to the chat history."""
         raise NotImplementedError

@@ -33,7 +33,16 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
         ChatMessageContent message = new(AuthorRole.User, input);
         ChatHistory chatHistory = [message];
         StringBuilder sb = new();
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chatHistory))
+        var kernelArguments = new KernelArguments(new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
+                    options: new FunctionChoiceBehaviorOptions
+                    {
+                        AllowStrictSchemaAdherence = true
+                    }
+                )
+        });
+        await foreach (ChatMessageContent response in agent.InvokeAsync(chatHistory, kernelArguments))
         {
             chatHistory.Add(response);
             sb.Append(response.Content);

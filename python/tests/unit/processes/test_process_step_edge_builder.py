@@ -133,3 +133,26 @@ def test_build_missing_target():
     # Act & Assert
     with pytest.raises(ValueError, match="Target must be provided"):
         edge_builder.build()
+
+
+def test_send_event_to_step_builder_with_function_name():
+    # Arrange
+    source = MagicMock(spec=ProcessStepBuilder)
+    source.link_to = MagicMock()
+
+    target = MagicMock(spec=ProcessStepBuilder)
+    target.resolve_function_target = MagicMock(
+        return_value=MagicMock(function_name="mock_function_name", parameter_name="mock_parameter_name")
+    )
+
+    event_id = "event_007"
+    edge_builder = ProcessStepEdgeBuilder(source=source, event_id=event_id)
+
+    # Act
+    edge_builder.send_event_to(target, parameter_name="mock_parameter_name", function_name="mock_function_name")
+
+    # Assert
+    assert edge_builder.target.step == target
+    assert edge_builder.target.parameter_name == "mock_parameter_name"
+    assert edge_builder.target.function_name == "mock_function_name"
+    source.link_to.assert_called_once_with(event_id, edge_builder)
