@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.selection.kernel_function_selection_strategy import (
     KernelFunctionSelectionStrategy,
 )

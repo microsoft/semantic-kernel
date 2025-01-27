@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.selection.sequential_selection_strategy import SequentialSelectionStrategy
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 

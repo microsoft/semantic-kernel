@@ -8,7 +8,7 @@ from collections.abc import AsyncGenerator, AsyncIterable
 from pydantic import Field, PrivateAttr
 
 from semantic_kernel.agents import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.group_chat.agent_chat_utils import KeyEncoder
 from semantic_kernel.agents.group_chat.broadcast_queue import BroadcastQueue, ChannelReference
 from semantic_kernel.contents.chat_history import ChatHistory

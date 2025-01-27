@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
+from semantic_kernel.agents.chat_completion.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
