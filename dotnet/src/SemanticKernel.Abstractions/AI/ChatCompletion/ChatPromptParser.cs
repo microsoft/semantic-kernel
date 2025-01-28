@@ -112,7 +112,7 @@ internal static class ChatPromptParser
     /// TagName = "message"<br/>
     /// Attributes = { "role" : "..." }<br/>
     /// optional one or more child nodes <image>...</image><br/>
-    /// optional one or more child node <text>...</text>
+    /// optional one or more child nodes <text>...</text>
     /// </remarks>
     private static bool IsValidChatMessage(PromptNode node)
     {
