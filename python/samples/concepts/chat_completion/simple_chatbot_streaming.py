@@ -2,10 +2,7 @@
 
 import asyncio
 
-from samples.concepts.setup.chat_completion_services import (
-    Services,
-    get_chat_completion_service_and_request_settings,
-)
+from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
 
 # This sample shows how to create a chatbot that streams responses.
@@ -26,6 +23,7 @@ from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
 # - Services.OLLAMA
 # - Services.ONNX
 # - Services.VERTEX_AI
+# - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 # Please note that not all models support streaming responses. Make sure to select a model that supports streaming.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
