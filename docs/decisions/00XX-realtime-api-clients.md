@@ -128,7 +128,30 @@ This would mean that all events are retained and returned to the developer as is
 
 ## Decision Outcome - Content and Events
 
-Chosen option: ...
+Chosen option: 3 Treat Everything as Events
+
+This option was chosen to allow abstraction away from the raw events, while still allowing the developer to access the raw events if needed. This allows for a simple programming model, while still allowing for complex interactions.
+A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event which is filled with the event type from the service and a field for the actual content, with a name that makes sense:
+
+```python
+AudioEvent(
+  event_type="audio",
+  service_event= "response.audio.delta",
+  audio: AudioContent(...)
+)
+```
+
+Next to these we will have a generic event, called ServiceEvent, this is the catch-all, which has event_type: "service", the service_event field filled with the event type from the service and a field called 'event' which contains the raw event from the service.
+
+```python
+ServiceEvent(
+  event_type="service",
+  service_event= "conversation.item.create",
+  event: { ... }
+)
+```
+
+This allows you to easily filter on the event_type, and then use the service_event to filter on the specific event type, and then use the content field to get the content, or the event field to get the raw event.
 
 # Programming model
 
@@ -137,10 +160,11 @@ The programming model for the clients needs to be simple and easy to use, while 
 
 _In this section we will refer to events for both content and events, regardless of the decision made in the previous section._
 
-1. Async generator for receiving events, that yields contents, combined with a event handler/callback mechanism for receiving events and a function for sending events
+1. Async generator for receiving events, that yields Events, combined with a event handler/callback mechanism for receiving events and a function for sending events
    - 1a: Single event handlers, where each event is passed to the handler
    - 1b: Multiple event handlers, where each event type has its own handler
 2. Event buffers/queues that are exposed to the developer, start sending and start receiving methods, that just initiate the sending and receiving of events and thereby the filling of the buffers
+3. Purely a start listening method that yields Events, and a send method that sends events
 
 ### 1. Async generator for receiving events, that yields contents, combined with a event handler/callback mechanism for receiving events and a function for sending events
 This would mean that the client would have a mechanism to register event handlers, and the integration would call these handlers when an event is received. For sending events, a function would be created that sends the event to the service.
@@ -173,7 +197,18 @@ This would mean that the audio content is handled, and passed to the developer c
 
 ## Decision Outcome - Programming model
 
-Chosen option: ...
+Chosen option: Purely a start listening method that yields Events, and a send method that sends events
+
+This makes the programming model very easy, a minimal setup that should work for every service and protocol would look like this:
+```python
+async for event in realtime_client.start_streaming():
+    match event.event_type:
+        case "audio":
+            await audio_player.add_audio(event.audio)
+        case "text":
+            print(event.text.text)
+```
+
 
 # Audio speaker/microphone handling
 
