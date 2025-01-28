@@ -18,7 +18,10 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
+public sealed class QdrantVectorStoreRecordCollection<TRecord> :
+    IVectorStoreRecordCollection<ulong, TRecord>,
+    IVectorStoreRecordCollection<Guid, TRecord>,
+    IKeywordVectorizedHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
@@ -30,6 +33,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid vector search.</summary>
+    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
@@ -459,19 +465,11 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vector);
+        var floatVector = VerifyVectorParam(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
-        }
-
+        // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
 
         // Build filter object.
         var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
@@ -480,7 +478,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            vectorName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
         }
 
         // Specify whether to include vectors in the search results.
@@ -517,29 +515,78 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
-    /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private string ResolveVectorFieldName(string? optionsVectorFieldName)
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        var floatVector = VerifyVectorParam(vector);
+
+        // Resolve options.
+        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.DenseVectorPropertyName);
+
+        // Build filter object.
+        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
+        var textDataProperty = this._propertyReader.GetTextDataPropertyOrFirst(internalOptions.TextPropertyName);
+        var textDataPropertyName = this._propertyReader.GetStoragePropertyName(textDataProperty.DataModelPropertyName);
+
+        // Specify the vector name if named vectors are used.
+        string? vectorName = null;
+        if (this._options.HasNamedVectors)
         {
-            if (!this._propertyReader.StoragePropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
-        {
-            vectorFieldName = this._propertyReader.FirstVectorPropertyStoragePropertyName;
+            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
         }
 
-        return vectorFieldName!;
+        // Specify whether to include vectors in the search results.
+        var vectorsSelector = new WithVectorsSelector();
+        vectorsSelector.Enable = internalOptions.IncludeVectors;
+
+        // Build the vector query.
+        var vectorQuery = new PrefetchQuery
+        {
+            Filter = filter,
+            Using = vectorName,
+            Query = new Query
+            {
+                Nearest = new VectorInput(floatVector.ToArray()),
+            },
+        };
+
+        // Build the keyword query.
+        var keywordFilter = filter.Clone();
+        keywordFilter.Must.Add(new Condition() { Field = new FieldCondition() { Key = textDataPropertyName, Match = new Match { Text = keywords } } });
+        var keywordQuery = new PrefetchQuery
+        {
+            Filter = keywordFilter,
+        };
+
+        // Build the fusion query.
+        var fusionQuery = new Query
+        {
+            Fusion = QdrantVectorStoreCollectionSearchMapping.MapFusionMethod(internalOptions.FusionMethod)
+        };
+
+        // Execute Search.
+        var points = await this.RunOperationAsync(
+            "Query",
+            () => this._qdrantClient.QueryAsync(
+                this.CollectionName,
+                prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
+                query: fusionQuery,
+                limit: (ulong)internalOptions.Top,
+                offset: (ulong)internalOptions.Skip,
+                vectorsSelector: vectorsSelector,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        // Map to data model.
+        var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
+                point,
+                this._mapper,
+                internalOptions.IncludeVectors,
+                DatabaseName,
+                this._collectionName,
+                "Query"));
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     /// <summary>
@@ -587,5 +634,17 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 OperationName = operationName
             };
         }
+    }
+
+    private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
+    {
+        Verify.NotNull(vector);
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
+        }
+
+        return floatVector;
     }
 }

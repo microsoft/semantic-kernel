@@ -322,7 +322,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorData.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var floatVector = this.VerifyVectorParam(vector);
+        var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
@@ -400,7 +400,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
     public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
-        var floatVector = this.VerifyVectorParam(vector);
+        var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
@@ -657,7 +657,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
+    private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
     {
         Verify.NotNull(vector);
 
