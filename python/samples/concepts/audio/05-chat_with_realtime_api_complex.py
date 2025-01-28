@@ -13,9 +13,8 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.connectors.ai.utils import SKAudioPlayer
-from semantic_kernel.contents import ChatHistory, StreamingChatMessageContent
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)
@@ -53,47 +52,6 @@ def check_audio_devices():
 check_audio_devices()
 
 
-class ReceivingStreamHandler:
-    """This is a simple class that listens to the received buffer of the RealtimeClientBase.
-
-    It can be used to play audio and print the transcript of the conversation.
-
-    It can also be used to act on other events from the service.
-    """
-
-    def __init__(self, realtime_client: RealtimeClientBase, audio_player: SKAudioPlayer | None = None):
-        self.audio_player = audio_player
-        self.realtime_client = realtime_client
-
-    async def listen(
-        self,
-        play_audio: bool = True,
-        print_transcript: bool = True,
-    ) -> None:
-        # print the start message of the transcript
-        if print_transcript:
-            print("Mosscap (transcript): ", end="")
-        try:
-            # start listening for events
-            while True:
-                event_type, event = await self.realtime_client.receive_buffer.get()
-                match event_type:
-                    case ListenEvents.RESPONSE_AUDIO_DELTA:
-                        if play_audio and self.audio_player and isinstance(event, StreamingChatMessageContent):
-                            await self.audio_player.add_audio(event.items[0])
-                    case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA:
-                        if print_transcript and isinstance(event, StreamingChatMessageContent):
-                            print(event.content, end="")
-                    case ListenEvents.RESPONSE_CREATED:
-                        if print_transcript:
-                            print("")
-                    # case ....:
-                    #     # add other event handling here
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            print("\nThanks for talking to Mosscap!")
-
-
 @kernel_function
 def get_weather(location: str) -> str:
     """Get the weather for a location."""
@@ -111,6 +69,7 @@ def get_date_time() -> str:
 
 
 async def main() -> None:
+    print_transcript = True
     # create the Kernel and add a simple function for function calling.
     kernel = Kernel()
     kernel.add_function(plugin_name="weather", function_name="get_weather", function=get_weather)
@@ -121,12 +80,6 @@ async def main() -> None:
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
     realtime_client = OpenAIRealtime(protocol="webrtc", audio_output_callback=audio_player.client_callback)
-
-    # create stream receiver (defined above), this can play the audio,
-    # if the audio_player is passed (commented out here)
-    # and allows you to print the transcript of the conversation
-    # and review or act on other events from the service
-    stream_handler = ReceivingStreamHandler(realtime_client)  # SimplePlayer(device_id=None)
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
@@ -165,9 +118,25 @@ async def main() -> None:
         #     item=ChatMessageContent(role="user", content="Hi there, who are you?")},
         # )
         # await realtime_client.send(SendEvents.RESPONSE_CREATE)
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(realtime_client.start_streaming())
-            tg.create_task(stream_handler.listen())
+        print("Mosscap (transcript): ", end="")
+        async for event in realtime_client.start_streaming():
+            match event.event_type:
+                # case "audio":
+                # if play_audio and audio_player:
+                #     await audio_player.add_audio(event.audio)
+                case "text":
+                    if print_transcript:
+                        print(event.text.text, end="")
+                case "service":
+                    # OpenAI Specific events
+                    match event.service_type:
+                        case ListenEvents.RESPONSE_CREATED:
+                            if print_transcript:
+                                print("")
+                        case ListenEvents.ERROR:
+                            logger.error(event.event)
+                # case ....:
+                #     # add other event handling here
 
 
 if __name__ == "__main__":

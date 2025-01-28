@@ -5,11 +5,10 @@ import base64
 import json
 import logging
 import sys
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import numpy as np
-
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -21,6 +20,7 @@ from openai.types.beta.realtime.conversation_item_param import ConversationItemP
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
+from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -53,7 +53,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
         chat_history: "ChatHistory | None" = None,
         create_response: bool = False,
         **kwargs: Any,
-    ) -> None:
+    ) -> AsyncGenerator[tuple[str, Any], None]:
         await self.connected.wait()
         if not self.connection:
             raise ValueError("Connection is not established.")
@@ -66,7 +66,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                 if self.audio_output_callback:
                     await self.audio_output_callback(np.frombuffer(base64.b64decode(event.delta), dtype=np.int16))
                 try:
-                    await self.receive_buffer.put((
+                    yield (
                         event.type,
                         StreamingChatMessageContent(
                             role=AuthorRole.ASSISTANT,
@@ -79,11 +79,12 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                             ],  # type: ignore
                             choice_index=event.content_index,
                         ),
-                    ))
+                    )
                 except Exception as e:
                     logger.error(f"Error processing remote audio frame: {e!s}")
             else:
-                await self._handle_event(event)
+                async for event in self._parse_event(event):
+                    yield event
 
     @override
     async def start_sending(self, **kwargs: Any) -> None:
@@ -91,26 +92,26 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
         if not self.connection:
             raise ValueError("Connection is not established.")
         while True:
-            event, data = await self.send_buffer.get()
-            match event:
+            event = await self.send_buffer.get()
+            match event.event_type:
                 case SendEvents.SESSION_UPDATE:
-                    if "settings" not in data:
+                    if "settings" not in event.data:
                         logger.error("Event data does not contain 'settings'")
-                    await self.connection.session.update(session=data["settings"].prepare_settings_dict())
+                    await self.connection.session.update(session=event.data["settings"].prepare_settings_dict())
                 case SendEvents.INPUT_AUDIO_BUFFER_APPEND:
-                    if "content" not in data:
+                    if "content" not in event.data:
                         logger.error("Event data does not contain 'content'")
                         return
-                    await self.connection.input_audio_buffer.append(audio=data["content"].data.decode("utf-8"))
+                    await self.connection.input_audio_buffer.append(audio=event.data["content"].data.decode("utf-8"))
                 case SendEvents.INPUT_AUDIO_BUFFER_COMMIT:
                     await self.connection.input_audio_buffer.commit()
                 case SendEvents.INPUT_AUDIO_BUFFER_CLEAR:
                     await self.connection.input_audio_buffer.clear()
                 case SendEvents.CONVERSATION_ITEM_CREATE:
-                    if "item" not in data:
+                    if "item" not in event.data:
                         logger.error("Event data does not contain 'item'")
                         return
-                    content = data["item"]
+                    content = event.data["item"]
                     for item in content.items:
                         match item:
                             case TextContent():
@@ -156,25 +157,25 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                                     )
                                 )
                 case SendEvents.CONVERSATION_ITEM_TRUNCATE:
-                    if "item_id" not in data:
+                    if "item_id" not in event.data:
                         logger.error("Event data does not contain 'item_id'")
                         return
                     await self.connection.conversation.item.truncate(
-                        item_id=data["item_id"], content_index=0, audio_end_ms=data.get("audio_end_ms", 0)
+                        item_id=event.data["item_id"], content_index=0, audio_end_ms=event.data.get("audio_end_ms", 0)
                     )
                 case SendEvents.CONVERSATION_ITEM_DELETE:
-                    if "item_id" not in data:
+                    if "item_id" not in event.data:
                         logger.error("Event data does not contain 'item_id'")
                         return
-                    await self.connection.conversation.item.delete(item_id=data["item_id"])
+                    await self.connection.conversation.item.delete(item_id=event.data["item_id"])
                 case SendEvents.RESPONSE_CREATE:
-                    if "response" in data:
-                        await self.connection.response.create(response=data["response"])
+                    if "response" in event.data:
+                        await self.connection.response.create(response=event.data["response"])
                     else:
                         await self.connection.response.create()
                 case SendEvents.RESPONSE_CANCEL:
-                    if "response_id" in data:
-                        await self.connection.response.cancel(response_id=data["response_id"])
+                    if "response_id" in event.data:
+                        await self.connection.response.cancel(response_id=event.data["response_id"])
                     else:
                         await self.connection.response.cancel()
 
