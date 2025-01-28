@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any
+from typing import TYPE_CHECKING
 
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
@@ -13,12 +13,16 @@ if sys.version < "3.12":
 else:
     from typing import override  # type: ignore  # pragma: no cover
 
+
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import (
     extract_range,
     locate_safe_reduction_index,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if TYPE_CHECKING:
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -29,16 +33,12 @@ class ChatHistoryTruncationReducer(ChatHistoryReducer):
 
     Because this class inherits from ChatHistoryReducer (which in turn inherits from ChatHistory),
     it can also be used anywhere a ChatHistory is expected, while adding truncation capability.
-    """
 
-    def __init__(self, target_count: int, threshold_count: int | None = None, **kwargs: Any):
-        """Initialize the truncation reducer."""
-        args: dict[str, Any] = {
-            "target_count": target_count,
-        }
-        if threshold_count is not None:
-            args["threshold_count"] = threshold_count
-        super().__init__(**args, **kwargs)
+    Args:
+        target_count: The target message count.
+        threshold_count: The threshold count to avoid orphaning messages.
+        auto_reduce: Whether to automatically reduce the chat history, default is False.
+    """
 
     @override
     async def reduce(self) -> Self | None:

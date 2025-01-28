@@ -96,10 +96,11 @@ def locate_safe_reduction_index(
     message_index = total_count - target_count
 
     # Move backward to avoid cutting function calls / results
+    # also skip over developer/system messages
     while message_index >= offset_count:
-        if not any(
-            isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in history[message_index].items
-        ):
+        if history[message_index].role not in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
+            break
+        if not contains_function_call_or_result(history[message_index]):
             break
         message_index -= 1
 
@@ -161,6 +162,11 @@ def extract_range(
 
         # If filter_func excludes it, skip it
         if filter_func and filter_func(msg):
+            i += 1
+            continue
+
+        # skipping system/developer message
+        if msg.role in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
             i += 1
             continue
 
