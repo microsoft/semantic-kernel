@@ -178,6 +178,7 @@ public sealed class ChatPromptParserTests
                     });
             });
     }
+
     [Fact]
     public void ItReturnsChatHistoryWithMixedXmlContent()
     {
