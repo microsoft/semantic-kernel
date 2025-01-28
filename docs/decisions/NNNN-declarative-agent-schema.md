@@ -93,11 +93,12 @@ For Agent properties that define behaviors e.g. `HistoryReducer` the Semantic Ke
 
 ## Decision Drivers
 
-- Schema **MUST** allow model settings to be assigned to an Agent
-- Schema **MUST** allow functions to be assigned to an Agent
-- Schema **MUST** allow a Semantic Kernel prompt to be used to define the Agent instructions
-- Schema **MUST** be extensible so that support for new Agent types can be added to Semantic Kernel
-- Schema **MUST** allow third parties to contribute new Agent types to Semantic Kernel
+- Schema **MUST** be Agent Service agnostic i.e., will work with Agents targeting Azure, Open AI, Mistral AI, ...
+- Schema **MUST** allow model settings to be assigned to an Agent.
+- Schema **MUST** allow tools (e.g. functions, code interpreter, file search, ...) to be assigned to an Agent.
+- Schema **MUST** allow a Semantic Kernel prompt (including Prompty format) to be used to define the Agent instructions.
+- Schema **MUST** be extensible so that support for new Agent types with their own settings and tools, can be added to Semantic Kernel.
+- Schema **MUST** allow third parties to contribute new Agent types to Semantic Kernel.
 - … <!-- numbers of drivers can vary -->
 
 ## Considered Options
@@ -164,7 +165,7 @@ Chosen option: "{title of option 1}", because
 
 ## More Information
 
-Below are examples showing the code first and equivalent declarative syntax fot creating different types of Agents.
+Below are examples showing the code first and equivalent declarative syntax for creating different types of Agents.
 
 Consider the following use cases:
 
