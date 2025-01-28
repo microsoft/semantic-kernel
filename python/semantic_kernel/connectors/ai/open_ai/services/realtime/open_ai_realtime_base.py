@@ -2,8 +2,18 @@
 
 import logging
 import sys
-from collections.abc import Callable, Coroutine
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
+
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.realtime_event import (
+    FunctionCallEvent,
+    FunctionResultEvent,
+    RealtimeEvent,
+    ServiceEvent,
+    TextEvent,
+)
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,8 +41,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -56,7 +64,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     _current_settings: PromptExecutionSettings | None = PrivateAttr(None)
     _call_id_to_function_map: dict[str, str] = PrivateAttr(default_factory=dict)
 
-    async def _handle_event(self, event: RealtimeServerEvent) -> None:
+    async def _parse_event(self, event: RealtimeServerEvent) -> AsyncGenerator[RealtimeEvent, None]:
         """Handle all events but audio delta.
 
         Audio delta has to be handled by the implementation of the protocol as some
@@ -64,38 +72,35 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         """
         match event.type:
             case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
-                await self.receive_buffer.put((
-                    event.type,
-                    StreamingChatMessageContent(
-                        role=AuthorRole.ASSISTANT,
-                        content=event.delta,
-                        choice_index=event.content_index,
+                yield TextEvent(
+                    event_type="text",
+                    service_type=event.type,
+                    text=StreamingTextContent(
                         inner_content=event,
+                        text=event.delta,
+                        choice_index=0,
                     ),
-                ))
+                )
             case ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED.value:
                 if event.item.type == "function_call" and event.item.call_id and event.item.name:
                     self._call_id_to_function_map[event.item.call_id] = event.item.name
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA.value:
-                await self.receive_buffer.put((
-                    event.type,
-                    StreamingChatMessageContent(
-                        role=AuthorRole.ASSISTANT,
-                        items=[
-                            FunctionCallContent(
-                                id=event.item_id,
-                                name=event.call_id,
-                                arguments=event.delta,
-                                index=event.output_index,
-                                metadata={"call_id": event.call_id},
-                            )
-                        ],
-                        choice_index=0,
+                yield FunctionCallEvent(
+                    event_type="function_call",
+                    service_type=event.type,
+                    function_call=FunctionCallContent(
+                        id=event.item_id,
+                        name=self._call_id_to_function_map[event.call_id],
+                        arguments=event.delta,
+                        index=event.output_index,
+                        metadata={"call_id": event.call_id},
                         inner_content=event,
                     ),
-                ))
+                )
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE.value:
-                await self._handle_function_call_arguments_done(event)
+                async for parsed_event in self._parse_function_call_arguments_done(event):
+                    if parsed_event:
+                        yield parsed_event
             case ListenEvents.ERROR.value:
                 logger.error("Error received: %s", event.error)
             case ListenEvents.SESSION_CREATED.value, ListenEvents.SESSION_UPDATED.value:
@@ -105,7 +110,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         # we put all event in the output buffer, but after the interpreted one.
         # so when dealing with them, make sure to check the type of the event, since they
         # might be of different types.
-        await self.receive_buffer.put((event.type, event))
+        yield ServiceEvent(event_type="service", service_type=event.type, event=event)
 
     @override
     async def update_session(
@@ -126,12 +131,16 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 self._update_function_choice_settings_callback(),
                 kernel=self.kernel,  # type: ignore
             )
-            await self.send(SendEvents.SESSION_UPDATE, settings=self._current_settings)
+            await self.send(
+                ServiceEvent(event_type="service", service_type=SendEvents.SESSION_UPDATE, event=self._current_settings)
+            )
         if chat_history and len(chat_history) > 0:
             for msg in chat_history.messages:
-                await self.send(SendEvents.CONVERSATION_ITEM_CREATE, item=msg)
+                await self.send(
+                    ServiceEvent(event_type="service", service_type=SendEvents.CONVERSATION_ITEM_CREATE, event=msg)
+                )
         if create_response:
-            await self.send(SendEvents.RESPONSE_CREATE)
+            await self.send(ServiceEvent(event_type="service", service_type=SendEvents.RESPONSE_CREATE))
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
@@ -147,20 +156,22 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
-    async def _handle_function_call_arguments_done(
+    async def _parse_function_call_arguments_done(
         self,
         event: ResponseFunctionCallArgumentsDoneEvent,
-    ) -> None:
+    ) -> AsyncGenerator[RealtimeEvent | None]:
         """Handle response function call done."""
         if not self.kernel or (
             self._current_settings
             and self._current_settings.function_choice_behavior
             and not self._current_settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
+            yield None
             return
         plugin_name, function_name = self._call_id_to_function_map.pop(event.call_id, "-").split("-", 1)
         if not plugin_name or not function_name:
             logger.error("Function call needs to have a plugin name and function name")
+            yield None
             return
         item = FunctionCallContent(
             id=event.item_id,
@@ -170,15 +181,22 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             index=event.output_index,
             metadata={"call_id": event.call_id},
         )
+        yield FunctionCallEvent(
+            event_type="function_call",
+            service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE,
+            function_call=item,
+        )
         chat_history = ChatHistory()
         await self.kernel.invoke_function_call(item, chat_history)
-        created_output = chat_history.messages[-1]
+        created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
         # This returns the output to the service
-        await self.send(SendEvents.CONVERSATION_ITEM_CREATE, item=created_output)
+        await self.send(
+            ServiceEvent(event_type="service", service_type=SendEvents.CONVERSATION_ITEM_CREATE, event=created_output)
+        )
         # The model doesn't start responding to the tool call automatically, so triggering it here.
-        await self.send(SendEvents.RESPONSE_CREATE)
+        await self.send(ServiceEvent(event_type="service", service_type=SendEvents.RESPONSE_CREATE))
         # This allows a user to have a full conversation in his code
-        await self.receive_buffer.put((ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, created_output))
+        yield FunctionResultEvent(event_type="function_result", function_result=created_output)
 
     @override
     async def start_listening(

@@ -5,9 +5,10 @@ import contextlib
 import json
 import logging
 import sys
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
+from pydantic import Field
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -28,12 +29,13 @@ from openai.types.beta.realtime.conversation_item_param import ConversationItemP
 from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
+from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
+from semantic_kernel.connectors.ai.realtime_client_base import RealtimeEvent
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.realtime_event import AudioEvent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -53,6 +55,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     protocol: ClassVar[Literal["webrtc"]] = "webrtc"
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
+    receive_buffer: asyncio.Queue[RealtimeEvent] = Field(default_factory=asyncio.Queue)
 
     # region public methods
 
@@ -63,9 +66,12 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         chat_history: "ChatHistory | None" = None,
         create_response: bool = False,
         **kwargs: Any,
-    ) -> None:
+    ) -> AsyncGenerator[RealtimeEvent, None]:
         if chat_history or settings or create_response:
             await self.update_session(settings=settings, chat_history=chat_history, create_response=create_response)
+        while True:
+            event = await self.receive_buffer.get()
+            yield event
 
     @override
     async def start_sending(self, **kwargs: Any) -> None:
@@ -75,20 +81,18 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         while self.data_channel.readyState != "open":
             await asyncio.sleep(0.1)
         while True:
-            event, data = await self.send_buffer.get()
-            if not isinstance(event, SendEvents):
-                event = SendEvents(event)
-            response: dict[str, Any] = {"type": event.value}
-            match event:
+            event = await self.send_buffer.get()
+            response: dict[str, Any] = {"type": event.event_type}
+            match event.event_type:
                 case SendEvents.SESSION_UPDATE:
-                    if "settings" not in data:
+                    if "settings" not in event.data:
                         logger.error("Event data does not contain 'settings'")
-                    response["session"] = data["settings"].prepare_settings_dict()
+                    response["session"] = event.data["settings"].prepare_settings_dict()
                 case SendEvents.CONVERSATION_ITEM_CREATE:
-                    if "item" not in data:
+                    if "item" not in event.data:
                         logger.error("Event data does not contain 'item'")
                         return
-                    content = data["item"]
+                    content = event.data["item"]
                     for item in content.items:
                         match item:
                             case TextContent():
@@ -131,24 +135,24 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                                 )
 
                 case SendEvents.CONVERSATION_ITEM_TRUNCATE:
-                    if "item_id" not in data:
+                    if "item_id" not in event.data:
                         logger.error("Event data does not contain 'item_id'")
                         return
-                    response["item_id"] = data["item_id"]
+                    response["item_id"] = event.data["item_id"]
                     response["content_index"] = 0
-                    response["audio_end_ms"] = data.get("audio_end_ms", 0)
+                    response["audio_end_ms"] = event.data.get("audio_end_ms", 0)
 
                 case SendEvents.CONVERSATION_ITEM_DELETE:
-                    if "item_id" not in data:
+                    if "item_id" not in event.data:
                         logger.error("Event data does not contain 'item_id'")
                         return
-                    response["item_id"] = data["item_id"]
+                    response["item_id"] = event.data["item_id"]
                 case SendEvents.RESPONSE_CREATE:
-                    if "response" in data:
-                        response["response"] = data["response"]
+                    if "response" in event.data:
+                        response["response"] = event.data["response"]
                 case SendEvents.RESPONSE_CANCEL:
-                    if "response_id" in data:
-                        response["response_id"] = data["response_id"]
+                    if "response_id" in event.data:
+                        response["response_id"] = event.data["response_id"]
 
             try:
                 self.data_channel.send(json.dumps(response))
@@ -249,13 +253,10 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                 logger.error(f"Error playing remote audio frame: {e!s}")
             try:
                 await self.receive_buffer.put(
-                    (
-                        ListenEvents.RESPONSE_AUDIO_DELTA,
-                        StreamingChatMessageContent(
-                            role=AuthorRole.ASSISTANT,
-                            items=[AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame)],  # type: ignore
-                            choice_index=0,
-                        ),
+                    AudioEvent(
+                        event_type="audio",
+                        service_type=ListenEvents.RESPONSE_AUDIO_DELTA,
+                        audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame),  # type: ignore
                     ),
                 )
             except Exception as e:
@@ -276,7 +277,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         except Exception as e:
             logger.error(f"Failed to parse event {data} with error: {e!s}")
             return
-        await self._handle_event(event)
+        async for parsed_event in self._parse_event(event):
+            await self.receive_buffer.put(parsed_event)
 
     async def _get_ephemeral_token(self) -> str:
         """Get an ephemeral token from OpenAI."""
