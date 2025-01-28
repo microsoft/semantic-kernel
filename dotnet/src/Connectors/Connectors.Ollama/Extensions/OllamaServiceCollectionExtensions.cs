@@ -171,7 +171,7 @@ public static class OllamaServiceCollectionExtensions
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaChatCompletion(
         this IServiceCollection services,
-        OllamaApiClient ollamaClient,
+        OllamaApiClient? ollamaClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -179,6 +179,7 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            ollamaClient ??= serviceProvider.GetRequiredService<OllamaApiClient>();
 
             var builder = ((IChatClient)ollamaClient)
                 .AsBuilder()
