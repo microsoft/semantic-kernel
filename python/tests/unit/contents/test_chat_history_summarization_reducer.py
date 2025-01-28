@@ -144,7 +144,9 @@ async def test_summarization_reducer_reduce_needed_auto(mock_service):
 
     for msg in messages:
         await reducer.add_message_async(msg)
-        assert len(reducer.messages) <= 5, "We should auto-reduce after each message."
+        assert len(reducer.messages) <= 5, (
+            "We should auto-reduce after each message, we have one summary, and then 4 other messages."
+        )
 
 
 async def test_summarization_reducer_reduce_no_messages_to_summarize(mock_service):
