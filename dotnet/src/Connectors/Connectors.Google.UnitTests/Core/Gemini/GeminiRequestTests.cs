@@ -470,6 +470,44 @@ public sealed class GeminiRequestTests
             c => Equals(message.Role, c.Role));
     }
 
+    [Fact]
+    public void CachedContentFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
+    }
+
+    [Fact]
+    public void CachedContentFromChatHistoryReturnsAsExpected()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage("user-message2");
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 }
