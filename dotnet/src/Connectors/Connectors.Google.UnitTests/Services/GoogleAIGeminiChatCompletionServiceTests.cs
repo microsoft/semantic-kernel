@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
-using System.IO;
-using System;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
