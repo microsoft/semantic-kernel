@@ -26,7 +26,14 @@ logger = logging.getLogger(__name__)
 
 @experimental_class
 class BedrockAgentChannel(AgentChannel, ChatHistory):
-    """An AgentChannel for a BedrockAgent that is based on a ChatHistory."""
+    """An AgentChannel for a BedrockAgent that is based on a ChatHistory.
+
+    This channel allows Bedrock agents to interact with other types of agents in Semantic Kernel in an AgentGroupChat.
+    However, since Bedrock agents require the chat history to alternate between user and agent messages, this channel
+    will preprocess the chat history to ensure that it meets the requirements of the Bedrock agent. When an invalid
+    pattern is detected, the channel will insert a placeholder user or assistant message to ensure that the chat history
+    alternates between user and agent messages.
+    """
 
     MESSAGE_PLACEHOLDER: ClassVar[str] = "[SILENCE]"
 
