@@ -11,14 +11,6 @@ namespace Microsoft.SemanticKernel.Agents.Extensions;
 internal static class AgentExtensions
 {
     /// <summary>
-    /// Default display name of the agent.
-    /// </summary>
-    /// <remarks>
-    /// Currently, it's intended for telemetry purposes only.
-    /// </remarks>
-    public static string DefaultAgentDisplayName = "UnnamedAgent";
-
-    /// <summary>
     /// Provides a name for the agent, even if it's the identifier.
     /// (since <see cref="Agent.Name"/> allows null)
     /// </summary>
@@ -33,5 +25,5 @@ internal static class AgentExtensions
     /// <remarks>
     /// Currently, it's intended for telemetry purposes only.
     /// </remarks>
-    public static string GetDisplayName(this Agent agent) => agent.Name ?? DefaultAgentDisplayName;
+    public static string GetDisplayName(this Agent agent) => agent.Name ?? "UnnamedAgent";
 }

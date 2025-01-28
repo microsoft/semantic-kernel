@@ -22,8 +22,8 @@ internal static partial class AgentChatLogMessages
     /// <summary>
     /// Logs retrieval of <see cref="AgentChat"/> messages.
     /// </summary>
-    private static readonly Action<ILogger, string, string, string, string, Exception?> s_logAgentChatGetChatMessages =
-        LoggerMessage.Define<string, string, string, string>(
+    private static readonly Action<ILogger, string, string, string, string?, Exception?> s_logAgentChatGetChatMessages =
+        LoggerMessage.Define<string, string, string, string?>(
             logLevel: LogLevel.Debug,
             eventId: 0,
             "[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}/{MessageSourceName}.");
@@ -37,7 +37,7 @@ internal static partial class AgentChatLogMessages
         {
             if (agent is null)
             {
-                s_logAgentChatGetChatMessages(logger, methodName, "primary", "primary", AgentExtensions.DefaultAgentDisplayName, null);
+                s_logAgentChatGetChatMessages(logger, methodName, "primary", "primary", null, null);
             }
             else
             {
