@@ -148,7 +148,11 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         chatHistory.AddUserMessage("Finish this sentence: He knew the sea’s...");
 
         // Setup initial cached content
-        var cachedContentJson = File.ReadAllText(Path.Combine("Resources", "gemini_cached_content.json"));
+        var cachedContentJson = File.ReadAllText(Path.Combine("Resources", "gemini_cached_content.json"))
+            .Replace("{{project}}", this.VertexAIGetProjectId())
+            .Replace("{{location}}", this.VertexAIGetLocation())
+            .Replace("{{model}}", this.VertexAIGetGeminiModel());
+
         var cachedContentName = string.Empty;
 
         using (var httpClient = new HttpClient()

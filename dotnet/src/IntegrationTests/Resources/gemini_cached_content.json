@@ -1,5 +1,5 @@
 {
-  "model": "projects/carepatron/locations/us-central1/publishers/google/models/gemini-1.5-flash-002",
+  "model": "projects/{{project}}/locations/{{location}}/publishers/google/models/{{model}}",
   "displayName": "CACHE_DISPLAY_NAME",
   "contents": [
     {
@@ -7,17 +7,6 @@
       "parts": [
         {
           "text": "This is sample text to demonstrate explicit caching."
-        }
-      ]
-    },
-    {
-      "role": "user",
-      "parts": [
-        {
-          "fileData": {
-            "mimeType": "image/png",
-            "fileUri": "gs://noiansdioasdoianwenoiqionioasndasd/Sample-png-image-5mb.png"
-          }
         }
       ]
     },
