@@ -9,14 +9,9 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from opentelemetry.trace import Span, Tracer, get_tracer, use_span
+from pydantic import Field
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    merge_function_results,
-    merge_streaming_function_results,
-)
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
@@ -26,6 +21,7 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import AVAILABLE_FUNCTIONS
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -41,6 +37,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # Connectors that support function calling should set this to True
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
+    instruction_role: str = Field(default_factory=lambda: "system", description="The role for instructions.")
 
     # region Internal methods to be implemented by the derived classes
 
@@ -102,6 +99,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
         """
+        from semantic_kernel.connectors.ai.function_calling_utils import (
+            merge_function_results,
+        )
+
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
         # Later on, we already use the tools or equivalent settings, we cast here.
@@ -110,15 +111,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             return await self._inner_get_chat_message_contents(chat_history, settings)
-
-        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
-        # if this method is called with a `FunctionCallBehavior` object as part of the settings
-        if hasattr(settings, "function_call_behavior") and isinstance(
-            settings.function_call_behavior, FunctionCallBehavior
-        ):
-            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
-                settings.function_call_behavior
-            )
 
         kernel: "Kernel" = kwargs.get("kernel")  # type: ignore
         if settings.function_choice_behavior is not None:
@@ -217,6 +209,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Yields:
             A stream representing the response(s) from the LLM.
         """
+        from semantic_kernel.connectors.ai.function_calling_utils import (
+            merge_streaming_function_results,
+        )
+
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
         # Later on, we already use the tools or equivalent settings, we cast here.
@@ -229,15 +225,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             ):
                 yield streaming_chat_message_contents
             return
-
-        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
-        # if this method is called with a `FunctionCallBehavior` object as part of the settings
-        if hasattr(settings, "function_call_behavior") and isinstance(
-            settings.function_call_behavior, FunctionCallBehavior
-        ):
-            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
-                settings.function_call_behavior
-            )
 
         kernel: "Kernel" = kwargs.get("kernel")  # type: ignore
         if settings.function_choice_behavior is not None:
@@ -397,7 +384,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         """Return the callback function to update the settings from a function call configuration.
 
         Override this method to provide a custom callback function to

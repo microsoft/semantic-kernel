@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+from pathlib import Path
 from typing import Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -481,6 +482,11 @@ def test_plugin_no_plugin(kernel: Kernel):
 def test_plugin_name_error(kernel: Kernel):
     with pytest.raises(ValueError):
         kernel.add_plugin(" ", None)
+
+
+def test_plugin_name_not_string_error(kernel: Kernel):
+    with pytest.raises(TypeError):
+        kernel.add_plugin(" ", plugin_name=Path(__file__).parent)
 
 
 def test_plugins_add_plugins(kernel: Kernel):

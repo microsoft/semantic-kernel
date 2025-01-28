@@ -86,10 +86,16 @@ To set your secrets with .NET Secret Manager:
 5. Or Azure Open AI:
 
     ```
-    dotnet user-secrets set "AzureOpenAI:DeploymentName" "..."
-    dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
+    dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4o"
     dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
     dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+    ```
+
+5. Or Azure AI:
+
+    ```
+    dotnet user-secrets set "AzureAI:ConnectionString" "..."
+    dotnet user-secrets set "AzureAI:ChatModelId" "gpt-4o"
     ```
 
 > NOTE: Azure secrets will take precedence, if both Open AI and Azure Open AI secrets are defined, unless `ForceOpenAI` is set:

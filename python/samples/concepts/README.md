@@ -10,6 +10,7 @@
 - [Assistant Agent Retrieval](./agents/assistant_agent_retrieval.py)
 - [Assistant Agent Streaming](./agents/assistant_agent_streaming.py)
 - [Chat Completion Function Termination](./agents/chat_completion_function_termination.py)
+- [Chat Completion History Reducer](./agents/chat_completion_history_reducer.py)
 - [Mixed Chat Agents](./agents/mixed_chat_agents.py)
 - [Mixed Chat Agents Plugins](./agents/mixed_chat_agents_plugins.py)
 - [Mixed Chat Files](./agents/mixed_chat_files.py)
@@ -45,6 +46,9 @@
 - [Simple Chatbot Store Metadata](./chat_completion/simple_chatbot_store_metadata.py)
 - [Simple Chatbot Streaming](./chat_completion/simple_chatbot_streaming.py)
 - [Simple Chatbot with Image](./chat_completion/simple_chatbot_with_image.py)
+- [Simple Chatbot with Summary History Reducer Keeping Function Content](./chat_completion/simple_chatbot_with_summary_history_reducer_keep_func_content.py)
+- [Simple Chatbot with Summary History Reducer](./chat_completion/simple_chatbot_with_summary_history_reducer.py)
+- [Simple Chatbot with Truncation History Reducer](./chat_completion/simple_chatbot_with_truncation_history_reducer.py)
 
 ### ChatHistory - Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py)
 

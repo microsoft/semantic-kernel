@@ -120,14 +120,13 @@ async def main():
 
         chat_history.add_message(result)
         for item in result.items:
-            await chat._process_function_call(
+            await kernel.invoke_function_call(
                 function_call=item,
-                kernel=kernel,
                 chat_history=chat_history,
                 arguments=KernelArguments(),
                 function_call_count=1,
                 request_index=0,
-                function_call_behavior=settings.function_choice_behavior,
+                function_behavior=settings.function_choice_behavior,
             )
 
 

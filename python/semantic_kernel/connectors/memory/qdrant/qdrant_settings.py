@@ -26,9 +26,15 @@ class QdrantSettings(KernelBaseSettings):
     prefer_grpc: bool = False
 
     @model_validator(mode="before")
-    def validate_settings(cls, values):
+    def validate_settings(cls, values: dict):
         """Validate the settings."""
-        if "url" not in values and "host" not in values and "path" not in values and "location" not in values:
+        if (
+            isinstance(values, dict)
+            and "url" not in values
+            and "host" not in values
+            and "path" not in values
+            and "location" not in values
+        ):
             values["location"] = IN_MEMORY_STRING
         return values
 

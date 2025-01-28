@@ -84,6 +84,8 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 # region Test Fixtures
 
@@ -392,6 +394,35 @@ def mock_run_step_tool_call():
                     id="tool_call_id",
                     code_interpreter=CodeInterpreter(input="test code", outputs=[]),
                 ),
+                FunctionToolCall(
+                    type="function",
+                    id="tool_call_id",
+                    function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
+                ),
+            ],
+            type="tool_calls",
+        ),
+        assistant_id="assistant_id",
+        object="thread.run.step",
+        run_id="run_id",
+        status="completed",
+        thread_id="thread_id",
+    )
+
+
+@pytest.fixture
+def mock_run_step_function_tool_call():
+    class MockToolCall:
+        def __init__(self):
+            self.type = "function"
+
+    return RunStep(
+        id="step_id_1",
+        type="tool_calls",
+        completed_at=int(datetime.now(timezone.utc).timestamp()),
+        created_at=int((datetime.now(timezone.utc) - timedelta(minutes=1)).timestamp()),
+        step_details=ToolCallsStepDetails(
+            tool_calls=[
                 FunctionToolCall(
                     type="function",
                     id="tool_call_id",
@@ -1204,6 +1235,288 @@ async def test_invoke(
             side_effect=mock_get_function_call_contents,
         ):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+
+
+async def test_invoke_order(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_run_required_action,
+    mock_run_step_function_tool_call,
+    mock_run_step_message_creation,
+    mock_thread_messages,
+    mock_function_call_content,
+):
+    poll_count = 0
+
+    async def mock_poll_run_status(run, thread_id):
+        nonlocal poll_count
+        if run.status == "requires_action":
+            if poll_count == 0:
+                pass
+            else:
+                run.status = "completed"
+            poll_count += 1
+        return run
+
+    def mock_get_function_call_contents(run, function_steps):
+        function_call_content = mock_function_call_content
+        function_call_content.id = "tool_call_id"
+        function_steps[function_call_content.id] = function_call_content
+        return [function_call_content]
+
+    azure_openai_assistant_agent.assistant = mock_assistant
+    azure_openai_assistant_agent._poll_run_status = AsyncMock(side_effect=mock_poll_run_status)
+    azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
+        side_effect=mock_get_function_call_contents,
+    ):
+        client = azure_openai_assistant_agent.client
+
+        with patch.object(client.beta.threads.runs, "create", new_callable=AsyncMock) as mock_runs_create:
+            mock_runs_create.return_value = mock_run_required_action
+
+            with (
+                patch.object(client.beta.threads.runs, "submit_tool_outputs", new_callable=AsyncMock),
+                patch.object(client.beta.threads.runs.steps, "list", new_callable=AsyncMock) as mock_steps_list,
+            ):
+                mock_steps_list.return_value = MagicMock(
+                    data=[mock_run_step_message_creation, mock_run_step_function_tool_call]
+                )
+
+                messages = []
+                async for _, content in azure_openai_assistant_agent._invoke_internal("thread_id"):
+                    messages.append(content)
+
+    assert len(messages) == 3
+    assert isinstance(messages[0].items[0], FunctionCallContent)
+    assert isinstance(messages[1].items[0], FunctionResultContent)
+    assert isinstance(messages[2].items[0], TextContent)
+
+
+async def test_invoke_instructions_non_streaming(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_run_in_progress,
+    mock_run_step_tool_call,
+    mock_run_step_message_creation,
+    mock_thread_messages,
+    mock_function_call_content,
+    openai_unit_test_env,
+):
+    # 1) Give the agent a base instructions field
+    azure_openai_assistant_agent.instructions = "Base instructions"
+
+    # 2) Provide a prompt template (which normally overrides 'instructions' if present)
+    azure_openai_assistant_agent.prompt_template = KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(template="Template instructions")
+    )
+
+    async def mock_poll_run_status(run, thread_id):
+        run.update_status()
+        return run
+
+    def mock_get_function_call_contents(run, function_steps):
+        function_call_content = mock_function_call_content
+        function_call_content.id = "tool_call_id"  # Set expected ID
+        function_steps[function_call_content.id] = function_call_content
+        return [function_call_content]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.submit_tool_outputs = AsyncMock()
+        mock_client.beta.threads.runs.steps = MagicMock()
+        mock_client.beta.threads.runs.steps.list = AsyncMock(
+            return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
+        )
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+        azure_openai_assistant_agent._get_tools = MagicMock(return_value=["tool"])
+        azure_openai_assistant_agent._poll_run_status = AsyncMock(side_effect=mock_poll_run_status)
+        azure_openai_assistant_agent._invoke_function_calls = AsyncMock()
+        azure_openai_assistant_agent._format_tool_outputs = MagicMock(
+            return_value=[{"tool_call_id": "id", "output": "output"}]
+        )
+        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
+
+        with (
+            patch(
+                "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
+                side_effect=mock_get_function_call_contents,
+            ),
+            patch.object(
+                azure_openai_assistant_agent.client.beta.threads.runs,
+                "create",
+                new_callable=AsyncMock,
+            ) as mock_runs_create,
+        ):
+            # Scenario A: Use prompt_template instructions
+            mock_runs_create.return_value = mock_run_in_progress
+            _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+
+            _, call_kwargs = mock_runs_create.call_args
+            instructions_used = call_kwargs["instructions"]
+            assert instructions_used == "Template instructions", (
+                "Should use the prompt_template instructions if present."
+            )
+
+            mock_runs_create.reset_mock()
+
+            # Scenario B: Provide only additional_instructions
+            gen = azure_openai_assistant_agent.invoke(
+                thread_id="abc123",
+                additional_instructions="My Additional",
+            )
+            _ = [m async for m in gen]
+
+            mock_runs_create.assert_called_once()
+            _, call_kwargs = mock_runs_create.call_args
+            instructions_used = call_kwargs["instructions"]
+            assert instructions_used == "Template instructions\n\nMy Additional", (
+                "Should append additional instructions to the template instructions."
+            )
+
+            mock_runs_create.reset_mock()
+
+            # Scenario C: Provide an override (ignores the template)
+            gen = azure_openai_assistant_agent.invoke(
+                thread_id="abc123",
+                instructions_override="Fully Overridden!",
+            )
+            _ = [m async for m in gen]
+
+            mock_runs_create.assert_called_once()
+            _, call_kwargs = mock_runs_create.call_args
+            instructions_used = call_kwargs["instructions"]
+            assert instructions_used == "Fully Overridden!", (
+                "If instructions_override is present, it should ignore the template and additional instructions."
+            )
+
+
+async def test_invoke_stream_with_instructions(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
+):
+    events = [
+        MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
+        MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
+        create_thread_message_delta_mock(),
+        mock_thread_run_step_completed(),
+        MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
+    ]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.instructions = "Base instructions"
+        azure_openai_assistant_agent.prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(template="Template instructions")
+        )
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        # Scenario A: Use only prompt template
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id", messages=messages):
+            assert content is not None
+
+        assert len(messages) > 0, "Expected messages to be populated during the stream."
+        mock_client.beta.threads.runs.stream.assert_called_once_with(
+            assistant_id=mock_assistant.id,
+            thread_id="thread_id",
+            instructions="Template instructions",
+            tools=azure_openai_assistant_agent._get_tools(),
+            temperature=0.7,
+            top_p=0.9,
+            model="test_model",
+            response_format="json",
+            metadata={},
+        )
+
+        mock_client.beta.threads.runs.stream.reset_mock()
+
+        # Scenario B: Use prompt template with additional instructions
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream(
+            "thread_id", messages=messages, additional_instructions="My additional instructions"
+        ):
+            assert content is not None
+
+        assert len(messages) > 0, "Expected messages to be populated during the stream."
+        mock_client.beta.threads.runs.stream.assert_called_once_with(
+            assistant_id=mock_assistant.id,
+            thread_id="thread_id",
+            instructions="Template instructions\n\nMy additional instructions",
+            tools=azure_openai_assistant_agent._get_tools(),
+            temperature=0.7,
+            top_p=0.9,
+            model="test_model",
+            response_format="json",
+            metadata={},
+        )
+
+        mock_client.beta.threads.runs.stream.reset_mock()
+
+
+async def test_invoke_stream_with_instructions_override(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
+):
+    events = [
+        MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
+        MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
+        create_thread_message_delta_mock(),
+        mock_thread_run_step_completed(),
+        MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
+    ]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+        azure_openai_assistant_agent.instructions = "Base instructions"
+        azure_openai_assistant_agent.prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(template="Template instructions")
+        )
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        # Use instructions override
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream(
+            "thread_id", messages=messages, instructions_override="Override instructions"
+        ):
+            assert content is not None
+
+        assert len(messages) > 0, "Expected messages to be populated during the stream."
+        mock_client.beta.threads.runs.stream.assert_called_once_with(
+            assistant_id=mock_assistant.id,
+            thread_id="thread_id",
+            instructions="Override instructions",
+            tools=azure_openai_assistant_agent._get_tools(),
+            temperature=0.7,
+            top_p=0.9,
+            model="test_model",
+            response_format="json",
+            metadata={},
+        )
 
 
 async def test_invoke_stream(

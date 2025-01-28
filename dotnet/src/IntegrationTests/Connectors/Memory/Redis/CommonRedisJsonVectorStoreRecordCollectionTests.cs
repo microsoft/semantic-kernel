@@ -3,20 +3,18 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
-
-// Disable unused class warning, as this class is marked internal to disable the tests in the base class.
-#pragma warning disable CA1812
-#pragma warning disable CA1852
 
 /// <summary>
 /// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Redis setup and teardown.</param>
 [Collection("RedisVectorStoreCollection")]
-internal class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>
+[DisableVectorStoreTests(Skip = "Redis tests fail intermittently on build server")]
+public class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<string>
 {
     protected override string Key1 => "1";
     protected override string Key2 => "2";
