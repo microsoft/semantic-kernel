@@ -23,7 +23,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
+        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>(MockBehavior.Loose));
 
         // Act
         this._serviceCollection.AddAzureCosmosDBNoSQLVectorStore();
@@ -56,7 +56,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
+        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>(MockBehavior.Loose));
 
         // Act
         this._serviceCollection.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection");

@@ -29,7 +29,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
 
-        var batchMock = new Mock<IBatch>();
+        var batchMock = new Mock<IBatch>(MockBehavior.Loose);
         this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);
     }
 

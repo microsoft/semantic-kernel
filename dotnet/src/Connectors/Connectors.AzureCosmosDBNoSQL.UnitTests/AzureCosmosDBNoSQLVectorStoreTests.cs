@@ -18,7 +18,7 @@ namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreTests
 {
-    private readonly Mock<Database> _mockDatabase = new();
+    private readonly Mock<Database> _mockDatabase = new(MockBehavior.Loose);
 
     [Fact]
     public void GetCollectionWithNotSupportedKeyThrowsException()

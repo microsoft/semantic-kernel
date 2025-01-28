@@ -21,8 +21,8 @@ namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 {
-    private readonly Mock<Database> _mockDatabase = new();
-    private readonly Mock<Container> _mockContainer = new();
+    private readonly Mock<Database> _mockDatabase = new(MockBehavior.Loose);
+    private readonly Mock<Container> _mockContainer = new(MockBehavior.Loose);
 
     public AzureCosmosDBNoSQLVectorStoreRecordCollectionTests()
     {
@@ -74,12 +74,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     public async Task CollectionExistsReturnsValidResultAsync(List<string> collections, string collectionName, bool expectedResult)
     {
         // Arrange
-        var mockFeedResponse = new Mock<FeedResponse<string>>();
+        var mockFeedResponse = new Mock<FeedResponse<string>>(MockBehavior.Loose);
         mockFeedResponse
             .Setup(l => l.Resource)
             .Returns(collections);
 
-        var mockFeedIterator = new Mock<FeedIterator<string>>();
+        var mockFeedIterator = new Mock<FeedIterator<string>>(MockBehavior.Loose);
         mockFeedIterator
             .SetupSequence(l => l.HasMoreResults)
             .Returns(true)
@@ -194,7 +194,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var mockFeedResponse = new Mock<FeedResponse<string>>();
+        var mockFeedResponse = new Mock<FeedResponse<string>>(MockBehavior.Loose);
         mockFeedResponse
             .Setup(l => l.Resource)
             .Returns(collections);

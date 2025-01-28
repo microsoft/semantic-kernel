@@ -26,7 +26,7 @@ public class QdrantMemoryStoreTests3
     private readonly string _text = "text";
     private readonly string _description = "description";
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
-    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new(MockBehavior.Loose);
 
     [Fact]
     public async Task GetNearestMatchesAsyncCallsDoNotReturnVectorsUnlessSpecifiedAsync()

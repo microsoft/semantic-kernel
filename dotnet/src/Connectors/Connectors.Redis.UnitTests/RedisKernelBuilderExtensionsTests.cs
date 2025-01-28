@@ -26,7 +26,7 @@ public class RedisKernelBuilderExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange.
-        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>(MockBehavior.Loose));
 
         // Act.
         this._kernelBuilder.AddRedisVectorStore();
@@ -39,7 +39,7 @@ public class RedisKernelBuilderExtensionsTests
     public void AddRedisHashSetVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
-        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>(MockBehavior.Loose));
 
         // Act.
         this._kernelBuilder.AddRedisHashSetVectorStoreRecordCollection<TestRecord>("testCollection");
@@ -52,7 +52,7 @@ public class RedisKernelBuilderExtensionsTests
     public void AddRedisJsonVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
-        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>(MockBehavior.Loose));
 
         // Act.
         this._kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TestRecord>("testCollection");

@@ -30,7 +30,7 @@ public class QdrantMemoryStoreTests2
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
     private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
-    private readonly Mock<ILoggerFactory> _mockLogger = new();
+    private readonly Mock<ILoggerFactory> _mockLogger = new(MockBehavior.Loose);
 
     [Fact]
     public async Task GetAsyncCallsDoNotRequestVectorsUnlessSpecifiedAsync()
