@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -62,7 +62,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True if reduction has occurred.</returns>
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
-        history.ReduceAsync(this.HistoryReducer, cancellationToken);
+        history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
 
     /// <inheritdoc/>
     protected sealed override IEnumerable<string> GetChannelKeys()

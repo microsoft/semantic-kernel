@@ -52,6 +52,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | EmbeddingsClient | None = None,
+        instruction_role: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
@@ -68,6 +69,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
+            instruction_role (str | None): The role to use for 'instruction' messages. (Optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -100,11 +102,16 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
                     user_agent=SEMANTIC_KERNEL_USER_AGENT,
                 )
 
-        super().__init__(
-            client=client,
-            managed_client=managed_client,
+        args: dict[str, Any] = {
+            "client": client,
+            "managed_client": managed_client,
             **kwargs,
-        )
+        }
+
+        if instruction_role:
+            args["instruction_role"] = instruction_role
+
+        super().__init__(**args)
 
     def __del__(self) -> None:
         """Close the client when the object is deleted."""

@@ -15,6 +15,7 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
     AutoFunctionInvocationContext,
 )
 from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -108,7 +109,7 @@ async def main():
         kernel=kernel,
         name=HOST_NAME,
         instructions=HOST_INSTRUCTIONS,
-        execution_settings=settings,
+        arguments=KernelArguments(settings=settings),
     )
 
     # Define the chat history

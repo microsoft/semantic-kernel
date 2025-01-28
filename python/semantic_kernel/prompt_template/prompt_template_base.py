@@ -20,7 +20,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
     allow_dangerously_set_content: bool = False
 
     @abstractmethod
-    async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments | None" = None) -> str:
         """Render the prompt template."""
         pass
 

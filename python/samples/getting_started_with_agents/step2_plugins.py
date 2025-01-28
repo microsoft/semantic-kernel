@@ -8,6 +8,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -81,7 +82,11 @@ async def main():
 
     # Create the agent
     agent = ChatCompletionAgent(
-        service_id="agent", kernel=kernel, name=HOST_NAME, instructions=HOST_INSTRUCTIONS, execution_settings=settings
+        service_id="agent",
+        kernel=kernel,
+        name=HOST_NAME,
+        instructions=HOST_INSTRUCTIONS,
+        arguments=KernelArguments(settings=settings),
     )
 
     # Define the chat history

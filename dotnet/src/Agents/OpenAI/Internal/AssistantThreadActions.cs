@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using OpenAI.Assistants;
@@ -827,23 +828,6 @@ internal static class AssistantThreadActions
                 { nameof(RunStepDetailsUpdate.StepId), completedStep.Id },
                 { nameof(RunStep.Usage), completedStep.Usage },
             };
-    }
-
-    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionCalls, CancellationToken cancellationToken)
-    {
-        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionCalls.Length];
-
-        for (int index = 0; index < functionCalls.Length; ++index)
-        {
-            functionTasks[index] = ExecuteFunctionStep(agent, functionCalls[index], cancellationToken);
-        }
-
-        return functionTasks;
-    }
-
-    private static Task<FunctionResultContent> ExecuteFunctionStep(OpenAIAssistantAgent agent, FunctionCallContent functionCall, CancellationToken cancellationToken)
-    {
-        return functionCall.InvokeAsync(agent.Kernel, cancellationToken);
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
