@@ -3,24 +3,19 @@
 import logging
 import uuid
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from pydantic import Field
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
-
-if TYPE_CHECKING:
-    from semantic_kernel.contents.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -48,41 +43,7 @@ class Agent(KernelBaseModel):
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None
-    history_reducer: ChatHistoryReducer | None = None
-    arguments: KernelArguments = Field(default_factory=KernelArguments)
-    prompt_template: PromptTemplateBase | None = None
-
-    async def reduce_history(self, history: "ChatHistory") -> bool:
-        """Perform the reduction on the provided history, returning True if reduction occurred.
-
-        If the history_reducer is not set, this method will return False.
-        If the history_reducer is the same object as the history, then it will just call `history.reduce()`,
-        you could also do that manually in this case.
-        Otherwise the settings of the history_reducer are used and applied
-        to the history provided and the history_reducer will be used to reduce the history.
-
-        Args:
-            history: The history to reduce.
-
-        Returns:
-            True if the history was reduced, False otherwise.
-            The provided history will have been updated if True.
-        """
-        if self.history_reducer is None:
-            return False
-
-        if self.history_reducer is history:
-            logger.info("You're reducing the same object, you can call `history.reduce()` instead.")
-            initial_len = len(self.history_reducer)
-            await self.history_reducer.reduce()
-            return len(self.history_reducer) < initial_len
-
-        self.history_reducer.replace(history)
-        new_messages = await self.history_reducer.reduce()
-        if new_messages is None:
-            return False
-        history.replace(new_messages)
-        return True
+    arguments: KernelArguments | None = None
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
@@ -94,10 +55,6 @@ class Agent(KernelBaseModel):
             raise NotImplementedError("Unable to get channel keys. Channel type not configured.")
         yield self.channel_type.__name__
 
-        if self.history_reducer is not None:
-            yield self.history_reducer.__class__.__name__
-            yield str(self.history_reducer.__hash__)
-
     async def create_channel(self) -> AgentChannel:
         """Create a channel.
 
@@ -108,7 +65,7 @@ class Agent(KernelBaseModel):
             raise NotImplementedError("Unable to create channel. Channel type not configured.")
         return self.channel_type()
 
-    async def format_instructions(self, kernel: Kernel, arguments: KernelArguments) -> str | None:
+    async def format_instructions(self, kernel: Kernel, arguments: "KernelArguments") -> str | None:
         """Format the instructions.
 
         Args:
@@ -126,7 +83,7 @@ class Agent(KernelBaseModel):
             )
         return await self.prompt_template.render(kernel, arguments)
 
-    def merge_arguments(self, override_args: KernelArguments) -> KernelArguments:
+    def merge_arguments(self, override_args: "KernelArguments") -> "KernelArguments":
         """Merge the arguments with the override arguments.
 
         Args:
