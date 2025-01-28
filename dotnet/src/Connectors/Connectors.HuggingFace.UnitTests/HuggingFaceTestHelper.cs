@@ -35,7 +35,7 @@ internal static class HuggingFaceTestHelper
     /// <param name="httpResponseMessage">Message to return for mocked <see cref="HttpClientHandler"/>.</param>
     internal static HttpClientHandler GetHttpClientHandlerMock(HttpResponseMessage httpResponseMessage)
     {
-        var httpClientHandler = new Mock<HttpClientHandler>(MockBehavior.Loose);
+        var httpClientHandler = new Mock<HttpClientHandler>();
 
         httpClientHandler
             .Protected()

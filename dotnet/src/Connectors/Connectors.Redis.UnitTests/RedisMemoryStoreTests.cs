@@ -27,7 +27,7 @@ public class RedisMemoryStoreTests
 
     public RedisMemoryStoreTests()
     {
-        this._mockDatabase = new Mock<IDatabase>(MockBehavior.Loose);
+        this._mockDatabase = new Mock<IDatabase>();
         this._collections = [];
     }
 

@@ -31,20 +31,20 @@ public class QdrantMemoryStoreTests
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
     private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
-    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new(MockBehavior.Loose);
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
 
     public QdrantMemoryStoreTests()
     {
         this._mockLoggerFactory
             .Setup(f => f.CreateLogger(It.IsAny<string>()))
-            .Returns(new Mock<ILogger>(MockBehavior.Loose).Object);
+            .Returns(new Mock<ILogger>().Object);
     }
 
     [Fact]
     public async Task ItCreatesNewCollectionAsync()
     {
         // Arrange
-        var mockQdrantClient = new Mock<IQdrantVectorDbClient>(MockBehavior.Loose);
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task<bool>>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -67,7 +67,7 @@ public class QdrantMemoryStoreTests
     public async Task ItWillNotOverwriteExistingCollectionAsync()
     {
         // Arrange
-        var mockQdrantClient = new Mock<IQdrantVectorDbClient>(MockBehavior.Loose);
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task<bool>>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -90,7 +90,7 @@ public class QdrantMemoryStoreTests
     public async Task ItListsCollectionsAsync()
     {
         // Arrange
-        var mockQdrantClient = new Mock<IQdrantVectorDbClient>(MockBehavior.Loose);
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<string>>(x => x.ListCollectionsAsync(It.IsAny<CancellationToken>()))
             .Returns((new string[] { "test1", "test2" }).ToAsyncEnumerable());
@@ -111,7 +111,7 @@ public class QdrantMemoryStoreTests
     public async Task ItDeletesCollectionAsync()
     {
         // Arrange
-        var mockQdrantClient = new Mock<IQdrantVectorDbClient>(MockBehavior.Loose);
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x => x.DeleteCollectionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
         mockQdrantClient
@@ -137,7 +137,7 @@ public class QdrantMemoryStoreTests
             description: this._description,
             embedding: this._embedding);
 
-        var mockQdrantClient = new Mock<IQdrantVectorDbClient>(MockBehavior.Loose);
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task<bool>>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
