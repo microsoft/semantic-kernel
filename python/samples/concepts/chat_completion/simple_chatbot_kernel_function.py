@@ -2,10 +2,7 @@
 
 import asyncio
 
-from samples.concepts.setup.chat_completion_services import (
-    Services,
-    get_chat_completion_service_and_request_settings,
-)
+from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
@@ -33,6 +30,7 @@ from semantic_kernel.functions import KernelArguments
 # - Services.OLLAMA
 # - Services.ONNX
 # - Services.VERTEX_AI
+# - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
