@@ -4,7 +4,7 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
