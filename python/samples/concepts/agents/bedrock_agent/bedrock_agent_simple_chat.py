@@ -1,16 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 import uuid
 
-import dotenv
+from samples.concepts.agents.bedrock_agent.setup_utils import use_existing_agent, use_new_agent
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+# This sample shows how to interact with a Bedrock agent in the simplest way.
+# This sample uses the following main component(s):
+# - a Bedrock agent
+# You will learn how to create a new or connect to an existing Bedrock agent and talk to it.
 
-dotenv.load_dotenv()
-
-# By default, this sample will create a new agent.
+# By default, this sample will create a new agent that will be deleted after the session ends.
 # If you want to use an existing agent, set this to False and fill in required parameters.
 CREATE_NEW_AGENT = True
 
@@ -19,42 +19,20 @@ CREATE_NEW_AGENT = True
 STREAMING = False
 
 # Common parameters whether creating a new agent or using an existing agent
-AGENT_ROLE_AMAZON_RESOURCE_NAME = os.getenv("AGENT_ROLE_AMAZON_RESOURCE_NAME")
 AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-sample"
 
 # If creating a new agent, you need to specify the following:
-# [Note] You may have to request access to the foundation model if you don't have it.
-FOUNDATION_MODEL = os.getenv("FOUNDATION_MODEL")
 INSTRUCTION = "You are a fridenly assistant. You help people find information."
 
 # If using an existing agent, you need to specify the following:
 AGENT_ID = ""
 
 
-async def use_new_agent():
-    """Create a new bedrock agent."""
-    return await BedrockAgent.create_new_agent(
-        agent_name=AGENT_NAME,
-        foundation_model=FOUNDATION_MODEL,
-        role_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        instruction=INSTRUCTION,
-    )
-
-
-async def use_existing_agent():
-    """Use an existing bedrock agent that has been created and prepared."""
-    return await BedrockAgent.use_existing_agent(
-        agent_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        agent_id=AGENT_ID,
-        agent_name=AGENT_NAME,
-    )
-
-
 async def main():
     if CREATE_NEW_AGENT:
-        bedrock_agent = await use_new_agent()
+        bedrock_agent = await use_new_agent(AGENT_NAME, INSTRUCTION)
     else:
-        bedrock_agent = await use_existing_agent()
+        bedrock_agent = await use_existing_agent(AGENT_ID, AGENT_NAME)
 
     # Use an uiud as the session id
     new_session_id = str(uuid.uuid4())
@@ -73,6 +51,10 @@ async def main():
             input_text="Hi, how are you?",
         ):
             print(f"Response:\n{response}")
+
+    if CREATE_NEW_AGENT:
+        # Delete the agent if it was created in this session
+        await bedrock_agent.delete_agent()
 
 
 if __name__ == "__main__":

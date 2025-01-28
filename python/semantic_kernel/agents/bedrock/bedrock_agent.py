@@ -136,9 +136,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
             **kwargs,
         )
 
-    async def delete_agent(self, agent_id, **kwargs) -> None:
+    async def delete_agent(self, **kwargs) -> None:
         """Delete an agent asynchronously."""
-        await self._delete_agent(agent_id, **kwargs)
+        await self._delete_agent(**kwargs)
 
     async def create_code_interpreter_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Enable code interpretation."""

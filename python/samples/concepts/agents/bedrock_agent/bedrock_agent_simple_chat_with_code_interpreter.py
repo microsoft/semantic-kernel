@@ -4,17 +4,20 @@ import asyncio
 import os
 import uuid
 
-import dotenv
-
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from samples.concepts.agents.bedrock_agent.setup_utils import use_existing_agent, use_new_agent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
-dotenv.load_dotenv()
+# This sample shows how to interact with a Bedrock agent that is capable of writing and executing code.
+# This sample uses the following main component(s):
+# - a Bedrock agent
+# You will learn how to create a new or connect to an existing Bedrock agent and ask it a question
+# that requires coding to answer.
+# After running this sample, a bar chart will be generated and saved to a file in the same directory
+# as this script.
 
-
-# By default, this sample will create a new agent.
+# By default, this sample will create a new agent that will be deleted after the session ends.
 # If you want to use an existing agent, set this to False and fill in required parameters.
 CREATE_NEW_AGENT = True
 
@@ -23,14 +26,9 @@ CREATE_NEW_AGENT = True
 STREAMING = False
 
 # Common parameters whether creating a new agent or using an existing agent
-AGENT_ROLE_AMAZON_RESOURCE_NAME = os.getenv("AGENT_ROLE_AMAZON_RESOURCE_NAME")
 AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-code-interpreter-sample"
 
 # If creating a new agent, you need to specify the following:
-# [Note] You may have to request access to the foundation model if you don't have it.
-# [Note] The success rate of function calling may vary depending on the foundation model.
-#        Advanced models may have better performance.
-FOUNDATION_MODEL = os.getenv("FOUNDATION_MODEL")
 INSTRUCTION = "You are a fridenly assistant. You help people find information."
 
 # If using an existing agent, you need to specify the following:
@@ -47,35 +45,11 @@ Dolpin  2
 """
 
 
-async def use_new_agent():
-    """Create a new bedrock agent."""
-    return await BedrockAgent.create_new_agent(
-        agent_name=AGENT_NAME,
-        foundation_model=FOUNDATION_MODEL,
-        role_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        instruction=INSTRUCTION,
-        # This will create a code interpreter action group for the agent.
-        enable_code_interpreter=True,
-    )
-
-
-async def use_existing_agent():
-    """Use an existing bedrock agent that has been created and prepared.
-
-    Make sure the existing agent has the action group created for code interpreter.
-    """
-    return await BedrockAgent.use_existing_agent(
-        agent_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        agent_id=AGENT_ID,
-        agent_name=AGENT_NAME,
-    )
-
-
 async def main():
     if CREATE_NEW_AGENT:
-        bedrock_agent = await use_new_agent()
+        bedrock_agent = await use_new_agent(AGENT_NAME, INSTRUCTION, enable_code_interpreter=True)
     else:
-        bedrock_agent = await use_existing_agent()
+        bedrock_agent = await use_existing_agent(AGENT_ID, AGENT_NAME)
 
     # Use an uiud as the session id
     new_session_id = str(uuid.uuid4())
@@ -103,6 +77,10 @@ async def main():
             print(f"Response:\n{response}")
             assert isinstance(response, ChatMessageContent)  # nosec
             binary_item = next(item for item in response.items if isinstance(item, BinaryContent))
+
+    if CREATE_NEW_AGENT:
+        # Delete the agent if it was created in this session
+        await bedrock_agent.delete_agent()
 
     # Save the chart to a file
     if not binary_item:

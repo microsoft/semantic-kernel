@@ -1,5 +1,30 @@
 # Concept samples on how to use AWS Bedrock agents
 
+## Pre-requisites
+
+1. You need to have an AWS account and [access to the foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-permissions.html)
+2. [AWS CLI installed](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configured](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration)
+
+## Samples
+
+| Sample | Description |
+|--------|-------------|
+| [bedrock_agent_simple_chat.py](bedrock_agent_simple_chat.py) | Demonstrates basic usage of the Bedrock agent. |
+| [bedrock_agent_simple_chat_with_kernel_function.py](bedrock_agent_simple_chat_with_kernel_function.py) | Shows how to use the Bedrock agent with a kernel function. |
+| [bedrock_agent_simple_chat_with_code_interpreter.py](bedrock_agent_simple_chat_with_code_interpreter.py) | Example of using the Bedrock agent with a code interpreter. |
+| [bedrock_mixed_chat_agents.py](bedrock_mixed_chat_agents.py) | Example of using multiple chat agents in a single script. |
+
+## Before running the samples
+
+You need to set up some environment variables to run the samples. Please refer to the [.env.example](.env.example) file for the required environment variables.
+
+### `AGENT_ROLE_AMAZON_RESOURCE_NAME`
+
+On your AWS console, go to the IAM service and go to **Roles**. Find the role you want to use and click on it. You will find the ARN in the summary section.
+
+### `FOUNDATION_MODEL`
+
+You need to make sure you have permission to access the foundation model. You can find the model ID in the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). To see the models you have access to, find the policy attached to your role you should see a list of models you have access to under the `Resource` section.
 
 ### How to add the `bedrock:InvokeModelWithResponseStream` action to an IAM policy
 

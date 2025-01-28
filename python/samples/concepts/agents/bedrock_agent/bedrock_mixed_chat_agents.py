@@ -1,35 +1,30 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
-import dotenv
-
+from samples.concepts.agents.bedrock_agent.setup_utils import use_existing_agent, use_new_agent
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-dotenv.load_dotenv()
+# This sample shows how to use a bedrock agent in a group chat that includes multiple agents of different roles.
+# This sample uses the following main component(s):
+# - a Bedrock agent
+# - a ChatCompletionAgent
+# - an AgentGroupChat
+# You will learn how to create a new or connect to an existing Bedrock agent and put it in a group chat with
+# another agent.
 
-# By default, this sample will create a new agent.
+# By default, this sample will create a new agent that will be deleted after the session ends.
 # If you want to use an existing agent, set this to False and fill in required parameters.
 CREATE_NEW_AGENT = True
 
 # If you want to enable streaming, set this to True.
 # In order to perform streaming, you need to have the permission on action: bedrock:InvokeModelWithResponseStream
 STREAMING = False
-
-# Common parameters whether creating a new agent or using an existing agent
-AGENT_ROLE_AMAZON_RESOURCE_NAME = os.getenv("AGENT_ROLE_AMAZON_RESOURCE_NAME")
-
-# If creating a new agent, you need to specify the following:
-# [Note] You may have to request access to the foundation model if you don't have it.
-FOUNDATION_MODEL = os.getenv("FOUNDATION_MODEL")
-INSTRUCTION = "You are a fridenly assistant. You help people find information."
 
 # If using an existing agent, you need to specify the following:
 AGENT_ID = ""
@@ -54,25 +49,6 @@ Consider suggestions when refining an idea.
 """
 
 
-async def use_new_agent():
-    """Create a new bedrock agent."""
-    return await BedrockAgent.create_new_agent(
-        agent_name=COPYWRITER_NAME,
-        foundation_model=FOUNDATION_MODEL,
-        role_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        instruction=COPYWRITER_INSTRUCTIONS,
-    )
-
-
-async def use_existing_agent():
-    """Use an existing bedrock agent that has been created and prepared."""
-    return await BedrockAgent.use_existing_agent(
-        agent_arn=AGENT_ROLE_AMAZON_RESOURCE_NAME,
-        agent_id=AGENT_ID,
-        agent_name=COPYWRITER_NAME,
-    )
-
-
 class ApprovalTerminationStrategy(TerminationStrategy):
     """A strategy for determining when an agent should terminate."""
 
@@ -94,7 +70,10 @@ async def main():
         instructions=REVIEWER_INSTRUCTIONS,
     )
 
-    agent_writer = await use_new_agent() if CREATE_NEW_AGENT else await use_existing_agent()
+    if CREATE_NEW_AGENT:
+        agent_writer = await use_new_agent(COPYWRITER_NAME, COPYWRITER_INSTRUCTIONS)
+    else:
+        agent_writer = await use_existing_agent(AGENT_ID, COPYWRITER_NAME)
 
     chat = AgentGroupChat(
         agents=[agent_writer, agent_reviewer],
@@ -118,6 +97,10 @@ async def main():
             print(f"# {message.role} - {message.name or '*'}: '{message.content}'")
 
     print(f"# IS COMPLETE: {chat.is_complete}")
+
+    if CREATE_NEW_AGENT:
+        # Delete the agent if it was created in this session
+        await agent_writer.delete_agent()
 
 
 if __name__ == "__main__":
