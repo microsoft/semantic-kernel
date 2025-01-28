@@ -67,7 +67,7 @@ class Agent(KernelBaseModel):
             raise NotImplementedError("Unable to create channel. Channel type not configured.")
         return self.channel_type()
 
-    async def format_instructions(self, kernel: Kernel, arguments: "KernelArguments") -> str | None:
+    async def format_instructions(self, kernel: Kernel, arguments: KernelArguments) -> str | None:
         """Format the instructions.
 
         Args:

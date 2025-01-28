@@ -4,10 +4,6 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Any
 
-if sys.version < "3.12":
-    pass  # pragma: no cover
-else:
-    pass  # type: ignore # pragma: no cover
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
