@@ -314,5 +314,5 @@ The following packages will be created for Processes:
 
 In validation of the proposed solution, two runtimes were created, one for the local/server scenario and one for the distributed actor scenario using Orleans. Both of these implementation were based on the [Pregel Algorithm](https://kowshik.github.io/JPregel/pregel_paper.pdf) for large-scale graph processing. This algorithm is well tested and well suited for single machine scenarios as well as distributed systems. More information on how the Pregel algorithm works can be found in the following links.
 
-- [Pregel - The Morning Paper](https://blog.acolyer.org/2015/05/26/pregel-a-system-for-large-scale-graph-processing/)
+<!-- [Pregel - The Morning Paper](https://blog.acolyer.org/2015/05/26/pregel-a-system-for-large-scale-graph-processing/) -->
 <!-- [Pregel - Distributed Algorithms and Optimization](https://web.stanford.edu/~rezab/classes/cme323/S15/notes/lec8.pdf) -->
