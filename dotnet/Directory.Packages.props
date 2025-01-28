@@ -145,7 +145,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Moq.Analyzers" Version="0.1.2" />
+    <PackageVersion Include="Moq.Analyzers" Version="0.3.0" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
