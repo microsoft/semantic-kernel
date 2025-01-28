@@ -56,6 +56,19 @@ public class OllamaServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddOllamaTextEmbeddingGenerationFromServiceCollection()
+    {
+        var services = new ServiceCollection();
+        using var ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "model");
+
+        services.AddSingleton(ollamaClient);
+        services.AddOllamaTextEmbeddingGeneration();
+        var serviceProvider = services.BuildServiceProvider();
+        var service = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(service);
+    }
+
+    [Fact]
     public void AddOllamaTextEmbeddingsGenerationToServiceCollection()
     {
         var services = new ServiceCollection();
