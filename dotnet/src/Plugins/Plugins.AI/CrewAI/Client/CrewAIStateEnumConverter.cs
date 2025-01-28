@@ -1,0 +1,41 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffState>
+{
+    public override CrewAIKickoffState Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        string? stringValue = reader.GetString();
+        return stringValue switch
+        {
+            "PENDING" => CrewAIKickoffState.Pending,
+            "STARTED" => CrewAIKickoffState.Started,
+            "RUNNING" => CrewAIKickoffState.Running,
+            "SUCCESS" => CrewAIKickoffState.Success,
+            "FAILED" => CrewAIKickoffState.Failed,
+            _ => throw new KernelException("Failed to parse Crew AI kickoff state.")
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, CrewAIKickoffState value, JsonSerializerOptions options)
+    {
+        string stringValue = value switch
+        {
+            CrewAIKickoffState.Pending => "PENDING",
+            CrewAIKickoffState.Started => "STARTED",
+            CrewAIKickoffState.Running => "RUNNING",
+            CrewAIKickoffState.Success => "SUCCESS",
+            CrewAIKickoffState.Failed => "FAILED",
+            _ => throw new KernelException("Failed to parse Crew AI kickoff state.")
+        };
+        writer.WriteStringValue(stringValue);
+    }
+}
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes

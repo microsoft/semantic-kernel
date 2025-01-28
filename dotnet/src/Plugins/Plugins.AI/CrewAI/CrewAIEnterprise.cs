@@ -1,0 +1,222 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
+using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
+
+/// <summary>
+/// A plugin for interacting with the a CrewAI Crew via the Enterprise APIs.
+/// </summary>
+public class CrewAIEnterprise
+{
+    private readonly ICrewAIEntepriseClient _crewClient;
+    private readonly ILogger _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CrewAIEnterprise"/> class.
+    /// </summary>
+    /// <param name="endpoint">The base URI of the CrewAI Crew</param>
+    /// <param name="authTokenProvider"> Optional provider for auth token generation. </param>
+    /// <param name="httpClientFactory">The HTTP client factory. </param>
+    /// <param name="loggerFactory">The logger factory. </param>
+    public CrewAIEnterprise(Uri endpoint, Func<Task<string>>? authTokenProvider, IHttpClientFactory? httpClientFactory = null, ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(endpoint, nameof(endpoint));
+        Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
+
+        this._crewClient = new CrewAIEntepriseClient(endpoint, authTokenProvider, httpClientFactory);
+        this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
+    }
+
+    internal CrewAIEnterprise(ICrewAIEntepriseClient crewClient, ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(crewClient, nameof(crewClient));
+        this._crewClient = crewClient;
+        this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
+    }
+
+    /// <summary>
+    /// Kicks off (starts) a CrewAI Crew with the given inputs and callbacks.
+    /// </summary>
+    /// <param name="inputs">An object containing key value pairs matching the required inputs of the Crew.</param>
+    /// <param name="taskWebhookUrl">The task level webhook Uri.</param>
+    /// <param name="stepWebhookUrl">The step level webhook Uri.</param>
+    /// <param name="crewWebhookUrl">The crew level webhook Uri.</param>
+    /// <returns>The Id of the scheduled kickoff.</returns>
+    /// <exception cref="KernelException"></exception>
+    public async Task<string> KickoffAsync(
+        object? inputs,
+        Uri? taskWebhookUrl = null,
+        Uri? stepWebhookUrl = null,
+        Uri? crewWebhookUrl = null)
+    {
+        try
+        {
+            CrewAIKickoffResponse kickoffTask = await this._crewClient.KickoffAsync(
+                inputs: inputs,
+                taskWebhookUrl: taskWebhookUrl?.AbsoluteUri,
+                stepWebhookUrl: stepWebhookUrl?.AbsoluteUri,
+                crewWebhookUrl: crewWebhookUrl?.AbsoluteUri)
+                .ConfigureAwait(false);
+
+            return kickoffTask.KickoffId;
+        }
+        catch (Exception ex)
+        {
+            throw new KernelException(message: "Failed to kickoff CrewAI Crew.", innerException: ex);
+        }
+    }
+
+    /// <summary>
+    /// Gets the current status of the CrewAI Crew kickoff.
+    /// </summary>
+    /// <param name="kickoffId">The Id of the Crew kickoff.</param>
+    /// <returns>A <see cref="CrewAIStatusResponse"/></returns>
+    /// <exception cref="KernelException"></exception>"
+    [KernelFunction]
+    [Description("Gets the current status of the CrewAI Crew kickoff.")]
+    public async Task<CrewAIStatusResponse> GetCrewStatusAsync([Description("The Id of the kickoff")] string kickoffId)
+    {
+        Verify.NotNullOrWhiteSpace(kickoffId, nameof(kickoffId));
+
+        try
+        {
+            CrewAIStatusResponse statusResponse = await this._crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
+            return statusResponse;
+        }
+        catch (Exception ex)
+        {
+            throw new KernelException(message: $"Failed to get status of CrewAI Crew with kickoff Id: {kickoffId}.", innerException: ex);
+        }
+    }
+
+    /// <summary>
+    /// Waits for the Crew kickoff to complete and returns the result.
+    /// </summary>
+    /// <param name="kickoffId">The Id of the crew kickoff.</param>
+    /// <returns>The result of the Crew kickoff.</returns>
+    /// <exception cref="KernelException"></exception>
+    [KernelFunction]
+    [Description("Waits for the Crew kickoff to complete and returns the result.")]
+    public async Task<string> WaitForCrewCompletionAsync([Description("The Id of the kickoff")] string kickoffId)
+    {
+        Verify.NotNullOrWhiteSpace(kickoffId, nameof(kickoffId));
+
+        try
+        {
+            CrewAIStatusResponse? statusResponse = null;
+            var status = CrewAIKickoffState.Pending;
+            do
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                statusResponse = await this._crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
+                status = statusResponse.State;
+            }
+            while (!this.IsTerminalState(status));
+
+            return status switch
+            {
+                CrewAIKickoffState.Failed => throw new KernelException(message: $"CrewAI Crew failed with error: {statusResponse.Result}"),
+                CrewAIKickoffState.Success => statusResponse.Result ?? string.Empty,
+                _ => throw new KernelException(message: "Failed to parse unexpected response from CrewAI status response."),
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new KernelException(message: $"Failed to wait for completion of CrewAI Crew with kickoff Id: {kickoffId}.", innerException: ex);
+        }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> that can be used to invoke the CrewAI Crew.
+    /// </summary>
+    /// <param name="name">The name of the <see cref="KernelFunction"/></param>
+    /// <param name="description">The description of the <see cref="KernelFunction"/></param>
+    /// <param name="inputDefinitions">The definitions of the Crew's required inputs.</param>
+    /// <param name="taskWebhookUrl">The task level webhook Uri</param>
+    /// <param name="stepWebhookUrl">The step level webhook Uri</param>
+    /// <param name="crewWebhookUrl">The crew level webhook Uri</param>
+    /// <returns>A <see cref="KernelFunction"/> that can invoke the Crew.</returns>
+    /// <exception cref="KernelException"></exception>
+    public KernelPlugin CreateKernelPlugin(
+        string name,
+        string description,
+        IEnumerable<CrewAIInputMetadata>? inputDefinitions,
+        Uri? taskWebhookUrl = null,
+        Uri? stepWebhookUrl = null,
+        Uri? crewWebhookUrl = null)
+    {
+        var options = new KernelFunctionFromMethodOptions()
+        {
+            FunctionName = "kickoff",
+            Description = description,
+            Parameters = inputDefinitions?.Select(i => new KernelParameterMetadata(i.Name) { Description = i.Description, IsRequired = true, ParameterType = i.Type }) ?? [],
+            ReturnParameter = new() { ParameterType = typeof(string) },
+        };
+
+        // Define the method that will be called when the KernelFunction is invoked
+        Task<string> KickoffCrewAsync(KernelArguments arguments)
+        {
+            // Extract the required arguments from the KernelArguments by name
+            Dictionary<string, object?> args = [];
+            if (inputDefinitions is not null)
+            {
+                foreach (var input in inputDefinitions)
+                {
+                    // If a required argument is missing, throw an exception
+                    if (!arguments.TryGetValue(input.Name, out var value))
+                    {
+                        throw new KernelException(message: $"Missing required input '{input.Name}' for CrewAI.");
+                    }
+
+                    // Since this KernelFunction does not have explicit parameters, they are passed into KernelArguments as strings, so we need to deserialize them
+                    var typedValue = (arguments[input.Name] as string) switch
+                    {
+                        string s => JsonSerializer.Deserialize(s, input.Type),
+                        _ => arguments[input.Name],
+                    };
+
+                    args.Add(input.Name, typedValue);
+                }
+            }
+
+            return this.KickoffAsync(
+                inputs: args,
+                taskWebhookUrl: taskWebhookUrl,
+                stepWebhookUrl: stepWebhookUrl,
+                crewWebhookUrl: crewWebhookUrl);
+        }
+
+        return KernelPluginFactory.CreateFromFunctions(
+            name,
+            [
+                KernelFunctionFactory.CreateFromMethod(KickoffCrewAsync, new(), options),
+                KernelFunctionFactory.CreateFromMethod(this.GetCrewStatusAsync),
+                KernelFunctionFactory.CreateFromMethod(this.WaitForCrewCompletionAsync)
+            ]);
+    }
+
+    #region Private Methods
+
+    /// <summary>
+    /// Determines if the Crew kikoff state is terminal.
+    /// </summary>
+    /// <param name="state">The state of the crew kickoff</param>
+    /// <returns>A <see cref="bool"/> indicating if the state is a terminal state.</returns>
+    private bool IsTerminalState(CrewAIKickoffState state)
+    {
+        return state == CrewAIKickoffState.Failed || state == CrewAIKickoffState.Success;
+    }
+
+    #endregion
+}
