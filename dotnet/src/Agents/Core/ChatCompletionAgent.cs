@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -59,7 +60,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
+        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
 
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -68,7 +69,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType(), messages.Count);
+        this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType(), messages.Count);
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
@@ -104,7 +105,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
+        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
 
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(
@@ -113,7 +114,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 kernel,
                 cancellationToken);
 
-        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
+        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
 
         AuthorRole? role = null;
         StringBuilder builder = new();
