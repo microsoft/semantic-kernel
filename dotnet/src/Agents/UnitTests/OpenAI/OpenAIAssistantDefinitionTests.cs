@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using SemanticKernel.Agents.UnitTests.Test;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;

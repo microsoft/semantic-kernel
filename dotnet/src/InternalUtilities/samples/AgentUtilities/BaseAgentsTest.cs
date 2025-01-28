@@ -3,8 +3,11 @@
 using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -21,6 +24,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     /// Metadata key to indicate the assistant as created for a sample.
     /// </summary>
     protected const string AssistantSampleMetadataKey = "sksample";
+
+    protected override bool ForceOpenAI => true;
 
     /// <summary>
     /// Metadata to indicate the assistant as created for a sample.
@@ -39,13 +44,23 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     /// <summary>
     /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
     /// </summary>
+    protected AzureAIClientProvider GetAzureProvider()
+    {
+        return AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+    }
+
+    /// <summary>
+    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
+    /// </summary>
     protected OpenAIClientProvider GetClientProvider()
-        =>
+    {
+        return
             this.UseOpenAIConfig ?
                 OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
                 !string.IsNullOrWhiteSpace(this.ApiKey) ?
                     OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
                     OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
+    }
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -91,13 +106,17 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             {
                 WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
             }
+            else if (usage is RunStepCompletionUsage agentUsage)
+            {
+                WriteUsage(agentUsage.TotalTokens, agentUsage.PromptTokens, agentUsage.CompletionTokens);
+            }
             else if (usage is ChatTokenUsage chatUsage)
             {
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
             }
         }
 
-        void WriteUsage(int totalTokens, int inputTokens, int outputTokens)
+        void WriteUsage(long totalTokens, long inputTokens, long outputTokens)
         {
             Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
         }
