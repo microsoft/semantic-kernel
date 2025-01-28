@@ -12,6 +12,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -44,6 +45,7 @@ class Agent(KernelBaseModel):
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None
     arguments: KernelArguments | None = None
+    prompt_template: PromptTemplateBase | None = None
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
@@ -83,7 +85,7 @@ class Agent(KernelBaseModel):
             )
         return await self.prompt_template.render(kernel, arguments)
 
-    def merge_arguments(self, override_args: "KernelArguments") -> "KernelArguments":
+    def merge_arguments(self, override_args: KernelArguments | None) -> KernelArguments:
         """Merge the arguments with the override arguments.
 
         Args:
@@ -92,17 +94,18 @@ class Agent(KernelBaseModel):
         Returns:
             The merged arguments. If both are None, return None.
         """
-        # If the agent's arguments are not set, simply return whatever is passed in.
         if not self.arguments:
+            if not override_args:
+                return KernelArguments()
             return override_args
 
-        # If the override args are not set, keep the current arguments.
         if not override_args:
             return self.arguments
 
         # Both are not None, so merge with precedence for override_args.
-        merged_execution_settings = dict(self.arguments.execution_settings or {})
-        merged_execution_settings.update(override_args.execution_settings or {})
+        merged_execution_settings = self.arguments.execution_settings or {}
+        if override_args.execution_settings:
+            merged_execution_settings.update(override_args.execution_settings)
 
         merged_params = dict(self.arguments)
         merged_params.update(override_args)

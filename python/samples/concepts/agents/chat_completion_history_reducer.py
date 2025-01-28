@@ -102,7 +102,7 @@ class HistoryReducerExample:
             # Invoke the agent and display its response
             async for response in agent.invoke(chat_history_reducer):
                 chat_history_reducer.add_message(response)
-                print(f"# {response.role} - {response.name}: '{response.content}'")
+                print(f"# Agent - {response.name}: '{response.content}'")
 
             print(f"@ Message Count: {len(chat_history_reducer.messages)}\n")
 

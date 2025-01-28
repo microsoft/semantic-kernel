@@ -116,7 +116,8 @@ def test_get_channel_keys_no_channel_type():
 def test_merge_arguments_both_none():
     agent = Agent()
     merged = agent.merge_arguments(None)
-    assert merged is None, "Should return None if both agent.arguments and override_args are None"
+    assert isinstance(merged, KernelArguments)
+    assert len(merged) == 0, "If both arguments are None, should return an empty KernelArguments object"
 
 
 def test_merge_arguments_agent_none_override_not_none():
