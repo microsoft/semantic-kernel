@@ -8,10 +8,12 @@ from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.functions import KernelArguments, kernel_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.contents import StreamingChatMessageContent
+    pass
 
 
 ###################################################################
@@ -69,30 +71,30 @@ async def main():
     chat_history = ChatHistory()
 
     # Respond to user input
-    user_inputs = {
+    user_inputs = [
         "Hello",
         "What is the special soup?",
         "What does that cost?",
         "Thank you",
-    }
+    ]
 
     for user_input in user_inputs:
         # Add the user input to the chat history
         chat_history.add_user_message(user_input)
         print(f"# User: '{user_input}'")
 
-        contents: list["StreamingChatMessageContent"] = []
         agent_name: str | None = None
         print("# Assistant - ", end="")
         async for content in agent.invoke_stream(chat_history):
             if not agent_name:
                 agent_name = content.name
                 print(f"{agent_name}: '", end="")
-            contents.append(content)
-            print(content.content, end="")
+            if (
+                not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in content.items)
+                and content.content.strip()
+            ):
+                print(f"{content.content}", end="", flush=True)
         print("'")
-        message_content = sum(contents[:1], contents[0])
-        chat_history.add_message(message_content)
 
 
 if __name__ == "__main__":

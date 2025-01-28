@@ -63,7 +63,7 @@ async def main():
 
     thread_id = await agent.create_thread()
 
-    user_inputs = {"Hello", "What is the special soup?", "What is the special drink?", "Thank you"}
+    user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "Thank you"]
     try:
         for user_input in user_inputs:
             await agent.add_chat_message(

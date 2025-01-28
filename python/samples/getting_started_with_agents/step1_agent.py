@@ -30,11 +30,11 @@ async def main():
     chat_history = ChatHistory()
     chat_history.add_developer_message(AGENT_INSTRUCTIONS)
 
-    user_inputs = {
+    user_inputs = [
         "Fortune favors the bold.",
         "I came, I saw, I conquered.",
         "Practice makes perfect.",
-    }
+    ]
     for user_input in user_inputs:
         # Add the user input to the chat history
         chat_history.add_user_message(user_input)
