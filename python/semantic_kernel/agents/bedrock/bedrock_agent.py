@@ -4,7 +4,7 @@
 import asyncio
 from collections.abc import AsyncIterable
 from functools import reduce
-from typing import Any
+from typing import Any, ClassVar
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.action_group_utils import (
@@ -15,6 +15,7 @@ from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -32,6 +33,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
     Manages the interaction with Amazon Bedrock Agent Service.
     """
+
+    channel_type: ClassVar[type[BedrockAgentChannel]] = BedrockAgentChannel
 
     @classmethod
     async def create_new_agent(
@@ -170,12 +173,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+        kwargs.setdefault("sessionState", {})
 
-        session_state: dict[str, Any] | None = None
         for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            if session_state:
-                # Session state is used to send function call results back to the agent.
-                kwargs["sessionState"] = session_state
             response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
             events: list[dict[str, Any]] = []
@@ -186,8 +186,10 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 # Check if there is function call requests. If there are function calls,
                 # parse and invoke them and return the results back to the agent.
                 # Not yielding the function call results back to the user.
-                session_state = await self._handle_return_control_event(
-                    next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event)
+                kwargs["sessionState"].update(
+                    await self._handle_return_control_event(
+                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event)
+                    )
                 )
             else:
                 # For the rest of the events, the chunk will become the chat message content.
@@ -203,7 +205,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
                     elif BedrockAgentEventType.TRACE in event:
                         trace_metadata = self._handle_trace_event(event)
 
-                if not chat_message_content:
+                if not chat_message_content or not chat_message_content.content:
                     raise AgentInvokeException("Chat message content is expected but not found in the response.")
 
                 if file_items:
@@ -223,12 +225,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
     ) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke an agent."""
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
+        kwargs.setdefault("sessionState", {})
 
-        session_state: dict[str, Any] | None = None
         for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            if session_state:
-                # Session state is used to send function call results back to the agent.
-                kwargs["sessionState"] = session_state
             response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
 
             all_function_call_messages: list[StreamingChatMessageContent] = []
@@ -271,10 +270,10 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 if isinstance(item, FunctionResultContent)
             ]
 
-            session_state = {
+            kwargs["sessionState"].update({
                 "invocationId": function_calls[0].id,
                 "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
-            }
+            })
 
     # region non streaming Event Handlers
 
