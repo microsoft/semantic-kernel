@@ -37,9 +37,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/> for external messaging</param>
-    internal LocalProcess(KernelProcess process, Kernel kernel, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
-        : base(process, kernel, null, externalMessageChannel)
+    internal LocalProcess(KernelProcess process, Kernel kernel)
+        : base(process, kernel)
     {
         Verify.NotNull(process.Steps);
 
@@ -208,10 +207,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 Verify.NotNull(step.State?.Id);
 
                 localStep =
-                    new LocalStep(step, this._kernel, null, this._externalMessageChannel)
+                    new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
+                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
 

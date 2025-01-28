@@ -20,12 +20,10 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
         Verify.NotNullOrWhiteSpace(process.State?.Name);
 
         this._kernel = kernel;
-        this._localProcess = new LocalProcess(
-            process,
-            kernel,
-            externalMessageChannel)
+        this._localProcess = new LocalProcess(process, kernel)
         {
-            EventProxy = eventProxy
+            EventProxy = eventProxy,
+            ExternalMessageChannel = externalMessageChannel,
         };
     }
 
@@ -60,6 +58,6 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// <inheritdoc/>
     public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
     {
-        return Task.FromResult(this._localProcess._externalMessageChannel);
+        return Task.FromResult(this._localProcess.ExternalMessageChannel);
     }
 }

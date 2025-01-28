@@ -345,7 +345,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);
 
         // Initialize the input channels
-        // TODO: only need to pass conditionally external channel to specific steps - new step type?
+        // TODO: Issue #10328 Cloud Events - new Step type dedicated to work as Proxy Step abstraction https://github.com/microsoft/semantic-kernel/issues/10328
         this._initialInputs = this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
