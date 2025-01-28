@@ -140,7 +140,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     }
 
     [RetryTheory]
-    [InlineData(ServiceType.VertexAI)]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationWithCachedContentAsync(ServiceType serviceType)
     {
         // Arrange
