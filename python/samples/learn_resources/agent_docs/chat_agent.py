@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 # Adjust the sys.path so we can use the GitHubPlugin and GitHubSettings classes
@@ -60,7 +61,7 @@ async def main():
 
             The current date and time is: {current_time}. 
             """,
-        execution_settings=settings,
+        arguments=KernelArguments(settings=settings),
     )
 
     history = ChatHistory()

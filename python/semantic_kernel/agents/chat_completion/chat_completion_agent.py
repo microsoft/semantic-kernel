@@ -135,9 +135,6 @@ class ChatCompletionAgent(Agent):
             kernel=kernel, arguments=arguments
         )
 
-        if not chat_completion_service:
-            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
-
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
         chat = await self._setup_agent_chat_history(
