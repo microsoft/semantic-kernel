@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -134,7 +135,7 @@ public sealed class AgentGroupChat : AgentChat
     {
         this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         this.AddAgent(agent);
 
@@ -163,7 +164,7 @@ public sealed class AgentGroupChat : AgentChat
     {
         this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         this.AddAgent(agent);
 
@@ -255,7 +256,7 @@ public sealed class AgentGroupChat : AgentChat
             throw;
         }
 
-        this.Logger.LogAgentGroupChatSelectedAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, this.ExecutionSettings.SelectionStrategy.GetType());
+        this.Logger.LogAgentGroupChatSelectedAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), this.ExecutionSettings.SelectionStrategy.GetType());
 
         return agent;
     }
