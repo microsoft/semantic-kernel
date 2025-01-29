@@ -104,7 +104,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 chatHistory.Extract(
                     this.UseSingleSummary ? 0 : insertionPoint,
                     truncationIndex,
-                    (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
+                    filter: (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try
             {
