@@ -2,20 +2,17 @@
 
 import sys
 from abc import ABC, abstractmethod
-from asyncio import Queue
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pydantic import Field
-
 if sys.version_info >= (3, 11):
-    from asyncio import TaskGroup
+    from typing import Self  # pragma: no cover
 else:
-    from taskgroup import TaskGroup
+    from typing_extensions import Self  # pragma: no cover
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.contents.realtime_event import RealtimeEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeEvent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -29,8 +26,8 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
-    send_buffer: Queue[RealtimeEvent] = Field(default_factory=Queue)
 
+    @abstractmethod
     async def send(self, event: RealtimeEvent) -> None:
         """Send an event to the service.
 
@@ -38,51 +35,18 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
             event: The event to send.
             kwargs: Additional arguments.
         """
-        await self.send_buffer.put(event)
-
-    async def start_streaming(
-        self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
-        **kwargs: Any,
-    ) -> AsyncGenerator[RealtimeEvent, None]:
-        """Start streaming, will start both listening and sending.
-
-        This method, start tasks for both listening and sending.
-
-        The arguments are passed to the start_listening method.
-
-        Args:
-            settings: Prompt execution settings.
-            chat_history: Chat history.
-            kwargs: Additional arguments.
-        """
-        await self.update_session(settings=settings, chat_history=chat_history, **kwargs)
-        async with TaskGroup() as tg:
-            tg.create_task(self.start_sending(**kwargs))
-            yield from tg.create_task(self.start_listening())
+        raise NotImplementedError
 
     @abstractmethod
-    async def start_listening(
+    def receive(
         self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
         **kwargs: Any,
     ) -> AsyncGenerator[RealtimeEvent, None]:
         """Starts listening for messages from the service, generates events.
 
         Args:
-            settings: Prompt execution settings.
-            chat_history: Chat history.
             kwargs: Additional arguments.
         """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def start_sending(
-        self,
-    ) -> None:
-        """Start sending items from the input_buffer to the service."""
         raise NotImplementedError
 
     @abstractmethod
@@ -134,7 +98,7 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
         """
         return lambda configuration, settings, choice_type: None
 
-    async def __aenter__(self) -> "RealtimeClientBase":
+    async def __aenter__(self) -> "Self":
         """Enter the context manager.
 
         Default implementation calls the create session method.
