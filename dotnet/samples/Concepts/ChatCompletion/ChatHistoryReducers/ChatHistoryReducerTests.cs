@@ -18,7 +18,7 @@ public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output
     [InlineData(6, "SystemMessage", null, 100, 5)]
     [InlineData(6, null, new int[] { 1 }, 100, 4)]
     [InlineData(6, "SystemMessage", new int[] { 2 }, 100, 4)]
-    public async Task VerifyChatHistoryMaxTokensReducerAsync(int messageCount, string? systemMessage, int[]? functionCallIndexes, int maxTokens, int expectedSize)
+    public async Task VerifyMaxTokensChatHistoryReducerAsync(int messageCount, string? systemMessage, int[]? functionCallIndexes, int maxTokens, int expectedSize)
     {
         // Arrange
         var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes, true);
