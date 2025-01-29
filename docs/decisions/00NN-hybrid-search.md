@@ -287,7 +287,7 @@ Accept a single string containing all the keywords.
 
 ### 3. Accept either in interface
 
-Accept either option.
+Accept either option and either combine or split the keywords in the connector as needed by the underlying db.
 
 ```csharp
     Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
@@ -307,7 +307,7 @@ Accept either option.
 
 ### 4. Accept either in interface but throw for not supported
 
-Accept either option but throw for the one not supported by the underly DB.
+Accept either option but throw for the one not supported by the underlying DB.
 
 - Pros: Easier for us to implement.
 - Cons: Harder for users to use.
