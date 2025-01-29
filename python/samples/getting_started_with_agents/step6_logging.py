@@ -3,13 +3,11 @@
 import asyncio
 import logging
 
-from semantic_kernel.agents import AgentGroupChat
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.kernel import Kernel
+from semantic_kernel import Kernel
+from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
+from semantic_kernel.agents.strategies import TerminationStrategy
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 
 ###################################################################
 # The following sample demonstrates how to create a simple,       #
@@ -33,25 +31,6 @@ class ApprovalTerminationStrategy(TerminationStrategy):
         return "approved" in history[-1].content.lower()
 
 
-REVIEWER_NAME = "ArtDirector"
-REVIEWER_INSTRUCTIONS = """
-You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-The goal is to determine if the given copy is acceptable to print.
-If so, state that it is approved.
-If not, provide insight on how to refine suggested copy without example.
-"""
-
-COPYWRITER_NAME = "CopyWriter"
-COPYWRITER_INSTRUCTIONS = """
-You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-The goal is to refine and decide on the single best copy as an expert in the field.
-Only provide a single proposal per response.
-You're laser focused on the goal at hand.
-Don't waste time with chit chat.
-Consider suggestions when refining an idea.
-"""
-
-
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id=service_id))
@@ -59,6 +38,13 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 
 async def main():
+    REVIEWER_NAME = "ArtDirector"
+    REVIEWER_INSTRUCTIONS = """
+    You are an art director who has opinions about copywriting born of a love for David Ogilvy.
+    The goal is to determine if the given copy is acceptable to print.
+    If so, state that it is approved.
+    If not, provide insight on how to refine suggested copy without example.
+    """
     agent_reviewer = ChatCompletionAgent(
         service_id="artdirector",
         kernel=_create_kernel_with_chat_completion("artdirector"),
@@ -66,6 +52,15 @@ async def main():
         instructions=REVIEWER_INSTRUCTIONS,
     )
 
+    COPYWRITER_NAME = "CopyWriter"
+    COPYWRITER_INSTRUCTIONS = """
+    You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+    The goal is to refine and decide on the single best copy as an expert in the field.
+    Only provide a single proposal per response.
+    You're laser focused on the goal at hand.
+    Don't waste time with chit chat.
+    Consider suggestions when refining an idea.
+    """
     agent_writer = ChatCompletionAgent(
         service_id="copywriter",
         kernel=_create_kernel_with_chat_completion("copywriter"),
@@ -73,20 +68,20 @@ async def main():
         instructions=COPYWRITER_INSTRUCTIONS,
     )
 
-    chat = AgentGroupChat(
+    group_chat = AgentGroupChat(
         agents=[agent_writer, agent_reviewer],
         termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
     )
 
     input = "a slogan for a new line of electric cars."
 
-    await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
-    print(f"# {AuthorRole.USER}: '{input}'")
+    await group_chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
+    print(f"# User: '{input}'")
 
-    async for content in chat.invoke():
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+    async for content in group_chat.invoke():
+        print(f"# Agent - {content.name or '*'}: '{content.content}'")
 
-    print(f"# IS COMPLETE: {chat.is_complete}")
+    print(f"# IS COMPLETE: {group_chat.is_complete}")
 
 
 if __name__ == "__main__":
