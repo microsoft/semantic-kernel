@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from collections.abc import Callable
 from functools import partial
 from typing import Any, ClassVar
 
@@ -74,7 +75,7 @@ class BedrockAgentBase(KernelBaseModel):
             raise ValueError("Only FunctionChoiceType.AUTO is supported.")
         return function_choice_behavior
 
-    async def _run_in_executor(self, executor, func, *args, **kwargs) -> Any:
+    async def _run_in_executor(self, executor: Any, func: Callable, *args, **kwargs) -> Any:
         """Run a function in an executor."""
         return await asyncio.get_event_loop().run_in_executor(executor, partial(func, *args, **kwargs))
 

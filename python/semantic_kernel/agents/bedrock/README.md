@@ -2,7 +2,7 @@
 
 ## Overview
 
-AWS Bedrock Agents is a managed service that allows users to stand up and run AI agents in the cloud quickly.
+AWS Bedrock Agents is a managed service that allows users to stand up and run AI agents in the AWS cloud quickly.
 
 ## Tools/Functions
 

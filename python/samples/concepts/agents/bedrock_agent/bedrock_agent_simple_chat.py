@@ -22,7 +22,7 @@ STREAMING = False
 AGENT_NAME = "semantic-kernel-bedrock-agent-simple-chat-sample"
 
 # If creating a new agent, you need to specify the following:
-INSTRUCTION = "You are a fridenly assistant. You help people find information."
+INSTRUCTION = "You are a friendly assistant. You help people find information."
 
 # If using an existing agent, you need to specify the following:
 AGENT_ID = ""
@@ -34,7 +34,7 @@ async def main():
     else:
         bedrock_agent = await use_existing_agent(AGENT_ID, AGENT_NAME)
 
-    # Use an uiud as the session id
+    # Use a uiud as the session id
     new_session_id = str(uuid.uuid4())
 
     # Invoke the agent

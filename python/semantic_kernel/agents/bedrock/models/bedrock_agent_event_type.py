@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
-from enum import StrEnum
+from enum import Enum
 
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class BedrockAgentEventType(StrEnum):
+class BedrockAgentEventType(str, Enum):
     """Bedrock Agent Event Type."""
 
     # Contains the text response from the agent.

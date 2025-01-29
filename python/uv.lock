@@ -4835,7 +4835,7 @@ requires-dist = [
     { name = "azure-identity", specifier = "~=1.13" },
     { name = "azure-identity", marker = "extra == 'azure'", specifier = "~=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = "~=1.36.4" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<0.7" },
     { name = "cloudevents", specifier = "~=1.0" },
     { name = "dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },

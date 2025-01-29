@@ -251,12 +251,13 @@ class BedrockAgent(BedrockAgentBase, Agent):
             full_message: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_function_call_messages)
             function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
 
-            chat_history = ChatHistory()
+            # Create a temporary chat history to store the function call results.
+            temp_chat_history = ChatHistory()
             await asyncio.gather(
                 *[
                     self.kernel.invoke_function_call(
                         function_call=function_call,
-                        chat_history=chat_history,
+                        chat_history=temp_chat_history,
                         function_call_count=len(function_calls),
                         request_index=request_index,
                     )
@@ -265,7 +266,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             )
             function_result_contents = [
                 item
-                for chat_message in chat_history.messages
+                for chat_message in temp_chat_history.messages
                 for item in chat_message.items
                 if isinstance(item, FunctionResultContent)
             ]
