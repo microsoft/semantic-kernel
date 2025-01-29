@@ -4,8 +4,10 @@ from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.history_reducer.chat_history_summarization_reducer import ChatHistorySummarizationReducer
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.image_content import ImageContent
@@ -22,9 +24,11 @@ __all__ = [
     "AudioContent",
     "AuthorRole",
     "ChatHistory",
+    "ChatHistoryReducer",
     "ChatHistorySummarizationReducer",
     "ChatHistoryTruncationReducer",
     "ChatMessageContent",
+    "FileReferenceContent",
     "FinishReason",
     "FunctionCallContent",
     "FunctionResultContent",

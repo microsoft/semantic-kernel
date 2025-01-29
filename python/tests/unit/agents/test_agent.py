@@ -8,9 +8,6 @@ import pytest
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
-from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
@@ -110,66 +107,17 @@ async def test_agent_hash():
     assert hash(agent1) != hash(agent3)
 
 
-async def test_reduce_history_no_reducer():
-    agent = Agent()
-    history = MockChatHistory(messages=["msg1", "msg2"])
-
-    result = await agent.reduce_history(history)
-
-    assert result is False, "reduce_history should return False if no history_reducer is set"
-    assert history.messages == ["msg1", "msg2"], "History should remain unchanged"
-
-
-async def test_reduce_history_reducer_returns_none():
-    agent = Agent()
-    agent.history_reducer = AsyncMock(spec=ChatHistoryReducer)
-    agent.history_reducer.reduce = AsyncMock(return_value=None)
-
-    history = MockChatHistory(messages=["original1", "original2"])
-    result = await agent.reduce_history(history)
-
-    assert result is False, "reduce_history should return False if reducer returns None"
-    assert history.messages == ["original1", "original2"], "History should remain unchanged"
-
-
-async def test_reduce_history_reducer_returns_messages():
-    agent = Agent()
-    agent.history_reducer = ChatHistoryTruncationReducer(target_count=1)
-    history = MockChatHistory(
-        messages=[
-            ChatMessageContent(role="user", content="original message"),
-            ChatMessageContent(role="assistant", content="assistant message"),
-        ]
-    )
-
-    result = await agent.reduce_history(history)
-
-    assert result is True, "reduce_history should return True if new messages are returned"
-    assert history.messages is not None
-
-
 def test_get_channel_keys_no_channel_type():
     agent = Agent()
     with pytest.raises(NotImplementedError):
         list(agent.get_channel_keys())
 
 
-def test_get_channel_keys_with_channel_and_reducer():
-    agent = MockAgent()
-    reducer = ChatHistoryTruncationReducer(target_count=1)
-    agent.history_reducer = reducer
-
-    keys = list(agent.get_channel_keys())
-    assert len(keys) == 3, "Should return three keys: channel, reducer class name, and reducer hash"
-    assert keys[0] == "MockChannel"
-    assert keys[1] == "ChatHistoryTruncationReducer"
-    assert keys[2] == str(reducer.__hash__), "Should return the string of the reducer's __hash__"
-
-
 def test_merge_arguments_both_none():
     agent = Agent()
     merged = agent.merge_arguments(None)
-    assert merged is None, "Should return None if both agent.arguments and override_args are None"
+    assert isinstance(merged, KernelArguments)
+    assert len(merged) == 0, "If both arguments are None, should return an empty KernelArguments object"
 
 
 def test_merge_arguments_agent_none_override_not_none():
