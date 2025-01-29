@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable, Coroutine, Mapping
-from typing import Any, ClassVar, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from numpy import ndarray
 from openai import AsyncOpenAI
@@ -16,6 +16,9 @@ from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_we
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+if TYPE_CHECKING:
+    from aiortc.mediastreams import MediaStreamTrack
 
 _T = TypeVar("_T", bound="OpenAIRealtime")
 
@@ -33,6 +36,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
         self,
         protocol: Literal["websocket", "webrtc"] = "websocket",
         audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
+        audio_track: "MediaStreamTrack | None" = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
@@ -54,6 +58,9 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
                 It is called first in both websockets and webrtc.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
+            audio_track: The audio track to use for the service, only used by WebRTC.
+                A default is supplied if not provided.
+                It can be any class that implements the AudioStreamTrack interface.
             ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id (str | None): Service ID tied to the execution settings.
@@ -81,6 +88,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.realtime_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")
+        kwargs = {"audio_track": audio_track} if protocol == "webrtc" and audio_track else {}
         super().__init__(
             protocol=protocol,
             audio_output_callback=audio_output_callback,
@@ -91,6 +99,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
             ai_model_type=OpenAIModelTypes.REALTIME,
             default_headers=default_headers,
             client=async_client,
+            **kwargs,
         )
 
 

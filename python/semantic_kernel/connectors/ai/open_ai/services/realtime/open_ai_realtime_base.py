@@ -1,19 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import base64
+import json
 import logging
 import sys
+from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
-
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.realtime_event import (
-    FunctionCallEvent,
-    FunctionResultEvent,
-    RealtimeEvent,
-    ServiceEvent,
-    TextEvent,
-)
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -21,8 +14,9 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from numpy import ndarray
-from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
-from openai.types.beta.realtime.response_function_call_arguments_done_event import (
+from openai.types.beta.realtime import (
+    RealtimeClientEvent,
+    RealtimeServerEvent,
     ResponseFunctionCallArgumentsDoneEvent,
 )
 from pydantic import PrivateAttr
@@ -35,12 +29,24 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.utils import (
+    _create_realtime_client_event,
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.events.realtime_event import (
+    FunctionCallEvent,
+    FunctionResultEvent,
+    RealtimeEvent,
+    ServiceEvent,
+    TextEvent,
+)
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -61,7 +67,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
     kernel: Kernel | None = None
 
-    _current_settings: PromptExecutionSettings | None = PrivateAttr(None)
+    _current_settings: PromptExecutionSettings | None = PrivateAttr(default=None)
     _call_id_to_function_map: dict[str, str] = PrivateAttr(default_factory=dict)
 
     async def _parse_event(self, event: RealtimeServerEvent) -> AsyncGenerator[RealtimeEvent, None]:
@@ -132,7 +138,11 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 kernel=self.kernel,  # type: ignore
             )
             await self.send(
-                ServiceEvent(event_type="service", service_type=SendEvents.SESSION_UPDATE, event=self._current_settings)
+                ServiceEvent(
+                    event_type="service",
+                    service_type=SendEvents.SESSION_UPDATE,
+                    event={"settings": self._current_settings},
+                )
             )
         if chat_history and len(chat_history) > 0:
             for msg in chat_history.messages:
@@ -198,22 +208,185 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         # This allows a user to have a full conversation in his code
         yield FunctionResultEvent(event_type="function_result", function_result=created_output)
 
-    @override
-    async def start_listening(
-        self, settings: PromptExecutionSettings | None = None, chat_history: ChatHistory | None = None, **kwargs: Any
-    ) -> None:
-        pass
+    @abstractmethod
+    async def _send(self, event: RealtimeClientEvent) -> None:
+        """Send an event to the service."""
+        raise NotImplementedError
 
     @override
-    async def start_sending(self, **kwargs: Any) -> None:
-        pass
+    async def send(self, event: RealtimeEvent, **kwargs: Any) -> None:
+        match event.event_type:
+            case "audio":
+                if isinstance(event.audio.data, ndarray):
+                    audio_data = base64.b64encode(event.audio.data.tobytes()).decode("utf-8")
+                else:
+                    audio_data = event.audio.data.decode("utf-8")
+                await self._send(
+                    _create_realtime_client_event(
+                        event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND,
+                        audio=audio_data,
+                    )
+                )
+            case "text":
+                await self._send(
+                    _create_realtime_client_event(
+                        event_type=SendEvents.CONVERSATION_ITEM_CREATE,
+                        **dict(
+                            type="message",
+                            content=[
+                                {
+                                    "type": "input_text",
+                                    "text": event.text.text,
+                                }
+                            ],
+                            role="user",
+                        ),
+                    )
+                )
+            case "function_call":
+                await self._send(
+                    _create_realtime_client_event(
+                        event_type=SendEvents.CONVERSATION_ITEM_CREATE,
+                        **dict(
+                            type="function_call",
+                            name=event.function_call.name or event.function_call.function_name,
+                            arguments=""
+                            if not event.function_call.arguments
+                            else event.function_call.arguments
+                            if isinstance(event.function_call.arguments, str)
+                            else json.dumps(event.function_call.arguments),
+                            call_id=event.function_call.metadata.get("call_id"),
+                        ),
+                    )
+                )
+            case "function_result":
+                await self._send(
+                    _create_realtime_client_event(
+                        event_type=SendEvents.CONVERSATION_ITEM_CREATE,
+                        **dict(
+                            type="function_call_output",
+                            output=event.function_result.result,
+                            call_id=event.function_result.metadata.get("call_id"),
+                        ),
+                    )
+                )
+            case "service":
+                data = event.event
+                match event.service_type:
+                    case SendEvents.SESSION_UPDATE:
+                        if not data:
+                            logger.error("Event data is empty")
+                            return
+                        settings = data.get("settings", None)
+                        if not settings or not isinstance(settings, PromptExecutionSettings):
+                            logger.error("Event data does not contain 'settings'")
+                            return
+                        if not settings.ai_model_id:
+                            settings.ai_model_id = self.ai_model_id
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type,
+                                **settings.prepare_settings_dict(),
+                            )
+                        )
+                    case SendEvents.INPUT_AUDIO_BUFFER_APPEND:
+                        if not data or "audio" not in data:
+                            logger.error("Event data does not contain 'audio'")
+                            return
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type,
+                                audio=data["audio"],
+                            )
+                        )
+                    case SendEvents.INPUT_AUDIO_BUFFER_COMMIT:
+                        await self._send(_create_realtime_client_event(event_type=event.service_type))
+                    case SendEvents.INPUT_AUDIO_BUFFER_CLEAR:
+                        await self._send(_create_realtime_client_event(event_type=event.service_type))
+                    case SendEvents.CONVERSATION_ITEM_CREATE:
+                        if not data or "item" not in data:
+                            logger.error("Event data does not contain 'item'")
+                            return
+                        content = data["item"]
+                        contents = content.items if isinstance(content, ChatMessageContent) else [content]
+                        for item in contents:
+                            match item:
+                                case TextContent():
+                                    await self._send(
+                                        _create_realtime_client_event(
+                                            event_type=event.service_type,
+                                            **dict(
+                                                type="message",
+                                                content=[
+                                                    {
+                                                        "type": "input_text",
+                                                        "text": item.text,
+                                                    }
+                                                ],
+                                                role="user",
+                                            ),
+                                        )
+                                    )
+                                case FunctionCallContent():
+                                    await self._send(
+                                        _create_realtime_client_event(
+                                            event_type=event.service_type,
+                                            **dict(
+                                                type="function_call",
+                                                name=item.name or item.function_name,
+                                                arguments=""
+                                                if not item.arguments
+                                                else item.arguments
+                                                if isinstance(item.arguments, str)
+                                                else json.dumps(item.arguments),
+                                                call_id=item.metadata.get("call_id"),
+                                            ),
+                                        )
+                                    )
 
-    @override
-    async def create_session(
-        self, settings: PromptExecutionSettings | None = None, chat_history: ChatHistory | None = None, **kwargs: Any
-    ) -> None:
-        pass
-
-    @override
-    async def close_session(self) -> None:
-        pass
+                                case FunctionResultContent():
+                                    await self._send(
+                                        _create_realtime_client_event(
+                                            event_type=event.service_type,
+                                            **dict(
+                                                type="function_call_output",
+                                                output=item.result,
+                                                call_id=item.metadata.get("call_id"),
+                                            ),
+                                        )
+                                    )
+                    case SendEvents.CONVERSATION_ITEM_TRUNCATE:
+                        if not data or "item_id" not in data:
+                            logger.error("Event data does not contain 'item_id'")
+                            return
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type,
+                                item_id=data["item_id"],
+                                content_index=0,
+                                audio_end_ms=data.get("audio_end_ms", 0),
+                            )
+                        )
+                    case SendEvents.CONVERSATION_ITEM_DELETE:
+                        if not data or "item_id" not in data:
+                            logger.error("Event data does not contain 'item_id'")
+                            return
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type,
+                                item_id=data["item_id"],
+                            )
+                        )
+                    case SendEvents.RESPONSE_CREATE:
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type, event_id=data.get("event_id", None) if data else None
+                            )
+                        )
+                    case SendEvents.RESPONSE_CANCEL:
+                        await self._send(
+                            _create_realtime_client_event(
+                                event_type=event.service_type,
+                                response_id=data.get("response_id", None) if data else None,
+                            )
+                        )

@@ -2,14 +2,14 @@
 
 import asyncio
 import logging
-from typing import Any, Final
+from typing import Any, ClassVar, Final
 
 import numpy as np
 import numpy.typing as npt
 from aiortc.mediastreams import MediaStreamError, MediaStreamTrack
 from av.audio.frame import AudioFrame
 from av.frame import Frame
-from pydantic import Field, PrivateAttr
+from pydantic import PrivateAttr
 from sounddevice import InputStream, OutputStream
 
 from semantic_kernel.contents.audio_content import AudioContent
@@ -25,36 +25,54 @@ DTYPE: Final[npt.DTypeLike] = np.int16
 
 
 class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
-    """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice.
+    """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice."""
 
-    Make sure the device_id is set to the correct device for your system.
-    """
-
-    kind: str = "audio"
+    kind: ClassVar[str] = "audio"
+    device_id: str | int | None = None
     sample_rate: int = SAMPLE_RATE
     channels: int = TRACK_CHANNELS
     frame_duration: int = FRAME_DURATION
     dtype: npt.DTypeLike = DTYPE
-    device: str | int | None = None
-    queue: asyncio.Queue[Frame] = Field(default_factory=asyncio.Queue)
-    is_recording: bool = False
     frame_size: int = 0
+    _queue: asyncio.Queue[Frame] = PrivateAttr(default_factory=asyncio.Queue)
+    _is_recording: bool = False
     _stream: InputStream | None = None
     _recording_task: asyncio.Task | None = None
     _loop: asyncio.AbstractEventLoop | None = None
-    _pts: int = 0  # Add this to track the pts
+    _pts: int = 0
 
-    def __init__(self, **kwargs: Any):
-        """Initialize the audio track.
+    def __init__(
+        self,
+        *,
+        device_id: str | int | None = None,
+        sample_rate: int = SAMPLE_RATE,
+        channels: int = TRACK_CHANNELS,
+        frame_duration: int = FRAME_DURATION,
+        dtype: npt.DTypeLike = DTYPE,
+    ):
+        """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice.
+
+        Make sure the device_id is set to the correct device for your system.
 
         Args:
+            device_id: The device id to use for recording audio.
+            sample_rate: The sample rate for the audio.
+            channels: The number of channels for the audio.
+            frame_duration: The duration of each audio frame in milliseconds.
+            dtype: The data type for the audio.
             **kwargs: Additional keyword arguments.
-
         """
-        kwargs["frame_size"] = int(
-            kwargs.get("sample_rate", SAMPLE_RATE) * kwargs.get("frame_duration", FRAME_DURATION) / 1000
+        args = {
+            "device_id": device_id,
+            "sample_rate": sample_rate,
+            "channels": channels,
+            "frame_duration": frame_duration,
+            "dtype": dtype,
+        }
+        args["frame_size"] = int(
+            args.get("sample_rate", SAMPLE_RATE) * args.get("frame_duration", FRAME_DURATION) / 1000
         )
-        super().__init__(**kwargs)
+        super().__init__(**args)
         MediaStreamTrack.__init__(self)
 
     async def recv(self) -> Frame:
@@ -63,8 +81,8 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
             self._recording_task = asyncio.create_task(self.start_recording())
 
         try:
-            frame = await self.queue.get()
-            self.queue.task_done()
+            frame = await self._queue.get()
+            self._queue.task_done()
             return frame
         except Exception as e:
             logger.error(f"Error receiving audio frame: {e!s}")
@@ -74,7 +92,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
         if status:
             logger.warning(f"Audio input status: {status}")
         if self._loop and self._loop.is_running():
-            asyncio.run_coroutine_threadsafe(self.queue.put(self._create_frame(indata)), self._loop)
+            asyncio.run_coroutine_threadsafe(self._queue.put(self._create_frame(indata)), self._loop)
 
     def _create_frame(self, indata: np.ndarray) -> Frame:
         audio_data = indata.copy()
@@ -95,16 +113,16 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
 
     async def start_recording(self):
         """Start recording audio from the input device."""
-        if self.is_recording:
+        if self._is_recording:
             return
 
-        self.is_recording = True
+        self._is_recording = True
         self._loop = asyncio.get_running_loop()
         self._pts = 0  # Reset pts when starting recording
 
         try:
             self._stream = InputStream(
-                device=self.device,
+                device=self.device_id,
                 channels=self.channels,
                 samplerate=self.sample_rate,
                 dtype=self.dtype,
@@ -113,14 +131,14 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
             )
             self._stream.start()
 
-            while self.is_recording:
+            while self._is_recording:
                 await asyncio.sleep(0.1)
 
         except Exception as e:
             logger.error(f"Error in audio recording: {e!s}")
             raise
         finally:
-            self.is_recording = False
+            self._is_recording = False
 
 
 class SKAudioPlayer(KernelBaseModel):
@@ -128,17 +146,26 @@ class SKAudioPlayer(KernelBaseModel):
 
     Make sure the device_id is set to the correct device for your system.
 
-    The sample rate, channels and frame duration should be set to match the audio you
-    are receiving, the defaults are for WebRTC.
+    The sample rate, channels and frame duration
+    should be set to match the audio you
+    are receiving.
+
+    Args:
+        device_id: The device id to use for playing audio.
+        sample_rate: The sample rate for the audio.
+        channels: The number of channels for the audio.
+        dtype: The data type for the audio.
+        frame_duration: The duration of each audio frame in milliseconds
+
     """
 
     device_id: int | None = None
     sample_rate: int = SAMPLE_RATE
-    dtype: npt.DTypeLike = DTYPE
     channels: int = PLAYER_CHANNELS
-    frame_duration_ms: int = FRAME_DURATION
-    _queue: asyncio.Queue[np.ndarray] | None = None
-    _stream: OutputStream | None = PrivateAttr(None)
+    dtype: npt.DTypeLike = DTYPE
+    frame_duration: int = FRAME_DURATION
+    _queue: asyncio.Queue[np.ndarray] | None = PrivateAttr(default=None)
+    _stream: OutputStream | None = PrivateAttr(default=None)
 
     async def __aenter__(self):
         """Start the audio stream when entering a context."""
@@ -157,7 +184,7 @@ class SKAudioPlayer(KernelBaseModel):
             samplerate=self.sample_rate,
             channels=self.channels,
             dtype=self.dtype,
-            blocksize=int(self.sample_rate * self.frame_duration_ms / 1000),
+            blocksize=int(self.sample_rate * self.frame_duration / 1000),
             device=self.device_id,
         )
         if self._stream and self._queue:
