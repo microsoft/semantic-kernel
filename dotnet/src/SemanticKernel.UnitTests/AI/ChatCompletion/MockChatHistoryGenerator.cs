@@ -18,7 +18,7 @@ internal static class MockChatHistoryGenerator
     {
         if (includeSystemMessage)
         {
-            yield return new ChatMessageContent(AuthorRole.System, $"system message");
+            yield return new ChatMessageContent(AuthorRole.System, "system message");
         }
 
         for (int index = 0; index < messageCount; ++index)
