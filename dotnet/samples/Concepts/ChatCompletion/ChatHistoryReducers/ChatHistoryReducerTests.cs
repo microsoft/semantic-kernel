@@ -12,29 +12,6 @@ namespace ChatCompletion;
 public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output)
 {
     [Theory]
-    [InlineData(3, null, null, 5, 0)]
-    [InlineData(2, null, null, 1, 1)]
-    [InlineData(2, "SystemMessage", null, 2, 2)]
-    [InlineData(10, null, null, 3, 3)]
-    [InlineData(10, "SystemMessage", null, 3, 3)]
-    [InlineData(9, null, null, 5, 5)]
-    [InlineData(11, null, null, 5, 5)]
-    [InlineData(8, "SystemMessage", null, 5, 5)]
-    [InlineData(10, "SystemMessage", null, 5, 5)]
-    public async Task VerifyChatHistoryTruncationReducerAsync(int messageCount, string? systemMessage, int[]? functionCallIndexes, int truncatedSize, int expectedSize)
-    {
-        // Arrange
-        var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes);
-        var reducer = new ChatHistoryTruncationReducer(truncatedSize);
-
-        // Act
-        var reducedHistory = await reducer.ReduceAsync(chatHistory);
-
-        // Assert
-        VerifyReducedHistory(reducedHistory, ComputeExpectedMessages(chatHistory, expectedSize));
-    }
-
-    [Theory]
     [InlineData(3, null, null, 100, 0)]
     [InlineData(3, "SystemMessage", null, 100, 0)]
     [InlineData(6, null, null, 100, 4)]

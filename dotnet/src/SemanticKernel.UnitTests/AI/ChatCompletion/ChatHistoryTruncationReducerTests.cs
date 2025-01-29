@@ -137,6 +137,24 @@ public class ChatHistoryTruncationReducerTests
         VerifyReducedHistory(reducedHistory, 10);
     }
 
+    /// <summary>
+    /// Validate history reduced and system message preserved when source history exceeds target threshold.
+    /// </summary>
+    [Fact]
+    public async Task VerifySystemMessageIsNotReducedAsync()
+    {
+        // Arrange
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20, includeSystemMessage: true).ToArray();
+        ChatHistoryTruncationReducer reducer = new(10);
+
+        // Act
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        // Assert
+        VerifyReducedHistory(reducedHistory, 10);
+        Assert.Contains(reducedHistory!, m => m.Role == AuthorRole.System);
+    }
+
     private static void VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
     {
         Assert.NotNull(reducedHistory);
