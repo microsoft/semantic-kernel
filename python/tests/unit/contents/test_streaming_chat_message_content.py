@@ -442,6 +442,10 @@ def test_scmc_with_unhashable_types_can_hash():
             ],
             choice_index=0,
         ),
+        StreamingChatMessageContent(
+            role=AuthorRole.USER,
+            choice_index=0,
+        ),
     ]
 
     for message in user_messages:

@@ -408,6 +408,9 @@ def test_cmc_with_unhashable_types_can_hash():
                 FileReferenceContent(file_id="test_file_id"),
             ],
         ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+        ),
     ]
 
     for message in user_messages:

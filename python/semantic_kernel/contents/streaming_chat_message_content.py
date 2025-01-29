@@ -223,7 +223,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 
     def __hash__(self) -> int:
         """Return the hash of the streaming chat message content."""
-        hashable_items = [make_hashable(item) for item in self.items] if self.items else None
+        hashable_items = [make_hashable(item) for item in self.items] if self.items else []
         return hash((
             self.tag,
             self.role,
