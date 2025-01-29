@@ -130,8 +130,8 @@ This would mean that all events are retained and returned to the developer as is
 
 Chosen option: 3 Treat Everything as Events
 
-This option was chosen to allow abstraction away from the raw events, while still allowing the developer to access the raw events if needed. This allows for a simple programming model, while still allowing for complex interactions.
-A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event which is filled with the event type from the service and a field for the actual content, with a name that makes sense:
+This option was chosen to allow abstraction away from the raw events, while still allowing the developer to access the raw events if needed. 
+A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event which is filled with the event type from the service and a field for the actual content, with a name that corresponds to the event type:
 
 ```python
 AudioEvent(
@@ -152,6 +152,15 @@ ServiceEvent(
 ```
 
 This allows you to easily filter on the event_type, and then use the service_event to filter on the specific event type, and then use the content field to get the content, or the event field to get the raw event.
+
+Collectively these are known as *RealtimeEvents*, and are returned as an async generator from the client, so you can easily loop over them. And they are passed to the send method.
+
+Initially RealtimeEvents are:
+- AudioEvent
+- TextEvent
+- FunctionCallEvent
+- FunctionResultEvent
+- ServiceEvent
 
 # Programming model
 
@@ -176,7 +185,7 @@ This would mean that the client would have a mechanism to register event handler
   - developer judgement needs to be made (or exposed with parameters) on what is returned through the async generator and what is passed to the event handlers
 
 ### 2. Event buffers/queues that are exposed to the developer, start sending and start receiving methods, that just initiate the sending and receiving of events and thereby the filling of the buffers
-This would mean that the there are two queues, one for sending and one for receiving, and the developer can listen to the receiving queue and send to the sending queue. Internal things like parsing events to content types and auto-function calling are processed first, and the result is put in the queue, the content type should use inner_content to capture the full event and these might add a message to the send queue as well.
+This would mean that there are two queues, one for sending and one for receiving, and the developer can listen to the receiving queue and send to the sending queue. Internal things like parsing events to content types and auto-function calling are processed first, and the result is put in the queue, the content type should use inner_content to capture the full event and these might add a message to the send queue as well.
 
 - Pro:
   - simple to use, just start sending and start receiving
@@ -239,3 +248,99 @@ This would mean that the client would receive AudioContent items, and would have
 ## Decision Outcome - Audio speaker/microphone handling
 
 Chosen option: ...
+
+# Interface design
+
+## Considered Options - Interface design
+
+1. Use a single class for everything
+2. Split the service class from a session class.
+
+The following methods will need to be supported:
+- create session
+- update session
+- close session
+- listen for/receive events
+- send events
+
+### 1. Use a single class for everything
+
+Each implementation would have to implements all of the above methods. This means that non-protocol specific elements are in the same class as the protocol specific elements and will lead to code duplication between them.
+
+### 2. Split the service class from a session class.
+
+Two interfaces are created:
+- Service: create session, update session, delete session, list sessions
+- Session: listen for/receive events, send events, update session, close session
+
+Currently neither the google or the openai api's support restarting sessions, so the advantage of splitting is mostly a implementation question but will not add any benefits to the user.
+
+This means that the split would be far simpler:
+- Service: create session
+- Session: listen for/receive events, send events, update session, close session
+
+## Naming
+
+The send and listen/receive methods need to be clear in the way their are named and this can become confusing when dealing with these api's. The following options are considered:
+
+Options for sending events to the service from your code:
+- google uses .send in their client.
+- OpenAI uses .send in their client as well
+- send or send_message is used in other clients, like Azure Communication Services
+
+Options for listening for events from the service in your code:
+- google uses .receive in their client.
+- openai uses .recv in their client.
+- others use receive or receive_messages in their clients.
+
+### Decision Outcome - Interface design
+
+Chosen option: Use a single class for everything
+Chosen for send and receive as verbs.
+
+This means that the interface will look like this:
+```python
+
+class RealtimeClient:
+    async def create_session(self, settings: PromptExecutionSettings, chat_history: ChatHistory, **kwargs) -> None:
+        ...
+
+    async def update_session(self, settings: PromptExecutionSettings, chat_history: ChatHistory, **kwargs) -> None:
+        ...
+
+    async def close_session(self, **kwargs) -> None:
+        ...
+
+    async def receive(self, **kwargs) -> AsyncGenerator[RealtimeEvent, None]:
+        ...
+
+    async def send(self, event: RealtimeEvent) -> None:
+        ...
+```
+
+In most cases, create_session should call update_session with the same parameters, since update session can also be done separately later on with the same inputs.
+
+For Python a default __aenter__ and __aexit__ method should be added to the class, so it can be used in a with statement, which calls create_session and close_session respectively.
+
+It is advisable, but not required, to implement the send method through a buffer/queue so that events be can 'sent' before the sessions has been established without losing them or raising exceptions, this might take a very seconds and in that time a single send call would block the application.
+
+For receiving a internal implementation might also rely on a buffer/queue, but this is up to the developer and what makes sense for that service. For instance webrtc relies on defining the callback at create session time, so the create_session method adds a function that adds events to the queue and the receive method starts reading from and yielding from that queue.
+
+The send method should handle all events types, but it might have to handle the same thing in two ways, for instance:
+```python
+audio = AudioContent(...)
+
+await client.send(AudioEvent(event_type='audio', audio=audio))
+```
+
+is equivalent to (at least in the case of OpenAI):
+```python
+audio = AudioContent(...)
+
+await client.send(ServiceEvent(event_type='service', service_event='input_audio_buffer.append', event=audio))
+```
+
+The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service.
+
+
+

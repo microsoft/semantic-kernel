@@ -3,7 +3,9 @@
 import asyncio
 import logging
 
+from samples.concepts.audio.utils import check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
+    ListenEvents,
     OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
@@ -34,14 +36,6 @@ logger.setLevel(logging.INFO)
 # It has device id's set in the AudioRecorderStream and AudioPlayerAsync classes,
 # so you may need to adjust these for your system.
 # you can check the available devices by uncommenting line below the function
-
-
-def check_audio_devices():
-    import sounddevice as sd
-
-    logger.debug(sd.query_devices())
-
-
 check_audio_devices()
 
 
@@ -65,18 +59,23 @@ async def main() -> None:
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
     audio_player = SKAudioPlayer()
+    print("Mosscap (transcript): ", end="")
     async with realtime_client, audio_player:
         await realtime_client.update_session(settings=settings, create_response=True)
-        async for event in realtime_client.start_streaming():
+
+        async for event in realtime_client.receive():
             match event.event_type:
                 case "audio":
                     await audio_player.add_audio(event.audio)
                 case "text":
-                    print(event.text.text)
+                    print(event.text.text, end="")
                 case "service":
-                    if event.service_type == "session.update":
+                    # OpenAI Specific events
+                    if event.service_type == ListenEvents.SESSION_UPDATED:
                         print("Session updated")
-                    if event.service_type == "error":
+                    if event.service_type == ListenEvents.RESPONSE_CREATED:
+                        print("")
+                    if event.service_type == ListenEvents.ERROR:
                         logger.error(event.event)
 
 

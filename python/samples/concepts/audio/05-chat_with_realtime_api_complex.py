@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 from random import randint
 
+from samples.concepts.audio.utils import check_audio_devices
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -13,7 +14,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.utils import SKAudioPlayer
+from semantic_kernel.connectors.ai.utils import SKAudioPlayer, SKAudioTrack
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import kernel_function
 
@@ -43,12 +44,6 @@ logger.setLevel(logging.INFO)
 # you can check the available devices by uncommenting line below the function
 
 
-def check_audio_devices():
-    import sounddevice as sd
-
-    logger.debug(sd.query_devices())
-
-
 check_audio_devices()
 
 
@@ -75,11 +70,18 @@ async def main() -> None:
     kernel.add_function(plugin_name="weather", function_name="get_weather", function=get_weather)
     kernel.add_function(plugin_name="time", function_name="get_date_time", function=get_date_time)
 
-    # create the realtime client and optionally add the audio output function, this is optional
+    # create the audio player and audio track
+    # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = SKAudioPlayer()
+    audio_track = SKAudioTrack()
+    # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = OpenAIRealtime(protocol="webrtc", audio_output_callback=audio_player.client_callback)
+    realtime_client = OpenAIRealtime(
+        protocol="webrtc",
+        audio_output_callback=audio_player.client_callback,
+        audio_track=audio_track,
+    )
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
@@ -112,18 +114,9 @@ async def main() -> None:
         await realtime_client.update_session(
             settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
         )
-        # you can also send other events to the service, like this (the first has content, the second does not)
-        # await realtime_client.send(
-        #     SendEvents.CONVERSATION_ITEM_CREATE,
-        #     item=ChatMessageContent(role="user", content="Hi there, who are you?")},
-        # )
-        # await realtime_client.send(SendEvents.RESPONSE_CREATE)
         print("Mosscap (transcript): ", end="")
-        async for event in realtime_client.start_streaming():
+        async for event in realtime_client.receive():
             match event.event_type:
-                # case "audio":
-                # if play_audio and audio_player:
-                #     await audio_player.add_audio(event.audio)
                 case "text":
                     if print_transcript:
                         print(event.text.text, end="")
@@ -135,8 +128,6 @@ async def main() -> None:
                                 print("")
                         case ListenEvents.ERROR:
                             logger.error(event.event)
-                # case ....:
-                #     # add other event handling here
 
 
 if __name__ == "__main__":
