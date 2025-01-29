@@ -29,6 +29,7 @@ class OpenAIConfigBase(OpenAIHandler):
         service_id: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         client: AsyncOpenAI | None = None,
+        instruction_role: str | None = None,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -48,6 +49,8 @@ class OpenAIConfigBase(OpenAIHandler):
             default_headers (Mapping[str, str]): Default headers
                 for HTTP requests. (Optional)
             client (AsyncOpenAI): An existing OpenAI client, optional.
+            instruction_role (str): The role to use for 'instruction'
+                messages, for example, summarization prompts could use `developer` or `system`. (Optional)
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -71,6 +74,8 @@ class OpenAIConfigBase(OpenAIHandler):
         }
         if service_id:
             args["service_id"] = service_id
+        if instruction_role:
+            args["instruction_role"] = instruction_role
         super().__init__(**args)
 
     def to_dict(self) -> dict[str, str]:

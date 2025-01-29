@@ -15,8 +15,6 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected override bool ForceOpenAI => true; // %%% REMOVE
-
     [Fact]
     public async Task UseFunctionInvocationFilterAsync()
     {

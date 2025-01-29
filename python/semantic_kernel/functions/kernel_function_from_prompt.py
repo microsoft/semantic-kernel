@@ -135,29 +135,30 @@ through prompt_template_config or in the prompt_template."
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: dict[str, Any],
+        data: Any,
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
         If it is not supplied, but prompt_template is, the prompt_template's execution settings are used.
         """
-        prompt_execution_settings = data.get("prompt_execution_settings")
-        prompt_template = data.get("prompt_template")
-        if not prompt_execution_settings:
-            if prompt_template:
-                prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
-                data["prompt_execution_settings"] = prompt_execution_settings
+        if isinstance(data, dict):
+            prompt_execution_settings = data.get("prompt_execution_settings")
+            prompt_template = data.get("prompt_template")
             if not prompt_execution_settings:
-                return data
-        if isinstance(prompt_execution_settings, PromptExecutionSettings):
-            data["prompt_execution_settings"] = {
-                prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
-            }
-        if isinstance(prompt_execution_settings, Sequence):
-            data["prompt_execution_settings"] = {
-                s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
-            }
+                if prompt_template:
+                    prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
+                    data["prompt_execution_settings"] = prompt_execution_settings
+                if not prompt_execution_settings:
+                    return data
+            if isinstance(prompt_execution_settings, PromptExecutionSettings):
+                data["prompt_execution_settings"] = {
+                    prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
+                }
+            if isinstance(prompt_execution_settings, Sequence):
+                data["prompt_execution_settings"] = {
+                    s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
+                }
         return data
 
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:

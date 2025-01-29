@@ -42,6 +42,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiContent? SystemInstruction { get; set; }
 
+    [JsonPropertyName("cachedContent")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CachedContent { get; set; }
+
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
@@ -67,6 +71,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(prompt);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -83,6 +88,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -316,6 +322,11 @@ internal sealed class GeminiRequest
     {
         request.SafetySettings = executionSettings.SafetySettings?.Select(s
             => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
+    }
+
+    private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
+    {
+        request.CachedContent = executionSettings.CachedContent;
     }
 
     internal sealed class ConfigurationElement

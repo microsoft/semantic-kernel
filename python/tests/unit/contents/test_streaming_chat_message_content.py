@@ -4,8 +4,10 @@ import pytest
 from defusedxml.ElementTree import XML
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -410,3 +412,41 @@ def test_scmc_bytes():
     message = StreamingChatMessageContent(choice_index=0, role=AuthorRole.USER, content="Hello, world!")
     assert bytes(message) == b"Hello, world!"
     assert bytes(message.items[0]) == b"Hello, world!"
+
+
+def test_scmc_with_unhashable_types_can_hash():
+    user_messages = [
+        StreamingChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                StreamingTextContent(text="Describe this image.", choice_index=0),
+                ImageContent(
+                    uri="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/New_york_times_square-terabass.jpg/1200px-New_york_times_square-terabass.jpg"
+                ),
+            ],
+            choice_index=0,
+        ),
+        StreamingChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                StreamingTextContent(text="What is the main color in this image?", choice_index=0),
+                ImageContent(uri="https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg"),
+            ],
+            choice_index=0,
+        ),
+        StreamingChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                StreamingTextContent(text="Is there an animal in this image?", choice_index=0),
+                FileReferenceContent(file_id="test_file_id"),
+            ],
+            choice_index=0,
+        ),
+        StreamingChatMessageContent(
+            role=AuthorRole.USER,
+            choice_index=0,
+        ),
+    ]
+
+    for message in user_messages:
+        assert hash(message) is not None
