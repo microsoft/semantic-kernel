@@ -25,5 +25,5 @@ internal static class AgentExtensions
     /// <remarks>
     /// Currently, it's intended for telemetry purposes only.
     /// </remarks>
-    public static string GetDisplayName(this Agent agent) => agent.Name ?? "UnnamedAgent";
+    public static string GetDisplayName(this Agent agent) => !string.IsNullOrWhiteSpace(agent.Name) ? agent.Name! : "UnnamedAgent";
 }
