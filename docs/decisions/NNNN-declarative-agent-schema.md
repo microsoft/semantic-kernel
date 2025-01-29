@@ -50,12 +50,11 @@ The above example shows how different Agent types are supported and also how the
 
 **Note:**
 
-1. The above pattern does is not supported at present.
+1. Providing Agent state is not supported in the Agent Framework at present.
 2. We need to decide if the Agent Framework should define an abstraction to allow any Agent to be invoked.
-3. If we are supporting an abstraction to allow any Agent to be invoked, what should the pattern look like.
-4. We will support JSON also as an out-of-the-box option.
+3. We will support JSON also as an out-of-the-box option.
 
-Currently Semantic Kernel supports two Agent types and these have the following properties:
+Currently Semantic Kernel supports three Agent types and these have the following properties:
 
 1. [`ChatCompletionAgent`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.agents.chatcompletionagent?view=semantic-kernel-dotnet):
    - `Arguments`: Optional arguments for the agent. (Inherited from ChatHistoryKernelAgent)
@@ -67,7 +66,7 @@ Currently Semantic Kernel supports two Agent types and these have the following 
    - `Logger`: The ILogger associated with this Agent. (Inherited from Agent)
    - `LoggerFactory`: A ILoggerFactory for this Agent. (Inherited from Agent)
    - `Name`: The name of the agent (optional). (Inherited from Agent)
-2. ['OpenAIAssistantAgent'](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.agents.agent.description?view=semantic-kernel-dotnet#microsoft-semantickernel-agents-agent-description):
+2. [`OpenAIAssistantAgent`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.agents.agent.description?view=semantic-kernel-dotnet#microsoft-semantickernel-agents-agent-description):
    - `Arguments`: Optional arguments for the agent.
    - `Definition`: The assistant definition.
    - `Description`: The description of the agent (optional). (Inherited from Agent)
@@ -79,8 +78,19 @@ Currently Semantic Kernel supports two Agent types and these have the following 
    - `LoggerFactory`: A ILoggerFactory for this Agent. (Inherited from Agent)
    - `Name`: The name of the agent (optional). (Inherited from Agent)
    - `PollingOptions`: Defines polling behavior
+3. [`AzureAIAgent`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Agents/AzureAI/AzureAIAgent.cs)
+   - `Definition`: The assistant definition.
+   - `PollingOptions`: Defines polling behavior for run processing.
+   - `Description`: The description of the agent (optional). (Inherited from Agent)
+   - `Id`: The identifier of the agent (optional). (Inherited from Agent)
+   - `Instructions`: The instructions of the agent (optional). (Inherited from KernelAgent)
+   - `IsDeleted`: Set when the assistant has been deleted via DeleteAsync(CancellationToken). An assistant removed by other means will result in an exception when invoked.
+   - `Kernel`: The Kernel containing services, plugins, and filters for use throughout the agent lifetime. (Inherited from KernelAgent)
+   - `Logger`: The ILogger associated with this Agent. (Inherited from Agent)
+   - `LoggerFactory`: A ILoggerFactory for this Agent. (Inherited from Agent)
+   - `Name`: The name of the agent (optional). (Inherited from Agent)
 
-When executing an Agent that was declaratively defined some of the properties will be determined by the runtime:
+When executing an Agent that was defined declaratively some of the properties will be determined by the runtime:
 
 - `Kernel`: The runtime will be responsible for create the `Kernel` instance to be used by the Agent. This `Kernel` instance must be configured with the models and tools that the Agent requires.
 - `Logger` or `LoggerFactory`: The runtime will be responsible for providing a correctly configured `Logger` or `LoggerFactory`.
@@ -96,10 +106,15 @@ For Agent properties that define behaviors e.g. `HistoryReducer` the Semantic Ke
 - Schema **MUST** be Agent Service agnostic i.e., will work with Agents targeting Azure, Open AI, Mistral AI, ...
 - Schema **MUST** allow model settings to be assigned to an Agent.
 - Schema **MUST** allow tools (e.g. functions, code interpreter, file search, ...) to be assigned to an Agent.
+- Schema **MUST** allow new types of tools to be defined for an Agent to use.
 - Schema **MUST** allow a Semantic Kernel prompt (including Prompty format) to be used to define the Agent instructions.
 - Schema **MUST** be extensible so that support for new Agent types with their own settings and tools, can be added to Semantic Kernel.
 - Schema **MUST** allow third parties to contribute new Agent types to Semantic Kernel.
 - … <!-- numbers of drivers can vary -->
+
+### Out of Scope
+
+- This ADR does not cover the multi-agent declarative format or the process declarative format
 
 ## Considered Options
 
