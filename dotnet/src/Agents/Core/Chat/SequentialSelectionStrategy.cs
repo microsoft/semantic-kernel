@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -42,7 +43,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
 
         Agent agent = agents[this._index];
 
-        this.Logger.LogSequentialSelectionStrategySelectedAgent(nameof(NextAsync), this._index, agents.Count, agent.Id);
+        this.Logger.LogSequentialSelectionStrategySelectedAgent(nameof(NextAsync), this._index, agents.Count, agent.Id, agent.GetDisplayName());
 
         return Task.FromResult(agent);
 

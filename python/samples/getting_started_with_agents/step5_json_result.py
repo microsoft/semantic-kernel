@@ -2,15 +2,13 @@
 
 import asyncio
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
+from semantic_kernel import Kernel
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.agents.strategies import TerminationStrategy
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 
 ###################################################################
 # The following sample demonstrates how to configure an Agent     #
@@ -21,85 +19,68 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 ###################################################################
 
 
-SCORE_COMPLETED_THRESHOLD = 70
-TUTOR_NAME = "Tutor"
-TUTOR_INSTRUCTIONS = """
-Think step-by-step and rate the user input on creativity and expressivness from 1-100.
-
-Respond in JSON format with the following JSON schema:
-
-{
-    "score": "integer (1-100)",
-    "notes": "the reason for your score"
-}
-"""
+def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+    kernel = Kernel()
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id))
+    return kernel
 
 
-class InputScore(KernelBaseModel):
+class InputScore(BaseModel):
     """A model for the input score."""
 
     score: int
     notes: str
 
 
-def translate_json(json_string: str) -> InputScore | None:
-    try:
-        if json_string is None:
-            return None
-        return InputScore.model_validate_json(json_string)
-    except ValidationError:
-        return None
-
-
 class ThresholdTerminationStrategy(TerminationStrategy):
     """A strategy for determining when an agent should terminate."""
 
+    threshold: int = 70
+
     async def should_agent_terminate(self, agent, history):
         """Check if the agent should terminate."""
-        last_message_content = history[-1].content or ""
-        result = translate_json(last_message_content)
-        return result.score >= SCORE_COMPLETED_THRESHOLD if result else False
-
-
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
-    return kernel
-
-
-async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: AgentGroupChat):
-    """Invoke the agent with the user input."""
-    await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
-
-    print(f"# {AuthorRole.USER}: '{input}'")
-
-    async for content in chat.invoke_single_turn(agent):
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-        print(f"# IS COMPLETE: {chat.is_complete}")
+        try:
+            result = InputScore.model_validate_json(history[-1].content or "")
+            return result.score >= self.threshold
+        except ValidationError:
+            return False
 
 
 async def main():
-    service_id = "tutor"
+    kernel = _create_kernel_with_chat_completion(service_id="tutor")
+
+    TUTOR_NAME = "Tutor"
+    TUTOR_INSTRUCTIONS = """Think step-by-step and rate the user input on creativity and expressiveness from 1-100 with some notes on how to improve."""  # noqa: E501
+
+    settings = kernel.get_prompt_execution_settings_from_service_id(service_id="tutor")
+    settings.response_format = InputScore
+
     agent = ChatCompletionAgent(
-        service_id=service_id,
-        kernel=_create_kernel_with_chat_completion(service_id=service_id),
+        service_id="tutor",
+        kernel=kernel,
         name=TUTOR_NAME,
         instructions=TUTOR_INSTRUCTIONS,
+        execution_settings=settings,
     )
 
     # Here a TerminationStrategy subclass is used that will terminate when
     # the response includes a score that is greater than or equal to 70.
     termination_strategy = ThresholdTerminationStrategy(maximum_iterations=10)
 
-    chat = AgentGroupChat(termination_strategy=termination_strategy)
+    group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 
-    await invoke_agent(agent=agent, input="The sunset is very colorful.", chat=chat)
-    await invoke_agent(agent=agent, input="The sunset is setting over the mountains.", chat=chat)
-    await invoke_agent(
-        agent=agent,
-        input="The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.",  # noqa: E501
-        chat=chat,
-    )
+    user_inputs = {
+        "The sunset is very colorful.",
+        "The sunset is setting over the mountains.",
+        "The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.",
+    }
+    for user_input in user_inputs:
+        await group_chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=user_input))
+        print(f"# User: '{user_input}'")
+
+        async for content in group_chat.invoke_single_turn(agent):
+            print(f"# Agent - {content.name or '*'}: '{content.content}'")
+            print(f"# IS COMPLETE: {group_chat.is_complete}")
 
 
 if __name__ == "__main__":

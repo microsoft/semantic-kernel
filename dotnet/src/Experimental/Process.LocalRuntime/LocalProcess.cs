@@ -211,6 +211,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
+                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
 

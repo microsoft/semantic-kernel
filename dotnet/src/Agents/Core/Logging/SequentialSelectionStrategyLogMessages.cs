@@ -22,11 +22,12 @@ internal static partial class SequentialSelectionStrategyLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Selected agent ({AgentIndex} / {AgentCount}): {AgentId}")]
+        Message = "[{MethodName}] Selected agent ({AgentIndex} / {AgentCount}): {AgentId}/{AgentName}")]
     public static partial void LogSequentialSelectionStrategySelectedAgent(
         this ILogger logger,
         string methodName,
         int agentIndex,
         int agentCount,
-        string agentId);
+        string agentId,
+        string agentName);
 }
