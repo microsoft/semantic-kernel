@@ -68,11 +68,10 @@ def kernel_function_metadata_to_function_call_format(
 def _create_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
     match event_type:
         case SendEvents.SESSION_UPDATE:
-            event_kwargs = {"event_id": kwargs.pop("event_id")} if "event_id" in kwargs else {}
             return SessionUpdateEvent(
                 type=event_type,
-                session=Session.model_validate(kwargs),
-                **event_kwargs,
+                session=Session.model_validate(kwargs.pop("session")),
+                **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_APPEND:
             return InputAudioBufferAppendEvent(

@@ -161,9 +161,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
             try:
                 await self._receive_buffer.put(
                     AudioEvent(
-                        event_type="audio",
                         service_type=ListenEvents.RESPONSE_AUDIO_DELTA,
-                        audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame),  # type: ignore
+                        audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame),
                     ),
                 )
             except Exception as e:

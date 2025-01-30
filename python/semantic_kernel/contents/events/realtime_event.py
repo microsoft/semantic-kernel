@@ -19,7 +19,7 @@ RealtimeEvent: TypeAlias = Annotated[
 class ServiceEvent(KernelBaseModel):
     """Base class for all service events."""
 
-    event_type: Literal["service"]
+    event_type: Literal["service"] = "service"
     service_type: str
     event: Any | None = None
 
@@ -27,7 +27,7 @@ class ServiceEvent(KernelBaseModel):
 class AudioEvent(KernelBaseModel):
     """Audio event type."""
 
-    event_type: Literal["audio"]
+    event_type: Literal["audio"] = "audio"
     service_type: str | None = None
     audio: AudioContent
 
@@ -35,7 +35,7 @@ class AudioEvent(KernelBaseModel):
 class TextEvent(KernelBaseModel):
     """Text event type."""
 
-    event_type: Literal["text"]
+    event_type: Literal["text"] = "text"
     service_type: str | None = None
     text: TextContent
 
@@ -43,7 +43,7 @@ class TextEvent(KernelBaseModel):
 class FunctionCallEvent(KernelBaseModel):
     """Function call event type."""
 
-    event_type: Literal["function_call"]
+    event_type: Literal["function_call"] = "function_call"
     service_type: str | None = None
     function_call: FunctionCallContent
 
@@ -51,6 +51,6 @@ class FunctionCallEvent(KernelBaseModel):
 class FunctionResultEvent(KernelBaseModel):
     """Function result event type."""
 
-    event_type: Literal["function_result"]
+    event_type: Literal["function_result"] = "function_result"
     service_type: str | None = None
     function_result: FunctionResultContent
