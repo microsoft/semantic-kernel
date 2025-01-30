@@ -3,6 +3,11 @@
 import sys
 from collections import deque
 from collections.abc import AsyncIterable
+from copy import deepcopy
+
+from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -10,7 +15,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Deque, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, ClassVar, Deque, Protocol, runtime_checkable
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents import ChatMessageContent
@@ -44,6 +49,14 @@ class ChatHistoryAgentProtocol(Protocol):
 @experimental_class
 class ChatHistoryChannel(AgentChannel, ChatHistory):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
+
+    ALLOWED_CONTENT_TYPES: ClassVar[tuple[type, ...]] = (
+        ImageContent,
+        FunctionCallContent,
+        FunctionResultContent,
+        StreamingTextContent,
+        TextContent,
+    )
 
     @override
     async def invoke(
@@ -142,10 +155,23 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     ) -> None:
         """Receive the conversation messages.
 
+        Do not include messages that only contain file references.
+
         Args:
             history: The history of messages in the conversation.
         """
-        self.messages.extend(history)
+        filtered_history: list[ChatMessageContent] = []
+        for message in history:
+            new_message = deepcopy(message)
+            if new_message.items is None:
+                new_message.items = []
+            allowed_items = [item for item in new_message.items if isinstance(item, self.ALLOWED_CONTENT_TYPES)]
+            if not allowed_items:
+                continue
+            new_message.items.clear()
+            new_message.items.extend(allowed_items)
+            filtered_history.append(new_message)
+        self.messages.extend(filtered_history)
 
     @override
     async def get_history(  # type: ignore
