@@ -16,6 +16,7 @@
 - [Mixed Chat Files](./agents/mixed_chat_files.py)
 - [Mixed Chat Reset](./agents/mixed_chat_reset.py)
 - [Mixed Chat Streaming](./agents/mixed_chat_streaming.py)
+- [Bedrock Agent](./agents/bedrock_agent/README.md)
 
 ### Audio - Using services that support audio-to-text and text-to-audio conversion
 

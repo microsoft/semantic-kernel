@@ -2,7 +2,6 @@
 
 import logging
 import sys
-import uuid
 from collections.abc import AsyncIterable
 from typing import Any, ClassVar
 
@@ -53,15 +52,17 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         if not isinstance(agent, BedrockAgent):
             raise AgentChatException(f"Agent is not of the expected type {type(BedrockAgent)}.")
         if not self.messages:
+            # This is not supposed to happen, as the channel won't get invoked
+            # before it has received messages. This is just extra safety.
             raise AgentChatException("No chat history available.")
 
         # Preprocess chat history
         self._ensure_history_alternates()
         self._ensure_last_message_is_user()
 
-        new_session_id = str(uuid.uuid4())
+        session_id = BedrockAgent.create_session_id()
         async for message in agent.invoke(
-            new_session_id,
+            session_id,
             self.messages[-1].content,
             sessionState=self._parse_chat_history_to_session_state(),
         ):
@@ -95,10 +96,10 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         self._ensure_history_alternates()
         self._ensure_last_message_is_user()
 
-        new_session_id = str(uuid.uuid4())
+        session_id = BedrockAgent.create_session_id()
         full_message: list[StreamingChatMessageContent] = []
         async for message_chunk in agent.invoke_stream(
-            new_session_id,
+            session_id,
             self.messages[-1].content,
             sessionState=self._parse_chat_history_to_session_state(),
         ):

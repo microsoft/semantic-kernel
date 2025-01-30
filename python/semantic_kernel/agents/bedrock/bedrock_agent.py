@@ -2,6 +2,7 @@
 
 
 import asyncio
+import uuid
 from collections.abc import AsyncIterable
 from functools import reduce
 from typing import Any, ClassVar
@@ -98,8 +99,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
         )
 
         prompt_template: PromptTemplateBase | None = None
-        if instructions and prompt_template_config:
-            raise AgentInitializationException("Cannot set both instructions and prompt_template_config.")
+        if instructions and prompt_template_config and prompt_template_config.template:
+            raise AgentInitializationException("Cannot set both instructions and prompt_template_config.template.")
         if prompt_template_config:
             prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
@@ -237,6 +238,18 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
         return bedrock_agent
 
+    @classmethod
+    def create_session_id(cls) -> str:
+        """Create a new session identifier.
+
+        It is the caller's responsibility to maintain the session ID
+        to continue the session with the agent.
+
+        Find the requirement for the session identifier here:
+        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeAgent.html#API_agent-runtime_InvokeAgent_RequestParameters
+        """
+        return str(uuid.uuid4())
+
     # endregion
 
     async def create_agent(
@@ -302,6 +315,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         self,
         session_id: str,
         input_text: str,
+        *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -379,6 +393,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         self,
         session_id: str,
         input_text: str,
+        *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,

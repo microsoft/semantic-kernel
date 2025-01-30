@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import uuid
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 
@@ -21,9 +20,9 @@ async def main():
     bedrock_agent = await BedrockAgent.create(AGENT_NAME, instructions=INSTRUCTION)
 
     async def ask_about_ai():
-        new_session_id = str(uuid.uuid4())
+        session_id = BedrockAgent.create_session_id()
         async for response in bedrock_agent.invoke(
-            session_id=new_session_id,
+            session_id=session_id,
             input_text="What is AI in one sentence?",
         ):
             print(response)

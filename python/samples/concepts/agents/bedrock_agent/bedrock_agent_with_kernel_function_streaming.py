@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import uuid
 from typing import Annotated
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
@@ -46,14 +45,13 @@ async def main():
         enable_kernel_function=True,
     )
 
-    # Use a uiud as the session id
-    new_session_id = str(uuid.uuid4())
+    session_id = BedrockAgent.create_session_id()
 
     try:
         # Invoke the agent
         print("Response: ")
         async for response in bedrock_agent.invoke_stream(
-            session_id=new_session_id,
+            session_id=session_id,
             input_text="What is the weather in Seattle?",
         ):
             print(response, end="")

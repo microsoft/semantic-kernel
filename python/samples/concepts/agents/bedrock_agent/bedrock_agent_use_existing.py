@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import uuid
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 
@@ -18,9 +17,7 @@ AGENT_ID = "..."
 
 async def main():
     bedrock_agent = await BedrockAgent.retrieve(AGENT_ID, AGENT_NAME)
-
-    # Use a uiud as the session id
-    new_session_id = str(uuid.uuid4())
+    session_id = BedrockAgent.create_session_id()
 
     try:
         while True:
@@ -32,7 +29,7 @@ async def main():
             # Invoke the agent
             # The chat history is maintained in the session
             async for response in bedrock_agent.invoke(
-                session_id=new_session_id,
+                session_id=session_id,
                 input_text=user_input,
             ):
                 print(f"Bedrock agent: {response}")
