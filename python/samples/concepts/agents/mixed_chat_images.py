@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
@@ -46,19 +45,11 @@ async def invoke_agent(
 
 async def main():
     try:
-        file_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-            "resources",
-            "mixed_chat_files",
-            "user-context.txt",
-        )
-
         ANALYST_NAME = "Analyst"
         ANALYST_INSTRUCTIONS = "Create charts as requested without explanation."
         analyst_agent = await AzureAssistantAgent.create(
             kernel=Kernel(),
             enable_code_interpreter=True,
-            code_interpreter_filenames=[file_path],
             name=ANALYST_NAME,
             instructions=ANALYST_INSTRUCTIONS,
         )
