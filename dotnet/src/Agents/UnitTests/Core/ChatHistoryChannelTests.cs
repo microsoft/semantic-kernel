@@ -34,7 +34,7 @@ public class ChatHistoryChannelTests
     /// Verify a <see cref="ChatHistoryChannel"/> filters empty content on receive.
     /// </summary>
     [Fact]
-    public async Task VerifyRecieveFiltersEmptyContentAsync()
+    public async Task VerifyReceiveFiltersEmptyContentAsync()
     {
         // Arrange
         ChatHistoryChannel channel = new();
@@ -53,7 +53,7 @@ public class ChatHistoryChannelTests
     /// As long as content is not empty, extraneous file content is ok.
     /// </remarks>
     [Fact]
-    public async Task VerifyRecieveFiltersFileContentAsync()
+    public async Task VerifyReceiveFiltersFileContentAsync()
     {
         // Arrange
         ChatHistoryChannel channel = new();
@@ -83,7 +83,7 @@ public class ChatHistoryChannelTests
     /// Verify a <see cref="ChatHistoryChannel"/> accepts function content on receive.
     /// </summary>
     [Fact]
-    public async Task VerifyRecieveAcceptsFunctionContentAsync()
+    public async Task VerifyReceiveAcceptsFunctionContentAsync()
     {
         // Arrange
         ChatHistoryChannel channel = new();
@@ -105,10 +105,10 @@ public class ChatHistoryChannelTests
     }
 
     /// <summary>
-    /// Verify a <see cref="ChatHistoryChannel"/> accepts iamge content on receive.
+    /// Verify a <see cref="ChatHistoryChannel"/> accepts image content on receive.
     /// </summary>
     [Fact]
-    public async Task VerifyRecieveAcceptsImageContentAsync()
+    public async Task VerifyReceiveAcceptsImageContentAsync()
     {
         // Arrange
         ChatHistoryChannel channel = new();
