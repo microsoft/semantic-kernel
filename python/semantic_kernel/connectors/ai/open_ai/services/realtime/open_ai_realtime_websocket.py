@@ -20,9 +20,7 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events.realtime_event import RealtimeEvent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.events.realtime_event import AudioEvent, RealtimeEvent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -54,18 +52,11 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                 if self.audio_output_callback:
                     await self.audio_output_callback(np.frombuffer(base64.b64decode(event.delta), dtype=np.int16))
                 try:
-                    yield (
-                        event.type,
-                        StreamingChatMessageContent(
-                            role=AuthorRole.ASSISTANT,
-                            items=[
-                                AudioContent(
-                                    data=base64.b64decode(event.delta),
-                                    data_format="base64",
-                                    inner_content=event,
-                                )
-                            ],  # type: ignore
-                            choice_index=event.content_index,
+                    yield AudioEvent(
+                        audio=AudioContent(
+                            data=base64.b64decode(event.delta),
+                            data_format="base64",
+                            inner_content=event,
                         ),
                     )
                 except Exception as e:

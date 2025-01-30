@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from typing import Any, ClassVar, Final
 
 import numpy as np
@@ -12,7 +13,9 @@ from av.frame import Frame
 from pydantic import PrivateAttr
 from sounddevice import InputStream, OutputStream
 
+from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.events.realtime_event import AudioEvent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -28,7 +31,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
     """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice."""
 
     kind: ClassVar[str] = "audio"
-    device_id: str | int | None = None
+    device: str | int | None = None
     sample_rate: int = SAMPLE_RATE
     channels: int = TRACK_CHANNELS
     frame_duration: int = FRAME_DURATION
@@ -44,7 +47,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
     def __init__(
         self,
         *,
-        device_id: str | int | None = None,
+        device: str | int | None = None,
         sample_rate: int = SAMPLE_RATE,
         channels: int = TRACK_CHANNELS,
         frame_duration: int = FRAME_DURATION,
@@ -52,10 +55,10 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
     ):
         """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice.
 
-        Make sure the device_id is set to the correct device for your system.
+        Make sure the device is set to the correct device for your system.
 
         Args:
-            device_id: The device id to use for recording audio.
+            device: The device id to use for recording audio.
             sample_rate: The sample rate for the audio.
             channels: The number of channels for the audio.
             frame_duration: The duration of each audio frame in milliseconds.
@@ -63,7 +66,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
             **kwargs: Additional keyword arguments.
         """
         args = {
-            "device_id": device_id,
+            "device": device,
             "sample_rate": sample_rate,
             "channels": channels,
             "frame_duration": frame_duration,
@@ -87,6 +90,15 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
         except Exception as e:
             logger.error(f"Error receiving audio frame: {e!s}")
             raise MediaStreamError("Failed to receive audio frame")
+
+    @asynccontextmanager
+    async def stream_to_realtime_client(self, realtime_client: RealtimeClientBase):
+        """Stream audio data to a RealtimeClientBase."""
+        while True:
+            frame = await self.recv()
+            await realtime_client.send(AudioEvent(audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16")))
+            yield
+            await asyncio.sleep(0.01)
 
     def _sounddevice_callback(self, indata: np.ndarray, frames: int, time: Any, status: Any) -> None:
         if status:
@@ -122,7 +134,7 @@ class SKAudioTrack(KernelBaseModel, MediaStreamTrack):
 
         try:
             self._stream = InputStream(
-                device=self.device_id,
+                device=self.device,
                 channels=self.channels,
                 samplerate=self.sample_rate,
                 dtype=self.dtype,
@@ -151,7 +163,7 @@ class SKAudioPlayer(KernelBaseModel):
     are receiving.
 
     Args:
-        device_id: The device id to use for playing audio.
+        device: The device id to use for playing audio.
         sample_rate: The sample rate for the audio.
         channels: The number of channels for the audio.
         dtype: The data type for the audio.
@@ -159,7 +171,7 @@ class SKAudioPlayer(KernelBaseModel):
 
     """
 
-    device_id: int | None = None
+    device: int | None = None
     sample_rate: int = SAMPLE_RATE
     channels: int = PLAYER_CHANNELS
     dtype: npt.DTypeLike = DTYPE
@@ -185,7 +197,7 @@ class SKAudioPlayer(KernelBaseModel):
             channels=self.channels,
             dtype=self.dtype,
             blocksize=int(self.sample_rate * self.frame_duration / 1000),
-            device=self.device_id,
+            device=self.device,
         )
         if self._stream and self._queue:
             self._stream.start()
@@ -205,8 +217,18 @@ class SKAudioPlayer(KernelBaseModel):
             if self._queue.empty():
                 return
             data: np.ndarray = self._queue.get_nowait()
-            outdata[:] = data.reshape(outdata.shape)
-            self._queue.task_done()
+            if data.size == frames:
+                outdata[:] = data.reshape(outdata.shape)
+                self._queue.task_done()
+            else:
+                if data.size > frames:
+                    self._queue.put_nowait(data[frames:])
+                    outdata[:] = np.concatenate((np.empty(0, dtype=np.int16), data[:frames])).reshape(outdata.shape)
+                else:
+                    outdata[:] = np.concatenate((data, np.zeros(frames - len(data), dtype=np.int16))).reshape(
+                        outdata.shape
+                    )
+                self._queue.task_done()
 
     async def client_callback(self, content: np.ndarray):
         """This function can be passed to the audio_output_callback field of the RealtimeClientBase."""

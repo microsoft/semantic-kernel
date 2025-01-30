@@ -193,3 +193,13 @@ class BinaryContent(KernelContent):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "binary", "binary": {"uri": str(self)}}
+
+    def to_base64_bytestring(self, encoding: str = "utf-8") -> str:
+        """Convert the instance to a bytestring."""
+        if self._data_uri and self._data_uri.data_array is not None:
+            return b64encode(self._data_uri.data_array.tobytes()).decode(encoding)
+        if self._data_uri and self._data_uri.data_bytes:
+            return self._data_uri.data_bytes.decode(encoding)
+        if self._data_uri and self._data_uri.data_str:
+            return self._data_uri.data_str
+        return ""
