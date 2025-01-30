@@ -151,17 +151,20 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         Args:
             history: The history of messages in the conversation.
         """
-        filtered_history = []
+        filtered_history: list[ChatMessageContent] = []
         for message in history:
             new_message = deepcopy(message)
-            non_file_items = [
+            if new_message.items is None:
+                new_message.items = []
+            items_to_keep = [
                 item
-                for item in new_message.items or []
+                for item in new_message.items
                 if not isinstance(item, (FileReferenceContent, StreamingFileReferenceContent))
             ]
-            if not non_file_items:
+            if not items_to_keep:
                 continue
-            new_message.items = non_file_items
+            new_message.items.clear()
+            new_message.items.extend(items_to_keep)
             filtered_history.append(new_message)
         self.messages.extend(filtered_history)
 
