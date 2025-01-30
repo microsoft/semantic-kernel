@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 internal sealed class ChatHistoryChannel : AgentChannel
 {
-    // Supported content types for <see cref="RecieveAsync"/> when
+    // Supported content types for <see cref="ReceiveAsync"/> when
     // <see cref="ChatMessageContent.Content"/> is empty.
     private static readonly HashSet<Type> s_contentMap =
         [
