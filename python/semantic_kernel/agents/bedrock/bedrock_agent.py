@@ -33,6 +33,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 
 @experimental_class
@@ -298,14 +299,37 @@ class BedrockAgent(BedrockAgentBase, Agent):
             **kwargs,
         )
 
+    @trace_agent_invocation
     async def invoke(
         self,
         session_id: str,
         input_text: str,
         agent_alias: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         **kwargs,
     ) -> AsyncIterable[ChatMessageContent]:
-        """Invoke an agent."""
+        """Invoke an agent.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of chat message content.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
         kwargs.setdefault("sessionState", {})
 
@@ -322,7 +346,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 # Not yielding the function call results back to the user.
                 kwargs["sessionState"].update(
                     await self._handle_return_control_event(
-                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event)
+                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event),
+                        kernel,
+                        arguments,
                     )
                 )
             else:
@@ -350,14 +376,37 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 yield chat_message_content
                 return
 
+    @trace_agent_invocation
     async def invoke_stream(
         self,
         session_id: str,
         input_text: str,
         agent_alias: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         **kwargs,
     ) -> AsyncIterable[StreamingChatMessageContent]:
-        """Invoke an agent."""
+        """Invoke an agent with streaming.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of streaming chat message content
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
         kwargs.setdefault("sessionState", {})
 
@@ -389,9 +438,10 @@ class BedrockAgent(BedrockAgentBase, Agent):
             temp_chat_history = ChatHistory()
             await asyncio.gather(
                 *[
-                    self.kernel.invoke_function_call(
+                    kernel.invoke_function_call(
                         function_call=function_call,
                         chat_history=temp_chat_history,
+                        arguments=arguments,
                         function_call_count=len(function_calls),
                         request_index=request_index,
                     )
@@ -426,7 +476,12 @@ class BedrockAgent(BedrockAgentBase, Agent):
             metadata=chunk,
         )
 
-    async def _handle_return_control_event(self, event: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_return_control_event(
+        self,
+        event: dict[str, Any],
+        kernel: Kernel,
+        kernel_arguments: KernelArguments,
+    ) -> dict[str, Any]:
         """Handle return control event."""
         return_control_payload = event[BedrockAgentEventType.RETURN_CONTROL]
         function_calls = parse_return_control_payload(return_control_payload)
@@ -436,9 +491,10 @@ class BedrockAgent(BedrockAgentBase, Agent):
         chat_history = ChatHistory()
         await asyncio.gather(
             *[
-                self.kernel.invoke_function_call(
+                kernel.invoke_function_call(
                     function_call=function_call,
                     chat_history=chat_history,
+                    arguments=kernel_arguments,
                     function_call_count=len(function_calls),
                 )
                 for function_call in function_calls
