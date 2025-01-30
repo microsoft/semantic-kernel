@@ -33,6 +33,7 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
@@ -315,4 +316,5 @@ class ChatMessageContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the chat message content."""
-        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *self.items))
+        hashable_items = [make_hashable(item) for item in self.items] if self.items else []
+        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *hashable_items))
