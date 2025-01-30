@@ -3,6 +3,10 @@
 import sys
 from collections import deque
 from collections.abc import AsyncIterable
+from copy import deepcopy
+
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -142,10 +146,24 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     ) -> None:
         """Receive the conversation messages.
 
+        Do not include messages that only contain file references.
+
         Args:
             history: The history of messages in the conversation.
         """
-        self.messages.extend(history)
+        filtered_history = []
+        for message in history:
+            new_message = deepcopy(message)
+            non_file_items = [
+                item
+                for item in new_message.items or []
+                if not isinstance(item, (FileReferenceContent, StreamingFileReferenceContent))
+            ]
+            if not non_file_items:
+                continue
+            new_message.items = non_file_items
+            filtered_history.append(new_message)
+        self.messages.extend(filtered_history)
 
     @override
     async def get_history(  # type: ignore

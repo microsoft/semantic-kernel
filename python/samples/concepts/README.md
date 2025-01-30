@@ -14,6 +14,7 @@
 - [Mixed Chat Agents](./agents/mixed_chat_agents.py)
 - [Mixed Chat Agents Plugins](./agents/mixed_chat_agents_plugins.py)
 - [Mixed Chat Files](./agents/mixed_chat_files.py)
+- [Mixed Chat Images](./agents/mixed_chat_images.py)
 - [Mixed Chat Reset](./agents/mixed_chat_reset.py)
 - [Mixed Chat Streaming](./agents/mixed_chat_streaming.py)
 
