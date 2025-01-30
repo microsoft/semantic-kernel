@@ -35,7 +35,7 @@ def kernel_function_metadata_to_bedrock_function_schema(function_metadata: Kerne
         # Only after the user confirms, the function call request will be issued by the agent.
         # If the user denies the confirmation, the agent will act as if the function does not exist.
         # Currently, we do not support this feature, so we set it to "DISABLED".
-        "requireConformation": "DISABLED",
+        "requireConfirmation": "DISABLED",
     }
 
     # Remove None values from the schema

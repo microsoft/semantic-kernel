@@ -35,32 +35,41 @@ class BedrockAgentBase(KernelBaseModel):
     bedrock_runtime_client: Any
     # Client: Use for model management
     bedrock_client: Any
-    # Function Choice Behavior
-    # This is primarily used to control the behavior of the kernel when the agent requests functions,
-    # and to configure the kernel function action group (i.e. via filters). When this is None, users
-    # won't be able to create a kernel function action groups.
+    # Function Choice Behavior: this is primarily used to control the behavior of the kernel when
+    # the agent requests functions, and to configure the kernel function action group (i.e. via filters).
+    # When this is None, users won't be able to create a kernel function action groups.
     function_choice_behavior: FunctionChoiceBehavior = Field(default=FunctionChoiceBehavior.Auto())
-    # Agent Model
-    agent_model: BedrockAgentModel | None = None
+    # Agent Model: stores the agent information
+    agent_model: BedrockAgentModel
 
     def __init__(
         self,
-        runtime_client: Any | None = None,
-        client: Any | None = None,
+        agent_model: BedrockAgentModel,
+        *,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+        bedrock_runtime_client: Any | None = None,
+        bedrock_client: Any | None = None,
         **kwargs,
     ) -> None:
-        """Initialize the Bedrock Agent.
+        """Initialize the Bedrock Agent Base.
 
         Args:
-            runtime_client: The Bedrock Runtime Client.
-            client: The Bedrock Client.
+            agent_model: The Bedrock Agent Model.
+            function_choice_behavior: The function choice behavior.
+            bedrock_runtime_client: The Bedrock Runtime Client.
+            bedrock_client: The Bedrock Client.
             kwargs: Additional keyword arguments.
         """
-        super().__init__(
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-agent-runtime"),
-            bedrock_client=client or boto3.client("bedrock-agent"),
+        args = {
+            "agent_model": agent_model,
+            "bedrock_runtime_client": bedrock_runtime_client or boto3.client("bedrock-agent-runtime"),
+            "bedrock_client": bedrock_client or boto3.client("bedrock-agent"),
             **kwargs,
-        )
+        }
+        if function_choice_behavior:
+            args["function_choice_behavior"] = function_choice_behavior
+
+        super().__init__(**args)
 
     @field_validator("function_choice_behavior", mode="after")
     @classmethod
@@ -87,14 +96,12 @@ class BedrockAgentBase(KernelBaseModel):
 
     async def _create_agent(
         self,
-        agent_name: str,
-        foundation_model: str,
-        role_arn: str,
         instruction: str,
         **kwargs,
     ) -> BedrockAgentModel:
-        """Create an agent asynchronously."""
-        if self.agent_model:
+        """Create an agent asynchronously on the Bedrock service."""
+        if self.agent_model.agent_id:
+            # Once the agent is created, the agent_id will be set.
             raise ValueError("Agent already exists. Please delete the agent before creating a new one.")
 
         try:
@@ -102,9 +109,9 @@ class BedrockAgentBase(KernelBaseModel):
                 None,
                 partial(
                     self.bedrock_client.create_agent,
-                    agentName=agent_name,
-                    foundationModel=foundation_model,
-                    agentResourceRoleArn=role_arn,
+                    agentName=self.agent_model.agent_name,
+                    foundationModel=self.agent_model.foundation_model,
+                    agentResourceRoleArn=self.agent_model.agent_arn,
                     instruction=instruction,
                     **kwargs,
                 ),
@@ -117,12 +124,12 @@ class BedrockAgentBase(KernelBaseModel):
 
             return self.agent_model
         except ClientError as e:
-            logger.error(f"Failed to create agent {agent_name}.")
+            logger.error(f"Failed to create agent {self.agent_model.agent_name}.")
             raise e
 
-    async def _prepare_agent(self) -> None:
+    async def prepare_agent(self) -> None:
         """Prepare the agent for use."""
-        if not self.agent_model:
+        if not self.agent_model.agent_id:
             raise ValueError("Agent does not exist. Please create the agent before preparing it.")
 
         try:
@@ -145,6 +152,9 @@ class BedrockAgentBase(KernelBaseModel):
         Creating an alias is similar to taking a snapshot of the agent's current settings.
         Later, users can switch between aliases to use different configurations.
         """
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before creating an alias.")
+
         try:
             return await self._run_in_executor(
                 None,
@@ -164,10 +174,16 @@ class BedrockAgentBase(KernelBaseModel):
         agent_name: str,
         foundation_model: str,
         **kwargs,
-    ) -> BedrockAgentModel:
-        """Update an agent asynchronously."""
-        if not self.agent_model:
-            raise ValueError("Agent does not exist. Please create the agent before updating it.")
+    ) -> None:
+        """Update an agent asynchronously.
+
+        Args:
+            agent_name: The name of the agent.
+            foundation_model: The foundation model to use.
+            kwargs: Additional keyword arguments.
+        """
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent has not been created. Please create the agent before updating it.")
 
         try:
             self.agent_model = await self._run_in_executor(
@@ -175,7 +191,7 @@ class BedrockAgentBase(KernelBaseModel):
                 partial(
                     self.bedrock_client.update_client,
                     agentId=self.agent_model.agent_id,
-                    agentResourceRoleArn=self.agent_model.role_arn,
+                    agentResourceRoleArn=self.agent_model.agent_arn,
                     agentName=agent_name,
                     foundationModel=foundation_model,
                     **kwargs,
@@ -183,31 +199,35 @@ class BedrockAgentBase(KernelBaseModel):
             )
 
             await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
-
-            return self.agent_model
         except ClientError as e:
             logger.error(f"Failed to update agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _delete_agent(self, **kwargs) -> None:
+    async def delete_agent(self, **kwargs) -> None:
         """Delete an agent asynchronously."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before deleting it.")
+
         try:
             await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.delete_client,
+                    self.bedrock_client.delete_agent,
                     agentId=self.agent_model.agent_id,
                     **kwargs,
                 ),
             )
 
-            self.agent_model = None
+            self.agent_model.agent_id = None
         except ClientError as e:
             logger.error(f"Failed to delete agent {self.agent_model.agent_id}.")
             raise e
 
     async def _get_agent(self) -> BedrockAgentModel:
         """Get an agent."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before getting it.")
+
         try:
             response = await self._run_in_executor(
                 None,
@@ -241,8 +261,11 @@ class BedrockAgentBase(KernelBaseModel):
     # endregion Agent Management
 
     # region Action Group Management
-    async def _create_code_interpreter_action_group(self, **kwargs) -> BedrockActionGroupModel:
+    async def create_code_interpreter_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Create a code interpreter action group."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
+
         try:
             return await self._run_in_executor(
                 None,
@@ -260,8 +283,11 @@ class BedrockAgentBase(KernelBaseModel):
             logger.error(f"Failed to create code interpreter action group for agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _create_user_input_action_group(self, **kwargs) -> BedrockActionGroupModel:
+    async def create_user_input_action_group(self, **kwargs) -> BedrockActionGroupModel:
         """Create a user input action group."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
+
         try:
             return await self._run_in_executor(
                 None,
@@ -281,6 +307,9 @@ class BedrockAgentBase(KernelBaseModel):
 
     async def _create_kernel_function_action_group(self, kernel: Kernel, **kwargs) -> BedrockActionGroupModel | None:
         """Create a kernel function action group."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
+
         function_call_choice_config = self.function_choice_behavior.get_config(kernel)
         if not function_call_choice_config.available_functions:
             logger.warning("No available functions. Skipping kernel function action group creation.")
@@ -308,8 +337,13 @@ class BedrockAgentBase(KernelBaseModel):
 
     # region Knowledge Base Management
 
-    async def _associate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> dict[str, Any]:
+    async def associate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> dict[str, Any]:
         """Associate an agent with a knowledge base."""
+        if not self.agent_model.agent_id:
+            raise ValueError(
+                "Agent does not exist. Please create the agent before associating it with a knowledge base."
+            )
+
         try:
             return await self._run_in_executor(
                 None,
@@ -327,8 +361,13 @@ class BedrockAgentBase(KernelBaseModel):
             )
             raise e
 
-    async def _disassociate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> None:
+    async def disassociate_agent_knowledge_base(self, knowledge_base_id: str, **kwargs) -> None:
         """Disassociate an agent with a knowledge base."""
+        if not self.agent_model.agent_id:
+            raise ValueError(
+                "Agent does not exist. Please create the agent before disassociating it with a knowledge base."
+            )
+
         try:
             await self._run_in_executor(
                 None,
@@ -346,8 +385,11 @@ class BedrockAgentBase(KernelBaseModel):
             )
             raise e
 
-    async def _list_associated_agent_knowledge_bases(self, **kwargs) -> dict[str, Any]:
+    async def list_associated_agent_knowledge_bases(self, **kwargs) -> dict[str, Any]:
         """List associated knowledge bases with an agent."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before listing associated knowledge bases.")
+
         try:
             return await self._run_in_executor(
                 None,
@@ -371,6 +413,9 @@ class BedrockAgentBase(KernelBaseModel):
         **kwargs,
     ) -> dict[str, Any]:
         """Invoke an agent."""
+        if not self.agent_model.agent_id:
+            raise ValueError("Agent does not exist. Please create the agent before invoking it.")
+
         agent_alias = agent_alias or self.WORKING_DRAFT_AGENT_ALIAS
 
         try:

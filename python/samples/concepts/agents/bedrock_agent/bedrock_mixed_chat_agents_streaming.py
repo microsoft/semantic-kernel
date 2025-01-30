@@ -79,8 +79,13 @@ async def main():
     print(f"# {AuthorRole.USER}: '{input}'")
 
     try:
-        async for message in chat.invoke():
-            print(f"# {message.role} - {message.name or '*'}: '{message.content}'")
+        current_agent = "*"
+        async for message_chunk in chat.invoke_stream():
+            if current_agent != message_chunk.name:
+                current_agent = message_chunk.name or "*"
+                print(f"\n# {message_chunk.role} - {current_agent}: ", end="")
+            print(message_chunk.content, end="")
+        print()
         print(f"# IS COMPLETE: {chat.is_complete}")
     finally:
         # Delete the agent

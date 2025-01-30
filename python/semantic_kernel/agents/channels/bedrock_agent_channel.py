@@ -56,8 +56,7 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
             raise AgentChatException("No chat history available.")
 
         # Preprocess chat history
-        if await agent.reduce_history(self):
-            self._ensure_history_alternates()
+        self._ensure_history_alternates()
         self._ensure_last_message_is_user()
 
         new_session_id = str(uuid.uuid4())
@@ -93,8 +92,7 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
             raise AgentChatException("No chat history available.")
 
         # Preprocess chat history
-        if await agent.reduce_history(self):
-            self._ensure_history_alternates()
+        self._ensure_history_alternates()
         self._ensure_last_message_is_user()
 
         new_session_id = str(uuid.uuid4())

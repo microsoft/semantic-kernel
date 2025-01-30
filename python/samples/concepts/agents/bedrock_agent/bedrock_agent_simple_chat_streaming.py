@@ -5,7 +5,7 @@ import uuid
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 
-# This sample shows how to interact with a Bedrock agent in the simplest way.
+# This sample shows how to interact with a Bedrock agent via streaming in the simplest way.
 # This sample uses the following main component(s):
 # - a Bedrock agent
 # You will learn how to create a new Bedrock agent and talk to it.
@@ -29,11 +29,13 @@ async def main():
 
             # Invoke the agent
             # The chat history is maintained in the session
-            async for response in bedrock_agent.invoke(
+            print("Bedrock agent: ", end="")
+            async for response in bedrock_agent.invoke_stream(
                 session_id=new_session_id,
                 input_text=user_input,
             ):
-                print(f"Bedrock agent: {response}")
+                print(response, end="")
+            print()
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
