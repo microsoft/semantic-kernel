@@ -10,19 +10,25 @@
 | Sample | Description |
 |--------|-------------|
 | [bedrock_agent_simple_chat.py](bedrock_agent_simple_chat.py) | Demonstrates basic usage of the Bedrock agent. |
-| [bedrock_agent_simple_chat_with_kernel_function.py](bedrock_agent_simple_chat_with_kernel_function.py) | Shows how to use the Bedrock agent with a kernel function. |
-| [bedrock_agent_simple_chat_with_code_interpreter.py](bedrock_agent_simple_chat_with_code_interpreter.py) | Example of using the Bedrock agent with a code interpreter. |
+| [bedrock_agent_simple_chat_streaming.py](bedrock_agent_simple_chat_streaming.py) | Demonstrates basic usage of the Bedrock agent with streaming. |
+| [bedrock_agent_with_kernel_function.py](bedrock_agent_with_kernel_function.py) | Shows how to use the Bedrock agent with a kernel function. |
+| [bedrock_agent_with_kernel_function_streaming.py](bedrock_agent_with_kernel_function_streaming.py) | Shows how to use the Bedrock agent with a kernel function with streaming. |
+| [bedrock_agent_with_code_interpreter.py](bedrock_agent_with_code_interpreter.py) | Example of using the Bedrock agent with a code interpreter. |
+| [bedrock_agent_with_code_interpreter_streaming.py](bedrock_agent_with_code_interpreter_streaming.py) | Example of using the Bedrock agent with a code interpreter and streaming. |
 | [bedrock_mixed_chat_agents.py](bedrock_mixed_chat_agents.py) | Example of using multiple chat agents in a single script. |
+| [bedrock_mixed_chat_agents_streaming.py](bedrock_mixed_chat_agents_streaming.py) | Example of using multiple chat agents in a single script with streaming. |
+| [bedrock_agent_update_agent.py](bedrock_agent_update_agent.py) | Example of updating an agent. |
+| [bedrock_agent_use_existing.py](bedrock_agent_use_existing.py) | Example of using an existing agent. |
 
 ## Before running the samples
 
 You need to set up some environment variables to run the samples. Please refer to the [.env.example](.env.example) file for the required environment variables.
 
-### `AGENT_ROLE_AMAZON_RESOURCE_NAME`
+### `BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN`
 
 On your AWS console, go to the IAM service and go to **Roles**. Find the role you want to use and click on it. You will find the ARN in the summary section.
 
-### `FOUNDATION_MODEL`
+### `BEDROCK_AGENT_FOUNDATION_MODEL`
 
 You need to make sure you have permission to access the foundation model. You can find the model ID in the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). To see the models you have access to, find the policy attached to your role you should see a list of models you have access to under the `Resource` section.
 

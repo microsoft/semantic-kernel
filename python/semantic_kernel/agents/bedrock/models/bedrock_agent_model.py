@@ -17,7 +17,6 @@ class BedrockAgentModel(KernelBaseModel):
     # This model_config will merge with the KernelBaseModel.model_config
     model_config = ConfigDict(extra="allow")
 
-    agent_arn: str = Field(..., alias="agentArn", description="The Amazon Resource Name (ARN) of the agent.")
     agent_id: str | None = Field(None, alias="agentId", description="The unique identifier of the agent.")
     agent_name: str | None = Field(None, alias="agentName", description="The name of the agent.")
     agent_version: str | None = Field(None, alias="agentVersion", description="The version of the agent.")

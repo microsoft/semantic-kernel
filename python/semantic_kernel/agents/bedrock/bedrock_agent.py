@@ -92,7 +92,6 @@ class BedrockAgent(BedrockAgentBase, Agent):
             raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
 
         bedrock_agent_model = BedrockAgentModel(
-            agent_arn=bedrock_agent_settings.agent_resource_role_arn,
             agent_id=id,
             agent_name=name,
             foundation_model=bedrock_agent_settings.foundation_model,
@@ -101,14 +100,13 @@ class BedrockAgent(BedrockAgentBase, Agent):
         prompt_template: PromptTemplateBase | None = None
         if instructions and prompt_template_config:
             raise AgentInitializationException("Cannot set both instructions and prompt_template_config.")
-        if not instructions and not prompt_template_config:
-            raise AgentInitializationException("Either instructions or prompt_template_config must be set.")
         if prompt_template_config:
             prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
             )
 
         args: dict[str, Any] = {
+            "agent_resource_role_arn": bedrock_agent_settings.agent_resource_role_arn,
             "name": name,
             "agent_model": bedrock_agent_model,
         }
@@ -264,7 +262,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             raise AgentInitializationException("Foundation model is required to create an agent.")
 
         await self._create_agent(
-            self.instructions or await self.format_instructions(self.kernel, self.arguments),
+            self.instructions or await self.format_instructions(self.kernel, self.arguments) or "",
             **kwargs,
         )
 

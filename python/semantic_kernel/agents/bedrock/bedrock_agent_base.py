@@ -41,9 +41,12 @@ class BedrockAgentBase(KernelBaseModel):
     function_choice_behavior: FunctionChoiceBehavior = Field(default=FunctionChoiceBehavior.Auto())
     # Agent Model: stores the agent information
     agent_model: BedrockAgentModel
+    # Agent ARN: The Amazon Resource Name (ARN) of the agent.
+    agent_resource_role_arn: str
 
     def __init__(
         self,
+        agent_resource_role_arn: str,
         agent_model: BedrockAgentModel,
         *,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -54,6 +57,7 @@ class BedrockAgentBase(KernelBaseModel):
         """Initialize the Bedrock Agent Base.
 
         Args:
+            agent_resource_role_arn: The Amazon Resource Name (ARN) of the agent.
             agent_model: The Bedrock Agent Model.
             function_choice_behavior: The function choice behavior.
             bedrock_runtime_client: The Bedrock Runtime Client.
@@ -61,6 +65,7 @@ class BedrockAgentBase(KernelBaseModel):
             kwargs: Additional keyword arguments.
         """
         args = {
+            "agent_resource_role_arn": agent_resource_role_arn,
             "agent_model": agent_model,
             "bedrock_runtime_client": bedrock_runtime_client or boto3.client("bedrock-agent-runtime"),
             "bedrock_client": bedrock_client or boto3.client("bedrock-agent"),
@@ -111,7 +116,7 @@ class BedrockAgentBase(KernelBaseModel):
                     self.bedrock_client.create_agent,
                     agentName=self.agent_model.agent_name,
                     foundationModel=self.agent_model.foundation_model,
-                    agentResourceRoleArn=self.agent_model.agent_arn,
+                    agentResourceRoleArn=self.agent_resource_role_arn,
                     instruction=instruction,
                     **kwargs,
                 ),
@@ -159,7 +164,7 @@ class BedrockAgentBase(KernelBaseModel):
             return await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.create_client_alias,
+                    self.bedrock_client.create_agent_alias,
                     agentAliasName=alias_name,
                     agentId=self.agent_model.agent_id,
                     **kwargs,
@@ -186,17 +191,18 @@ class BedrockAgentBase(KernelBaseModel):
             raise ValueError("Agent has not been created. Please create the agent before updating it.")
 
         try:
-            self.agent_model = await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.update_client,
+                    self.bedrock_client.update_agent,
                     agentId=self.agent_model.agent_id,
-                    agentResourceRoleArn=self.agent_model.agent_arn,
+                    agentResourceRoleArn=self.agent_resource_role_arn,
                     agentName=agent_name,
                     foundationModel=foundation_model,
                     **kwargs,
                 ),
             )
+            self.agent_model = response["agent"]
 
             await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
         except ClientError as e:
@@ -348,7 +354,7 @@ class BedrockAgentBase(KernelBaseModel):
             return await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.associate_client_knowledge_base,
+                    self.bedrock_client.associate_agent_knowledge_base,
                     agentId=self.agent_model.agent_id,
                     agentVersion=self.agent_model.agent_version,
                     knowledgeBaseId=knowledge_base_id,
@@ -372,7 +378,7 @@ class BedrockAgentBase(KernelBaseModel):
             await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.disassociate_client_knowledge_base,
+                    self.bedrock_client.disassociate_agent_knowledge_base,
                     agentId=self.agent_model.agent_id,
                     agentVersion=self.agent_model.agent_version,
                     knowledgeBaseId=knowledge_base_id,
@@ -394,7 +400,7 @@ class BedrockAgentBase(KernelBaseModel):
             return await self._run_in_executor(
                 None,
                 partial(
-                    self.bedrock_client.list_client_knowledge_bases,
+                    self.bedrock_client.list_agent_knowledge_bases,
                     agentId=self.agent_model.agent_id,
                     agentVersion=self.agent_model.agent_version,
                     **kwargs,
