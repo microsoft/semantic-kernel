@@ -1,10 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import base64
 import json
 import logging
 import sys
-from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
@@ -146,11 +144,24 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             )
         if chat_history and len(chat_history) > 0:
             for msg in chat_history.messages:
-                await self.send(
-                    ServiceEvent(event_type="service", service_type=SendEvents.CONVERSATION_ITEM_CREATE, event=msg)
-                )
+                for item in msg.items:
+                    match item:
+                        case TextContent():
+                            await self.send(TextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=item))
+                        case FunctionCallContent():
+                            await self.send(
+                                FunctionCallEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, function_call=item)
+                            )
+                        case FunctionResultContent():
+                            await self.send(
+                                FunctionResultEvent(
+                                    service_type=SendEvents.CONVERSATION_ITEM_CREATE, function_result=item
+                                )
+                            )
+                        case _:
+                            logger.error("Unsupported item type: %s", item)
         if create_response:
-            await self.send(ServiceEvent(event_type="service", service_type=SendEvents.RESPONSE_CREATE))
+            await self.send(ServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
@@ -191,24 +202,21 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             index=event.output_index,
             metadata={"call_id": event.call_id},
         )
-        yield FunctionCallEvent(
-            event_type="function_call",
-            service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE,
-            function_call=item,
-        )
+        yield FunctionCallEvent(service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, function_call=item)
         chat_history = ChatHistory()
         await self.kernel.invoke_function_call(item, chat_history)
         created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
         # This returns the output to the service
-        await self.send(
-            ServiceEvent(event_type="service", service_type=SendEvents.CONVERSATION_ITEM_CREATE, event=created_output)
+        result = FunctionResultEvent(
+            service_type=SendEvents.CONVERSATION_ITEM_CREATE,
+            function_result=created_output,
         )
+        await self.send(result)
         # The model doesn't start responding to the tool call automatically, so triggering it here.
-        await self.send(ServiceEvent(event_type="service", service_type=SendEvents.RESPONSE_CREATE))
+        await self.send(ServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
         # This allows a user to have a full conversation in his code
-        yield FunctionResultEvent(event_type="function_result", function_result=created_output)
+        yield result
 
-    @abstractmethod
     async def _send(self, event: RealtimeClientEvent) -> None:
         """Send an event to the service."""
         raise NotImplementedError
@@ -217,14 +225,9 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     async def send(self, event: RealtimeEvent, **kwargs: Any) -> None:
         match event.event_type:
             case "audio":
-                if isinstance(event.audio.data, ndarray):
-                    audio_data = base64.b64encode(event.audio.data.tobytes()).decode("utf-8")
-                else:
-                    audio_data = event.audio.data.decode("utf-8")
                 await self._send(
                     _create_realtime_client_event(
-                        event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND,
-                        audio=audio_data,
+                        event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND, audio=event.audio.to_base64_bytestring()
                     )
                 )
             case "text":
@@ -286,7 +289,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         await self._send(
                             _create_realtime_client_event(
                                 event_type=event.service_type,
-                                **settings.prepare_settings_dict(),
+                                session=settings.prepare_settings_dict(),
                             )
                         )
                     case SendEvents.INPUT_AUDIO_BUFFER_APPEND:

@@ -43,7 +43,7 @@ async def main() -> None:
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = OpenAIRealtime(protocol="webrtc")
+    realtime_client = OpenAIRealtime("webrtc")
     # Create the settings for the session
     settings = OpenAIRealtimeExecutionSettings(
         instructions="""

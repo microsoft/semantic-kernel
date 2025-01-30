@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Callable, Coroutine, Mapping
+from collections.abc import AsyncGenerator, Callable, Coroutine, Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from numpy import ndarray
@@ -15,26 +15,66 @@ from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_we
     OpenAIRealtimeWebsocketBase,
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.events.realtime_event import RealtimeEvent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
 
+    from semantic_kernel.connectors.ai import PromptExecutionSettings
+    from semantic_kernel.contents import ChatHistory
+
 _T = TypeVar("_T", bound="OpenAIRealtime")
 
 
-class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
+__all__ = ["OpenAIRealtime"]
+
+
+class RealtimeClientStub(RealtimeClientBase):
+    """This class makes sure that IDE's don't complain about missing methods in the below superclass."""
+
+    async def send(self, event: Any) -> None:
+        pass
+
+    async def create_session(
+        self,
+        settings: "PromptExecutionSettings | None" = None,
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        pass
+
+    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvent, None]:
+        pass
+
+    async def update_session(
+        self,
+        settings: "PromptExecutionSettings | None" = None,
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        pass
+
+    async def close_session(self) -> None:
+        pass
+
+
+class OpenAIRealtime(OpenAIRealtimeBase, RealtimeClientStub):
     """OpenAI Realtime service."""
 
-    def __new__(cls: type["_T"], *args: Any, **kwargs: Any) -> "_T":
+    def __new__(cls: type["_T"], protocol: str, *args: Any, **kwargs: Any) -> "_T":
         """Pick the right subclass, based on protocol."""
         subclass_map = {subcl.protocol: subcl for subcl in cls.__subclasses__()}
-        subclass = subclass_map[kwargs.pop("protocol", "websocket")]
+        subclass = subclass_map[protocol]
         return super(OpenAIRealtime, subclass).__new__(subclass)
 
     def __init__(
         self,
-        protocol: Literal["websocket", "webrtc"] = "websocket",
+        protocol: Literal["websocket", "webrtc"],
+        *,
         audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
         audio_track: "MediaStreamTrack | None" = None,
         ai_model_id: str | None = None,
@@ -42,7 +82,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
         org_id: str | None = None,
         service_id: str | None = None,
         default_headers: Mapping[str, str] | None = None,
-        async_client: AsyncOpenAI | None = None,
+        client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         **kwargs: Any,
@@ -50,7 +90,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
         """Initialize an OpenAIRealtime service.
 
         Args:
-            protocol: The protocol to use, can be either "websocket" or "webrtc".
+            protocol: The protocol to use, must be either "websocket" or "webrtc".
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
@@ -70,7 +110,7 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
                 the env vars or .env file value.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
@@ -88,7 +128,6 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.realtime_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")
-        kwargs = {"audio_track": audio_track} if protocol == "webrtc" and audio_track else {}
         super().__init__(
             protocol=protocol,
             audio_output_callback=audio_output_callback,
@@ -98,12 +137,12 @@ class OpenAIRealtime(OpenAIConfigBase, OpenAIRealtimeBase):
             org_id=openai_settings.org_id,
             ai_model_type=OpenAIModelTypes.REALTIME,
             default_headers=default_headers,
-            client=async_client,
+            client=client,
             **kwargs,
         )
 
 
-class OpenAIRealtimeWebRTC(OpenAIRealtime, OpenAIRealtimeWebRTCBase):
+class OpenAIRealtimeWebRTC(OpenAIRealtime, OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebRTC protocol.
 
     This should not be used directly, use OpenAIRealtime instead.
@@ -112,8 +151,19 @@ class OpenAIRealtimeWebRTC(OpenAIRealtime, OpenAIRealtimeWebRTCBase):
 
     protocol: ClassVar[Literal["webrtc"]] = "webrtc"
 
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize an OpenAIRealtime service using WebRTC protocol."""
+        super().__init__(
+            *args,
+            **kwargs,
+        )
 
-class OpenAIRealtimeWebSocket(OpenAIRealtime, OpenAIRealtimeWebsocketBase):
+
+class OpenAIRealtimeWebSocket(OpenAIRealtime, OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebSocket protocol.
 
     This should not be used directly, use OpenAIRealtime instead.
@@ -121,3 +171,13 @@ class OpenAIRealtimeWebSocket(OpenAIRealtime, OpenAIRealtimeWebsocketBase):
     """
 
     protocol: ClassVar[Literal["websocket"]] = "websocket"
+
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            *args,
+            **kwargs,
+        )

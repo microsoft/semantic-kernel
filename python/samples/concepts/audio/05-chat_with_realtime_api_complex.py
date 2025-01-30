@@ -52,35 +52,41 @@ def get_weather(location: str) -> str:
     """Get the weather for a location."""
     weather_conditions = ("sunny", "hot", "cloudy", "raining", "freezing", "snowing")
     weather = weather_conditions[randint(0, len(weather_conditions) - 1)]  # nosec
-    logger.info(f"Getting weather for {location}: {weather}")
+    logger.info(f"@ Getting weather for {location}: {weather}")
     return f"The weather in {location} is {weather}."
 
 
 @kernel_function
 def get_date_time() -> str:
     """Get the current date and time."""
-    logger.info("Getting current datetime")
+    logger.info("@ Getting current datetime")
     return f"The current date and time is {datetime.now().isoformat()}."
+
+
+@kernel_function
+def goodbye():
+    """When the user is done, say goodbye and then call this function."""
+    logger.info("@ Goodbye has been called!")
+    raise KeyboardInterrupt
 
 
 async def main() -> None:
     print_transcript = True
     # create the Kernel and add a simple function for function calling.
     kernel = Kernel()
-    kernel.add_function(plugin_name="weather", function_name="get_weather", function=get_weather)
-    kernel.add_function(plugin_name="time", function_name="get_date_time", function=get_date_time)
+    kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
 
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
-    audio_player = SKAudioPlayer()
+    audio_player = SKAudioPlayer(sample_rate=24000, frame_duration=100, channels=1)
     audio_track = SKAudioTrack()
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
     realtime_client = OpenAIRealtime(
-        protocol="webrtc",
+        protocol="websocket",
         audio_output_callback=audio_player.client_callback,
-        audio_track=audio_track,
+        # audio_track=audio_track,
     )
 
     # Create the settings for the session
@@ -110,7 +116,7 @@ async def main() -> None:
     chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    async with realtime_client, audio_player:
+    async with realtime_client, audio_player, audio_track.stream_to_realtime_client(realtime_client):
         await realtime_client.update_session(
             settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
         )
