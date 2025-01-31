@@ -3,16 +3,17 @@
 import asyncio
 import logging
 
-from samples.concepts.audio.utils import check_audio_devices
+from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
     ListenEvents,
     OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.utils import SKAudioPlayer
 
 logging.basicConfig(level=logging.WARNING)
+utils_log = logging.getLogger("samples.concepts.realtime.utils")
+utils_log.setLevel(logging.INFO)
 aiortc_log = logging.getLogger("aiortc")
 aiortc_log.setLevel(logging.WARNING)
 aioice_log = logging.getLogger("aioice")
@@ -43,7 +44,12 @@ async def main() -> None:
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = OpenAIRealtime("webrtc")
+    audio_player = AudioPlayerWebRTC()
+    realtime_client = OpenAIRealtime(
+        "webrtc",
+        audio_output_callback=audio_player.client_callback,
+        audio_track=AudioRecorderWebRTC(),
+    )
     # Create the settings for the session
     settings = OpenAIRealtimeExecutionSettings(
         instructions="""
@@ -58,15 +64,15 @@ async def main() -> None:
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    audio_player = SKAudioPlayer()
+
     print("Mosscap (transcript): ", end="")
     async with realtime_client, audio_player:
         await realtime_client.update_session(settings=settings, create_response=True)
 
         async for event in realtime_client.receive():
             match event.event_type:
-                case "audio":
-                    await audio_player.add_audio(event.audio)
+                # case "audio":
+                #     await audio_player.add_audio(event.audio)
                 case "text":
                     print(event.text.text, end="")
                 case "service":

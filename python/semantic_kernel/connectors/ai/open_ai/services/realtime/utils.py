@@ -65,7 +65,7 @@ def kernel_function_metadata_to_function_call_format(
     }
 
 
-def _create_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
+def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
     match event_type:
         case SendEvents.SESSION_UPDATE:
             return SessionUpdateEvent(

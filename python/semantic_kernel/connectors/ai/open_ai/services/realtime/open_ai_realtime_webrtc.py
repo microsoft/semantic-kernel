@@ -26,13 +26,12 @@ from av.audio.frame import AudioFrame
 from openai._models import construct_type_unchecked
 from openai.types.beta.realtime.realtime_client_event import RealtimeClientEvent
 from openai.types.beta.realtime.realtime_server_event import RealtimeServerEvent
-from pydantic import Field, PrivateAttr
+from pydantic import PrivateAttr
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
-from semantic_kernel.connectors.ai.realtime_client_base import RealtimeEvent
-from semantic_kernel.connectors.ai.utils.realtime_helpers import SKAudioTrack
 from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.events import RealtimeEvent
 from semantic_kernel.contents.events.realtime_event import AudioEvent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -51,7 +50,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     protocol: ClassVar[Literal["webrtc"]] = "webrtc"
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
-    audio_track: MediaStreamTrack = Field(default_factory=SKAudioTrack)
+    audio_track: MediaStreamTrack | None = None
     _receive_buffer: asyncio.Queue[RealtimeEvent] = PrivateAttr(default_factory=asyncio.Queue)
 
     @override
@@ -82,6 +81,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         **kwargs: Any,
     ) -> None:
         """Create a session in the service."""
+        if not self.audio_track:
+            raise Exception("Audio track not initialized")
         self.peer_connection = RTCPeerConnection(
             configuration=RTCConfiguration(iceServers=[RTCIceServer(urls="stun:stun.l.google.com:19302")])
         )
@@ -161,8 +162,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
             try:
                 await self._receive_buffer.put(
                     AudioEvent(
-                        service_type=ListenEvents.RESPONSE_AUDIO_DELTA,
                         audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame),
+                        service_type=ListenEvents.RESPONSE_AUDIO_DELTA,
                     ),
                 )
             except Exception as e:
