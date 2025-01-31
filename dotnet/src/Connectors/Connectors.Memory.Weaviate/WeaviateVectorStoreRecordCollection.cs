@@ -365,7 +365,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             this._propertyReader.VectorPropertyJsonNames,
             this._propertyReader.DataPropertyJsonNames);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, OperationName, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -396,12 +396,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             this._propertyReader.VectorPropertyJsonNames,
             this._propertyReader.DataPropertyJsonNames);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, OperationName, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
 
-    private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string operationName, CancellationToken cancellationToken)
+    private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
     {
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
@@ -421,7 +421,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         var mappedResults = collectionResults.Where(x => x is not null).Select(result =>
         {
-            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!);
+            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,

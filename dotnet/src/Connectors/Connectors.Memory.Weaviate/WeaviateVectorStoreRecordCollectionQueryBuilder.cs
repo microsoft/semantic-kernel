@@ -113,7 +113,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               {{string.Join(" ", dataPropertyStorageNames)}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
-                {{WeaviateConstants.ScorePropertyName}}
+                {{WeaviateConstants.HybridScorePropertyName}}
                 {{vectorsQuery}}
               }
             }
