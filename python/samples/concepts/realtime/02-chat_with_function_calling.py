@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from random import randint
 
-from samples.concepts.audio.utils import check_audio_devices
+from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -14,11 +14,12 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.utils import SKAudioPlayer, SKAudioTrack
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)
+utils_log = logging.getLogger("samples.concepts.realtime.utils")
+utils_log.setLevel(logging.INFO)
 aiortc_log = logging.getLogger("aiortc")
 aiortc_log.setLevel(logging.WARNING)
 aioice_log = logging.getLogger("aioice")
@@ -78,15 +79,15 @@ async def main() -> None:
 
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
-    audio_player = SKAudioPlayer(sample_rate=24000, frame_duration=100, channels=1)
-    audio_track = SKAudioTrack()
+    audio_player = AudioPlayerWebRTC()
+    audio_track = AudioRecorderWebRTC()
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
     realtime_client = OpenAIRealtime(
-        protocol="websocket",
+        protocol="webrtc",
         audio_output_callback=audio_player.client_callback,
-        # audio_track=audio_track,
+        audio_track=audio_track,
     )
 
     # Create the settings for the session
@@ -116,7 +117,7 @@ async def main() -> None:
     chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    async with realtime_client, audio_player, audio_track.stream_to_realtime_client(realtime_client):
+    async with realtime_client, audio_player:
         await realtime_client.update_session(
             settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
         )

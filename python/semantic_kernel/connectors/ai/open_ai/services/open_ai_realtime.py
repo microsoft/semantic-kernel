@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import AsyncGenerator, Callable, Coroutine, Mapping
+from collections.abc import Callable, Coroutine, Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from numpy import ndarray
@@ -15,17 +15,11 @@ from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_we
     OpenAIRealtimeWebsocketBase,
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.events.realtime_event import RealtimeEvent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
 
-    from semantic_kernel.connectors.ai import PromptExecutionSettings
-    from semantic_kernel.contents import ChatHistory
 
 _T = TypeVar("_T", bound="OpenAIRealtime")
 
@@ -33,36 +27,7 @@ _T = TypeVar("_T", bound="OpenAIRealtime")
 __all__ = ["OpenAIRealtime"]
 
 
-class RealtimeClientStub(RealtimeClientBase):
-    """This class makes sure that IDE's don't complain about missing methods in the below superclass."""
-
-    async def send(self, event: Any) -> None:
-        pass
-
-    async def create_session(
-        self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
-        **kwargs: Any,
-    ) -> None:
-        pass
-
-    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvent, None]:
-        pass
-
-    async def update_session(
-        self,
-        settings: "PromptExecutionSettings | None" = None,
-        chat_history: "ChatHistory | None" = None,
-        **kwargs: Any,
-    ) -> None:
-        pass
-
-    async def close_session(self) -> None:
-        pass
-
-
-class OpenAIRealtime(OpenAIRealtimeBase, RealtimeClientStub):
+class OpenAIRealtime(OpenAIRealtimeBase):
     """OpenAI Realtime service."""
 
     def __new__(cls: type["_T"], protocol: str, *args: Any, **kwargs: Any) -> "_T":
@@ -128,6 +93,8 @@ class OpenAIRealtime(OpenAIRealtimeBase, RealtimeClientStub):
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.realtime_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")
+        if audio_track:
+            kwargs["audio_track"] = audio_track
         super().__init__(
             protocol=protocol,
             audio_output_callback=audio_output_callback,
