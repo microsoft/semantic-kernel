@@ -37,10 +37,12 @@ class BedrockModelProvider(Enum):
     @classmethod
     def to_model_provider(cls, model_id: str) -> "BedrockModelProvider":
         """Convert a model ID to a model provider."""
-        if model_id.startswith("us."):
-            model_id = model_id.removeprefix("us.")
-        provider = model_id.split(".")[0]
-        return cls(provider)
+        try:
+            return next(provider for provider in cls if provider.value in model_id)
+        except StopAsyncIteration:
+            raise ValueError(
+                f"Model ID {model_id} does not contain a valid model provider name."
+            )
 
 
 # region Text Completion
