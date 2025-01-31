@@ -150,6 +150,9 @@ internal class CrewAIEntepriseClient : ICrewAIEntepriseClient
     #endregion
 }
 
+/// <summary>
+/// Internal interface used for mocking and testing.
+/// </summary>
 internal interface ICrewAIEntepriseClient
 {
     Task<CrewAIRequiredInputs> GetInputsAsync();

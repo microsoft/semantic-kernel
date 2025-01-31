@@ -74,7 +74,7 @@ public sealed class CrewAIEnterpriseTests
                         .ReturnsAsync(response);
 
         // Act
-        var result = await this._crewAIEnterprise.GetCrewStatusAsync("12345");
+        var result = await this._crewAIEnterprise.GetCrewKickoffStatusAsync("12345");
 
         // Assert
         Assert.Equal(CrewAIKickoffState.Running, result.State);
@@ -91,7 +91,7 @@ public sealed class CrewAIEnterpriseTests
                         .ThrowsAsync(new InvalidOperationException("Status retrieval failed"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.GetCrewStatusAsync("12345"));
+        await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.GetCrewKickoffStatusAsync("12345"));
     }
 
     /// <summary>

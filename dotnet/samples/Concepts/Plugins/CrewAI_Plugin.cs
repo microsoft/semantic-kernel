@@ -6,12 +6,13 @@ using Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 namespace Search;
 
 /// <summary>
-/// This example shows how to create and use a <see cref="CrewAI_Plugin"/>.
+/// This example shows how to interact with an existing CrewAI Enterprise Crew directly or as a plugin.
+/// These examples require a valid CrewAI Enterprise deployment with an endpoint, auth token, and known inputs.
 /// </summary>
 public class CrewAI_Plugin(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Show how to create a <see cref="CrewAI_Plugin"/> and use it to invoke a Crew.
+    /// Shows how to kickoff an existing CrewAI Enterprise Crew and wait for it to complete.
     /// </summary>
     [Fact]
     public async Task UsingCrewAIEnterpriseAsync()
@@ -23,26 +24,27 @@ public class CrewAI_Plugin(ITestOutputHelper output) : BaseTest(output)
             endpoint: new Uri(crewAIEndpoint),
             authTokenProvider: async () => crewAIAuthToken);
 
+        // The required inputs for the Crew must be known in advance. This example is modeled after the
+        // Enterprise Content Marketing Crew Template and requires the following inputs:
         var inputs = new
         {
-            company = "Microsoft",
-            topic = "Consumer AI Products",
+            company = "CrewAI",
+            topic = "Agentic products for consumers",
         };
 
-        // Invoke directly with inputs
-        var result = await crew.KickoffAsync(inputs);
-        Console.WriteLine(result);
+        // Invoke directly with our inputs
+        var kickoffId = await crew.KickoffAsync(inputs);
+        Console.WriteLine($"CrewAI Enterprise Crew kicked off with ID: {kickoffId}");
 
-        // Create a plugin with input descriptions and types
-        var crewPlugin = crew.CreateKernelPlugin(
-            name: "myCrew",
-            description: "Conducts thorough research on topic to identify emerging trends, analyze competitor strategies, and gather data-driven insights, focusing on 2024.",
-            inputDefinitions: [
-                new ("company", "The name of the company that should be researched", typeof(string)),
-                new ("topic", "The topic that should be researched", typeof(string)),
-            ]);
+        // Wait for completion
+        var result = await crew.WaitForCrewCompletionAsync(kickoffId);
+        Console.WriteLine("CrewAI Enterprise Crew completed with the following result:");
+        Console.WriteLine(result);
     }
 
+    /// <summary>
+    /// Shows how to kickoff an existing CrewAI Enterprise Crew as a plugin.
+    /// </summary>
     [Fact]
     public async Task UsingCrewAIEnterpriseAsPluginAsync()
     {
@@ -68,22 +70,39 @@ public class CrewAI_Plugin(ITestOutputHelper output) : BaseTest(output)
             endpoint: new Uri(crewAIEndpoint),
             authTokenProvider: async () => crewAIAuthToken);
 
-        var inputs = new
+        // The required inputs for the Crew must be known in advance. This example is modeled after the
+        // Enterprise Content Marketing Crew Template and requires string inputs for the company and topic.
+        // We need to describe the type and purpose of each input to allow the LLM to invoke the crew as expected.
+        var crewPluginDefinitions = new[]
         {
-            company = "Microsoft",
-            topic = "Consumer AI Products",
+            new CrewAIInputMetadata(Name: "company", Description: "The name of the company that should be researched", Type: typeof(string)),
+            new CrewAIInputMetadata(Name: "topic", Description: "The topic that should be researched", Type: typeof(string)),
         };
 
+        // Create the CrewAI Plugin. This builds a plugin that can be added to the Kernel and invoked like any other plugin.
+        // The plugin will conatin the following functions:
+        // - Kickoff: Starts the Crew with the specified inputs and returns the Id of the scheduled kickoff.
+        // - KickoffAndWait: Starts the Crew with the specified inputs and waits for the Crew to complete before returning the result.
+        // - WaitForCrewCompletion: Waits for the specified Crew kickoff to complete and returns the result.
+        // - GetCrewKickoffStatus: Gets the status of the specified Crew kickoff.
         var crewPlugin = crew.CreateKernelPlugin(
-            "myCrew",
-            "Conducts thorough research on topic to identify emerging trends, analyze competitor strategies, and gather data-driven insights, focusing on 2024.",
-            [
-                new ("company", "The name of the company that should be researched", typeof(string)),
-                new ("topic", "The topic that should be researched", typeof(string)),
-            ]);
+            name: "EnterpriseContentMarketingCrew",
+            description: "Conducts thorough research on the specified company and topic to identify emerging trends, analyze competitor strategies, and gather data-driven insights.",
+            inputMetadata: crewPluginDefinitions);
 
+        // Add the plugin to the Kernel
         kernel.Plugins.Add(crewPlugin);
-        var result = await kernel.InvokeAsync(crewPlugin["kickoff"], new() { ["company"] = inputs.company, ["topic"] = inputs.topic });
+
+        // Invoke the CrewAI Plugin directly as shown below, or use automaic function calling with an LLM.
+        var kickoffAndWaitFunction = crewPlugin["KickoffAndWait"];
+        var result = await kernel.InvokeAsync(
+            function: kickoffAndWaitFunction,
+            arguments: new()
+            {
+                ["company"] = "CrewAI",
+                ["topic"] = "Consumer AI Products"
+            });
+
         Console.WriteLine(result);
     }
 }
