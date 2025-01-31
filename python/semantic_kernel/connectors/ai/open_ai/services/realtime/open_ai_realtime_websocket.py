@@ -49,15 +49,13 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
 
         async for event in self.connection:
             if event.type == ListenEvents.RESPONSE_AUDIO_DELTA.value:
+                audio_bytes = base64.b64decode(event.delta)
                 if self.audio_output_callback:
-                    await self.audio_output_callback(np.frombuffer(base64.b64decode(event.delta), dtype=np.int16))
+                    await self.audio_output_callback(np.frombuffer(audio_bytes, dtype=np.int16))
                 try:
                     yield AudioEvent(
-                        audio=AudioContent(
-                            data=base64.b64decode(event.delta),
-                            data_format="base64",
-                            inner_content=event,
-                        ),
+                        audio=AudioContent(data=audio_bytes, data_format="base64", inner_content=event),
+                        service_type=event.type,
                     )
                 except Exception as e:
                     logger.error(f"Error processing remote audio frame: {e!s}")

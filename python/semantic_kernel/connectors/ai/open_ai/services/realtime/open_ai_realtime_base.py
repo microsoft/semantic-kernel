@@ -3,15 +3,18 @@
 import json
 import logging
 import sys
-from collections.abc import AsyncGenerator, Callable, Coroutine
+from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
+
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    OpenAIRealtimeExecutionSettings,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from numpy import ndarray
 from openai.types.beta.realtime import (
     RealtimeClientEvent,
     RealtimeServerEvent,
@@ -27,7 +30,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.utils import (
-    _create_realtime_client_event,
+    _create_openai_realtime_client_event,
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -60,9 +63,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     """OpenAI Realtime service."""
 
-    protocol: ClassVar[Literal["websocket", "webrtc"]] = "websocket"
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
-    audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
+    protocol: ClassVar[Literal["websocket", "webrtc"]] = "websocket"
     kernel: Kernel | None = None
 
     _current_settings: PromptExecutionSettings | None = PrivateAttr(default=None)
@@ -77,7 +79,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         match event.type:
             case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
                 yield TextEvent(
-                    event_type="text",
                     service_type=event.type,
                     text=StreamingTextContent(
                         inner_content=event,
@@ -90,7 +91,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                     self._call_id_to_function_map[event.item.call_id] = event.item.name
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA.value:
                 yield FunctionCallEvent(
-                    event_type="function_call",
                     service_type=event.type,
                     function_call=FunctionCallContent(
                         id=event.item_id,
@@ -114,7 +114,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         # we put all event in the output buffer, but after the interpreted one.
         # so when dealing with them, make sure to check the type of the event, since they
         # might be of different types.
-        yield ServiceEvent(event_type="service", service_type=event.type, event=event)
+        yield ServiceEvent(service_type=event.type, event=event)
 
     @override
     async def update_session(
@@ -137,7 +137,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             )
             await self.send(
                 ServiceEvent(
-                    event_type="service",
                     service_type=SendEvents.SESSION_UPDATE,
                     event={"settings": self._current_settings},
                 )
@@ -162,20 +161,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Unsupported item type: %s", item)
         if create_response:
             await self.send(ServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
-
-    @override
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (  # noqa
-            OpenAIRealtimeExecutionSettings,
-        )
-
-        return OpenAIRealtimeExecutionSettings
-
-    @override
-    def _update_function_choice_settings_callback(
-        self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
-        return update_settings_from_function_call_configuration
 
     async def _parse_function_call_arguments_done(
         self,
@@ -226,13 +211,13 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         match event.event_type:
             case "audio":
                 await self._send(
-                    _create_realtime_client_event(
+                    _create_openai_realtime_client_event(
                         event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND, audio=event.audio.to_base64_bytestring()
                     )
                 )
             case "text":
                 await self._send(
-                    _create_realtime_client_event(
+                    _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
                         **dict(
                             type="message",
@@ -248,7 +233,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 )
             case "function_call":
                 await self._send(
-                    _create_realtime_client_event(
+                    _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
                         **dict(
                             type="function_call",
@@ -264,7 +249,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 )
             case "function_result":
                 await self._send(
-                    _create_realtime_client_event(
+                    _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
                         **dict(
                             type="function_call_output",
@@ -281,13 +266,22 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Event data is empty")
                             return
                         settings = data.get("settings", None)
-                        if not settings or not isinstance(settings, PromptExecutionSettings):
+                        if not settings:
                             logger.error("Event data does not contain 'settings'")
                             return
+                        if not isinstance(settings, OpenAIRealtimeExecutionSettings):
+                            try:
+                                settings = self.get_prompt_execution_settings_from_settings(settings)
+                            except Exception as e:
+                                logger.error(
+                                    f"Failed to properly create settings from passed settings: {settings}, error: {e}"
+                                )
+                                return
+                        assert isinstance(settings, OpenAIRealtimeExecutionSettings)  # nosec
                         if not settings.ai_model_id:
                             settings.ai_model_id = self.ai_model_id
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type,
                                 session=settings.prepare_settings_dict(),
                             )
@@ -297,15 +291,15 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Event data does not contain 'audio'")
                             return
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type,
                                 audio=data["audio"],
                             )
                         )
                     case SendEvents.INPUT_AUDIO_BUFFER_COMMIT:
-                        await self._send(_create_realtime_client_event(event_type=event.service_type))
+                        await self._send(_create_openai_realtime_client_event(event_type=event.service_type))
                     case SendEvents.INPUT_AUDIO_BUFFER_CLEAR:
-                        await self._send(_create_realtime_client_event(event_type=event.service_type))
+                        await self._send(_create_openai_realtime_client_event(event_type=event.service_type))
                     case SendEvents.CONVERSATION_ITEM_CREATE:
                         if not data or "item" not in data:
                             logger.error("Event data does not contain 'item'")
@@ -316,7 +310,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             match item:
                                 case TextContent():
                                     await self._send(
-                                        _create_realtime_client_event(
+                                        _create_openai_realtime_client_event(
                                             event_type=event.service_type,
                                             **dict(
                                                 type="message",
@@ -332,7 +326,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                                     )
                                 case FunctionCallContent():
                                     await self._send(
-                                        _create_realtime_client_event(
+                                        _create_openai_realtime_client_event(
                                             event_type=event.service_type,
                                             **dict(
                                                 type="function_call",
@@ -349,7 +343,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
                                 case FunctionResultContent():
                                     await self._send(
-                                        _create_realtime_client_event(
+                                        _create_openai_realtime_client_event(
                                             event_type=event.service_type,
                                             **dict(
                                                 type="function_call_output",
@@ -363,7 +357,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Event data does not contain 'item_id'")
                             return
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type,
                                 item_id=data["item_id"],
                                 content_index=0,
@@ -375,21 +369,52 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Event data does not contain 'item_id'")
                             return
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type,
                                 item_id=data["item_id"],
                             )
                         )
                     case SendEvents.RESPONSE_CREATE:
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type, event_id=data.get("event_id", None) if data else None
                             )
                         )
                     case SendEvents.RESPONSE_CANCEL:
                         await self._send(
-                            _create_realtime_client_event(
+                            _create_openai_realtime_client_event(
                                 event_type=event.service_type,
                                 response_id=data.get("response_id", None) if data else None,
                             )
                         )
+
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (  # noqa
+            OpenAIRealtimeExecutionSettings,
+        )
+
+        return OpenAIRealtimeExecutionSettings
+
+    @override
+    def _update_function_choice_settings_callback(
+        self,
+    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+        return update_settings_from_function_call_configuration
+
+    @override
+    async def create_session(
+        self,
+        settings: "PromptExecutionSettings | None" = None,
+        chat_history: "ChatHistory | None" = None,
+        **kwargs: Any,
+    ) -> None:
+        pass
+
+    @override
+    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvent, None]:
+        pass
+
+    @override
+    async def close_session(self) -> None:
+        pass

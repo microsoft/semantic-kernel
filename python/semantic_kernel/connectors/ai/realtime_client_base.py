@@ -2,13 +2,15 @@
 
 import sys
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
+
+from numpy import ndarray
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
@@ -26,6 +28,7 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
+    audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
 
     @abstractmethod
     async def send(self, event: RealtimeEvent) -> None:
