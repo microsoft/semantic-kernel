@@ -16,7 +16,7 @@ def kernel_function_to_bedrock_function_schema(
     return {
         "functions": [
             kernel_function_metadata_to_bedrock_function_schema(function_metadata)
-            for function_metadata in function_choice_configuration.available_functions
+            for function_metadata in function_choice_configuration.available_functions or []
         ]
     }
 

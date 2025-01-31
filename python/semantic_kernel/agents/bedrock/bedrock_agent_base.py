@@ -121,7 +121,7 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
-            self.agent_model = response["agent"]
+            self.agent_model = BedrockAgentModel(**response["agent"])
 
             # The agent will first enter the CREATING status.
             # When the agent is created, it will enter the NOT_PREPARED status.
@@ -174,18 +174,11 @@ class BedrockAgentBase(KernelBaseModel):
             logger.error(f"Failed to create alias {alias_name} for agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _update_agent(
-        self,
-        agent_name: str,
-        foundation_model: str,
-        **kwargs,
-    ) -> None:
+    async def update_agent(self, **kwargs) -> None:
         """Update an agent asynchronously.
 
         Args:
-            agent_name: The name of the agent.
-            foundation_model: The foundation model to use.
-            kwargs: Additional keyword arguments.
+            kwargs: The keyword arguments to update the agent.
         """
         if not self.agent_model.agent_id:
             raise ValueError("Agent has not been created. Please create the agent before updating it.")
@@ -197,12 +190,13 @@ class BedrockAgentBase(KernelBaseModel):
                     self.bedrock_client.update_agent,
                     agentId=self.agent_model.agent_id,
                     agentResourceRoleArn=self.agent_resource_role_arn,
-                    agentName=agent_name,
-                    foundationModel=foundation_model,
+                    # Use the existing agent name and foundation model if not provided since they are required.
+                    agentName=kwargs.get("agentName") or self.agent_model.agent_name,
+                    foundationModel=kwargs.get("foundationModel") or self.agent_model.foundation_model,
                     **kwargs,
                 ),
             )
-            self.agent_model = response["agent"]
+            self.agent_model = BedrockAgentModel(**response["agent"])
 
             await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
         except ClientError as e:
@@ -243,7 +237,7 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
 
-            return response["agent"]
+            return BedrockAgentModel(**response["agent"])
         except ClientError as e:
             logger.error(f"Failed to get agent {self.agent_model.agent_id}.")
             raise e
@@ -257,7 +251,7 @@ class BedrockAgentBase(KernelBaseModel):
         """Wait for the agent to reach a specific status."""
         for _ in range(max_attempts):
             agent = await self._get_agent()
-            if agent["agentStatus"] == status:
+            if agent.agent_status == status:
                 return
 
             await asyncio.sleep(interval)

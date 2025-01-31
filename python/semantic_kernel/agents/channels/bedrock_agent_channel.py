@@ -194,7 +194,7 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
 
     def _parse_chat_history_to_session_state(self) -> dict[str, Any]:
         """Parse the chat history to a session state."""
-        session_state = {"conversationHistory": {"messages": []}}
+        session_state: dict[str, Any] = {"conversationHistory": {"messages": []}}
         if len(self.messages) > 1:
             # We don't take the last message as it needs to be sent separately in another parameter
             for message in self.messages[:-1]:

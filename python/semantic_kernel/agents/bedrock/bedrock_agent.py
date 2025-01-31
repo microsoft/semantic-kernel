@@ -287,28 +287,12 @@ class BedrockAgent(BedrockAgentBase, Agent):
             await self._create_kernel_function_action_group(self.kernel)
 
         await self.prepare_agent()
+
+        if not self.agent_model.agent_id:
+            raise AgentInitializationException("Agent ID is not set.")
         self.id = self.agent_model.agent_id
 
         return self
-
-    async def update_agent(
-        self,
-        agent_name: str | None = None,
-        foundation_model: str | None = None,
-        **kwargs,
-    ) -> None:
-        """Update an agent and prepare it for use.
-
-        Args:
-            agent_name (str, optional): The name of the agent.
-            foundation_model (str, optional): The foundation model.
-            **kwargs: Additional keyword arguments.
-        """
-        await self._update_agent(
-            agent_name or self.agent_model.agent_name,
-            foundation_model or self.agent_model.foundation_model,
-            **kwargs,
-        )
 
     @trace_agent_invocation
     async def invoke(
@@ -568,7 +552,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
             choice_index=0,
-            items=function_calls,
+            items=function_calls,  # type: ignore
             name=self.name,
             inner_content=event,
             ai_model_id=self.agent_model.foundation_model,
@@ -577,7 +561,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
     def _handle_streaming_files_event(self, event: dict[str, Any]) -> StreamingChatMessageContent:
         """Handle streaming file event."""
         files_event = event[BedrockAgentEventType.FILES]
-        items = [
+        items: list[BinaryContent] = [
             BinaryContent(
                 data=file["bytes"],
                 data_format="base64",
@@ -590,7 +574,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
             choice_index=0,
-            items=items,
+            items=items,  # type: ignore
             name=self.name,
             inner_content=event,
             ai_model_id=self.agent_model.foundation_model,
@@ -601,6 +585,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         return StreamingChatMessageContent(
             role=AuthorRole.ASSISTANT,
             choice_index=0,
+            items=[],
             name=self.name,
             inner_content=event,
             ai_model_id=self.agent_model.foundation_model,
