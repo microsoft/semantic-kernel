@@ -60,8 +60,8 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform ~= 1.60",
-    "google-generativeai ~= 0.7"
+    "google-cloud-aiplatform == 1.60",
+    "google-generativeai == 0.7"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
