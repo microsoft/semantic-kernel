@@ -22,6 +22,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    OpenAIRealtimeExecutionSettings,
+    TurnDetection,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_audio_execution_settings import (
     OpenAITextToAudioExecutionSettings,
 )
@@ -36,10 +40,12 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import A
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_image import AzureTextToImage
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtime
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
+from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 
@@ -63,12 +69,15 @@ __all__ = [
     "DataSourceFieldsMapping",
     "DataSourceFieldsMapping",
     "ExtraBody",
+    "ListenEvents",
     "OpenAIAudioToText",
     "OpenAIAudioToTextExecutionSettings",
     "OpenAIChatCompletion",
     "OpenAIChatPromptExecutionSettings",
     "OpenAIEmbeddingPromptExecutionSettings",
     "OpenAIPromptExecutionSettings",
+    "OpenAIRealtime",
+    "OpenAIRealtimeExecutionSettings",
     "OpenAISettings",
     "OpenAITextCompletion",
     "OpenAITextEmbedding",
@@ -77,4 +86,6 @@ __all__ = [
     "OpenAITextToAudioExecutionSettings",
     "OpenAITextToImage",
     "OpenAITextToImageExecutionSettings",
+    "SendEvents",
+    "TurnDetection",
 ]

@@ -45,6 +45,7 @@ dependencies = [
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
+    "taskgroup >= 0.2.2; python_version < '3.11'",
 ]
 
 ### Optional dependencies
@@ -61,7 +62,8 @@ chroma = [
 ]
 google = [
     "google-cloud-aiplatform ~= 1.60",
-    "google-generativeai ~= 0.7"
+    "google-generativeai ~= 0.7",
+    "google-genai ~= 0.4"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
@@ -122,6 +124,11 @@ dapr = [
     "dapr>=1.14.0",
     "dapr-ext-fastapi>=1.14.0",
     "flask-dapr>=1.14.0"
+]
+openai_realtime = [
+    "openai[realtime] ~= 1.0",
+    "aiortc>=1.9.0",
+    "sounddevice>=0.5.1",
 ]
 
 [tool.uv]
@@ -220,5 +227,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-

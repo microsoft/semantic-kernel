@@ -12,6 +12,7 @@ if sys.version < "3.11":
 else:
     from typing import Self  # type: ignore # pragma: no cover
 
+from numpy import ndarray
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url
 
@@ -28,28 +29,43 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
     data_bytes: bytes | None = None
     data_str: str | None = None
+    data_array: ndarray | None = None
     mime_type: str | None = None
     parameters: dict[str, str] = Field(default_factory=dict)
     data_format: str | None = None
 
-    def update_data(self, value: str | bytes):
+    def update_data(self, value: str | bytes | ndarray):
         """Update the data, using either a string or bytes."""
-        if isinstance(value, str):
-            self.data_str = value
-        else:
-            self.data_bytes = value
+        match value:
+            case str():
+                self.data_str = value
+            case bytes():
+                self.data_bytes = value
+            case ndarray():
+                self.data_array = value
 
     @model_validator(mode="before")
     @classmethod
     def _validate_data(cls, values: Any) -> dict[str, Any]:
         """Validate the data."""
-        if isinstance(values, dict) and not values.get("data_bytes") and not values.get("data_str"):
-            raise ContentInitializationError("Either data_bytes or data_str must be provided.")
+        if (
+            isinstance(values, dict)
+            and not values.get("data_bytes")
+            and not values.get("data_str")
+            and values.get("data_array") is None
+        ):
+            raise ContentInitializationError("Either data_bytes, data_str or data_array must be provided.")
         return values
 
     @model_validator(mode="after")
     def _parse_data(self) -> Self:
-        """Parse the data bytes to str."""
+        """Parse the data bytes to str.
+
+        Will try to decode the data bytes to a string if it is not already set.
+        However if the data array is used, it will not be converted to a string.
+        """
+        if self.data_array is not None:
+            return self
         if not self.data_str and self.data_bytes:
             if self.data_format and self.data_format.lower() == "base64":
                 self.data_str = base64.b64encode(self.data_bytes).decode("utf-8")
@@ -113,10 +129,12 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
     def to_string(self, metadata: dict[str, str] = {}) -> str:
         """Return the data uri as a string."""
+        if self.data_array:
+            data_str = self.data_array.tobytes().decode("utf-8")
         parameters = ";".join([f"{key}={val}" for key, val in metadata.items()])
         parameters = f";{parameters}" if parameters else ""
         data_format = f"{self.data_format}" if self.data_format else ""
-        return f"data:{self.mime_type or ''}{parameters};{data_format},{self.data_str}"
+        return f"data:{self.mime_type or ''}{parameters};{data_format},{self.data_str or data_str}"
 
     def __eq__(self, value: object) -> bool:
         """Check if the data uri is equal to another."""

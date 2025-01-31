@@ -2,9 +2,11 @@
 
 import logging
 import os
+from base64 import b64encode
 from typing import Annotated, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
+from numpy import ndarray
 from pydantic import Field, FilePath, UrlConstraints, computed_field
 from pydantic_core import Url
 
@@ -48,7 +50,7 @@ class BinaryContent(KernelContent):
         self,
         uri: Url | str | None = None,
         data_uri: DataUrl | str | None = None,
-        data: str | bytes | None = None,
+        data: str | bytes | ndarray | None = None,
         data_format: str | None = None,
         mime_type: str | None = None,
         **kwargs: Any,
@@ -68,22 +70,25 @@ class BinaryContent(KernelContent):
                 ai_model_id (str | None): The id of the AI model that generated this response.
                 metadata (dict[str, Any]): Any metadata that should be attached to the response.
         """
-        _data_uri = None
+        data_uri_ = None
         if data_uri:
-            _data_uri = DataUri.from_data_uri(data_uri, self.default_mime_type)
+            data_uri_ = DataUri.from_data_uri(data_uri, self.default_mime_type)
             if "metadata" in kwargs:
-                kwargs["metadata"].update(_data_uri.parameters)
+                kwargs["metadata"].update(data_uri_.parameters)
             else:
-                kwargs["metadata"] = _data_uri.parameters
+                kwargs["metadata"] = data_uri_.parameters
+        elif isinstance(data, ndarray):
+            data_uri_ = DataUri(data_array=data, mime_type=mime_type or self.default_mime_type)
         elif data:
-            if isinstance(data, str):
-                _data_uri = DataUri(
-                    data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
-                )
-            else:
-                _data_uri = DataUri(
-                    data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
-                )
+            match data:
+                case str():
+                    data_uri_ = DataUri(
+                        data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    )
+                case bytes():
+                    data_uri_ = DataUri(
+                        data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
+                    )
 
         if uri is not None:
             if isinstance(uri, str) and os.path.exists(uri):
@@ -92,7 +97,7 @@ class BinaryContent(KernelContent):
                 uri = Url(uri)
 
         super().__init__(uri=uri, **kwargs)
-        self._data_uri = _data_uri
+        self._data_uri = data_uri_
 
     @computed_field  # type: ignore
     @property
@@ -109,8 +114,10 @@ class BinaryContent(KernelContent):
         self.metadata.update(self._data_uri.parameters)
 
     @property
-    def data(self) -> bytes:
+    def data(self) -> bytes | ndarray:
         """Get the data."""
+        if self._data_uri and self._data_uri.data_array is not None:
+            return self._data_uri.data_array
         if self._data_uri and self._data_uri.data_bytes:
             return self._data_uri.data_bytes
         if self._data_uri and self._data_uri.data_str:
@@ -118,15 +125,18 @@ class BinaryContent(KernelContent):
         return b""
 
     @data.setter
-    def data(self, value: str | bytes):
+    def data(self, value: str | bytes | ndarray):
         """Set the data."""
         if self._data_uri:
             self._data_uri.update_data(value)
         else:
-            if isinstance(value, str):
-                self._data_uri = DataUri(data_str=value, mime_type=self.mime_type)
-            else:
-                self._data_uri = DataUri(data_bytes=value, mime_type=self.mime_type)
+            match value:
+                case str():
+                    self._data_uri = DataUri(data_str=value, mime_type=self.mime_type)
+                case bytes():
+                    self._data_uri = DataUri(data_bytes=value, mime_type=self.mime_type)
+                case ndarray():
+                    self._data_uri = DataUri(data_array=value, mime_type=self.mime_type)
 
     @property
     def mime_type(self) -> str:
@@ -167,9 +177,22 @@ class BinaryContent(KernelContent):
 
     def write_to_file(self, path: str | FilePath) -> None:
         """Write the data to a file."""
+        if isinstance(self.data, ndarray):
+            self.data.tofile(path)  # codespell:ignore tofile
+            return
         with open(path, "wb") as file:
             file.write(self.data)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "binary", "binary": {"uri": str(self)}}
+
+    def to_base64_bytestring(self, encoding: str = "utf-8") -> str:
+        """Convert the instance to a bytestring."""
+        if self._data_uri and self._data_uri.data_array is not None:
+            return b64encode(self._data_uri.data_array.tobytes()).decode(encoding)
+        if self._data_uri and self._data_uri.data_bytes:
+            return self._data_uri.data_bytes.decode(encoding)
+        if self._data_uri and self._data_uri.data_str:
+            return self._data_uri.data_str
+        return ""
