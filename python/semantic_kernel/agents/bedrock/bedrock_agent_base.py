@@ -400,8 +400,9 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
-        except ClientError:
+        except ClientError as e:
             logger.error(f"Failed to list associated knowledge bases for agent {self.agent_model.agent_id}.")
+            raise e
 
     # endregion Knowledge Base Management
 
