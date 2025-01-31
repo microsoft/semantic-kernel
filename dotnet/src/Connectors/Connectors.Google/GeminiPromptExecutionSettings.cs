@@ -27,6 +27,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private bool? _audioTimestamp;
     private string? _responseMimeType;
     private object? _responseSchema;
+    private string? _cachedContent;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -41,6 +42,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Range is 0.0 to 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Temperature
     {
         get => this._temperature;
@@ -56,6 +58,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
     [JsonPropertyName("top_p")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? TopP
     {
         get => this._topP;
@@ -71,6 +74,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The TopK property represents the maximum value of a collection or dataset.
     /// </summary>
     [JsonPropertyName("top_k")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopK
     {
         get => this._topK;
@@ -85,6 +89,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
         get => this._maxTokens;
@@ -99,6 +104,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The count of candidates. Possible values range from 1 to 8.
     /// </summary>
     [JsonPropertyName("candidate_count")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? CandidateCount
     {
         get => this._candidateCount;
@@ -114,6 +120,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Maximum number of stop sequences is 5.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? StopSequences
     {
         get => this._stopSequences;
@@ -128,6 +135,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Represents a list of safety settings.
     /// </summary>
     [JsonPropertyName("safety_settings")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<GeminiSafetySetting>? SafetySettings
     {
         get => this._safetySettings;
@@ -180,6 +188,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// if enabled, audio timestamp will be included in the request to the model.
     /// </summary>
     [JsonPropertyName("audio_timestamp")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? AudioTimestamp
     {
         get => this._audioTimestamp;
@@ -198,6 +207,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// 3. text/x.enum: For classification tasks, output an enum value as defined in the response schema.
     /// </summary>
     [JsonPropertyName("response_mimetype")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseMimeType
     {
         get => this._responseMimeType;
@@ -231,6 +241,23 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._responseSchema = value;
+        }
+    }
+
+    /// <summary>
+    /// Optional. The name of the cached content used as context to serve the prediction.
+    /// Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings.
+    /// Format: projects/{project}/locations/{location}/cachedContents/{cachedContent}
+    /// </summary>
+    [JsonPropertyName("cached_content")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CachedContent
+    {
+        get => this._cachedContent;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._cachedContent = value;
         }
     }
 

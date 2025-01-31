@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.selection.sequential_selection_strategy import SequentialSelectionStrategy
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 
 
 class MockAgent(Agent):
@@ -78,13 +79,47 @@ async def test_sequential_selection_exceeds_length(agents):
     selected_agent = await strategy.next(agents, [])
 
     assert selected_agent.id == "agent-0"
+    assert strategy._index == 0
+
+    selected_agent = await strategy.next(agents, [])
+
+    assert selected_agent.id == "agent-1"
     assert strategy._index == 1
 
 
 async def test_sequential_selection_empty_agents():
     strategy = SequentialSelectionStrategy()
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(AgentExecutionException) as excinfo:
         await strategy.next([], [])
 
-    assert "No agents to select from" in str(excinfo.value)
+    assert "Agent Failure - No agents present to select." in str(excinfo.value)
+
+
+async def test_sequential_selection_avoid_selecting_same_agent_twice():
+    # Arrange
+    agent_0 = MagicMock(spec=Agent)
+    agent_0.id = "agent-0"
+    agent_0.name = "Agent0"
+
+    agent_1 = MagicMock(spec=Agent)
+    agent_1.id = "agent-1"
+    agent_1.name = "Agent1"
+
+    agents = [agent_0, agent_1]
+
+    strategy = SequentialSelectionStrategy()
+    # Simulate that we've already selected an agent once:
+    strategy.has_selected = True
+    # Set the initial agent to the first agent
+    strategy.initial_agent = agent_0
+    # Ensure the internal index is set to -1
+    strategy._index = -1
+
+    # Act
+    selected_agent = await strategy.next(agents, [])
+
+    # Assert
+    # According to the condition, we should skip selecting agent_0 again
+    assert selected_agent.id == "agent-1"
+    assert strategy._index == 1

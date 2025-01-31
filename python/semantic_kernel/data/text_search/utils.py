@@ -1,10 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from contextlib import suppress
 from typing import TYPE_CHECKING, Any, Protocol
-
-from pydantic import ValidationError
 
 if TYPE_CHECKING:
     from semantic_kernel.data.search_options import SearchOptions
@@ -47,26 +44,30 @@ def create_options(
     Returns:
         SearchOptions: The options.
 
+    Raises:
+        ValidationError: If the options are not valid.
+
     """
-    new_options = options_class()
-    if options:
-        if not isinstance(options, options_class):
-            inputs = None
-            try:
-                inputs = options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)
-            except Exception:
-                logger.warning("Options are not valid. Creating new options.")
-            if inputs:
-                new_options = options_class.model_validate(inputs)
-        else:
-            new_options = options
+    # no options give, so just try to create from kwargs
+    if not options:
+        return options_class.model_validate(kwargs)
+    # options are the right class, just update based on kwargs
+    if isinstance(options, options_class):
         for key, value in kwargs.items():
-            if key in new_options.model_fields:
-                setattr(new_options, key, value)
-    else:
-        with suppress(ValidationError):
-            new_options = options_class(**kwargs)
-    return new_options
+            if key in options.model_fields:
+                setattr(options, key, value)
+        return options
+    # options are not the right class, so create new options
+    # first try to dump the existing, if this doesn't work for some reason, try with kwargs only
+    inputs = {}
+    try:
+        inputs = options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)
+    except Exception:
+        # This is very unlikely to happen, but if it does, we will just create new options.
+        # one reason this could happen is if a different class is passed that has no model_dump method
+        logger.warning("Options are not valid. Creating new options from just kwargs.")
+    inputs.update(kwargs)
+    return options_class.model_validate(kwargs)
 
 
 def default_options_update_function(

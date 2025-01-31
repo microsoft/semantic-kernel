@@ -222,6 +222,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
             "max_prompt_tokens": 50,
             "parallel_tool_calls_enabled": True,
             "truncation_message_count": 10,
+            "template_format": "semantic-kernel",
         }
 
 
