@@ -270,17 +270,19 @@ TextPropertyName
 
 ### 1. Accept Split keywords in interface
 
-Accept an IEnumerable of string where each value is a separate keyword.
+Accept an ICollection of string where each value is a separate keyword.
+A version that takes a single keyword and calls the `ICollection<string>` version can also be provided as an extension method.
 
 ```csharp
     Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
         TVector vector,
-        IEnumerable<string> keywords,
+        ICollection<string> keywords,
         KeywordVectorizedHybridSearchOptions options,
         CancellationToken cancellationToken);
 ```
 
 - Pros: Easier to use in the connector if the underlying DB requires split keywords
+- Pros: Only solution broadly supported, see comparison table above.
 
 ### 2. Accept single string in interface
 
@@ -294,7 +296,8 @@ Accept a single string containing all the keywords.
         CancellationToken cancellationToken);
 ```
 
-- Pros: Easier for a user to use, since they don't need to do any keyword splitting themselves.
+- Pros: Easier for a user to use, since they don't need to do any keyword splitting.
+- Cons: We don't have the capabilities to properly sanitise the string, e.g. splitting words appropriately for the language, and potentially removing filler words.
 
 ### 3. Accept either in interface
 
@@ -303,7 +306,7 @@ Accept either option and either combine or split the keywords in the connector a
 ```csharp
     Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
         TVector vector,
-        IEnumerable<string> keywords,
+        ICollection<string> keywords,
         KeywordVectorizedHybridSearchOptions options,
         CancellationToken cancellationToken);
     Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
@@ -315,6 +318,7 @@ Accept either option and either combine or split the keywords in the connector a
 
 - Pros: Easier for a user to use, since they can pick whichever suits them better
 - Cons: We have to still convert to/from the internal presentation by either combining keywords or splitting them.
+- Cons: We don't have the capabilities to properly sanitise the single string, e.g. splitting words appropriately for the language, and potentially removing filler words.
 
 ### 4. Accept either in interface but throw for not supported
 
