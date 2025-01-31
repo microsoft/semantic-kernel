@@ -64,7 +64,7 @@ async def main() -> None:
         thread = await client.agents.create_thread()
 
         user_inputs = [
-            "Hello",
+            # "Hello",
             "What is the special soup?",
             "How much does that cost?",
             "Thank you",
@@ -77,10 +77,14 @@ async def main() -> None:
                     thread_id=thread.id, message=ChatMessageContent(role=AuthorRole.USER, content=user_input)
                 )
                 print(f"# User: '{user_input}'")
-                # Invoke the agent for the specified thread
-                async for content in agent.invoke(thread_id=thread.id):
+                first_chunk = True
+                async for content in agent.invoke_stream(thread_id=thread.id):
                     if content.role != AuthorRole.TOOL:
-                        print(f"# Agent: {content.content}")
+                        if first_chunk:
+                            print(f"# {content.role}: ", end="", flush=True)
+                            first_chunk = False
+                        print(content.content, end="", flush=True)
+                print()
         finally:
             await client.agents.delete_thread(thread.id)
             await client.agents.delete_agent(agent.id)

@@ -10,7 +10,6 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
-from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -57,6 +56,8 @@ class AzureAIChannel(AgentChannel):
         Yields:
             tuple[bool, ChatMessageContent]: The conversation messages.
         """
+        from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
+
         if not isinstance(agent, AzureAIAgent):
             raise AgentChatException(f"Agent is not of the expected type {type(AzureAIAgent)}.")
 
@@ -87,11 +88,18 @@ class AzureAIChannel(AgentChannel):
         Yields:
             tuple[bool, StreamingChatMessageContent]: The conversation messages.
         """
+        from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
+
         if not isinstance(agent, AzureAIAgent):
             raise AgentChatException(f"Agent is not of the expected type {type(AzureAIAgent)}.")
 
         async for message in AgentThreadActions.invoke_stream(
-            agent=agent, thread_id=self.thread_id, messages=messages, **kwargs
+            agent=agent,
+            thread_id=self.thread_id,
+            messages=messages,
+            arguments=agent.arguments,
+            kernel=agent.kernel,
+            **kwargs,
         ):
             yield message
 

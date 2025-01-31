@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
@@ -16,7 +17,6 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils import logging
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
@@ -31,7 +31,7 @@ class AzureAIAgent(Agent):
     """Azure AI Agent class."""
 
     client: AIProjectClient
-    agent: AzureAIAgentModel
+    definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
     channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
@@ -40,7 +40,7 @@ class AzureAIAgent(Agent):
         self,
         *,
         client: AIProjectClient,
-        agent: AzureAIAgentModel,
+        definition: AzureAIAgentModel,
         kernel: "Kernel | None" = None,
         arguments: "KernelArguments | None" = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
@@ -50,7 +50,7 @@ class AzureAIAgent(Agent):
 
         Args:
             client: The AzureAI Project client
-            agent: The AzureAI Agent model
+            definition: The AzureAI Agent model
             kernel: The Kernel instance (Optional)
             arguments: The KernelArguments instance (Optional)
             description: The description of the agent (Optional)
@@ -63,26 +63,30 @@ class AzureAIAgent(Agent):
         """
         args: dict[str, Any] = {
             "client": client,
-            "agent": agent,
-            "name": agent.name,
-            "description": agent.description,
+            "definition": definition,
+            "name": definition.name,
+            "description": definition.description,
         }
 
-        if id is not None:
-            args["id"] = id
+        if definition.id is not None:
+            args["id"] = definition.id
         if kernel is not None:
             args["kernel"] = kernel
         if arguments is not None:
             args["arguments"] = arguments
-        if agent.instructions and prompt_template_config and agent.instructions != prompt_template_config.template:
+        if (
+            definition.instructions
+            and prompt_template_config
+            and definition.instructions != prompt_template_config.template
+        ):
             logger.info(
-                f"Both `instructions` ({agent.instructions}) and `prompt_template_config` "
+                f"Both `instructions` ({definition.instructions}) and `prompt_template_config` "
                 f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
                 "and ignoring `instructions`."
             )
 
-        if agent.instructions is not None:
-            args["instructions"] = agent.instructions
+        if definition.instructions is not None:
+            args["instructions"] = definition.instructions
         if prompt_template_config is not None:
             args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
@@ -102,7 +106,7 @@ class AzureAIAgent(Agent):
             thread_id: The ID of the thread
             message: The chat message to add
         """
-        await AgentThreadActions.create_message(thread_id=thread_id, message=message)
+        await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
 
     @trace_agent_invocation
     async def invoke(
