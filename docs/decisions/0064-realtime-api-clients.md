@@ -80,7 +80,7 @@ Both the OpenAI and Google realtime api's are in preview/beta, this means there 
 
 ## Overall Decision Drivers
 - Abstract away the underlying protocols, so that developers can build applications that implement whatever protocol they want to support, without having to change the client code when changing models or protocols.
-  - There are some limitations expected here as some WebRTC requires different information at session create time then websockets.
+  - There are some limitations expected here as i.e. WebRTC requires different information at session create time than websockets.
 - Simple programming model that is likely able to handle future realtime api's and the evolution of the existing ones.
 - Whenever possible we transform incoming content into Semantic Kernel content, but surface everything, so it's extensible for developers and in the future.
 
@@ -240,7 +240,7 @@ This would mean that there are two queues, one for sending and one for receiving
   - potentially causes audio delays because of the queueing mechanism
 
 ### 2b. Same as option 2, but with priority handling of audio content
-This would mean that the audio content is handled, and passed to the developer code, and then all other events are processed.
+This would mean that the audio content is handled first and sent to a callback directly so that the developer can play it or send it onward as soon as possible, and then all other events are processed (like text, function calls, etc) and put in the queue.
 
 - Pro:
   - mitigates audio delays
@@ -261,7 +261,7 @@ This would mean that the clients implement a function that yields events, and th
   - lots of events types mean a large single set of code to handle it all
 
 ### 3b. Same as option 3, but with priority handling of audio content
-This would mean that the audio content is handled, and passed to the developer code, and then all other events are yielded.
+This would mean that the audio content is handled first and sent to a callback directly so that the developer can play it or send it onward as soon as possible, and then all other events are parsed and yielded.
 
 - Pro:
   - mitigates audio delays
@@ -299,6 +299,7 @@ This would mean that the client would have a mechanism to register audio handler
   - could mitigate buffer issues by prioritizing audio content being sent to the handlers
 - Con:
   - extra code in SK that needs to be maintained, potentially relying on third party code
+  - audio drivers can be platform specific, so this might not work well or at all on all platforms
 
 ### 2. Send and receive AudioContent to the client, and let the client handle the audio recording and playing
 This would mean that the client would receive AudioContent items, and would have to deal with them itself, including recording and playing the audio.
@@ -384,7 +385,7 @@ In most cases, create_session should call update_session with the same parameter
 
 For Python a default __aenter__ and __aexit__ method should be added to the class, so it can be used in a with statement, which calls create_session and close_session respectively.
 
-It is advisable, but not required, to implement the send method through a buffer/queue so that events be can 'sent' before the sessions has been established without losing them or raising exceptions, this might take a few seconds and in that time a single send call would block the application.
+It is advisable, but not required, to implement the send method through a buffer/queue so that events can be 'sent' before the sessions has been established without losing them or raising exceptions, this might take a few seconds and in that time a single send call would block the application.
 
 The send method should handle all events types, but it might have to handle the same thing in two ways, for instance:
 ```python
