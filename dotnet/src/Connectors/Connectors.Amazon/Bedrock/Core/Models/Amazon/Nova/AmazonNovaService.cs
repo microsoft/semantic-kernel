@@ -14,6 +14,9 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Nova;
 
 internal sealed class AmazonNovaService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    { PropertyNameCaseInsensitive = true };
+
     ConverseRequest IBedrockChatCompletionService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
@@ -79,7 +82,7 @@ internal sealed class AmazonNovaService : IBedrockTextGenerationService, IBedroc
     IReadOnlyList<TextContent> IBedrockTextGenerationService.GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
-        var responseBody = JsonSerializer.Deserialize<NovaTextResponse>(reader.ReadToEnd(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var responseBody = JsonSerializer.Deserialize<NovaTextResponse>(reader.ReadToEnd(), s_jsonSerializerOptions);
         List<TextContent> textContents = [];
         if (responseBody?.Output?.Message?.Contents is not { Count: > 0 })
         {
