@@ -330,7 +330,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
 
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "Currently passing image by URI are not supported by GoogleAI.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAudioBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
@@ -355,8 +355,8 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     }
 
     [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "Currently passing image by URI are not supported by GoogleAI.")]
-    [InlineData(ServiceType.VertexAI, Skip = "Currently passing image by URI are not supported by GoogleAI.")]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAudioUriAsync(ServiceType serviceType)
     {
         // Arrange
