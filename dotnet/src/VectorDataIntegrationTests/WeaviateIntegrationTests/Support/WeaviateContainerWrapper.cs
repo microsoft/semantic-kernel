@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using WeaviateIntegrationTests.Support.TestContainer;
 
-namespace QdrantIntegrationTests.Support;
+namespace WeaviateIntegrationTests.Support;
 
 public class WeaviateContainerWrapper : IAsyncDisposable
 {

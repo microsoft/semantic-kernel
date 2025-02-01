@@ -140,6 +140,8 @@ internal class WeaviateFilterTranslator
 
             this._filter.Append('}');
         }
+
+        throw new NotSupportedException("Invalid equality/comparison");
     }
 
     private void TranslateContains(Expression source, Expression item)

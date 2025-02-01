@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
-using QdrantIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
+using WeaviateIntegrationTests.Support;
 
-namespace RedisIntegrationTests.Filter;
+namespace WeaviateIntegrationTests.Filter;
 
 public class WeaviateFilterFixture : FilterFixtureBase<Guid>
 {

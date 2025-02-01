@@ -5,7 +5,7 @@ using VectorDataSpecificationTests.Filter;
 using Xunit;
 using Xunit.Sdk;
 
-namespace RedisIntegrationTests.Filter;
+namespace WeaviateIntegrationTests.Filter;
 
 public class WeaviateBasicFilterTests(WeaviateFilterFixture fixture) : BasicFilterTestsBase<Guid>(fixture), IClassFixture<WeaviateFilterFixture>
 {

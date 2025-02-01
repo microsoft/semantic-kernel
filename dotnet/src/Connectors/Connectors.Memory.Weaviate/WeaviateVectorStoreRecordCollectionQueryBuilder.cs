@@ -33,7 +33,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
             string.Empty;
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
             { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
@@ -45,7 +45,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
             _ => null
         };
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
 
