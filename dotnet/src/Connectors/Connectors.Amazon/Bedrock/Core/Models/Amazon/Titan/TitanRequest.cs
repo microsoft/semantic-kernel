@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Titan;
 
 internal static class TitanRequest
 {
