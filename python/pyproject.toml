@@ -66,7 +66,7 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.5.1"
+    "torch == 2.6.0"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.11",
