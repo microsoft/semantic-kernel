@@ -14,7 +14,8 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 
 # Test case to verify the initialization of BedrockAgent
-async def test_bedrock_agent_initialization(bedrock_agent_unit_test_env):
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_initialization(client, bedrock_agent_unit_test_env):
     agent = BedrockAgent(name="test_agent", env_file_path="fake_path")
 
     assert agent.name == "test_agent"
@@ -46,7 +47,8 @@ async def test_bedrock_agent_initialization_error_with_instructions_and_prompt_t
 
 
 # Test case to verify error handling during BedrockAgent initialization with non-auto function choice
-async def test_bedrock_agent_initialization_error_with_non_auto_function_choice(bedrock_agent_unit_test_env):
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_initialization_error_with_non_auto_function_choice(client, bedrock_agent_unit_test_env):
     with pytest.raises(ValueError, match="Only FunctionChoiceType.AUTO is supported."):
         BedrockAgent(
             name="test_agent",
