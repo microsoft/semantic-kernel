@@ -1230,7 +1230,7 @@ class OpenAIAssistantBase(Agent):
             "model": merged_options.get("ai_model_id"),
             "top_p": merged_options.get("top_p"),
             # TODO(evmattso): Support `parallel_tool_calls` when it is ready
-            "response_format": "json" if merged_options.get("enable_json_response") else None,
+            "response_format": {"type": "json_object"} if merged_options.get("enable_json_response") else None,
             "temperature": merged_options.get("temperature"),
             "truncation_strategy": truncation_message_count if truncation_message_count else None,
             "metadata": merged_options.get("metadata", None),
