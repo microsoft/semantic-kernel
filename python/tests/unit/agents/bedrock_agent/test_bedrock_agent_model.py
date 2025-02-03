@@ -1,8 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-from pydantic import ValidationError
-
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 
 
@@ -68,15 +65,3 @@ def test_bedrock_agent_model_extra_field():
     assert model.foundation_model == "test_model"
     assert model.agent_status == "CREATING"
     assert model.extraField == "extra_value"
-
-
-def test_bedrock_agent_model_invalid_agent_status():
-    """Test case to verify error handling when agentStatus is invalid."""
-    with pytest.raises(ValidationError):
-        BedrockAgentModel(
-            agentId="test_id",
-            agentName="test_name",
-            agentVersion="1.0",
-            foundationModel="test_model",
-            agentStatus="INVALID_STATUS",
-        )

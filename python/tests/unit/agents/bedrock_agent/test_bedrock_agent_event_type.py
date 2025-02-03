@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 
 

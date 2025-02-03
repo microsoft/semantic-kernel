@@ -3,39 +3,28 @@
 import pytest
 
 from semantic_kernel.agents.bedrock.action_group_utils import (
-    kernel_function_to_bedrock_function_schema,
-    kernel_function_metadata_to_bedrock_function_schema,
-    kernel_function_parameter_to_bedrock_function_parameter,
+    BEDROCK_FUNCTION_ALLOWED_PARAMETER_TYPES,
     kernel_function_parameter_type_to_bedrock_function_parameter_type,
-    parse_return_control_payload,
+    kernel_function_to_bedrock_function_schema,
     parse_function_result_contents,
+    parse_return_control_payload,
 )
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
-from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.kernel import Kernel
 
 
-def test_kernel_function_to_bedrock_function_schema():
+def test_kernel_function_to_bedrock_function_schema(kernel_with_function: Kernel):
     # Test the conversion of kernel function to bedrock function schema
-    function_metadata = KernelFunctionMetadata(
-        description="Test function",
-        fully_qualified_name="test_function",
-        parameters=[
-            KernelParameterMetadata(name="param1", description="Parameter 1", schema_data={"type": "string"}, is_required=True)
-        ],
-    )
-    function_choice_configuration = FunctionCallChoiceConfiguration(available_functions=[function_metadata])
+    function_choice_behavior = FunctionChoiceBehavior.Auto()
+    function_choice_configuration = function_choice_behavior.get_config(kernel_with_function)
     result = kernel_function_to_bedrock_function_schema(function_choice_configuration)
     assert result == {
         "functions": [
             {
-                "description": "Test function",
-                "name": "test_function",
+                "name": "test_plugin-getLightStatus",
                 "parameters": {
-                    "param1": {
-                        "description": "Parameter 1",
+                    "arg1": {
                         "type": "string",
                         "required": True,
                     }
@@ -43,41 +32,6 @@ def test_kernel_function_to_bedrock_function_schema():
                 "requireConfirmation": "DISABLED",
             }
         ]
-    }
-
-
-def test_kernel_function_metadata_to_bedrock_function_schema():
-    # Test the conversion of kernel function metadata to bedrock function schema
-    function_metadata = KernelFunctionMetadata(
-        description="Test function",
-        fully_qualified_name="test_function",
-        parameters=[
-            KernelParameterMetadata(name="param1", description="Parameter 1", schema_data={"type": "string"}, is_required=True)
-        ],
-    )
-    result = kernel_function_metadata_to_bedrock_function_schema(function_metadata)
-    assert result == {
-        "description": "Test function",
-        "name": "test_function",
-        "parameters": {
-            "param1": {
-                "description": "Parameter 1",
-                "type": "string",
-                "required": True,
-            }
-        },
-        "requireConfirmation": "DISABLED",
-    }
-
-
-def test_kernel_function_parameter_to_bedrock_function_parameter():
-    # Test the conversion of kernel function parameter to bedrock function parameter
-    parameter = KernelParameterMetadata(name="param1", description="Parameter 1", schema_data={"type": "string"}, is_required=True)
-    result = kernel_function_parameter_to_bedrock_function_parameter(parameter)
-    assert result == {
-        "description": "Parameter 1",
-        "type": "string",
-        "required": True,
     }
 
 
@@ -91,7 +45,11 @@ def test_kernel_function_parameter_type_to_bedrock_function_parameter_type():
 def test_kernel_function_parameter_type_to_bedrock_function_parameter_type_invalid():
     # Test the conversion of invalid kernel function parameter type to bedrock function parameter type
     schema_data = {"type": "invalid_type"}
-    with pytest.raises(ValueError, match="Type invalid_type is not allowed in bedrock function parameter type. Allowed types are {'string', 'number', 'integer', 'boolean', 'array'}."):
+    with pytest.raises(
+        ValueError,
+        match="Type invalid_type is not allowed in bedrock function parameter type. "
+        f"Allowed types are {BEDROCK_FUNCTION_ALLOWED_PARAMETER_TYPES}.",
+    ):
         kernel_function_parameter_type_to_bedrock_function_parameter_type(schema_data)
 
 
@@ -122,6 +80,7 @@ def test_parse_function_result_contents():
     # Test the parsing of function result contents to be returned to the agent
     function_result_contents = [
         FunctionResultContent(
+            id="test_id",
             name="test_function",
             result="test_result",
             metadata={"functionInvocationInput": {"actionGroup": "test_action_group"}},
