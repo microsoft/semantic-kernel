@@ -34,7 +34,7 @@ jobs:
         run: |
           new_issue_url=$(gh issue create \
             --title "Port dotnet feature: ${{ github.event.issue.title || github.event.pull_request.title }}" \
-            --label "Python" \
+            --label "python" \
             --body "# Original issue
             ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
             ## Description
