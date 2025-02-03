@@ -64,7 +64,7 @@ async def main() -> None:
         thread = await client.agents.create_thread()
 
         user_inputs = [
-            # "Hello",
+            "Hello",
             "What is the special soup?",
             "How much does that cost?",
             "Thank you",

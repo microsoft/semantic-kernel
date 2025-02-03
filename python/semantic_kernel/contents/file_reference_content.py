@@ -22,6 +22,7 @@ class FileReferenceContent(KernelContent):
     content_type: Literal[ContentTypes.FILE_REFERENCE_CONTENT] = Field(FILE_REFERENCE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FILE_REFERENCE_CONTENT_TAG
     file_id: str | None = None
+    tools: list[str] = Field(default_factory=list)
 
     def __str__(self) -> str:
         """Return the string representation of the file reference content."""

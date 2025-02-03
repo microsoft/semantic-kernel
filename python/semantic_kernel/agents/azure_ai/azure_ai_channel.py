@@ -62,8 +62,7 @@ class AzureAIChannel(AgentChannel):
             raise AgentChatException(f"Agent is not of the expected type {type(AzureAIAgent)}.")
 
         async for is_visible, message in AgentThreadActions.invoke(
-            agent,
-            self.client,
+            agent=agent,
             thread_id=self.thread_id,
             arguments=agent.arguments,
             kernel=agent.kernel,

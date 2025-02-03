@@ -13,7 +13,7 @@ from azure.ai.projects.models import (
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
     RunStepDeltaCodeInterpreterToolCall,
-    RunStepDeltaFunction,
+    RunStepDeltaFunctionToolCall,
     RunStepFunctionToolCall,
     ThreadMessage,
     ThreadRun,
@@ -278,7 +278,7 @@ def generate_streaming_function_content(
 
     for tool in step_details.tool_calls:
         if tool.type == "function":
-            function: RunStepDeltaFunction = tool
+            function: RunStepDeltaFunctionToolCall = tool.function
             items.append(
                 FunctionCallContent(
                     id=tool.id,
