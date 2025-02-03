@@ -124,7 +124,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             messages: The history of messages in the conversation.
 
         Returns:
-            An async iterable of bool, StreamingChatMessageContent.
+            An async iterable of ChatMessageContent.
         """
         if not isinstance(agent, ChatHistoryAgentProtocol):
             id = getattr(agent, "id", "")
