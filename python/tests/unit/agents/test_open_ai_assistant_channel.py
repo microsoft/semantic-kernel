@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -74,12 +75,12 @@ def mock_assistant():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": {
+            "__run_options": json.dumps({
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
-            }
+            })
         },
         model="test_model",
         description="test_description",
