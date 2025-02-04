@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,6 +15,7 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -334,7 +336,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
-        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        // Build filter object.
+        var filter = internalOptions switch
+        {
+            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
+            { Filter: VectorSearchFilter oldFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(oldFilter, this._propertyReader.JsonPropertyNamesMap),
+            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => null
+        };
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Build search options.
         var searchOptions = new SearchOptions
@@ -342,9 +354,14 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             VectorSearch = new(),
             Size = internalOptions.Top,
             Skip = internalOptions.Skip,
-            Filter = filterString,
             IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
+
+        if (filter is not null)
+        {
+            searchOptions.Filter = filter;
+        }
+
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
@@ -374,7 +391,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
-        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
 
         // Build search options.
         var searchOptions = new SearchOptions

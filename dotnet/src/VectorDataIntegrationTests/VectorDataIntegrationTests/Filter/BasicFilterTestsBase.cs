@@ -147,6 +147,10 @@ public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture
         => this.TestFilter(r => new[] { "foo", "baz", "unknown" }.Contains(r.String));
 
     [ConditionalFact]
+    public virtual Task Contains_over_inline_string_array_with_weird_chars()
+        => this.TestFilter(r => new[] { "foo", "baz", "un  , ' \"" }.Contains(r.String));
+
+    [ConditionalFact]
     public virtual Task Contains_over_captured_string_array()
     {
         var array = new[] { "foo", "baz", "unknown" };
