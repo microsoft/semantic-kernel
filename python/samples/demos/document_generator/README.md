@@ -37,7 +37,7 @@ To learn more about the Semantic Kernel Agent Framework, please refer to the [Se
 - `AICodeSandbox` - for executing AI generated code in a sandbox environment
 
     ```bash
-    pip install AICodeSandbox
+    pip install ai-code-sandbox
     ```
 
     > You must also have `docker` installed and running on your machine. Follow the instructions [here](https://docs.docker.com/get-started/introduction/get-docker-desktop/) to install docker for your platform. Images will be pulled during runtime if not already present. Containers will be created and destroyed during code execution.
@@ -54,6 +54,7 @@ OPENAI_API_KEY=<your-key>
 ```
 
 > gpt-4o-2024-08-06 was used to generate [GENERATED_DOCUMENT.md](GENERATED_DOCUMENT.md).
+> Feel free to use other models from OpenAI or other providers. When you use models from another provider, make sure to update the chat completion services accordingly.
 
 ```env
 
