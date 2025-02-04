@@ -35,7 +35,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().EqualTo("FieldName", expected);
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
+        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromOldFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
 
         // Assert.
         Assert.Single(actual.Must);
@@ -69,7 +69,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().AnyTagEqualTo("FieldName", "Value");
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
+        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromOldFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
 
         // Assert.
         Assert.Single(actual.Must);
@@ -84,7 +84,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().EqualTo("FieldName", "Value");
 
         // Act and Assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionSearchMapping.BuildFilter(filter, new Dictionary<string, string>()));
+        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionSearchMapping.BuildFromOldFilter(filter, new Dictionary<string, string>()));
     }
 
     [Fact]

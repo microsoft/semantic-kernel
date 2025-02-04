@@ -405,7 +405,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             properties: recordDefinition.Properties,
             vectorProperty: vectorProperty,
             vectorValue: vector,
-            filter: null,
+            oldFilter: null,
             skip: null,
             includeVectors: true,
             limit: 10);

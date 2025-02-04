@@ -197,7 +197,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
-        var vectorSearchOptions = new VectorSearchOptions
+        var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
             Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
             Skip = searchOptions.Skip,

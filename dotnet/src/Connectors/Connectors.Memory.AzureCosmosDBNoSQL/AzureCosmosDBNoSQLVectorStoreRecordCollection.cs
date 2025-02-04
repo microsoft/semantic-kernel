@@ -69,7 +69,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
@@ -355,7 +355,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
-        VectorSearchOptions? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
@@ -679,7 +679,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         IAsyncEnumerable<JsonObject> jsonObjects,
         string scorePropertyName,
         string operationName,
-        VectorSearchOptions searchOptions,
+        VectorSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var jsonObject in jsonObjects.ConfigureAwait(false))

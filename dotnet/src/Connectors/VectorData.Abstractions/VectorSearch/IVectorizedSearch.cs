@@ -21,6 +21,6 @@ public interface IVectorizedSearch<TRecord>
     /// <returns>The records found by the vector search, including their result scores.</returns>
     Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
-        VectorSearchOptions? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 }

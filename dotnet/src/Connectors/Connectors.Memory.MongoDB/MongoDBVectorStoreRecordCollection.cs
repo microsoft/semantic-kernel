@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -32,7 +34,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     private const string DocumentPropertyName = "document";
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -247,7 +249,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
-        VectorSearchOptions? options = null,
+        MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
@@ -273,9 +275,15 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
-        var filter = MongoDBVectorStoreCollectionSearchMapping.BuildFilter(
-            searchOptions.Filter,
-            this._storagePropertyNames);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = searchOptions switch
+        {
+            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
+            { Filter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
+            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            _ => null
+        };
+#pragma warning restore CS0618
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
@@ -383,7 +391,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         IAsyncCursor<BsonDocument> cursor,
-        VectorSearchOptions searchOptions,
+        MEVD.VectorSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Aggregate";

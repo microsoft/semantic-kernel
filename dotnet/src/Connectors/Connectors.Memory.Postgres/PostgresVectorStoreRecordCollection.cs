@@ -37,7 +37,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -250,7 +250,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
 
@@ -285,11 +285,14 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             var results = this._client.GetNearestMatchesAsync(
                 this.CollectionName,
-                this._propertyReader.RecordDefinition.Properties,
+                this._propertyReader,
                 vectorProperty,
                 pgVector,
                 searchOptions.Top,
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
                 searchOptions.Filter,
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+                searchOptions.NewFilter,
                 searchOptions.Skip,
                 searchOptions.IncludeVectors,
                 cancellationToken)

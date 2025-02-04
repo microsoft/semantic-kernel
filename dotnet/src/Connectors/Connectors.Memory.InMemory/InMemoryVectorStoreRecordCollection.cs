@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Internal storage for all of the record collections.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollections;
@@ -210,7 +211,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
         Verify.NotNull(vector);
@@ -234,13 +235,22 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");
         }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
-        var filteredRecords = InMemoryVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
+        var allValues = this.GetCollectionDictionary().Values.Cast<TRecord>();
+        var filteredRecords = internalOptions switch
+        {
+            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
+            { Filter: VectorSearchFilter oldFilter } => InMemoryVectorStoreCollectionSearchMapping.FilterRecords(oldFilter, allValues),
+            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(newFilter),
+            _ => allValues
+        };
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
         // Compare each vector in the filtered results with the provided vector.
-        var results = filteredRecords.Select<object, (object record, float score)?>((record) =>
+        var results = filteredRecords.Select<TRecord, (TRecord record, float score)?>(record =>
         {
-            var vectorObject = this._vectorResolver(vectorPropertyName!, (TRecord)record);
+            var vectorObject = this._vectorResolver(vectorPropertyName!, record);
             if (vectorObject is not ReadOnlyMemory<float> dbVector)
             {
                 return null;

@@ -20,6 +20,6 @@ public interface IVectorizableTextSearch<TRecord>
     /// <returns>The records found by the vector search, including their result scores.</returns>
     Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(
         string searchText,
-        VectorSearchOptions? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 }

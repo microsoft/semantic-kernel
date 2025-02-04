@@ -149,7 +149,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         };
 
         // Act.
-        var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(basicVectorSearchFilter, storagePropertyNames);
+        var filter = RedisVectorStoreCollectionSearchMapping.BuildOldFilter(basicVectorSearchFilter, storagePropertyNames);
 
         // Assert.
         switch (filterType)
@@ -184,7 +184,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Act & Assert.
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(basicVectorSearchFilter, storagePropertyNames);
+            var filter = RedisVectorStoreCollectionSearchMapping.BuildOldFilter(basicVectorSearchFilter, storagePropertyNames);
         });
     }
 
@@ -201,7 +201,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Act & Assert.
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var filter = RedisVectorStoreCollectionSearchMapping.BuildFilter(basicVectorSearchFilter, storagePropertyNames);
+            var filter = RedisVectorStoreCollectionSearchMapping.BuildOldFilter(basicVectorSearchFilter, storagePropertyNames);
         });
     }
 

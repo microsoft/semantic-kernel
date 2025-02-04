@@ -31,7 +31,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Internal storage for all of the record collections.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollections;
@@ -213,7 +213,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
         Verify.NotNull(vector);
@@ -238,6 +238,11 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Filter records using the provided filter before doing the vector comparison.
+        if (internalOptions.NewFilter is not null)
+        {
+            throw new NotSupportedException("LINQ-based filtering is not supported with VolatileVectorStore, use Microsoft.SemanticKernel.Connectors.InMemory instead");
+        }
+
         var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
 
         // Compare each vector in the filtered results with the provided vector.

@@ -63,7 +63,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             embedding,
-            new VectorSearchOptions
+            new()
             {
                 IncludeVectors = true,
                 Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")

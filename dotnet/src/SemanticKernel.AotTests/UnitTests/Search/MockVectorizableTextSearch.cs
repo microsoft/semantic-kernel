@@ -13,7 +13,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorizableTextSea
         this._searchResults = ToAsyncEnumerable(searchResults);
     }
 
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new VectorSearchResults<TRecord>(this._searchResults));
     }

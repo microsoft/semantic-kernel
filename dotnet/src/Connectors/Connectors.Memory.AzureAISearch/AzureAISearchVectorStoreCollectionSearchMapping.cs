@@ -19,10 +19,10 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <returns>The OData filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-    public static string BuildFilterString(VectorSearchFilter? basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static string BuildLegacyFilterString(VectorSearchFilter basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var filterString = string.Empty;
-        if (basicVectorSearchFilter?.FilterClauses is not null)
+        if (basicVectorSearchFilter.FilterClauses is not null)
         {
             // Map Equality clauses.
             var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>().Select(x =>
