@@ -14,7 +14,7 @@
                 },
                 {
                     "method": "Post",
-                    "uriTemplate": "/me/messages"
+                    "uriTemplate": "/me/sendMail"
                 }
             ]
         }

@@ -100,14 +100,31 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
     }
     private static readonly HashSet<string> s_fieldsToIgnore = new(
         [
+            "@odata.type",
+            "attachments",
+            "bccRecipients",
             "bodyPreview",
             "categories",
+            "ccRecipients",
             "conversationId",
             "conversationIndex",
+            "extensions",
+            "flag",
+            "from",
+            "hasAttachments",
+            "id",
             "inferenceClassification",
             "internetMessageHeaders",
             "isDeliveryReceiptRequested",
+            "isDraft",
+            "isRead",
+            "isReadReceiptRequested",
             "multiValueExtendedProperties",
+            "parentFolderId",
+            "receivedDateTime",
+            "replyTo",
+            "sender",
+            "sentDateTime",
             "singleValueExtendedProperties",
             "uniqueBody",
             "webLink",
@@ -135,25 +152,40 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         {
             return schema;
         }
-        if (jsonNode.TryGetPropertyValue(RequiredPropertyName, out var requiredRawValue) && requiredRawValue is JsonArray requiredArray)
+
+        TrimPropertiesFromJsonNode(jsonNode);
+
+        return KernelJsonSchema.Parse(node.ToString());
+    }
+    private static void TrimPropertiesFromJsonNode(JsonNode jsonNode)
+    {
+        if (jsonNode is not JsonObject jsonObject)
+        {
+            return;
+        }
+        if (jsonObject.TryGetPropertyValue(RequiredPropertyName, out var requiredRawValue) && requiredRawValue is JsonArray requiredArray)
         {
             jsonNode[RequiredPropertyName] = new JsonArray(requiredArray.Where(x => x is not null).Select(x => x!.GetValue<string>()).Where(x => !s_fieldsToIgnore.Contains(x)).Select(x => JsonValue.Create(x)).ToArray());
         }
-
-        if (jsonNode.TryGetPropertyValue(PropertiesPropertyName, out var propertiesRawValue) && propertiesRawValue is JsonObject propertiesObject)
+        if (jsonObject.TryGetPropertyValue(PropertiesPropertyName, out var propertiesRawValue) && propertiesRawValue is JsonObject propertiesObject)
         {
-            var properties = propertiesObject.Where(x => s_fieldsToIgnore.Contains(x.Key)).Select(x => x.Key).ToArray();
+            var properties = propertiesObject.Where(x => s_fieldsToIgnore.Contains(x.Key)).Select(static x => x.Key).ToArray();
             foreach (var property in properties)
             {
                 propertiesObject.Remove(property);
             }
         }
-
-        return KernelJsonSchema.Parse(node.ToString());
+        foreach (var subProperty in jsonObject)
+        {
+            if (subProperty.Value is not null)
+            {
+                TrimPropertiesFromJsonNode(subProperty.Value);
+            }
+        }
     }
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
-        if ("me_CreateMessages".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
+        if ("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
             "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
