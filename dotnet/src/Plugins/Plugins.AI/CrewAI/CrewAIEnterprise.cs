@@ -234,7 +234,7 @@ public class CrewAIEnterprise
     /// <returns>A <see cref="bool"/> indicating if the state is a terminal state.</returns>
     private bool IsTerminalState(CrewAIKickoffState state)
     {
-        return state == CrewAIKickoffState.Failed || state == CrewAIKickoffState.Success;
+        return state == CrewAIKickoffState.Failed || state == CrewAIKickoffState.Failure || state == CrewAIKickoffState.Success || state == CrewAIKickoffState.NotFound;
     }
 
     private static Dictionary<string, object?> BuildArguments(IEnumerable<CrewAIInputMetadata>? inputMetadata, KernelArguments arguments)

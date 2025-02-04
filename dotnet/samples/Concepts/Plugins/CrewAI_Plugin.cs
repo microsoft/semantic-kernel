@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
-namespace Search;
+namespace Plugins;
 
 /// <summary>
 /// This example shows how to interact with an existing CrewAI Enterprise Crew directly or as a plugin.

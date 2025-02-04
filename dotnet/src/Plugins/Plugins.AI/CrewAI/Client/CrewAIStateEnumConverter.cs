@@ -19,6 +19,8 @@ internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffStat
             "RUNNING" => CrewAIKickoffState.Running,
             "SUCCESS" => CrewAIKickoffState.Success,
             "FAILED" => CrewAIKickoffState.Failed,
+            "FAILURE" => CrewAIKickoffState.Failure,
+            "NOT FOUND" => CrewAIKickoffState.NotFound,
             _ => throw new KernelException("Failed to parse Crew AI kickoff state.")
         };
     }
@@ -32,6 +34,8 @@ internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffStat
             CrewAIKickoffState.Running => "RUNNING",
             CrewAIKickoffState.Success => "SUCCESS",
             CrewAIKickoffState.Failed => "FAILED",
+            CrewAIKickoffState.Failure => "FAILURE",
+            CrewAIKickoffState.NotFound => "NOT FOUND",
             _ => throw new KernelException("Failed to parse Crew AI kickoff state.")
         };
         writer.WriteStringValue(stringValue);

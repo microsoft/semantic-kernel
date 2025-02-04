@@ -30,5 +30,15 @@ public enum CrewAIKickoffState
     /// <summary>
     /// The kickoff failed.
     /// </summary>
-    Failed
+    Failed,
+
+    /// <summary>
+    /// The kickoff has failed.
+    /// </summary>
+    Failure,
+
+    /// <summary>
+    /// The kickoff was not found.
+    /// </summary>
+    NotFound
 }

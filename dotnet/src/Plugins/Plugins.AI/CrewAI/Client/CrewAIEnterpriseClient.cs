@@ -2,7 +2,6 @@
 
 using System;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,9 +98,7 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
             };
 
             using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
-            using var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-
-            using var requestMessage = HttpRequest.CreatePostRequest("/kickoff", requestContent);
+            using var requestMessage = HttpRequest.CreatePostRequest("/kickoff", content);
             using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
 

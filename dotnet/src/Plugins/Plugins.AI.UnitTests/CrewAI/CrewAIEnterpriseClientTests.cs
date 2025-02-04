@@ -107,6 +107,8 @@ public sealed partial class CrewAIEnterpriseClientTests
     [InlineData(CrewAIKickoffState.Running)]
     [InlineData(CrewAIKickoffState.Success)]
     [InlineData(CrewAIKickoffState.Failed)]
+    [InlineData(CrewAIKickoffState.Failure)]
+    [InlineData(CrewAIKickoffState.NotFound)]
     public async Task GetStatusAsyncReturnsCrewAIStatusResponseAsync(CrewAIKickoffState state)
     {
         var crewAIStatusState = state switch
