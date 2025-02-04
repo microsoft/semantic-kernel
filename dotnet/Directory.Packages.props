@@ -50,6 +50,7 @@
     <PackageVersion Include="Npgsql" Version="8.0.6" />
     <PackageVersion Include="OllamaSharp" Version="4.0.17" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.2]" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
