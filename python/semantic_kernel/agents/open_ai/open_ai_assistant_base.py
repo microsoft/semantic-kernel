@@ -121,7 +121,7 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -368,10 +368,7 @@ class OpenAIAssistantBase(Agent):
         execution_settings = {}
         template_format = "semantic-kernel"
         if isinstance(assistant.metadata, dict) and OpenAIAssistantBase._options_metadata_key in assistant.metadata:
-            settings_data = assistant.metadata[OpenAIAssistantBase._options_metadata_key]
-            if isinstance(settings_data, str):
-                settings_data = json.loads(settings_data)
-                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = settings_data
+            settings_data = json.loads(assistant.metadata[OpenAIAssistantBase._options_metadata_key])
             execution_settings = {key: value for key, value in settings_data.items()}
             template_format = assistant.metadata.get(OpenAIAssistantBase._template_metadata_key, "semantic-kernel")
 
