@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,5 +11,4 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <param name="context">The context containing HTTP operation details.</param>
 /// <param name="cancellationToken">The cancellation token.</param>
 /// <returns>The HTTP response content.</returns>
-[Experimental("SKEXP0040")]
 public delegate Task<object?> HttpResponseContentReader(HttpResponseContentReaderContext context, CancellationToken cancellationToken = default);

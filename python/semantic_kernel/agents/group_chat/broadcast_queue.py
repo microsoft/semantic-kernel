@@ -4,6 +4,7 @@
 import asyncio
 from collections import deque
 from dataclasses import dataclass, field
+from typing import Any
 
 from pydantic import Field, SkipValidation, ValidationError, model_validator
 
@@ -28,11 +29,12 @@ class QueueReference(KernelBaseModel):
         return len(self.queue) == 0
 
     @model_validator(mode="before")
-    def validate_receive_task(cls, values):
+    def validate_receive_task(cls, values: Any):
         """Validate the receive task."""
-        receive_task = values.get("receive_task")
-        if receive_task is not None and not isinstance(receive_task, asyncio.Task):
-            raise ValidationError("receive_task must be an instance of asyncio.Task or None")
+        if isinstance(values, dict):
+            receive_task = values.get("receive_task")
+            if receive_task is not None and not isinstance(receive_task, asyncio.Task):
+                raise ValidationError("receive_task must be an instance of asyncio.Task or None")
         return values
 
 

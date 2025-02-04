@@ -213,7 +213,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         try
         {
@@ -226,7 +226,7 @@ public abstract class AgentChat
 
             await foreach ((bool isVisible, ChatMessageContent message) in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
+                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), message);
 
                 messages.Add(message);
 
@@ -248,7 +248,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
         finally
         {
@@ -272,7 +272,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         try
         {
@@ -290,7 +290,7 @@ public abstract class AgentChat
 
             this.History.AddRange(messages);
 
-            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
+            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), messages);
 
             // Broadcast message to other channels (in parallel)
             // Note: Able to queue messages without synchronizing channels.
@@ -300,7 +300,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
         finally
         {
@@ -433,7 +433,7 @@ public abstract class AgentChat
         AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
         if (channel is null)
         {
-            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
             channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
@@ -445,7 +445,7 @@ public abstract class AgentChat
                 await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
             }
 
-            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
 
         return channel;

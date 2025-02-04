@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -86,7 +87,7 @@ async def main():
             kernel=kernel,
             name=REVIEWER_NAME,
             instructions=REVIEWER_INSTRUCTIONS,
-            execution_settings=settings,
+            arguments=KernelArguments(settings=settings),
         )
 
         agent_writer = await OpenAIAssistantAgent.create(

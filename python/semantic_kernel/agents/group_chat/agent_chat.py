@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import threading
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncIterable
 
 from pydantic import Field, PrivateAttr
 
@@ -54,13 +54,13 @@ class AgentChat(KernelBaseModel):
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
-    async def get_messages_in_descending_order(self):
+    async def get_messages_in_descending_order(self) -> AsyncIterable[ChatMessageContent]:
         """Get messages in descending order asynchronously."""
         for index in range(len(self.history.messages) - 1, -1, -1):
             yield self.history.messages[index]
             await asyncio.sleep(0)  # Yield control to the event loop
 
-    async def get_chat_messages(self, agent: "Agent | None" = None) -> AsyncGenerator[ChatMessageContent, None]:
+    async def get_chat_messages(self, agent: "Agent | None" = None) -> AsyncIterable[ChatMessageContent]:
         """Get chat messages asynchronously."""
         self.set_activity_or_throw()
 

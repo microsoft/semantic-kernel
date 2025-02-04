@@ -7,7 +7,7 @@ from collections.abc import Callable, Sequence
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
@@ -264,7 +264,11 @@ class TextSearch:
         @kernel_function(name=function_name, description=description)
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
             query = kwargs.pop("query", "")
-            inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
+            try:
+                inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
+            except ValidationError:
+                # this usually only happens when the kwargs are invalid, so blank options in this case.
+                inner_options = self.options_class()
             query, inner_options = update_func(query=query, options=inner_options, parameters=parameters, **kwargs)
             try:
                 results = await self._get_search_function(search_function)(

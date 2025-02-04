@@ -18,8 +18,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
+    from semantic_kernel.functions import KernelArguments
     from semantic_kernel.kernel import Kernel
-
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
     def __init__(
         self,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         deployment_name: str | None = None,
         api_key: str | None = None,
@@ -58,18 +60,20 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
         token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an Azure OpenAI Assistant Agent.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
             service_id: The service ID. (optional)
             deployment_name: The deployment name. (optional)
             api_key: The Azure OpenAI API key. (optional)
@@ -98,6 +102,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
             token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -124,7 +129,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
-            "kernel": kernel,
             "ai_model_id": azure_openai_settings.chat_deployment_name,
             "service_id": service_id,
             "client": client,
@@ -149,6 +153,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             args["id"] = id
         if kernel is not None:
             args["kernel"] = kernel
+        if arguments is not None:
+            args["arguments"] = arguments
+        if prompt_template_config is not None:
+            args["prompt_template_config"] = prompt_template_config
         if kwargs:
             args.update(kwargs)
 
@@ -159,6 +167,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         cls,
         *,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         deployment_name: str | None = None,
         api_key: str | None = None,
@@ -184,18 +193,20 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
         token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> "AzureAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
             service_id: The service ID. (optional)
             deployment_name: The deployment name. (optional)
             api_key: The Azure OpenAI API key. (optional)
@@ -227,6 +238,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
             token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -234,6 +246,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         """
         agent = cls(
             kernel=kernel,
+            arguments=arguments,
             service_id=service_id,
             deployment_name=deployment_name,
             api_key=api_key,
@@ -261,6 +274,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
             truncation_message_count=truncation_message_count,
             token_endpoint=token_endpoint,
+            prompt_template_config=prompt_template_config,
             **kwargs,
         )
 
@@ -316,10 +330,12 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
         client: AsyncAzureOpenAI | None = None,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         default_headers: dict[str, str] | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
     ) -> "AzureAssistantAgent":
         """Retrieve an assistant by ID.
 
@@ -332,10 +348,12 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             ad_token_provider: The Azure AD token provider. (optional)
             client: The Azure OpenAI client. (optional)
             kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
             default_headers: The default headers. (optional)
             env_file_path: The environment file path. (optional)
             env_file_encoding: The environment file encoding. (optional)
             token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
 
         Returns:
             An AzureAssistantAgent instance.
@@ -363,6 +381,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 
         return AzureAssistantAgent(
             kernel=kernel,
+            arguments=arguments,
             assistant=assistant,
             client=client,
             ad_token=ad_token,
@@ -373,6 +392,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
             token_endpoint=token_endpoint,
+            prompt_template_config=prompt_template_config,
             **assistant_definition,
         )
 

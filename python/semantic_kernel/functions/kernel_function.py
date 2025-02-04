@@ -30,6 +30,7 @@ from semantic_kernel.prompt_template.const import (
 from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
 from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -37,7 +38,6 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 # Logger, tracer and meter for observability
@@ -46,7 +46,7 @@ tracer: trace.Tracer = trace.get_tracer(__name__)
 meter: metrics.Meter = metrics.get_meter_provider().get_meter(__name__)
 MEASUREMENT_FUNCTION_TAG_NAME: str = "semantic_kernel.function.name"
 
-TEMPLATE_FORMAT_MAP = {
+TEMPLATE_FORMAT_MAP: dict[TEMPLATE_FORMAT_TYPES, type[PromptTemplateBase]] = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
     HANDLEBARS_TEMPLATE_FORMAT_NAME: HandlebarsPromptTemplate,
     JINJA2_TEMPLATE_FORMAT_NAME: Jinja2PromptTemplate,

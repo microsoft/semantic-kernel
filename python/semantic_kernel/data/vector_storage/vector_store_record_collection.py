@@ -52,9 +52,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     @model_validator(mode="before")
     @classmethod
-    def _ensure_data_model_definition(cls: type[_T], data: dict[str, Any]) -> dict[str, Any]:
+    def _ensure_data_model_definition(cls: type[_T], data: Any) -> dict[str, Any]:
         """Ensure there is a  data model definition, if it isn't passed, try to get it from the data model type."""
-        if not data.get("data_model_definition"):
+        if isinstance(data, dict) and not data.get("data_model_definition"):
             data["data_model_definition"] = getattr(
                 data["data_model_type"], "__kernel_vectorstoremodel_definition__", None
             )

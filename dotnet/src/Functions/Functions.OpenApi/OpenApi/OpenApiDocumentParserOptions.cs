@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Options for OpenAPI document parser.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class OpenApiDocumentParserOptions
 {
     /// <summary>

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -55,19 +56,19 @@ public abstract class TerminationStrategy
     /// <returns>True to terminate chat loop.</returns>
     public async Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogTerminationStrategyEvaluatingCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+        this.Logger.LogTerminationStrategyEvaluatingCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         // `Agents` must contain `agent`, if `Agents` not empty.
         if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
         {
-            this.Logger.LogTerminationStrategyAgentOutOfScope(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+            this.Logger.LogTerminationStrategyAgentOutOfScope(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
             return false;
         }
 
         bool shouldTerminate = await this.ShouldAgentTerminateAsync(agent, history, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogTerminationStrategyEvaluatedCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, shouldTerminate);
+        this.Logger.LogTerminationStrategyEvaluatedCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), shouldTerminate);
 
         return shouldTerminate;
     }
