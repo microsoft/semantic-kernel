@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Connectors.Amazon.Nova;
+using Microsoft.SemanticKernel.Connectors.Amazon.Titan;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
@@ -34,7 +36,12 @@ internal sealed class BedrockServiceFactory
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonService();
+                    return new AmazonTitanService();
+                }
+
+                if (modelName.StartsWith("nova-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new AmazonNovaService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":
@@ -92,7 +99,11 @@ internal sealed class BedrockServiceFactory
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonService();
+                    return new AmazonTitanService();
+                }
+                if (modelName.StartsWith("nova-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new AmazonNovaService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":

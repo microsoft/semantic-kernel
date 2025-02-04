@@ -7,13 +7,14 @@ using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Titan;
 
 /// <summary>
 /// Input-output service for Amazon Titan model.
 /// </summary>
-internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockChatCompletionService
+internal sealed class AmazonTitanService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
