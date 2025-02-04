@@ -80,7 +80,7 @@ public class CrewAI_Plugin(ITestOutputHelper output) : BaseTest(output)
         };
 
         // Create the CrewAI Plugin. This builds a plugin that can be added to the Kernel and invoked like any other plugin.
-        // The plugin will conatin the following functions:
+        // The plugin will contain the following functions:
         // - Kickoff: Starts the Crew with the specified inputs and returns the Id of the scheduled kickoff.
         // - KickoffAndWait: Starts the Crew with the specified inputs and waits for the Crew to complete before returning the result.
         // - WaitForCrewCompletion: Waits for the specified Crew kickoff to complete and returns the result.

@@ -181,7 +181,7 @@ public class CrewAIEnterprise
             ReturnParameter = new() { ParameterType = typeof(string) },
         };
 
-        // Define the kernel function implmentation for kickoff
+        // Define the kernel function implementation for kickoff
         [KernelFunction(KickoffFunctionName)]
         [Description("kicks off the CrewAI Crew and returns the Id of the scheduled kickoff.")]
         async Task<string> KickoffAsync(KernelArguments arguments)
@@ -196,7 +196,7 @@ public class CrewAIEnterprise
                 .ConfigureAwait(false);
         }
 
-        // Define the kernel function implmentation for kickoff and wait for result
+        // Define the kernel function implementation for kickoff and wait for result
         [KernelFunction(KickoffAndWaitFunctionName)]
         [Description("kicks off the CrewAI Crew, waits for it to complete, and returns the result.")]
         async Task<string> KickoffAndWaitAsync(KernelArguments arguments)
