@@ -54,56 +54,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
+        var agentName = this.GetDisplayName();
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        var result = ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
+            () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
+            cancellationToken);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
-
-        int messageCount = chat.Count;
-
-        var serviceType = chatCompletionService.GetType();
-        var agentDisplayName = this.GetDisplayName();
-
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentDisplayName, this.Description);
-
-        IReadOnlyList<ChatMessageContent> messages;
-
-        try
+        await foreach (var item in result.ConfigureAwait(false))
         {
-            this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
-
-            messages =
-                await chatCompletionService.GetChatMessageContentsAsync(
-                    chat,
-                    executionSettings,
-                    kernel,
-                    cancellationToken).ConfigureAwait(false);
-
-            this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType, messages.Count);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            throw;
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            history.Add(message);
-        }
-
-        foreach (ChatMessageContent message in messages)
-        {
-            message.AuthorName = this.Name;
-
-            yield return message;
+            yield return item;
         }
     }
 
@@ -114,92 +74,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
+        var agentName = this.GetDisplayName();
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        var result = ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
+            () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
+            cancellationToken);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
-
-        int messageCount = chat.Count;
-
-        var serviceType = chatCompletionService.GetType();
-        var agentDisplayName = this.GetDisplayName();
-
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentDisplayName, this.Description);
-
-        IAsyncEnumerable<StreamingChatMessageContent> messages;
-
-        try
+        await foreach (var item in result.ConfigureAwait(false))
         {
-            this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
-
-            messages = chatCompletionService.GetStreamingChatMessageContentsAsync(
-                chat,
-                executionSettings,
-                kernel,
-                cancellationToken);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            throw;
-        }
-
-        AuthorRole? role = null;
-        StringBuilder builder = new();
-
-        var resultEnumerator = messages.ConfigureAwait(false).GetAsyncEnumerator();
-
-        try
-        {
-            while (true)
-            {
-                try
-                {
-                    if (!await resultEnumerator.MoveNextAsync())
-                    {
-                        break;
-                    }
-                }
-                catch (Exception ex) when (activity is not null)
-                {
-                    activity.SetError(ex);
-                    throw;
-                }
-
-                var message = resultEnumerator.Current;
-
-                role = message.Role;
-                message.Role ??= AuthorRole.Assistant;
-                message.AuthorName = this.Name;
-
-                builder.Append(message.ToString());
-
-                yield return message;
-            }
-        }
-        finally
-        {
-            await resultEnumerator.DisposeAsync();
-        }
-
-        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            history.Add(message);
-        }
-
-        // Do not duplicate terminated function result to history
-        if (role != AuthorRole.Tool)
-        {
-            history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
+            yield return item;
         }
     }
 
@@ -225,6 +109,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         return (chatCompletionService, executionSettings);
     }
 
+    #region private
+
     private async Task<ChatHistory> SetupAgentChatHistoryAsync(
         IReadOnlyList<ChatMessageContent> history,
         KernelArguments? arguments,
@@ -244,4 +130,112 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         return chat;
     }
+
+    private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
+        string agentName,
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        kernel ??= this.Kernel;
+        arguments = this.MergeArguments(arguments);
+
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+
+        int messageCount = chat.Count;
+
+        var serviceType = chatCompletionService.GetType();
+
+        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
+
+        IReadOnlyList<ChatMessageContent> messages =
+            await chatCompletionService.GetChatMessageContentsAsync(
+                chat,
+                executionSettings,
+                kernel,
+                cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, agentName, serviceType, messages.Count);
+
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            history.Add(message);
+        }
+
+        foreach (ChatMessageContent message in messages)
+        {
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+    }
+
+    private async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
+        string agentName,
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        kernel ??= this.Kernel;
+        arguments = this.MergeArguments(arguments);
+
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+
+        int messageCount = chat.Count;
+
+        var serviceType = chatCompletionService.GetType();
+
+        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
+
+        IAsyncEnumerable<StreamingChatMessageContent> messages =
+            chatCompletionService.GetStreamingChatMessageContentsAsync(
+                chat,
+                executionSettings,
+                kernel,
+                cancellationToken);
+
+        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
+
+        AuthorRole? role = null;
+        StringBuilder builder = new();
+        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+        {
+            role = message.Role;
+            message.Role ??= AuthorRole.Assistant;
+            message.AuthorName = this.Name;
+
+            builder.Append(message.ToString());
+
+            yield return message;
+        }
+
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            history.Add(message);
+        }
+
+        // Do not duplicate terminated function result to history
+        if (role != AuthorRole.Tool)
+        {
+            history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
+        }
+    }
+
+    #endregion
 }
