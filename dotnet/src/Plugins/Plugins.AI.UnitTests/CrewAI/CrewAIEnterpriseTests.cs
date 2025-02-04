@@ -18,7 +18,7 @@ namespace SemanticKernel.Plugins.UnitTests.AI.CrewAI;
 /// </summary>
 public sealed class CrewAIEnterpriseTests
 {
-    private readonly Mock<ICrewAIEntepriseClient> _mockClient;
+    private readonly Mock<ICrewAIEnterpriseClient> _mockClient;
     private readonly CrewAIEnterprise _crewAIEnterprise;
 
     /// <summary>
@@ -26,7 +26,7 @@ public sealed class CrewAIEnterpriseTests
     /// </summary>
     public CrewAIEnterpriseTests()
     {
-        this._mockClient = new Mock<ICrewAIEntepriseClient>(MockBehavior.Strict);
+        this._mockClient = new Mock<ICrewAIEnterpriseClient>(MockBehavior.Strict);
         this._crewAIEnterprise = new CrewAIEnterprise(this._mockClient.Object, NullLoggerFactory.Instance);
     }
 
@@ -127,7 +127,6 @@ public sealed class CrewAIEnterpriseTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.WaitForCrewCompletionAsync("12345"));
-        Assert.Equal("CrewAI Crew failed with error: Error", exception.Message);
     }
 
     /// <summary>

@@ -14,28 +14,28 @@ using Xunit;
 namespace SemanticKernel.Plugins.AI.UnitTests.CrewAI;
 
 /// <summary>
-/// Tests for the <see cref="CrewAIEntepriseClient"/> class.
+/// Tests for the <see cref="CrewAIEnterpriseClient"/> class.
 /// </summary>
-public sealed partial class CrewAIEntepriseClientTests
+public sealed partial class CrewAIEnterpriseClientTests
 {
     private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
-    private readonly CrewAIEntepriseClient _client;
+    private readonly CrewAIEnterpriseClient _client;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CrewAIEntepriseClientTests"/> class.
+    /// Initializes a new instance of the <see cref="CrewAIEnterpriseClientTests"/> class.
     /// </summary>
-    public CrewAIEntepriseClientTests()
+    public CrewAIEnterpriseClientTests()
     {
         this._httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         using var httpClientFactory = new MockHttpClientFactory(this._httpMessageHandlerMock);
-        this._client = new CrewAIEntepriseClient(
+        this._client = new CrewAIEnterpriseClient(
             endpoint: new Uri("http://example.com"),
             authTokenProvider: () => Task.FromResult("token"),
             httpClientFactory);
     }
 
     /// <summary>
-    /// Tests that <see cref="CrewAIEntepriseClient.GetInputsAsync"/> returns the required inputs from the CrewAI API.
+    /// Tests that <see cref="CrewAIEnterpriseClient.GetInputsAsync"/> returns the required inputs from the CrewAI API.
     /// </summary>
     /// <returns></returns>
     [Fact]
@@ -67,7 +67,7 @@ public sealed partial class CrewAIEntepriseClientTests
     }
 
     /// <summary>
-    /// Tests that <see cref="CrewAIEntepriseClient.KickoffAsync"/> returns the kickoff id from the CrewAI API.
+    /// Tests that <see cref="CrewAIEnterpriseClient.KickoffAsync"/> returns the kickoff id from the CrewAI API.
     /// </summary>
     /// <returns></returns>
     [Fact]
@@ -97,7 +97,7 @@ public sealed partial class CrewAIEntepriseClientTests
     }
 
     /// <summary>
-    /// Tests that <see cref="CrewAIEntepriseClient.GetStatusAsync"/> returns the status of the CrewAI Crew.
+    /// Tests that <see cref="CrewAIEnterpriseClient.GetStatusAsync"/> returns the status of the CrewAI Crew.
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>

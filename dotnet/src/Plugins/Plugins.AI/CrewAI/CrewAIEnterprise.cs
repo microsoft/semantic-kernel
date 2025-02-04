@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 /// </summary>
 public class CrewAIEnterprise
 {
-    private readonly ICrewAIEntepriseClient _crewClient;
+    private readonly ICrewAIEnterpriseClient _crewClient;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -44,14 +44,14 @@ public class CrewAIEnterprise
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
 
-        this._crewClient = new CrewAIEntepriseClient(endpoint, authTokenProvider, httpClientFactory);
+        this._crewClient = new CrewAIEnterpriseClient(endpoint, authTokenProvider, httpClientFactory);
         this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
     }
 
     /// <summary>
     /// Internal constructor used for testing purposes.
     /// </summary>
-    internal CrewAIEnterprise(ICrewAIEntepriseClient crewClient, ILoggerFactory? loggerFactory = null)
+    internal CrewAIEnterprise(ICrewAIEnterpriseClient crewClient, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(crewClient, nameof(crewClient));
         this._crewClient = crewClient;

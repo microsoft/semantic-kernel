@@ -12,13 +12,13 @@ namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
 /// <summary>
 /// A client for interacting with the CrewAI Enterprise API.
 /// </summary>
-internal class CrewAIEntepriseClient : ICrewAIEntepriseClient
+internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
 {
     private readonly Uri _endpoint;
     private readonly Func<Task<string>> _authTokenProvider;
     private readonly IHttpClientFactory? _httpClientFactory;
 
-    public CrewAIEntepriseClient(Uri endpoint, Func<Task<string>>? authTokenProvider, IHttpClientFactory? clientFactory = null)
+    public CrewAIEnterpriseClient(Uri endpoint, Func<Task<string>>? authTokenProvider, IHttpClientFactory? clientFactory = null)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
@@ -153,7 +153,7 @@ internal class CrewAIEntepriseClient : ICrewAIEntepriseClient
 /// <summary>
 /// Internal interface used for mocking and testing.
 /// </summary>
-internal interface ICrewAIEntepriseClient
+internal interface ICrewAIEnterpriseClient
 {
     Task<CrewAIRequiredInputs> GetInputsAsync();
     Task<CrewAIKickoffResponse> KickoffAsync(
