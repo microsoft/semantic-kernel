@@ -11,6 +11,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
 public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
 {
+    public const string ConnectionStringKey = "AzureCosmosDBNoSQL:ConnectionString";
     private const string DatabaseName = "testdb";
 
     private readonly CosmosClient _cosmosClient;
@@ -19,6 +20,14 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
     public Database? Database { get; private set; }
 
     public AzureCosmosDBNoSQLVectorStoreFixture()
+    {
+        var connectionString = GetConnectionString();
+        var options = new CosmosClientOptions { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default };
+
+        this._cosmosClient = new CosmosClient(connectionString, options);
+    }
+
+    public static string GetConnectionString()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -31,10 +40,13 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             .AddUserSecrets<AzureCosmosDBNoSQLVectorStoreFixture>()
             .Build();
 
-        var connectionString = GetConnectionString(configuration);
-        var options = new CosmosClientOptions { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default };
+        var settingValue = configuration[ConnectionStringKey];
+        if (string.IsNullOrWhiteSpace(settingValue))
+        {
+            throw new ArgumentNullException($"{settingValue} string is not configured");
+        }
 
-        this._cosmosClient = new CosmosClient(connectionString, options);
+        return settingValue;
     }
 
     public async Task InitializeAsync()
@@ -62,19 +74,4 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             this._cosmosClient.Dispose();
         }
     }
-
-    #region private
-
-    private static string GetConnectionString(IConfigurationRoot configuration)
-    {
-        var settingValue = configuration["AzureCosmosDBNoSQL:ConnectionString"];
-        if (string.IsNullOrWhiteSpace(settingValue))
-        {
-            throw new ArgumentNullException($"{settingValue} string is not configured");
-        }
-
-        return settingValue;
-    }
-
-    #endregion
 }

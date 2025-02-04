@@ -516,7 +516,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return this.KeywordVectorizedHybridSearch(vector, new List<string>() { keywords }, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
 
@@ -553,7 +559,12 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Build the keyword query.
         var keywordFilter = filter.Clone();
-        keywordFilter.Must.Add(new Condition() { Field = new FieldCondition() { Key = textDataPropertyName, Match = new Match { Text = keywords } } });
+        var keywordSubFilter = new Filter();
+        foreach (string keyword in keywords)
+        {
+            keywordSubFilter.Should.Add(new Condition() { Field = new FieldCondition() { Key = textDataPropertyName, Match = new Match { Text = keyword } } });
+        }
+        keywordFilter.Must.Add(new Condition() { Filter = keywordSubFilter });
         var keywordQuery = new PrefetchQuery
         {
             Filter = keywordFilter,

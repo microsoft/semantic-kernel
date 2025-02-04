@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
@@ -11,7 +10,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 /// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
-[DisableVectorStoreTests(Skip = "Azure CosmosDB NoSQL cluster is required")]
+[CosmosDBbNoSQLConnectionStringSetConditionAttribute]
 public class CommonKeywordVectorizedHybridSearchTests(AzureCosmosDBNoSQLVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>
 {
     protected override string Key1 => "1";

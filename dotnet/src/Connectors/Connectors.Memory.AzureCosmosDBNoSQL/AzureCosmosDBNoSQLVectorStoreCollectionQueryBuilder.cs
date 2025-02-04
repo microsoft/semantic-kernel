@@ -23,7 +23,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     /// </summary>
     public static QueryDefinition BuildSearchQuery<TVector>(
         TVector vector,
-        string? text,
+        ICollection<string>? keywords,
         List<string> fields,
         Dictionary<string, string> storagePropertyNames,
         string vectorPropertyName,
@@ -36,14 +36,14 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        const string TextVariableName = "@text";
+        const string KeywordsVariableName = "@keywords";
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.TableQueryVariableName;
 
         var fieldsArgument = fields.Select(field => $"{tableVariableName}.{field}");
         var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
-        var fullTextScoreArgument = textPropertyName is not null && text is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, [{TextVariableName}])" : null;
+        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {KeywordsVariableName})" : null;
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
@@ -87,7 +87,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         if (fullTextScoreArgument is not null)
         {
-            queryParameters.Add(TextVariableName, text!);
+            queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
         }
 
         var queryDefinition = new QueryDefinition(builder.ToString());
