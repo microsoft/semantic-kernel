@@ -11,12 +11,12 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// A <see cref="KernelAgent"/> specialization based on Azure AI Agent.
+/// Provides a specialized <see cref="KernelAgent"/> based on an Azure AI agent.
 /// </summary>
 public sealed class AzureAIAgent : KernelAgent
 {
     /// <summary>
-    /// Tool definitions used when associating a file attachment to an input message:
+    /// Provides tool definitions used when associating a file attachment to an input message:
     /// <see cref="FileReferenceContent.Tools"/>.
     /// </summary>
     public static class Tools
@@ -33,7 +33,7 @@ public sealed class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// Metadata key that identifies code-interpreter content.
+    /// The metadata key that identifies code-interpreter content.
     /// </summary>
     public const string CodeInterpreterMetadataKey = "code";
 
@@ -42,24 +42,23 @@ public sealed class AzureAIAgent : KernelAgent
     private readonly string[] _channelKeys;
 
     /// <summary>
-    /// The assistant definition.
+    /// Gets the assistant definition.
     /// </summary>
     public Azure.AI.Projects.Agent Definition { get; private init; }
 
     /// <summary>
-    /// Defines polling behavior for run processing
+    /// Gets the polling behavior for run processing.
     /// </summary>
     public RunPollingOptions PollingOptions { get; } = new();
 
     /// <summary>
     /// Adds a message to the specified thread.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
-    /// <param name="message">A non-system message with which to append to the conversation.</param>
+    /// <param name="threadId">The thread identifier.</param>
+    /// <param name="message">A non-system message to append to the conversation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <remarks>
-    /// Only supports messages with role = User or agent:
-    /// https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+    /// Only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or agent</see>.
     /// </remarks>
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
@@ -69,22 +68,22 @@ public sealed class AzureAIAgent : KernelAgent
     /// <summary>
     /// Gets messages for a specified thread.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
+    /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
         return AgentThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
     }
 
     /// <summary>
-    /// Invoke the assistant on the specified thread.
+    /// Invokes the assistant on the specified thread.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
+    /// <param name="threadId">The thread identifier.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of response messages.</returns>
+    /// <returns>An asynchronous enumeration of response messages.</returns>
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
@@ -98,14 +97,14 @@ public sealed class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// Invoke the assistant on the specified thread.
+    /// Invokes the assistant on the specified thread.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
-    /// <param name="options">Optional invocation options</param>
+    /// <param name="threadId">The thread identifier.</param>
+    /// <param name="options">Optional invocation options.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of response messages.</returns>
+    /// <returns>An asynchronous enumeration of response messages.</returns>
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
@@ -129,14 +128,14 @@ public sealed class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// Invoke the assistant on the specified thread with streaming response.
+    /// Invokes the assistant on the specified thread with streaming response.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
+    /// <param name="threadId">The thread identifier.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
-    /// <param name="messages">Optional receiver of the completed messages generated</param>
+    /// <param name="messages">Optional receiver of the completed messages that are generated.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
@@ -151,15 +150,15 @@ public sealed class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// Invoke the assistant on the specified thread with streaming response.
+    /// Invokes the assistant on the specified thread with streaming response.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
-    /// <param name="options">Optional invocation options</param>
+    /// <param name="threadId">The thread identifier.</param>
+    /// <param name="options">Optional invocation options.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
-    /// <param name="messages">Optional receiver of the completed messages generated</param>
+    /// <param name="messages">Optional receiver of the completed messages that are generated.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
@@ -232,8 +231,8 @@ public sealed class AzureAIAgent : KernelAgent
     /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
     /// </summary>
     /// <param name="model">The agent model definition.</param>
-    /// <param name="clientProvider">A <see cref="AzureAIClientProvider"/> instance.</param>
-    /// <param name="templateFactory">An optional template factory</param>
+    /// <param name="clientProvider">An <see cref="AzureAIClientProvider"/> instance.</param>
+    /// <param name="templateFactory">An optional template factory.</param>
     public AzureAIAgent(
         Azure.AI.Projects.Agent model,
         AzureAIClientProvider clientProvider,

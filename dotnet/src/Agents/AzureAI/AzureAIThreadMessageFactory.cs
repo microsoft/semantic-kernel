@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// Exposes patterns for creating and managing agent threads.
 /// </summary>
 /// <remarks>
-/// Support translation of <see cref="ChatMessageContent"/> from native models.
+/// This class supports translation of <see cref="ChatMessageContent"/> from native models.
 /// </remarks>
 public static class AzureAIThreadMessageFactory
 {
