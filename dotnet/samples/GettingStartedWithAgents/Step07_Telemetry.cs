@@ -17,9 +17,6 @@ namespace GettingStarted;
 /// <summary>
 /// A repeat of <see cref="Step03_Chat"/> with telemetry enabled.
 /// </summary>
-/// <remarks>
-/// Samples become super noisy with logging always enabled.
-/// </remarks>
 public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
@@ -124,7 +121,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
             {
-                // This is all that is required to enable logging across the agent framework/
+                // This is all that is required to enable logging across the Agent Framework.
                 LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
                 ExecutionSettings =
                     new()
@@ -191,14 +188,12 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
 
     private TracerProvider? GetTracerProvider(bool useApplicationInsights)
     {
-        const string SemanticKernelActivitySource = "Microsoft.SemanticKernel*";
-
-        // Enable model diagnostics with sensitive data.
-        AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
+        // Enable diagnostics.
+        AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics", true);
 
         var tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Semantic Kernel Agents Tracing Example"))
-            .AddSource(SemanticKernelActivitySource)
+            .AddSource("Microsoft.SemanticKernel*")
             .AddSource(s_activitySource.Name);
 
         if (useApplicationInsights)
