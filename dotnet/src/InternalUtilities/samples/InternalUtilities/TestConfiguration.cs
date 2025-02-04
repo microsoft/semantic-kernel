@@ -49,6 +49,8 @@ public sealed class TestConfiguration
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
 
+    public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
         if (s_instance is null)
@@ -308,5 +310,11 @@ public sealed class TestConfiguration
             this.TenantId = tenantId;
             this.RedirectUri = redirectUri;
         }
+    }
+
+    public class CrewAIConfig
+    {
+        public string Endpoint { get; set; }
+        public string AuthToken { get; set; }
     }
 }
