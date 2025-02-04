@@ -68,8 +68,8 @@ endif
 ##############################
 .ONESHELL:
 install-python:
-	echo "Installing python 3.10, 3.11, 3.12"
-	uv python install 3.10 3.11 3.12
+	echo "Installing python versions"
+	uv python install 3.10 3.11 3.12 3.13 3.13t
 
 ##############################
 #  INSTALL-PRE-COMMIT
@@ -87,7 +87,7 @@ install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
 	echo "Installing Semantic Kernel and all dependencies"
-	uv sync --all-extras --dev
+	uv sync --all-extras --dev --prerelease=if-necessary-or-explicit
 
 ##############################
 #  CLEAN

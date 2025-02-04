@@ -118,6 +118,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -173,6 +174,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -237,6 +239,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -295,6 +298,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev

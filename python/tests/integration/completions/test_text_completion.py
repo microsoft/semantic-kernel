@@ -2,6 +2,7 @@
 
 import sys
 from functools import partial
+from importlib import util
 from typing import Any
 
 if sys.version_info >= (3, 12):
@@ -31,6 +32,9 @@ from semantic_kernel.contents import StreamingTextContent, TextContent
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
+
+hugging_face_setup = util.find_spec("torch") is not None
+
 
 azure_openai_setup = True
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
@@ -219,7 +223,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="patrickvonplaten/t5-tiny-random",
                     ai_model_id="patrickvonplaten/t5-tiny-random",
                     task="text2text-generation",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "hf_summ": (
@@ -227,7 +233,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="jotamunz/billsum_tiny_summarization",
                     ai_model_id="jotamunz/billsum_tiny_summarization",
                     task="summarization",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "hf_gen": (
@@ -235,7 +243,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
                     ai_model_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
                     task="text-generation",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "onnx_gen_ai": (

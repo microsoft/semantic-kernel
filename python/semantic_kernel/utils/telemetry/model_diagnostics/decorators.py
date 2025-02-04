@@ -13,6 +13,7 @@ from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.experimental_decorator import experimental_function
@@ -434,9 +435,9 @@ def _set_completion_response(
                 "message": completion.to_dict(),
             }
 
-            if hasattr(completion, "finish_reason"):
+            if isinstance(completion, ChatMessageContent):
                 full_response["finish_reason"] = completion.finish_reason
-            if hasattr(completion, "choice_index"):
+            if isinstance(completion, StreamingContentMixin):
                 full_response["index"] = completion.choice_index
 
             logger.info(
