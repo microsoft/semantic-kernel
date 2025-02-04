@@ -9,8 +9,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 

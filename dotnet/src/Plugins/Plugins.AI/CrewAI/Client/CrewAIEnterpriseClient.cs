@@ -4,10 +4,26 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
+
+/// <summary>
+/// Internal interface used for mocking and testing.
+/// </summary>
+internal interface ICrewAIEnterpriseClient
+{
+    Task<CrewAIRequiredInputs> GetInputsAsync(CancellationToken cancellationToken = default);
+    Task<CrewAIKickoffResponse> KickoffAsync(
+        object? inputs,
+        string? taskWebhookUrl = null,
+        string? stepWebhookUrl = null,
+        string? crewWebhookUrl = null,
+        CancellationToken cancellationToken = default);
+    Task<CrewAIStatusResponse> GetStatusAsync(string taskId, CancellationToken cancellationToken = default);
+}
 
 /// <summary>
 /// A client for interacting with the CrewAI Enterprise API.
@@ -31,17 +47,22 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     /// <summary>
     /// Get the inputs required for the Crew to kickoff.
     /// </summary>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
     /// <returns>Aninstance of <see cref="CrewAIRequiredInputs"/> describing the required inputs.</returns>
     /// <exception cref="KernelException"></exception>
-    public async Task<CrewAIRequiredInputs> GetInputsAsync()
+    public async Task<CrewAIRequiredInputs> GetInputsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
-            var response = await client.GetAsync(new Uri("/inputs", UriKind.Relative)).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var requirements = JsonSerializer.Deserialize<CrewAIRequiredInputs>(responseString);
+            using var requestMessage = HttpRequest.CreateGetRequest("/inputs");
+            using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var requirements = JsonSerializer.Deserialize<CrewAIRequiredInputs>(body);
 
             return requirements switch
             {
@@ -62,12 +83,14 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     /// <param name="taskWebhookUrl">The task level webhook Uri.</param>
     /// <param name="stepWebhookUrl">The step level webhook Uri.</param>
     /// <param name="crewWebhookUrl">The crew level webhook Uri.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
     /// <returns>A string containing the Id of the started Crew Task.</returns>
     public async Task<CrewAIKickoffResponse> KickoffAsync(
         object? inputs,
         string? taskWebhookUrl = null,
         string? stepWebhookUrl = null,
-        string? crewWebhookUrl = null)
+        string? crewWebhookUrl = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -81,11 +104,15 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
 
             using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
             using var requestContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(new Uri("/kickoff", UriKind.Relative), requestContent).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
 
-            var strResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var kickoffResponse = JsonSerializer.Deserialize<CrewAIKickoffResponse>(strResponse);
+            using var requestMessage = HttpRequest.CreatePostRequest("/kickoff", requestContent);
+            using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var kickoffResponse = JsonSerializer.Deserialize<CrewAIKickoffResponse>(body);
             return kickoffResponse switch
             {
                 null => throw new KernelException(message: "Failed to deserialize kickoff response from CrewAI."),
@@ -102,17 +129,22 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     /// Get the status of the Crew Task.
     /// </summary>
     /// <param name="taskId">The Id of the task.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
     /// <returns>A string containing the status or final result of the Crew task.</returns>
     /// <exception cref="KernelException"></exception>
-    public async Task<CrewAIStatusResponse> GetStatusAsync(string taskId)
+    public async Task<CrewAIStatusResponse> GetStatusAsync(string taskId, CancellationToken cancellationToken = default)
     {
         try
         {
             using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
-            var response = await client.GetAsync(new Uri($"/status/{taskId}", UriKind.Relative)).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var strResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var statusResponse = JsonSerializer.Deserialize<CrewAIStatusResponse>(strResponse);
+            using var requestMessage = HttpRequest.CreateGetRequest($"/status/{taskId}");
+            using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var statusResponse = JsonSerializer.Deserialize<CrewAIStatusResponse>(body);
             return statusResponse switch
             {
                 null => throw new KernelException(message: "Failed to deserialize status response from CrewAI."),
@@ -123,11 +155,6 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
         {
             throw new KernelException(message: "Failed to status of CrewAI Crew.", innerException: ex);
         }
-    }
-
-    public void Dispose()
-    {
-        throw new NotImplementedException();
     }
 
     #region Private Methods
@@ -148,18 +175,4 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     }
 
     #endregion
-}
-
-/// <summary>
-/// Internal interface used for mocking and testing.
-/// </summary>
-internal interface ICrewAIEnterpriseClient
-{
-    Task<CrewAIRequiredInputs> GetInputsAsync();
-    Task<CrewAIKickoffResponse> KickoffAsync(
-        object? inputs,
-        string? taskWebhookUrl = null,
-        string? stepWebhookUrl = null,
-        string? crewWebhookUrl = null);
-    Task<CrewAIStatusResponse> GetStatusAsync(string taskId);
 }

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>
 /// Represents the requirements for kicking off a CrewAI Crew.

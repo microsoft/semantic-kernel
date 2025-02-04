@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>
 /// Represents the state of a CrewAI Crew kickoff.

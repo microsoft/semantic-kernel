@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.AI.CrewAI;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
 using Moq;
 using Xunit;
 
@@ -38,7 +37,7 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIKickoffResponse { KickoffId = "12345" };
-        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null))
+        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(response);
 
         // Act
@@ -55,7 +54,7 @@ public sealed class CrewAIEnterpriseTests
     public async Task KickoffAsyncFailureAsync()
     {
         // Arrange
-        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null))
+        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null, It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new InvalidOperationException("Kickoff failed"));
 
         // Act & Assert
@@ -70,7 +69,7 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Running };
-        this._mockClient.Setup(client => client.GetStatusAsync("12345"))
+        this._mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(response);
 
         // Act
@@ -87,7 +86,7 @@ public sealed class CrewAIEnterpriseTests
     public async Task GetCrewStatusAsyncFailureAsync()
     {
         // Arrange
-        this._mockClient.Setup(client => client.GetStatusAsync("12345"))
+        this._mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
                         .ThrowsAsync(new InvalidOperationException("Status retrieval failed"));
 
         // Act & Assert
@@ -102,7 +101,7 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Success, Result = "Completed" };
-        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345"))
+        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
                         .ReturnsAsync(response);
 
@@ -121,7 +120,7 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Failed, Result = "Error" };
-        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345"))
+        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
                         .ReturnsAsync(response);
 

@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>
 /// Models the response object of a call to kickoff a CrewAI Crew.

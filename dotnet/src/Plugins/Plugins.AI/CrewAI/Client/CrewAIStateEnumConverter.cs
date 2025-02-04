@@ -3,9 +3,8 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Plugins.AI.CrewAI.Models;
 
-namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI.Client;
+namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffState>
