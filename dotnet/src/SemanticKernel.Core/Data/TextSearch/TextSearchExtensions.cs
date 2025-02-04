@@ -373,7 +373,7 @@ public static class TextSearchExtensions
         options ??= DefaultGetSearchResultsMethodOptions(jsonSerializerOptions);
         return KernelFunctionFactory.CreateFromMethod(
                 GetSearchResultAsync,
-                new(),
+                jsonSerializerOptions,
                 options);
     }
 

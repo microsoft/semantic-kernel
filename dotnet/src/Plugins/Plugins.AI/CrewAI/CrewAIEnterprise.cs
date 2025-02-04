@@ -19,6 +19,7 @@ public class CrewAIEnterprise
 {
     private readonly ICrewAIEnterpriseClient _crewClient;
     private readonly ILogger _logger;
+    private readonly TimeSpan _pollingInterval;
 
     /// <summary>
     /// The name of the kickoff function.
@@ -37,13 +38,15 @@ public class CrewAIEnterprise
     /// <param name="authTokenProvider"> Optional provider for auth token generation. </param>
     /// <param name="httpClientFactory">The HTTP client factory. </param>
     /// <param name="loggerFactory">The logger factory. </param>
-    public CrewAIEnterprise(Uri endpoint, Func<Task<string>>? authTokenProvider, IHttpClientFactory? httpClientFactory = null, ILoggerFactory? loggerFactory = null)
+    /// <param name="pollingInterval">Defines the delay time between status calls when pollin for a kickoff to complete.</param>
+    public CrewAIEnterprise(Uri endpoint, Func<Task<string>> authTokenProvider, IHttpClientFactory? httpClientFactory = null, ILoggerFactory? loggerFactory = null, TimeSpan? pollingInterval = default)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
 
         this._crewClient = new CrewAIEnterpriseClient(endpoint, authTokenProvider, httpClientFactory);
         this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
+        this._pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(1);
     }
 
     /// <summary>

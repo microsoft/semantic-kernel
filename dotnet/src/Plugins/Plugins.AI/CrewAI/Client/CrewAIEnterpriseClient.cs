@@ -34,7 +34,7 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     private readonly Func<Task<string>> _authTokenProvider;
     private readonly IHttpClientFactory? _httpClientFactory;
 
-    public CrewAIEnterpriseClient(Uri endpoint, Func<Task<string>>? authTokenProvider, IHttpClientFactory? clientFactory = null)
+    public CrewAIEnterpriseClient(Uri endpoint, Func<Task<string>> authTokenProvider, IHttpClientFactory? clientFactory = null)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
@@ -64,13 +64,9 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
 
             var requirements = JsonSerializer.Deserialize<CrewAIRequiredInputs>(body);
 
-            return requirements switch
-            {
-                null => throw new KernelException(message: "Failed to deserialize requirements from CrewAI."),
-                _ => requirements,
-            };
+            return requirements ?? throw new KernelException(message: $"Failed to deserialize requirements from CrewAI. Response: {body}");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not KernelException)
         {
             throw new KernelException(message: "Failed to get required inputs for CrewAI Crew.", innerException: ex);
         }
@@ -113,13 +109,9 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
                 .ConfigureAwait(false);
 
             var kickoffResponse = JsonSerializer.Deserialize<CrewAIKickoffResponse>(body);
-            return kickoffResponse switch
-            {
-                null => throw new KernelException(message: "Failed to deserialize kickoff response from CrewAI."),
-                _ => kickoffResponse,
-            };
+            return kickoffResponse ?? throw new KernelException(message: $"Failed to deserialize kickoff response from CrewAI. Response: {body}");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not KernelException)
         {
             throw new KernelException(message: "Failed to kickoff CrewAI Crew.", innerException: ex);
         }
@@ -145,13 +137,10 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
                 .ConfigureAwait(false);
 
             var statusResponse = JsonSerializer.Deserialize<CrewAIStatusResponse>(body);
-            return statusResponse switch
-            {
-                null => throw new KernelException(message: "Failed to deserialize status response from CrewAI."),
-                _ => statusResponse,
-            };
+
+            return statusResponse ?? throw new KernelException(message: $"Failed to deserialize status response from CrewAI. Response: {body}");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not KernelException)
         {
             throw new KernelException(message: "Failed to status of CrewAI Crew.", innerException: ex);
         }

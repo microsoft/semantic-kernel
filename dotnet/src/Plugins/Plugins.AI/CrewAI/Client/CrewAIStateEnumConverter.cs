@@ -12,7 +12,7 @@ internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffStat
     public override CrewAIKickoffState Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string? stringValue = reader.GetString();
-        return stringValue switch
+        return stringValue?.ToUpperInvariant() switch
         {
             "PENDING" => CrewAIKickoffState.Pending,
             "STARTED" => CrewAIKickoffState.Started,
