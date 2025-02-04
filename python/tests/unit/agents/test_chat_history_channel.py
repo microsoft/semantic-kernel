@@ -7,7 +7,9 @@ import pytest
 
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ServiceInvalidTypeError
 
@@ -22,6 +24,9 @@ class MockChatHistoryHandler:
     async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+
+    async def reduce_history(self, history: list[ChatMessageContent]) -> list[ChatMessageContent]:
+        return history
 
 
 class MockNonChatHistoryHandler:
@@ -197,3 +202,47 @@ async def test_reset_history():
     await channel.reset()
 
     assert len(channel.messages) == 0
+
+
+async def test_receive_skips_file_references():
+    channel = ChatHistoryChannel()
+
+    file_ref_item = FileReferenceContent()
+    streaming_file_ref_item = StreamingFileReferenceContent()
+    normal_item_1 = FunctionResultContent(id="test_id", result="normal content 1")
+    normal_item_2 = FunctionResultContent(id="test_id_2", result="normal content 2")
+
+    msg_with_file_only = ChatMessageContent(
+        role=AuthorRole.USER,
+        content="Normal message set as TextContent",
+        items=[file_ref_item],
+    )
+
+    msg_with_mixed = ChatMessageContent(
+        role=AuthorRole.USER,
+        content="Mixed content message",
+        items=[streaming_file_ref_item, normal_item_1],
+    )
+
+    msg_with_normal = ChatMessageContent(
+        role=AuthorRole.USER,
+        content="Normal message",
+        items=[normal_item_2],
+    )
+
+    history = [msg_with_file_only, msg_with_mixed, msg_with_normal]
+    await channel.receive(history)
+
+    assert len(channel.messages) == 3
+
+    assert channel.messages[0].content == "Normal message set as TextContent"
+    assert len(channel.messages[0].items) == 1
+
+    assert channel.messages[1].content == "Mixed content message"
+    assert len(channel.messages[0].items) == 1
+    assert channel.messages[1].items[0].result == "normal content 1"
+
+    assert channel.messages[2].content == "Normal message"
+    assert len(channel.messages[2].items) == 2
+    assert channel.messages[2].items[0].result == "normal content 2"
+    assert channel.messages[2].items[1].text == "Normal message"

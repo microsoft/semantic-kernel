@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests.Extensions;
@@ -38,6 +39,32 @@ public class OllamaServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
         var service = serviceProvider.GetRequiredService<IChatCompletionService>();
 
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    public void AddOllamaChatCompletionFromServiceCollection()
+    {
+        var services = new ServiceCollection();
+        using var ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "model");
+
+        services.AddSingleton(ollamaClient);
+        services.AddOllamaChatCompletion();
+        var serviceProvider = services.BuildServiceProvider();
+        var service = serviceProvider.GetRequiredService<IChatCompletionService>();
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    public void AddOllamaTextEmbeddingGenerationFromServiceCollection()
+    {
+        var services = new ServiceCollection();
+        using var ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "model");
+
+        services.AddSingleton(ollamaClient);
+        services.AddOllamaTextEmbeddingGeneration();
+        var serviceProvider = services.BuildServiceProvider();
+        var service = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(service);
     }
 

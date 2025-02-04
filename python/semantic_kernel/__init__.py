@@ -2,5 +2,5 @@
 
 from semantic_kernel.kernel import Kernel
 
-__version__ = "1.17.1"
+__version__ = "1.20.0"
 __all__ = ["Kernel", "__version__"]

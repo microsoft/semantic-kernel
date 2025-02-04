@@ -159,7 +159,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
             DistanceFunction.CosineSimilarity => 1 - redisScore,
             DistanceFunction.CosineDistance => redisScore,
             DistanceFunction.DotProductSimilarity => redisScore,
-            DistanceFunction.EuclideanDistance => redisScore,
+            DistanceFunction.EuclideanSquaredDistance => redisScore,
             _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported."),
         };
     }

@@ -3,20 +3,30 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using OpenAI;
+using OpenAI.Chat;
 using Xunit;
+using BinaryContent = System.ClientModel.BinaryContent;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
+
 public partial class ClientCoreTests
 {
     [Fact]
@@ -239,5 +249,91 @@ public partial class ClientCoreTests
         clientCore = new ClientCore("modelId", " ", endpoint: new Uri("http://localhost"));
         clientCore = new ClientCore("modelId", "", endpoint: new Uri("http://localhost"));
         clientCore = new ClientCore("modelId", apiKey: null!, endpoint: new Uri("http://localhost"));
+    }
+
+    [Theory]
+    [ClassData(typeof(ChatMessageContentWithFunctionCalls))]
+    public async Task ItShouldReplaceDisallowedCharactersInFunctionName(ChatMessageContent chatMessageContent, bool nameContainsDisallowedCharacter)
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        using HttpMessageHandlerStub handler = new();
+        handler.ResponseToReturn = responseMessage;
+        using HttpClient client = new(handler);
+
+        var clientCore = new ClientCore("modelId", "apikey", httpClient: client);
+
+        ChatHistory chatHistory = [chatMessageContent];
+
+        // Act
+        await clientCore.GetChatMessageContentsAsync("gpt-4", chatHistory, new OpenAIPromptExecutionSettings(), new Kernel());
+
+        // Assert
+        JsonElement jsonString = JsonSerializer.Deserialize<JsonElement>(handler.RequestContent);
+
+        var function = jsonString.GetProperty("messages")[0].GetProperty("tool_calls")[0].GetProperty("function");
+
+        if (nameContainsDisallowedCharacter)
+        {
+            // The original name specified in function calls is "bar.foo", which contains a disallowed character '.'.
+            Assert.Equal("bar_foo", function.GetProperty("name").GetString());
+        }
+        else
+        {
+            // The original name specified in function calls is "bar-foo" and contains no disallowed characters.
+            Assert.Equal("bar-foo", function.GetProperty("name").GetString());
+        }
+    }
+
+    internal sealed class ChatMessageContentWithFunctionCalls : TheoryData<ChatMessageContent, bool>
+    {
+        private static readonly ChatToolCall s_functionCallWithInvalidFunctionName = ChatToolCall.CreateFunctionToolCall(id: "call123", functionName: "bar.foo", functionArguments: BinaryData.FromString("{}"));
+
+        private static readonly ChatToolCall s_functionCallWithValidFunctionName = ChatToolCall.CreateFunctionToolCall(id: "call123", functionName: "bar-foo", functionArguments: BinaryData.FromString("{}"));
+
+        public ChatMessageContentWithFunctionCalls()
+        {
+            this.AddMessagesWithFunctionCallsWithInvalidFunctionName();
+        }
+
+        private void AddMessagesWithFunctionCallsWithInvalidFunctionName()
+        {
+            // Case when function calls are available via the `Tools` property.
+            this.Add(new OpenAIChatMessageContent(AuthorRole.Assistant, "", "", [s_functionCallWithInvalidFunctionName]), true);
+
+            // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of ChatToolCall type.
+            this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
+            {
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = new ChatToolCall[] { s_functionCallWithInvalidFunctionName }
+            }), true);
+
+            // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
+            this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
+            {
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithInvalidFunctionName.Id}}", "Name": "{{s_functionCallWithInvalidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithInvalidFunctionName.FunctionArguments}}"}]""")
+            }), true);
+        }
+
+        private void AddMessagesWithFunctionCallsWithValidFunctionName()
+        {
+            // Case when function calls are available via the `Tools` property.
+            this.Add(new OpenAIChatMessageContent(AuthorRole.Assistant, "", "", [s_functionCallWithValidFunctionName]), false);
+
+            // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of ChatToolCall type.
+            this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
+            {
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = new ChatToolCall[] { s_functionCallWithValidFunctionName }
+            }), false);
+
+            // Case when function calls are available via the `ChatResponseMessage.FunctionToolCalls` metadata as an array of JsonElement type.
+            this.Add(new ChatMessageContent(AuthorRole.Assistant, "", metadata: new Dictionary<string, object?>()
+            {
+                [OpenAIChatMessageContent.FunctionToolCallsProperty] = JsonSerializer.Deserialize<JsonElement>($$"""[{"Id": "{{s_functionCallWithValidFunctionName.Id}}", "Name": "{{s_functionCallWithValidFunctionName.FunctionName}}", "Arguments": "{{s_functionCallWithValidFunctionName.FunctionArguments}}"}]""")
+            }), false);
+        }
     }
 }

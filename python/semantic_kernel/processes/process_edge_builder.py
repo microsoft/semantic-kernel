@@ -32,7 +32,9 @@ class ProcessEdgeBuilder(KernelBaseModel):
             raise TypeError("Target cannot be None")
 
         if isinstance(target, ProcessStepBuilder):
-            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name"))
+            target = ProcessFunctionTargetBuilder(
+                step=target, parameter_name=kwargs.get("parameter_name"), function_name=kwargs.get("function_name")
+            )
 
         self.target = target
         edge_builder = ProcessStepEdgeBuilder(source=self.source, event_id=self.event_id)

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Agents;

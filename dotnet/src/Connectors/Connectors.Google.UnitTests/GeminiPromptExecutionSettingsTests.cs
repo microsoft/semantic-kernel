@@ -28,6 +28,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Null(executionSettings.SafetySettings);
         Assert.Null(executionSettings.AudioTimestamp);
         Assert.Null(executionSettings.ResponseMimeType);
+        Assert.Null(executionSettings.ResponseSchema);
         Assert.Equal(GeminiPromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
     }
 
@@ -70,7 +71,8 @@ public sealed class GeminiPromptExecutionSettingsTests
                 { "max_tokens", 1000 },
                 { "temperature", 0 },
                 { "audio_timestamp", true },
-                { "response_mimetype", "application/json" }
+                { "response_mimetype", "application/json" },
+                { "response_schema", JsonSerializer.Serialize(new { }) }
             }
         };
 
@@ -81,6 +83,9 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.NotNull(executionSettings);
         Assert.Equal(1000, executionSettings.MaxTokens);
         Assert.Equal(0, executionSettings.Temperature);
+        Assert.Equal("application/json", executionSettings.ResponseMimeType);
+        Assert.NotNull(executionSettings.ResponseSchema);
+        Assert.Equal(typeof(JsonElement), executionSettings.ResponseSchema.GetType());
         Assert.True(executionSettings.AudioTimestamp);
     }
 

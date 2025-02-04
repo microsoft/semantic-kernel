@@ -16,7 +16,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
+    from semantic_kernel.functions import KernelArguments
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -35,6 +37,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         self,
         *,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
@@ -54,17 +57,19 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant service.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The arguments to pass to the function. (optional)
             service_id: The service ID. (optional) If not provided the default service name (default) is used.
             ai_model_id: The AI model ID. (optional)
             api_key: The OpenAI API key. (optional)
@@ -89,6 +94,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The max prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             kwargs: Additional keyword arguments.
 
         Raises:
@@ -142,6 +148,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             args["id"] = id
         if kernel is not None:
             args["kernel"] = kernel
+        if arguments is not None:
+            args["arguments"] = arguments
+        if prompt_template_config is not None:
+            args["prompt_template_config"] = prompt_template_config
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
@@ -151,6 +161,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         cls,
         *,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
@@ -173,17 +184,19 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> "OpenAIAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The arguments to pass to the function. (optional)
             service_id: The service ID. (optional) If not provided the default service name (default) is used.
             ai_model_id: The AI model ID. (optional)
             api_key: The OpenAI API key. (optional)
@@ -211,6 +224,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The max prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -218,6 +232,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """
         agent = cls(
             kernel=kernel,
+            arguments=arguments,
             service_id=service_id,
             ai_model_id=ai_model_id,
             api_key=api_key,
@@ -241,6 +256,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens=max_prompt_tokens,
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
             truncation_message_count=truncation_message_count,
+            prompt_template_config=prompt_template_config,
             **kwargs,
         )
 
@@ -286,6 +302,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 vector_store_id = await agent.create_vector_store(file_ids=vector_store_file_ids_combined)
                 agent.vector_store_id = vector_store_id
                 assistant_create_kwargs["vector_store_id"] = vector_store_id
+
+        if prompt_template_config is not None:
+            assistant_create_kwargs["prompt_template_config"] = prompt_template_config
 
         agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
@@ -369,6 +388,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         *,
         id: str,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         api_key: str | None = None,
         org_id: str | None = None,
         ai_model_id: str | None = None,
@@ -376,19 +396,22 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         default_headers: dict[str, str] | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
     ) -> "OpenAIAssistantAgent":
         """Retrieve an assistant by ID.
 
         Args:
             id: The assistant ID.
             kernel: The Kernel instance. (optional)
+            arguments: The arguments to pass to the function. (optional)
             api_key: The OpenAI API key. (optional)
             org_id: The OpenAI organization ID. (optional)
             ai_model_id: The AI model ID. (optional)
             client: The OpenAI client. (optional)
             default_headers: The default headers. (optional)
             env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional
+            env_file_encoding: The environment file encoding. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
 
         Returns:
             An OpenAIAssistantAgent instance.
@@ -412,6 +435,17 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+        return OpenAIAssistantAgent(
+            kernel=kernel,
+            arguments=arguments,
+            assistant=assistant,
+            client=client,
+            api_key=api_key,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            prompt_template_config=prompt_template_config,
+            **assistant_definition,
+        )
 
     # endregion

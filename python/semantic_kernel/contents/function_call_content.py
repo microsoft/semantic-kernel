@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
@@ -149,9 +150,18 @@ class FunctionCallContent(KernelContent):
         if isinstance(self.arguments, Mapping):
             return self.arguments
         try:
-            return json.loads(self.arguments.replace("'", '"'))
+            return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
-            raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
+            logger.debug("Function Call arguments are not valid JSON. Trying to preprocess.")
+            try:
+                # Python strings can be single quoted, but JSON strings should be double quoted.
+                # JSON keys and values should be enclosed in double quotes.
+                # Replace single quotes with double quotes, but not if it's an escaped single quote.
+                return json.loads(re.sub(r"(?<!\\)'", '"', self.arguments).replace("\\'", "'"))
+            except json.JSONDecodeError:
+                raise FunctionCallInvalidArgumentsException(
+                    "Function Call arguments are not valid JSON even after preprocessing."
+                ) from exc
 
     def to_kernel_arguments(self) -> "KernelArguments":
         """Return the arguments as a KernelArguments instance."""
@@ -211,4 +221,13 @@ class FunctionCallContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function call content."""
-        return hash((self.tag, self.id, self.index, self.name, self.function_name, self.plugin_name, self.arguments))
+        args_hashable = frozenset(self.arguments.items()) if isinstance(self.arguments, Mapping) else None
+        return hash((
+            self.tag,
+            self.id,
+            self.index,
+            self.name,
+            self.function_name,
+            self.plugin_name,
+            args_hashable,
+        ))

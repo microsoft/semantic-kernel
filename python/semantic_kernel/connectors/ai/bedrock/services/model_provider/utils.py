@@ -4,12 +4,10 @@ import asyncio
 import json
 from collections.abc import Callable, Mapping
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -19,6 +17,10 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 async def run_in_executor(executor, func, *args, **kwargs):
@@ -177,8 +179,8 @@ def format_bedrock_function_name_to_kernel_function_fully_qualified_name(bedrock
 
 
 def update_settings_from_function_choice_configuration(
-    function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: PromptExecutionSettings,
+    function_choice_configuration: "FunctionCallChoiceConfiguration",
+    settings: "PromptExecutionSettings",
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""

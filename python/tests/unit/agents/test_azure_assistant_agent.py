@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
@@ -35,12 +36,12 @@ def mock_assistant():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": {
+            "__run_options": json.dumps({
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
-            }
+            })
         },
         model="test_model",
         description="test_description",
@@ -75,7 +76,7 @@ def test_create_client_from_configuration(azure_openai_assistant_agent, azure_op
 def test_create_client_from_configuration_missing_api_key():
     with pytest.raises(
         AgentInitializationException,
-        match="Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client.",
+        match="Please provide either AzureOpenAI api_key, an ad_token, ad_token_provider, or a client.",
     ):
         AzureAssistantAgent._create_client(None)
 
@@ -211,17 +212,18 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
             "metadata": {
-                "__run_options": {
+                "__run_options": json.dumps({
                     "max_completion_tokens": 100,
                     "max_prompt_tokens": 50,
                     "parallel_tool_calls_enabled": True,
                     "truncation_message_count": 10,
-                }
+                })
             },
             "max_completion_tokens": 100,
             "max_prompt_tokens": 50,
             "parallel_tool_calls_enabled": True,
             "truncation_message_count": 10,
+            "template_format": "semantic-kernel",
         }
 
 
@@ -250,12 +252,12 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "top_p": 0.9,
                 "vector_store_id": "vector_store1",
                 "metadata": {
-                    "__run_options": {
+                    "__run_options": json.dumps({
                         "max_completion_tokens": 100,
                         "max_prompt_tokens": 50,
                         "parallel_tool_calls_enabled": True,
                         "truncation_message_count": 10,
-                    }
+                    })
                 },
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
@@ -299,12 +301,12 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
             "metadata": {
-                "__run_options": {
+                "__run_options": json.dumps({
                     "max_completion_tokens": 100,
                     "max_prompt_tokens": 50,
                     "parallel_tool_calls_enabled": True,
                     "truncation_message_count": 10,
-                }
+                })
             },
             "max_completion_tokens": 100,
             "max_prompt_tokens": 50,
@@ -326,7 +328,7 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
     with pytest.raises(
-        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
     ):
         _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
@@ -352,6 +354,219 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
     with pytest.raises(
-        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
     ):
         AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
+
+
+async def test_setup_client_and_token_with_existing_client():
+    """Test that if a client is already provided, _setup_client_and_token
+    simply returns that client (and doesn't create a new one).
+    """
+    mock_settings = MagicMock()
+    mock_settings.chat_deployment_name = "test_deployment_name"
+    mock_settings.api_key = None
+    mock_settings.token_endpoint = None
+    mock_client = MagicMock(spec=AsyncAzureOpenAI)
+
+    returned_client, returned_token = AzureAssistantAgent._setup_client_and_token(
+        azure_openai_settings=mock_settings,
+        ad_token=None,
+        ad_token_provider=None,
+        client=mock_client,
+        default_headers=None,
+    )
+
+    assert returned_client == mock_client
+    assert returned_token is None
+
+
+async def test_setup_client_and_token_with_api_key_creates_client():
+    """Test that providing an API key (and no client) results
+    in creating a new client via _create_client.
+    """
+    mock_settings = MagicMock()
+    mock_settings.chat_deployment_name = "test_deployment_name"
+    mock_settings.api_key.get_secret_value.return_value = "test_api_key"
+    mock_settings.endpoint = "https://test.endpoint"
+    mock_settings.api_version = "2024-05-01"
+    mock_settings.token_endpoint = None
+
+    with patch.object(AzureAssistantAgent, "_create_client", return_value="mock_client") as mock_create_client:
+        returned_client, returned_token = AzureAssistantAgent._setup_client_and_token(
+            azure_openai_settings=mock_settings,
+            ad_token=None,
+            ad_token_provider=None,
+            client=None,
+            default_headers=None,
+        )
+
+        mock_create_client.assert_called_once_with(
+            api_key="test_api_key",
+            endpoint="https://test.endpoint",
+            api_version="2024-05-01",
+            ad_token=None,
+            ad_token_provider=None,
+            default_headers=None,
+        )
+        assert returned_client == "mock_client"
+        assert returned_token is None
+
+
+async def test_setup_client_and_token_fetches_ad_token_when_token_endpoint_present():
+    """Test that if no credentials are provided except a token endpoint,
+    _setup_client_and_token fetches an AD token.
+    """
+    mock_settings = MagicMock()
+    mock_settings.chat_deployment_name = "test_deployment_name"
+    mock_settings.api_key = None
+    mock_settings.endpoint = "https://test.endpoint"
+    mock_settings.api_version = "2024-05-01"
+    mock_settings.token_endpoint = "https://login.microsoftonline.com"
+
+    with (
+        patch(
+            "semantic_kernel.agents.open_ai.azure_assistant_agent.get_entra_auth_token",
+            return_value="fetched_ad_token",
+        ) as mock_get_token,
+        patch.object(AzureAssistantAgent, "_create_client", return_value="mock_client") as mock_create_client,
+    ):
+        returned_client, returned_token = AzureAssistantAgent._setup_client_and_token(
+            azure_openai_settings=mock_settings,
+            ad_token=None,
+            ad_token_provider=None,
+            client=None,
+            default_headers=None,
+        )
+
+        mock_get_token.assert_called_once_with("https://login.microsoftonline.com")
+        mock_create_client.assert_called_once_with(
+            api_key=None,
+            endpoint="https://test.endpoint",
+            api_version="2024-05-01",
+            ad_token="fetched_ad_token",
+            ad_token_provider=None,
+            default_headers=None,
+        )
+        assert returned_client == "mock_client"
+        assert returned_token == "fetched_ad_token"
+
+
+async def test_setup_client_and_token_no_credentials_raises_exception():
+    """Test that if there's no client, no API key, no AD token/provider,
+    and no token endpoint, an AgentInitializationException is raised.
+    """
+    mock_settings = MagicMock()
+    mock_settings.chat_deployment_name = "test_deployment_name"
+    mock_settings.api_key = None
+    mock_settings.endpoint = "https://test.endpoint"
+    mock_settings.api_version = "2024-05-01"
+    mock_settings.token_endpoint = None
+
+    with pytest.raises(
+        AgentInitializationException, match="Please provide either a client, an api_key, ad_token or ad_token_provider."
+    ):
+        _ = AzureAssistantAgent._setup_client_and_token(
+            azure_openai_settings=mock_settings,
+            ad_token=None,
+            ad_token_provider=None,
+            client=None,
+            default_headers=None,
+        )
+
+
+@pytest.mark.parametrize(
+    "exclude_list, client, api_key, should_raise, expected_exception_msg, should_create_client_call",
+    [
+        ([], None, "test_api_key", False, None, True),
+        ([], AsyncMock(spec=AsyncAzureOpenAI), None, False, None, False),
+        (
+            [],
+            AsyncMock(spec=AsyncAzureOpenAI),
+            "test_api_key",
+            False,
+            None,
+            False,
+        ),
+        (
+            ["AZURE_OPENAI_API_KEY"],
+            None,
+            None,
+            True,
+            "Please provide either a client, an api_key, ad_token or ad_token_provider.",
+            False,
+        ),
+    ],
+    indirect=["exclude_list"],
+)
+async def test_retrieve_agent_handling_api_key_and_client(
+    azure_openai_unit_test_env,
+    exclude_list,
+    kernel,
+    client,
+    api_key,
+    should_raise,
+    expected_exception_msg,
+    should_create_client_call,
+):
+    is_api_key_present = "AZURE_OPENAI_API_KEY" not in exclude_list
+
+    with (
+        patch.object(
+            AzureAssistantAgent,
+            "_create_azure_openai_settings",
+            return_value=MagicMock(
+                chat_model_id="test_model",
+                api_key=MagicMock(
+                    get_secret_value=MagicMock(return_value="test_api_key" if is_api_key_present else None)
+                )
+                if is_api_key_present
+                else None,
+            ),
+        ),
+        patch.object(
+            AzureAssistantAgent,
+            "_create_client",
+            return_value=AsyncMock(spec=AsyncAzureOpenAI),
+        ) as mock_create_client,
+        patch.object(
+            OpenAIAssistantBase,
+            "_create_open_ai_assistant_definition",
+            return_value={
+                "ai_model_id": "test_model",
+                "description": "test_description",
+                "id": "test_id",
+                "name": "test_name",
+            },
+        ) as mock_create_def,
+    ):
+        if client:
+            client.beta = MagicMock()
+            client.beta.assistants = MagicMock()
+            client.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+        else:
+            mock_client_instance = mock_create_client.return_value
+            mock_client_instance.beta = MagicMock()
+            mock_client_instance.beta.assistants = MagicMock()
+            mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=MagicMock(spec=Assistant))
+
+        if should_raise:
+            with pytest.raises(AgentInitializationException, match=expected_exception_msg):
+                await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, api_key=api_key, client=client)
+            return
+
+        retrieved_agent = await AzureAssistantAgent.retrieve(
+            id="test_id", kernel=kernel, api_key=api_key, client=client
+        )
+
+        if should_create_client_call:
+            mock_create_client.assert_called_once()
+        else:
+            mock_create_client.assert_not_called()
+
+        assert retrieved_agent.ai_model_id == "test_model"
+        mock_create_def.assert_called_once()
+        if client:
+            client.beta.assistants.retrieve.assert_called_once_with("test_id")
+        else:
+            mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")

@@ -18,8 +18,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
+    from semantic_kernel.functions import KernelArguments
     from semantic_kernel.kernel import Kernel
-
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
     def __init__(
         self,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         deployment_name: str | None = None,
         api_key: str | None = None,
@@ -58,18 +60,20 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
         token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an Azure OpenAI Assistant Agent.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
             service_id: The service ID. (optional)
             deployment_name: The deployment name. (optional)
             api_key: The Azure OpenAI API key. (optional)
@@ -98,12 +102,13 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
             token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
             AgentInitializationError: If the api_key is not provided in the configuration.
         """
-        azure_openai_settings = AzureAssistantAgent._create_azure_openai_settings(
+        azure_openai_settings = self._create_azure_openai_settings(
             api_key=api_key,
             endpoint=endpoint,
             deployment_name=deployment_name,
@@ -113,34 +118,17 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             token_endpoint=token_endpoint,
         )
 
-        if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
+        client, ad_token = self._setup_client_and_token(
+            azure_openai_settings=azure_openai_settings,
+            ad_token=ad_token,
+            ad_token_provider=ad_token_provider,
+            client=client,
+            default_headers=default_headers,
+        )
 
-        if (
-            client is None
-            and azure_openai_settings.api_key is None
-            and ad_token_provider is None
-            and ad_token is None
-            and azure_openai_settings.token_endpoint
-        ):
-            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
-
-        if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
-
-        if not client:
-            client = self._create_client(
-                api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
-                endpoint=azure_openai_settings.endpoint,
-                api_version=azure_openai_settings.api_version,
-                ad_token=ad_token,
-                ad_token_provider=ad_token_provider,
-                default_headers=default_headers,
-            )
         service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
-            "kernel": kernel,
             "ai_model_id": azure_openai_settings.chat_deployment_name,
             "service_id": service_id,
             "client": client,
@@ -165,8 +153,13 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             args["id"] = id
         if kernel is not None:
             args["kernel"] = kernel
+        if arguments is not None:
+            args["arguments"] = arguments
+        if prompt_template_config is not None:
+            args["prompt_template_config"] = prompt_template_config
         if kwargs:
             args.update(kwargs)
+
         super().__init__(**args)
 
     @classmethod
@@ -174,6 +167,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         cls,
         *,
         kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
         service_id: str | None = None,
         deployment_name: str | None = None,
         api_key: str | None = None,
@@ -199,17 +193,20 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> "AzureAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
         Args:
             kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
             service_id: The service ID. (optional)
             deployment_name: The deployment name. (optional)
             api_key: The Azure OpenAI API key. (optional)
@@ -240,13 +237,16 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The maximum prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
             **kwargs: Additional keyword arguments.
 
         Returns:
-            An instance of the AzureOpenAIAssistantAgent
+            An instance of the AzureAssistantAgent
         """
         agent = cls(
             kernel=kernel,
+            arguments=arguments,
             service_id=service_id,
             deployment_name=deployment_name,
             api_key=api_key,
@@ -273,16 +273,16 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens=max_prompt_tokens,
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
             truncation_message_count=truncation_message_count,
+            token_endpoint=token_endpoint,
+            prompt_template_config=prompt_template_config,
             **kwargs,
         )
 
         assistant_create_kwargs: dict[str, Any] = {}
 
         code_interpreter_file_ids_combined: list[str] = []
-
         if code_interpreter_file_ids is not None:
             code_interpreter_file_ids_combined.extend(code_interpreter_file_ids)
-
         if code_interpreter_filenames is not None:
             for file_path in code_interpreter_filenames:
                 try:
@@ -293,16 +293,13 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                         f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
                     )
                     raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
-
         if code_interpreter_file_ids_combined:
             agent.code_interpreter_file_ids = code_interpreter_file_ids_combined
             assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids_combined
 
         vector_store_file_ids_combined: list[str] = []
-
         if vector_store_file_ids is not None:
             vector_store_file_ids_combined.extend(vector_store_file_ids)
-
         if vector_store_filenames is not None:
             for file_path in vector_store_filenames:
                 try:
@@ -311,7 +308,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                 except FileNotFoundError as ex:
                     logger.error(f"Failed to upload vector store file with path: `{file_path}` with exception: {ex}")
                     raise AgentInitializationException("Failed to upload vector store files.", ex) from ex
-
         if vector_store_file_ids_combined:
             agent.file_search_file_ids = vector_store_file_ids_combined
             if enable_file_search or agent.enable_file_search:
@@ -321,6 +317,131 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 
         agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
+
+    @classmethod
+    async def retrieve(
+        cls,
+        *,
+        id: str,
+        api_key: str | None = None,
+        endpoint: HttpsUrl | None = None,
+        api_version: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
+        client: AsyncAzureOpenAI | None = None,
+        kernel: "Kernel | None" = None,
+        arguments: "KernelArguments | None" = None,
+        default_headers: dict[str, str] | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        token_endpoint: str | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
+    ) -> "AzureAssistantAgent":
+        """Retrieve an assistant by ID.
+
+        Args:
+            id: The assistant ID.
+            api_key: The Azure OpenAI API key. (optional)
+            endpoint: The Azure OpenAI endpoint. (optional)
+            api_version: The Azure OpenAI API version. (optional)
+            ad_token: The Azure AD token. (optional)
+            ad_token_provider: The Azure AD token provider. (optional)
+            client: The Azure OpenAI client. (optional)
+            kernel: The Kernel instance. (optional)
+            arguments: The Kernel arguments. (optional)
+            default_headers: The default headers. (optional)
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional)
+            token_endpoint: The Azure AD token endpoint. (optional)
+            prompt_template_config: The prompt template configuration. (optional)
+
+        Returns:
+            An AzureAssistantAgent instance.
+        """
+        azure_openai_settings = cls._create_azure_openai_settings(
+            api_key=api_key,
+            endpoint=endpoint,
+            deployment_name=None,  # Not required for retrieving an existing assistant
+            api_version=api_version,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            token_endpoint=token_endpoint,
+        )
+
+        client, ad_token = cls._setup_client_and_token(
+            azure_openai_settings=azure_openai_settings,
+            ad_token=ad_token,
+            ad_token_provider=ad_token_provider,
+            client=client,
+            default_headers=default_headers,
+        )
+
+        assistant = await client.beta.assistants.retrieve(id)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+
+        return AzureAssistantAgent(
+            kernel=kernel,
+            arguments=arguments,
+            assistant=assistant,
+            client=client,
+            ad_token=ad_token,
+            api_key=api_key,
+            endpoint=endpoint,
+            api_version=api_version,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            token_endpoint=token_endpoint,
+            prompt_template_config=prompt_template_config,
+            **assistant_definition,
+        )
+
+    @staticmethod
+    def _setup_client_and_token(
+        azure_openai_settings: AzureOpenAISettings,
+        ad_token: str | None,
+        ad_token_provider: Callable[[], str | Awaitable[str]] | None,
+        client: AsyncAzureOpenAI | None,
+        default_headers: dict[str, str] | None,
+    ) -> tuple[AsyncAzureOpenAI, str | None]:
+        """Helper method that ensures either an AD token or an API key is present.
+
+        Retrieves a new AD token if needed, and configures the AsyncAzureOpenAI client.
+
+        Returns:
+            A tuple of (client, ad_token), where client is guaranteed not to be None.
+        """
+        if not azure_openai_settings.chat_deployment_name:
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
+
+        # If everything is missing, but there is a token_endpoint, try to get the token.
+        if (
+            client is None
+            and azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and ad_token is None
+            and azure_openai_settings.token_endpoint
+        ):
+            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+
+        # If we still have no credentials, we can't proceed
+        if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise AgentInitializationException(
+                "Please provide either a client, an api_key, ad_token or ad_token_provider."
+            )
+
+        # Build the client if it's not supplied
+        if not client:
+            client = AzureAssistantAgent._create_client(
+                api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+                endpoint=azure_openai_settings.endpoint,
+                api_version=azure_openai_settings.api_version,
+                ad_token=ad_token,
+                ad_token_provider=ad_token_provider,
+                default_headers=default_headers,
+            )
+
+        return client, ad_token
 
     @staticmethod
     def _create_client(
@@ -351,10 +472,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 
         if not api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException(
-                "Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client."
+                "Please provide either AzureOpenAI api_key, an ad_token, ad_token_provider, or a client."
             )
         if not endpoint:
             raise AgentInitializationException("Please provide an AzureOpenAI endpoint.")
+
         return AsyncAzureOpenAI(
             azure_endpoint=str(endpoint),
             api_version=api_version,
@@ -412,65 +534,5 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
             yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-
-    @classmethod
-    async def retrieve(
-        cls,
-        *,
-        id: str,
-        api_key: str | None = None,
-        endpoint: HttpsUrl | None = None,
-        api_version: str | None = None,
-        ad_token: str | None = None,
-        ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
-        client: AsyncAzureOpenAI | None = None,
-        kernel: "Kernel | None" = None,
-        default_headers: dict[str, str] | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-    ) -> "AzureAssistantAgent":
-        """Retrieve an assistant by ID.
-
-        Args:
-            id: The assistant ID.
-            api_key: The Azure OpenAI API
-            endpoint: The Azure OpenAI endpoint. (optional)
-            api_version: The Azure OpenAI API version. (optional)
-            ad_token: The Azure AD token. (optional)
-            ad_token_provider: The Azure AD token provider. (optional)
-            client: The Azure OpenAI client. (optional)
-            kernel: The Kernel instance. (optional)
-            default_headers: The default headers. (optional)
-            env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional)
-
-        Returns:
-            An AzureAssistantAgent instance.
-        """
-        azure_openai_settings = AzureAssistantAgent._create_azure_openai_settings(
-            api_key=api_key,
-            endpoint=endpoint,
-            api_version=api_version,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-
-        if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
-
-        if not client:
-            client = AzureAssistantAgent._create_client(
-                api_key=api_key,
-                endpoint=endpoint,
-                api_version=api_version,
-                ad_token=ad_token,
-                ad_token_provider=ad_token_provider,
-                default_headers=default_headers,
-            )
-        assistant = await client.beta.assistants.retrieve(id)
-        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 
     # endregion

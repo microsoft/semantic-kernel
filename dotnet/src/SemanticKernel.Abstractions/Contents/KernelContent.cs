@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
 

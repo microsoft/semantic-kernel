@@ -76,14 +76,22 @@ public class OpenApiFunctionExecutionParameters
     /// as a stream rather than as a string.
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
-    [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
+    /// A custom factory for the <see cref="RestApiOperationResponse"/>.
+    /// It allows modifications of various aspects of the original response, such as adding response headers,
+    /// changing response content, adjusting the schema, or providing a completely new response.
+    /// If a custom factory is not supplied, the internal factory will be used by default.
+    /// </summary>
+    [Experimental("SKEXP0040")]
+    public RestApiOperationResponseFactory? RestApiOperationResponseFactory { get; set; }
 
     /// <summary>
     /// A custom REST API parameter filter.
     /// </summary>
     [Experimental("SKEXP0040")]
-    internal RestApiParameterFilter? ParameterFilter { get; set; }
+    public RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.

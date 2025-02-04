@@ -57,11 +57,11 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,<0.6"
+    "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform ~= 1.60",
-    "google-generativeai ~= 0.7"
+    "google-cloud-aiplatform == 1.60",
+    "google-generativeai == 0.7"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
@@ -107,7 +107,7 @@ redis = [
 ]
 usearch = [
     "usearch ~= 2.9",
-    "pyarrow >= 12.0,< 19.0"
+    "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
     "weaviate-client>=4.7,<5.0",
@@ -116,7 +116,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 aws = [
-    "boto3>=1.28.57",
+    "boto3~=1.36.4",
 ]
 dapr = [
     "dapr>=1.14.0",

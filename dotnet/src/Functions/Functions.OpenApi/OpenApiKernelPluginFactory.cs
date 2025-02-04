@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -139,7 +138,6 @@ public static partial class OpenApiKernelPluginFactory
     /// <param name="specification">The specification model.</param>
     /// <param name="executionParameters">The OpenAPI specification parsing and function execution parameters.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance that contains functions corresponding to the operations defined in the OpenAPI specification.</returns>
-    [Experimental("SKEXP0040")]
     public static KernelPlugin CreateFromOpenApi(
         string pluginName,
         RestApiSpecification specification,
@@ -216,7 +214,8 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters?.UserAgent,
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false,
-            executionParameters?.HttpResponseContentReader);
+            executionParameters?.HttpResponseContentReader,
+            executionParameters?.RestApiOperationResponseFactory);
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
@@ -264,7 +263,8 @@ public static partial class OpenApiKernelPluginFactory
     {
         IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
-            executionParameters?.EnablePayloadNamespacing ?? false
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            executionParameters?.ParameterFilter
         );
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;

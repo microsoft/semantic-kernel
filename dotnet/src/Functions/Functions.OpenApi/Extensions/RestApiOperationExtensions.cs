@@ -44,11 +44,11 @@ internal static partial class RestApiOperationExtensions
 
         foreach (var parameter in parameters)
         {
-            // The functionality of replacing invalid symbols and setting the argument name   
-            // was introduced to handle dashes allowed in OpenAPI parameter names and   
-            // not supported by SK at that time. More context -   
-            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780   
-            // It's kept for backward compatibility only.  
+            // The functionality of replacing invalid symbols and setting the argument name
+            // was introduced to handle dashes allowed in OpenAPI parameter names and
+            // not supported by SK at that time. More context -
+            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780
+            // It's kept for backward compatibility only.
             parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
@@ -120,7 +120,16 @@ internal static partial class RestApiOperationExtensions
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
-        return [
+        if (parameterFilter is not null)
+        {
+            return new RestApiParameter[]
+            {
+                CreatePayloadArtificialParameter(operation),
+                CreateContentTypeArtificialParameter(operation)
+            }.Where(p => parameterFilter(new(operation, p)) is not null).ToList();
+        }
+        return
+        [
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
         ];
@@ -183,6 +192,12 @@ internal static partial class RestApiOperationExtensions
 
             if (!property.Properties.Any())
             {
+                // Assign an argument name (sanitized form of the property name) so that the parameter value look-up / resolution functionality in the RestApiOperationRunner
+                // class can find the value for the parameter by the argument name in the arguments dictionary. If the argument name is not assigned here, the resolution mechanism
+                // will try to find the parameter value by the parameter's original name. However, because the parameter was advertised with the sanitized name by the RestApiOperationExtensions.GetParameters
+                // method, no value will be found, and an exception will be thrown: "No argument is found for the 'customerid_contact@odata.bind' payload property."
+                property.ArgumentName ??= InvalidSymbolsRegex().Replace(parameterName, "_");
+
                 var parameter = new RestApiParameter(
                     name: parameterName,
                     type: property.Type,

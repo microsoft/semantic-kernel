@@ -37,7 +37,9 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+Put the .env file in the root directory.
+
+If you place the .env in a different directory, configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
@@ -121,7 +123,7 @@ summarize = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
-    prompt_template_settings=req_settings,
+    prompt_execution_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics

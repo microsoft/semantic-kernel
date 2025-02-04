@@ -1,19 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+from pathlib import Path
 from typing import Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -487,6 +484,11 @@ def test_plugin_name_error(kernel: Kernel):
         kernel.add_plugin(" ", None)
 
 
+def test_plugin_name_not_string_error(kernel: Kernel):
+    with pytest.raises(TypeError):
+        kernel.add_plugin(" ", plugin_name=Path(__file__).parent)
+
+
 def test_plugins_add_plugins(kernel: Kernel):
     plugin1 = KernelPlugin(name="TestPlugin")
     plugin2 = KernelPlugin(name="TestPlugin2")
@@ -586,34 +588,6 @@ def test_add_functions_to_existing(kernel: Kernel):
 
     plugin = kernel.add_functions(plugin_name="test", functions=[func1, func2])
     assert len(plugin.functions) == 2
-
-
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel, define_openai_predicate_context):
-    base_folder = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
-    with open(os.path.join(base_folder, "TestOpenAIPlugin", "akv-openai.json")) as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), base_folder, "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    await kernel.add_plugin_from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_str=openai_spec,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(spec=httpx.AsyncClient),
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-    plugin = kernel.get_plugin(plugin_name="TestOpenAIPlugin")
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
 
 
 def test_import_plugin_from_openapi(kernel: Kernel):

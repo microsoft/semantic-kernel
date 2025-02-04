@@ -39,7 +39,7 @@ internal static class PineconeVectorStoreCollectionCreateMapping
         {
             DistanceFunction.CosineSimilarity => Metric.Cosine,
             DistanceFunction.DotProductSimilarity => Metric.DotProduct,
-            DistanceFunction.EuclideanDistance => Metric.Euclidean,
+            DistanceFunction.EuclideanSquaredDistance => Metric.Euclidean,
             null => Metric.Cosine,
             _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Pinecone VectorStore.")
         };

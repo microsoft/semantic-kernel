@@ -38,3 +38,9 @@ class AgentChatException(AgentException):
     """An error occurred while invoking the agent chat."""
 
     pass
+
+
+class AgentChatHistoryReducerException(AgentException):
+    """An error occurred while reducing the chat history."""
+
+    pass

@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 using Sdk = Pinecone;
 
@@ -17,13 +17,7 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
 {
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
 
-    [PineconeFact]
-    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
-    {
-        await base.ItCanGetAListOfExistingCollectionNamesAsync();
-    }
-
-    [PineconeFact]
+    [VectorStoreFact]
     public void CreateCollectionUsingFactory()
     {
         var vectorStore = new PineconeVectorStore(

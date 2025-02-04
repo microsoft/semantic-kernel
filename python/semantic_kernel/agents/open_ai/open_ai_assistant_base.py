@@ -42,13 +42,18 @@ from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
     AgentInvokeException,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -61,6 +66,7 @@ class OpenAIAssistantBase(Agent):
     """
 
     _options_metadata_key: ClassVar[str] = "__run_options"
+    _template_metadata_key: ClassVar[str] = "__template_format"
 
     ai_model_id: str
     client: AsyncOpenAI
@@ -85,6 +91,7 @@ class OpenAIAssistantBase(Agent):
     max_prompt_tokens: int | None = None
     parallel_tool_calls_enabled: bool | None = True
     truncation_message_count: int | None = None
+    prompt_template: PromptTemplateBase | None = None
 
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
@@ -114,11 +121,12 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, str] | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant Base.
@@ -145,6 +153,7 @@ class OpenAIAssistantBase(Agent):
             max_prompt_tokens: The max prompt tokens. Defaults to None. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. Defaults to True. (optional)
             truncation_message_count: The truncation message count. Defaults to None. (optional)
+            prompt_template_config: The prompt template config. Defaults to None. (optional)
             kwargs: The keyword arguments.
         """
         args: dict[str, Any] = {}
@@ -153,7 +162,6 @@ class OpenAIAssistantBase(Agent):
             "ai_model_id": ai_model_id,
             "client": client,
             "service_id": service_id,
-            "instructions": instructions,
             "description": description,
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
@@ -175,6 +183,23 @@ class OpenAIAssistantBase(Agent):
             args["id"] = id
         if kernel is not None:
             args["kernel"] = kernel
+
+        if instructions and prompt_template_config and instructions != prompt_template_config.template:
+            logger.info(
+                f"Both `instructions` ({instructions}) and `prompt_template_config` "
+                f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
+                "and ignoring `instructions`."
+            )
+
+        if instructions is not None:
+            args["instructions"] = instructions
+        if prompt_template_config is not None:
+            args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )
+            if prompt_template_config.template is not None:
+                # Use the template from the prompt_template_config if it is provided
+                args["instructions"] = prompt_template_config.template
         if kwargs:
             args.update(kwargs)
 
@@ -191,6 +216,7 @@ class OpenAIAssistantBase(Agent):
         enable_file_search: bool | None = None,
         vector_store_id: str | None = None,
         metadata: dict[str, str] | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> "Assistant":
         """Create the assistant.
@@ -205,6 +231,7 @@ class OpenAIAssistantBase(Agent):
             code_interpreter_file_ids: The file ids. Defaults to None. (optional)
             vector_store_id: The vector store id. Defaults to None. (optional)
             metadata: The metadata. Defaults to None. (optional)
+            prompt_template_config: The prompt template configuration. Defaults to None. (optional)
             kwargs: Extra keyword arguments.
 
         Returns:
@@ -267,15 +294,27 @@ class OpenAIAssistantBase(Agent):
         elif self.metadata:
             create_assistant_kwargs["metadata"] = self.metadata
 
+        if "metadata " not in create_assistant_kwargs and prompt_template_config is not None:
+            create_assistant_kwargs["metadata"] = {}
+            create_assistant_kwargs["metadata"][self._template_metadata_key] = prompt_template_config.template_format
+
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
-        execution_settings = {}
+        execution_settings: dict[str, Any] = {}
         if self.max_completion_tokens:
             execution_settings["max_completion_tokens"] = self.max_completion_tokens
 
         if self.max_prompt_tokens:
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
+
+        if self.top_p is not None:
+            execution_settings["top_p"] = self.top_p
+            create_assistant_kwargs["top_p"] = self.top_p
+
+        if self.temperature is not None:
+            execution_settings["temperature"] = self.temperature
+            create_assistant_kwargs["temperature"] = self.temperature
 
         if self.parallel_tool_calls_enabled:
             execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
@@ -327,12 +366,11 @@ class OpenAIAssistantBase(Agent):
             An OpenAI Assistant Definition.
         """
         execution_settings = {}
+        template_format = "semantic-kernel"
         if isinstance(assistant.metadata, dict) and OpenAIAssistantBase._options_metadata_key in assistant.metadata:
-            settings_data = assistant.metadata[OpenAIAssistantBase._options_metadata_key]
-            if isinstance(settings_data, str):
-                settings_data = json.loads(settings_data)
-                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = settings_data
+            settings_data = json.loads(assistant.metadata[OpenAIAssistantBase._options_metadata_key])
             execution_settings = {key: value for key, value in settings_data.items()}
+            template_format = assistant.metadata.get(OpenAIAssistantBase._template_metadata_key, "semantic-kernel")
 
         file_ids: list[str] = []
         vector_store_id = None
@@ -370,6 +408,7 @@ class OpenAIAssistantBase(Agent):
             "top_p": assistant.top_p,
             "vector_store_id": vector_store_id if vector_store_id else None,
             "metadata": assistant.metadata,
+            "template_format": template_format,
             **execution_settings,
         }
 
@@ -596,11 +635,14 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Invoke Methods
 
+    @trace_agent_invocation
     async def invoke(
         self,
         thread_id: str,
         *,
         ai_model_id: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
         enable_json_response: bool | None = None,
@@ -611,6 +653,8 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the chat assistant.
@@ -620,6 +664,8 @@ class OpenAIAssistantBase(Agent):
         Args:
             thread_id: The thread id.
             ai_model_id: The AI model id. Defaults to None. (optional)
+            arguments: The kernel arguments. Defaults to None. (optional)
+            kernel: The kernel. Defaults to None. (optional)
             enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
             enable_file_search: Enable file search. Defaults to False. (optional)
             enable_json_response: Enable JSON response. Defaults to False. (optional)
@@ -630,6 +676,8 @@ class OpenAIAssistantBase(Agent):
             temperature: The temperature. Defaults to None. (optional)
             top_p: The top p. Defaults to None. (optional)
             metadata: The metadata. Defaults to {}. (optional)
+            instructions_override: If provided, fully replaces the usual prompt instructions. (optional)
+            additional_instructions: If provided, is appended to whatever instructions exist. (optional)
             kwargs: Extra keyword arguments.
 
         Yields:
@@ -638,6 +686,8 @@ class OpenAIAssistantBase(Agent):
         async for is_visible, content in self._invoke_internal(
             thread_id=thread_id,
             ai_model_id=ai_model_id,
+            arguments=arguments,
+            kernel=kernel,
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
             enable_json_response=enable_json_response,
@@ -648,6 +698,8 @@ class OpenAIAssistantBase(Agent):
             temperature=temperature,
             top_p=top_p,
             metadata=metadata,
+            instructions_override=instructions_override,
+            additional_instructions=additional_instructions,
             kwargs=kwargs,
         ):
             if is_visible:
@@ -658,6 +710,8 @@ class OpenAIAssistantBase(Agent):
         thread_id: str,
         *,
         ai_model_id: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
         enable_json_response: bool | None = None,
@@ -668,15 +722,19 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Internal invoke method.
 
-        The supplied arguments will take precedence over the specified assistant level attributes.
+        The supplied arguments will take precedence over the specified assistant-level attributes.
 
         Args:
             thread_id: The thread id.
             ai_model_id: The AI model id. Defaults to None. (optional)
+            arguments: The kernel arguments. Defaults to None. (optional)
+            kernel: The kernel. Defaults to None. (optional)
             enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
             enable_file_search: Enable file search. Defaults to False. (optional)
             enable_json_response: Enable JSON response. Defaults to False. (optional)
@@ -687,6 +745,8 @@ class OpenAIAssistantBase(Agent):
             temperature: The temperature. Defaults to None. (optional)
             top_p: The top p. Defaults to None. (optional)
             metadata: The metadata. Defaults to {}. (optional)
+            instructions_override: If provided, fully replaces the usual prompt instructions. (optional)
+            additional_instructions: If provided, is appended to whatever instructions exist. (optional)
             kwargs: Extra keyword arguments.
 
         Yields:
@@ -701,8 +761,26 @@ class OpenAIAssistantBase(Agent):
         if metadata is None:
             metadata = {}
 
-        self._check_if_deleted()
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         tools = self._get_tools()
+
+        # Get base instructions from the prompt template, if any
+        base_instructions = await self.format_instructions(kernel=kernel, arguments=arguments)
+
+        merged_instructions: str = ""
+        if instructions_override is not None:
+            merged_instructions = instructions_override
+        elif base_instructions and additional_instructions:
+            merged_instructions = f"{base_instructions}\n\n{additional_instructions}"
+        else:
+            merged_instructions = base_instructions or additional_instructions or ""
 
         run_options = self._generate_options(
             ai_model_id=ai_model_id,
@@ -716,16 +794,17 @@ class OpenAIAssistantBase(Agent):
             temperature=temperature,
             top_p=top_p,
             metadata=metadata,
-            kwargs=kwargs,
+            **kwargs,
         )
-
         # Filter out None values to avoid passing them as kwargs
         run_options = {k: v for k, v in run_options.items() if v is not None}
+
+        logger.debug(f"Starting invoke for agent `{self.name}` and thread `{thread_id}`")
 
         run = await self.client.beta.threads.runs.create(
             assistant_id=self.assistant.id,
             thread_id=thread_id,
-            instructions=self.assistant.instructions,
+            instructions=merged_instructions or self.assistant.instructions,
             tools=tools,  # type: ignore
             **run_options,
         )
@@ -747,8 +826,13 @@ class OpenAIAssistantBase(Agent):
 
             # Check if function calling required
             if run.status == "requires_action":
+                logger.debug(f"Run [{run.id}] requires action for agent `{self.name}` and thread `{thread_id}`")
                 fccs = get_function_call_contents(run, function_steps)
                 if fccs:
+                    logger.debug(
+                        f"Yielding `generate_function_call_content` for agent `{self.name}` and "
+                        f"thread `{thread_id}`, visibility False"
+                    )
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 
                     from semantic_kernel.contents.chat_history import ChatHistory
@@ -762,28 +846,52 @@ class OpenAIAssistantBase(Agent):
                         thread_id=thread_id,
                         tool_outputs=tool_outputs,  # type: ignore
                     )
+                    logger.debug(f"Submitted tool outputs for agent `{self.name}` and thread `{thread_id}`")
 
             steps_response = await self.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
+            logger.debug(f"Called for steps_response for run [{run.id}] agent `{self.name}` and thread `{thread_id}`")
             steps: list[RunStep] = steps_response.data
-            completed_steps_to_process: list[RunStep] = sorted(
-                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids],
-                key=lambda s: s.created_at,
+
+            def sort_key(step: RunStep):
+                # Put tool_calls first, then message_creation
+                # If multiple steps share a type, break ties by completed_at
+                return (0 if step.type == "tool_calls" else 1, step.completed_at)
+
+            completed_steps_to_process = sorted(
+                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids], key=sort_key
+            )
+
+            logger.debug(
+                f"Completed steps to process for run [{run.id}] agent `{self.name}` and thread `{thread_id}` "
+                f"with length `{len(completed_steps_to_process)}`"
             )
 
             message_count = 0
             for completed_step in completed_steps_to_process:
                 if completed_step.type == "tool_calls":
+                    logger.debug(
+                        f"Entering step type tool_calls for run [{run.id}], agent `{self.name}` and "
+                        f"thread `{thread_id}`"
+                    )
                     assert hasattr(completed_step.step_details, "tool_calls")  # nosec
                     for tool_call in completed_step.step_details.tool_calls:
                         is_visible = False
                         content: "ChatMessageContent | None" = None
                         if tool_call.type == "code_interpreter":
+                            logger.debug(
+                                f"Entering step type tool_calls for run [{run.id}], [code_interpreter] for "
+                                f"agent `{self.name}` and thread `{thread_id}`"
+                            )
                             content = generate_code_interpreter_content(
                                 self.name,
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
                             is_visible = True
                         elif tool_call.type == "function":
+                            logger.debug(
+                                f"Entering step type tool_calls for run [{run.id}], [function] for agent `{self.name}` "
+                                f"and thread `{thread_id}`"
+                            )
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
                             content = generate_function_result_content(
@@ -792,8 +900,16 @@ class OpenAIAssistantBase(Agent):
 
                         if content:
                             message_count += 1
+                            logger.debug(
+                                f"Yielding tool_message for run [{run.id}], agent `{self.name}` and thread "
+                                f"`{thread_id}` and message count `{message_count}`, is_visible `{is_visible}`"
+                            )
                             yield is_visible, content
                 elif completed_step.type == "message_creation":
+                    logger.debug(
+                        f"Entering step type message_creation for run [{run.id}], agent `{self.name}` and "
+                        f"thread `{thread_id}`"
+                    )
                     message = await self._retrieve_message(
                         thread_id=thread_id,
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
@@ -802,15 +918,22 @@ class OpenAIAssistantBase(Agent):
                         content = generate_message_content(self.name, message)
                         if content and len(content.items) > 0:
                             message_count += 1
+                            logger.debug(
+                                f"Yielding message_creation for run [{run.id}], agent `{self.name}` and "
+                                f"thread `{thread_id}` and message count `{message_count}`, is_visible `{True}`"
+                            )
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
+    @trace_agent_invocation
     async def invoke_stream(
         self,
         thread_id: str,
         *,
         messages: list["ChatMessageContent"] | None = None,
         ai_model_id: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
         enable_json_response: bool | None = None,
@@ -821,13 +944,43 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
-        """Invoke the chat assistant with streaming."""
+        """Internal invoke stream method.
+
+        The supplied arguments will take precedence over the specified assistant-level attributes.
+
+        Args:
+            thread_id: The thread id.
+            messages: The chat messages. Defaults to None. (optional)
+            ai_model_id: The AI model id. Defaults to None. (optional)
+            arguments: The kernel arguments. Defaults to None. (optional)
+            kernel: The kernel. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
+            enable_file_search: Enable file search. Defaults to False. (optional)
+            enable_json_response: Enable JSON response. Defaults to False. (optional)
+            max_completion_tokens: The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens: The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count: The truncation message count. Defaults to None. (optional)
+            temperature: The temperature. Defaults to None. (optional)
+            top_p: The top p. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            instructions_override: If provided, fully replaces the usual prompt instructions. (optional)
+            additional_instructions: If provided, is appended to whatever instructions exist. (optional)
+            kwargs: Extra keyword arguments.
+
+        Yields:
+            tuple[bool, ChatMessageContent]: A tuple of visibility and chat message content.
+        """
         async for content in self._invoke_internal_stream(
             thread_id=thread_id,
             messages=messages,
             ai_model_id=ai_model_id,
+            arguments=arguments,
+            kernel=kernel,
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
             enable_json_response=enable_json_response,
@@ -838,6 +991,8 @@ class OpenAIAssistantBase(Agent):
             temperature=temperature,
             top_p=top_p,
             metadata=metadata,
+            instructions_override=instructions_override,
+            additional_instructions=additional_instructions,
             **kwargs,
         ):
             yield content
@@ -848,6 +1003,8 @@ class OpenAIAssistantBase(Agent):
         *,
         messages: list["ChatMessageContent"] | None = None,
         ai_model_id: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         enable_code_interpreter: bool | None = False,
         enable_file_search: bool | None = False,
         enable_json_response: bool | None = None,
@@ -858,6 +1015,8 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Internal invoke method with streaming."""
@@ -870,7 +1029,26 @@ class OpenAIAssistantBase(Agent):
         if metadata is None:
             metadata = {}
 
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
         tools = self._get_tools()
+
+        # Get base instructions from the prompt template, if any
+        base_instructions = await self.format_instructions(kernel=kernel, arguments=arguments)
+
+        merged_instructions: str = ""
+        if instructions_override is not None:
+            merged_instructions = instructions_override
+        elif base_instructions and additional_instructions:
+            merged_instructions = f"{base_instructions}\n\n{additional_instructions}"
+        else:
+            merged_instructions = base_instructions or additional_instructions or ""
 
         run_options = self._generate_options(
             ai_model_id=ai_model_id,
@@ -893,7 +1071,7 @@ class OpenAIAssistantBase(Agent):
         stream = self.client.beta.threads.runs.stream(
             assistant_id=self.assistant.id,
             thread_id=thread_id,
-            instructions=self.assistant.instructions,
+            instructions=merged_instructions or self.assistant.instructions,
             tools=tools,  # type: ignore
             **run_options,
         )
