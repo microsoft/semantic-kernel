@@ -26,10 +26,15 @@ Example|Description
 [Step05_JsonResult](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step05_JsonResult.cs)|How to have an agent produce JSON.
 [Step06_DependencyInjection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step06_DependencyInjection.cs)|How to define dependency injection patterns for agents.
 [Step07_Logging](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step07_Logging.cs)|How to enable logging for agents.
-[Step08_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step08_Assistant.cs)|How to create an Open AI Assistant agent.
-[Step09_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step09_Assistant_Vision.cs)|How to provide an image as input to an Open AI Assistant agent.
-[Step10_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step10_AssistantTool_CodeInterpreter_.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
-[Step11_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step11_AssistantTool_FileSearch.cs)|How to use the file-search tool for an Open AI Assistant agent.
+[Step01_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step01_Assistant.cs)|How to create an Open AI Assistant agent.
+[Step02_Assistant_Vision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step02_Assistant_Vision.cs)|How to provide an image as input to an Open AI Assistant agent.
+[Step03_AssistantTool_CodeInterpreter_](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step03_AssistantTool_CodeInterpreter_.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
+[Step04_AssistantTool_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step04_AssistantTool_FileSearch.cs)|How to use the file-search tool for an Open AI Assistant agent.
+[Step01_AzureAIAgent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step01_AzureAIAgent.cs)|How to create an Azure AI agent.
+[Step02_AzureAIAgent_Chat](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step02_AzureAIAgent_Chat.cs)|How create a conversation with Azure AI agents.
+[Step03_AzureAIAgent_CodeInterpreter](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step03_AzureAIAgent_CodeInterpreter.cs)|How to use the code-interpreter tool for an Azure AI agent.
+[Step04_AzureAIAgent_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step04_AzureAIAgent_FileSearch.cs)|How to use the file-search tool for an Azure AI agent.
+[Step05_AzureAIAgent_OpenAPI](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step05_AzureAIAgent_OpenAPI.cs)|How to use the Open API tool for an Azure AI agent.
 
 ## Legacy Agents
 

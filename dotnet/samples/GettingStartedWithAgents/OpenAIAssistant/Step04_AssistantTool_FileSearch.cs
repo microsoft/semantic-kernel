@@ -7,7 +7,7 @@ using OpenAI.Files;
 using OpenAI.VectorStores;
 using Resources;
 
-namespace GettingStarted;
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
