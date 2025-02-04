@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 /// <summary>
 /// Models the response object of a call to get the state of a CrewAI Crew kickoff.
 /// </summary>
-public record CrewAIStatusResponse
+public class CrewAIStatusResponse
 {
     /// <summary>
     /// The current state of the CrewAI Crew kickoff.

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 /// <summary>
 /// Represents the requirements for kicking off a CrewAI Crew.
 /// </summary>
-public record CrewAIRequiredInputs
+public class CrewAIRequiredInputs
 {
     /// <summary>
     /// The inputs required for the Crew.
