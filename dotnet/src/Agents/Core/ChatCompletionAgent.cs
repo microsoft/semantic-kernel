@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -48,43 +47,33 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var agentName = this.GetDisplayName();
 
-        var result = ActivityExtensions.RunWithActivityAsync(
+        return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
-
-        await foreach (var item in result.ConfigureAwait(false))
-        {
-            yield return item;
-        }
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var agentName = this.GetDisplayName();
 
-        var result = ActivityExtensions.RunWithActivityAsync(
+        return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
-
-        await foreach (var item in result.ConfigureAwait(false))
-        {
-            yield return item;
-        }
     }
 
     /// <inheritdoc/>
