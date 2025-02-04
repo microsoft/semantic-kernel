@@ -118,6 +118,8 @@ public sealed partial class CrewAIEnterpriseClientTests
             CrewAIKickoffState.Running => "RUNNING",
             CrewAIKickoffState.Success => "SUCCESS",
             CrewAIKickoffState.Failed => "FAILED",
+            CrewAIKickoffState.Failure => "FAILURE",
+            CrewAIKickoffState.NotFound => "NOT FOUND",
             _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
         };
 
