@@ -191,8 +191,8 @@ class BedrockAgentBase(KernelBaseModel):
                     agentId=self.agent_model.agent_id,
                     agentResourceRoleArn=self.agent_resource_role_arn,
                     # Use the existing agent name and foundation model if not provided since they are required.
-                    agentName=kwargs.get("agentName") or self.agent_model.agent_name,
-                    foundationModel=kwargs.get("foundationModel") or self.agent_model.foundation_model,
+                    agentName=kwargs.pop("agentName", None) or self.agent_model.agent_name,
+                    foundationModel=kwargs.pop("foundationModel", None) or self.agent_model.foundation_model,
                     **kwargs,
                 ),
             )
