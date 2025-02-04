@@ -46,6 +46,11 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
         // and more...
     }
 
+    /// <summary>
+    /// Demonstrates tracing in <see cref="ChatCompletionAgent"/>.
+    /// Tracing is enabled through the <see cref="TracerProvider"/>.
+    /// For output this example uses Console as well as Application Insights.
+    /// </summary>
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, false)]
