@@ -23,29 +23,9 @@ namespace GettingStarted;
 public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for the application activities.
+    /// Instance of <see cref="ActivitySource"/> for the example's main activity.
     /// </summary>
     private static readonly ActivitySource s_activitySource = new("AgentsTelemetry.Example");
-
-    private const string ReviewerName = "ArtDirector";
-    private const string ReviewerInstructions =
-        """
-        You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-        The goal is to determine if the given copy is acceptable to print.
-        If so, state that it is approved.
-        If not, provide insight on how to refine suggested copy without examples.
-        """;
-
-    private const string CopyWriterName = "CopyWriter";
-    private const string CopyWriterInstructions =
-        """
-        You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-        The goal is to refine and decide on the single best copy as an expert in the field.
-        Only provide a single proposal per response.
-        You're laser focused on the goal at hand.
-        Don't waste time with chit chat.
-        Consider suggestions when refining an idea.
-        """;
 
     /// <summary>
     /// Demonstrates logging in <see cref="ChatCompletionAgent"/> and <see cref="AgentGroupChat"/>.
@@ -55,7 +35,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task LoggingAsync()
     {
-        await RunExampleAsync(this.LoggerFactory);
+        await RunExampleAsync(loggerFactory: this.LoggerFactory);
 
         // Output:
         // [AddChatMessages] Adding Messages: 1.
@@ -67,44 +47,18 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task TracingAsync(bool useApplicationInsights)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task TracingAsync(bool useApplicationInsights, bool useStreaming)
     {
-        const string SemanticKernelActivitySource = "Microsoft.SemanticKernel*";
-
-        // Enable model diagnostics with sensitive data.
-        AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
-
-        var tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Semantic Kernel Agents Tracing Example"))
-            .AddSource(SemanticKernelActivitySource)
-            .AddSource(s_activitySource.Name);
-
-        if (useApplicationInsights)
-        {
-            var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ConfigurationNotFoundException(
-                    nameof(TestConfiguration.ApplicationInsights),
-                    nameof(TestConfiguration.ApplicationInsights.ConnectionString));
-            }
-
-            tracerProviderBuilder.AddAzureMonitorTraceExporter(o => o.ConnectionString = connectionString);
-        }
-        else
-        {
-            tracerProviderBuilder.AddConsoleExporter();
-        }
-
-        using var tracerProvider = tracerProviderBuilder.Build();
+        using var tracerProvider = GetTracerProvider(useApplicationInsights);
 
         using var activity = s_activitySource.StartActivity("MainActivity");
         Console.WriteLine($"Operation/Trace ID: {Activity.Current?.TraceId}");
 
-        await RunExampleAsync();
+        await RunExampleAsync(useStreaming: useStreaming);
 
         // Output:
         // Operation/Trace ID: 132d831ef39c13226cdaa79873f375b8
@@ -122,30 +76,41 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
 
     #region private
 
-    private sealed class ApprovalTerminationStrategy : TerminationStrategy
-    {
-        // Terminate when the final message contains the term "approve"
-        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
-    }
-
-    private async Task RunExampleAsync(ILoggerFactory? loggerFactory = null)
+    private async Task RunExampleAsync(
+        bool useStreaming = false,
+        ILoggerFactory? loggerFactory = null)
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
             new()
             {
-                Instructions = ReviewerInstructions,
-                Name = ReviewerName,
+                Name = "ArtDirector",
+                Instructions =
+                    """
+                    You are an art director who has opinions about copywriting born of a love for David Ogilvy.
+                    The goal is to determine if the given copy is acceptable to print.
+                    If so, state that it is approved.
+                    If not, provide insight on how to refine suggested copy without examples.
+                    """,
+                Description = "An art director who has opinions about copywriting born of a love for David Ogilvy",
                 Kernel = this.CreateKernelWithChatCompletion(),
-                LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory)
+                LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
             };
 
         ChatCompletionAgent agentWriter =
             new()
             {
-                Instructions = CopyWriterInstructions,
-                Name = CopyWriterName,
+                Name = "CopyWriter",
+                Instructions =
+                    """
+                    You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+                    The goal is to refine and decide on the single best copy as an expert in the field.
+                    Only provide a single proposal per response.
+                    You're laser focused on the goal at hand.
+                    Don't waste time with chit chat.
+                    Consider suggestions when refining an idea.
+                    """,
+                Description = "A copywriter with ten years of experience and are known for brevity and a dry humor.",
                 Kernel = this.CreateKernelWithChatCompletion(),
                 LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
             };
@@ -177,15 +142,89 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);
 
-        await foreach (ChatMessageContent response in chat.InvokeAsync())
+        if (useStreaming)
         {
-            this.WriteAgentChatMessage(response);
+            string lastAgent = string.Empty;
+            await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync())
+            {
+                if (string.IsNullOrEmpty(response.Content))
+                {
+                    continue;
+                }
+
+                if (!lastAgent.Equals(response.AuthorName, StringComparison.Ordinal))
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                    lastAgent = response.AuthorName ?? string.Empty;
+                }
+
+                Console.WriteLine($"\t > streamed: '{response.Content}'");
+            }
+
+            // Display the chat history.
+            Console.WriteLine("================================");
+            Console.WriteLine("CHAT HISTORY");
+            Console.WriteLine("================================");
+
+            ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
+
+            for (int index = 0; index < history.Length; index++)
+            {
+                this.WriteAgentChatMessage(history[index]);
+            }
+        }
+        else
+        {
+            await foreach (ChatMessageContent response in chat.InvokeAsync())
+            {
+                this.WriteAgentChatMessage(response);
+            }
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 
+    private TracerProvider? GetTracerProvider(bool useApplicationInsights)
+    {
+        const string SemanticKernelActivitySource = "Microsoft.SemanticKernel*";
+
+        // Enable model diagnostics with sensitive data.
+        AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
+
+        var tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Semantic Kernel Agents Tracing Example"))
+            .AddSource(SemanticKernelActivitySource)
+            .AddSource(s_activitySource.Name);
+
+        if (useApplicationInsights)
+        {
+            var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ConfigurationNotFoundException(
+                    nameof(TestConfiguration.ApplicationInsights),
+                    nameof(TestConfiguration.ApplicationInsights.ConnectionString));
+            }
+
+            tracerProviderBuilder.AddAzureMonitorTraceExporter(o => o.ConnectionString = connectionString);
+        }
+        else
+        {
+            tracerProviderBuilder.AddConsoleExporter();
+        }
+
+        return tracerProviderBuilder.Build();
+    }
+
     private ILoggerFactory GetLoggerFactoryOrDefault(ILoggerFactory? loggerFactory = null) => loggerFactory ?? NullLoggerFactory.Instance;
+
+    private sealed class ApprovalTerminationStrategy : TerminationStrategy
+    {
+        // Terminate when the final message contains the term "approve"
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
+    }
 
     #endregion
 }

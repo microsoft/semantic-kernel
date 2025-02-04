@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -7,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -60,16 +63,31 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
+        var serviceType = chatCompletionService.GetType();
+        var agentDisplayName = this.GetDisplayName();
 
-        IReadOnlyList<ChatMessageContent> messages =
-            await chatCompletionService.GetChatMessageContentsAsync(
-                chat,
-                executionSettings,
-                kernel,
-                cancellationToken).ConfigureAwait(false);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentDisplayName, this.Description);
 
-        this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType(), messages.Count);
+        IReadOnlyList<ChatMessageContent> messages;
+
+        try
+        {
+            this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
+
+            messages =
+                await chatCompletionService.GetChatMessageContentsAsync(
+                    chat,
+                    executionSettings,
+                    kernel,
+                    cancellationToken).ConfigureAwait(false);
+
+            this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType, messages.Count);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
@@ -105,29 +123,68 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
+        var serviceType = chatCompletionService.GetType();
+        var agentDisplayName = this.GetDisplayName();
 
-        IAsyncEnumerable<StreamingChatMessageContent> messages =
-            chatCompletionService.GetStreamingChatMessageContentsAsync(
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentDisplayName, this.Description);
+
+        IAsyncEnumerable<StreamingChatMessageContent> messages;
+
+        try
+        {
+            this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
+
+            messages = chatCompletionService.GetStreamingChatMessageContentsAsync(
                 chat,
                 executionSettings,
                 kernel,
                 cancellationToken);
-
-        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, this.GetDisplayName(), chatCompletionService.GetType());
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
 
         AuthorRole? role = null;
         StringBuilder builder = new();
-        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+
+        var resultEnumerator = messages.ConfigureAwait(false).GetAsyncEnumerator();
+
+        try
         {
-            role = message.Role;
-            message.Role ??= AuthorRole.Assistant;
-            message.AuthorName = this.Name;
+            while (true)
+            {
+                try
+                {
+                    if (!await resultEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
 
-            builder.Append(message.ToString());
+                var message = resultEnumerator.Current;
 
-            yield return message;
+                role = message.Role;
+                message.Role ??= AuthorRole.Assistant;
+                message.AuthorName = this.Name;
+
+                builder.Append(message.ToString());
+
+                yield return message;
+            }
         }
+        finally
+        {
+            await resultEnumerator.DisposeAsync();
+        }
+
+        this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, agentDisplayName, serviceType);
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
