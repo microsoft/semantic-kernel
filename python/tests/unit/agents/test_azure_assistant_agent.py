@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
@@ -35,12 +36,12 @@ def mock_assistant():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": {
+            "__run_options": json.dumps({
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
-            }
+            })
         },
         model="test_model",
         description="test_description",
@@ -211,12 +212,12 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
             "metadata": {
-                "__run_options": {
+                "__run_options": json.dumps({
                     "max_completion_tokens": 100,
                     "max_prompt_tokens": 50,
                     "parallel_tool_calls_enabled": True,
                     "truncation_message_count": 10,
-                }
+                })
             },
             "max_completion_tokens": 100,
             "max_prompt_tokens": 50,
@@ -251,12 +252,12 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "top_p": 0.9,
                 "vector_store_id": "vector_store1",
                 "metadata": {
-                    "__run_options": {
+                    "__run_options": json.dumps({
                         "max_completion_tokens": 100,
                         "max_prompt_tokens": 50,
                         "parallel_tool_calls_enabled": True,
                         "truncation_message_count": 10,
-                    }
+                    })
                 },
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
@@ -300,12 +301,12 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
             "metadata": {
-                "__run_options": {
+                "__run_options": json.dumps({
                     "max_completion_tokens": 100,
                     "max_prompt_tokens": 50,
                     "parallel_tool_calls_enabled": True,
                     "truncation_message_count": 10,
-                }
+                })
             },
             "max_completion_tokens": 100,
             "max_prompt_tokens": 50,
