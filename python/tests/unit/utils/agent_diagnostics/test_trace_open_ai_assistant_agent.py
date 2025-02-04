@@ -18,7 +18,7 @@ async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history, openai_
         async for _ in open_ai_assistant_agent.invoke(chat_history):
             pass
     # Assert
-    mock_tracer.start_as_current_span.assert_called_once_with(open_ai_assistant_agent.name)
+    mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {open_ai_assistant_agent.name}")
 
 
 @patch("semantic_kernel.utils.telemetry.agent_diagnostics.decorators.tracer")
@@ -30,4 +30,4 @@ async def test_open_ai_assistant_agent_invoke_stream(mock_tracer, chat_history, 
         async for _ in open_ai_assistant_agent.invoke_stream(chat_history):
             pass
     # Assert
-    mock_tracer.start_as_current_span.assert_called_once_with(open_ai_assistant_agent.name)
+    mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {open_ai_assistant_agent.name}")
