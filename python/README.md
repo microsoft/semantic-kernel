@@ -37,7 +37,9 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+Put the .env file in the root directory.
+
+If you place the .env in a different directory, configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
