@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Defines aggregation behavior for <see cref="AggregatorTerminationStrategy"/>
+/// Defines aggregation behavior for <see cref="AggregatorTerminationStrategy"/>.
 /// </summary>
 public enum AggregateTerminationCondition
 {
@@ -23,16 +23,19 @@ public enum AggregateTerminationCondition
 }
 
 /// <summary>
-/// Aggregate a set of <see cref="TerminationStrategy"/> objects.
+/// Provides methods to aggregate a set of <see cref="TerminationStrategy"/> objects.
 /// </summary>
-/// <param name="strategies">Set of strategies upon which to aggregate.</param>
+/// <param name="strategies">The set of strategies upon which to aggregate.</param>
 public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] strategies) : TerminationStrategy
 {
     private readonly TerminationStrategy[] _strategies = strategies;
 
     /// <summary>
-    /// Logical operation for aggregation: All or Any (and/or). Default: All.
+    /// Gets the logical operation for aggregation.
     /// </summary>
+    /// <value>
+    /// The logical operation for aggregation, which can be <see cref="AggregateTerminationCondition.All"/> or <see cref="AggregateTerminationCondition.Any"/>. The default is <see cref="AggregateTerminationCondition.All"/>.
+    /// </value>
     public AggregateTerminationCondition Condition { get; init; } = AggregateTerminationCondition.All;
 
     /// <inheritdoc/>

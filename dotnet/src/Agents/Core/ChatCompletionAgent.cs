@@ -14,11 +14,11 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
+/// Represents a <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
-/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
-/// (<see cref="KernelAgent.Arguments"/>)
+/// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
+/// (<see cref="KernelAgent.Arguments"/>).
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
@@ -31,10 +31,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class from
     /// a <see cref="PromptTemplateConfig"/>.
     /// </summary>
-    /// <param name="templateConfig">Prompt template configuration</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent</param>
+    /// <param name="templateConfig">The prompt template configuration.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <remarks>
-    /// When 'templateFactory' parameter is not provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
+    /// When a template factory argument isn't provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
     /// </remarks>
     public ChatCompletionAgent(
         PromptTemplateConfig templateConfig,

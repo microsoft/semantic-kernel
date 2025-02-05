@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="ChatHistoryKernelAgent"/>.
+/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryKernelAgent"/>.
 /// </summary>
 internal sealed class ChatHistoryChannel : AgentChannel
 {
