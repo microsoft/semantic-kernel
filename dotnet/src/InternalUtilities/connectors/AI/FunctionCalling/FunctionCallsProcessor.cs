@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -490,6 +491,17 @@ internal sealed class FunctionCallsProcessor
             return chatMessageContent.ToString();
         }
 
-        return JsonSerializer.Serialize(functionResult);
+        return JsonSerializer.Serialize(functionResult, s_functionResultSerializerOptions);
     }
+
+    /// <summary>
+    /// The <see cref="JsonSerializerOptions" /> which will be used in <see cref="ProcessFunctionResult(object)"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="JsonSerializer.Serialize{TValue}(TValue, JsonSerializerOptions?)"/> is very likely to escape characters and generates LLM unfriendly results by default.
+    /// </remarks>
+    private static readonly JsonSerializerOptions s_functionResultSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
 }
