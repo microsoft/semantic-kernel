@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence, TypeVar
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 from azure.ai.projects.models import (
     CodeInterpreterTool,
@@ -13,6 +14,7 @@ from azure.ai.projects.models import (
 
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.contents import ChatMessageContent
@@ -20,6 +22,7 @@ if TYPE_CHECKING:
 _T = TypeVar("_T", bound="AzureAIAgentUtils")
 
 
+@experimental_class
 class AzureAIAgentUtils:
     """AzureAI Agent Utility Methods."""
 

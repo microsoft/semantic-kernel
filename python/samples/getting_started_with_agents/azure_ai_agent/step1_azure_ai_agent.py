@@ -55,8 +55,6 @@ async def main() -> None:
             model=ai_agent_settings.model_deployment_name,
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
-            temperature=0.19,
-            top_p=0.99,
         )
 
         # Create the AzureAI Agent
@@ -86,7 +84,10 @@ async def main() -> None:
                 )
                 print(f"# User: '{user_input}'")
                 # Invoke the agent for the specified thread
-                async for content in agent.invoke(thread_id=thread.id):
+                async for content in agent.invoke(
+                    thread_id=thread.id,
+                    temperature=0.2,  # override the agent-level temperature setting with a run-time value
+                ):
                     if content.role != AuthorRole.TOOL:
                         print(f"# Agent: {content.content}")
         finally:
