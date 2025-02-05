@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,15 +43,17 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
     /// <inheritdoc/>
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
+        var systemMessage = chatHistory.FirstOrDefault(l => l.Role == AuthorRole.System);
+
         // First pass to determine the truncation index
-        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
+        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount, hasSystemMessage: systemMessage is not null);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
         if (truncationIndex > 0)
         {
             // Second pass to truncate the history
-            truncatedHistory = chatHistory.Extract(truncationIndex);
+            truncatedHistory = chatHistory.Extract(truncationIndex, systemMessage: systemMessage);
         }
 
         return Task.FromResult(truncatedHistory);

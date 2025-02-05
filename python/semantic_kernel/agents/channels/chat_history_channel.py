@@ -125,7 +125,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             kwargs: The keyword arguments
 
         Returns:
-            An async iterable of bool, StreamingChatMessageContent.
+            An async iterable of ChatMessageContent.
         """
         if not isinstance(agent, ChatHistoryAgentProtocol):
             id = getattr(agent, "id", "")
