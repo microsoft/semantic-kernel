@@ -46,6 +46,17 @@ async def test_bedrock_agent_initialization_error_with_instructions_and_prompt_t
         )
 
 
+# Test case to verify error handling during BedrockAgent initialization without both instructions and prompt template
+async def test_bedrock_agent_initialization_error_without_instructions_and_prompt_template(bedrock_agent_unit_test_env):
+    with pytest.raises(
+        AgentInitializationException, match="Either instructions or prompt_template_config.template is required."
+    ):
+        BedrockAgent(
+            name="test_agent",
+            env_file_path="fake_path",
+        )
+
+
 # Test case to verify error handling during BedrockAgent initialization with non-auto function choice
 @patch.object(boto3, "client", return_value=Mock())
 async def test_bedrock_agent_initialization_error_with_non_auto_function_choice(client, bedrock_agent_unit_test_env):
