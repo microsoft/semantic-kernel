@@ -17,6 +17,8 @@ The examples can be run as integration tests but their code can also be copied t
 
 The getting started with agents examples include:
 
+### ChatCompletion
+
 Example|Description
 ---|---
 [Step01_Agent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step01_Agent.cs)|How to create and use an agent.
@@ -26,10 +28,20 @@ Example|Description
 [Step05_JsonResult](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step05_JsonResult.cs)|How to have an agent produce JSON.
 [Step06_DependencyInjection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step06_DependencyInjection.cs)|How to define dependency injection patterns for agents.
 [Step07_Telemetry](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step07_Telemetry.cs)|How to enable logging for agents.
+
+### Open AI Assistant
+
+Example|Description
+---|---
 [Step01_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step01_Assistant.cs)|How to create an Open AI Assistant agent.
 [Step02_Assistant_Vision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step02_Assistant_Vision.cs)|How to provide an image as input to an Open AI Assistant agent.
 [Step03_AssistantTool_CodeInterpreter_](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step03_AssistantTool_CodeInterpreter_.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
 [Step04_AssistantTool_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step04_AssistantTool_FileSearch.cs)|How to use the file-search tool for an Open AI Assistant agent.
+
+### Azure AI Agent
+
+Example|Description
+---|---
 [Step01_AzureAIAgent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step01_AzureAIAgent.cs)|How to create an Azure AI agent.
 [Step02_AzureAIAgent_Chat](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step02_AzureAIAgent_Chat.cs)|How create a conversation with Azure AI agents.
 [Step03_AzureAIAgent_CodeInterpreter](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step03_AzureAIAgent_CodeInterpreter.cs)|How to use the code-interpreter tool for an Azure AI agent.
