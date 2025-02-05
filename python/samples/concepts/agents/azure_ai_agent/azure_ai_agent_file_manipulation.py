@@ -30,7 +30,7 @@ async def main() -> None:
         ) as client,
     ):
         csv_file_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
             "resources",
             "agent_assistant_file_manipulation",
             "sales.csv",

@@ -273,7 +273,8 @@ class AgentThreadActions:
                                         yield is_visible, content
                     case RunStepType.MESSAGE_CREATION:
                         logger.debug(
-                            f"Entering message_creation for run [{run.id}], agent `{agent.name}` and thread `{thread_id}`"
+                            f"Entering message_creation for run [{run.id}], agent `{agent.name}` and thread "
+                            f"`{thread_id}`"
                         )
                         message_call_details: RunStepMessageCreationDetails = cast(
                             RunStepMessageCreationDetails, completed_step.step_details
@@ -623,7 +624,15 @@ class AgentThreadActions:
         client: "AIProjectClient",
         thread_id: str,
     ) -> AsyncIterable["ChatMessageContent"]:
-        """Get messages from a thread."""
+        """Get messages from a thread.
+
+        Args:
+            client: The client to use to get the messages.
+            thread_id: The ID of the thread to get the messages from.
+
+        Yields:
+            The messages from the thread.
+        """
         agent_names: dict[str, Any] = {}
         last_id: str | None = None
         messages: OpenAIPageableListOfThreadMessage
@@ -711,18 +720,21 @@ class AgentThreadActions:
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
             "parallel_tool_calls": parallel_tool_calls,
+            "additional_messages": additional_messages,
         }
 
     @classmethod
     def _translate_additional_messages(
         cls: type[_T], messages: "list[ChatMessageContent] | None"
     ) -> list[ThreadMessage] | None:
+        """Translate additional messages to the required format."""
         if not messages:
             return None
         return AzureAIAgentUtils.get_thread_messages(messages)
 
     @classmethod
     def _prepare_tool_definition(cls: type[_T], tool: dict | ToolDefinition) -> dict | ToolDefinition:
+        """Prepare the tool definition."""
         if tool.get("type") == "openapi" and "openapi" in tool:
             openapi_data = dict(tool["openapi"])
             openapi_data.pop("functions", None)
@@ -732,6 +744,7 @@ class AgentThreadActions:
 
     @classmethod
     def _get_tools(cls: type[_T], agent: "AzureAIAgent", kernel: "Kernel") -> list[dict[str, Any] | ToolDefinition]:
+        """Get the tools for the agent."""
         tools: list[Any] = list(agent.definition.tools)
         funcs = kernel.get_full_list_of_function_metadata()
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
@@ -740,6 +753,7 @@ class AgentThreadActions:
 
     @classmethod
     async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+        """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
         count = 0
         try:
@@ -749,7 +763,7 @@ class AgentThreadActions:
             )
         except asyncio.TimeoutError:
             timeout_duration = agent.polling_options.run_polling_timeout
-            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."
+            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
             logger.error(error_message)
             raise AgentInvokeException(error_message)
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
@@ -757,6 +771,7 @@ class AgentThreadActions:
 
     @classmethod
     async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, count: int) -> ThreadRun:
+        """Poll the run status."""
         while True:
             await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
             count += 1
@@ -772,6 +787,7 @@ class AgentThreadActions:
     async def _retrieve_message(
         cls: type[_T], agent: "AzureAIAgent", thread_id: str, message_id: str
     ) -> ThreadMessage | None:
+        """Retrieve a message from a thread."""
         message: ThreadMessage | None = None
         count = 0
         max_retries = 3
@@ -795,6 +811,7 @@ class AgentThreadActions:
     async def _invoke_function_calls(
         cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
     ) -> list[Any]:
+        """Invoke the function calls."""
         tasks = [
             kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
             for function_call in fccs
@@ -805,6 +822,7 @@ class AgentThreadActions:
     def _format_tool_outputs(
         cls: type[_T], fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
     ) -> list[dict[str, str]]:
+        """Format the tool outputs for submission."""
         from semantic_kernel.contents.function_result_content import FunctionResultContent
 
         tool_call_lookup = {
@@ -828,6 +846,7 @@ class AgentThreadActions:
         function_steps: dict[str, "FunctionCallContent"],
         **kwargs: Any,
     ) -> FunctionActionResult | None:
+        """Handle the requires action event for a streaming run."""
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
             function_call_content = generate_function_call_content(agent_name=agent_name, fccs=fccs)

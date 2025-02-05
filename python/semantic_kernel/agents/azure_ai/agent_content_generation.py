@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from azure.ai.projects.models import (
     MessageDeltaImageFileContent,
+    MessageDeltaImageFileContentObject,
     MessageDeltaTextContent,
     MessageDeltaTextFileCitationAnnotation,
     MessageDeltaTextFilePathAnnotation,
@@ -45,8 +46,8 @@ if TYPE_CHECKING:
 
 ###################################################################
 # The methods in this file are used with Azure AI Agent           #
-# related code. They are used to create chat messages, or         #
-# generate message content.                                       #
+# related code. They are used to invoke, create chat messages,    #
+# or generate message content.                                    #
 ###################################################################
 
 
@@ -177,7 +178,7 @@ def generate_streaming_message_content(
                             items.append(generate_streaming_annotation_content(annotation))
         elif delta_block.type == "image_file":
             assert isinstance(delta_block, MessageDeltaImageFileContent)  # nosec
-            if delta_block.image_file and delta_block.image_file.file_id:
+            if delta_block.image_file and isinstance(delta_block.image_file, MessageDeltaImageFileContentObject):
                 file_id = delta_block.image_file.file_id
                 items.append(
                     StreamingFileReferenceContent(
