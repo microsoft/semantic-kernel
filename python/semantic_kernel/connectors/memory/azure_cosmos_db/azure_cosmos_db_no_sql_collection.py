@@ -225,7 +225,7 @@ class AzureCosmosDBNoSQLCollection(
                 case EqualTo():
                     clause = ""
                     if field_def.property_type in ["int", "float"]:
-                        clause = f"c.{filter.field_name} = {filter.value}" 
+                        clause = f"c.{filter.field_name} = {filter.value}"
                     if field_def.property_type == "str":
                         clause = f"c.{filter.field_name} = '{filter.value}'"
                     if field_def.property_type == "list[str]":
