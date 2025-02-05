@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -6,7 +7,9 @@ using System.Threading.Tasks;
 using Azure.AI.Projects;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -109,23 +112,17 @@ public sealed class AzureAIAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         AzureAIInvocationOptions? options,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
-
-        await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
-        {
-            if (isVisible)
-            {
-                yield return message;
-            }
-        }
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => this.InternalInvokeAsync(threadId, options, arguments, kernel, cancellationToken),
+            cancellationToken);
     }
 
     /// <summary>
@@ -171,10 +168,10 @@ public sealed class AzureAIAgent : KernelAgent
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
-
-        return AgentThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => this.InternalInvokeStreamingAsync(threadId, options, arguments, kernel, messages, cancellationToken),
+            cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -256,4 +253,41 @@ public sealed class AzureAIAgent : KernelAgent
             this.Template = templateFactory.Create(templateConfig);
         }
     }
+
+    #region private
+
+    private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
+        string threadId,
+        AzureAIInvocationOptions? options,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        kernel ??= this.Kernel;
+        arguments = this.MergeArguments(arguments);
+
+        await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
+        {
+            if (isVisible)
+            {
+                yield return message;
+            }
+        }
+    }
+
+    private IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
+        string threadId,
+        AzureAIInvocationOptions? options,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        ChatHistory? messages = null,
+        CancellationToken cancellationToken = default)
+    {
+        kernel ??= this.Kernel;
+        arguments = this.MergeArguments(arguments);
+
+        return AgentThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
+    }
+
+    #endregion
 }
