@@ -3,15 +3,18 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast
 
 from azure.ai.projects.models import (
+    AgentsApiResponseFormat,
+    AgentsApiResponseFormatMode,
     AgentsNamedToolChoiceType,
     AgentStreamEvent,
     AsyncAgentEventHandler,
     AsyncAgentRunStream,
+    BaseAsyncAgentEventHandler,
     OpenAIPageableListOfThreadMessage,
-    OpenApiToolDefinition,
+    ResponseFormatJsonSchemaType,
     RunStep,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
@@ -22,6 +25,8 @@ from azure.ai.projects.models import (
     SubmitToolOutputsAction,
     ThreadMessage,
     ThreadRun,
+    ToolDefinition,
+    TruncationObject,
 )
 from azure.ai.projects.models._enums import MessageRole
 
@@ -44,6 +49,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+from semantic_kernel.functions import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -51,184 +57,11 @@ if TYPE_CHECKING:
 
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
     from semantic_kernel.contents import ChatHistory, ChatMessageContent
-    from semantic_kernel.functions import KernelArguments
     from semantic_kernel.kernel import Kernel
 
+_T = TypeVar("_T", bound="AgentThreadActions")
+
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-# class MyEventHandler(AsyncAgentEventHandler):
-#     """A single event handler that processes the entire run.
-
-#     (and any sub-stream triggered by submit_tool_outputs_to_stream) in one place.
-
-#     * Keep track of partial messages or completed messages in dictionaries/lists.
-#     * Re-dispatch events to your custom logic for function calls, etc.
-#     * If 'requires_action' -> call your _handle_streaming_requires_action and
-#       call submit_tool_outputs_to_stream(..., event_handler=self) to continue in the same stream.
-#     """
-
-#     def __init__(
-#         self,
-#         agent_name: str,
-#         thread_id: str,
-#         messages_list: list,  # store final messages or streaming texts
-#         function_steps: dict[str, Any],
-#         project_client: "AIProjectClient",
-#         kernel: "Kernel",
-#     ) -> None:
-#         super().__init__()
-#         self.agent_name = agent_name
-#         self.thread_id = thread_id
-#         self.messages_list = messages_list
-#         self.function_steps = function_steps  # track known function calls
-#         self.project_client = project_client
-#         self.kernel = kernel
-
-#         # Keep track of run steps that created messages (like in your old code's `active_messages`)
-#         self.active_messages: dict[str, RunStep] = {}
-#         self._queue: asyncio.Queue = asyncio.Queue()
-
-#     #
-#     # The library calls on_event(...) behind the scenes, but these typed
-#     # methods can be recognized by the base event handler to handle specific events:
-#     #
-
-#     async def on_thread_run_created(self, run: ThreadRun) -> None:
-#         logger.info(f"[Handler] Run created with ID: {run.id}")
-
-#     async def on_thread_run_in_progress(self, step: RunStep) -> None:
-#         logger.info(f"[Handler] Run in-progress with step ID: {step.id}")
-
-#     async def on_thread_message_delta(self, delta: MessageDeltaChunk) -> None:
-#         # This is your partial streaming text. Convert it to a final string or store it.
-#         content = generate_streaming_message_content(self.agent_name, delta)
-#         logger.info(f"[Handler] on_thread_message_delta -> {content}")
-#         # You could yield this up to a caller, or store in self.messages_list
-#         self.messages_list.append(content)
-#         self._queue.put_nowait(content)
-
-#     async def on_run_step_completed(self, step: RunStep) -> None:
-#         """The run step has completed. If it created a message, store it in active_messages so we can retrieve content later."""
-#         logger.info(f"[Handler] Run step completed with ID: {step.id}")
-#         if hasattr(step.step_details, "message_creation") and step.step_details.message_creation:
-#             message_id = step.step_details.message_creation.message_id
-#             if message_id not in self.active_messages:
-#                 self.active_messages[message_id] = step
-#                 self._queue.put_nowait(step)
-
-#     async def on_run_step_delta(self, chunk: Any) -> None:
-#         """This can be used for partial step updates, including partial tool calls."""
-#         run_step_event_data: RunStepDeltaChunk = chunk
-#         run_step_details = run_step_event_data.delta.step_details
-#         if isinstance(run_step_details, RunStepDeltaToolCallObject):
-#             for tool_call in run_step_details.tool_calls:
-#                 tool_content = None
-#                 if tool_call.type == "function":
-#                     tool_content = generate_streaming_function_content(self.agent_name, run_step_details)
-#                 elif tool_call.type == "code_interpreter":
-#                     tool_content = generate_streaming_code_interpreter_content(self.agent_name, run_step_details)
-#                 if tool_content:
-#                     self._queue.put_nowait(tool_content)
-#         # if hasattr(chunk.delta, "step_details") and chunk.delta.step_details:
-#         #     step_details = chunk.delta.step_details
-#         #     if hasattr(step_details, "tool_calls") and step_details.tool_calls:
-#         #         for tool_call in step_details.tool_calls:
-#         #             if tool_call.type == "function":
-#         #                 content = generate_streaming_function_content(self.agent_name, tool_call)
-#         #                 self.messages_list.append(content)
-#         #                 self._queue.put_nowait(content)
-#         #             elif tool_call.type == "code_interpreter":
-#         #                 content = generate_streaming_code_interpreter_content(self.agent_name, tool_call)
-#         #                 self.messages_list.append(content)
-#         #                 self._queue.put_nowait(content)
-
-#     async def on_thread_run_requires_action(self, run: ThreadRun) -> None:
-#         """The run is waiting for tool outputs or function calls.
-
-#         This is analogous to
-#         'THREAD_RUN_REQUIRES_ACTION' in your old code. We'll call out to your custom
-#         _handle_streaming_requires_action and then re-submit tool outputs.
-#         """
-#         logger.info(f"[Handler] Run requires action with ID: {run.id}")
-#         # Suppose you have a custom method that decides how to respond:
-#         action_result = await AgentThreadActions._handle_streaming_requires_action(
-#             agent_name=self.agent_name,
-#             kernel=self.kernel,
-#             run=run,
-#             function_steps=self.function_steps,
-#         )
-#         if not action_result:
-#             logger.error("Function call required but no function steps found!")
-#             return  # or raise
-
-#         # If there's a function result to yield to your user, store it
-#         if action_result.function_result_content:
-#             self.messages_list.append(action_result.function_result_content)
-
-#         # If there's a next function call (or more tool outputs), we must submit them
-#         if action_result.function_call_content:
-#             self.messages_list.append(str(action_result.function_call_content))
-
-#         if action_result.tool_outputs:
-#             logger.info(f"[Handler] Submitting {len(action_result.tool_outputs)} tool outputs...")
-#             # Notice we re-use *this* same event handler so that subsequent streaming
-#             # continues to arrive in these callback methods.
-#             await self.project_client.agents.submit_tool_outputs_to_stream(
-#                 thread_id=run.thread_id,
-#                 run_id=run.id,
-#                 tool_outputs=action_result.tool_outputs,
-#                 event_handler=self,  # critical - continue in the same event handler
-#             )
-
-#     async def on_thread_run_completed(self, run: ThreadRun) -> None:
-#         """The run is finished. We can retrieve any final messages.
-
-#         Then the library will eventually call on_done().
-#         """
-#         logger.info(f"[Handler] Run completed with ID: {run.id}")
-#         # Retrieve all final messages from active_messages
-#         for message_id, step in self.active_messages.items():
-#             message_obj = await AgentThreadActions._retrieve_message(self.agent_name, run.thread_id, message_id)
-#             if message_obj and hasattr(message_obj, "content"):
-#                 content = generate_message_content(self.agent_name, message_obj, step)
-#                 self.messages_list.append(content)
-#                 self._queue.put_nowait(content)
-
-#     async def on_thread_run_failed(self, run: ThreadRun) -> None:
-#         """The run has failed. Log or handle error details."""
-#         msg = run.last_error.message if (run.last_error and run.last_error.message) else ""
-#         logger.error(f"[Handler] Run failed with ID: {run.id}, error: {msg}")
-#         self._queue.put_nowait(msg)
-
-#     async def on_done(self) -> None:
-#         """The entire stream is done (server sent `data: [DONE]` or the run entered a final state)."""
-#         logger.info("[Handler] on_done called, streaming is complete.")
-#         self._queue.put_nowait("[DONE]")
-
-#     #
-#     # Optional overrides if you need to see raw event data
-#     # or other event types that don't have a dedicated callback:
-#     #
-#     async def on_unhandled_event(self, event_type: str, event_data: Any) -> None:
-#         logger.debug(f"[Handler] Unhandled event: {event_type}, data={event_data}")
-
-#     async def stream_messages(self) -> AsyncIterator[Any]:
-#         while True:
-#             item = await self._queue.get()
-#             if item == "[DONE]":
-#                 break
-#             yield item
-
-
-# async def _consume_stream(stream) -> None:
-#     """Consumes the SSE stream so the event handler gets invoked for each event.
-#     We do 'async with stream' and 'async for ... in stream' to pull all events.
-#     """
-#     async with stream as response_stream:
-#         async for _event_type, _event_data, _raw_event in response_stream:
-#             pass
-#     # Once we exit this block, we've consumed all SSE events
 
 
 @experimental_class
@@ -242,12 +75,29 @@ class AgentThreadActions:
 
     @classmethod
     async def invoke(
-        cls,
+        cls: type[_T],
         *,
         agent: "AzureAIAgent",
         thread_id: str,
-        arguments: "KernelArguments",
-        kernel: "Kernel",
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        model: str | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: "list[ChatMessageContent] | None" = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        max_prompt_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
+        truncation_strategy: TruncationObject | None = None,
+        response_format: AgentsApiResponseFormat
+        | AgentsApiResponseFormatMode
+        | ResponseFormatJsonSchemaType
+        | None = None,
+        parallel_tool_calls: bool | None = None,
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the message in the thread.
@@ -257,24 +107,63 @@ class AgentThreadActions:
             thread_id: The thread id.
             arguments: The kernel arguments.
             kernel: The kernel.
+            model: The model.
+            instructions_override: The instructions override.
+            additional_instructions: The additional instructions.
+            additional_messages: The additional messages to add to the thread. Only supports messages with
+                role = User or Assistant.
+                https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            max_prompt_tokens: The max prompt tokens.
+            max_completion_tokens: The max completion tokens.
+            truncation_strategy: The truncation strategy.
+            response_format: The response format.
+            parallel_tool_calls: The parallel tool calls.
+            metadata: The metadata.
             kwargs: Additional keyword arguments.
 
         Returns:
-            The a tuple of the visibility and the invoked message.
+            A tuple of the visibility flag and the invoked message.
         """
-        arguments = {} if arguments is None else {**arguments, **kwargs}
+        arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
-        tools = cls._get_tools(agent, kernel)
+        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
 
-        instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
+        base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
+
+        merged_instructions: str = ""
+        if instructions_override is not None:
+            merged_instructions = instructions_override
+        elif base_instructions and additional_instructions:
+            merged_instructions = f"{base_instructions}\n\n{additional_instructions}"
+        else:
+            merged_instructions = base_instructions or additional_instructions or ""
+
+        run_options = cls._generate_options(
+            agent=agent,
+            model=model,
+            additional_messages=additional_messages,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            truncation_strategy=truncation_strategy,
+            response_format=response_format,
+            parallel_tool_calls=parallel_tool_calls,
+        )
+        # Remove keys with None values.
+        run_options = {k: v for k, v in run_options.items() if v is not None}
 
         run: ThreadRun = await agent.client.agents.create_run(
             assistant_id=agent.id,
             thread_id=thread_id,
-            instructions=instructions,
+            instructions=merged_instructions or agent.instructions,
             tools=tools,
-            **kwargs,
+            **run_options,
         )
 
         processed_step_ids = set()
@@ -292,13 +181,13 @@ class AgentThreadActions:
                     f"with error: {error_message}"
                 )
 
-            # Check if function calling required
+            # Check if function calling is required
             if run.status == "requires_action" and isinstance(run.required_action, SubmitToolOutputsAction):
                 logger.debug(f"Run [{run.id}] requires tool action for agent `{agent.name}` and thread `{thread_id}`")
                 fccs = get_function_call_contents(run, function_steps)
                 if fccs:
                     logger.debug(
-                        f"Yielding `generate_function_call_content` for agent `{agent.name}` and "
+                        f"Yielding generate_function_call_content for agent `{agent.name}` and "
                         f"thread `{thread_id}`, visibility False"
                     )
                     yield False, generate_function_call_content(agent_name=agent.name, fccs=fccs)
@@ -321,12 +210,13 @@ class AgentThreadActions:
             steps: list[RunStep] = steps_response.data
 
             def sort_key(step: RunStep):
-                # Put tool_calls first, then message_creation
-                # If multiple steps share a type, break ties by completed_at
+                # Put tool_calls first, then message_creation.
+                # If multiple steps share a type, break ties by completed_at.
                 return (0 if step.type == "tool_calls" else 1, step.completed_at)
 
             completed_steps_to_process = sorted(
-                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids], key=sort_key
+                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids],
+                key=sort_key,
             )
 
             logger.debug(
@@ -342,17 +232,21 @@ class AgentThreadActions:
                             f"Entering step type tool_calls for run [{run.id}], agent `{agent.name}` and "
                             f"thread `{thread_id}`"
                         )
-                        tool_call_details: RunStepToolCallDetails = completed_step.step_details
+                        tool_call_details: RunStepToolCallDetails = cast(
+                            RunStepToolCallDetails, completed_step.step_details
+                        )
                         for tool_call in tool_call_details.tool_calls:
                             is_visible = False
                             content: "ChatMessageContent | None" = None
                             match tool_call.type:
                                 case AgentsNamedToolChoiceType.CODE_INTERPRETER:
                                     logger.debug(
-                                        f"Entering step type tool_calls for run [{run.id}], [code_interpreter] for "
-                                        f"agent `{agent.name}` and thread `{thread_id}`"
+                                        f"Entering tool_calls (code_interpreter) for run [{run.id}], agent "
+                                        f"`{agent.name}` and thread `{thread_id}`"
                                     )
-                                    code_call: RunStepCodeInterpreterToolCall = tool_call
+                                    code_call: RunStepCodeInterpreterToolCall = cast(
+                                        RunStepCodeInterpreterToolCall, tool_call
+                                    )
                                     content = generate_code_interpreter_content(
                                         agent.name,
                                         code_call.code_interpreter.input,
@@ -360,8 +254,8 @@ class AgentThreadActions:
                                     is_visible = True
                                 case AgentsNamedToolChoiceType.FUNCTION:
                                     logger.debug(
-                                        f"Entering step type tool_calls for run [{run.id}], [function] for agent "
-                                        f"`{agent.name}` and thread `{thread_id}`"
+                                        f"Entering tool_calls (function) for run [{run.id}], agent `{agent.name}` "
+                                        f"and thread `{thread_id}`"
                                     )
                                     function_step = function_steps.get(tool_call.id)
                                     assert function_step is not None  # nosec
@@ -372,17 +266,18 @@ class AgentThreadActions:
                                     if content:
                                         message_count += 1
                                         logger.debug(
-                                            f"Yielding tool_message for run [{run.id}], agent `{agent.name}` and "
-                                            f"thread `{thread_id}` and message count `{message_count}`, "
+                                            f"Yielding tool_message for run [{run.id}], agent `{agent.name}`, "
+                                            f"thread `{thread_id}`, message count `{message_count}`, "
                                             f"is_visible `{is_visible}`"
                                         )
                                         yield is_visible, content
                     case RunStepType.MESSAGE_CREATION:
                         logger.debug(
-                            f"Entering step type message_creation for run [{run.id}], agent `{agent.name}` and "
-                            f"thread `{thread_id}`"
+                            f"Entering message_creation for run [{run.id}], agent `{agent.name}` and thread `{thread_id}`"
                         )
-                        message_call_details: RunStepMessageCreationDetails = completed_step.step_details
+                        message_call_details: RunStepMessageCreationDetails = cast(
+                            RunStepMessageCreationDetails, completed_step.step_details
+                        )
                         message = await cls._retrieve_message(
                             agent=agent,
                             thread_id=thread_id,
@@ -393,78 +288,150 @@ class AgentThreadActions:
                             if content and len(content.items) > 0:
                                 message_count += 1
                                 logger.debug(
-                                    f"Yielding message_creation for run [{run.id}], agent `{agent.name}` and "
-                                    f"thread `{thread_id}` and message count `{message_count}`, is_visible `{True}`"
+                                    f"Yielding message_creation for run [{run.id}], agent `{agent.name}`, "
+                                    f"thread `{thread_id}`, message count `{message_count}`, is_visible `True`"
                                 )
                                 yield True, content
                 processed_step_ids.add(completed_step.id)
 
     @classmethod
     async def invoke_stream(
-        cls,
+        cls: type[_T],
         *,
         agent: "AzureAIAgent",
         thread_id: str,
-        messages: list[Any],
-        arguments: Any,
-        kernel: Any,
+        messages: "list[ChatMessageContent] | None" = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        model: str | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: "list[ChatMessageContent] | None" = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        max_prompt_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
+        truncation_strategy: TruncationObject | None = None,
+        response_format: AgentsApiResponseFormat
+        | AgentsApiResponseFormatMode
+        | ResponseFormatJsonSchemaType
+        | None = None,
+        parallel_tool_calls: bool | None = None,
+        metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[str]:
-        """Invoke the agent stream and yield ChatMessageContent continuously."""
-        # Prepare and merge arguments.
-        arguments = {} if arguments is None else {**arguments, **kwargs}
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Invoke the agent stream and yield ChatMessageContent continuously.
+
+        Args:
+            agent: The agent to invoke.
+            thread_id: The thread id.
+            messages: The messages.
+            arguments: The kernel arguments.
+            kernel: The kernel.
+            model: The model.
+            instructions_override: The instructions override.
+            additional_instructions: The additional instructions.
+            additional_messages: The additional messages to add to the thread. Only supports messages with
+                role = User or Assistant.
+                https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            max_prompt_tokens: The max prompt tokens.
+            max_completion_tokens: The max completion tokens.
+            truncation_strategy: The truncation strategy.
+            response_format: The response format.
+            parallel_tool_calls: The parallel tool calls.
+            metadata: The metadata.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of streamed content.
+        """
+        arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
         arguments = agent.merge_arguments(arguments)
 
-        # Retrieve tools and build instructions.
-        tools = cls._get_tools(agent, kernel, is_async=True)
-        instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
+        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
 
-        # Kick off the streaming run.
+        base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
+
+        merged_instructions: str = ""
+        if instructions_override is not None:
+            merged_instructions = instructions_override
+        elif base_instructions and additional_instructions:
+            merged_instructions = f"{base_instructions}\n\n{additional_instructions}"
+        else:
+            merged_instructions = base_instructions or additional_instructions or ""
+
+        run_options = cls._generate_options(
+            agent=agent,
+            model=model,
+            additional_messages=additional_messages,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            truncation_strategy=truncation_strategy,
+            response_format=response_format,
+            parallel_tool_calls=parallel_tool_calls,
+        )
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
         stream: AsyncAgentRunStream = await agent.client.agents.create_stream(
             assistant_id=agent.id,
             thread_id=thread_id,
-            instructions=instructions,
+            instructions=merged_instructions or agent.instructions,
             tools=tools,
+            **run_options,
         )
 
         function_steps: dict[str, FunctionCallContent] = {}
         active_messages: dict[str, RunStep] = {}
 
-        # Process events from the primary stream.
         async for content in cls._process_stream_events(
-            stream, agent, thread_id, messages, kernel, function_steps, active_messages
+            stream=stream,
+            agent=agent,
+            thread_id=thread_id,
+            messages=messages,
+            kernel=kernel,
+            function_steps=function_steps,
+            active_messages=active_messages,
         ):
-            yield content
+            if content:
+                yield content
 
     @classmethod
     async def _process_stream_events(
-        cls,
+        cls: type[_T],
         stream: AsyncAgentRunStream,
         agent: "AzureAIAgent",
         thread_id: str,
-        messages: list[Any],
-        kernel: Any,
+        kernel: "Kernel",
         function_steps: dict[str, FunctionCallContent],
         active_messages: dict[str, RunStep],
-    ) -> AsyncIterable[str]:
+        messages: "list[ChatMessageContent] | None" = None,
+    ) -> AsyncIterable["ChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
         while True:
             async with stream as response_stream:
                 async for event_type, event_data, _ in response_stream:
                     if event_type == AgentStreamEvent.THREAD_RUN_CREATED:
-                        run: ThreadRun = event_data
+                        run = event_data
                         logger.info(f"Assistant run created with ID: {run.id}")
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_IN_PROGRESS:
-                        run_step: RunStep = event_data
+                        run_step = cast(RunStep, event_data)
                         logger.info(f"Assistant run in progress with ID: {run_step.id}")
 
                     elif event_type == AgentStreamEvent.THREAD_MESSAGE_DELTA:
                         yield generate_streaming_message_content(agent.name, event_data)
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_STEP_COMPLETED:
-                        step_completed: RunStep = event_data
+                        step_completed = cast(RunStep, event_data)
                         logger.info(f"Run step completed with ID: {step_completed.id}")
                         if isinstance(step_completed.step_details, RunStepMessageCreationDetails):
                             msg_id = step_completed.step_details.message_creation.message_id
@@ -473,7 +440,9 @@ class AgentThreadActions:
                     elif event_type == AgentStreamEvent.THREAD_RUN_STEP_DELTA:
                         run_step_event: RunStepDeltaChunk = event_data
                         details = run_step_event.delta.step_details
-                        if isinstance(details, RunStepDeltaToolCallObject):
+                        if not details:
+                            continue
+                        if isinstance(details, RunStepDeltaToolCallObject) and details.tool_calls:
                             for tool_call in details.tool_calls:
                                 content = None
                                 if tool_call.type == "function":
@@ -484,7 +453,7 @@ class AgentThreadActions:
                                     yield content
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_REQUIRES_ACTION:
-                        run: ThreadRun = event_data
+                        run = cast(ThreadRun, event_data)
                         action_result = await cls._handle_streaming_requires_action(
                             agent_name=agent.name,
                             kernel=kernel,
@@ -506,13 +475,19 @@ class AgentThreadActions:
                             if messages:
                                 messages.append(action_result.function_call_content)
                             async for sub_content in cls._stream_tool_outputs(
-                                agent, thread_id, run, action_result, active_messages, messages
+                                agent=agent,
+                                thread_id=thread_id,
+                                run=run,
+                                action_result=action_result,
+                                active_messages=active_messages,
+                                messages=messages,
                             ):
-                                yield sub_content
+                                if sub_content:
+                                    yield sub_content
                             break
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
-                        run: ThreadRun = event_data
+                        run = cast(ThreadRun, event_data)
                         logger.info(f"Run completed with ID: {run.id}")
                         if active_messages:
                             for msg_id, step in active_messages.items():
@@ -526,7 +501,7 @@ class AgentThreadActions:
                         return
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_FAILED:
-                        run_failed: ThreadRun = event_data
+                        run_failed = cast(ThreadRun, event_data)
                         error_message = (
                             run_failed.last_error.message
                             if run_failed.last_error and run_failed.last_error.message
@@ -542,19 +517,19 @@ class AgentThreadActions:
 
     @classmethod
     async def _stream_tool_outputs(
-        cls,
+        cls: type[_T],
         agent: "AzureAIAgent",
         thread_id: str,
         run: ThreadRun,
         action_result: FunctionActionResult,
         active_messages: dict[str, RunStep],
-        messages: list[Any],
-    ) -> AsyncIterable[str]:
-        """Wraps the tool outputs stream as an async generator.
+        messages: "list[ChatMessageContent] | None" = None,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Wrap the tool outputs stream as an async generator.
 
         This allows downstream consumers to iterate over the yielded content.
         """
-        handler = AsyncAgentEventHandler()
+        handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
         await agent.client.agents.submit_tool_outputs_to_stream(
             run_id=run.id,
             thread_id=thread_id,
@@ -571,7 +546,8 @@ class AgentThreadActions:
                         message = await cls._retrieve_message(agent=agent, thread_id=thread_id, message_id=msg_id)
                         if message and hasattr(message, "content"):
                             final_content = generate_message_content(agent.name, message, step)
-                            messages.append(final_content)
+                            if messages:
+                                messages.append(final_content)
                 return
             elif sub_event_type == AgentStreamEvent.THREAD_RUN_FAILED:
                 run_failed: ThreadRun = sub_event_data
@@ -591,7 +567,7 @@ class AgentThreadActions:
 
     @classmethod
     async def create_thread(
-        cls,
+        cls: type[_T],
         client: "AIProjectClient",
         **kwargs: Any,
     ) -> str:
@@ -609,8 +585,12 @@ class AgentThreadActions:
 
     @classmethod
     async def create_message(
-        cls, client: "AIProjectClient", thread_id: str, message: "ChatMessageContent", **kwargs: Any
-    ) -> None:
+        cls: type[_T],
+        client: "AIProjectClient",
+        thread_id: str,
+        message: "ChatMessageContent",
+        **kwargs: Any,
+    ) -> "ThreadMessage | None":
         """Create a message in the thread.
 
         Args:
@@ -618,14 +598,17 @@ class AgentThreadActions:
             thread_id: The ID of the thread to create the message in.
             message: The message to create.
             kwargs: Additional keyword arguments.
+
+        Returns:
+            The created message.
         """
         if any(isinstance(item, FunctionCallContent) for item in message.items):
-            return
+            return None
 
         if not message.content.strip():
-            return
+            return None
 
-        message = await client.agents.create_message(
+        return await client.agents.create_message(
             thread_id=thread_id,
             role=MessageRole.USER if message.role == AuthorRole.USER else MessageRole.AGENT,
             content=message.content,
@@ -636,14 +619,14 @@ class AgentThreadActions:
 
     @classmethod
     async def get_messages(
-        cls,
+        cls: type[_T],
         client: "AIProjectClient",
         thread_id: str,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Get messages from a thread."""
         agent_names: dict[str, Any] = {}
         last_id: str | None = None
-        messages: OpenAIPageableListOfThreadMessage = None
+        messages: OpenAIPageableListOfThreadMessage
 
         while True:
             messages = await client.agents.list_messages(
@@ -663,23 +646,17 @@ class AgentThreadActions:
                 assistant_name: str | None = None
 
                 if message.assistant_id and message.assistant_id.strip() and message.assistant_id not in agent_names:
-                    assistant = await client.agents.get_agent(
-                        message.assistant_id,
-                    )
+                    assistant = await client.agents.get_agent(message.assistant_id)
                     if assistant.name and assistant.name.strip():
                         agent_names[assistant.id] = assistant.name
 
-                # Fallback to message.assistant_id if no name is found
                 assistant_name = agent_names.get(message.assistant_id) or message.assistant_id
 
-                # Build chat content
                 content = generate_message_content(assistant_name, message)
 
-                # Only yield if there are actual items in the content
                 if len(content.items) > 0:
                     yield content
 
-            # Check if there are more messages to fetch
             if not messages.has_more:
                 break
 
@@ -688,73 +665,82 @@ class AgentThreadActions:
     # region Internal Methods
 
     @classmethod
-    def _get_tools(cls, agent: "AzureAIAgent", kernel: "Kernel", is_async: bool = False) -> list[dict[str, Any]]:
-        """In *both* cases, return a list of dict describing the function schema.
+    def _merge_options(
+        cls: type[_T],
+        *,
+        agent: "AzureAIAgent",
+        model: str | None = None,
+        response_format: AgentsApiResponseFormat
+        | AgentsApiResponseFormatMode
+        | ResponseFormatJsonSchemaType
+        | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Merge run-time options with the agent-level options.
 
-        No references to AsyncFunctionTool or sets of callables.
+        Run-level parameters take precedence.
         """
-        tools = []
-        # Start with the agent's built-in tools (already dict-based).
-        for t in agent.definition.tools:
-            if t.get("type") == "openapi":
-                openapi_data = t["openapi"]  # Extract full OpenAPI definition
-                # Ensure only the required field is passed
-                tools.append(OpenApiToolDefinition(openapi=openapi_data))
-            else:
-                tools.extend(agent.definition.tools)  # typically a list of dict
+        return {
+            "model": model if model is not None else agent.definition.model,
+            "response_format": response_format if response_format is not None else agent.definition.response_format,
+            "temperature": temperature if temperature is not None else agent.definition.temperature,
+            "top_p": top_p if top_p is not None else agent.definition.top_p,
+            "metadata": metadata if metadata is not None else agent.definition.metadata,
+            **kwargs,
+        }
 
-        # Then add kernel function metadata as dict
+    @classmethod
+    def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
+        """Generate a dictionary of options that can be passed directly to create_run."""
+        merged = cls._merge_options(**kwargs)
+        trunc_count = merged.get("truncation_message_count", None)
+        max_completion_tokens = merged.get("max_completion_tokens", None)
+        max_prompt_tokens = merged.get("max_prompt_tokens", None)
+        parallel_tool_calls = merged.get("parallel_tool_calls_enabled", None)
+        additional_messages = cls._translate_additional_messages(merged.get("additional_messages", None))
+        return {
+            "model": merged.get("model"),
+            "top_p": merged.get("top_p"),
+            "response_format": merged.get("response_format"),
+            "temperature": merged.get("temperature"),
+            "truncation_strategy": trunc_count,
+            "metadata": merged.get("metadata"),
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "parallel_tool_calls": parallel_tool_calls,
+        }
+
+    @classmethod
+    def _translate_additional_messages(
+        cls: type[_T], messages: "list[ChatMessageContent] | None"
+    ) -> list[ThreadMessage] | None:
+        if not messages:
+            return None
+        return AzureAIAgentUtils.get_thread_messages(messages)
+
+    @classmethod
+    def _prepare_tool_definition(cls: type[_T], tool: dict | ToolDefinition) -> dict | ToolDefinition:
+        if tool.get("type") == "openapi" and "openapi" in tool:
+            openapi_data = dict(tool["openapi"])
+            openapi_data.pop("functions", None)
+            tool = dict(tool)
+            tool["openapi"] = openapi_data
+        return tool
+
+    @classmethod
+    def _get_tools(cls: type[_T], agent: "AzureAIAgent", kernel: "Kernel") -> list[dict[str, Any] | ToolDefinition]:
+        tools: list[Any] = list(agent.definition.tools)
         funcs = kernel.get_full_list_of_function_metadata()
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
         tools.extend(dict_defs)
-
-        return tools
-
-    # @classmethod
-    # def _get_tools(cls, agent: "AzureAIAgent", kernel: "Kernel", is_async: bool = False) -> Any:
-    #     """Get the list of tools for the agent.
-
-    #     The return type differs in async vs. non-async:
-    #     • Non-async: returns a list of dict-based function definitions
-    #     • Async: returns an AsyncToolSet containing an AsyncFunctionTool
-    #     """
-    #     if not is_async:
-    #         # Original synchronous approach:
-    #         #  - Start with any built-in tool definitions
-    #         #  - Extend with Redwood-friendly dict for each kernel function
-    #         tools = []
-    #         tools.extend(agent.definition.tools)  # typically a list of dict
-    #         funcs = kernel.get_full_list_of_function_metadata()  # however you get them
-    #         tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
-    #         return tools
-
-    #     # Asynchronous approach:
-    #     #  We want an AsyncFunctionTool, which expects a set of real Python callables.
-    #     #  So we have to gather the actual functions from the kernel, not dicts.
-    #     #  Let's assume `kernel.get_full_list_of_function_metadata()` returns some metadata
-    #     #  for which we can retrieve actual Python callables.
-    #     funcs_metadata = kernel.get_full_list_of_function_metadata()
-
-    #     # Convert the metadata objects into actual Python callables
-    #     # (You have to implement this method to suit your environment.)
-    #     async_funcs = set()
-    #     for f_meta in funcs_metadata:
-    #         actual_callable = cls._get_python_callable_from_metadata(kernel, f_meta)
-    #         async_funcs.add(actual_callable)
-
-    #     # Create the AsyncFunctionTool with that set of callables
-    #     async_tool = AsyncFunctionTool(async_funcs)
-
-    #     # Put it in an AsyncToolSet (assuming Redwood’s AsyncToolSet usage)
-    #     toolset = AsyncToolSet()
-    #     toolset.add(async_tool)
-    #     return toolset
+        return [cls._prepare_tool_definition(tool) for tool in tools]
 
     @classmethod
-    async def _poll_run_status(cls, agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
-        """Poll the run status."""
+    async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
-
         count = 0
         try:
             run = await asyncio.wait_for(
@@ -763,47 +749,32 @@ class AgentThreadActions:
             )
         except asyncio.TimeoutError:
             timeout_duration = agent.polling_options.run_polling_timeout
-            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
+            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."
             logger.error(error_message)
             raise AgentInvokeException(error_message)
-
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
 
     @classmethod
-    async def _poll_loop(cls, agent: "AzureAIAgent", run: ThreadRun, thread_id: str, count: int) -> ThreadRun:
-        """Internal polling loop."""
+    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, count: int) -> ThreadRun:
         while True:
             await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
             count += 1
-
             try:
                 run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)
             except Exception as e:
                 logging.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
-                # Retry anyway
-
             if run.status not in cls.polling_status:
                 break
-
         return run
 
     @classmethod
-    async def _retrieve_message(cls, agent: "AzureAIAgent", thread_id: str, message_id: str) -> ThreadMessage | None:
-        """Retrieve a message from a thread.
-
-        Args:
-            agent: The agent.
-            thread_id: The thread id.
-            message_id: The message id.
-
-        Returns:
-            The message or None.
-        """
+    async def _retrieve_message(
+        cls: type[_T], agent: "AzureAIAgent", thread_id: str, message_id: str
+    ) -> ThreadMessage | None:
         message: ThreadMessage | None = None
         count = 0
         max_retries = 3
-
         while count < max_retries:
             try:
                 message = await agent.client.agents.get_message(thread_id=thread_id, message_id=message_id)
@@ -818,14 +789,12 @@ class AgentThreadActions:
                     break
                 backoff_time: float = agent.polling_options.message_synchronization_delay.total_seconds() * (2**count)
                 await asyncio.sleep(backoff_time)
-
         return message
 
     @classmethod
     async def _invoke_function_calls(
-        cls, kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+        cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
     ) -> list[Any]:
-        """Invoke function calls and store results in chat history."""
         tasks = [
             kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
             for function_call in fccs
@@ -834,17 +803,8 @@ class AgentThreadActions:
 
     @classmethod
     def _format_tool_outputs(
-        cls, fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+        cls: type[_T], fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
     ) -> list[dict[str, str]]:
-        """Format tool outputs from chat history for submission.
-
-        Args:
-            fccs: The function call contents.
-            chat_history: The chat history.
-
-        Returns:
-            The formatted tool outputs as a list of dictionaries.
-        """
         from semantic_kernel.contents.function_result_content import FunctionResultContent
 
         tool_call_lookup = {
@@ -853,7 +813,6 @@ class AgentThreadActions:
             for tool_call in message.items
             if isinstance(tool_call, FunctionResultContent)
         }
-
         return [
             {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}
             for fcc in fccs
@@ -862,7 +821,7 @@ class AgentThreadActions:
 
     @classmethod
     async def _handle_streaming_requires_action(
-        cls,
+        cls: type[_T],
         agent_name: str,
         kernel: "Kernel",
         run: ThreadRun,
@@ -872,14 +831,11 @@ class AgentThreadActions:
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
             function_call_content = generate_function_call_content(agent_name=agent_name, fccs=fccs)
-
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
-
             function_result_content = merge_function_results(chat_history.messages)[0]
-
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
         return None

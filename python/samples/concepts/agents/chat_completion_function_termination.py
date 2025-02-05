@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+
+###################################################################
+# The following sample demonstrates how to configure the auto     #
+# function invocation filter with use of a ChatCompletionAgent.   #
+###################################################################
+import logging
 from typing import Annotated
 
 from semantic_kernel.agents import ChatCompletionAgent
@@ -19,11 +25,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
-###################################################################
-# The following sample demonstrates how to configure the auto     #
-# function invocation filter with use of a ChatCompletionAgent.   #
-###################################################################
-
+logging.basicConfig(level=logging.DEBUG)
 
 # Define the agent name and instructions
 HOST_NAME = "Host"

@@ -1,30 +1,62 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, ClassVar, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence, TypeVar
 
-from azure.ai.projects.models import CodeInterpreterTool, FileSearchTool, MessageAttachment, ToolDefinition
+from azure.ai.projects.models import (
+    CodeInterpreterTool,
+    FileSearchTool,
+    MessageAttachment,
+    MessageRole,
+    ThreadMessageOptions,
+    ToolDefinition,
+)
 
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 
 if TYPE_CHECKING:
     from semantic_kernel.contents import ChatMessageContent
+
+_T = TypeVar("_T", bound="AzureAIAgentUtils")
 
 
 class AzureAIAgentUtils:
     """AzureAI Agent Utility Methods."""
 
-    tool_metadata: ClassVar[dict[str, ToolDefinition]] = {
+    tool_metadata: ClassVar[dict[str, Sequence[ToolDefinition]]] = {
         "file_search": FileSearchTool().definitions,
-        "code_interpreter": CodeInterpreterTool().definitions,  # Assuming this is missing
+        "code_interpreter": CodeInterpreterTool().definitions,
     }
 
     @classmethod
-    def get_metadata(cls, message: "ChatMessageContent") -> dict[str, str]:
-        """Get the metadata for an agent message."""
-        return {kvp.key: str(kvp.value) if kvp.value is not None else "" for kvp in (message.metadata or [])}
+    def get_thread_messages(cls: type[_T], messages: list["ChatMessageContent"]) -> Any:
+        """Get the thread messages for an agent message."""
+        if not messages:
+            return None
+
+        thread_messages: list[ThreadMessageOptions] = []
+
+        for message in messages:
+            if not message.content:
+                continue
+
+            thread_msg = ThreadMessageOptions(
+                content=message.content,
+                role=MessageRole.USER if message.role == AuthorRole.USER else MessageRole.AGENT,
+                attachments=cls.get_attachments(message),
+                metadata=cls.get_metadata(message) if message.metadata else None,
+            )
+            thread_messages.append(thread_msg)
+
+        return thread_messages
 
     @classmethod
-    def get_attachments(cls, message: "ChatMessageContent") -> list[MessageAttachment]:
+    def get_metadata(cls: type[_T], message: "ChatMessageContent") -> dict[str, str]:
+        """Get the metadata for an agent message."""
+        return {k: str(v) if v is not None else "" for k, v in (message.metadata or {}).items()}
+
+    @classmethod
+    def get_attachments(cls: type[_T], message: "ChatMessageContent") -> list[MessageAttachment]:
         """Get the attachments for an agent message.
 
         Args:
@@ -34,16 +66,19 @@ class AzureAIAgentUtils:
             A list of MessageAttachment
         """
         return [
-            MessageAttachment(file_content.file_id, list(cls._get_tool_definition(file_content.tools)))
+            MessageAttachment(
+                file_id=file_content.file_id,
+                tools=list(cls._get_tool_definition(file_content.tools)),  # type: ignore
+                data_source=file_content.data_source if file_content.data_source else None,
+            )
             for file_content in message.items
             if isinstance(file_content, FileReferenceContent)
         ]
 
     @classmethod
-    def _get_tool_definition(cls, tools: list[str]) -> Iterable[ToolDefinition]:
+    def _get_tool_definition(cls: type[_T], tools: list[Any]) -> Iterable[ToolDefinition]:
         if not tools:
-            return iter([])
-
+            return
         for tool in tools:
             if tool_definition := cls.tool_metadata.get(tool):
-                yield tool_definition
+                yield from tool_definition

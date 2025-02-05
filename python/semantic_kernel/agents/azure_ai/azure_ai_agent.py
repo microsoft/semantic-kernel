@@ -6,6 +6,15 @@ from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
+from azure.ai.projects.models import (
+    AgentsApiResponseFormat,
+    AgentsApiResponseFormatMode,
+    ResponseFormatJsonSchemaType,
+    ThreadMessage,
+    ThreadMessageOptions,
+    ToolDefinition,
+    TruncationObject,
+)
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
@@ -25,6 +34,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+AgentsApiResponseFormatOption = (
+    str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
+)
 
 
 @experimental_class
@@ -100,18 +113,40 @@ class AzureAIAgent(Agent):
 
         super().__init__(**args)
 
-    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> None:
+    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "ThreadMessage | None":
         """Add a chat message to the thread.
 
         Args:
             thread_id: The ID of the thread
             message: The chat message to add
+
+        Returns:
+            ThreadMessage | None: The thread message
         """
-        await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
+        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
 
     @trace_agent_invocation
     async def invoke(
-        self, thread_id: str, *, arguments: KernelArguments | None = None, kernel: Kernel | None = None, **kwargs
+        self,
+        thread_id: str,
+        arguments: KernelArguments | None = None,
+        kernel: Kernel | None = None,
+        # Run-level parameters:
+        *,
+        model: str | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: list[ThreadMessageOptions] | None = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        max_prompt_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
+        truncation_strategy: TruncationObject | None = None,
+        response_format: AgentsApiResponseFormatOption | None = None,
+        parallel_tool_calls: bool | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the agent on the specified thread."""
         if arguments is None:
@@ -122,8 +157,29 @@ class AzureAIAgent(Agent):
         kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
+        run_level_params = {
+            "model": model,
+            "instructions_override": instructions_override,
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "tools": tools,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_prompt_tokens": max_prompt_tokens,
+            "max_completion_tokens": max_completion_tokens,
+            "truncation_strategy": truncation_strategy,
+            "response_format": response_format,
+            "parallel_tool_calls": parallel_tool_calls,
+            "metadata": metadata,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
         async for is_visible, message in AgentThreadActions.invoke(
-            agent=self, thread_id=thread_id, kernel=kernel, arguments=arguments, **kwargs
+            agent=self,
+            thread_id=thread_id,
+            kernel=kernel,
+            arguments=arguments,
+            **run_level_params,  # type: ignore
         ):
             if is_visible:
                 yield message
@@ -132,10 +188,25 @@ class AzureAIAgent(Agent):
     async def invoke_stream(
         self,
         thread_id: str,
-        *,
         messages: list["ChatMessageContent"] | None = None,
+        kernel: Kernel | None = None,
         arguments: KernelArguments | None = None,
-        **kwargs,
+        # Run-level parameters:
+        *,
+        model: str | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: list[ThreadMessageOptions] | None = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        max_prompt_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
+        truncation_strategy: TruncationObject | None = None,
+        response_format: AgentsApiResponseFormatOption | None = None,
+        parallel_tool_calls: bool | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the agent on the specified thread with a stream of messages."""
         if arguments is None:
@@ -143,11 +214,33 @@ class AzureAIAgent(Agent):
         else:
             arguments.update(kwargs)
 
-        kernel = self.kernel
+        kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
+        run_level_params = {
+            "model": model,
+            "instructions_override": instructions_override,
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "tools": tools,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_prompt_tokens": max_prompt_tokens,
+            "max_completion_tokens": max_completion_tokens,
+            "truncation_strategy": truncation_strategy,
+            "response_format": response_format,
+            "parallel_tool_calls": parallel_tool_calls,
+            "metadata": metadata,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
         async for message in AgentThreadActions.invoke_stream(
-            agent=self, thread_id=thread_id, messages=messages, kernel=kernel, arguments=arguments, **kwargs
+            agent=self,
+            thread_id=thread_id,
+            messages=messages,
+            kernel=kernel,
+            arguments=arguments,
+            **run_level_params,  # type: ignore
         ):
             yield message
 

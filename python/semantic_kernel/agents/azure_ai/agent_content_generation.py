@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from azure.ai.projects.models import (
     MessageDeltaImageFileContent,
+    MessageDeltaTextContent,
     MessageDeltaTextFileCitationAnnotation,
     MessageDeltaTextFilePathAnnotation,
+    MessageImageFileContent,
+    MessageTextContent,
     MessageTextFileCitationAnnotation,
     MessageTextFilePathAnnotation,
     RunStep,
@@ -13,6 +16,7 @@ from azure.ai.projects.models import (
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
     RunStepDeltaCodeInterpreterToolCall,
+    RunStepDeltaFileSearchToolCall,
     RunStepDeltaFunctionToolCall,
     RunStepFunctionToolCall,
     ThreadMessage,
@@ -36,10 +40,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_function
 if TYPE_CHECKING:
     from azure.ai.projects.models import (
         MessageDeltaChunk,
-        MessageDeltaTextAnnotation,
-        MessageTextAnnotation,
         RunStepDeltaToolCallObject,
-        RunStepToolCall,
     )
 
 ###################################################################
@@ -116,7 +117,10 @@ def generate_message_content(
 
     content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name, metadata=metadata)  # type: ignore
 
-    for item_content in message.content:
+    messages: list[MessageImageFileContent | MessageTextContent] = cast(
+        list[MessageImageFileContent | MessageTextContent], message.content or []
+    )
+    for item_content in messages:
         if item_content.type == "text":
             content.items.append(
                 TextContent(
@@ -146,8 +150,11 @@ def generate_streaming_message_content(
 
     items: list[StreamingTextContent | StreamingAnnotationContent | StreamingFileReferenceContent] = []
 
-    # Process each content block in the delta
-    for delta_block in delta.content or []:
+    delta_chunks: list[MessageDeltaImageFileContent | MessageDeltaTextContent] = cast(
+        list[MessageDeltaImageFileContent | MessageDeltaTextContent], delta.content or []
+    )
+
+    for delta_block in delta_chunks:
         if delta_block.type == "text":
             if delta_block.text and delta_block.text.value:  # Ensure text is not None
                 text_value = delta_block.text.value
@@ -227,7 +234,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
 
 @experimental_function
 def generate_function_result_content(
-    agent_name: str, function_step: FunctionCallContent, tool_call: "RunStepToolCall"
+    agent_name: str, function_step: FunctionCallContent, tool_call: "RunStepFunctionToolCall"
 ) -> ChatMessageContent:
     """Generate function result content."""
     function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
@@ -264,7 +271,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
 @experimental_function
 def generate_streaming_function_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
-) -> "StreamingChatMessageContent":
+) -> "StreamingChatMessageContent | None":
     """Generate streaming function content.
 
     Args:
@@ -274,17 +281,26 @@ def generate_streaming_function_content(
     Returns:
         StreamingChatMessageContent: The chat message content.
     """
+    if not step_details.tool_calls:
+        return None
+
     items: list[FunctionCallContent] = []
 
-    for tool in step_details.tool_calls:
-        if tool.type == "function":
-            function: RunStepDeltaFunctionToolCall = tool.function
+    tool_calls: list[
+        RunStepDeltaCodeInterpreterToolCall | RunStepDeltaFileSearchToolCall | RunStepDeltaFunctionToolCall
+    ] = cast(
+        list[RunStepDeltaCodeInterpreterToolCall | RunStepDeltaFileSearchToolCall | RunStepDeltaFunctionToolCall],
+        step_details.tool_calls or [],
+    )
+
+    for tool in tool_calls:
+        if tool.type == "function" and tool.function:
             items.append(
                 FunctionCallContent(
                     id=tool.id,
                     index=getattr(tool, "index", None),
-                    name=function.name,
-                    arguments=function.arguments,
+                    name=tool.function.name,
+                    arguments=tool.function.arguments,
                 )
             )
 
@@ -314,6 +330,9 @@ def generate_streaming_code_interpreter_content(
         StreamingChatMessageContent: The chat message content.
     """
     items: list[StreamingTextContent | StreamingFileReferenceContent] = []
+
+    if not step_details.tool_calls:
+        return None
 
     metadata: dict[str, bool] = {}
     for index, tool in enumerate(step_details.tool_calls):
@@ -357,7 +376,9 @@ def generate_streaming_code_interpreter_content(
 
 
 @experimental_function
-def generate_annotation_content(annotation: "MessageTextAnnotation") -> AnnotationContent:
+def generate_annotation_content(
+    annotation: MessageTextFilePathAnnotation | MessageTextFileCitationAnnotation,
+) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
     if isinstance(annotation, MessageTextFilePathAnnotation):
@@ -374,7 +395,9 @@ def generate_annotation_content(annotation: "MessageTextAnnotation") -> Annotati
 
 
 @experimental_function
-def generate_streaming_annotation_content(annotation: "MessageDeltaTextAnnotation") -> StreamingAnnotationContent:
+def generate_streaming_annotation_content(
+    annotation: MessageDeltaTextFilePathAnnotation | MessageDeltaTextFileCitationAnnotation,
+) -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
     if isinstance(annotation, MessageDeltaTextFilePathAnnotation) and annotation.file_path:

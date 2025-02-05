@@ -55,6 +55,8 @@ async def main() -> None:
             model=ai_agent_settings.model_deployment_name,
             name=AGENT_NAME,
             instructions=AGENT_INSTRUCTIONS,
+            temperature=0.19,
+            top_p=0.99,
         )
 
         # Create the AzureAI Agent
