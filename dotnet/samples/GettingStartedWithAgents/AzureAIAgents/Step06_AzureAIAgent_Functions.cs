@@ -25,6 +25,9 @@ public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
         AzureAIClientProvider clientProvider = this.GetAzureProvider();
         AgentsClient client = clientProvider.Client.GetAgentsClient();
 
+        // In this sample the function tools are added to the agent this is
+        // important if you want to retrieve the agent later and then dynamically check
+        // what function tools it requires.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
@@ -34,7 +37,7 @@ public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, clientProvider)
+        Microsoft.SemanticKernel.Agents.AzureAI.AzureAIAgent agent = new(definition, clientProvider)
         {
             Kernel = new Kernel(),
         };
