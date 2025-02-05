@@ -329,6 +329,58 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     }
 
     [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAudioBinaryDataAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Memory<byte> audio = await File.ReadAllBytesAsync(Path.Combine("TestData", "test_audio.wav"));
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("Transcribe this audio"),
+            new AudioContent(audio, "audio/wav")
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatServiceWithVision(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("the sun rises", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAudioUriAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Uri audioUri = new("gs://cloud-samples-data/speech/brooklyn_bridge.flac"); // needs setup
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("Transcribe this audio"),
+            new AudioContent(audioUri) { MimeType = "audio/flac" }
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatServiceWithVision(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("brooklyn bridge", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "Currently GoogleAI always returns zero tokens.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsUsedTokensAsync(ServiceType serviceType)
