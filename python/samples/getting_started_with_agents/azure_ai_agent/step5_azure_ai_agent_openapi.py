@@ -43,7 +43,7 @@ async def main() -> None:
 
         # Initialize agent OpenApi tool using the read in OpenAPI spec
 
-        with open(os.path.join(openapi_spec_file_path, "weather.json"), "r") as weather_file:
+        with open(os.path.join(openapi_spec_file_path, "weather.json")) as weather_file:
             weather_openapi_spec = json.loads(weather_file.read())
 
         openapi_weather = OpenApiTool(
@@ -53,7 +53,7 @@ async def main() -> None:
             auth=auth,
         )
 
-        with open(os.path.join(openapi_spec_file_path, "countries.json"), "r") as countries_file:
+        with open(os.path.join(openapi_spec_file_path, "countries.json")) as countries_file:
             countries_openapi_spec = json.loads(countries_file.read())
 
         openapi_countries = OpenApiTool(

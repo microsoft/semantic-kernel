@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable
+from collections.abc import AsyncIterable, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
