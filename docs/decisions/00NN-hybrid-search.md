@@ -159,7 +159,7 @@ class SparseVectorizedHybridSearchOptions
 interface IKeywordVectorizableHybridSearch<TRecord>
 {
     Task<VectorSearchResults<TRecord>> KeywordVectorizableHybridSearch(
-        string description,
+        string searchText,
         ICollection<string> keywords,
         KeywordVectorizableHybridSearchOptions options = default,
         CancellationToken cancellationToken = default);
@@ -188,7 +188,7 @@ class KeywordVectorizableHybridSearchOptions
 interface ISparseVectorizableTextHybridSearch<TRecord>
 {
     Task<VectorSearchResults<TRecord>> SparseVectorizableTextHybridSearch(
-        string description,
+        string searchText,
         ICollection<string> keywords,
         SparseVectorizableTextHybridSearchOptions options = default,
         CancellationToken cancellationToken = default);
