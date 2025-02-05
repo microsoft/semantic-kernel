@@ -155,7 +155,7 @@ internal static class AgentThreadActions
         // Add function tools that are not already present in the agent definition
         foreach (var tool in functionTools)
         {
-            bool exists = tools.Any(t => t is FunctionToolDefinition && ((FunctionToolDefinition)t).Name == tool.Name);
+            bool exists = tools.Any(t => t is FunctionToolDefinition ftd && ftd.Name == tool.Name);
             if (!exists)
             {
                 tools.Add(tool);
