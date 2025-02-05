@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 
-namespace GettingStarted;
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
 /// This example demonstrates similarity between using <see cref="OpenAIAssistantAgent"/>
