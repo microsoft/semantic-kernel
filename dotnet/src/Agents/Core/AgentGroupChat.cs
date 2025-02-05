@@ -25,7 +25,7 @@ public sealed class AgentGroupChat : AgentChat
     /// </summary>
     /// <value>
     /// <see langword="true"/> if the completion criteria have been met; otherwise <see langword="false"/>.
-    /// The default is <see cref="true"/>. Set to <see langword="false"/> to enable more agent interactions.
+    /// The default is <see langword="true"/>. Set to <see langword="false"/> to enable more agent interactions.
     /// </value>
     public bool IsComplete { get; set; }
 

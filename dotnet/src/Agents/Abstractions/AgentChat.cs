@@ -143,7 +143,7 @@ public abstract class AgentChat
     /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
-    /// <exception cref="KernelException"/>A system message is present, and no other action is taken.</exception>
+    /// <exception cref="KernelException">A system message is present, and no other action is taken.</exception>
     public void AddChatMessage(ChatMessageContent message)
     {
         this.AddChatMessages([message]);
@@ -161,7 +161,7 @@ public abstract class AgentChat
     /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
-    /// <exception cref="KernelException"/>A system message is present, and no other action is taken.
+    /// <exception cref="KernelException">A system message is present, and no other action is taken.
     /// -or-
     /// The chat has current activity.</exception>
     public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
