@@ -4,7 +4,7 @@ using Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
-internal static class KernelFunctionExtensions
+public static class KernelFunctionExtensions
 {
     /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.

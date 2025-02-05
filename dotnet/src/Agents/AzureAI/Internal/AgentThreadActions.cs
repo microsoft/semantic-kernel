@@ -149,11 +149,22 @@ internal static class AgentThreadActions
     {
         logger.LogAzureAIAgentCreatingRun(nameof(InvokeAsync), threadId);
 
-        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+        List<ToolDefinition> tools = new(agent.Definition.Tools);
+        var functionTools = kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)));
+
+        // Add function tools that are not already present in the agent definition
+        foreach (var tool in functionTools)
+        {
+            bool exists = tools.Any(t => t is FunctionToolDefinition && ((FunctionToolDefinition)t).Name == tool.Name);
+            if (!exists)
+            {
+                tools.Add(tool);
+            }
+        }
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        ThreadRun run = await client.CreateAsync(threadId, agent, instructions, tools, invocationOptions, cancellationToken).ConfigureAwait(false);
+        ThreadRun run = await client.CreateAsync(threadId, agent, instructions, tools.ToArray(), invocationOptions, cancellationToken).ConfigureAwait(false);
 
         logger.LogAzureAIAgentCreatedRun(nameof(InvokeAsync), run.Id, threadId);
 

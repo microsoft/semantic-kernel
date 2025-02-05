@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Agent = Azure.AI.Projects.Agent;
 
-namespace GettingStarted;
+namespace GettingStarted.AzureAIAgents;
 
 /// <summary>
 /// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>

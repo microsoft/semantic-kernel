@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 
-namespace GettingStarted;
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
 /// Demonstrate providing image input to <see cref="OpenAIAssistantAgent"/> .
