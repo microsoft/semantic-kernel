@@ -36,14 +36,20 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        const string KeywordsVariableName = "@keywords";
+        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
+        //const string KeywordsVariableName = "@keywords";
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.TableQueryVariableName;
 
         var fieldsArgument = fields.Select(field => $"{tableVariableName}.{field}");
         var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
-        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {KeywordsVariableName})" : null;
+
+        // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
+        var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
+        var formattedKeywords = sanitizedKeywords is not null ? $"[\"{string.Join("\", \"", sanitizedKeywords)}\"]" : null;
+        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {formattedKeywords})" : null;
+
         var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
@@ -85,10 +91,11 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
             builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
 
-        if (fullTextScoreArgument is not null)
-        {
-            queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
-        }
+        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
+        //if (fullTextScoreArgument is not null)
+        //{
+        //    queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
+        //}
 
         var queryDefinition = new QueryDefinition(builder.ToString());
 
