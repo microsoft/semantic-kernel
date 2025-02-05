@@ -38,7 +38,7 @@ public sealed class WeaviateVectorStoreCollectionSearchMappingTests
         };
 
         // Act
-        var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(jsonObject);
+        var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(jsonObject, "distance");
 
         // Assert
         Assert.Equal(0.5, score);
