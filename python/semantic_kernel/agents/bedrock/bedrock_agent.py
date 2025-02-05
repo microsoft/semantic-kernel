@@ -430,28 +430,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
             full_message: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_function_call_messages)
             function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
-
-            # Create a temporary chat history to store the function call results.
-            temp_chat_history = ChatHistory()
-            await asyncio.gather(
-                *[
-                    kernel.invoke_function_call(
-                        function_call=function_call,
-                        chat_history=temp_chat_history,
-                        arguments=arguments,
-                        function_call_count=len(function_calls),
-                        request_index=request_index,
-                    )
-                    for function_call in function_calls
-                ],
-            )
-            function_result_contents = [
-                item
-                for chat_message in temp_chat_history.messages
-                for item in chat_message.items
-                if isinstance(item, FunctionResultContent)
-            ]
-
+            function_result_contents = await self._handle_function_call_contents(function_calls)
             kwargs["sessionState"].update({
                 "invocationId": function_calls[0].id,
                 "returnControlInvocationResults": parse_function_result_contents(function_result_contents),
@@ -485,24 +464,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         if not function_calls:
             raise AgentInvokeException("Function call is expected but not found in the response.")
 
-        chat_history = ChatHistory()
-        await asyncio.gather(
-            *[
-                kernel.invoke_function_call(
-                    function_call=function_call,
-                    chat_history=chat_history,
-                    arguments=kernel_arguments,
-                    function_call_count=len(function_calls),
-                )
-                for function_call in function_calls
-            ],
-        )
-        function_result_contents = [
-            item
-            for chat_message in chat_history.messages
-            for item in chat_message.items
-            if isinstance(item, FunctionResultContent)
-        ]
+        function_result_contents = await self._handle_function_call_contents(function_calls)
 
         return {
             "invocationId": function_calls[0].id,
@@ -593,3 +555,28 @@ class BedrockAgent(BedrockAgentBase, Agent):
         )
 
     # endregion
+
+    async def _handle_function_call_contents(
+        self,
+        function_call_contents: list[FunctionCallContent],
+    ) -> list[FunctionResultContent]:
+        """Handle function call contents."""
+        chat_history = ChatHistory()
+        await asyncio.gather(
+            *[
+                self.kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=self.arguments,
+                    function_call_count=len(function_call_contents),
+                )
+                for function_call in function_call_contents
+            ],
+        )
+
+        return [
+            item
+            for chat_message in chat_history.messages
+            for item in chat_message.items
+            if isinstance(item, FunctionResultContent)
+        ]
