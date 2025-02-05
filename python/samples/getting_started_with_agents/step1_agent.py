@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from functools import reduce
 
+from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.contents import ChatHistory
 
 ###################################################################
 # The following sample demonstrates how to create a simple,       #
@@ -15,52 +13,37 @@ from semantic_kernel.kernel import Kernel
 # of a pirate and then ends with a parrot sound.                  #
 ###################################################################
 
-# To toggle streaming or non-streaming mode, change the following boolean
-streaming = True
+# Create the instance of the Kernel
+kernel = Kernel()
 
-# Define the agent name and instructions
-PARROT_NAME = "Parrot"
-PARROT_INSTRUCTIONS = "Repeat the user message in the voice of a pirate and then end with a parrot sound."
+# Add the OpenAIChatCompletion AI Service to the Kernel
+kernel.add_service(OpenAIChatCompletion(service_id="agent"))
 
-
-async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory):
-    """Invoke the agent with the user input."""
-    chat.add_user_message(input)
-
-    print(f"# {AuthorRole.USER}: '{input}'")
-
-    if streaming:
-        contents = []
-        content_name = ""
-        async for content in agent.invoke_stream(chat):
-            content_name = content.name
-            contents.append(content)
-        streaming_chat_message = reduce(lambda first, second: first + second, contents)
-        print(f"# {content.role} - {content_name or '*'}: '{streaming_chat_message}'")
-        chat.add_message(streaming_chat_message)
-    else:
-        async for content in agent.invoke(chat):
-            print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-            chat.add_message(content)
+# Define the agent with name and instructions
+AGENT_NAME = "Parrot"
+AGENT_INSTRUCTIONS = "You are a helpful parrot that repeats the user message in a pirate voice."
+agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name=AGENT_NAME)
 
 
 async def main():
-    # Create the instance of the Kernel
-    kernel = Kernel()
-
-    # Add the OpenAIChatCompletion AI Service to the Kernel
-    kernel.add_service(AzureChatCompletion(service_id="agent"))
-
-    # Create the agent
-    agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name=PARROT_NAME, instructions=PARROT_INSTRUCTIONS)
-
     # Define the chat history
-    chat = ChatHistory()
+    chat_history = ChatHistory()
+    chat_history.add_developer_message(AGENT_INSTRUCTIONS)
 
-    # Respond to user input
-    await invoke_agent(agent, "Fortune favors the bold.", chat)
-    await invoke_agent(agent, "I came, I saw, I conquered.", chat)
-    await invoke_agent(agent, "Practice makes perfect.", chat)
+    user_inputs = [
+        "Fortune favors the bold.",
+        "I came, I saw, I conquered.",
+        "Practice makes perfect.",
+    ]
+    for user_input in user_inputs:
+        # Add the user input to the chat history
+        chat_history.add_user_message(user_input)
+        print(f"# User: '{user_input}'")
+        # Invoke the agent to get a response
+        async for content in agent.invoke(chat_history):
+            # Add the response to the chat history
+            chat_history.add_message(content)
+            print(f"# Agent - {content.name or '*'}: '{content.content}'")
 
 
 if __name__ == "__main__":

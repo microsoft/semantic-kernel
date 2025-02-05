@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, mock_open, patch
@@ -43,10 +44,7 @@ from openai.types.beta.threads.runs import (
     ToolCallDeltaObject,
     ToolCallsStepDetails,
 )
-from openai.types.beta.threads.runs.code_interpreter_tool_call import (
-    CodeInterpreter,
-    CodeInterpreterToolCall,
-)
+from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreter, CodeInterpreterToolCall
 from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreter as CodeInterpreterDelta
 from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreterToolCallDelta
 from openai.types.beta.threads.runs.function_tool_call import Function as RunsFunction
@@ -118,12 +116,12 @@ def mock_assistant():
         created_at=123456789,
         object="assistant",
         metadata={
-            "__run_options": {
+            "__run_options": json.dumps({
                 "max_completion_tokens": 100,
                 "max_prompt_tokens": 50,
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
-            }
+            })
         },
         model="test_model",
         description="test_description",
@@ -1441,7 +1439,7 @@ async def test_invoke_stream_with_instructions(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
@@ -1463,7 +1461,7 @@ async def test_invoke_stream_with_instructions(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
@@ -1514,7 +1512,7 @@ async def test_invoke_stream_with_instructions_override(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
