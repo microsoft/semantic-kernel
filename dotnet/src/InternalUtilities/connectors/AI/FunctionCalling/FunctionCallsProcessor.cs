@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -490,6 +491,10 @@ internal sealed class FunctionCallsProcessor
             return chatMessageContent.ToString();
         }
 
-        return JsonSerializer.Serialize(functionResult);
+        return JsonSerializer.Serialize(functionResult, s_functionResultSerializerOptions);
     }
+    private static readonly JsonSerializerOptions s_functionResultSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
 }
