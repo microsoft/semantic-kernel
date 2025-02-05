@@ -4,6 +4,9 @@ using Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
+/// <summary>
+/// Extensions for <see cref="KernelFunction"/> to support Azure AI specific operations.
+/// </summary>
 public static class KernelFunctionExtensions
 {
     /// <summary>
