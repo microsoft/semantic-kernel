@@ -1439,7 +1439,7 @@ async def test_invoke_stream_with_instructions(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
@@ -1461,7 +1461,7 @@ async def test_invoke_stream_with_instructions(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
@@ -1512,7 +1512,7 @@ async def test_invoke_stream_with_instructions_override(
             temperature=0.7,
             top_p=0.9,
             model="test_model",
-            response_format="json",
+            response_format={"type": "json_object"},
             metadata={},
         )
 
