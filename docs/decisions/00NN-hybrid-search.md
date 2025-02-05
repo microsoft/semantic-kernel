@@ -102,7 +102,7 @@ interface IKeywordVectorizedHybridSearch<TRecord>
 {
     Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
         TVector vector,
-        string keywords,
+        ICollection<string> keywords,
         KeywordVectorizedHybridSearchOptions options,
         CancellationToken cancellationToken);
 }
@@ -160,7 +160,7 @@ interface IKeywordVectorizableHybridSearch<TRecord>
 {
     Task<VectorSearchResults<TRecord>> KeywordVectorizableHybridSearch(
         string description,
-        string? keywords = default,
+        ICollection<string> keywords,
         KeywordVectorizableHybridSearchOptions options = default,
         CancellationToken cancellationToken = default);
 }
@@ -189,7 +189,7 @@ interface ISparseVectorizableTextHybridSearch<TRecord>
 {
     Task<VectorSearchResults<TRecord>> SparseVectorizableTextHybridSearch(
         string description,
-        string? keywords = default,
+        ICollection<string> keywords,
         SparseVectorizableTextHybridSearchOptions options = default,
         CancellationToken cancellationToken = default);
 }
