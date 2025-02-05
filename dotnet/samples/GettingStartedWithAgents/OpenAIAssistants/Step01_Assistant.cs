@@ -1,20 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.AzureAI;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
 
-namespace GettingStarted;
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="AzureAIAgent"/>
+/// This example demonstrates similarity between using <see cref="OpenAIAssistantAgent"/>
 /// and <see cref="ChatCompletionAgent"/> (see: Step 2).
 /// </summary>
-public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step01_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -23,25 +21,23 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
     public async Task UseSingleAssistantAgentAsync()
     {
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-
-        Agent definition = await client.CreateAgentAsync(
-            TestConfiguration.AzureAI.ChatModelId,
-            HostName,
-            null,
-            HostInstructions);
-        AzureAIAgent agent = new(definition, clientProvider)
-        {
-            Kernel = new Kernel(),
-        };
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Instructions = HostInstructions,
+                    Name = HostName,
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         // Respond to user input
         try
@@ -53,18 +49,18 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
+            await agent.AddChatMessageAsync(threadId, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
             {
                 this.WriteAgentChatMessage(response);
             }
@@ -78,22 +74,24 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
 
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, clientProvider, new KernelPromptTemplateFactory())
-        {
-            Kernel = new Kernel(),
-            Arguments = new KernelArguments()
-            {
-                { "topic", "Dog" },
-                { "length", "3" },
-            },
-        };
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateFromTemplateAsync(
+                clientProvider: this.GetClientProvider(),
+                capabilities: new OpenAIAssistantCapabilities(this.Model)
+                {
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel(),
+                defaultArguments: new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                },
+                templateConfig);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         try
         {
@@ -102,22 +100,22 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
 
             // Invoke the agent with the override arguments.
             await InvokeAgentAsync(
-                        new()
-                        {
-                            { "topic", "Cat" },
-                            { "length", "3" },
-                        });
+                new()
+                {
+                { "topic", "Cat" },
+                { "length", "3" },
+                });
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id, arguments))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
             {
                 WriteAgentChatMessage(response);
             }
