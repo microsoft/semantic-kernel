@@ -60,16 +60,16 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform == 1.60",
+    "google-cloud-aiplatform == 1.79.0",
     "google-generativeai == 0.7"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.5.1"
+    "torch == 2.6.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.11",
+    "pymongo >= 4.8.0, < 4.12",
     "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [

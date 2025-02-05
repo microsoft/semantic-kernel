@@ -233,7 +233,8 @@ jobs:
   python-merge-gate-ollama:
     name: Python Pre-Merge Integration Tests - Ollama
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, this job is disabled for now.
+    if: false && github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -388,7 +389,8 @@ jobs:
           ollama serve &
           sleep 5
       - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest'
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
+        if: false && matrix.os == 'ubuntu-latest'
         run: |
           ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
           ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
@@ -426,14 +428,16 @@ jobs:
         id: run_tests_completions
         timeout-minutes: 10
         shell: bash
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/completions
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
         timeout-minutes: 5
         shell: bash
+        # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/embeddings
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         timeout-minutes: 5

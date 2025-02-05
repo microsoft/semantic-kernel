@@ -267,7 +267,7 @@ class BedrockAgentBase(KernelBaseModel):
             raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
 
         try:
-            return await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.create_agent_action_group,
@@ -279,6 +279,8 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
             logger.error(f"Failed to create code interpreter action group for agent {self.agent_model.agent_id}.")
             raise e
@@ -289,7 +291,7 @@ class BedrockAgentBase(KernelBaseModel):
             raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
 
         try:
-            return await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.create_agent_action_group,
@@ -301,6 +303,8 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
             logger.error(f"Failed to create user input action group for agent {self.agent_model.agent_id}.")
             raise e
@@ -316,7 +320,7 @@ class BedrockAgentBase(KernelBaseModel):
             return None
 
         try:
-            return await self._run_in_executor(
+            response = await self._run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.create_agent_action_group,
@@ -329,6 +333,8 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
             logger.error(f"Failed to create kernel function action group for agent {self.agent_model.agent_id}.")
             raise e
