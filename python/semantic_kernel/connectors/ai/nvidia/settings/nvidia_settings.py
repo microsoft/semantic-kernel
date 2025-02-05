@@ -1,0 +1,43 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from typing import ClassVar
+
+from pydantic import SecretStr
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
+
+class NvidiaSettings(KernelBaseSettings):
+    """Nvidia model settings.
+
+    The settings are first loaded from environment variables with the prefix 'NVIDIA_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+
+    Optional settings for prefix 'NVIDIA_' are:
+    - api_key: NVIDIA API key, see https://console.NVIDIA.com/settings/keys
+        (Env var NVIDIA_API_KEY)
+    - base_url: HttpsUrl | None - base_url: The url of the NVIDIA endpoint. The base_url consists of the endpoint,
+                and more information refer https://docs.api.nvidia.com/nim/reference/
+                use endpoint if you only want to supply the endpoint.
+                (Env var NVIDIA_BASE_URL)
+    - chat_model_id: The NVIDIA chat model ID to use see https://docs.api.nvidia.com/nim/reference/llm-apis.
+        (Env var NVIDIA_CHAT_MODEL_ID)
+    - text_model_id: str | None - The NVIDIA text model ID to use, for example, nvidia/nemotron-4-340b-reward.
+        (Env var NVIDIA_TEXT_MODEL_ID)
+    - embedding_model_id: str | None - The NVIDIA embedding model ID to use, for example, nvidia/nv-embed-v1.
+        (Env var NVIDIA_EMBEDDING_MODEL_ID)
+    - text_to_image_model_id: str | None - The NVIDIA text to image model ID to use, for example, nvidia/neva-22b.
+        (Env var NVIDIA_TEXT_TO_IMAGE_MODEL_ID)
+    - env_file_path: if provided, the .env settings are read from this file path location
+    """
+
+    env_prefix: ClassVar[str] = "NVIDIA_"
+
+    api_key: SecretStr | None = None
+    base_url: str | None = None
+    chat_model_id: str | None = None
+    text_model_id: str | None = None
+    embedding_model_id: str | None = "nvidia/nv-embedqa-e5-v5"
+    text_to_image_model_id: str | None = None
