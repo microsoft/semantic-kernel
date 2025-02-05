@@ -101,8 +101,6 @@ class BedrockAgent(BedrockAgentBase, Agent):
         prompt_template: PromptTemplateBase | None = None
         if instructions and prompt_template_config and prompt_template_config.template:
             raise AgentInitializationException("Cannot set both instructions and prompt_template_config.template.")
-        if not instructions and (not prompt_template_config or not prompt_template_config.template):
-            raise AgentInitializationException("Either instructions or prompt_template_config.template is required.")
         if prompt_template_config:
             prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
