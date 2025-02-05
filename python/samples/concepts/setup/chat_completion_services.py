@@ -151,9 +151,19 @@ def get_azure_ai_inference_chat_completion_service_and_request_settings(
         AzureAIInferenceChatPromptExecutionSettings,
     )
 
+    # The AI model ID is used as an identifier for developers when they are using serverless endpoints
+    # on AI Foundry. It is not actually used to identify the model in the service as the endpoint points
+    # to only one model.
+    # When developers are using one endpoint that can route to multiple models, the `ai_model_id` will be
+    # used to identify the model. To use the latest routing feature on AI Foundry, please refer to the
+    # following documentation:
+    # https://learn.microsoft.com/en-us/azure/ai-services/multi-service-resource?%3Fcontext=%2Fazure%2Fai-services%2Fmodel-inference%2Fcontext%2Fcontext&pivots=azportal
+    # https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/how-to/configure-project-connection?pivots=ai-foundry-portal
+    # https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/how-to/inference?tabs=python
+
     chat_service = AzureAIInferenceChatCompletion(
         service_id=service_id,
-        ai_model_id="id",  # The model ID is simply an identifier as the model id cannot be obtained programmatically.
+        ai_model_id="id",
         instruction_role=instruction_role,
     )
     request_settings = AzureAIInferenceChatPromptExecutionSettings(service_id=service_id)
