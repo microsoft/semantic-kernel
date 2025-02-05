@@ -223,7 +223,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
             vector,
-            keywordText,
+            [keywordText],
             fields,
             this._storagePropertyNames,
             vectorPropertyName,
