@@ -86,6 +86,8 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
 
         response: EmbeddingsResult = await self.client.embed(
             input=texts,
+            # The model id will be ignored by the service if the endpoint serves only one model (i.e. MaaS)
+            model=self.ai_model_id,
             model_extras=settings.extra_parameters if settings else None,
             dimensions=settings.dimensions if settings else None,
             encoding_format=settings.encoding_format if settings else None,
