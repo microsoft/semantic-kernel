@@ -3,7 +3,7 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic import Field, StringConstraints
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -22,7 +22,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     The service_id is used in Semantic Kernel to identify the service, if empty the ai_model_id is used.
     """
 
-    ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    ai_model_id: Annotated[str, Field(min_length=1)]
     service_id: str = Field("")
 
     def model_post_init(self, __context: object | None = None):
