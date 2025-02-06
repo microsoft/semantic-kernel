@@ -19,7 +19,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// <summary>
     /// Gets the name of the collection.
     /// </summary>
-    string CollectionName { get; }
+    public string CollectionName { get; }
 
     /// <summary>
     /// Check if the collection exists in the vector store.
