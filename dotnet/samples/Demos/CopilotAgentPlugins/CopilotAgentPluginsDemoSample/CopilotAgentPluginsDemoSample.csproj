@@ -17,7 +17,7 @@
     </Content>
   </ItemGroup>
 
-  <!-- Build with packages For use outside of the Repo where Central version reqirements enforced-->
+  <!-- Build with packages For use outside of the Repo where Central version requirements enforced-->
   <!-- <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client"/>
     <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.33.0-preview" /> 
