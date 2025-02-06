@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Connectors.Amazon.Nova;
-using Microsoft.SemanticKernel.Connectors.Amazon.Titan;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 

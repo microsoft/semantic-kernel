@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Nova;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 internal static class NovaRequest
 {

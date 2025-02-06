@@ -7,10 +7,9 @@ using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
-using static Microsoft.SemanticKernel.Connectors.Amazon.Nova.NovaRequest;
+using static Microsoft.SemanticKernel.Connectors.Amazon.Core.NovaRequest;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Nova;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 internal sealed class AmazonNovaService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {

@@ -7,9 +7,8 @@ using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Titan;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for Amazon Titan model.
