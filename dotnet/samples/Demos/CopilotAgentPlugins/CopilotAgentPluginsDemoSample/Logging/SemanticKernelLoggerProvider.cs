@@ -1,11 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
 
-public class SemanticKernelLoggerProvider : ILoggerProvider
+public class SemanticKernelLoggerProvider : ILoggerProvider, IDisposable
 {
     public ILogger CreateLogger(string categoryName)
     {
         return new SemanticKernelLogger();
     }
 
-    public void Dispose() { }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // Dispose managed resources here.
+        }
+
+        // Dispose unmanaged resources here.
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 }

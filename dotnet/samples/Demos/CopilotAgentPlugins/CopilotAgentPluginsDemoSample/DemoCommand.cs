@@ -77,20 +77,20 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             switch (selection)
             {
                 case LOAD_COPILOT_AGENT_PLUGIN:
-                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins);
+                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins).ConfigureAwait(false);
                     break;
                 case LOAD_ALL_COPILOT_AGENT_PLUGINS:
-                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins, loadAllPlugins: true);
+                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins, loadAllPlugins: true).ConfigureAwait(false);
                     break;
                 case UNLOAD_ALL_PLUGINS:
                     kernel.Plugins.Clear();
                     AnsiConsole.MarkupLine("[bold green]All plugins unloaded successfully.[/]");
                     break;
                 case SHOW_COPILOT_AGENT_MANIFEST:
-                    await ShowCopilotAgentManifestAsync(availableCopilotPlugins);
+                    await ShowCopilotAgentManifestAsync(availableCopilotPlugins).ConfigureAwait(false);
                     break;
                 case EXECUTE_GOAL:
-                    await ExecuteGoalAsync(kernel, promptSettings);
+                    await ExecuteGoalAsync(kernel, promptSettings).ConfigureAwait(false);
                     break;
                 case LIST_LOADED_PLUGINS:
                     ListLoadedPlugins(kernel);
@@ -109,17 +109,14 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             }
         }
     }
-
-
-
     private async Task LoadCopilotAgentPluginAsync(Kernel kernel, IConfigurationRoot configuration, string[] availableCopilotPlugins, bool loadAllPlugins = false)
     {
-        await LoadPluginAsync(kernel, configuration, availableCopilotPlugins, AddCopilotAgentPluginAsync, loadAllPlugins);
+        await LoadPluginAsync(kernel, configuration, availableCopilotPlugins, AddCopilotAgentPluginAsync, loadAllPlugins).ConfigureAwait(false);
     }
 
     private async Task ShowCopilotAgentManifestAsync(string[] availableCopilotPlugins)
     {
-        await ShowManifestAsync(availableCopilotPlugins, GetCopilotAgentManifestPath);
+        await ShowManifestAsync(availableCopilotPlugins, GetCopilotAgentManifestPath).ConfigureAwait(false);
     }
     //private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), $"Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
     private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
@@ -210,15 +207,15 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                 .SpinnerStyle(Style.Parse("yellow"))
                 .StartAsync($"loading {selectedPluginName}...", async ctx =>
                 {
-                    await loader(kernel, configuration, selectedPluginName);
-                });
+                    await loader(kernel, configuration, selectedPluginName).ConfigureAwait(false);
+                }).ConfigureAwait(false);
         }
     }
 
     private async Task ExecuteGoalAsync(Kernel kernel, PromptExecutionSettings promptExecutionSettings)
     {
         var goal = AnsiConsole.Ask<string>("Enter your goal:");
-        var result = await kernel.InvokePromptAsync(goal, new KernelArguments(promptExecutionSettings));
+        var result = await kernel.InvokePromptAsync(goal, new KernelArguments(promptExecutionSettings)).ConfigureAwait(false);
         var panel = new Panel($"[bold]Result[/]{Environment.NewLine}{Environment.NewLine}[green italic]{Markup.Escape(result.ToString())}[/]");
         AnsiConsole.Write(panel);
     }
@@ -355,7 +352,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                 request.RequestUri = uriBuilder.Uri;
             }
 
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         };
     }
 
@@ -489,7 +486,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     {//TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
-            await next(context);
+            await next(context).ConfigureAwait(false);
 
             if (context.Result.ValueType == typeof(RestApiOperationResponse))
             {

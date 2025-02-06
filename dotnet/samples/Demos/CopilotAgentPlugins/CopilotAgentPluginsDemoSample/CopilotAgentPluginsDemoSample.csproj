@@ -5,7 +5,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>SKEXP0040,SKEXP0042,SKEXP0043,SKEXP0050,SKEXP0053,SKEXP0060,SKEXP0061,1591,RCS1037,CA1063,VSTHRD111,CA2007</NoWarn>
+    <NoWarn>SKEXP0040,SKEXP0042,SKEXP0043,SKEXP0050,SKEXP0053,SKEXP0060,SKEXP0061,1591,CA1050,CA1308,CA2234</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,7 @@
     </Content>
   </ItemGroup>
 
-  <!-- Build with packages -->
+  <!-- Build with packages For use outside of the Repo where Central version reqirements enforced-->
   <!-- <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client"/>
     <PackageReference Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.33.0-preview" /> 

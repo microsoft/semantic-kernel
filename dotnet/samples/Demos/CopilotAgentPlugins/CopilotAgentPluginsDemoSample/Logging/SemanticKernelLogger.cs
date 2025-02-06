@@ -35,7 +35,7 @@ public class SemanticKernelLogger : ILogger
 
     private bool PrintMessageWithALabelAndJson(string label, string message)
     {
-        if (message.StartsWith(label))
+        if (message.StartsWith(label, System.StringComparison.Ordinal))
         {
             var json = message.Substring(label.Length).Trim();
 
@@ -86,7 +86,7 @@ public class SemanticKernelLogger : ILogger
 
     private bool PrintMessageBetweenTags(string message, string label, string startTag, string endTag)
     {
-        if (message.StartsWith(label))
+        if (message.StartsWith(label, System.StringComparison.Ordinal))
         {
             var split = message.Split(startTag);
             AnsiConsole.MarkupLine($"[green]{EscapeMarkup(split[0])}[/]");
