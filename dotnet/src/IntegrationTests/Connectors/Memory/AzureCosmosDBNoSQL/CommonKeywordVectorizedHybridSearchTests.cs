@@ -10,7 +10,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 /// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
-[CosmosDBbNoSQLConnectionStringSetConditionAttribute]
+[CosmosDBbNoSQLConnectionStringSetCondition]
 public class CommonKeywordVectorizedHybridSearchTests(AzureCosmosDBNoSQLVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>
 {
     protected override string Key1 => "1";

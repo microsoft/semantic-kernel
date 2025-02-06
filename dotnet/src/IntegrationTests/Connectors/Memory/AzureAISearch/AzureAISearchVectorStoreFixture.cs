@@ -49,11 +49,19 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         .Build();
 
     /// <summary>
+    /// Get the test configuration for Azure AI Search.
+    /// </summary>
+    public static AzureAISearchConfiguration? GetAzureAISearchConfiguration()
+    {
+        return s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreFixture"/> class.
     /// </summary>
     public AzureAISearchVectorStoreFixture()
     {
-        var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+        var config = GetAzureAISearchConfiguration();
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));

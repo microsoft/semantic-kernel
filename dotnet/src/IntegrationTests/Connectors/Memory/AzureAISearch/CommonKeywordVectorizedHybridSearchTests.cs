@@ -11,6 +11,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 /// </summary>
 /// <param name="fixture">Azure AI Search setup and teardown.</param>
 [Collection("AzureAISearchVectorStoreCollection")]
+[AzureAISearchConfigSetCondition]
 public class CommonKeywordVectorizedHybridSearchTests(AzureAISearchVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>
 {
     protected override string Key1 => "1";
