@@ -63,15 +63,17 @@ class AzureAIAgent(Agent):
         """Initialize the Azure AI Agent.
 
         Args:
-            client: The AzureAI Project client
-            definition: The AzureAI Agent model
-            kernel: The Kernel instance (Optional)
-            arguments: The KernelArguments instance (Optional)
-            description: The description of the agent (Optional)
-            id: The ID of the agent (Optional)
-            instructions: The instructions for the agent (Optional)
-            name: The name of the agent (Optional)
-            prompt_template_config: The prompt template configuration (Optional). If this is provided along with
+            client: The AzureAI Project client. See "Quickstart: Create a new agent" guide
+                https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=programming-language-python-azure
+                for details on how to create a new agent.
+            definition: The AzureAI Agent model created via the AzureAI Project client.
+            kernel: The Kernel instance used if invoking plugins
+            arguments: The KernelArguments instance
+            description: The description of the agent
+            id: The ID of the agent
+            instructions: The instructions for the agent
+            name: The name of the agent
+            prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
             **kwargs: Additional keyword arguments
         """

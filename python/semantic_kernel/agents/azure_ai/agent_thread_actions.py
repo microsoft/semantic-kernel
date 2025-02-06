@@ -263,14 +263,14 @@ class AgentThreadActions:
                                         agent_name=agent.name, function_step=function_step, tool_call=tool_call
                                     )
 
-                                    if content:
-                                        message_count += 1
-                                        logger.debug(
-                                            f"Yielding tool_message for run [{run.id}], agent `{agent.name}`, "
-                                            f"thread `{thread_id}`, message count `{message_count}`, "
-                                            f"is_visible `{is_visible}`"
-                                        )
-                                        yield is_visible, content
+                            if content:
+                                message_count += 1
+                                logger.debug(
+                                    f"Yielding tool_message for run [{run.id}], agent `{agent.name}`, "
+                                    f"thread `{thread_id}`, message count `{message_count}`, "
+                                    f"is_visible `{is_visible}`"
+                                )
+                                yield is_visible, content
                     case RunStepType.MESSAGE_CREATION:
                         logger.debug(
                             f"Entering message_creation for run [{run.id}], agent `{agent.name}` and thread "
@@ -755,30 +755,33 @@ class AgentThreadActions:
     async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
-        count = 0
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent=agent, run=run, thread_id=thread_id, count=count),
+                cls._poll_loop(agent=agent, run=run, thread_id=thread_id),
                 timeout=agent.polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
             timeout_duration = agent.polling_options.run_polling_timeout
-            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
+            error_message = (
+                f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` "
+                f"after waiting {timeout_duration}."
+            )
             logger.error(error_message)
             raise AgentInvokeException(error_message)
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, count: int) -> ThreadRun:
-        """Poll the run status."""
+    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+        """Continuously poll the run status until it is no longer pending."""
+        count = 0
         while True:
             await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
             count += 1
             try:
                 run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)
             except Exception as e:
-                logging.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
+                logger.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
             if run.status not in cls.polling_status:
                 break
         return run
