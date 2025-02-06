@@ -1,52 +1,55 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.ComponentModel;
-using Azure.AI.Projects;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Agent = Azure.AI.Projects.Agent;
 
-namespace GettingStarted.AzureAgents;
+using System.ComponentModel;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
+
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
-/// This example demonstrates how to define function tools for an <see cref="AzureAIAgent"/>
-/// when the agent is created. This is useful if you want to retrieve the agent later and
+/// This example demonstrates how to define function tools for an <see cref="OpenAIAssistantAgent"/>
+/// when the assistant is created. This is useful if you want to retrieve the assistant later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step05_AssistantTool_Function(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task UseSingleAgentWithFunctionToolsAsync()
+    public async Task UseSingleAssistantWithFunctionToolsAsync()
     {
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        OpenAIClientProvider provider = this.GetClientProvider();
+        var client = provider.Client.GetAssistantClient();
+        AssistantCreationOptions creationOptions =
+            new()
+            {
+                Name = HostName,
+                Instructions = HostInstructions,
+                Metadata = AssistantSampleMetadata,
+            };
 
-        // In this sample the function tools are added to the agent this is
-        // important if you want to retrieve the agent later and then dynamically check
+        // In this sample the function tools are added to the assistant this is
+        // important if you want to retrieve the assistant later and then dynamically check
         // what function tools it requires.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
+        plugin.Select(f => f.ToToolDefinition(plugin.Name)).ToList().ForEach(td => creationOptions.Tools.Add(td));
 
-        Agent definition = await client.CreateAgentAsync(
-            model: TestConfiguration.AzureAI.ChatModelId,
-            name: HostName,
-            description: null,
-            instructions: HostInstructions,
-            tools: tools);
-        AzureAIAgent agent = new(definition, clientProvider)
-        {
-            Kernel = new Kernel(),
-        };
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                clientProvider: this.GetClientProvider(),
+                modelId: this.Model,
+                creationOptions: creationOptions,
+                kernel: new Kernel());
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         // Respond to user input
         try
@@ -58,24 +61,23 @@ public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await agent.DeleteThreadAsync(threadId);
+            await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
+            await agent.AddChatMessageAsync(threadId, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
             {
                 this.WriteAgentChatMessage(response);
             }
         }
     }
-
     private sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]
