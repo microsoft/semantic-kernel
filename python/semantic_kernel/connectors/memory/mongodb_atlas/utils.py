@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from numpy import array
+from pymongo.operations import SearchIndexModel
 
+from semantic_kernel.connectors.memory.mongodb_atlas.const import DISTANCE_FUNCTION_MAPPING
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-DEFAULT_DB_NAME = "default"
-DEFAULT_SEARCH_INDEX_NAME = "default"
 NUM_CANDIDATES_SCALAR = 10
 
 MONGODB_FIELD_ID = "_id"
@@ -66,3 +72,44 @@ def memory_record_to_mongo_document(record: MemoryRecord) -> dict:
         MONGODB_FIELD_EMBEDDING: record._embedding.tolist(),
         MONGODB_FIELD_TIMESTAMP: record._timestamp,
     }
+
+
+def create_vector_field(field: VectorStoreRecordVectorField) -> dict:
+    """Create a vector field.
+
+    Args:
+        field (VectorStoreRecordVectorField): The vector field.
+
+    Returns:
+        dict: The vector field.
+    """
+    if field.distance_function not in DISTANCE_FUNCTION_MAPPING:
+        raise ServiceInitializationError(f"Invalid distance function: {field.distance_function}")
+    return {
+        "type": "vector",
+        "numDimensions": field.dimensions,
+        "path": field.name,
+        "similarity": DISTANCE_FUNCTION_MAPPING[field.distance_function],
+    }
+
+
+def create_index_definition(record_definition: VectorStoreRecordDefinition, index_name: str) -> SearchIndexModel:
+    """Create an index definition.
+
+    Args:
+        record_definition (VectorStoreRecordDefinition): The record definition.
+        index_name (str): The index name.
+
+    Returns:
+        SearchIndexModel: The index definition.
+    """
+    vector_fields = [create_vector_field(field) for field in record_definition.vector_fields]
+    data_fields = [
+        {"path": field.name, "type": "filter"}
+        for field in record_definition.fields
+        if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+    ]
+    key_field = [{"path": record_definition.key_field.name, "type": "filter"}]
+    return SearchIndexModel(
+        type="vectorSearch", name=index_name, definition={"fields": vector_fields + data_fields + key_field}
+    )

@@ -5,7 +5,7 @@
 These plugins have been generated thanks to [kiota](https://aka.ms/kiota) and can be regenerated if needed.
 
 ```shell
-cd dotnet/samples/Concepts/Resources/Plugins/CopilotAgentPlugins
+cd dotnet/samples/Concepts/Resources/Plugins
 ```
 
 ### Calendar plugin
@@ -37,7 +37,7 @@ kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /driv
 Microsoft Graph list message and create a draft message for the current user.
 
 ```shell
-kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/messages#GET -i /me/messages#POST -o CopilotAgentPlugins/MessagesPlugin --pn Messages
+kiota plugin add -t APIPlugin -d https://aka.ms/graph/v1.0/openapi.yaml -i /me/messages#GET -i /me/sendMail#POST -o CopilotAgentPlugins/MessagesPlugin --pn Messages
 ```
 
 ### Astronomy plugin

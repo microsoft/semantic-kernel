@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Agent = Azure.AI.Projects.Agent;
 
-namespace GettingStarted;
+namespace GettingStarted.AzureAgents;
 
 /// <summary>
 /// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
@@ -88,12 +88,6 @@ public class Step02_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAgentsTest
             }
 
             Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
-
-            var history = await chat.GetChatMessagesAsync(agentReviewer).Reverse().ToArrayAsync();
-            foreach (ChatMessageContent response in history)
-            {
-                this.WriteAgentChatMessage(response);
-            }
         }
         finally
         {
