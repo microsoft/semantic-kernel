@@ -17,21 +17,6 @@ public interface IKeywordVectorizedHybridSearch<TRecord>
     /// </summary>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>
-    /// <param name="keywords">A space separated list of keywords to search the store with.</param>
-    /// <param name="options">The options that control the behavior of the search.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The records found by the hybrid search, including their result scores.</returns>
-    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(
-        TVector vector,
-        string keywords,
-        KeywordVectorizedHybridSearchOptions? options = default,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Search the vector store for records that match the given embedding and keywords, after applying the provided filters.
-    /// </summary>
-    /// <typeparam name="TVector">The type of the vector.</typeparam>
-    /// <param name="vector">The vector to search the store with.</param>
     /// <param name="keywords">A collection of keywords to search the store with.</param>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

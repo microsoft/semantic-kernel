@@ -17,7 +17,7 @@ public class KeywordVectorizedHybridSearchOptions
     /// Use the name of the vector property from your data model or as provided in the record definition.
     /// If not provided will default to the first vector property in the schema.
     /// </summary>
-    public string? DenseVectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the target text property to do the text/keyword search on.

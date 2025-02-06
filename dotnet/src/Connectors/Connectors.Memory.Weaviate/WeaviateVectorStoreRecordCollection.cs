@@ -369,12 +369,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return this.KeywordVectorizedHybridSearch(vector, new List<string>() { keywords }, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
@@ -382,7 +376,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.DenseVectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
         var textDataProperty = this._propertyReader.GetTextDataPropertyOrFirst(searchOptions.TextPropertyName);
 
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);

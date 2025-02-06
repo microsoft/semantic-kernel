@@ -400,16 +400,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(
-        TVector vector,
-        string keywords,
-        KeywordVectorizedHybridSearchOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.KeywordVectorizedHybridSearch(vector, new List<string>() { keywords }, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
@@ -418,7 +408,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this.VerifyVectorType(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.DenseVectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
         var textProperty = this._propertyReader.GetTextDataPropertyOrFirst(searchOptions.TextPropertyName);

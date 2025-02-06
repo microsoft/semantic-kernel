@@ -516,19 +516,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, string keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return this.KeywordVectorizedHybridSearch(vector, new List<string>() { keywords }, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.DenseVectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
 
         // Build filter object.
         var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
