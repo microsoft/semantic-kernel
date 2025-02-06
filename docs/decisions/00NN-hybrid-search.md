@@ -90,23 +90,23 @@ Each DB has different keyword search capabilities. Some only support a very basi
 
 |Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
 |-|-|-|-|-|-|
-|KeywordVectorizedHybridSearch|KeywordVectorizedHybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|KeywordVectorizedHybridSearch|KeywordVectorizedHybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |SparseVectorizedHybridSearch|SparseVectorizedHybridSearch|Sparse Vector + Dense Vector|SparseVectorizedHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
-|KeywordVectorizableTextHybridSearch|KeywordVectorizableTextHybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|KeywordVectorizableTextHybridSearch|KeywordVectorizableTextHybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |SparseVectorizableTextHybridSearch|SparseVectorizableTextHybridSearch|string[] + string|SparseVectorizableTextHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
 
 |Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
 |-|-|-|-|-|-|
-|KeywordVectorizedHybridSearch|HybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|KeywordVectorizedHybridSearch|HybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |SparseVectorizedHybridSearch|HybridSearch|Sparse Vector + Dense Vector|SparseVectorizedHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
-|KeywordVectorizableTextHybridSearch|HybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|KeywordVectorizableTextHybridSearch|HybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |SparseVectorizableTextHybridSearch|HybridSearch|string[] + string|SparseVectorizableTextHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
 
 |Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
 |-|-|-|-|-|-|
-|HybridSearchWithKeywords|HybridSearchWithKeywords|string[] + Dense Vector|HybridSearchWithKeywordsOptions|TextPropertyName|VectorPropertyName|
+|HybridSearchWithKeywords|HybridSearchWithKeywords|string[] + Dense Vector|HybridSearchWithKeywordsOptions|FullTextPropertyName|VectorPropertyName|
 |HybridSearchWithSparseVector|HybridSearchWithSparseVector|Sparse Vector + Dense Vector|HybridSearchWithSparseVectorOptions|SparseVectorPropertyName|VectorPropertyName|
-|HybridSearchWithKeywordsAndText|HybridSearchWithKeywordsAndText|string[] + string|HybridSearchWithKeywordsAndTextOptions|TextPropertyName|VectorPropertyName|
+|HybridSearchWithKeywordsAndText|HybridSearchWithKeywordsAndText|string[] + string|HybridSearchWithKeywordsAndTextOptions|FullTextPropertyName|VectorPropertyName|
 |HybridSearchWithKeywordsForSparseVectorAndText|HybridSearchWithKeywordsForSparseVectorAndText|string[] + string|HybridSearchWithKeywordsForSparseVectorAndTextOptions|SparseVectorPropertyName|VectorPropertyName|
 
 ### Keyword based hybrid search
@@ -181,7 +181,7 @@ class KeywordVectorizableHybridSearchOptions
     // The name of the property to target the dense vector search against.
     public string? VectorPropertyName { get; init; }
     // The name of the property to target the text search against.
-    public string? TextPropertyName { get; init; }
+    public string? FullTextPropertyName { get; init; }
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -257,7 +257,7 @@ DenseVectorPropertyName
 SparseVectorPropertyName
 
 DenseVectorPropertyName
-TextPropertyName
+FullTextPropertyName
 
 - Pros: This is more explicit, considering that there are also sparse vectors involved.
 - Cons: It is inconsistent with the naming in the non-hybrid vector search.
@@ -268,7 +268,7 @@ VectorPropertyName
 SparseVectorPropertyName
 
 VectorPropertyName
-TextPropertyName
+FullTextPropertyName
 
 - Pros: This is consistent with the naming in the non-hybrid vector search.
 - Cons: It is internally inconsistent, i.e. we have sparse vector, but for dense it's just vector.

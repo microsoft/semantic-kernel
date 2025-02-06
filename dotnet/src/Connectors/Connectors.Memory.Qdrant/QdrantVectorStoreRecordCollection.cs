@@ -526,7 +526,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Build filter object.
         var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrOnly(internalOptions.TextPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrOnly(internalOptions.FullTextPropertyName);
         var textDataPropertyName = this._propertyReader.GetStoragePropertyName(textDataProperty.DataModelPropertyName);
 
         // Specify the vector name if named vectors are used.
