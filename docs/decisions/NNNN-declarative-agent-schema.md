@@ -112,6 +112,17 @@ For Agent properties that define behaviors e.g. `HistoryReducer` the Semantic Ke
 - Schema **MUST** allow third parties to contribute new Agent types to Semantic Kernel.
 - … <!-- numbers of drivers can vary -->
 
+The document will describe the following use cases:
+
+1. Metadata about the agent and the file.
+2. Creating an Agent with access to function tools and a set of instructions to guide it's behavior.
+3. Allow templating of Agent instructions (and other properties).
+4. Configuring the model and providing multiple model configurations.
+5. Configuring data sources (context/knowledge) for the Agent to use.
+6. Configuring additional tools for the Agent to use e.g. code interpreter, OpenAPI endpoints, .
+7. Enabling additional modalities for the Agent e.g. speech.
+8. Error conditions e.g. models or function tools not being available.
+
 ### Out of Scope
 
 - This ADR does not cover the multi-agent declarative format or the process declarative format
@@ -179,6 +190,8 @@ Chosen option: "{title of option 1}", because
 <!-- This is an optional element. Feel free to remove. -->
 
 ## More Information
+
+### Code First versus Declarative Format
 
 Below are examples showing the code first and equivalent declarative syntax for creating different types of Agents.
 
@@ -353,6 +366,9 @@ actions:
 
 Declarative using Semantic Kernel schema:
 
+Using the syntax below the assistant does not have the functions included in it's definition.
+The functions must be added to the `Kernel` instance associated with the Agent and will be passed when the Agent is invoked.
+
 ```yml
 name: RestaurantHost
 type: openai_assistant
@@ -367,7 +383,27 @@ execution_settings:
         - MenuPlugin.GetItemPrice
     metadata:
       sksample: true
+``
+
+or the
+```yml
+name: RestaurantHost
+type: openai_assistant
+instructions: Answer questions about the menu.
+description: This agent answers questions about the menu.
+execution_settings:
+  default:
+    temperature: 0.4
+tools:
+  - type: function
+    name: MenuPlugin-GetSpecials
+    description: Provides a list of specials from the menu.
+  - type: function
+    name: MenuPlugin-GetItemPrice
+    description: Provides the price of the requested menu item.
+    parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
 ```
+
 
 **Note**: The `Kernel` instance used to create the Agent must have an instance of `OpenAIClientProvider` registered as a service.
 
@@ -421,3 +457,112 @@ execution_settings:
     metadata:
       sksample: true
 ```
+
+### Declarative Format Use Cases
+
+#### Metadata about the agent and the file
+
+```yaml
+name: RestaurantHost
+type: azureai_agent
+description: This agent answers questions about the menu.
+version: 0.0.1
+```
+
+#### Creating an Agent with access to function tools and a set of instructions to guide it's behavior
+
+```yaml
+name: RestaurantHost
+type: azureai_agent
+description: This agent answers questions about the menu.
+version: 0.0.1
+instructions: Answer questions about the menu.
+execution_settings:
+  default:
+    temperature: 0.4
+    function_choice_behavior:
+      type: auto
+      functions:
+        - MenuPlugin.GetSpecials
+        - MenuPlugin.GetItemPrice
+```
+
+or
+
+```yml
+name: RestaurantHost
+type: azureai_agent
+description: This agent answers questions about the menu.
+instructions: Answer questions about the menu.
+execution_settings:
+  default:
+    temperature: 0.4
+tools:
+  - type: function
+    name: MenuPlugin-GetSpecials
+    description: Provides a list of specials from the menu.
+  - type: function
+    name: MenuPlugin-GetItemPrice
+    description: Provides the price of the requested menu item.
+    parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
+```
+
+#### Allow templating of Agent instructions (and other properties)
+
+```yaml
+```
+
+#### Configuring the model and providing multiple model configurations
+
+```yaml
+name: RestaurantHost
+type: azureai_agent
+description: This agent answers questions about the menu.
+instructions: Answer questions about the menu.
+execution_settings:
+  default:
+    temperature: 0.4
+  gpt-4o:
+    temperature: 0.5
+  gpt-4o-mini:
+    temperature: 0.5
+tools:
+  - type: function
+    name: MenuPlugin-GetSpecials
+    description: Provides a list of specials from the menu.
+  - type: function
+    name: MenuPlugin-GetItemPrice
+    description: Provides the price of the requested menu item.
+    parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
+```
+
+#### Configuring data sources (context/knowledge) for the Agent to use
+
+```yaml
+```
+
+#### Configuring additional tools for the Agent to use e.g. code interpreter, OpenAPI endpoints
+
+```yaml
+name: Coder Agent
+type: azureai_agent
+description: This agent uses code to answer questions.
+instructions: Use code to answer questions.
+execution_settings:
+  default:
+    metadata:
+      sksample: true
+tools:
+  - type: code_interpreter
+```
+
+```yaml
+```
+
+#### Enabling additional modalities for the Agent e.g. speech
+
+```yaml
+```
+
+#### Error conditions e.g. models or function tools not being available
+
