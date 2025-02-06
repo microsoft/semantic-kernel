@@ -456,26 +456,57 @@ public class VectorStoreRecordPropertyReaderTests
 
     [Theory]
     [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
-    public void GetTextDataPropertyOrFirstReturnsRequestedPropOrFirstTextDataPropAndThrowsForInvalidProp(Type type, VectorStoreRecordDefinition? definition)
+    public void GetFullTextDataPropertyOrOnlyReturnsRequestedPropOrOnlyTextDataPropAndThrowsForInvalidProp(Type type, VectorStoreRecordDefinition? definition)
     {
         // Arrange.
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Equal("Data2", sut.GetTextDataPropertyOrFirst("Data2").DataModelPropertyName);
-        Assert.Equal("Data1", sut.GetTextDataPropertyOrFirst(null).DataModelPropertyName);
-        Assert.Throws<InvalidOperationException>(() => sut.GetTextDataPropertyOrFirst("DoesNotExist"));
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrOnly("Data1").DataModelPropertyName);
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrOnly(null).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly("DoesNotExist"));
     }
 
     [Theory]
     [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
-    public void GetTextDataPropertyOrFirstThrowsForTextDataProps(Type type, VectorStoreRecordDefinition? definition)
+    public void GetFullTextDataPropertyOrOnlyThrowsForNoTextDataProps(Type type, VectorStoreRecordDefinition? definition)
     {
         // Arrange.
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetTextDataPropertyOrFirst(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyThrowsForNonFullTextSearchProp(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly("Data2"));
+    }
+
+    [Fact]
+    public void GetFullTextDataPropertyOrOnlyThrowsForMultipleMatchingProps()
+    {
+        // Arrange.
+        var properties = new List<VectorStoreRecordProperty>
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsFullTextSearchable = true }
+        };
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = properties
+        };
+        var sut = new VectorStoreRecordPropertyReader(typeof(object), definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly(null));
     }
 
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()

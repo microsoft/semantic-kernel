@@ -309,7 +309,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var textDataProperty = this._propertyReader.GetTextDataPropertyOrFirst(searchOptions.TextPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrOnly(searchOptions.TextPropertyName);
         var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
 
         var filter = MongoDBVectorStoreCollectionSearchMapping.BuildFilter(

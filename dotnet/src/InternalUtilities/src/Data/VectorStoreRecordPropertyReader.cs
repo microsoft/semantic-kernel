@@ -370,12 +370,13 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Get the text data property with the provided name if a name is provided, and fall back
-    /// to the first text data property in the schema if not.
+    /// Get the text data property, that has full text search indexing enabled, with the provided name if a name is provided, and fall back
+    /// to a text data property in the schema if not. If no name is provided and there is more than one text data property with
+    /// full text search indexing enabled, an exception will be thrown.
     /// </summary>
     /// <param name="propertyName">The property name.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
-    public VectorStoreRecordDataProperty GetTextDataPropertyOrFirst(string? propertyName)
+    public VectorStoreRecordDataProperty GetFullTextDataPropertyOrOnly(string? propertyName)
     {
         // If text data property name is provided, try to find it in schema or throw an exception.
         if (!string.IsNullOrWhiteSpace(propertyName))
@@ -384,24 +385,35 @@ internal sealed class VectorStoreRecordPropertyReader
             var dataProperty = this.DataProperties
                 .FirstOrDefault(l => l.DataModelPropertyName.Equals(propertyName, StringComparison.Ordinal) && l.PropertyType == typeof(string));
 
-            if (dataProperty is not null)
+            if (dataProperty is null)
             {
-                return dataProperty;
+                throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a text data property named '{propertyName}'.");
             }
 
-            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a text data property named '{propertyName}'.");
+            if (!dataProperty.IsFullTextSearchable)
+            {
+                throw new InvalidOperationException($"The text data property named '{propertyName}' on the {this._dataModelType.FullName} type must have full text search enabled.");
+            }
+
+            return dataProperty;
         }
 
-        // If text data property name is not provided, return first text data property from schema or throw if none exist.
-        var firstTextDataProperty = this.DataProperties
-            .FirstOrDefault(l => l.PropertyType == typeof(string));
+        // If text data property name is not provided, check if a single full text searchable text property exists or throw otherwise.
+        var fullTextStringProperties = this.DataProperties
+            .Where(l => l.PropertyType == typeof(string) && l.IsFullTextSearchable)
+            .ToList();
 
-        if (firstTextDataProperty is null)
+        if (fullTextStringProperties.Count == 0)
         {
-            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any text data properties.");
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any text data properties that have full text search enabled.");
         }
 
-        return firstTextDataProperty;
+        if (fullTextStringProperties.Count > 1)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does has multiple text data properties that have full text search enabled, please specify your chosen property via options.");
+        }
+
+        return fullTextStringProperties[0];
     }
 
     /// <summary>

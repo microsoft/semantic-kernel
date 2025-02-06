@@ -22,7 +22,8 @@ public class KeywordVectorizedHybridSearchOptions
     /// <summary>
     /// Gets or sets the name of the target text property to do the text/keyword search on.
     /// Use the name of the data property from your data model or as provided in the record definition.
-    /// If not provided will default to the first data property of type string in the schema.
+    /// If not provided will look if there is a text property with full text search enabled, and
+    /// will throw if either none or multiple exist.
     /// </summary>
     public string? TextPropertyName { get; init; }
 
