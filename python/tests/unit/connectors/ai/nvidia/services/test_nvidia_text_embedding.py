@@ -7,7 +7,7 @@ from openai import AsyncClient
 from openai.resources.embeddings import AsyncEmbeddings
 
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
-    NVIDIAEmbeddingPromptExecutionSettings,
+    NvidiaEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_text_embedding import NvidiaTextEmbedding
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -16,7 +16,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 
 @pytest.fixture
 def nvidia_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for OpenAISettings."""
+    """Fixture to set environment variables for NvidiaTextEmbedding."""
     if exclude_list is None:
         exclude_list = []
 
@@ -43,7 +43,7 @@ def test_init(nvidia_unit_test_env):
     assert isinstance(nvidia_text_embedding.client, AsyncClient)
     assert nvidia_text_embedding.ai_model_id == nvidia_unit_test_env["NVIDIA_EMBEDDING_MODEL_ID"]
 
-    assert nvidia_text_embedding.get_prompt_execution_settings_class() == NVIDIAEmbeddingPromptExecutionSettings
+    assert nvidia_text_embedding.get_prompt_execution_settings_class() == NvidiaEmbeddingPromptExecutionSettings
 
 
 def test_init_validation_fail() -> None:
@@ -90,7 +90,7 @@ async def test_embedding_calls_with_parameters(mock_create, nvidia_unit_test_env
 async def test_embedding_calls_with_settings(mock_create, nvidia_unit_test_env) -> None:
     ai_model_id = "test_model_id"
     texts = ["hello world", "goodbye world"]
-    settings = NVIDIAEmbeddingPromptExecutionSettings(service_id="default")
+    settings = NvidiaEmbeddingPromptExecutionSettings(service_id="default")
     nvidia_text_embedding = NvidiaTextEmbedding(service_id="default", ai_model_id=ai_model_id)
 
     await nvidia_text_embedding.generate_embeddings(texts, settings=settings)

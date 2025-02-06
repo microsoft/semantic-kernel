@@ -26,7 +26,7 @@ class NvidiaPromptExecutionSettings(PromptExecutionSettings):
         )
 
 
-class NVIDIAEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
+class NvidiaEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
     """Settings for NVIDIA embedding prompt execution."""
 
     """Specific settings for the text embedding endpoint."""
@@ -34,10 +34,10 @@ class NVIDIAEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
     input: str | list[str] | list[int] | list[list[int]] | None = None
     model: str = None
     encoding_format: Literal["float", "base64"] | None = "float"  # default to float
-    truncate: Literal[None, "START", "END"] | None = None
+    truncate: Literal[None, "NONE", "START", "END"] | None = None
     input_type: Literal["passage", "query"] | None = "passage"  # default to passage
     user: str | None = None
     extra_headers: dict | None = None
     extra_body: dict | None = None
     timeout: float | None = None
-    dimensions: Annotated[int | None, Field(gt=0, le=3072)] = None
+    dimensions: Annotated[int | None, Field(gt=0)] = None

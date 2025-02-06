@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
-    NVIDIAEmbeddingPromptExecutionSettings,
+    NvidiaEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
@@ -55,8 +55,6 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             env_file_path (str | None): Use the environment settings file as
                 a fallback to environment variables. (Optional)
             service_id (str): Service ID for the model. (optional)
-
-        Note that this model will be downloaded from the NVIDIA model hub.
         """
         try:
             nvidia_settings = NvidiaSettings.create(api_key=api_key, base_url=base_url, embedding_model_id=ai_model_id)
@@ -92,7 +90,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
     async def generate_raw_embeddings(
         self,
         texts: list[str],
-        settings: "NVIDIAEmbeddingPromptExecutionSettings | None" = None,
+        settings: "NvidiaEmbeddingPromptExecutionSettings | None" = None,
         batch_size: int | None = None,
         **kwargs: Any,
     ) -> Any:
@@ -100,16 +98,16 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
 
         Args:
             texts (List[str]): The texts to generate embeddings for.
-            settings (NVIDIAEmbeddingPromptExecutionSettings): The settings to use for the request.
+            settings (NvidiaEmbeddingPromptExecutionSettings): The settings to use for the request.
             batch_size (int): The batch size to use for the request.
             kwargs (Dict[str, Any]): Additional arguments to pass to the request.
         """
         if not settings:
-            settings = NVIDIAEmbeddingPromptExecutionSettings(ai_model_id=self.ai_model_id)
+            settings = NvidiaEmbeddingPromptExecutionSettings(ai_model_id=self.ai_model_id)
         else:
-            if not isinstance(settings, NVIDIAEmbeddingPromptExecutionSettings):
+            if not isinstance(settings, NvidiaEmbeddingPromptExecutionSettings):
                 settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, NVIDIAEmbeddingPromptExecutionSettings)  # nosec
+        assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
         if settings.model is None:
             settings.model = self.ai_model_id
         for key, value in kwargs.items():
@@ -131,7 +129,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
-        return NVIDIAEmbeddingPromptExecutionSettings
+        return NvidiaEmbeddingPromptExecutionSettings
 
     @classmethod
     def from_dict(cls: type["NvidiaTextEmbedding"], settings: dict[str, Any]) -> "NvidiaTextEmbedding":
