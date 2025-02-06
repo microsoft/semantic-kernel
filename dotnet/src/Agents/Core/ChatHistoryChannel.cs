@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,10 +13,19 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="ChatHistoryKernelAgent"/>.
+/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryKernelAgent"/>.
 /// </summary>
 internal sealed class ChatHistoryChannel : AgentChannel
 {
+    // Supported content types for <see cref="ReceiveAsync"/> when
+    // <see cref="ChatMessageContent.Content"/> is empty.
+    private static readonly HashSet<Type> s_contentMap =
+        [
+            typeof(FunctionCallContent),
+            typeof(FunctionResultContent),
+            typeof(ImageContent),
+        ];
+
     private readonly ChatHistory _history;
 
     /// <inheritdoc/>
@@ -105,7 +115,11 @@ internal sealed class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
-        this._history.AddRange(history);
+        // Only add messages with valid content or supported content-items.
+        this._history.AddRange(
+            history.Where(
+                m => !string.IsNullOrEmpty(m.Content) ||
+                m.Items.Where(i => s_contentMap.Contains(i.GetType())).Any()));
 
         return Task.CompletedTask;
     }

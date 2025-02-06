@@ -80,6 +80,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// </summary>
     internal ProcessEventProxy? EventProxy { get; init; }
 
+    internal IExternalKernelProcessMessageChannel? ExternalMessageChannel { get; init; }
+
     /// <summary>
     /// Retrieves all events that have been emitted by this step in the previous superstep.
     /// </summary>
@@ -231,6 +233,13 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <exception cref="KernelException"></exception>
     protected virtual async ValueTask InitializeStepAsync()
     {
+        if (this.ExternalMessageChannel != null)
+        {
+            // initialize external message channel
+            // TODO: in LocalRuntime need to ensure initialization only happens once
+            await this.ExternalMessageChannel.Initialize().ConfigureAwait(false);
+        }
+
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
@@ -242,7 +251,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed

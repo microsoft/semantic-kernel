@@ -22,5 +22,6 @@ public static class KernelProcessDaprExtensions
         actorOptions.Actors.RegisterActor<EventBufferActor>();
         actorOptions.Actors.RegisterActor<MessageBufferActor>();
         actorOptions.Actors.RegisterActor<ExternalEventBufferActor>();
+        actorOptions.Actors.RegisterActor<ExternalMessageBufferActor>();
     }
 }

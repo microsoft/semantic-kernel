@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Agent = Azure.AI.Projects.Agent;
 
-namespace GettingStarted;
+namespace GettingStarted.AzureAgents;
 
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .

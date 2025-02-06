@@ -1,11 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.kernel import Kernel
+from semantic_kernel import Kernel
+from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 
 #####################################################################
 # The following sample demonstrates how to create an OpenAI         #
@@ -14,32 +12,18 @@ from semantic_kernel.kernel import Kernel
 # Python code to print Fibonacci numbers.                           #
 #####################################################################
 
-
-AGENT_NAME = "CodeRunner"
-AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
+# Create the instance of the Kernel
+kernel = Kernel()
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = True
-
-
-# A helper method to invoke the agent with the user input
-async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
-    """Invoke the agent with the user input."""
-    await agent.add_chat_message(thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=input))
-
-    print(f"# {AuthorRole.USER}: '{input}'")
-
-    async for content in agent.invoke(thread_id=thread_id):
-        if content.role != AuthorRole.TOOL:
-            print(f"# {content.role}: {content.content}")
+use_azure_openai = False
 
 
 async def main():
-    # Create the instance of the Kernel
-    kernel = Kernel()
-
     # Define a service_id for the sample
     service_id = "agent"
+    AGENT_NAME = "CodeRunner"
+    AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
 
     # Create the agent
     if use_azure_openai:
@@ -61,12 +45,19 @@ async def main():
 
     thread_id = await agent.create_thread()
 
+    user_input = "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?"
+    print(f"# User: '{user_input}'")
     try:
-        await invoke_agent(
-            agent,
+        await agent.add_chat_message(
             thread_id=thread_id,
-            input="Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?",  # noqa: E501
+            message=ChatMessageContent(
+                role=AuthorRole.USER,
+                content=user_input,
+            ),
         )
+        async for content in agent.invoke(thread_id=thread_id):
+            if content.role != AuthorRole.TOOL:
+                print(f"# Agent: {content.content}")
     finally:
         await agent.delete_thread(thread_id)
         await agent.delete()

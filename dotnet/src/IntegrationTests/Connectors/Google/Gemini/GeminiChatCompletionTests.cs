@@ -3,11 +3,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Newtonsoft.Json.Linq;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
@@ -133,6 +136,61 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         this.Output.WriteLine(response.Content);
         Assert.Contains("1520", response.Content, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Roger", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationWithCachedContentAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Finish this sentence: He knew the sea’s...");
+
+        // Setup initial cached content
+        var cachedContentJson = File.ReadAllText(Path.Combine("Resources", "gemini_cached_content.json"))
+            .Replace("{{project}}", this.VertexAIGetProjectId())
+            .Replace("{{location}}", this.VertexAIGetLocation())
+            .Replace("{{model}}", this.VertexAIGetGeminiModel());
+
+        var cachedContentName = string.Empty;
+
+        using (var httpClient = new HttpClient()
+        {
+            DefaultRequestHeaders = { Authorization = new("Bearer", this.VertexAIGetBearerKey()) }
+        })
+        {
+            using (var content = new StringContent(cachedContentJson, Encoding.UTF8, "application/json"))
+            {
+                using (var httpResponse = await httpClient.PostAsync(
+                new Uri($"https://{this.VertexAIGetLocation()}-aiplatform.googleapis.com/v1beta1/projects/{this.VertexAIGetProjectId()}/locations/{this.VertexAIGetLocation()}/cachedContents"),
+                content))
+                {
+                    httpResponse.EnsureSuccessStatusCode();
+
+                    var responseString = await httpResponse.Content.ReadAsStringAsync();
+                    var responseJson = JObject.Parse(responseString);
+
+                    cachedContentName = responseJson?["name"]?.ToString();
+
+                    Assert.NotNull(cachedContentName);
+                }
+            }
+        }
+
+        var sut = this.GetChatService(serviceType, isBeta: true);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(
+            chatHistory,
+            new GeminiPromptExecutionSettings
+            {
+                CachedContent = cachedContentName
+            });
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("capriciousness", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
     [RetryTheory]
@@ -268,6 +326,58 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         Assert.False(string.IsNullOrWhiteSpace(message));
         this.Output.WriteLine(message);
         Assert.Contains("green", message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAudioBinaryDataAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Memory<byte> audio = await File.ReadAllBytesAsync(Path.Combine("TestData", "test_audio.wav"));
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("Transcribe this audio"),
+            new AudioContent(audio, "audio/wav")
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatServiceWithVision(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("the sun rises", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAudioUriAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Uri audioUri = new("gs://cloud-samples-data/speech/brooklyn_bridge.flac"); // needs setup
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("Transcribe this audio"),
+            new AudioContent(audioUri) { MimeType = "audio/flac" }
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatServiceWithVision(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("brooklyn bridge", response.Content, StringComparison.OrdinalIgnoreCase);
     }
 
     [RetryTheory]

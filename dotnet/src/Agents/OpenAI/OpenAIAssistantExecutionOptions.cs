@@ -7,37 +7,39 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Defines assistant execution options for each invocation.
 /// </summary>
 /// <remarks>
-/// These options are persisted as a single entry of the assistant's metadata with key: "__run_options"
+/// These options are persisted as a single entry of the assistant's metadata with key: "__run_options".
 /// </remarks>
 public sealed class OpenAIAssistantExecutionOptions
 {
     /// <summary>
-    /// Appends additional instructions.
+    /// Gets the additional instructions.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AdditionalInstructions { get; init; }
 
     /// <summary>
-    /// The maximum number of completion tokens that may be used over the course of the run.
+    /// Gets the maximum number of completion tokens that can be used over the course of the run.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxCompletionTokens { get; init; }
 
     /// <summary>
-    /// The maximum number of prompt tokens that may be used over the course of the run.
+    /// Gets the maximum number of prompt tokens that can be used over the course of the run.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxPromptTokens { get; init; }
 
     /// <summary>
-    /// Enables parallel function calling during tool use.  Enabled by default.
-    /// Use this property to disable.
+    /// Gets a value that indicates whether parallel function calling is enabled during tool use.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if parallel function calling is enabled during tool use; otherwise, <see langword="false"/>. The default is <see langword="true"/>.
+    /// </value>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? ParallelToolCallsEnabled { get; init; }
 
     /// <summary>
-    /// When set, the thread will be truncated to the N most recent messages in the thread.
+    /// Gets the number of recent messages that the thread will be truncated to.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TruncationMessageCount { get; init; }

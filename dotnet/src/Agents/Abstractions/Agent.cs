@@ -20,30 +20,30 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class Agent
 {
     /// <summary>
-    /// The description of the agent (optional)
+    /// Gets the description of the agent (optional).
     /// </summary>
     public string? Description { get; init; }
 
     /// <summary>
-    /// The identifier of the agent (optional).
+    /// Gets the identifier of the agent (optional).
     /// </summary>
-    /// <remarks>
-    /// Default to a random guid value, but may be overridden.
-    /// </remarks>
+    /// <value>
+    /// The identifier of the agent. The default is a random GUID value, but that can be overridden.
+    /// </value>
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// The name of the agent (optional)
+    /// Gets the name of the agent (optional).
     /// </summary>
     public string? Name { get; init; }
 
     /// <summary>
-    /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
+    /// Gets an <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
     /// </summary>
     public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
 
     /// <summary>
-    /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
+    /// Gets the <see cref="ILogger"/> associated with this <see cref="Agent"/>.
     /// </summary>
     protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
