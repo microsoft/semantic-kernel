@@ -108,25 +108,4 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors })),
             point.Score);
     }
-
-    /// <summary>
-    /// Map the given fusion method string to a <see cref="Fusion"/> value.
-    /// </summary>
-    /// <param name="fusionString">The fusion string to map.</param>
-    /// <returns>The mapped <see cref="Fusion"/> value.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided fusion method isn't supported.</exception>
-    public static Fusion MapFusionMethod(string? fusionString)
-    {
-        if (string.IsNullOrWhiteSpace(fusionString))
-        {
-            return Fusion.Rrf;
-        }
-
-        return fusionString switch
-        {
-            nameof(Fusion.Rrf) => Fusion.Rrf,
-            nameof(Fusion.Dbsf) => Fusion.Dbsf,
-            _ => throw new InvalidOperationException($"Unsupported fusion method '{fusionString}'. Qdrant supports {nameof(Fusion.Rrf)} and {nameof(Fusion.Dbsf)}.")
-        };
-    }
 }

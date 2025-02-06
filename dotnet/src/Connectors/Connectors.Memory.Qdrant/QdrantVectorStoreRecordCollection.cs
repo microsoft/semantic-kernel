@@ -567,7 +567,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
         // Build the fusion query.
         var fusionQuery = new Query
         {
-            Fusion = QdrantVectorStoreCollectionSearchMapping.MapFusionMethod(internalOptions.FusionMethod)
+            Fusion = Fusion.Rrf,
         };
 
         // Execute Search.

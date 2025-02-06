@@ -409,11 +409,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrOnly(internalOptions.TextPropertyName);
         var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
 
-        if (internalOptions.FusionMethod is not null && internalOptions.FusionMethod != "RRF")
-        {
-            throw new NotSupportedException($"FusionMethod {internalOptions.FusionMethod} is not supported by the Azure AI Search connector.");
-        }
-
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });

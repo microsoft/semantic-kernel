@@ -28,17 +28,6 @@ public class KeywordVectorizedHybridSearchOptions
     public string? TextPropertyName { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the fusion method to use to combine
-    /// the results of the dense vector and text/keyword search.
-    /// </summary>
-    /// <remarks>
-    /// If not set, the default fusion method for each database will be used.
-    /// Some DBs may only support a single fusion method, in which case
-    /// setting this option is unnecessary.
-    /// </remarks>
-    public string? FusionMethod { get; init; }
-
-    /// <summary>
     /// Gets or sets the maximum number of results to return.
     /// </summary>
     public int Top { get; init; } = 3;

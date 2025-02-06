@@ -129,9 +129,6 @@ class KeywordVectorizedHybridSearchOptions
     // The name of the property to target the text search against.
     public string? FullTextPropertyName { get; init; }
 
-    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string? FusionMethod { get; init; } = null;
-
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
     public int Skip { get; init; } = 0;

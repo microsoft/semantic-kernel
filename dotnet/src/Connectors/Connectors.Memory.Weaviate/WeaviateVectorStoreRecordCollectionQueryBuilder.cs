@@ -93,8 +93,6 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
 
-        var fusionMethod = string.IsNullOrWhiteSpace(searchOptions.FusionMethod) ? "rankedFusion" : searchOptions.FusionMethod;
-
         return $$"""
         {
           Get {
@@ -107,7 +105,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
                 properties: ["{{textPropertyName}}"]
                 targetVectors: ["{{vectorPropertyName}}"]
                 vector: {{vectorArray}}
-                fusionType: {{fusionMethod}}
+                fusionType: rankedFusion
               }
             ) {
               {{string.Join(" ", dataPropertyStorageNames)}}
