@@ -98,7 +98,6 @@ internal static class AgentThreadActions
             messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
             foreach (ThreadMessage message in messages)
             {
-                Console.WriteLine(message.Id);
                 lastId = message.Id;
                 string? assistantName = null;
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
