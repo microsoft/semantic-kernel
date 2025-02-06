@@ -86,21 +86,35 @@ Each DB has different keyword search capabilities. Some only support a very basi
 |<p>string[] keyword</p><p>One or more words per element</p><p>Multiple words in a single element is a phrase that must match exactly to boost the ranking.</p>|Y|N|Y|Only via filter with multiple OR'd matches and NO Index|-|N|Y|
 |<p>string keyword</p><p>Space separated words</p><p>Any matching word boosts ranking.</p>|Y|Y|Y|N (would need to split words)|-|N (would need to split words)|Y|
 
-### Naming
+### Naming Options
 
-|Name|Parameters|Keyword Property Selector|Dense Vector Property Selector|
-|-|-|-|-|
-|KeywordVectorizedHybridSearch|string + Dense Vector|TextPropertyName|DenseVectorPropertyName|
-|SparseVectorizedHybridSearch|Sparse Vector + Dense Vector|SparseVectorPropertyName|DenseVectorPropertyName|
-|KeywordVectorizableTextHybridSearch|string + string / string|TextPropertyName|DenseVectorPropertyName|
-|SparseVectorizableTextHybridSearch|string + string / string|SparseVectorPropertyName|DenseVectorPropertyName|
+|Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
+|-|-|-|-|-|-|
+|KeywordVectorizedHybridSearch|KeywordVectorizedHybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|SparseVectorizedHybridSearch|SparseVectorizedHybridSearch|Sparse Vector + Dense Vector|SparseVectorizedHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
+|KeywordVectorizableTextHybridSearch|KeywordVectorizableTextHybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|SparseVectorizableTextHybridSearch|SparseVectorizableTextHybridSearch|string[] + string|SparseVectorizableTextHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
+
+|Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
+|-|-|-|-|-|-|
+|KeywordVectorizedHybridSearch|HybridSearch|string[] + Dense Vector|KeywordVectorizedHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|SparseVectorizedHybridSearch|HybridSearch|Sparse Vector + Dense Vector|SparseVectorizedHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
+|KeywordVectorizableTextHybridSearch|HybridSearch|string[] + string|KeywordVectorizableTextHybridSearchOptions|TextPropertyName|VectorPropertyName|
+|SparseVectorizableTextHybridSearch|HybridSearch|string[] + string|SparseVectorizableTextHybridSearchOptions|SparseVectorPropertyName|VectorPropertyName|
+
+|Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
+|-|-|-|-|-|-|
+|HybridSearchWithKeywords|HybridSearchWithKeywords|string[] + Dense Vector|HybridSearchWithKeywordsOptions|TextPropertyName|VectorPropertyName|
+|HybridSearchWithSparseVector|HybridSearchWithSparseVector|Sparse Vector + Dense Vector|HybridSearchWithSparseVectorOptions|SparseVectorPropertyName|VectorPropertyName|
+|HybridSearchWithKeywordsAndText|HybridSearchWithKeywordsAndText|string[] + string|HybridSearchWithKeywordsAndTextOptions|TextPropertyName|VectorPropertyName|
+|HybridSearchWithKeywordsForSparseVectorAndText|HybridSearchWithKeywordsForSparseVectorAndText|string[] + string|HybridSearchWithKeywordsForSparseVectorAndTextOptions|SparseVectorPropertyName|VectorPropertyName|
 
 ### Keyword based hybrid search
 
 ```csharp
 interface IKeywordVectorizedHybridSearch<TRecord>
 {
-    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch(
+    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(
         TVector vector,
         ICollection<string> keywords,
         KeywordVectorizedHybridSearchOptions options,
@@ -110,9 +124,11 @@ interface IKeywordVectorizedHybridSearch<TRecord>
 class KeywordVectorizedHybridSearchOptions
 {
     // The name of the property to target the vector search against.
-    public string? DenseVectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; init; }
+
     // The name of the property to target the text search against.
-    public string? TextPropertyName { get; init; }
+    public string? FullTextPropertyName { get; init; }
+
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
     public string? FusionMethod { get; init; } = null;
 
@@ -129,8 +145,8 @@ class KeywordVectorizedHybridSearchOptions
 ```csharp
 interface ISparseVectorizedHybridSearch<TRecord>
 {
-    Task<VectorSearchResults<TRecord>> SparseVectorizedHybridSearch<TDenseVector, TSparseVector>(
-        TDenseVector denseVector,
+    Task<VectorSearchResults<TRecord>> SparseVectorizedHybridSearch<TVector, TSparseVector>(
+        TVector vector,
         TSparseVector sparsevector,
         SparseVectorizedHybridSearchOptions options,
         CancellationToken cancellationToken);
@@ -139,7 +155,7 @@ interface ISparseVectorizedHybridSearch<TRecord>
 class SparseVectorizedHybridSearchOptions
 {
     // The name of the property to target the dense vector search against.
-    public string? DenseVectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; init; }
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
@@ -168,7 +184,7 @@ interface IKeywordVectorizableHybridSearch<TRecord>
 class KeywordVectorizableHybridSearchOptions
 {
     // The name of the property to target the dense vector search against.
-    public string? DenseVectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; init; }
     // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
@@ -197,7 +213,7 @@ interface ISparseVectorizableTextHybridSearch<TRecord>
 class SparseVectorizableTextHybridSearchOptions
 {
     // The name of the property to target the dense vector search against.
-    public string? DenseVectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; init; }
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
     // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
@@ -361,5 +377,14 @@ the property bag required by VectorStoreRecordProperty.
 
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | � | comes out best (see below)}.
+### Scoping
+
+Chosen option "1. Keyword Hybrid Search Only", since enterprise support for generating sparse vectors is poor and without an end to end story, the value is low.
+
+### PropertyName Naming
+
+Chosen option "2. Implicit Dense naming", since it is consistent with the existing vector search options naming.
+
+### Keyword splitting
+
+Chosen option "1. Accept Split keywords in interface", since it is the only one with broad support amongst databases.
