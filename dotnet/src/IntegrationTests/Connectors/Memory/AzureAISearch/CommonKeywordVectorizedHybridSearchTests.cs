@@ -21,7 +21,7 @@ public class CommonKeywordVectorizedHybridSearchTests(AzureAISearchVectorStoreFi
 
     protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new AzureAISearchVectorStoreRecordCollection<TRecord>(fixture.SearchIndexClient, recordCollectionName, new()
+        return new AzureAISearchVectorStoreRecordCollection<TRecord>(fixture.SearchIndexClient, recordCollectionName + AzureAISearchVectorStoreFixture.TestIndexPostfix, new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

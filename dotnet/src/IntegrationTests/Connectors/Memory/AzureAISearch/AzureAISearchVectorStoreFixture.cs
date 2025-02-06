@@ -29,8 +29,13 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Test index name which consists out of "hotels-" and the machine name with any non-alphanumeric characters removed.
     /// </summary>
+    private readonly string _testIndexName = "hotels-" + TestIndexPostfix;
+
+    /// <summary>
+    /// Gets the test index name postfix that is derived from the local machine name used to avoid clashes between test runs from different callers.
+    /// </summary>
 #pragma warning disable CA1308 // Normalize strings to uppercase
-    private readonly string _testIndexName = "hotels-" + new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
+    public static string TestIndexPostfix { get; private set; } = new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
     /// <summary>
