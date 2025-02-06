@@ -4,18 +4,20 @@
 
 ### Agents - Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel
 
-- [Assistant Agent Chart Maker](./agents/assistant_agent_chart_maker.py)
-- [Assistant Agent File Manipulation](./agents/assistant_agent_file_manipulation.py)
-- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent_file_manipulation_streaming.py)
-- [Assistant Agent Retrieval](./agents/assistant_agent_retrieval.py)
-- [Assistant Agent Streaming](./agents/assistant_agent_streaming.py)
-- [Chat Completion Function Termination](./agents/chat_completion_function_termination.py)
-- [Chat Completion History Reducer](./agents/chat_completion_history_reducer.py)
-- [Mixed Chat Agents](./agents/mixed_chat_agents.py)
-- [Mixed Chat Agents Plugins](./agents/mixed_chat_agents_plugins.py)
-- [Mixed Chat Files](./agents/mixed_chat_files.py)
-- [Mixed Chat Reset](./agents/mixed_chat_reset.py)
-- [Mixed Chat Streaming](./agents/mixed_chat_streaming.py)
+- [Assistant Agent Chart Maker](./agents/assistant_agent/assistant_agent_chart_maker.py)
+- [Assistant Agent File Manipulation](./agents/assistant_agent/assistant_agent_file_manipulation.py)
+- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent/assistant_agent_file_manipulation_streaming.py)
+- [Assistant Agent Retrieval](./agents/assistant_agent/assistant_agent_retrieval.py)
+- [Assistant Agent Streaming](./agents/assistant_agent/assistant_agent_streaming.py)
+- [Chat Completion Function Termination](./agents/chat_completion_agent/chat_completion_function_termination.py)
+- [Chat Completion History Reducer](./agents/chat_completion_agent/chat_completion_history_reducer.py)
+- [Mixed Chat Agents](./agents/mixed_chat/mixed_chat_agents.py)
+- [Mixed Chat Agents Plugins](./agents/mixed_chat/mixed_chat_agents_plugins.py)
+- [Mixed Chat Files](./agents/mixed_chat/mixed_chat_files.py)
+- [Mixed Chat Images](./agents/mixed_chat/mixed_chat_images.py)
+- [Mixed Chat Reset](./agents/mixed_chat/mixed_chat_reset.py)
+- [Mixed Chat Streaming](./agents/mixed_chat/mixed_chat_streaming.py)
+- [Bedrock Agent](./agents/bedrock_agent/README.md)
 
 ### Audio - Using services that support audio-to-text and text-to-audio conversion
 

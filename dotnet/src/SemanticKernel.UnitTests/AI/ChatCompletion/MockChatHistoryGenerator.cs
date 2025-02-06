@@ -14,8 +14,13 @@ internal static class MockChatHistoryGenerator
     /// <summary>
     /// Create a homogeneous list of assistant messages.
     /// </summary>
-    public static IEnumerable<ChatMessageContent> CreateSimpleHistory(int messageCount)
+    public static IEnumerable<ChatMessageContent> CreateSimpleHistory(int messageCount, bool includeSystemMessage = false)
     {
+        if (includeSystemMessage)
+        {
+            yield return new ChatMessageContent(AuthorRole.System, "system message");
+        }
+
         for (int index = 0; index < messageCount; ++index)
         {
             yield return new ChatMessageContent(AuthorRole.Assistant, $"message #{index}");

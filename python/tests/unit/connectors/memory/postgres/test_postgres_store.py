@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import pytest
 import pytest_asyncio
 from psycopg import AsyncConnection, AsyncCursor
 from psycopg_pool import AsyncConnectionPool
@@ -13,6 +14,8 @@ from pytest import fixture
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
+from semantic_kernel.connectors.memory.postgres.constants import DISTANCE_COLUMN_NAME
+from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.connectors.memory.postgres.postgres_store import PostgresStore
 from semantic_kernel.data.const import DistanceFunction, IndexKind
@@ -22,6 +25,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 
 
 @fixture(scope="function")
@@ -74,6 +78,9 @@ class SimpleDataModel:
         dict[str, Any],
         VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
     ]
+
+
+# region VectorStore Tests
 
 
 async def test_vector_store_defaults(vector_store: PostgresStore) -> None:
@@ -236,7 +243,130 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
     assert records[2].data == {"key": "value3"}
 
 
-# Test settings
+# endregion
+
+# region Vector Search tests
+
+
+@pytest.mark.parametrize(
+    "distance_function, operator, subquery_distance, include_vectors, include_total_count",
+    [
+        (DistanceFunction.COSINE_SIMILARITY, "<=>", f'1 - subquery."{DISTANCE_COLUMN_NAME}"', False, False),
+        (DistanceFunction.COSINE_DISTANCE, "<=>", None, False, False),
+        (DistanceFunction.DOT_PROD, "<#>", f'-1 * subquery."{DISTANCE_COLUMN_NAME}"', True, False),
+        (DistanceFunction.EUCLIDEAN_DISTANCE, "<->", None, False, True),
+        (DistanceFunction.MANHATTAN, "<+>", None, True, True),
+    ],
+)
+async def test_vector_search(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+    distance_function: DistanceFunction,
+    operator: str,
+    subquery_distance: str | None,
+    include_vectors: bool,
+    include_total_count: bool,
+) -> None:
+    @vectorstoremodel
+    @dataclass
+    class SimpleDataModel:
+        id: Annotated[int, VectorStoreRecordKeyField()]
+        embedding: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                index_kind=IndexKind.HNSW,
+                dimensions=1536,
+                distance_function=distance_function,
+                property_type="float",
+            ),
+        ]
+        data: Annotated[
+            dict[str, Any],
+            VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
+        ]
+
+    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    search_results = await collection.vectorized_search(
+        [1.0, 2.0, 3.0],
+        options=VectorSearchOptions(
+            top=10, skip=5, include_vectors=include_vectors, include_total_count=include_total_count
+        ),
+    )
+    if include_total_count:
+        # Including total count issues query directly
+        assert mock_cursor.execute.call_count == 1
+    else:
+        # Total count is not included, query is issued when iterating over results
+        assert mock_cursor.execute.call_count == 0
+        async for _ in search_results.results:
+            pass
+        assert mock_cursor.execute.call_count == 1
+
+    execute_args, _ = mock_cursor.execute.call_args
+
+    assert (search_results.total_count is not None) == include_total_count
+
+    statement = execute_args[0]
+    statement_str = statement.as_string()
+
+    expected_columns = '"id", "data"'
+    if include_vectors:
+        expected_columns = '"id", "embedding", "data"'
+
+    expected_statement = (
+        f'SELECT {expected_columns}, "embedding" {operator} %s as "{DISTANCE_COLUMN_NAME}" '
+        'FROM "public"."test_collection" '
+        f'ORDER BY "{DISTANCE_COLUMN_NAME}" LIMIT 10 OFFSET 5'
+    )
+
+    if subquery_distance:
+        expected_statement = (
+            f'SELECT subquery.*, {subquery_distance} AS "{DISTANCE_COLUMN_NAME}" FROM ('
+            + expected_statement
+            + ") AS subquery"
+        )
+
+    assert statement_str == expected_statement
+
+
+async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
+    @vectorstoremodel
+    @dataclass
+    class ConflictingDataModel:
+        id: Annotated[int, VectorStoreRecordKeyField()]
+        sk_pg_distance: Annotated[
+            float, VectorStoreRecordDataField()
+        ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
+
+        embedding: Annotated[
+            list[float],
+            VectorStoreRecordVectorField(
+                embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                index_kind=IndexKind.HNSW,
+                dimensions=1536,
+                distance_function=DistanceFunction.COSINE_SIMILARITY,
+                property_type="float",
+            ),
+        ]
+        data: Annotated[
+            dict[str, Any],
+            VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
+        ]
+
+    collection = vector_store.get_collection("test_collection", ConflictingDataModel)
+    assert isinstance(collection, PostgresCollection)
+
+    # Ensure that the distance column name has been changed to avoid conflict
+    assert collection._distance_column_name != DISTANCE_COLUMN_NAME
+    assert collection._distance_column_name.startswith(f"{DISTANCE_COLUMN_NAME}_")
+
+
+# endregion
+
+# region Settings tests
 
 
 def test_settings_connection_string(monkeypatch) -> None:
@@ -290,3 +420,6 @@ def test_settings_env_vars(monkeypatch) -> None:
     assert conn_info["dbname"] == "dbname"
     assert conn_info["user"] == "user"
     assert conn_info["password"] == "password"
+
+
+# endregion

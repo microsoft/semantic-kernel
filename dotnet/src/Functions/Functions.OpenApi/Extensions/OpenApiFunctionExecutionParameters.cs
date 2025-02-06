@@ -76,7 +76,6 @@ public class OpenApiFunctionExecutionParameters
     /// as a stream rather than as a string.
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
-    [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
 
     /// <summary>

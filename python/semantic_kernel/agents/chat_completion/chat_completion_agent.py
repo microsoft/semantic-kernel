@@ -145,7 +145,8 @@ class ChatCompletionAgent(Agent):
         messages = await chat_completion_service.get_chat_message_contents(
             chat_history=chat,
             settings=settings,
-            kernel=self.kernel,
+            kernel=kernel,
+            arguments=arguments,
         )
 
         logger.info(
@@ -208,7 +209,8 @@ class ChatCompletionAgent(Agent):
             chat_completion_service.get_streaming_chat_message_contents(
                 chat_history=chat,
                 settings=settings,
-                kernel=self.kernel,
+                kernel=kernel,
+                arguments=arguments,
             )
         )
 
