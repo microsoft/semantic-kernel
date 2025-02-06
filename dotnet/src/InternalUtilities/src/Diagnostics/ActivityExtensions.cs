@@ -24,7 +24,7 @@ internal static class ActivityExtensions
         foreach (var tag in tags)
         {
             activity.SetTag(tag.Key, tag.Value);
-        };
+        }
 
         return activity;
     }
