@@ -9,12 +9,14 @@ namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
+/// <remarks>
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
+/// </remarks>
 public abstract class AgentChannel
 {
     /// <summary>
-    /// The <see cref="ILogger"/> associated with the <see cref="AgentChannel"/>.
+    /// Gets or sets the <see cref="ILogger"/> associated with the <see cref="AgentChannel"/>.
     /// </summary>
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
@@ -75,11 +77,11 @@ public abstract class AgentChannel
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
-/// <typeparam name="TAgent">The agent type for this channel</typeparam>
+/// <typeparam name="TAgent">The agent type for this channel.</typeparam>
 /// <remarks>
-/// Convenience upcast to agent for <see cref="AgentChannel{TAgent}.InvokeAsync(TAgent, CancellationToken)"/>.
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
+/// This class is a convenience upcast to an agent for <see cref="AgentChannel{TAgent}.InvokeAsync(TAgent, CancellationToken)"/>.
 /// </remarks>
 public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 {
