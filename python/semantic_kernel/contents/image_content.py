@@ -49,6 +49,40 @@ class ImageContent(BinaryContent):
         ValidationError: If neither uri or data is provided.
     """
 
+    def __init__(
+        self,
+        uri: str | None = None,
+        data_uri: str | None = None,
+        data: str | bytes | None = None,
+        data_format: str | None = None,
+        mime_type: str | None = None,
+        **kwargs: Any,
+    ):
+        """Create an Image Content object, either from a data_uri or data.
+
+        Args:
+            uri (Url | None): The reference uri of the content.
+            data_uri (DataUrl | None): The data uri of the content.
+            data (str | bytes | None): The data of the content.
+            data_format (str | None): The format of the data (e.g. base64).
+            mime_type (str | None): The mime type of the image, only used with data.
+            kwargs (Any): Any additional arguments:
+                inner_content (Any): The inner content of the response,
+                    this should hold all the information from the response so even
+                    when not creating a subclass a developer
+                    can leverage the full thing.
+                ai_model_id (str | None): The id of the AI model that generated this response.
+                metadata (dict[str, Any]): Any metadata that should be attached to the response.
+        """
+        super().__init__(
+            uri=uri,
+            data_uri=data_uri,
+            data=data,
+            data_format=data_format,
+            mime_type=mime_type,
+            **kwargs,
+        )
+
     content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = IMAGE_CONTENT_TAG
 
