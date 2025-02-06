@@ -32,15 +32,18 @@ public enum AggregatorMode
 public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
 {
     /// <summary>
-    /// Defines the relationship between the internal aggregated chat and the chat
+    /// Gets the relationship between the internal aggregated chat and the chat
     /// with which <see cref="AggregatorAgent"/> is participating.
-    /// Default: <see cref="AggregatorMode.Flat"/>.
     /// </summary>
+    /// <value>
+    /// The relationship between the internal aggregated chat and the chat
+    /// with which <see cref="AggregatorAgent"/> is participating. The default value is <see cref="AggregatorMode.Flat"/>.
+    /// </value>
     public AggregatorMode Mode { get; init; } = AggregatorMode.Flat;
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Different <see cref="AggregatorAgent"/> will never share the same channel.
+    /// Different <see cref="AggregatorAgent"/> instances will never share the same channel.
     /// </remarks>
     protected internal override IEnumerable<string> GetChannelKeys()
     {
