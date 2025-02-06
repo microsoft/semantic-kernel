@@ -155,8 +155,6 @@ class SparseVectorizedHybridSearchOptions
     public string? VectorPropertyName { get; init; }
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
-    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -184,8 +182,6 @@ class KeywordVectorizableHybridSearchOptions
     public string? VectorPropertyName { get; init; }
     // The name of the property to target the text search against.
     public string? TextPropertyName { get; init; }
-    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
@@ -213,8 +209,6 @@ class SparseVectorizableTextHybridSearchOptions
     public string? VectorPropertyName { get; init; }
     // The name of the property to target the sparse vector search against.
     public string? SparseVectorPropertyName { get; init; }
-    // Allow fusion method to be configurable for dbs that support configuration. If null, a default is used.
-    public string? FusionMethod { get; init; } = null;
 
     public VectorSearchFilter? Filter { get; init; }
     public int Top { get; init; } = 3;
