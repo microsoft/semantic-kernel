@@ -475,7 +475,6 @@ version: 0.0.1
 name: RestaurantHost
 type: azureai_agent
 description: This agent answers questions about the menu.
-version: 0.0.1
 instructions: Answer questions about the menu.
 execution_settings:
   default:
@@ -510,6 +509,21 @@ tools:
 #### Allow templating of Agent instructions (and other properties)
 
 ```yaml
+name: GenerateStory
+description: An agent that generates a story about a topic.
+template: |
+  Tell a story about {{$topic}} that is {{$length}} sentences long.
+template_format: semantic-kernel
+input_variables:
+  - name: topic
+    description: The topic of the story.
+    is_required: true
+  - name: length
+    description: The number of sentences in the story.
+    is_required: true
+execution_settings:
+  default:
+    temperature: 0.6
 ```
 
 #### Configuring the model and providing multiple model configurations
@@ -539,7 +553,19 @@ tools:
 #### Configuring data sources (context/knowledge) for the Agent to use
 
 ```yaml
+name: Document FAQ Agent
+type: azureai_agent
+instructions: Use provide documents to answer questions. Politely decline to answer if the provided documents don't include an answer to the question.
+description: This agent uses documents to answer questions.
+execution_settings:
+  default:
+    metadata:
+      sksample: true
+tools:
+  - type: file_search
 ```
+
+**TODO: How do we configure the documents to include?**
 
 #### Configuring additional tools for the Agent to use e.g. code interpreter, OpenAPI endpoints
 
@@ -557,6 +583,19 @@ tools:
 ```
 
 ```yaml
+name: Country FAQ Agent
+type: azureai_agent
+instructions: Answer questions about countries. For all other questions politely decline to answer.
+description: This agent answers question about different countries.
+execution_settings:
+  default:
+    metadata:
+      sksample: true
+tools:
+  - type: openapi
+    name: RestCountriesAPI
+    description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
+    schema: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
 ```
 
 #### Enabling additional modalities for the Agent e.g. speech
