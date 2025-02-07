@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Json;
@@ -17,17 +19,17 @@ public class SemanticKernelLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (!IsEnabled(logLevel))
+        if (!this.IsEnabled(logLevel))
         {
             return;
         }
 
         // You can reformat the message here
         var message = formatter(state, exception);
-        if (!PrintMessageBetweenTags(message, "Rendered prompt", "[FUNCTIONS]", "[END FUNCTIONS]")
-            && !PrintMessageWithALabelAndJson("Function result:", message)
-            && !PrintMessageWithALabelAndJson("Function arguments:", message)
-            && !PrintMessageWithALabelAndJson("Plan result:", message))
+        if (!this.PrintMessageBetweenTags(message, "Rendered prompt", "[FUNCTIONS]", "[END FUNCTIONS]")
+            && !this.PrintMessageWithALabelAndJson("Function result:", message)
+            && !this.PrintMessageWithALabelAndJson("Function arguments:", message)
+            && !this.PrintMessageWithALabelAndJson("Plan result:", message))
         {
             AnsiConsole.MarkupLine($"[green]{logLevel}[/] {Markup.Escape(message)}");
         }
@@ -89,13 +91,13 @@ public class SemanticKernelLogger : ILogger
         if (message.StartsWith(label, System.StringComparison.Ordinal))
         {
             var split = message.Split(startTag);
-            AnsiConsole.MarkupLine($"[green]{EscapeMarkup(split[0])}[/]");
+            AnsiConsole.MarkupLine($"[green]{this.EscapeMarkup(split[0])}[/]");
             if (split.Length > 1)
             {
                 var split2 = split[1].Split(endTag);
                 try
                 {
-                    var jsonText = new JsonText(EscapeMarkup(split2[0]));
+                    var jsonText = new JsonText(this.EscapeMarkup(split2[0]));
                     AnsiConsole.Write(
                         new Panel(jsonText)
                             .Header("Functions")
@@ -105,10 +107,10 @@ public class SemanticKernelLogger : ILogger
                 }
                 catch
                 {
-                    AnsiConsole.MarkupLine(EscapeMarkup(split2[0]));
+                    AnsiConsole.MarkupLine(this.EscapeMarkup(split2[0]));
                 }
 
-                AnsiConsole.MarkupLine(EscapeMarkup(split2[1]));
+                AnsiConsole.MarkupLine(this.EscapeMarkup(split2[1]));
                 return true;
             }
         }

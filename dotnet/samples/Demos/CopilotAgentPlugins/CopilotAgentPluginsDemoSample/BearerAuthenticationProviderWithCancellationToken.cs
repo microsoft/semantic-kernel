@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
 
@@ -8,7 +10,7 @@ using Microsoft.Identity.Client;
 /// </summary>
 public class BearerAuthenticationProviderWithCancellationToken
 {
-    private readonly IPublicClientApplication client;
+    private readonly IPublicClientApplication _client;
 
     /// <summary>
     /// Creates an instance of the <see cref="BearerAuthenticationProviderWithCancellationToken"/> class.
@@ -25,7 +27,7 @@ public class BearerAuthenticationProviderWithCancellationToken
             throw new InvalidOperationException("Please provide valid MSGraph configuration in appsettings.Development.json file.");
         }
 
-        client = PublicClientApplicationBuilder
+        this._client = PublicClientApplicationBuilder
             .Create(clientId)
             .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
             .WithDefaultRedirectUri()
@@ -39,7 +41,7 @@ public class BearerAuthenticationProviderWithCancellationToken
     /// <param name="cancellationToken"></param>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
-        var token = await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+        var token = await this.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
     private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
@@ -47,12 +49,12 @@ public class BearerAuthenticationProviderWithCancellationToken
         var scopes = new string[] { "https://graph.microsoft.com/.default" };
         try
         {
-            var authResult = await client.AcquireTokenSilent(scopes, (await client.GetAccountsAsync().ConfigureAwait(false)).FirstOrDefault()).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            var authResult = await this._client.AcquireTokenSilent(scopes, (await this._client.GetAccountsAsync().ConfigureAwait(false)).FirstOrDefault()).ExecuteAsync(cancellationToken).ConfigureAwait(false);
             return authResult.AccessToken;
         }
         catch
         {
-            var authResult = await client.AcquireTokenWithDeviceCode(scopes, deviceCodeResult =>
+            var authResult = await this._client.AcquireTokenWithDeviceCode(scopes, deviceCodeResult =>
             {
                 Console.WriteLine(deviceCodeResult.Message);
                 return Task.CompletedTask;

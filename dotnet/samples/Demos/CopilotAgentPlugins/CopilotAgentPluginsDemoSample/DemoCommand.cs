@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Web;
 using Microsoft.Extensions.Configuration;
@@ -22,12 +24,12 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
         public bool? EnableLogging { get; set; }
     }
 
-    private static readonly Lazy<IConfigurationRoot> configurationRoot = new Lazy<IConfigurationRoot>(() =>
+    private static readonly Lazy<IConfigurationRoot> s_configurationRoot = new(() =>
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
             .Build());
 
-    private static IConfigurationRoot configuration => configurationRoot.Value;
+    private static IConfigurationRoot configuration => s_configurationRoot.Value;
 
     private const string CopilotAgentPluginsDirectory = "CopilotAgentPlugins";
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -77,29 +79,29 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             switch (selection)
             {
                 case LOAD_COPILOT_AGENT_PLUGIN:
-                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins).ConfigureAwait(false);
+                    await this.LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins).ConfigureAwait(false);
                     break;
                 case LOAD_ALL_COPILOT_AGENT_PLUGINS:
-                    await LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins, loadAllPlugins: true).ConfigureAwait(false);
+                    await this.LoadCopilotAgentPluginAsync(kernel, configuration, availableCopilotPlugins, loadAllPlugins: true).ConfigureAwait(false);
                     break;
                 case UNLOAD_ALL_PLUGINS:
                     kernel.Plugins.Clear();
                     AnsiConsole.MarkupLine("[bold green]All plugins unloaded successfully.[/]");
                     break;
                 case SHOW_COPILOT_AGENT_MANIFEST:
-                    await ShowCopilotAgentManifestAsync(availableCopilotPlugins).ConfigureAwait(false);
+                    await this.ShowCopilotAgentManifestAsync(availableCopilotPlugins).ConfigureAwait(false);
                     break;
                 case EXECUTE_GOAL:
-                    await ExecuteGoalAsync(kernel, promptSettings).ConfigureAwait(false);
+                    await this.ExecuteGoalAsync(kernel, promptSettings).ConfigureAwait(false);
                     break;
                 case LIST_LOADED_PLUGINS:
-                    ListLoadedPlugins(kernel);
+                    this.ListLoadedPlugins(kernel);
                     break;
                 case LIST_LOADED_PLUGINS_WITH_FUNCTIONS:
-                    ListLoadedPlugins(kernel, withFunctions: true);
+                    this.ListLoadedPlugins(kernel, withFunctions: true);
                     break;
                 case LIST_LOADED_PLUGINS_WITH_FUNCTIONS_AND_PARAMETERS:
-                    ListLoadedPlugins(kernel, withFunctions: true, withParameters: true);
+                    this.ListLoadedPlugins(kernel, withFunctions: true, withParameters: true);
                     break;
                 case EXIT:
                     return 0;
@@ -111,12 +113,12 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     }
     private async Task LoadCopilotAgentPluginAsync(Kernel kernel, IConfigurationRoot configuration, string[] availableCopilotPlugins, bool loadAllPlugins = false)
     {
-        await LoadPluginAsync(kernel, configuration, availableCopilotPlugins, AddCopilotAgentPluginAsync, loadAllPlugins).ConfigureAwait(false);
+        await this.LoadPluginAsync(kernel, configuration, availableCopilotPlugins, this.AddCopilotAgentPluginAsync, loadAllPlugins).ConfigureAwait(false);
     }
 
     private async Task ShowCopilotAgentManifestAsync(string[] availableCopilotPlugins)
     {
-        await ShowManifestAsync(availableCopilotPlugins, GetCopilotAgentManifestPath).ConfigureAwait(false);
+        await this.ShowManifestAsync(availableCopilotPlugins, GetCopilotAgentManifestPath).ConfigureAwait(false);
     }
     //private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), $"Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
     private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
@@ -356,7 +358,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
         };
     }
 
-    private readonly BearerAuthenticationProviderWithCancellationToken bearerAuthenticationProviderWithCancellationToken = new(configuration);
+    private readonly BearerAuthenticationProviderWithCancellationToken _bearerAuthenticationProviderWithCancellationToken = new(configuration);
 
     private async Task AddCopilotAgentPluginAsync(Kernel kernel, IConfigurationRoot configuration, string pluginName)
     {
@@ -364,7 +366,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
         {
             FunctionExecutionParameters = new()
             {
-                { "https://graph.microsoft.com/v1.0", new OpenApiFunctionExecutionParameters(authCallback: bearerAuthenticationProviderWithCancellationToken.AuthenticateRequestAsync, enableDynamicOperationPayload: false, enablePayloadNamespacing: true) { ParameterFilter = s_restApiParameterFilter} },
+                { "https://graph.microsoft.com/v1.0", new OpenApiFunctionExecutionParameters(authCallback: this._bearerAuthenticationProviderWithCancellationToken.AuthenticateRequestAsync, enableDynamicOperationPayload: false, enablePayloadNamespacing: true) { ParameterFilter = s_restApiParameterFilter} },
                 { "https://api.nasa.gov/planetary", new OpenApiFunctionExecutionParameters(authCallback: GetApiKeyAuthProvider("DEMO_KEY", "api_key", false), enableDynamicOperationPayload: false, enablePayloadNamespacing: true)}
             },
         };
@@ -467,7 +469,9 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
         foreach (var subProperty in jsonObject)
         {
             if (subProperty.Value is not null)
+            {
                 TrimPropertiesFromJsonNode(subProperty.Value);
+            }
         }
     }
 #pragma warning disable SKEXP0040
