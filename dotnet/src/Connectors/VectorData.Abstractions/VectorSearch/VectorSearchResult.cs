@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// A single search result from a vector search.
+/// Represents a single search result from a vector search.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public sealed class VectorSearchResult<TRecord>
@@ -20,12 +20,12 @@ public sealed class VectorSearchResult<TRecord>
     }
 
     /// <summary>
-    /// The record that was found by the search.
+    /// Gets the record that was found by the search.
     /// </summary>
     public TRecord Record { get; }
 
     /// <summary>
-    /// The score of this result in relation to the search query.
+    /// Gets the score of this result in relation to the search query.
     /// </summary>
     public double? Score { get; }
 }

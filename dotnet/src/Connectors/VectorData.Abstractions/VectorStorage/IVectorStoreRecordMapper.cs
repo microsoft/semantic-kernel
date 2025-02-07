@@ -3,21 +3,21 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Interface for mapping between a storage model, and the consumer record data model.
+/// Defines an interface for mapping between a storage model and the consumer record data model.
 /// </summary>
 /// <typeparam name="TRecordDataModel">The consumer record data model to map to or from.</typeparam>
 /// <typeparam name="TStorageModel">The storage model to map to or from.</typeparam>
 public interface IVectorStoreRecordMapper<TRecordDataModel, TStorageModel>
 {
     /// <summary>
-    /// Map from the consumer record data model to the storage model.
+    /// Maps from the consumer record data model to the storage model.
     /// </summary>
     /// <param name="dataModel">The consumer record data model record to map.</param>
     /// <returns>The mapped result.</returns>
     TStorageModel MapFromDataToStorageModel(TRecordDataModel dataModel);
 
     /// <summary>
-    /// Map from the storage model to the consumer record data model.
+    /// Maps from the storage model to the consumer record data model.
     /// </summary>
     /// <param name="storageModel">The storage data model record to map.</param>
     /// <param name="options">Options to control the mapping behavior.</param>
