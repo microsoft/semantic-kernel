@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 contact: sergeymenshykh
 date: 2025-02-05
 deciders: dmytrostruk, markwallace, rbarreto, sergeymenshykh, westey-m,
@@ -16,7 +16,6 @@ AI powered applications need to be able to effectively and seamlessly leverage b
 1. The model orchestration layer should be simple and extensible.
 2. The model orchestration layer client code should not be aware of or deal with the underlying complexities.
 3. The model orchestration layer should allow for different strategies for selecting the best model(s) for the task at hand.
-4. The model orchestration layer can be configured declaratively.
 
 ## Considered Implementation Options
 
@@ -74,6 +73,7 @@ public sealed class FallbackChatClient : IChatClient
 Other orchestration strategies, such as latency-based or token-based strategies, can be implemented in a similar way: a class that implements the IChatClient interface and the corresponding chat client selection strategy.
 
 Pros:
+- Does not require any new abstraction.
 - Simple and straightforward implementation.
 - Can be sufficient for most use cases.
 
@@ -233,164 +233,13 @@ Pros:
 - Allows reusing same handlers to create various composite orchestration strategies.
 
 Cons:
-- Requires slightly more components than the previous option: context classes and code for handling the next handler.
+- Requires new abstractions and components than the previous option: context classes and code for handling the next handler.
 
 <br/>
 
 POC demonstrating this option can be found [here](https://github.com/microsoft/semantic-kernel/pull/10412).
- 
-## Considered Declaration Options
 
-This section contains only one considered option for the declarative configuration of the model orchestration layer. 
-The other options will be considered in the scope of the [.Net: Az Template Support](https://github.com/microsoft/semantic-kernel/issues/10149), where chat clients and agents need to be configured declaratively.
-
-### Option 1: Factory-based configuration with DI
-
-This deployment option presumes having a factory per component to create and configure the components and DI for wiring them together.
-
-The JSON declaration for chat clients may look like this:
-
-```json
-{
-    "services": [ 
-        {
-            "serviceKey": "openAIClient",
-            "type": "Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.Abstractions",  
-            "lifetime": "Singleton",
-            "factory": {
-                "type": "ChatCompletion.Hybrid.OpenAIChatClientFactory, Concepts",
-                "configuration": {
-                    "useFunctionInvocation": true,
-                    "chatModel": "gpt4o",
-                    "credential": {
-                        "type": "System.ClientModel.ApiKeyCredential, System.ClientModel",
-                        "apiKeySecretName": "openAIApiSecret"
-                    }
-                }
-            }
-        },
-        {
-            "serviceKey": "azureOpenAIClient",
-            "type": "Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.Abstractions",  
-            "lifetime": "Singleton",
-            "factory": {
-                "type": "ChatCompletion.Hybrid.AzureOpenAIChatClientFactory, Concepts",
-                "configuration": {
-                    "useFunctionInvocation": true,
-                    "chatModel": "gpt4o-mini",
-                    "deploymentSecretName": "azure",
-                    "credential": 
-                    {
-                        "type": "Azure.Identity.AzureCliCredential, Azure.Identity"
-                    }
-                }
-            }
-        },
-        {
-            "serviceKey": "hybridChatClient",
-            "type": "Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.Abstractions",  
-            "lifetime": "Singleton",
-            "factory": {
-                "type": "ChatCompletion.Hybrid.HybridChatClientFactory, Concepts",
-                "configuration": {
-                    "clients": ["openAIClient", "azureOpenAIClient"]
-                }
-            }
-        }
-    ]  
-}  
-```
-
-The factory classes would look like this:
-```csharp
-internal sealed class OpenAIChatClientFactory
-{
-    private readonly OpenAIChatClientConfiguration _config;
-
-    public OpenAIChatClientFactory(IServiceProvider serviceProvider, JsonElement config)
-    {
-        this._config = config.Deserialize<OpenAIChatClientConfiguration>()!;
-    }
-
-    public Microsoft.Extensions.AI.IChatClient Create()
-    {
-        IChatClient openAiClient = new OpenAIClient(_config.Credential).AsChatClient(_config.ChatModel);
-
-        var builder = new ChatClientBuilder(openAiClient);
-
-        if (this._config.UseFunctionInvocation)
-        {
-            builder.UseFunctionInvocation();
-        }
-
-        return builder.Build();
-    }
-}
-
-internal sealed class HybridChatClientFactory
-{
-    private readonly HybridChatClientConfiguration _configuration;
-    private readonly IServiceProvider _serviceProvider;
-
-    public HybridChatClientFactory(IServiceProvider serviceProvider, JsonElement configuration)
-    {
-        this._serviceProvider = serviceProvider;
-        this._configuration = configuration.Deserialize<HybridChatClientConfiguration>()!;
-    }
-
-    public Microsoft.Extensions.AI.IChatClient Create()
-    {
-        FallbackChatCompletionHandler handler = new();
-
-        var chatClients = this._configuration.Clients.Select(this._serviceProvider.GetRequiredKeyedService<IChatClient>);
-
-        var kernel = this._serviceProvider.GetService<Kernel>();
-
-        return new HybridChatClient(chatClients, handler, kernel);
-    }
-}
-```
-
-The application bootstrap code might like this:
-```csharp
-using var configuration = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""
-{
-    "services": [ 
-        {
-            "serviceKey": "openAIClient",
-            ...
-        },
-        {
-            "serviceKey": "azureOpenAIClient",
-            ..
-        },
-        {
-            "serviceKey": "hybridChatClient",
-            ...
-        }
-    ]  
-}  
-"""));
-
-var services = new ServiceCollection();
-
-ServiceRegistry.RegisterServices(services, configuration);
-
-var serviceProvider = services.BuildServiceProvider();
-
-var hybridChatClient = serviceProvider.GetRequiredKeyedService<IChatClient>("hybridChatClient");
-
-var result = await hybridChatClient.CompleteAsync("Do I need an umbrella?", ...);
-```
-
-This option was prototyped [here](https://github.com/SergeyMenshykh/semantic-kernel/blob/27676638600120d0d87ac151cc7dea9a6b7d9c92/dotnet/samples/Concepts/ChatCompletion/Hybrid/SwitchingBetweenLocalAndCloudModels.cs#L72).
-
-Pros:
-- No need to change declarative configuration rendering code to support new components.
-
-Cons:
-- Requires a factory per component.
- 
 ## Decision Outcome
 
-TBD
+Chosen option: Option 1 because it does not require any new abstraction; its simplicity and straightforwardness are sufficient for most use cases. 
+Option 2 can be considered in the future if more complex orchestration scenarios are required.
