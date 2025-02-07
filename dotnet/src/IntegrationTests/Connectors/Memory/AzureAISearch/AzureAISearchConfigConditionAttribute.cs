@@ -10,7 +10,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 /// Attribute to use to skip tests if the settings for Azure AI Search is not set.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-public sealed class AzureAISearchConfigSetConditionAttribute : Attribute, ITestCondition
+public sealed class AzureAISearchConfigConditionAttribute : Attribute, ITestCondition
 {
     public ValueTask<bool> IsMetAsync()
     {

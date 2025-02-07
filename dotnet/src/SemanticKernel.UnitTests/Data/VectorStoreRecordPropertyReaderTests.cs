@@ -462,9 +462,9 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrOnly("Data1").DataModelPropertyName);
-        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrOnly(null).DataModelPropertyName);
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly("DoesNotExist"));
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle("Data1").DataModelPropertyName);
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle(null).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("DoesNotExist"));
     }
 
     [Theory]
@@ -475,7 +475,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
     }
 
     [Theory]
@@ -486,7 +486,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly("Data2"));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("Data2"));
     }
 
     [Fact]
@@ -506,7 +506,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(typeof(object), definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrOnly(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
     }
 
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()

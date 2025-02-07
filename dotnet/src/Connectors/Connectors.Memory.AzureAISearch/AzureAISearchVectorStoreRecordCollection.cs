@@ -406,7 +406,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrOnly(internalOptions.FullTextPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.FullTextPropertyName);
         var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
 
         // Configure search settings.

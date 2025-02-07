@@ -376,7 +376,7 @@ internal sealed class VectorStoreRecordPropertyReader
     /// </summary>
     /// <param name="propertyName">The property name.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
-    public VectorStoreRecordDataProperty GetFullTextDataPropertyOrOnly(string? propertyName)
+    public VectorStoreRecordDataProperty GetFullTextDataPropertyOrSingle(string? propertyName)
     {
         // If text data property name is provided, try to find it in schema or throw an exception.
         if (!string.IsNullOrWhiteSpace(propertyName))
