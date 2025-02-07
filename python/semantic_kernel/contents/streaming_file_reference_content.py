@@ -25,6 +25,8 @@ class StreamingFileReferenceContent(KernelContent):
     )
     tag: ClassVar[str] = STREAMING_FILE_REFERENCE_CONTENT_TAG
     file_id: str | None = None
+    tools: list[Any] = Field(default_factory=list)
+    data_source: Any | None = None
 
     def __str__(self) -> str:
         """Return the string representation of the file reference content."""
