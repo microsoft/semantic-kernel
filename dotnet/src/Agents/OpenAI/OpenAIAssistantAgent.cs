@@ -59,7 +59,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
 
     /// <summary>
-    /// Defines a new <see cref="OpenAIAssistantAgent"/>.
+    /// Create a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="clientProvider">The OpenAI client provider for accessing the API service.</param>
     /// <param name="capabilities">The assistant's capabilities.</param>
@@ -106,7 +106,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <summary>
-    /// Defines a new <see cref="OpenAIAssistantAgent"/>.
+    /// Create a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="clientProvider">The OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
@@ -132,6 +132,44 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+
+        // Instantiate the agent
+        return
+            new OpenAIAssistantAgent(model, clientProvider, client)
+            {
+                Kernel = kernel,
+                Arguments = defaultArguments
+            };
+    }
+
+    /// <summary>
+    /// Create a new <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
+    /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
+    /// <param name="modelId">OpenAI model id.</param>
+    /// <param name="creationOptions">The assistant creation options.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
+    public static async Task<OpenAIAssistantAgent> CreateAsync(
+        OpenAIClientProvider clientProvider,
+        string modelId,
+        AssistantCreationOptions creationOptions,
+        Kernel kernel,
+        KernelArguments? defaultArguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate input
+        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(clientProvider, nameof(clientProvider));
+        Verify.NotNull(creationOptions, nameof(creationOptions));
+
+        // Create the client
+        AssistantClient client = CreateClient(clientProvider);
+
+        // Create the assistant
+        Assistant model = await client.CreateAssistantAsync(modelId, creationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return

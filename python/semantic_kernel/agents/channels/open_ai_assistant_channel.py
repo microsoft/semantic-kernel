@@ -44,11 +44,12 @@ class OpenAIAssistantChannel(AgentChannel):
             await create_chat_message(self.client, self.thread_id, message)
 
     @override
-    async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
+    async def invoke(self, agent: "Agent", **kwargs: Any) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the agent.
 
         Args:
             agent: The agent to invoke.
+            kwargs: The keyword arguments.
 
         Yields:
             tuple[bool, ChatMessageContent]: The conversation messages.
@@ -61,18 +62,19 @@ class OpenAIAssistantChannel(AgentChannel):
         if agent._is_deleted:
             raise AgentChatException("Agent is deleted.")
 
-        async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id):
+        async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id, **kwargs):
             yield is_visible, message
 
     @override
     async def invoke_stream(
-        self, agent: "Agent", messages: list[ChatMessageContent]
+        self, agent: "Agent", messages: list[ChatMessageContent], **kwargs: Any
     ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the agent stream.
 
         Args:
             agent: The agent to invoke.
             messages: The conversation messages.
+            kwargs: The keyword arguments.
 
         Yields:
             tuple[bool, StreamingChatMessageContent]: The conversation messages.
@@ -85,7 +87,7 @@ class OpenAIAssistantChannel(AgentChannel):
         if agent._is_deleted:
             raise AgentChatException("Agent is deleted.")
 
-        async for message in agent._invoke_internal_stream(thread_id=self.thread_id, messages=messages):
+        async for message in agent._invoke_internal_stream(thread_id=self.thread_id, messages=messages, **kwargs):
             yield message
 
     @override

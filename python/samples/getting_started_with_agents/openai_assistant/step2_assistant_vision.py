@@ -31,9 +31,7 @@ async def main():
     )
 
     cat_image_file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "resources",
-        "cat.jpg",
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg"
     )
 
     # Upload the file for use with the assistant

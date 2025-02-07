@@ -4,7 +4,10 @@ using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-internal static class KernelFunctionExtensions
+/// <summary>
+/// Extensions for <see cref="KernelFunction"/> to support OpenAI specific operations.
+/// </summary>
+public static class KernelFunctionExtensions
 {
     /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.

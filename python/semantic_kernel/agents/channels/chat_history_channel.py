@@ -15,7 +15,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, ClassVar, Deque, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, ClassVar, Deque, Protocol, runtime_checkable
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents import ChatMessageContent
@@ -62,11 +62,13 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     async def invoke(
         self,
         agent: "Agent",
+        **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
+            kwargs: The keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent.
@@ -113,15 +115,14 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 
     @override
     async def invoke_stream(
-        self,
-        agent: "Agent",
-        messages: list[ChatMessageContent],
+        self, agent: "Agent", messages: list[ChatMessageContent], **kwargs: Any
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
             messages: The history of messages in the conversation.
+            kwargs: The keyword arguments
 
         Returns:
             An async iterable of ChatMessageContent.

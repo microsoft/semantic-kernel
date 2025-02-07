@@ -23,7 +23,9 @@ use_azure_openai = False
 
 async def main():
     # Get the path to the employees.pdf file
-    pdf_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "employees.pdf")
+    pdf_file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
+    )
 
     # Define a service_id for the sample
     service_id = "agent"

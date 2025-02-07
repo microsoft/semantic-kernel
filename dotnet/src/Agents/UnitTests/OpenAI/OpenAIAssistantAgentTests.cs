@@ -20,6 +20,7 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 /// <summary>
 /// Unit testing of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 public sealed class OpenAIAssistantAgentTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
@@ -906,3 +907,5 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         { }
     }
 }
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+
