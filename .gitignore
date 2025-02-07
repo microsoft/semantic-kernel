@@ -494,6 +494,8 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+/python/samples/demos/graphrag/output/*
+/python/samples/demos/graphrag/ragtest/*
 
 # kiota workspace files
 **/.kiota
