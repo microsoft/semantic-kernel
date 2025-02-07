@@ -118,15 +118,11 @@ public sealed class HybridChatClient : IChatClient
     ...
 }
 
-public abstract class ChatCompletionHandler : IDisposable
+public abstract class ChatCompletionHandler
 {
     public abstract Task<Extensions.AI.ChatCompletion> CompleteAsync(ChatCompletionHandlerContext context, CancellationToken cancellationToken = default);
 
     public abstract IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(ChatCompletionHandlerContext context, CancellationToken cancellationToken = default);
-
-    public virtual void Dispose()
-    {
-    }
 }
 ```
 
