@@ -34,7 +34,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private const string CopilotAgentPluginsDirectory = "CopilotAgentPlugins";
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        var availableCopilotPlugins = Directory.GetDirectories($"Plugins/{CopilotAgentPluginsDirectory}");
+        var availableCopilotPlugins = Directory.GetDirectories($"../../../Concepts/Resources/Plugins/{CopilotAgentPluginsDirectory}");
 
         var selectedKernelName = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
@@ -120,8 +120,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     {
         await this.ShowManifestAsync(availableCopilotPlugins, GetCopilotAgentManifestPath).ConfigureAwait(false);
     }
-    //private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), $"Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
-    private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
+    private static string GetCopilotAgentManifestPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "../../../Concepts/Resources/Plugins", CopilotAgentPluginsDirectory, name, $"{name[..^6].ToLowerInvariant()}-apiplugin.json");
 
     private async Task ShowManifestAsync(string[] availableApiManifestPlugins, Func<string, string> nameLookup)
     {
