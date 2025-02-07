@@ -109,6 +109,7 @@ def test_prompt_execution_settings_class(azure_ai_inference_unit_test_env, model
 async def test_azure_ai_inference_chat_completion(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_chat_completion_response,
 ) -> None:
@@ -123,6 +124,7 @@ async def test_azure_ai_inference_chat_completion(
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         **settings.prepare_settings_dict(),
     )
@@ -140,6 +142,7 @@ async def test_azure_ai_inference_chat_completion(
 async def test_azure_ai_inference_chat_completion_with_standard_parameters(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_chat_completion_response,
 ) -> None:
@@ -163,6 +166,7 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         frequency_penalty=settings.frequency_penalty,
         max_tokens=settings.max_tokens,
@@ -186,6 +190,7 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
 async def test_azure_ai_inference_chat_completion_with_extra_parameters(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_chat_completion_response,
 ) -> None:
@@ -202,6 +207,7 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=settings.extra_parameters,
         **settings.prepare_settings_dict(),
     )
@@ -296,6 +302,7 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
 async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     kernel,
     chat_history: ChatHistory,
     mock_azure_ai_inference_chat_completion_response,
@@ -319,6 +326,7 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         **settings.prepare_settings_dict(),
     )
@@ -342,6 +350,7 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
 async def test_azure_ai_inference_streaming_chat_completion(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_streaming_chat_completion_response,
 ) -> None:
@@ -360,6 +369,7 @@ async def test_azure_ai_inference_streaming_chat_completion(
     mock_complete.assert_awaited_once_with(
         stream=True,
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         **settings.prepare_settings_dict(),
     )
@@ -374,6 +384,7 @@ async def test_azure_ai_inference_streaming_chat_completion(
 async def test_azure_ai_inference_chat_streaming_completion_with_standard_parameters(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_streaming_chat_completion_response,
 ) -> None:
@@ -401,6 +412,7 @@ async def test_azure_ai_inference_chat_streaming_completion_with_standard_parame
     mock_complete.assert_awaited_once_with(
         stream=True,
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         frequency_penalty=settings.frequency_penalty,
         max_tokens=settings.max_tokens,
@@ -421,6 +433,7 @@ async def test_azure_ai_inference_chat_streaming_completion_with_standard_parame
 async def test_azure_ai_inference_streaming_chat_completion_with_extra_parameters(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     chat_history: ChatHistory,
     mock_azure_ai_inference_streaming_chat_completion_response,
 ) -> None:
@@ -441,6 +454,7 @@ async def test_azure_ai_inference_streaming_chat_completion_with_extra_parameter
     mock_complete.assert_awaited_once_with(
         stream=True,
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=settings.extra_parameters,
         **settings.prepare_settings_dict(),
     )
@@ -546,6 +560,7 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
 async def test_azure_ai_inference_streaming_chat_completion_with_function_choice_behavior_no_tool_call(
     mock_complete,
     azure_ai_inference_service,
+    model_id,
     kernel,
     chat_history: ChatHistory,
     mock_azure_ai_inference_streaming_chat_completion_response,
@@ -573,6 +588,7 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
     mock_complete.assert_awaited_once_with(
         stream=True,
         messages=[UserMessage(content=user_message_content)],
+        model=model_id,
         model_extras=None,
         **settings.prepare_settings_dict(),
     )

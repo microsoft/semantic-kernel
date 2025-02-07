@@ -136,6 +136,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         with AzureAIInferenceTracing():
             response: ChatCompletions = await self.client.complete(
                 messages=self._prepare_chat_history_for_request(chat_history),
+                # The model id will be ignored by the service if the endpoint serves only one model (i.e. MaaS)
+                model=self.ai_model_id,
                 model_extras=settings.extra_parameters,
                 **settings.prepare_settings_dict(),
             )
@@ -158,6 +160,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         with AzureAIInferenceTracing():
             response: AsyncStreamingChatCompletions = await self.client.complete(
                 stream=True,
+                # The model id will be ignored by the service if the endpoint serves only one model (i.e. MaaS)
+                model=self.ai_model_id,
                 messages=self._prepare_chat_history_for_request(chat_history),
                 model_extras=settings.extra_parameters,
                 **settings.prepare_settings_dict(),
