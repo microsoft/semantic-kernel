@@ -69,10 +69,6 @@ class AzureAIAgent(Agent):
             definition: The AzureAI Agent model created via the AzureAI Project client.
             kernel: The Kernel instance used if invoking plugins
             arguments: The KernelArguments instance
-            description: The description of the agent
-            id: The ID of the agent
-            instructions: The instructions for the agent
-            name: The name of the agent
             prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
             **kwargs: Additional keyword arguments
