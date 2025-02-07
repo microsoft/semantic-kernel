@@ -21,7 +21,7 @@ public class VectorSearchResults<TRecord>(IAsyncEnumerable<VectorSearchResult<TR
     public long? TotalCount { get; init; }
 
     /// <summary>
-    /// GEts or sets the metadata associated with the content.
+    /// Gets or sets the metadata associated with the content.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; init; }
 

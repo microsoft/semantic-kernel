@@ -49,7 +49,7 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// <value>
     /// The default varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
-    /// <seealso cref="DistanceFunction"/>
+    /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
     public string? IndexKind { get; init; }
 
     /// <summary>
@@ -58,6 +58,6 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// <value>
     /// The default varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
-    /// <seealso cref="IndexKind"/>
+    /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; init; }
 }
