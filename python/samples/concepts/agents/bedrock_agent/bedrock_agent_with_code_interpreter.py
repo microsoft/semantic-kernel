@@ -24,7 +24,7 @@ Panda   5
 Tiger   8 
 Lion    3
 Monkey  6
-Dolpin  2
+Dolphin  2
 """
 
 

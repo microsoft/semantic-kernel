@@ -50,11 +50,7 @@ def _format_developer_message(message: ChatMessageContent) -> ChatRequestMessage
     Returns:
         The formatted developer message.
     """
-    # TODO(@ymuichiro): Add support when Azure AI Inference SDK implements developer role
-    raise NotImplementedError(
-        "Developer role is currently not supported by the Azure AI Inference SDK. "
-        "This feature will be implemented in a future update when SDK support is available."
-    )
+    return ChatRequestMessage({"role": "developer", "content": message.content})
 
 
 def _format_user_message(message: ChatMessageContent) -> UserMessage:
