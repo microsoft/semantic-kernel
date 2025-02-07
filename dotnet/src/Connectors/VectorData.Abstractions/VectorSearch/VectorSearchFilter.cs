@@ -36,8 +36,8 @@ public sealed class VectorSearchFilter
 
     /// <summary>
     /// Creates a new instance of <see cref="VectorSearchFilter"/> with the provided <see cref="FilterClause"/> instances.
-    /// <param name="filterClauses">The <see cref="FilterClause"/> instances to use.</param>
     /// </summary>
+    /// <param name="filterClauses">The <see cref="FilterClause"/> instances to use.</param>
     public VectorSearchFilter(IEnumerable<FilterClause> filterClauses)
     {
         if (filterClauses == null)
