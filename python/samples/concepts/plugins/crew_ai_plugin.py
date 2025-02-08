@@ -5,6 +5,9 @@ import logging
 
 from semantic_kernel.core_plugins.crew_ai.crew_ai_enterprise import CrewAIEnterprise, InputMetadata
 from semantic_kernel.core_plugins.crew_ai.crew_ai_settings import CrewAISettings
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.kernel import Kernel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,11 +31,13 @@ async def using_crew_ai_enterprise():
 
 
 async def using_crew_ai_enterprise_as_plugin():
-    settings = CrewAISettings()
+    settings = CrewAISettings.create()
+    crew = CrewAIEnterprise(settings=settings)
 
-    # Setup the CrewAIEnterprise instance
-    crew = CrewAIEnterprise(
-        endpoint=settings.endpoint, auth_token_provider=lambda: settings.auth_token.get_secret_value()
+    # Define the description of the Crew. This will used as the semantic description of the plugin.
+    crew_description = (
+        "Conducts thorough research on the specified company and topic to identify emerging trends,"
+        "analyze competitor strategies, and gather data-driven insights."
     )
 
     # The required inputs for the Crew must be known in advance. This example is modeled after the
@@ -50,11 +55,6 @@ async def using_crew_ai_enterprise_as_plugin():
     #   the result.
     # - wait_for_completion: Waits for the specified Crew kickoff to complete and returns the result.
     # - get_status: Gets the status of the specified Crew kickoff.
-    crew_description = (
-        "Conducts thorough research on the specified company and topic to identify emerging trends,"
-        "analyze competitor strategies, and gather data-driven insights."
-    )
-
     crew_plugin = crew.create_kernel_plugin(
         name="EnterpriseContentMarketingCrew",
         description=crew_description,
@@ -62,12 +62,14 @@ async def using_crew_ai_enterprise_as_plugin():
     )
 
     # Example of invoking the plugin directly
-    kickoff_and_wait_function = crew_plugin["functions"]["kickoff_and_wait"]
-    result = await kickoff_and_wait_function({"company": "CrewAI", "topic": "Consumer AI Products"})
+    kickoff_and_wait_function: KernelFunction = crew_plugin["kickoff_and_wait"]
+    result = await kickoff_and_wait_function.invoke(
+        kernel=Kernel(), arguments=KernelArguments(company="CrewAI", topic="Consumer AI Products")
+    )
 
     print(result)
 
 
 if __name__ == "__main__":
-    asyncio.run(using_crew_ai_enterprise())
+    # asyncio.run(using_crew_ai_enterprise())
     asyncio.run(using_crew_ai_enterprise_as_plugin())
