@@ -20,6 +20,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Contains tests for the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>

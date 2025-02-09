@@ -188,6 +188,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         });
     }
 
+#pragma warning disable CS0618 // FilterClause is obsolete
     /// <summary>
     /// Execute a vector search and return the results.
     /// </summary>
@@ -197,7 +198,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
-        var vectorSearchOptions = new VectorSearchOptions
+        var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
             Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
             Skip = searchOptions.Skip,
@@ -213,6 +214,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         return await this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
     }
+#pragma warning restore CS0618 // FilterClause is obsolete
 
     /// <summary>
     /// Return the search results as instances of TRecord.

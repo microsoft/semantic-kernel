@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("WeaviateVectorStoreCollection")]
 public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture)
 {

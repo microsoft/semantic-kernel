@@ -15,6 +15,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("PineconeVectorStoreTests")]
 [PineconeApiKeySetCondition]
 public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture fixture) : IClassFixture<PineconeVectorStoreFixture>
@@ -293,7 +295,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         // update
         await hotelRecordCollection.UpsertAsync(langriSha);
 
-        // this is not great but no vectors are added so we can't query status for number of vectors like we do for insert/delete 
+        // this is not great but no vectors are added so we can't query status for number of vectors like we do for insert/delete
         await Task.Delay(2000);
 
         var updated = await hotelRecordCollection.GetAsync("langri-sha", new GetRecordOptions { IncludeVectors = true });

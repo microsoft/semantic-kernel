@@ -9,6 +9,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Unit tests for <see cref="AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping"/> class.
 /// </summary>
