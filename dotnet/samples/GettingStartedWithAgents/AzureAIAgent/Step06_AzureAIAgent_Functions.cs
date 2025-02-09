@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Agent = Azure.AI.Projects.Agent;
@@ -10,8 +9,9 @@ using Agent = Azure.AI.Projects.Agent;
 namespace GettingStarted.AzureAgents;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="AzureAIAgent"/>
-/// and <see cref="ChatCompletionAgent"/> (see: Step 2).
+/// This example demonstrates how to define function tools for an <see cref="AzureAIAgent"/>
+/// when the agent is created. This is useful if you want to retrieve the agent later and
+/// then dynamically check what function tools it requires.
 /// </summary>
 public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
 {
@@ -37,12 +37,12 @@ public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        Microsoft.SemanticKernel.Agents.AzureAI.AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, clientProvider)
         {
             Kernel = new Kernel(),
         };
 
-        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
