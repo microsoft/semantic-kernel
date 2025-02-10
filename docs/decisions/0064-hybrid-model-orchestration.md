@@ -262,6 +262,9 @@ chat messages or options, it is impossible to send chat messages using this meth
 chat messages to the selected service to obtain a completion, as the selector does not return the completion itself. Additionally, the TrySelectAIService method 
 is synchronous, making it difficult to send chat messages without using synchronous code, which is generally discouraged.
 
+Looking at the above, it is clear that the IAIServiceSelector interface is not suitable for the hybrid orchestration of AI services since it was designed for a different purpose: 
+to synchronously select an instance of an AI service based on SK context and service metadata without taking the results of completion and streamed completion methods into account.
+
 Pros:
 - Reuses the existing mechanism for AI service selection.
 
