@@ -32,7 +32,6 @@ kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
-kernel.add_plugin()
 
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
