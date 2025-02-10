@@ -12,6 +12,7 @@ from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
     CrewAIStatusResponse,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
 class CrewAIEnterpriseClient(KernelBaseModel):
@@ -87,5 +88,10 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             aiohttp.ClientSession: The HTTP client session.
         """
         auth_token = await self.auth_token_provider()
-        headers = {"Authorization": f"Bearer {auth_token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+            "user_agent": SEMANTIC_KERNEL_USER_AGENT,
+        }
+
         return aiohttp.ClientSession(headers=headers)
