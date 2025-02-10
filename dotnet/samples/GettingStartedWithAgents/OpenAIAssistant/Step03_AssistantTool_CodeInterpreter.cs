@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace GettingStarted;
+namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .

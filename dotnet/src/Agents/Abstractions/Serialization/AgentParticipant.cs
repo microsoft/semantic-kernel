@@ -9,31 +9,37 @@ namespace Microsoft.SemanticKernel.Agents.Serialization;
 public sealed class AgentParticipant
 {
     /// <summary>
-    /// The captured <see cref="Agent.Id"/>.
+    /// Gets the captured <see cref="Agent.Id"/>.
     /// </summary>
     public string Id { get; init; } = string.Empty;
 
     /// <summary>
-    /// The captured <see cref="Agent.Name"/>.
+    /// Gets the captured <see cref="Agent.Name"/>.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; init; }
 
     /// <summary>
-    /// The fully qualified <see cref="Agent"/> type name.
+    /// Gets the fully qualified <see cref="Agent"/> type name.
     /// </summary>
     public string Type { get; init; } = string.Empty;
 
     /// <summary>
-    /// Parameterless constructor for deserialization.
+    /// Creates a new instance of <see cref="AgentParticipant"/>.
     /// </summary>
+    /// <remarks>
+    /// This parameterless constructor is for deserialization.
+    /// </remarks>
     [JsonConstructor]
     public AgentParticipant() { }
 
     /// <summary>
-    /// Convenience constructor for serialization.
+    /// Creates a new instance of <see cref="AgentParticipant"/> with the specified agent.
     /// </summary>
-    /// <param name="agent">The referenced <see cref="Agent"/></param>
+    /// <remarks>
+    /// This is a convenience constructor for serialization.
+    /// </remarks>
+    /// <param name="agent">The referenced <see cref="Agent"/>.</param>
     internal AgentParticipant(Agent agent)
     {
         this.Id = agent.Id;
