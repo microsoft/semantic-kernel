@@ -77,10 +77,6 @@ Pros:
 - Simple and straightforward implementation.
 - Can be sufficient for most use cases.
 
-Cons:
-- Can't be reused to create more complex scenarios.
-
-
 ### Option 2: HybridChatClient class with chat completion handler(s) per orchestration strategy
 
 This option introduces a HybridChatClient class that implements the IChatClient interface and delegates the selection routine to a provided handler represented by the abstract ChatCompletionHandler class:
