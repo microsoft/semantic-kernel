@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -36,11 +36,13 @@ class AgentChannel(ABC):
     def invoke(
         self,
         agent: "Agent",
+        **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
+            kwargs: The keyword arguments.
 
         Returns:
             An async iterable of a bool, ChatMessageContent.
@@ -51,13 +53,15 @@ class AgentChannel(ABC):
     def invoke_stream(
         self,
         agent: "Agent",
-        history: "list[ChatMessageContent]",
+        messages: "list[ChatMessageContent]",
+        **kwargs: Any,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
-            history: The history of messages in the conversation.
+            messages: The history of messages in the conversation.
+            kwargs: The keyword arguments.
 
         Returns:
             An async iterable ChatMessageContent.
