@@ -824,6 +824,19 @@ public class FunctionCallsProcessorTests
         Assert.Equal("{\"a\":2,\"b\":\"test\"}", result);
     }
 
+    [Fact]
+    public void ItShouldSerializeFunctionResultsWithStringProperties()
+    {
+        // Arrange
+        var functionResult = new { Text = "ﾃｽﾄ" };
+
+        // Act
+        var result = FunctionCallsProcessor.ProcessFunctionResult(functionResult);
+
+        // Assert
+        Assert.Equal("{\"Text\":\"ﾃｽﾄ\"}", result);
+    }
+
     private sealed class AutoFunctionInvocationFilter(
         Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation) : IAutoFunctionInvocationFilter
     {
