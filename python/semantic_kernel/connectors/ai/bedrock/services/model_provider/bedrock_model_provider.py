@@ -39,10 +39,8 @@ class BedrockModelProvider(Enum):
         """Convert a model ID to a model provider."""
         try:
             return next(provider for provider in cls if provider.value in model_id)
-        except StopAsyncIteration:
-            raise ValueError(
-                f"Model ID {model_id} does not contain a valid model provider name."
-            )
+        except StopIteration:
+            raise ValueError(f"Model ID {model_id} does not contain a valid model provider name.")
 
 
 # region Text Completion

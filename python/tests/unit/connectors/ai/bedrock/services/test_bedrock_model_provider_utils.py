@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    BedrockModelProvider,
+)
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     remove_none_recursively,
     update_settings_from_function_choice_configuration,
-)
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
-    BedrockModelProvider,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel import Kernel
@@ -140,3 +142,7 @@ def test_inference_profile_with_bedrock_model() -> None:
 
     eu_meta_inference_profile = "eu.meta.llama3-2-3b-instruct-v1:0"
     assert BedrockModelProvider.to_model_provider(eu_meta_inference_profile) == BedrockModelProvider.META
+
+    unknown_inference_profile = "unknown"
+    with pytest.raises(ValueError, match="Model ID unknown does not contain a valid model provider name."):
+        BedrockModelProvider.to_model_provider(unknown_inference_profile)
