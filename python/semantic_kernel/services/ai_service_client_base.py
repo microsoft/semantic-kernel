@@ -3,7 +3,7 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic import Field, StringConstraints
+from pydantic.types import StringConstraints
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -23,7 +23,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     """
 
     ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-    service_id: str = Field("")
+    service_id: str = ""
 
     def model_post_init(self, __context: object | None = None):
         """Update the service_id if it is not set."""

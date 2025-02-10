@@ -14,7 +14,7 @@ class KernelFunctionMetadata(KernelBaseModel):
     """The kernel function metadata."""
 
     name: str = Field(..., pattern=FUNCTION_NAME_REGEX)
-    plugin_name: str | None = Field(None, pattern=PLUGIN_NAME_REGEX)
+    plugin_name: str | None = Field(default=None, pattern=PLUGIN_NAME_REGEX)
     description: str | None = Field(default=None)
     parameters: list[KernelParameterMetadata] = Field(default_factory=list)
     is_prompt: bool

@@ -2,6 +2,7 @@
 
 
 import pytest
+from numpy import array
 
 from semantic_kernel.contents.binary_content import BinaryContent
 
@@ -15,6 +16,9 @@ test_cases = [
     pytest.param(
         BinaryContent(data_uri="data:image/jpeg;foo=bar;base64,dGVzdF9kYXRh", metadata={"bar": "baz"}),
         id="data_uri_with_params_and_metadata",
+    ),
+    pytest.param(
+        BinaryContent(data=array([1, 2, 3]), mime_type="application/json", data_format="base64"), id="data_array"
     ),
 ]
 
@@ -72,6 +76,7 @@ def test_update_data_str():
 
 def test_update_existing_data():
     binary = BinaryContent(data_uri="data:image/jpeg;foo=bar;base64,dGVzdF9kYXRh", metadata={"bar": "baz"})
+    assert binary._data_uri is not None
     binary._data_uri.data_format = None
     binary.data = "test_data"
     binary.data = b"test_data"

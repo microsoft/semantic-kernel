@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import numpy as np
 import pytest
 
 from semantic_kernel.contents.utils.data_uri import DataUri
@@ -20,7 +21,15 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
             "base64",
             id="basic_image",
         ),
-        pytest.param("data:text/plain;,test_data", None, "test_data", "text/plain", {}, None, id="basic_text"),
+        pytest.param(
+            "data:text/plain;,test_data",
+            b"test_data",
+            "test_data",
+            "text/plain",
+            {},
+            None,
+            id="basic_text",
+        ),
         pytest.param(
             "data:application/octet-stream;base64,AQIDBA==",
             b"\x01\x02\x03\x04",
@@ -41,12 +50,21 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
         ),
         pytest.param(
             "data:application/octet-stream;utf8,01-02-03-04",
-            None,
+            b"01-02-03-04",
             "01-02-03-04",
             "application/octet-stream",
             {},
             "utf8",
             id="utf8",
+        ),
+        pytest.param(
+            "data:text/plain;key=value;base64,U29t\r\nZQ==\t",
+            b"Some",
+            "U29tZQ==",
+            "text/plain",
+            {"key": "value"},
+            "base64",
+            id="with_params",
         ),
     ],
 )
@@ -60,10 +78,10 @@ def test_data_uri_from_data_uri_str(
 ):
     data_uri = DataUri.from_data_uri(uri)
     assert data_uri.data_bytes == data_bytes
-    assert data_uri.data_str == data_str
     assert data_uri.mime_type == mime_type
     assert data_uri.parameters == parameters
     assert data_uri.data_format == data_format
+    assert data_uri._data_str() == data_str
 
 
 @pytest.mark.parametrize(
@@ -74,11 +92,6 @@ def test_data_uri_from_data_uri_str(
         pytest.param("data:", ContentInitializationError, id="missing_comma"),
         pytest.param("data:something,", ContentInitializationError, id="mime_type_without_subtype"),
         pytest.param("data:something;else,data", ContentInitializationError, id="mime_type_without_subtype2"),
-        pytest.param(
-            "data:type/subtype;parameterwithoutvalue;else,", ContentInitializationError, id="param_without_value"
-        ),
-        pytest.param("data:type/subtype;parameter=va=lue;else,", ContentInitializationError, id="param_multiple_eq"),
-        pytest.param("data:type/subtype;=value;else,", ContentInitializationError, id="param_without_name"),
         pytest.param("data:image/jpeg;base64,dGVzdF9kYXRh;foo=bar", ContentInitializationError, id="wrong_order"),
         pytest.param("data:text/plain;test_data", ContentInitializationError, id="missing_comma"),
         pytest.param(
@@ -230,3 +243,70 @@ def test_eq():
     assert data_uri1 == data_uri2
     assert data_uri1 != "data:image/jpeg;base64,dGVzdF9kYXRh"
     assert data_uri1 != DataUri.from_data_uri("data:image/jpeg;base64,dGVzdF9kYXRi")
+
+
+def test_array():
+    arr = np.array([[1, 2], [3, 4]], dtype=np.uint8)
+    data_uri = DataUri(data_array=arr, mime_type="application/octet-stream", data_format="base64")
+    encoded = data_uri.to_string()
+    assert data_uri.data_array is not None
+    assert "data:application/octet-stream;base64," in encoded
+    assert data_uri.data_array.tobytes() == b"\x01\x02\x03\x04"
+
+
+@pytest.mark.parametrize(
+    "data_bytes, data_str, data_array, data_format, expected_output",
+    [
+        pytest.param(
+            b"test_data",
+            None,
+            None,
+            "base64",
+            "dGVzdF9kYXRh",
+            id="bytes_base64",
+        ),
+        pytest.param(
+            b"test_data",
+            None,
+            None,
+            "plain",
+            "test_data",
+            id="bytes_non_base64",
+        ),
+        pytest.param(
+            None,
+            "dGVzdF9kYXRh",
+            None,
+            "base64",
+            "dGVzdF9kYXRh",
+            id="string_base64",
+        ),
+        pytest.param(
+            None,
+            "plain_data",
+            None,
+            None,
+            "plain_data",
+            id="string_non_base64",
+        ),
+        pytest.param(
+            None,
+            None,
+            np.array([1, 2, 3], dtype=np.uint8),
+            "base64",
+            "AQID",
+            id="array_base64",
+        ),
+        pytest.param(
+            None,
+            None,
+            np.array([1, 2, 3], dtype=np.uint8),
+            "plain",
+            "\1\2\3",
+            id="array_non_base64",
+        ),
+    ],
+)
+def test__data_str(data_bytes, data_str, data_array, data_format, expected_output):
+    data_uri = DataUri(data_bytes=data_bytes, data_str=data_str, data_array=data_array, data_format=data_format)
+    assert data_uri._data_str() == expected_output

@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 class OpenAIAudioToTextExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI audio to text services."""
 
-    ai_model_id: str | None = Field(None, serialization_alias="model")
+    ai_model_id: str | None = Field(default=None, serialization_alias="model")
     filename: str | None = Field(
-        None, description="Do not set this manually. It is set by the service based on the audio content."
+        default=None,
+        description="Do not set this manually. It is set by the service based on the audio content.",
     )
     language: str | None = None
     prompt: str | None = None
