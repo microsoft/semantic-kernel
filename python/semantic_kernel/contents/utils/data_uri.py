@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import base64
+import binascii
 import logging
 import re
 import sys
@@ -85,7 +86,10 @@ class DataUri(KernelBaseModel, validate_assignment=True):
 
         if data_str is not None and not data_bytes:
             if data_format and data_format.lower() == "base64":
-                args["data_bytes"] = base64.b64decode(data_str, validate=True)
+                try:
+                    args["data_bytes"] = base64.b64decode(data_str, validate=True)
+                except binascii.Error as exc:
+                    raise ContentInitializationError("Invalid base64 data.") from exc
             else:
                 args["data_bytes"] = data_str.encode("utf-8")
         if "data_array" not in args and "data_bytes" not in args:
