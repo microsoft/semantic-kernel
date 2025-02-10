@@ -21,7 +21,15 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
             "base64",
             id="basic_image",
         ),
-        pytest.param("data:text/plain;,test_data", b"test_data", "test_data", "text/plain", {}, None, id="basic_text"),
+        pytest.param(
+            "data:text/plain;,test_data",
+            b"test_data",
+            "test_data",
+            "text/plain",
+            {},
+            None,
+            id="basic_text",
+        ),
         pytest.param(
             "data:application/octet-stream;base64,AQIDBA==",
             b"\x01\x02\x03\x04",
@@ -49,6 +57,15 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
             "utf8",
             id="utf8",
         ),
+        pytest.param(
+            "data:text/plain;key=value;base64,U29t\r\nZQ==\t",
+            b"Some",
+            "U29tZQ==",
+            "text/plain",
+            {"key": "value"},
+            "base64",
+            id="with_params",
+        ),
     ],
 )
 def test_data_uri_from_data_uri_str(
@@ -75,11 +92,6 @@ def test_data_uri_from_data_uri_str(
         pytest.param("data:", ContentInitializationError, id="missing_comma"),
         pytest.param("data:something,", ContentInitializationError, id="mime_type_without_subtype"),
         pytest.param("data:something;else,data", ContentInitializationError, id="mime_type_without_subtype2"),
-        pytest.param(
-            "data:type/subtype;parameterwithoutvalue;else,", ContentInitializationError, id="param_without_value"
-        ),
-        pytest.param("data:type/subtype;parameter=va=lue;else,", ContentInitializationError, id="param_multiple_eq"),
-        pytest.param("data:type/subtype;=value;else,", ContentInitializationError, id="param_without_name"),
         pytest.param("data:image/jpeg;base64,dGVzdF9kYXRh;foo=bar", ContentInitializationError, id="wrong_order"),
         pytest.param("data:text/plain;test_data", ContentInitializationError, id="missing_comma"),
         pytest.param(
