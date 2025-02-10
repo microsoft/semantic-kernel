@@ -5,6 +5,7 @@ import binascii
 import logging
 import re
 import sys
+from collections.abc import Mapping, MutableMapping, Sequence
 from typing import Any, TypeVar
 
 if sys.version < "3.11":
@@ -45,7 +46,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     data_array: ndarray | None = None
     data_bytes: bytes | None = None
     mime_type: str | None = None
-    parameters: dict[str, str] = Field(default_factory=dict)
+    parameters: MutableMapping[str, str] = Field(default_factory=dict)
     data_format: str | None = None
 
     def __init__(
@@ -54,7 +55,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         data_str: str | None = None,
         data_array: ndarray | None = None,
         mime_type: str | None = None,
-        parameters: list[str] | dict[str, str] | None = None,
+        parameters: Sequence[str] | Mapping[str, str] | None = None,
         data_format: str | None = None,
         **kwargs: Any,
     ):
@@ -71,7 +72,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             data_format: The format of the data (e.g. base64).
             kwargs: Any additional arguments.
         """
-        args = {}
+        args: dict[str, Any] = {}
         if data_bytes is not None:
             args["data_bytes"] = data_bytes
         if data_array is not None:
@@ -153,7 +154,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             matches["parameters"] = matches["parameters"].strip(";").split(";")
         if not matches.get("mime_type"):
             matches["mime_type"] = default_mime_type
-        return cls(**matches)
+        return cls(**matches)  # type: ignore
 
     def to_string(self, metadata: dict[str, str] = {}) -> str:
         """Return the data uri as a string."""
