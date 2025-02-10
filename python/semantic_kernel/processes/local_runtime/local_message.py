@@ -16,5 +16,5 @@ class LocalMessage(KernelBaseModel):
     destination_id: str = Field(...)
     function_name: str = Field(...)
     values: dict[str, Any | None] = Field(...)
-    target_event_id: str | None = Field(None)
-    target_event_data: Any | None = Field(None)
+    target_event_id: str | None = Field(default=None)
+    target_event_data: Any | None = Field(default=None)
