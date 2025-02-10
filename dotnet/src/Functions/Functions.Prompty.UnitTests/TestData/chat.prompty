@@ -7,9 +7,9 @@ model:
   api: chat
   configuration:
     type: azure_openai
-    azure_deployment: gpt-35-turbo
     api_version: 2023-07-01-preview
   parameters:
+    model_id: gpt-35-turbo
     tools_choice: auto
     tools:
     - type: function
