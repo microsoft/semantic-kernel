@@ -27,9 +27,13 @@ AZURE_AI_AGENT_RESOURCE_GROUP_NAME = "<example-resource-group-name>"
 AZURE_AI_AGENT_PROJECT_NAME = "<example-project-name>"
 ```
 
+The project connection string is of the following format: `<HostName>;<AzureSubscriptionId>;<ResourceGroup>;<ProjectName>`. See [here](https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=programming-language-python-azure#configure-and-run-an-agent) for information on obtaining the values to populate the connection string.
+
 The .env should be placed in the root directory.
 
 ### Configuring the AI Project Client
+
+Please make sure you have configured the proper resources to be able to run an Azure AI Agent.
 
 This can be done in one of two ways:
 
@@ -63,3 +67,24 @@ async with (
 ):
 # code
 ```
+
+### Requests and Rate Limits
+
+Please note that your default rate limits/requests per minute may be low depending on how often you want to poll on the status of the run. You have two options:
+
+1. Adjust the `polling_options` on the `AzureAIAgent` to slow down the number of times you make a server request for the status of the run. The default polling interval is 250 ms. You may adjust this to run every 1 second (or other desired value):
+
+```python
+# Required imports
+from datetime import timedelta
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+
+# Configure the polling options as part of the `AzureAIAgent`
+agent = AzureAIAgent(
+    client=client,
+    definition=agent_definition,
+    polling_options=RunPollingOptions(run_polling_interval=timedelta(seconds=1)),
+)
+```
+
+2. Adjust your deployment's `Rate Limit (Tokens per minute)`, which in turn adjusts the allowed `Rate Limit (Requests per minute)`). This is done in the Azure AI Foundry under your project's deployment for your "Connected Azure OpenAI Service Resource."

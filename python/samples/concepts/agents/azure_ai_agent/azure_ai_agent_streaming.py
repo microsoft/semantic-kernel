@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from datetime import timedelta
 from typing import Annotated
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -55,6 +57,7 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            polling_options=RunPollingOptions(run_polling_interval=timedelta(seconds=1)),
         )
 
         # Add the sample plugin to the kernel
