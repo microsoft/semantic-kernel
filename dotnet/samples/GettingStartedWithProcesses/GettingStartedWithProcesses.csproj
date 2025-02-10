@@ -44,6 +44,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Step00\**" />
+    <Compile Remove="Step02\**" />
+    <Compile Remove="Step03\**" />
+    <Compile Remove="Step04\**" />
+    <EmbeddedResource Remove="Step00\**" />
+    <EmbeddedResource Remove="Step02\**" />
+    <EmbeddedResource Remove="Step03\**" />
+    <EmbeddedResource Remove="Step04\**" />
+    <None Remove="Step00\**" />
+    <None Remove="Step02\**" />
+    <None Remove="Step03\**" />
+    <None Remove="Step04\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
@@ -59,9 +74,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-King-of-the-Golden-Mountain.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)"/>
-    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-Water-of-Life.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)"/>
-    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-White-Snake.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)"/>
+    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-King-of-the-Golden-Mountain.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-Water-of-Life.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-White-Snake.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

@@ -44,14 +44,17 @@ public class Step05_MapReduce : BaseTest
 
         // Execute the process
         Kernel kernel = new();
-        using LocalKernelProcessContext localProcess =
-            await process.StartAsync(
-                kernel,
-                new KernelProcessEvent
-                {
-                    Id = "Start",
-                    Data = this._sourceContent,
-                });
+        //using LocalKernelProcessContext localProcess =
+        //    await process.StartAsync(
+        //        kernel,
+        //        new KernelProcessEvent
+        //        {
+        //            Id = "Start",
+        //            Data = this._sourceContent,
+        //        });
+        var runtime = new Microsoft.AutoGen.Core.InProcessRuntime();
+        using var runningProcess = await process.StartAsync(kernel, runtime, new KernelProcessEvent() { Id = "Start", Data = this._sourceContent });
+
 
         // Display the results
         Dictionary<string, int> results = (Dictionary<string, int>?)kernel.Data[ResultStep.ResultKey] ?? [];

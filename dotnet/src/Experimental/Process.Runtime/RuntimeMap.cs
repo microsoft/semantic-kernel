@@ -5,29 +5,27 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AutoGen.Contracts;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
-internal sealed class LocalMap : LocalStep
+internal sealed class RuntimeMap : RuntimeStep
 {
     private readonly HashSet<string> _mapEvents;
     private readonly KernelProcessMap _map;
-    private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LocalMap"/> class.
+    /// Initializes a new instance of the <see cref="RuntimeMap"/> class.
     /// </summary>
     /// <param name="map">The <see cref="KernelProcessMap"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    internal LocalMap(KernelProcessMap map, Kernel kernel)
-        : base(map, kernel)
+    /// <param name="runtime">%%%</param>
+    internal RuntimeMap(KernelProcessMap map, Kernel kernel, IAgentRuntime runtime)
+        : base(map, kernel, runtime)
     {
         this._map = map;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<LocalStep>();
         this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];
     }
 
@@ -39,7 +37,7 @@ internal sealed class LocalMap : LocalStep
 
         // Prepare state for map execution
         int index = 0;
-        List<(Task Task, LocalKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
+        List<(Task Task, KernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
         ConcurrentDictionary<string, Type> capturedEvents = [];
         try
         {
@@ -51,7 +49,7 @@ internal sealed class LocalMap : LocalStep
                 KernelProcess process = mapOperation.CloneProcess(this._logger);
                 MapOperationContext context = new(this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);
+                KernelProcessContext processContext = new(process, this._kernel, this.Runtime, context.Filter);
                 Task processTask =
                     processContext.StartWithEventAsync(
                         new KernelProcessEvent

@@ -189,14 +189,14 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
                         EventProxy = this.EventProxy,
                     };
             }
-            //else if (step is KernelProcessMap mapStep) %%% TODO: MapStep
-            //{
-            //    localStep =
-            //        new LocalMap(mapStep, this._kernel)
-            //        {
-            //            ParentProcessId = this.Id,
-            //        };
-            //}
+            else if (stepInfo is KernelProcessMap mapStep)
+            {
+                step =
+                    new RuntimeMap(mapStep, this._kernel, this.Runtime)
+                    {
+                        ParentProcessId = this.StepId,
+                    };
+            }
             else
             {
                 // The current step should already have an Id.
