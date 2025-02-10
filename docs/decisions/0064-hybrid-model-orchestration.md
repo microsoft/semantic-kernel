@@ -81,7 +81,7 @@ Cons:
 - Can't be reused to create more complex scenarios.
 
 
-### Option 2: HybridChatClient class with chat copletion handler(s) per orchestration strategy
+### Option 2: HybridChatClient class with chat completion handler(s) per orchestration strategy
 
 This option introduces a HybridChatClient class that implements the IChatClient interface and delegates the selection routine to a provided handler represented by the abstract ChatCompletionHandler class:
 ```csharp
@@ -234,6 +234,42 @@ Cons:
 <br/>
 
 POC demonstrating this option can be found [here](https://github.com/microsoft/semantic-kernel/pull/10412).
+
+### Option 3: Implementing existing IAIServiceSelector interface.
+
+The Semantic Kernel has a mechanism that allows for the dynamic selection of AI services:
+
+```csharp
+public interface IAIServiceSelector
+{
+    bool TrySelectAIService<T>(
+        Kernel kernel,
+        KernelFunction function,
+        KernelArguments arguments,
+        [NotNullWhen(true)] out T? service,
+        out PromptExecutionSettings? serviceSettings) where T : class, IAIService;
+}
+```
+
+However, this mechanism requires specific context - the kernel, function, and arguments which may not always be available.
+Additionally, it only works with implementations of the IAIService interface, which may not be compatible with all AI services, 
+such as those in Microsoft.Extensions.AI that implement the IChatClient interface.
+
+Furthermore, this mechanism cannot be used in orchestration scenarios where an AI service needs to be prompted first to determine its availability, latency, etc.
+For example, to check if an AI service is available, the selector would need to send chat messages with options to the service. It should then return 
+the completion if the service is available, or fallback to another service if it is not. Given that the TrySelectAIService method does not accept a list of 
+chat messages or options, it is impossible to send chat messages using this method. Even if it were possible, the consumer code would have to resend the same 
+chat messages to the selected service to obtain a completion, as the selector does not return the completion itself. Additionally, the TrySelectAIService method 
+is synchronous, making it difficult to send chat messages without using synchronous code, which is generally discouraged.
+
+Pros:
+- Reuses the existing mechanism for AI service selection.
+
+Cons:
+- Not suitable for all AI services.
+- Requires context that may not be available in all scenarios.
+- Consumer code must be aware of the IAIServiceSelector interface instead of simply using the IChatClient interface.
+- Synchronous method.
 
 ## Decision Outcome
 
