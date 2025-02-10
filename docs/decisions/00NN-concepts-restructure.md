@@ -29,15 +29,7 @@ If we were to find the definitive solution, it would be need to consider all pot
 
 ## Solution
 
-### Search Engine for Examples
-
-Upgrade the Concepts project to be a Web Application that can run locally (or in a container) where it provides an easy UI for samples discovery, setup credentials and execution, by clicking the the Run from the IDE the experience should be flawless and friendly:
-
-- Allow a smart seach by token, description and ensure it can index the tests and show them in a HTML or MARKDOWN complying with all the Decision drivers provided above.
-
-- Ensure when presenting the tests to consolidate in all the dependencies within the assembly as part of a single Program.cs file, for easy copy and paste.
-
-- Additionally we could host and link as part of our official Concepts documentation and added as part of the release pipeline, so devs would also have easy access to our demos without necessarily needing to setup their own envs.
+We can apply a set of guidelines to the Concepts project to make it easier to find, understand and use the examples. This will also make it easier to generate documentation and source code from the examples in the future. Those guidelines also will help to implement new and existing examples in a consistent way.
 
 ### 1. Decorate concepts test classes
 
@@ -209,6 +201,20 @@ Sorting orfans approach:
 - `TextGeneration/Ollama_TextGeneration.cs` -> `Text/Ollama_TextGeneration.cs`
 - `Memory/TextMemoryPlugin_GeminiEmbeddingGeneration.cs` -> `Plugins/TextMemoryPlugin_GeminiEmbeddingGeneration.cs`
 - `Memory/VectorStore_ConsumeFromMemoryStore_AzureAISearch.cs` -> `VectorData/AzureAISearch_VectorStore_ConsumeFromMemoryStore.cs`
+
+### Search Engine for Concept Examples
+
+As a medium term goal, with all the cleanup and restructuring applied, we could consider upgrading the Concepts project to become a flawless and friendly Web Application simply by clicking in the Run button IDE we start it providing an easy WebUI for sample discovery, setup and execution.
+
+To improve easy of access for everyone, we can host the WebApp use it as a link on our official Concepts documentation publishing it as part of the release pipeline, so devs would also be able to easily access our demos without necessarily needing to setup their own envs.
+
+Some of the features we should consider:
+
+- Allow a smart seach by concept and description, ensuring it can index the tests and show them in a HTML or MARKDOWN complying with all the Decision drivers provided above.
+
+- Easy copy/paste. Consolidate all the code for the selected sample in a way that its dependencies are ready to be copied and run into a single Program.cs.
+
+- Enable export to Jupyter Notebook. This would be a great feature to allow users to easily run the samples in their own environment.
 
 ## Decision Outcome
 
