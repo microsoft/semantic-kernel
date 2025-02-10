@@ -5,6 +5,7 @@ import contextlib
 import json
 import logging
 import uuid
+from collections.abc import Callable
 from queue import Queue
 from typing import Any
 
@@ -46,16 +47,18 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
-    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
+    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel, factories: dict[str, Callable]):
         """Initializes a new instance of ProcessActor.
 
         Args:
             ctx: The actor runtime context.
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
+            factories: The factory dictionary that contains step types to factory methods.
         """
-        super().__init__(ctx, actor_id, kernel)
+        super().__init__(ctx, actor_id, kernel, factories)
         self.kernel = kernel
+        self.factories = factories
         self.steps: list[StepInterface] = []
         self.step_infos: list[DaprStepInfo] = []
         self.initialize_task: bool | None = False
