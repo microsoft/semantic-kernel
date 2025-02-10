@@ -4,14 +4,8 @@ import base64
 import binascii
 import logging
 import re
-import sys
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import Any, TypeVar
-
-if sys.version < "3.11":
-    pass  # pragma: no cover
-else:
-    pass  # type: ignore # pragma: no cover
 
 from numpy import ndarray
 from pydantic import Field, ValidationError, field_validator
