@@ -123,12 +123,10 @@ class BinaryContent(KernelContent):
     @property
     def data(self) -> bytes:
         """Get the data."""
-        if self._data_uri and self._data_uri.data_bytes:
-            return self._data_uri.data_bytes
-        if self._data_uri and self._data_uri.data_str:
-            return self._data_uri.data_str.encode("utf-8")
         if self._data_uri and self._data_uri.data_array:
             return self._data_uri.data_array.tobytes()
+        if self._data_uri and self._data_uri.data_bytes:
+            return self._data_uri.data_bytes
         return b""
 
     @data.setter
