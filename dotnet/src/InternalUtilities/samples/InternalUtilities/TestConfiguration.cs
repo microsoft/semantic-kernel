@@ -49,8 +49,8 @@ public sealed class TestConfiguration
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
-
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+    public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -322,5 +322,11 @@ public sealed class TestConfiguration
     {
         public string Endpoint { get; set; }
         public string AuthToken { get; set; }
+    }
+
+    public class BedrockAgentConfig
+    {
+        public string AgentResourceRoleArn { get; set; }
+        public string FoundationModel { get; set; }
     }
 }
