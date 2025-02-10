@@ -18,7 +18,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
-    type: Literal["DaprStepInfo"] = Field(default="DaprStepInfo")
+    type: Literal["DaprStepInfo"] = "DaprStepInfo"
     inner_step_python_type: str
     state: KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
