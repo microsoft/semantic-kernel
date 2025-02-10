@@ -87,7 +87,17 @@ public class Ollama_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
 {
 ```
 
-### 3. Each fact in the concepts MUST have a xmldoc description
+### 3. Each fact in the concepts MUST have a descriptive name
+
+Fact method names, MUST provide a clear understanding of what is happening in the test.
+
+| Bad ❌                                     | Good ✅                                                         |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `OpenAI_ChatCompletion.ServicePromptAsync` | `OpenAI_ChatCompletion.UsingChatServiceWithStringPromptAsync`   |
+| `OpenAI_ChatCompletion.ChatPromptAsync`    | `OpenAI_ChatCompletion.UsingKernelChatPromptSyntaxAsync`        |
+| `OpenAI_CustomClient.RunAsync`             | `OpenAI_CustomHttpClient.AddingHeaderWithCustomHttpClientAsync` |
+
+### 4. Each fact in the concepts MUST have xmldoc description
 
 Similar to the class description, each fact should have a description of what is the purpose of the fact, this is very helpful for documentation and user orientation.
 
@@ -95,14 +105,14 @@ This will be very helpful for later Roslyn scrap when needed (ipynb) generation 
 
 Note: Can be easily setup using a proper AI prompt with file context.
 
-### 4. Keep the code commented.
+### 5. Keep the code commented.
 
 The code should be commented in a way that it is easy to understand what is happening in the code. This is very helpful for documentation and user orientation.
 This way during the UI rendering each line of comments can be extracted into different code blocks sections automatically.
 
 Note: Can be easily setup using a proper AI prompt with file context.
 
-### 5. Test File Name and Size
+### 6. Test File Name and Size
 
 The overall rule is to have try to keep as less as possible examples in a single file, splitting the files per group of examples whenever possible.
 
@@ -124,12 +134,12 @@ Note: Can be easily fixed using a proper AI prompt with file context.
 public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ServicePromptAsync()
+    public async Task UsingChatServiceWithStringPromptAsync()
     {
     }
 
     [Fact]
-    public async Task ChatPromptAsync()
+    public async Task UsingKernelChatPromptSyntaxAsync()
     {
     }
 }
@@ -167,7 +177,7 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant
 }
 ```
 
-### 6. Simplify folder structure
+### 7. Simplify folder structure
 
 This is not a mandatory requirement for indexing but would simplify the overall structure of the project.
 
