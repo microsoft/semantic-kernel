@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import json
 import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -21,7 +20,6 @@ from semantic_kernel.exceptions.function_exceptions import (
     PluginInitializationError,
 )
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -174,14 +172,11 @@ class CrewAIEnterprise(KernelBaseModel):
                 is_required=True,
             )
 
-        parameters = [
-            KernelParameterMetadata(name="arguments", description=None, type="KernelArguments", is_required=True)
-        ]
-        parameters.extend([build_metadata(input) for input in input_metadata or []])
+        parameters = [build_metadata(input) for input in input_metadata or []]
 
         @kernel_function(description="Kickoff the CrewAI task.")
-        async def kickoff(arguments: KernelArguments, **kwargs: Any) -> str:
-            args = self._build_arguments(input_metadata, arguments)
+        async def kickoff(**kwargs: Any) -> str:
+            args = self._build_arguments(input_metadata, kwargs)
             return await self.kickoff(
                 inputs=args,
                 task_webhook_url=task_webhook_url,
@@ -190,8 +185,8 @@ class CrewAIEnterprise(KernelBaseModel):
             )
 
         @kernel_function(description="Kickoff the CrewAI task and wait for completion.")
-        async def kickoff_and_wait(arguments: KernelArguments, **kwargs: Any) -> str:
-            args = self._build_arguments(input_metadata, arguments)
+        async def kickoff_and_wait(**kwargs: Any) -> str:
+            args = self._build_arguments(input_metadata, kwargs)
             kickoff_id = await self.kickoff(
                 inputs=args,
                 task_webhook_url=task_webhook_url,
@@ -213,9 +208,7 @@ class CrewAIEnterprise(KernelBaseModel):
             },
         )
 
-    def _build_arguments(
-        self, input_metadata: list[InputMetadata] | None, arguments: KernelArguments
-    ) -> dict[str, Any]:
+    def _build_arguments(self, input_metadata: list[InputMetadata] | None, arguments: dict[str, Any]) -> dict[str, Any]:
         """Builds the arguments for the CrewAI task from the provided metadata and arguments.
 
         Args:
@@ -231,9 +224,5 @@ class CrewAIEnterprise(KernelBaseModel):
                 name = input.name
                 if name not in arguments:
                     raise PluginInitializationError(f"Missing required input '{name}' for CrewAI.")
-                value = arguments[name]
-                if input.type == "string":
-                    args[name] = value
-                else:
-                    args[name] = json.loads(value)
+                args[name] = arguments[name]
         return args
