@@ -10,7 +10,7 @@ from glob import glob
 from types import MethodType
 from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
-from pydantic import Field, StringConstraints
+from pydantic import Field
 
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
@@ -75,7 +75,7 @@ class KernelPlugin(KernelBaseModel):
 
     """
 
-    name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
+    name: Annotated[str, Field(min_length=1, pattern=PLUGIN_NAME_REGEX)]
     description: str | None = None
     functions: dict[str, KernelFunction] = Field(default_factory=dict)
 
