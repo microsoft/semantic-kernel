@@ -258,6 +258,20 @@ wheels = [
 ]
 
 [[package]]
+name = "azure-ai-projects"
+version = "1.0.0b5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/0f/47600c1c3bb1b92913350c9878c517ccbd2630f4c5393cd4054dc71d5fbd/azure_ai_projects-1.0.0b5.tar.gz", hash = "sha256:7bb068b38a8810c5a59a628e18f196c76af2a06cb774e725b97bfc8b61b3aaf0", size = 303846 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/3b/5ef0717685e4d3e3b537d7538e430199ab4c16665766ab3de90d5fedc8ef/azure_ai_projects-1.0.0b5-py3-none-any.whl", hash = "sha256:7ed7a44e8d76bf108be7de6f33b9c54a63fc47193cd259770006a6862ce25ccd", size = 193481 },
+]
+
+[[package]]
 name = "azure-common"
 version = "1.1.28"
 source = { registry = "https://pypi.org/simple" }
@@ -4765,6 +4779,7 @@ aws = [
 ]
 azure = [
     { name = "azure-ai-inference", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "azure-ai-projects", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-core-tracing-opentelemetry", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-cosmos", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-identity", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4853,6 +4868,7 @@ requires-dist = [
     { name = "aiohttp", specifier = "~=3.8" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
+    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = ">=1.0.0b5" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = "~=1.13" },
