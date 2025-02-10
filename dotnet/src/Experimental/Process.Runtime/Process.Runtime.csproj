@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Process.LocalRuntime</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Process.Runtime</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
@@ -16,9 +16,15 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Process - LocalRuntime</Title>
-    <Description>Semantic Kernel Process LocalRuntime. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
+    <Title>Semantic Kernel Process - Runtime</Title>
+    <Description>Semantic Kernel Process Runtime. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AutoGen.Core" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
@@ -28,11 +34,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Process.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>

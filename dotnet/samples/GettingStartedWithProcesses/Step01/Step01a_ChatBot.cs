@@ -14,7 +14,7 @@ namespace Step01;
 /// Demonstrate creation of <see cref="KernelProcess"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public class Step01a_ChatBot(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Demonstrates the creation of a simple process that has multiple steps, takes
@@ -77,7 +77,11 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         Console.WriteLine($"Diagram generated at: {generatedImagePath}");
 
         // Start the process with an initial external event
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        Console.WriteLine($"=== Start - Executing '{process.Name}' ===");
+        //using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        var runtime = new Microsoft.AutoGen.Core.InProcessRuntime();
+        using var runningProcess = await kernelProcess.StartAsync(kernel, runtime, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        Console.WriteLine($"=== End - Executing '{process.Name}' ===");
     }
 
     /// <summary>
@@ -164,11 +168,9 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         {
             _state!.ChatMessages.Add(new(AuthorRole.User, userMessage));
             IChatCompletionService chatService = _kernel.Services.GetRequiredService<IChatCompletionService>();
-            ChatMessageContent response = await chatService.GetChatMessageContentAsync(_state.ChatMessages).ConfigureAwait(false);
-            if (response == null)
-            {
+            ChatMessageContent response =
+                await chatService.GetChatMessageContentAsync(_state.ChatMessages).ConfigureAwait(false) ??
                 throw new InvalidOperationException("Failed to get a response from the chat completion service.");
-            }
 
             System.Console.ForegroundColor = ConsoleColor.Yellow;
             System.Console.WriteLine($"ASSISTANT: {response.Content}");
@@ -187,7 +189,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
     /// </summary>
     private sealed class ChatBotState
     {
-        internal ChatHistory ChatMessages { get; } = new();
+        internal ChatHistory ChatMessages { get; } = [];
     }
 
     /// <summary>
