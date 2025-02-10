@@ -19,6 +19,9 @@ internal sealed class WeaviateConstants
     /// <summary>Score property name in Weaviate.</summary>
     internal const string ScorePropertyName = "distance";
 
+    /// <summary>Score property name for hybrid search in Weaviate.</summary>
+    internal const string HybridScorePropertyName = "score";
+
     /// <summary>Additional properties property name in Weaviate.</summary>
     internal const string AdditionalPropertiesPropertyName = "_additional";
 }

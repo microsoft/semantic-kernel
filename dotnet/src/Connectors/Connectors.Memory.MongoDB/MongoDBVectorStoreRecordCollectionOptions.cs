@@ -31,6 +31,11 @@ public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
     public string VectorIndexName { get; init; } = MongoDBConstants.DefaultVectorIndexName;
 
     /// <summary>
+    /// Full text search index name to use. If null, the default "full_text_search_index" name will be used.
+    /// </summary>
+    public string FullTextSearchIndexName { get; init; } = MongoDBConstants.DefaultFullTextSearchIndexName;
+
+    /// <summary>
     /// Number of max retries for vector collection operation.
     /// </summary>
     public int MaxRetries { get; init; } = 5;
