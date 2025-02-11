@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -60,15 +59,24 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     public class WidgetFactory
     {
         [KernelFunction]
-        [Description("Creates a new widget of the specified type and colors")]
-        public WidgetDetails CreateWidget([Description("The type of widget to be created")] WidgetType widgetType, [Description("The colors of the widget to be created")] WidgetColor[] widgetColors)
+        public WidgetDetails CreateWidget(string widgetType, string[] widgetColors)
         {
-            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).ToArray());
-            return new()
+            if (!Enum.TryParse(widgetType, true, out WidgetType type))
             {
-                SerialNumber = $"{widgetType}-{colors}-{Guid.NewGuid()}",
-                Type = widgetType,
-                Colors = widgetColors
+                type = WidgetType.Useful;
+            }
+
+            var colors = widgetColors
+                .Select(c => Enum.TryParse(c, true, out WidgetColor parsedColor) ? parsedColor : (WidgetColor?)null)
+                .Where(c => c.HasValue)
+                .Select(c => c!.Value)
+                .ToArray();
+
+            return new WidgetDetails
+            {
+                SerialNumber = $"{type}-{string.Join("-", colors)}-{Guid.NewGuid()}",
+                Type = type,
+                Colors = colors
             };
         }
     }
