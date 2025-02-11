@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace ChatCompletion;
+namespace Filtering;
 
 /// <summary>
 /// This sample shows how to switch between Azure OpenAI deployments based on the functions that are being called.
@@ -83,6 +83,8 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
                 }
                 else
                 {
+                    output.WriteLine("Switching to use eastus deployment");
+
                     chatHistory.RemoveAt(chatHistory.Count - 1);
 
                     IChatCompletionService chatCompletionService = kernel.Services.GetRequiredKeyedService<IChatCompletionService>("eastus");
