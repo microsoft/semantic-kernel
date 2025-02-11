@@ -13,7 +13,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=NameSpa
 Example for `ChatCompletion/OpenAI_ChatCompletion.cs` file, targeting the `ChatPromptSync` test:
 
 ```powershell
-dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCompletion.OpenAI_ChatCompletion.ChatPromptSync"
+dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCompletion.OpenAI_ChatCompletion.ChatPromptAsync"
 ```
 
 ## Table of Contents

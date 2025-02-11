@@ -53,10 +53,10 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from samples.getting_started_with_agents.step1_agent import main as step1_agent
-from samples.getting_started_with_agents.step2_plugins import main as step2_plugins
-from samples.getting_started_with_agents.step3_chat import main as step3_chat
-from samples.getting_started_with_agents.step7_assistant import main as step7_assistant
+from samples.getting_started_with_agents.chat_completion.step1_agent import main as step1_agent
+from samples.getting_started_with_agents.chat_completion.step2_plugins import main as step2_plugins
+from samples.getting_started_with_agents.chat_completion.step3_chat import main as step3_chat
+from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step7_assistant
 from tests.utils import retry
 
 # These environment variable names are used to control which samples are run during integration testing.

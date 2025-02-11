@@ -55,6 +55,7 @@
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
+    <PackageVersion Include="Prompty.Core" Version="0.0.23-alpha" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
@@ -172,5 +173,9 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.5.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.5.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.5.2" />
+    <!-- SpectreConsole-->
+    <PackageVersion Include="Spectre.Console" Version="0.49.1" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.49.1" />
+    <PackageVersion Include="Spectre.Console.Json" Version="0.49.1" />
   </ItemGroup>
 </Project>

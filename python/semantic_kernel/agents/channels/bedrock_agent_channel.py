@@ -37,11 +37,12 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
     MESSAGE_PLACEHOLDER: ClassVar[str] = "[SILENCE]"
 
     @override
-    async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+    async def invoke(self, agent: "Agent", **kwargs: Any) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
+            kwargs: Additional keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent with a boolean indicating if the
@@ -75,12 +76,14 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         self,
         agent: "Agent",
         messages: list[ChatMessageContent],
+        **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a streaming interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
             messages: The history of messages in the conversation.
+            kwargs: Additional keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent.
