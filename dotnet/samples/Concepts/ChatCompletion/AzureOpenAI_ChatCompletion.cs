@@ -14,20 +14,32 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task ChatPromptAsync()
     {
-        Assert.NotNull(TestConfiguration.Ollama.ModelId);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
 
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
                                        <message role="user">Hi, I'm looking for book suggestions</message>
                                        """);
 
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        var kernelBuilder = Kernel.CreateBuilder();
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.ApiKey))
+        {
+            kernelBuilder.AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new DefaultAzureCredential(),
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+        }
+        else
+        {
+            kernelBuilder.AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+        }
+        var kernel = kernelBuilder.Build();
 
         var reply = await kernel.InvokePromptAsync(chatPrompt.ToString());
 
@@ -44,7 +56,14 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion ========");
 
-        AzureOpenAIChatCompletionService chatCompletionService = new(
+        AzureOpenAIChatCompletionService chatCompletionService =
+            string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.ApiKey) ?
+            new(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new DefaultAzureCredential(),
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId) :
+            new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
@@ -62,10 +81,17 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
 
-        AzureOpenAIChatCompletionService chatCompletionService = new(
+        AzureOpenAIChatCompletionService chatCompletionService =
+            string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.ApiKey) ?
+            new(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new DefaultAzureCredential(),
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId) :
+            new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-            credentials: new DefaultAzureCredential(),
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         await StartChatAsync(chatCompletionService);
