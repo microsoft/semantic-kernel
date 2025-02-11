@@ -29,7 +29,7 @@ class CrewAIEnterpriseClient(KernelBaseModel):
         """
         async with await self._create_http_client() as client, client.get(f"{self.endpoint}/inputs") as response:
             response.raise_for_status()
-            body = await response.text()
+            return CrewAIRequiredInputs.model_validate_json(await response.text())
             return CrewAIRequiredInputs(**json.loads(body))
 
     async def kickoff(
