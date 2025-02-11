@@ -104,10 +104,24 @@ Each DB has different keyword search capabilities. Some only support a very basi
 
 |Interface Name|Method Name|Parameters|Options Class Name|Keyword Property Selector|Dense Vector Property Selector|
 |-|-|-|-|-|-|
-|HybridSearchWithKeywords|HybridSearchWithKeywords|string[] + Dense Vector|HybridSearchWithKeywordsOptions|FullTextPropertyName|VectorPropertyName|
+|HybridSearchWithKeywords|HybridSearch|string[] + Dense Vector|HybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |HybridSearchWithSparseVector|HybridSearchWithSparseVector|Sparse Vector + Dense Vector|HybridSearchWithSparseVectorOptions|SparseVectorPropertyName|VectorPropertyName|
-|HybridSearchWithKeywordsAndText|HybridSearchWithKeywordsAndText|string[] + string|HybridSearchWithKeywordsAndTextOptions|FullTextPropertyName|VectorPropertyName|
-|HybridSearchWithKeywordsForSparseVectorAndText|HybridSearchWithKeywordsForSparseVectorAndText|string[] + string|HybridSearchWithKeywordsForSparseVectorAndTextOptions|SparseVectorPropertyName|VectorPropertyName|
+|HybridSearchWithKeywordsAndVectorizableText|HybridSearch|string[] + string|HybridSearchOptions|FullTextPropertyName|VectorPropertyName|
+|HybridSearchWithVectorizableKeywordsAndText|HybridSearchWithSparseVector|string[] + string|HybridSearchWithSparseVectorOptions|SparseVectorPropertyName|VectorPropertyName|
+
+|Area|Type of search|Method Name|
+|-|-|-|
+|**Non-vector Search**|||
+|Non-vector Search||Search|
+|**Vector Search**|||
+|Vector Search|With Vector|VectorSearch|
+|Vector Search|With Vectorizable Text (string)|VectorSearchWithText|
+|Vector Search|With Vectorizable Image (string/byte[]/other)|VectorSearchWithImage|
+|**Hybrid Search**|||
+|Hybrid Search|With DenseVector and string[] keywords|HybridSearch|
+|Hybrid Search|With vectorizable string and string[] keywords|HybridSearch|
+|Hybrid Search|With DenseVector and SparseVector|HybridSearchWithSparseVector|
+|Hybrid Search|With vectorizable string and sparse vectorisable string[] keywords|HybridSearchWithSparseVector|
 
 ### Keyword based hybrid search
 
