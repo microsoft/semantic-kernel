@@ -41,7 +41,7 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     {
         if (eventData != null)
         {
-            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = (string)eventData });
+            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = eventData });
         }
 
         return Task.CompletedTask;

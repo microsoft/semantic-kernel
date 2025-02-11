@@ -46,6 +46,11 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
     {
+        if (!this.ExternalTopicUsage.ContainsKey(topicName))
+        {
+            throw new InvalidOperationException($"Topic name {topicName} is not registered as proxy publish event, register first before using");
+        }
+
         // TODO-estenori: these 2 could potentially be merged into 1 dict later
         // maybe sourceStep is not needed? need to check
         this.EventTopicMap[eventData.EventName] = topicName;

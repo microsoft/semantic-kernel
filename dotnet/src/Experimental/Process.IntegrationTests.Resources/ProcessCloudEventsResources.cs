@@ -34,6 +34,7 @@ public sealed class MockProxyStep : KernelProcessStep
     public async Task OnEchoMessageAsync(KernelProcessStepContext context, string message)
     {
         await context.EmitExternalEventAsync(TopicNames.EchoExternalTopic, message);
+        await context.EmitEventAsync(TopicNames.EchoExternalTopic, message);
     }
 }
 

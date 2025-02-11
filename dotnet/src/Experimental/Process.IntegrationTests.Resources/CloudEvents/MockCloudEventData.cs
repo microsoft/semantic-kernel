@@ -15,5 +15,5 @@ public class MockCloudEventData
     /// <summary>
     /// Data emitted in the mock cloud event
     /// </summary>
-    public string? Data { get; set; }
+    public object? Data { get; set; }
 }

@@ -2,6 +2,7 @@
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -41,11 +42,11 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
-    /// Tests a simple linear process with two steps and no sub processes.
+    /// Tests that evaluates basic behavior of process using "EmitExternalEvent" in the processBuilder
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
     [Fact]
-    public async Task LinearProcessWithCloudEventSubscribersAsync()
+    public async Task LinearProcessWithCloudEventSubscribersUsingEmitToTopicAsync()
     {
         // Arrange
         OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
@@ -54,7 +55,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
             apiKey: configuration.ApiKey);
 
         Kernel kernel = this._kernelBuilder.Build();
-        var process = this.CreateLinearProcess("SimpleWithCloudEvents").Build();
+        var process = this.CreateLinearProcessWithEmitTopic("SimpleWithCloudEvents").Build();
 
         // Act
         string testInput = "Test";
@@ -67,10 +68,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
-        Assert.Equal(testInput, mockClient.CloudEvents[0].Data);
-        Assert.Equal(MockProxyStep.TopicNames.EchoExternalTopic, mockClient.CloudEvents[0].TopicName);
-        Assert.Equal($"{testInput} {testInput}", mockClient.CloudEvents[1].Data);
-        Assert.Equal(MockProxyStep.TopicNames.RepeatExternalTopic, mockClient.CloudEvents[1].TopicName);
+        this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: MockProxyStep.TopicNames.EchoExternalTopic, expectedTopicData: testInput);
+        this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: MockProxyStep.TopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
     }
 
     /// <summary>
@@ -79,35 +78,54 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
     /// Output Events: [<see cref="ProcessTestsEvents.OutputReadyInternal"/>, <see cref="ProcessTestsEvents.OutputReadyPublic"/>]<br/>
     /// <code>
     /// ┌────────┐    ┌────────┐
-    /// │  echo  ├─┬─►│ repeat ├───┐
-    /// └────────┘ │  └────────┘   │
-    ///            │               │
-    ///            │  ┌───────┐    │
-    ///            └─►│ proxy │◄───┘
+    /// │  echo  ├───►│ repeat ├───►
+    /// └────────┘ │  └────────┘ │
+    ///
+    ///            │  ┌───────┐  │
+    ///            └─►│ proxy │◄─┘
     ///               └───────┘
     /// </code>
     /// </summary>
-    private ProcessBuilder CreateLinearProcess(string name)
+    private ProcessBuilder CreateLinearProcessWithEmitTopic(string name)
     {
         var processBuilder = new ProcessBuilder(name);
         var echoStep = processBuilder.AddStepFromType<EchoStep>();
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
-        var proxyStep = processBuilder.AddStepFromType<MockProxyStep>();
 
-        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
+        // TODO add tests verify error when using event that is not registered
+        var proxyTopics = new List<string>() { "RepeatExternalTopic", "EchoExternalTopic" };
+        var proxyStep = processBuilder.AddProxyStep<MockCloudEventClient>(proxyTopics);
+
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
-        echoStep.OnFunctionResult(nameof(EchoStep.Echo))
+        echoStep
+            .OnFunctionResult(nameof(EchoStep.Echo))
             .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
 
         echoStep
             .OnFunctionResult()
-            .SendEventTo(new ProcessFunctionTargetBuilder(proxyStep, functionName: MockProxyStep.FunctionNames.OnEchoMessage));
+            .EmitExternalEvent(proxyStep, "EchoExternalTopic");
 
         repeatStep
             .OnEvent(ProcessTestsEvents.OutputReadyInternal)
-            .SendEventTo(new ProcessFunctionTargetBuilder(proxyStep, functionName: MockProxyStep.FunctionNames.OnRepeatMessage));
+            .EmitExternalEvent(proxyStep, "RepeatExternalTopic");
 
         return processBuilder;
     }
+
+    #region Assert Utils
+    private void AssertProxyMessage(object? rawProxyMessage, string expectedPublishTopic, object? expectedTopicData = null)
+    {
+        Assert.NotNull(rawProxyMessage);
+        Assert.IsType<KernelProcessProxyMessage>(rawProxyMessage);
+
+        var proxyMessage = (KernelProcessProxyMessage)rawProxyMessage;
+        Assert.NotNull(proxyMessage);
+        Assert.Equal(expectedPublishTopic, proxyMessage.ExternalTopicName);
+        Assert.IsType<string>(proxyMessage.EventData);
+        Assert.Equal(expectedTopicData, proxyMessage.EventData);
+    }
+    #endregion
 }
