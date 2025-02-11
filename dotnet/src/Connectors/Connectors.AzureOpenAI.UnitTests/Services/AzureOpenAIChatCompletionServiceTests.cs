@@ -293,7 +293,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var modelId = "o1";
         var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient);
         OpenAIPromptExecutionSettings executionSettings = new() { ReasoningEffort = reasoningEffortObject };
-        using var responseMessage =  new HttpResponseMessage(HttpStatusCode.OK)
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
         };
