@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Process;
 
 /// <summary>
-/// Internal SK KernelProcessStep preconfiged to be used when emitting SK events outside of the SK Process Framework or inside with a different event name
+/// Internal SK KernelProcessStep preconfigured to be used when emitting SK events outside of the SK Process Framework or inside with a different event name
 /// </summary>
 public sealed class KernelProxyStep : KernelProcessStep
 {

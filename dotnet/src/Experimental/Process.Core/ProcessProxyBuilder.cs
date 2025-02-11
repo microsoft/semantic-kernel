@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Process.Models;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides functionality to allow emitting external messages from withing the SK
+/// Provides functionality to allow emitting external messages from within the SK
 /// process.
 /// </summary>
 public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
@@ -62,7 +62,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     /// <inheritdoc/>
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
-        KernelProcessProxyStateMetadata? proxyMetada = new()
+        KernelProcessProxyStateMetadata? proxyMetadata = new()
         {
             Name = this.Name,
             Id = this.Id,
@@ -78,7 +78,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
         return new KernelProcessProxy(state, builtEdges)
         {
-            ProxyMetadata = proxyMetada
+            ProxyMetadata = proxyMetadata
         };
     }
 }
