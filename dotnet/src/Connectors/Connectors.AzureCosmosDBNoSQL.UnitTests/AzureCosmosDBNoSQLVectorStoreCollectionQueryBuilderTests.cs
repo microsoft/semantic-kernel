@@ -9,6 +9,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder"/> class.
 /// </summary>
@@ -35,7 +37,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .EqualTo("TestProperty2", "test-value-2")
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Skip = 5, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -84,7 +86,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .EqualTo("TestProperty2", "test-value-2")
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -129,7 +131,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         var filter = new VectorSearchFilter().EqualTo("non-existent-property", "test-value-2");
 
-        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Skip = 5, Top = 10 };
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
@@ -150,7 +152,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var vectorPropertyName = "test_property_1";
         var fields = this._storagePropertyNames.Values.ToList();
 
-        var searchOptions = new VectorSearchOptions { Skip = 5, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { Skip = 5, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -181,10 +183,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
-        const string ExpectedQueryText = "" +
-            "SELECT x.key,x.property_1,x.property_2 " +
-            "FROM x " +
-            "WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0) ";
+        const string ExpectedQueryText = """
+                                         SELECT x.key,x.property_1,x.property_2
+                                         FROM x
+                                         WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0)
+                                         """;
 
         const string KeyStoragePropertyName = "key_property";
         const string PartitionKeyPropertyName = "partition_key_property";
@@ -211,4 +214,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Equal("@pk0", queryParameters[1].Name);
         Assert.Equal("partition_key", queryParameters[1].Value);
     }
+
+#pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
+    private sealed class DummyType;
+#pragma warning restore CA1812
 }

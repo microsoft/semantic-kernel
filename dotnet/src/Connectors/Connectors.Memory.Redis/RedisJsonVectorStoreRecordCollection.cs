@@ -44,7 +44,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
@@ -374,7 +374,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 

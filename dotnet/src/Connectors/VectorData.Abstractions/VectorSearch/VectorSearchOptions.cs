@@ -1,16 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Linq.Expressions;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Options for vector search.
 /// </summary>
-public class VectorSearchOptions
+public class VectorSearchOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
+    [Obsolete("Use NewFilter instead")]
     public VectorSearchFilter? Filter { get; init; }
+
+    /// <summary>
+    /// Gets or sets a search filter to use before doing the vector search.
+    /// </summary>
+    public Expression<Func<TRecord, bool>>? NewFilter { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the vector property to search on.

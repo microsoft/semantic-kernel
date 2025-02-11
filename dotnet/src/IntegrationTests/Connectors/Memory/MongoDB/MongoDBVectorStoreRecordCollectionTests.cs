@@ -12,6 +12,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {

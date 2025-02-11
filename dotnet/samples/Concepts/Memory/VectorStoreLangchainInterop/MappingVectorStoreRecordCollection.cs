@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// TODO: Commented out as part of implementing LINQ-based filtering, since MappingVectorStoreRecordCollection is no longer easy/feasible.
+// TODO: The user provides an expression tree accepting a TPublicRecord, but we require an expression tree accepting a TInternalRecord.
+// TODO: This is something that the user must provide, and is quite advanced.
+
+#if DISABLED
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 
@@ -132,3 +138,5 @@ internal sealed class MappingVectorStoreRecordCollection<TPublicKey, TInternalKe
         };
     }
 }
+
+#endif
