@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 /// <summary>
 /// Extensions associated with the status of a <see cref="BedrockAgent"/>.
 /// </summary>
-internal static class AgentStatusExtensions
+internal static class BedrockAgentStatusExtensions
 {
     /// <summary>
     /// Wait for the agent to reach the specified status.

@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockAgent.Model;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 namespace GettingStarted.BedrockAgents;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="BedrockAgent"/>
-/// and <see cref="ChatCompletionAgent"/> (see: Step 2).
+/// This example demonstrates how to interact with a <see cref="BedrockAgent"/> in the most basic way.
 /// </summary>
 public class Step01_BedrockAgent(ITestOutputHelper output) : BaseAgentsTest(output)
 {
@@ -38,7 +36,37 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseAgentsTest(outp
             var responses = bedrock_agent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
             await foreach (var response in responses)
             {
-                output.WriteLine(response.Content);
+                this.Output.WriteLine(response.Content);
+            }
+        }
+        finally
+        {
+            await bedrock_agent.DeleteAsync(CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task UseNewAgentStreamingAsync()
+    {
+        // Define the agent
+        CreateAgentRequest createAgentRequest = new()
+        {
+            AgentName = AgentName,
+            Description = AgentDescription,
+            Instruction = AgentInstruction,
+            AgentResourceRoleArn = TestConfiguration.BedrockAgent.AgentResourceRoleArn,
+            FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
+        };
+
+        var bedrock_agent = await BedrockAgent.CreateAsync(createAgentRequest);
+
+        // Respond to user input
+        try
+        {
+            var streamingResponses = bedrock_agent.InvokeStreamingAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            await foreach (var response in streamingResponses)
+            {
+                this.Output.WriteLine(response.Content);
             }
         }
         finally

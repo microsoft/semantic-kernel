@@ -54,6 +54,8 @@ public class BedrockAgent : KernelAgent
     /// Create a Bedrock agent on the service.
     /// </summary>
     /// <param name="request">The request to create the agent.</param>
+    /// <param name="enableCodeInterpreter">Whether to enable the code interpreter for the agent.</param>
+    /// <param name="enableKernelFunctions">Whether to enable kernel functions for the agent.</param>
     /// <param name="client">The client to use.</param>
     /// <param name="runtimeClient">The runtime client to use.</param>
     /// <param name="kernel">A kernel instance for the agent to use.</param>
@@ -62,6 +64,8 @@ public class BedrockAgent : KernelAgent
     /// <returns>An instance of the <see cref="BedrockAgent"/>.</returns>
     public static async Task<BedrockAgent> CreateAsync(
         AmazonBedrockAgentModel.CreateAgentRequest request,
+        bool enableCodeInterpreter = false,
+        bool enableKernelFunctions = false,
         AmazonBedrockAgent.AmazonBedrockAgentClient? client = null,
         AmazonBedrockAgentRuntimeClient? runtimeClient = null,
         Kernel? kernel = null,
@@ -81,6 +85,17 @@ public class BedrockAgent : KernelAgent
         // The agent will first enter the CREATING status.
         // When the agent is created, it will enter the NOT_PREPARED status.
         await agent.WaitForAgentStatusAsync(AmazonBedrockAgent.AgentStatus.NOT_PREPARED, cancellationToken).ConfigureAwait(false);
+
+        if (enableCodeInterpreter)
+        {
+            await agent.CreateCodeInterpreterActionGroupAsync(cancellationToken).ConfigureAwait(false);
+        }
+        if (enableKernelFunctions)
+        {
+            await agent.CreateKernelFunctionActionGroupAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // Need to prepare the agent before it can be invoked.
         await agent.PrepareAsync(cancellationToken).ConfigureAwait(false);
 
         return agent;
@@ -198,6 +213,44 @@ public class BedrockAgent : KernelAgent
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => this.InternalInvokeStreamingAsync(invokeAgentRequest, arguments, cancellationToken),
             cancellationToken);
+    }
+
+    /// <summary>
+    /// Create a code interpreter action group for the agent.
+    /// </summary>
+    private async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken)
+    {
+        var createAgentActionGroupRequest = new AmazonBedrockAgentModel.CreateAgentActionGroupRequest
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = $"{this.GetDisplayName()}_CodeInterpreter",
+            ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
+            ParentActionGroupSignature = new(AmazonBedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
+        };
+
+        await this._client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a kernel function action group for the agent.
+    /// </summary>
+    private async Task CreateKernelFunctionActionGroupAsync(CancellationToken cancellationToken)
+    {
+        var createAgentActionGroupRequest = new AmazonBedrockAgentModel.CreateAgentActionGroupRequest
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = $"{this.GetDisplayName()}_KernelFunctions",
+            ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
+            ActionGroupExecutor = new()
+            {
+                CustomControl = AmazonBedrockAgent.CustomControlMethod.RETURN_CONTROL,
+            },
+            FunctionSchema = this.Kernel.ToFunctionSchema(),
+        };
+
+        await this._client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
     }
 
     protected override IEnumerable<string> GetChannelKeys()
