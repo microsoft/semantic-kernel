@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
 
-    <NoWarn>$(NoWarn);CA2007,SKEXP0001,SKEXP0020,VSTHRD111</NoWarn>
+    <NoWarn>$(NoWarn);CS1591,CA1861,CA2007,SKEXP0001,SKEXP0020,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Testcontainers.MsSql" />
   </ItemGroup>
 
   <ItemGroup>

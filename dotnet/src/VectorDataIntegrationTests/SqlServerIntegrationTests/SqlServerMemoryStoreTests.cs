@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using Microsoft.SemanticKernel.Memory;
+using SqlServerIntegrationTests;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
@@ -15,10 +12,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
 /// <summary>
 /// Unit tests for <see cref="SqlServerMemoryStore"/> class.
 /// </summary>
-public class SqlServerMemoryStoreTests : IAsyncLifetime
+public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : IClassFixture<SqlServerContainerFixture>, IAsyncLifetime
 {
-    private const string? SkipReason = "Configure SQL Server or Azure SQL connection string and then set this to 'null'.";
-    //private const string? SkipReason = null;
     private const string SchemaName = "sk_it";
     private const string DefaultCollectionName = "test";
     private const int TestEmbeddingDimensionsCount = 5;
@@ -27,16 +22,13 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
 
     private SqlServerMemoryStore Store { get; set; } = null!;
 
+    private SqlServerContainerFixture Fixture { get; } = fixture;
+
     public async Task InitializeAsync()
     {
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<SqlServerMemoryStore>()
-            .Build();
+        await this.Fixture.InitializeAsync();
 
-        var connectionString = configuration["SqlServer:ConnectionString"];
+        string connectionString = this.Fixture.GetConnectionString();
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -54,9 +46,11 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await this.CleanupDatabaseAsync();
+
+        await this.Fixture.DisposeAsync();
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task CreateCollectionAsync()
     {
         Assert.False(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
@@ -65,7 +59,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.True(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task DropCollectionAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -73,7 +67,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.False(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task GetCollectionsAsync()
     {
         await this.Store.CreateCollectionAsync("collection1");
@@ -84,7 +78,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.Contains("collection2", collections);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task UpsertAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -104,7 +98,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.Equal("Some id", id);
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetAsync(bool withEmbeddings)
@@ -128,7 +122,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             record.Embedding.ToArray());
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task UpsertBatchAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -139,7 +133,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             id => Assert.Equal("Some other id", id));
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetBatchAsync(bool withEmbeddings)
@@ -180,7 +174,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             });
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task RemoveAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -191,7 +185,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.Null(await this.Store.GetAsync(DefaultCollectionName, "Some id"));
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task RemoveBatchAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -204,7 +198,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.Null(await this.Store.GetAsync(DefaultCollectionName, "Some other id"));
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetNearestMatchesAsync(bool withEmbeddings)
@@ -248,7 +242,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             });
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task GetNearestMatchesWithMinRelevanceScoreAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -265,7 +259,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }
 
-    [Theory(Skip = SkipReason)]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetNearestMatchAsync(bool withEmbeddings)
