@@ -21,62 +21,6 @@ public class KernelBuilderExtensionsTests
         this._kernelBuilder = Kernel.CreateBuilder();
     }
 
-    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
-    [Fact]
-    public void AddVectorStoreRegistersClass()
-    {
-        // Act.
-        this._kernelBuilder.AddVolatileVectorStore();
-
-        // Assert.
-        var kernel = this._kernelBuilder.Build();
-        var vectorStore = kernel.Services.GetRequiredService<IVectorStore>();
-        Assert.NotNull(vectorStore);
-        Assert.IsType<VolatileVectorStore>(vectorStore);
-    }
-
-    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
-    [Fact]
-    public void AddVolatileVectorStoreTextSearchRegistersClass()
-    {
-        // Arrange.
-        this._kernelBuilder.AddVolatileVectorStore();
-        this._kernelBuilder.AddOpenAITextEmbeddingGeneration("modelId", "apiKey");
-
-        // Act.
-        this._kernelBuilder.AddVolatileVectorStoreTextSearch<Guid, DataModel>(
-            "records",
-            new DataModelTextSearchStringMapper(),
-            new DataModelTextSearchResultMapper());
-
-        // Assert.
-        var kernel = this._kernelBuilder.Build();
-        var vectorStoreTextSearch = kernel.Services.GetRequiredService<VectorStoreTextSearch<DataModel>>();
-        Assert.NotNull(vectorStoreTextSearch);
-        Assert.IsType<VectorStoreTextSearch<DataModel>>(vectorStoreTextSearch);
-    }
-
-    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
-    [Fact]
-    public void AddVolatileVectorStoreTextSearchWithDelegatesRegistersClass()
-    {
-        // Arrange.
-        this._kernelBuilder.AddVolatileVectorStore();
-        this._kernelBuilder.AddOpenAITextEmbeddingGeneration("modelId", "apiKey");
-
-        // Act.
-        this._kernelBuilder.AddVolatileVectorStoreTextSearch<Guid, DataModel>(
-            "records",
-            obj => ((DataModel)obj).Text,
-            obj => new TextSearchResult(value: ((DataModel)obj).Text) { Name = ((DataModel)obj).Key.ToString() });
-
-        // Assert.
-        var kernel = this._kernelBuilder.Build();
-        var vectorStoreTextSearch = kernel.Services.GetRequiredService<VectorStoreTextSearch<DataModel>>();
-        Assert.NotNull(vectorStoreTextSearch);
-        Assert.IsType<VectorStoreTextSearch<DataModel>>(vectorStoreTextSearch);
-    }
-
     /// <summary>
     /// String mapper which converts a DataModel to a string.
     /// </summary>
