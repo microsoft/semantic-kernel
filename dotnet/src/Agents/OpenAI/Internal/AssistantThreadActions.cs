@@ -256,7 +256,7 @@ internal static class AssistantThreadActions
             int messageCount = 0;
             foreach (RunStep completedStep in completedStepsToProcess)
             {
-                if (completedStep.Type == RunStepType.ToolCalls)
+                if (completedStep.Kind == RunStepKind.ToolCall)
                 {
                     foreach (RunStepToolCall toolCall in completedStep.Details.ToolCalls)
                     {
@@ -264,15 +264,15 @@ internal static class AssistantThreadActions
                         ChatMessageContent? content = null;
 
                         // Process code-interpreter content
-                        if (toolCall.ToolKind == RunStepToolCallKind.CodeInterpreter)
+                        if (toolCall.Kind == RunStepToolCallKind.CodeInterpreter)
                         {
                             content = GenerateCodeInterpreterContent(agent.GetName(), toolCall.CodeInterpreterInput, completedStep);
                             isVisible = true;
                         }
                         // Process function result content
-                        else if (toolCall.ToolKind == RunStepToolCallKind.Function)
+                        else if (toolCall.Kind == RunStepToolCallKind.Function)
                         {
-                            FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
+                            FunctionResultContent functionStep = functionSteps[toolCall.Id]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), [functionStep], completedStep);
                         }
 
@@ -284,7 +284,7 @@ internal static class AssistantThreadActions
                         }
                     }
                 }
-                else if (completedStep.Type == RunStepType.MessageCreation)
+                else if (completedStep.Kind == RunStepKind.CreatedMessage)
                 {
                     // Retrieve the message
                     ThreadMessage? message = await RetrieveMessageAsync(client, threadId, completedStep.Details.CreatedMessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
@@ -506,7 +506,7 @@ internal static class AssistantThreadActions
                 {
                     foreach (RunStepToolCall stepDetails in step.Details.ToolCalls)
                     {
-                        toolMap[stepDetails.ToolCallId] = step.Id;
+                        toolMap[stepDetails.Id] = step.Id;
                     }
                 }
 
@@ -564,14 +564,14 @@ internal static class AssistantThreadActions
                     {
                         foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
                         {
-                            if (toolCall.ToolKind == RunStepToolCallKind.Function)
+                            if (toolCall.Kind == RunStepToolCallKind.Function)
                             {
                                 messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
                                 stepFunctionResults.Remove(step.Id);
                                 break;
                             }
 
-                            if (toolCall.ToolKind == RunStepToolCallKind.CodeInterpreter)
+                            if (toolCall.Kind == RunStepToolCallKind.CodeInterpreter)
                             {
                                 messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), toolCall.CodeInterpreterInput, step));
                             }
@@ -761,13 +761,13 @@ internal static class AssistantThreadActions
 
     private static IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
     {
-        if (step.Status == RunStepStatus.InProgress && step.Type == RunStepType.ToolCalls)
+        if (step.Status == RunStepStatus.InProgress && step.Kind == RunStepKind.ToolCall)
         {
             foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
             {
                 (FunctionName nameParts, KernelArguments functionArguments) = ParseFunctionCall(toolCall.FunctionName, toolCall.FunctionArguments);
 
-                FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.ToolCallId, functionArguments);
+                FunctionCallContent content = new(nameParts.Name, nameParts.PluginName, toolCall.Id, functionArguments);
 
                 yield return content;
             }

@@ -28,9 +28,13 @@ public class Step05_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
             new()
             {
                 Name = HostName,
-                Instructions = HostInstructions,
-                Metadata = AssistantSampleMetadata,
+                Instructions = HostInstructions
             };
+
+        foreach (var keyValuePair in AssistantSampleMetadata)
+        {
+            creationOptions.Metadata.Add(keyValuePair);
+        }
 
         // In this sample the function tools are added to the assistant this is
         // important if you want to retrieve the assistant later and then dynamically check
