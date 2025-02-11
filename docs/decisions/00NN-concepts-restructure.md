@@ -222,6 +222,12 @@ Some of the features we should consider:
 
 - Enable export to Jupyter Notebook. This would be a great feature to allow users to easily run the samples in their own environment.
 
+#### POC's
+
+1. SourceBrowser
+2. Static Web Site (AI Generated)
+3. TBD (WebApp)
+
 ### Balancing Clarity (Copy and Paste) vs Usability
 
 Much of our samples have plenty of repetitive code that can be refactored and extracted in Utilities or Helpers, this could reduce significantly the size of the samples even allowing them to be provider/service agnostic.

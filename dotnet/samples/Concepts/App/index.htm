@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Kernel Test Files Search</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        #search {
+            width: 300px;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .square {
+            width: 220px;
+            height: 150px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .square:hover {
+            background: #e9ecef;
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <input type="text" id="search" class="form-control" placeholder="Search test files..." onkeyup="filterTests()">
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Test File Content</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="fileContent" style="white-space: pre-wrap;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const grid = document.getElementById('grid');
+        let testFiles = []; // Array to store { name, path } for each file
+
+        // Helper function to "humanize" a file name.
+        function humanize(filename) {
+            // Remove the .cs extension (case-insensitive)
+            let name = filename.replace(/\.cs$/i, "");
+            // Replace underscores with spaces
+            name = name.replace(/_/g, " ");
+            // Insert space between a lowercase letter and an uppercase letter
+            name = name.replace(/([a-z])([A-Z])/g, "$1 $2");
+            // Insert space between sequences of uppercase letters and a following uppercase letter with lowercase (e.g. "AIChat" -> "AI Chat")
+            name = name.replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+            return name;
+        }
+
+        // Fetch the repository tree from the public GitHub API (no auth required)
+        async function fetchTestFiles() {
+            try {
+                const response = await fetch("https://api.github.com/repos/microsoft/semantic-kernel/git/trees/main?recursive=1");
+                const data = await response.json();
+                // Filter for C# files under dotnet/samples/Concepts/
+                testFiles = data.tree
+                    .filter(item => item.path.startsWith("dotnet/samples/Concepts/") && item.path.endsWith(".cs"))
+                    .map(item => {
+                        const parts = item.path.split("/");
+                        return { name: parts[parts.length - 1], path: item.path };
+                    });
+                // Initially sort alphabetically
+                testFiles.sort((a, b) => a.name.localeCompare(b.name));
+                populateGrid(testFiles);
+            } catch (err) {
+                console.error("Error fetching test files:", err);
+                grid.innerHTML = "<p>Error loading files.</p>";
+            }
+        }
+
+        // Populate the grid with squares based on the provided file list.
+        function populateGrid(files) {
+            grid.innerHTML = "";
+            if (files.length === 0) {
+                grid.innerHTML = "<p>No files found.</p>";
+                return;
+            }
+            files.forEach(file => {
+                const div = document.createElement("div");
+                div.className = "square";
+                // Use the humanize() function to convert file name for display.
+                div.textContent = humanize(file.name);
+                div.dataset.path = file.path;
+                div.addEventListener("click", () => showFileContent(file.path, humanize(file.name)));
+                grid.appendChild(div);
+            });
+        }
+
+        // Filter the local file list by splitting the search term into tokens.
+        // Files with more matching tokens appear first.
+        function filterTests() {
+            const term = document.getElementById('search').value.trim().toLowerCase();
+            if (term === "") {
+                populateGrid(testFiles);
+                return;
+            }
+            const tokens = term.split(/\s+/);
+            // Filter files that match at least one token.
+            let filtered = testFiles.filter(file => {
+                const fileName = file.name.toLowerCase();
+                return tokens.some(token => fileName.includes(token));
+            });
+            // Sort by number of matching tokens (descending) and then alphabetically.
+            filtered.sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                const aMatches = tokens.reduce((acc, token) => acc + (aName.includes(token) ? 1 : 0), 0);
+                const bMatches = tokens.reduce((acc, token) => acc + (bName.includes(token) ? 1 : 0), 0);
+                return bMatches - aMatches || aName.localeCompare(bName);
+            });
+            populateGrid(filtered);
+        }
+
+        // Fetch the file content from GitHub raw URL and display it in a Bootstrap modal.
+        async function showFileContent(filePath, fileName) {
+            try {
+                const rawUrl = `https://raw.githubusercontent.com/microsoft/semantic-kernel/main/${filePath}`;
+                const response = await fetch(rawUrl);
+                const content = await response.text();
+                document.getElementById("modalTitle").textContent = fileName;
+                document.getElementById("fileContent").textContent = content;
+                const modal = new bootstrap.Modal(document.getElementById('contentModal'));
+                modal.show();
+            } catch (err) {
+                console.error("Error fetching file content:", err);
+            }
+        }
+
+        // On page load, fetch the list of test files.
+        fetchTestFiles();
+    </script>
+</body>
+
+</html>
