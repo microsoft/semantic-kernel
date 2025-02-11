@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 contact: rogerbarreto
-date: { YYYY-MM-DD when the decision was last updated }
+date: 2025-02-11
 deciders: markwallace, sergey, dmytro, weslie, evan, shawn
 ---
 
