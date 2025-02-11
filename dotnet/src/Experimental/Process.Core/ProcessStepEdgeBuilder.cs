@@ -13,9 +13,9 @@ public sealed class ProcessStepEdgeBuilder
     internal ProcessFunctionTargetBuilder? Target { get; set; }
 
     /// <summary>
-    /// The event Id that the edge fires on.
+    /// The event data that the edge fires on.
     /// </summary>
-    internal string EventId { get; }
+    internal ProcessEventData EventData { get; }
 
     /// <summary>
     /// The source step of the edge.
@@ -27,13 +27,14 @@ public sealed class ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
-    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId)
+    /// <param name="eventName"></param>
+    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName)
     {
         Verify.NotNull(source, nameof(source));
         Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
         this.Source = source;
-        this.EventId = eventId;
+        this.EventData = new() { EventId = eventId, EventName = eventName };
     }
 
     /// <summary>
@@ -65,9 +66,39 @@ public sealed class ProcessStepEdgeBuilder
         }
 
         this.Target = target;
-        this.Source.LinkTo(this.EventId, this);
+        this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventId);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName);
+    }
+
+    /// <summary>
+    /// Emit the SK step event as a SK process public event with different name as the original step event
+    /// </summary>
+    /// <param name="proxyStep"></param>
+    /// <param name="topicName"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder EmitInternalEvent(ProcessProxyBuilder proxyStep, string topicName, object? defaultValue = null)
+    {
+        // TODO-estenori: do linking of internal forward events
+
+        var targetBuilder = proxyStep.GetInternalFunctionTargetBuilder();
+        return this.SendEventTo(targetBuilder);
+    }
+
+    /// <summary>
+    /// Emit the SK step event as an external event with specific topic name
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder EmitExternalEvent(ProcessProxyBuilder proxyStep, string topicName)
+    {
+        // 1. Link sk event and topic
+        proxyStep.LinkTopicToStepEdgeInfo(topicName, this.Source, this.EventData);
+
+        // 2. Regular SK step link step functions/edge connection
+        var targetBuilder = proxyStep.GetExternalFunctionTargetBuilder();
+
+        return this.SendEventTo(targetBuilder);
     }
 
     /// <summary>

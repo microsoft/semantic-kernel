@@ -431,7 +431,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         bool foundEdge = false;
         foreach (KernelProcessEdge edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
-            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.SourceId, daprEvent.Data);
             ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
