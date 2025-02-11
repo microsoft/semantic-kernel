@@ -122,8 +122,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(155, usage.TotalTokenCount);
     }
 
-    [Fact]
-    public async Task GetChatMessageContentsHandlesSettingsCorrectlyAsync()
+    [Theory]
+    [InlineData("system")]
+    [InlineData("developer")]
+    public async Task GetChatMessageContentsHandlesSettingsCorrectlyAsync(string historyRole)
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
@@ -152,7 +154,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("User Message");
         chatHistory.AddUserMessage([new ImageContent(new Uri("https://image")), new TextContent("User Message")]);
-        chatHistory.AddSystemMessage("System Message");
+        if (historyRole == "system")
+        {
+            chatHistory.AddSystemMessage("System Message");
+        }
+        else
+        {
+            chatHistory.AddDeveloperMessage("Developer Message");
+        }
         chatHistory.AddAssistantMessage("Assistant Message");
 
         using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
@@ -189,8 +198,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("User Message", contentItems[1].GetProperty("text").GetString());
         Assert.Equal("text", contentItems[1].GetProperty("type").GetString());
 
-        Assert.Equal("system", systemMessage.GetProperty("role").GetString());
-        Assert.Equal("System Message", systemMessage.GetProperty("content").GetString());
+        if (historyRole == "system")
+        {
+            Assert.Equal("system", systemMessage.GetProperty("role").GetString());
+            Assert.Equal("System Message", systemMessage.GetProperty("content").GetString());
+        }
+        else
+        {
+            Assert.Equal("developer", systemMessage.GetProperty("role").GetString());
+            Assert.Equal("Developer Message", systemMessage.GetProperty("content").GetString());
+        }
 
         Assert.Equal("assistant", assistantMessage.GetProperty("role").GetString());
         Assert.Equal("Assistant Message", assistantMessage.GetProperty("content").GetString());
@@ -1537,6 +1554,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
     public static TheoryData<string?, string?> Versions => new()
     {
+        { "V2025_01_01_preview", "2025-01-01-preview" },
+        { "V2025_01_01_PREVIEW", "2025-01-01-preview" },
+        { "2025_01_01_Preview", "2025-01-01-preview" },
+        { "2025-01-01-preview", "2025-01-01-preview" },
+        { "V2024_12_01_preview", "2024-12-01-preview" },
+        { "V2024_12_01_PREVIEW", "2024-12-01-preview" },
+        { "2024_12_01_Preview", "2024-12-01-preview" },
+        { "2024-12-01-preview", "2024-12-01-preview" },
         { "V2024_10_01_preview", "2024-10-01-preview" },
         { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
         { "2024_10_01_Preview", "2024-10-01-preview" },
@@ -1552,10 +1577,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { "V2024_06_01", "2024-06-01" },
         { "2024_06_01", "2024-06-01" },
         { "2024-06-01", "2024-06-01" },
+        { "V2024_10_21", "2024-10-21" },
+        { "2024_10_21", "2024-10-21" },
+        { "2024-10-21", "2024-10-21" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_09_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_21.ToString(), null }
     };
 
     public void Dispose()
