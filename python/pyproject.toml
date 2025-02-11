@@ -63,7 +63,7 @@ chroma = [
 ]
 google = [
     "google-cloud-aiplatform == 1.79.0",
-    "google-generativeai == 0.7"
+    "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
@@ -112,7 +112,7 @@ usearch = [
     "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
-    "weaviate-client>=4.7,<5.0",
+    "weaviate-client>=4.10,<5.0",
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -140,7 +140,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.7",
+    "ruff ~= 0.9",
     "pyright>=1.1.392.post0",
 ]
 environments = [

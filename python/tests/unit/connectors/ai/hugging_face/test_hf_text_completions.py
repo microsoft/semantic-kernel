@@ -4,6 +4,7 @@ from threading import Thread
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from transformers import TextIteratorStreamer
 
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -11,16 +12,6 @@ from semantic_kernel.exceptions import KernelInvokeException, ServiceResponseExc
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-try:
-    import torch  # noqa: F401
-    from transformers import TextIteratorStreamer  # noqa: F401
-
-    ready = True
-except ImportError:
-    ready = False
-
-pytestmark = pytest.mark.skipif(not ready, reason="Pytorch is not installed.")
 
 
 @pytest.mark.parametrize(

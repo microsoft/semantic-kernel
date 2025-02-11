@@ -9,6 +9,8 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+import sentence_transformers
+import torch
 from numpy import ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
@@ -16,24 +18,12 @@ from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from torch import Tensor
 
-    try:
-        from torch import Tensor
-    except ImportError:
-        Tensor = Any  # type: ignore
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-try:
-    import sentence_transformers
-    import torch
-
-    ready = True
-except ImportError:
-    logger.warning("torch is not installed, HuggingFaceTextCompletion will not work.")
-    ready = False
 
 
 @experimental_class
@@ -59,8 +49,6 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        if not ready:
-            raise ImportError("torch is not installed, HuggingFaceTextEmbedding will not work.")
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
