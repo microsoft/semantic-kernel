@@ -53,7 +53,7 @@ async def main(query: str, first_run: bool = False):
     vectorizer = VectorStoreRecordUtils(kernel)
     # Create the Azure AI Search collection
     collection = AzureAISearchCollection[HotelSampleClass](
-        collection_name="hotels-sample-index", data_model_type=HotelSampleClass
+        collection_name="hotels-sample-index-4", data_model_type=HotelSampleClass
     )
     # Check if the collection exists.
     if not await collection.does_collection_exist():
@@ -100,5 +100,5 @@ async def main(query: str, first_run: bool = False):
 
 
 if __name__ == "__main__":
-    query = "swimming pool and good internet connection"
+    query = "which hotels are available with full-sized kitchens?"
     asyncio.run(main(query=query, first_run=first_run))

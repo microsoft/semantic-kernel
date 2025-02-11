@@ -2,15 +2,6 @@
 
 import asyncio
 
-from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import AzureAISearchTool, ConnectionType
-from azure.identity.aio import DefaultAzureCredential
-
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-
 ###########################################################################
 # The following sample demonstrates how to create a simple,               #
 # Azure AI agent that uses the Azure AI Search tool and the demo          #
@@ -23,6 +14,18 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 # Azure AI Search service. You may follow this guide to create the index: #
 # https://learn.microsoft.com/azure/search/search-get-started-portal      #
 ###########################################################################
+import logging
+
+from azure.ai.projects.aio import AIProjectClient
+from azure.ai.projects.models import AzureAISearchTool, ConnectionType
+from azure.identity.aio import DefaultAzureCredential
+
+from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 async def main() -> None:

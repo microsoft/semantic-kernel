@@ -24,6 +24,9 @@ USAGE:
        the "Models + endpoints" tab in your Azure AI Foundry project.
 """
 
+
+# logging.basicConfig(level=logging.DEBUG)
+
 from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import AzureAISearchTool, ConnectionType
 from azure.identity import DefaultAzureCredential
@@ -48,7 +51,7 @@ for conn in conn_list:
 print(conn_id)
 
 # Initialize agent AI search tool and add the search index connection id
-ai_search = AzureAISearchTool(index_connection_id=conn_id, index_name="hotels-sample-index")
+ai_search = AzureAISearchTool(index_connection_id=conn_id, index_name="hotels-sample-index-4")
 
 # Create agent with AI search tool and process assistant run
 with project_client:
@@ -71,7 +74,7 @@ with project_client:
     message = project_client.agents.create_message(
         thread_id=thread.id,
         role="user",
-        content="Which hotels are available with full-sized kitchens in Nashville, TN?",
+        content="Using the index, which hotels are available with full-sized kitchens in Nashville, TN?",
     )
     print(f"Created message, ID: {message.id}")
 
@@ -85,6 +88,9 @@ with project_client:
     # Delete the assistant when done
     project_client.agents.delete_agent(agent.id)
     print("Deleted agent")
+
+    run_steps = project_client.agents.list_run_steps(thread_id=thread.id, run_id=run.id)
+    print(f"Run steps: {run_steps}")
 
     # Fetch and log all messages
     messages = project_client.agents.list_messages(thread_id=thread.id)
