@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AmazonBedrockAgent = Amazon.BedrockAgent;
@@ -11,7 +12,6 @@ using AmazonBedrockAgentRuntimeModel = Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -290,5 +290,4 @@ public class BedrockAgent : KernelAgent
 
     internal string GetCodeInterpreterActionGroupSignature() => $"{this.GetDisplayName()}_CodeInterpreter";
     internal string GetKernelFunctionActionGroupSignature() => $"{this.GetDisplayName()}_KernelFunctions";
-
 }
