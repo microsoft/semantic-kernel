@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: { proposed }
-contact: { Eduard van Valkenburg}
-date: { 2025-01-31 }
-deciders: { Eduard van Valkenburg, Mark Wallace, Ben Thomas, Shawn Henry }
-consulted: { Weslie Steyn, Roger Barreto, Ben Thomas, Mark Wallace, Sergey Menshykh, Evan Mattson }
-informed: { Tao Chen, Dmytro Struk }
+status:  proposed 
+contact:  Eduard van Valkenburg
+date:  2025-01-31 
+deciders:  Eduard van Valkenburg, Mark Wallace, Ben Thomas, Shawn Henry 
+consulted:  Weslie Steyn, Roger Barreto, Ben Thomas, Mark Wallace, Sergey Menshykh, Evan Mattson 
+informed: Tao Chen, Dmytro Struk
 ---
 
 # Multi-modal Realtime API Clients
@@ -16,17 +16,19 @@ Multiple model providers are starting to enable realtime voice-to-voice or even 
 
 The key feature that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. There are also options for Google to use video and images as input, this will likely not be implemented first, but the abstraction should be able to deal with it.
 
+> [!IMPORTANT] 
+> Both the OpenAI and Google realtime api's are in preview/beta, this means there might be breaking changes in the way they work coming in the future, therefore the clients built to support these API's are going to be experimental until the API's stabilize.
+
 At this time, the protocols that these API's use are Websockets and WebRTC.
 
 In both cases there are events being sent to and from the service, some events contain content, text, audio, or video (so far only sending, not receiving), while some events are "control" events, like content created, function call requested, etc. Sending events include, sending content, either voice, text or function call output, or events, like committing the input audio and requesting a response. 
 
 ### Websocket
-Websocket has been around for a while and is a well known technology, it is a full-duplex communication protocol over a single, long-lived connection. It is used for sending and receiving messages between client and server in real-time. Each event can contain a message, which might contain a content item, or a control event. Audio is sent as a base64 encoded string that is part of a event.
+Websocket has been around for a while and is a well known technology, it is a full-duplex communication protocol over a single, long-lived connection. It is used for sending and receiving messages between client and server in real-time. Each event can contain a message, which might contain a content item, or a control event. Audio is sent as a base64 encoded string in a event.
 
 ### WebRTC
 WebRTC is a Mozilla project that provides web browsers and mobile applications with real-time communication via simple APIs. It allows audio and video communication to work inside web pages and other applications by allowing direct peer-to-peer communication, eliminating the need to install plugins or download native apps. It is used for sending and receiving audio and video streams, and can be used for sending (data-)messages as well. The big difference compared to websockets is that it explicitly create a channel for audio and video, and a separate channel for "data", which are events and in this space that contains all non-AV content, text, function calls, function results and control events, like errors or acknowledgements.
 
-Both the OpenAI and Google realtime api's are in preview/beta, this means there might be breaking changes in the way they work coming in the future, therefore the clients built to support these API's are going to be experimental until the API's stabilize.
 
 ### Event types (Websocket and partially WebRTC)
 
@@ -126,7 +128,7 @@ This would introduce events, each event has a type, those can be core content ty
   - easy to maintain and extend
 - Con:
   - new concept introduced
-  - might be confusing to have contents with and without SK type
+  - might be confusing to have contents with and without SK types
 
 ## Decision Outcome - Content and Events
 
@@ -177,7 +179,7 @@ ImageEvent(
 )
 ```
 
-Next to these we will have a generic event, called ServiceEvent, this is the catch-all, which has event_type: "service", the service_event field filled with the event type from the service and a field called 'event' which contains the raw event from the service.
+Next to these we will have a generic event, called ServiceEvent, this is the catch-all, which has event_type: "service", the service_event field filled with the event type from the service and a field called 'event' which contains the raw event from the service. A key difference between this event and other events is that the service_event field cannot by None, it has to be filled.
 
 ```python
 ServiceEvent(
@@ -312,11 +314,11 @@ This would mean that the client would receive AudioContent items, and would have
 
 ## Decision Outcome - Audio speaker/microphone handling
 
-Chosen option: Option 2: there are vast difference in audio format, frame duration, sample rate and other audio settings, that a default that works *always* is not feasible, and the developer will have to deal with this anyway, so it's better to let them deal with it from the start, we will add sample audio handlers to the samples to still allow people to get started with ease. 
+Chosen option: Option 2: there are vast difference in audio format, frame duration, sample rate and other audio settings, that a default that works *always* is likely not feasible, and the developer will have to deal with this anyway, so it's better to let them deal with it from the start, we will add sample audio handlers to the samples to still allow people to get started with ease. 
 
 # Interface design
 
-The following methods will need to be supported:
+The following functionalities will need to be supported:
 - create session
 - update session
 - close session
@@ -338,7 +340,7 @@ Two interfaces are created:
 - Service: create session, update session, delete session, maybe list sessions?
 - Session: listen for/receive events, send events, update session, close session
 
-Currently neither the google or the openai api's support restarting sessions, so the advantage of splitting is mostly a implementation question but will not add any benefits to the developer. This means that the split would be far simpler:
+Currently neither the google or the openai api's support restarting sessions, so the advantage of splitting is mostly a implementation question but will not add any benefits to the developer. This means that the resultant split will actually be far simpler:
 - Service: create session
 - Session: listen for/receive events, send events, update session, close session
 
@@ -381,27 +383,29 @@ class RealtimeClient:
         ...
 ```
 
-In most cases, create_session should call update_session with the same parameters, since update session can also be done separately later on with the same inputs.
+In most cases, `create_session` should call `update_session` with the same parameters, since update session can also be done separately later on with the same inputs.
 
-For Python a default __aenter__ and __aexit__ method should be added to the class, so it can be used in a with statement, which calls create_session and close_session respectively.
+For Python a default `__aenter__` and `__aexit__` method should be added to the class, so it can be used in a `async with` statement, which calls create_session and close_session respectively.
 
-It is advisable, but not required, to implement the send method through a buffer/queue so that events can be 'sent' before the sessions has been established without losing them or raising exceptions, this might take a few seconds and in that time a single send call would block the application.
+It is advisable, but not required, to implement the send method through a buffer/queue so that events can be 'sent' before the sessions has been established without losing them or raising exceptions, since the session creation might take a few seconds and in that time a single send call would either block the application or throw an exception.
 
-The send method should handle all events types, but it might have to handle the same thing in two ways, for instance:
+The send method should handle all events types, but it might have to handle the same thing in two ways, for instance (for the OpenAI API):
 ```python
 audio = AudioContent(...)
 
 await client.send(AudioEvent(event_type='audio', audio=audio))
 ```
 
-should be equivalent to (for the OpenAI API):
+should be equivalent to:
 ```python
 audio = AudioContent(...)
 
 await client.send(ServiceEvent(event_type='service', service_event='input_audio_buffer.append', event=audio))
 ```
 
-The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this would be required to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
+The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this can for instance be used to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
+
+The developer should document which event types are used by default for the non-ServiceEvents.
 
 
 [openai-realtime-api]: https://platform.openai.com/docs/guides/realtime
