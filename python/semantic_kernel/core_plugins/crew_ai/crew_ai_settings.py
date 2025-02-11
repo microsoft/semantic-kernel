@@ -19,17 +19,4 @@ class CrewAISettings(KernelBaseSettings):
     endpoint: str
     auth_token: SecretStr | None = None
     polling_interval: float = 1.0
-
-
-class CrewAIClientSettings(KernelBaseSettings):
-    """The Crew.AI client settings.
-
-    Required:
-    - endpoint: str - The API endpoint.
-    """
-
-    env_prefix: ClassVar[str] = "CREW_AI_CLIENT_"
-
-    endpoint: str
-    auth_token: SecretStr | None = None
-    polling_interval: float = 1.0
+    polling_timeout: float = 30.0

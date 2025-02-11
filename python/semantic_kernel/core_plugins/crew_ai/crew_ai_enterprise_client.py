@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
-from collections.abc import Awaitable, Callable
 from typing import Any
 
 import aiohttp
 
+from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
 from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
     CrewAIKickoffResponse,
     CrewAIRequiredInputs,
@@ -19,7 +18,31 @@ class CrewAIEnterpriseClient(KernelBaseModel):
     """Client to interact with the Crew AI Enterprise API."""
 
     endpoint: str
-    auth_token_provider: Callable[..., Awaitable[str]]
+    auth_token: str
+    request_header: dict[str, str]
+    session: aiohttp.ClientSession | None
+
+    def __init__(
+        self,
+        endpoint: str,
+        auth_token: str,
+        session: aiohttp.ClientSession | None = None,
+    ):
+        """Initializes a new instance of the CrewAIEnterpriseClient class.
+
+        Args:
+            endpoint (str): The API endpoint.
+            auth_token (str): The authentication token.
+            session (Optional[aiohttp.ClientSession], optional): The HTTP client session. Defaults to None.
+        """
+        request_header = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+            "user_agent": SEMANTIC_KERNEL_USER_AGENT,
+        }
+
+        session = session
+        super().__init__(endpoint=endpoint, auth_token=auth_token, request_header=request_header, session=session)
 
     async def get_inputs(self) -> CrewAIRequiredInputs:
         """Get the required inputs for Crew AI.
@@ -27,10 +50,12 @@ class CrewAIEnterpriseClient(KernelBaseModel):
         Returns:
             CrewAIRequiredInputs: The required inputs for Crew AI.
         """
-        async with await self._create_http_client() as client, client.get(f"{self.endpoint}/inputs") as response:
+        async with (
+            AsyncSession(self.session) as session,
+            session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,
+        ):
             response.raise_for_status()
             return CrewAIRequiredInputs.model_validate_json(await response.text())
-            return CrewAIRequiredInputs(**json.loads(body))
 
     async def kickoff(
         self,
@@ -57,12 +82,12 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             "crewWebhookUrl": crew_webhook_url,
         }
         async with (
-            await self._create_http_client() as client,
-            client.post(f"{self.endpoint}/kickoff", json=content) as response,
+            AsyncSession(self.session) as session,
+            session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,
         ):
             response.raise_for_status()
             body = await response.text()
-            return CrewAIKickoffResponse(**json.loads(body))
+            return CrewAIKickoffResponse.model_validate_json(body)
 
     async def get_status(self, task_id: str) -> CrewAIStatusResponse:
         """Get the status of a Crew AI task.
@@ -74,24 +99,9 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             CrewAIStatusResponse: The status response of the task.
         """
         async with (
-            await self._create_http_client() as client,
-            client.get(f"{self.endpoint}/status/{task_id}") as response,
+            AsyncSession(self.session) as session,
+            session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,
         ):
             response.raise_for_status()
             body = await response.text()
-            return CrewAIStatusResponse(**json.loads(body))
-
-    async def _create_http_client(self) -> aiohttp.ClientSession:
-        """Create an HTTP client session with the necessary headers.
-
-        Returns:
-            aiohttp.ClientSession: The HTTP client session.
-        """
-        auth_token = await self.auth_token_provider()
-        headers = {
-            "Authorization": f"Bearer {auth_token}",
-            "Content-Type": "application/json",
-            "user_agent": SEMANTIC_KERNEL_USER_AGENT,
-        }
-
-        return aiohttp.ClientSession(headers=headers)
+            return CrewAIStatusResponse.model_validate_json(body)

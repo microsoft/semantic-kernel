@@ -2,12 +2,12 @@
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable
 from typing import Any
 
-from pydantic import Field
+import aiohttp
+from pydantic import Field, ValidationError
 
-from semantic_kernel.core_plugins.crew_ai.crew_ai_client import CrewAIEnterpriseClient
+from semantic_kernel.core_plugins.crew_ai.crew_ai_enterprise_client import CrewAIEnterpriseClient
 from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
     CrewAIEnterpriseKickoffState,
     CrewAIStatusResponse,
@@ -24,36 +24,57 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class CrewAIEnterprise(KernelBaseModel):
-    """Class to interface with Crew.AI Crews from Semantic Kernel."""
+    """Class to interface with Crew.AI Crews from Semantic Kernel.
+
+    This object can be used directly or as a plugin in the Kernel.
+    """
 
     client: CrewAIEnterpriseClient
     polling_interval: float = Field(default=1.0)
+    polling_timeout: float = Field(default=30.0)
 
-    def __init__(self, settings: CrewAISettings, auth_token_provider: Callable[..., Awaitable[str]] | None = None):
-        """Initialize a new instance of the class.
+    def __init__(
+        self,
+        endpoint: str | None = None,
+        auth_token: str | None = None,
+        polling_interval: float | None = 1.0,
+        polling_timeout: float | None = 30.0,
+        session: aiohttp.ClientSession | None = None,
+    ):
+        """Initialize a new instance of the class.  This object can be used directly or as a plugin in the Kernel.
 
         Args:
-            settings (CrewAISettings): The API endpoint.
-            auth_token_provider (Optional[callable], optional): A callable to provide the authentication token.
+            endpoint (str | None, optional): The API endpoint.
+            auth_token (str | None, optional): The authentication token.
+            polling_interval (float, optional): The polling interval in seconds. Defaults to 1.0.
+            polling_timeout (float, optional): The polling timeout in seconds. Defaults to 30.0.
+            session (aiohttp.ClientSession | None, optional): The HTTP client session. Defaults to None.
         """
-        if not auth_token_provider:
-            if not settings.auth_token:
-                raise PluginInitializationError("An auth token provider or auth token must be provided.")
+        try:
+            settings = CrewAISettings.create(
+                endpoint=endpoint,
+                auth_token=auth_token,
+                polling_interval=polling_interval,
+                polling_timeout=polling_timeout,
+            )
+        except ValidationError as ex:
+            raise PluginInitializationError("Failed to initialize CrewAI settings.") from ex
 
-            async def auth_token_provider() -> Awaitable[str]:
-                await asyncio.sleep(0)  # Yield control to the event loop
-                return settings.auth_token.get_secret_value()
-
-        client = CrewAIEnterpriseClient(endpoint=settings.endpoint, auth_token_provider=auth_token_provider)
+        client = CrewAIEnterpriseClient(
+            endpoint=settings.endpoint, auth_token=settings.auth_token.get_secret_value(), session=session
+        )
 
         super().__init__(
             client=client,
             polling_interval=settings.polling_interval,
+            polling_timeout=settings.polling_timeout,
         )
 
     async def kickoff(
@@ -116,19 +137,24 @@ class CrewAIEnterprise(KernelBaseModel):
         try:
             status_response = None
             status = CrewAIEnterpriseKickoffState.Pending
-            while status not in [
-                CrewAIEnterpriseKickoffState.Failed,
-                CrewAIEnterpriseKickoffState.Failure,
-                CrewAIEnterpriseKickoffState.Success,
-                CrewAIEnterpriseKickoffState.Not_Found,
-            ]:
-                logger.info(
-                    f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {status}"
-                )
 
-                await asyncio.sleep(self.polling_interval)
-                status_response = await self.client.get_status(kickoff_id)
-                status = status_response.state
+            async def poll_status():
+                nonlocal status, status_response
+                while status not in [
+                    CrewAIEnterpriseKickoffState.Failed,
+                    CrewAIEnterpriseKickoffState.Failure,
+                    CrewAIEnterpriseKickoffState.Success,
+                    CrewAIEnterpriseKickoffState.Not_Found,
+                ]:
+                    logger.debug(
+                        f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {status}"
+                    )
+
+                    await asyncio.sleep(self.polling_interval)
+                    status_response = await self.client.get_status(kickoff_id)
+                    status = status_response.state
+
+            await asyncio.wait_for(poll_status(), timeout=self.polling_timeout)
 
             logger.info(f"CrewAI Crew with kickoff Id: {kickoff_id} completed with status: {status_response.state}")
             if status in ["Failed", "Failure"]:

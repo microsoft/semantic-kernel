@@ -3,18 +3,21 @@
 import asyncio
 import logging
 
-from semantic_kernel.core_plugins.crew_ai import CrewAIEnterprise, InputMetadata
-from semantic_kernel.core_plugins.crew_ai.crew_ai_settings import CrewAISettings
-from semantic_kernel.functions import KernelArguments
-from semantic_kernel.functions import KernelFunction
 from semantic_kernel import Kernel
+from semantic_kernel.core_plugins.crew_ai import CrewAIEnterprise
+from semantic_kernel.core_plugins.crew_ai.crew_ai_models import InputMetadata
+from semantic_kernel.functions import KernelArguments, KernelFunction
 
 logging.basicConfig(level=logging.INFO)
 
 
 async def using_crew_ai_enterprise():
-    settings = CrewAISettings.create()
-    crew = CrewAIEnterprise(settings=settings)
+    # Create an instance of the CrewAI Enterprise Crew
+    crew = CrewAIEnterprise()
+
+    #####################################################################
+    #              Using the CrewAI Enterprise Crew directly            #
+    #####################################################################
 
     # The required inputs for the Crew must be known in advance. This example is modeled after the
     # Enterprise Content Marketing Crew Template and requires the following inputs:
@@ -29,10 +32,9 @@ async def using_crew_ai_enterprise():
     print("CrewAI Enterprise Crew completed with the following result:")
     print(result)
 
-
-async def using_crew_ai_enterprise_as_plugin():
-    settings = CrewAISettings.create()
-    crew = CrewAIEnterprise(settings=settings)
+    #####################################################################
+    #              Using the CrewAI Enterprise as a Plugin              #
+    #####################################################################
 
     # Define the description of the Crew. This will used as the semantic description of the plugin.
     crew_description = (
@@ -71,5 +73,4 @@ async def using_crew_ai_enterprise_as_plugin():
 
 
 if __name__ == "__main__":
-    # asyncio.run(using_crew_ai_enterprise())
-    asyncio.run(using_crew_ai_enterprise_as_plugin())
+    asyncio.run(using_crew_ai_enterprise())
