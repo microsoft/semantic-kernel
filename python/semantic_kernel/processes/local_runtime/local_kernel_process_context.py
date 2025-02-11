@@ -33,6 +33,7 @@ class LocalKernelProcessContext(KernelBaseModel):
             process=process,
             kernel=kernel,
             parent_process_id=None,
+            factories=process.factories,
         )
 
         super().__init__(local_process=local_process)
