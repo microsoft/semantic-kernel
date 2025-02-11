@@ -31,6 +31,21 @@ If we were to find the definitive solution, it would be need to consider all pot
 
 We can apply a set of guidelines to the Concepts project to make it easier to find, understand and use the examples. This will also make it easier to generate documentation and source code from the examples in the future. Those guidelines also will help to implement new and existing examples in a consistent way.
 
+### Balancing Clarity (Copy and Paste) vs Usability
+
+For the majority of developers the most frustrating part is copying a sample that actually doesn't work or compile because it has a missing part (not just the credentials).
+
+Much of our samples have plenty of repetitive code that can be refactored and extracted in Utilities or Helpers, this could reduce significantly the size of the samples even allowing them to be provider/service agnostic.
+
+The issue arises that such optimized samples would hide common code making it unusable for Copy and Paste, increasing significantly the cognitive load and patience (when looking from a GitHub UI) to know where to seek for the common implementation.
+
+Since Semantic Kernel is fundamentally stable and won't change, we may reconsider keeping a more verbose and repetitive code in the samples.
+
+Assuming we move forward with sample code generation in the WebApp, this might be a got thing to be revisited as the common code could be auto-generated and injected in a copy/paste friendly `Program.cs` demo.
+
+> [!NOTE]
+> Focusing too much in usability might move us away from the main decision drivers of this proposal.
+
 ### 1. Decorate concepts test classes
 
 Using Concept Attributes on our classes, allowing indexing of samples by multiple concept tags. This also adds the benefit of being specific, compilable and less prone for mistaking add or using a non-existing concept.
@@ -227,19 +242,6 @@ Some of the features we should consider:
 1. [SourceBrowser for SK](https://github.com/KirillOsenkov/SourceBrowser)
 2. [Static Web Site based on file name tokenization (AI 0 Shot Generated)](https://raw.githack.com/RogerBarreto/semantic-kernel/issues/10168-adr-concepts-restructure/dotnet/samples/Concepts/App/index.htm)
 3. TBD: Executable WebApp with Backend code (IDE required)
-
-### Balancing Clarity (Copy and Paste) vs Usability
-
-Much of our samples have plenty of repetitive code that can be refactored and extracted in Utilities or Helpers, this could reduce significantly the size of the samples even allowing them to be provider/service agnostic.
-
-The issue arises that such optimized samples would hide common code making it unusable for Copy and Paste, increasing significantly the cognitive load and patience (when looking from a GitHub UI) to know where to seek for the common implementation.
-
-Since Semantic Kernel is fundamentally stable and won't change, we may reconsider keeping a more verbose and repetitive code in the samples.
-
-Assuming we move forward with sample code generation in the WebApp, this might be a got thing to be revisited as the common code could be auto-generated and injected in a copy/paste friendly `Program.cs` demo.
-
-> [!NOTE]
-> Focusing too much in usability might move us away from the main decision drivers of this proposal.
 
 ## Decision Outcome
 
