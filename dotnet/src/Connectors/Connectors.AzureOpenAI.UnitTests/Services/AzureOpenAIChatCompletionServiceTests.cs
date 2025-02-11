@@ -263,6 +263,66 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData(null, null)]
+    [InlineData("string", "low")]
+    [InlineData("string", "medium")]
+    [InlineData("string", "high")]
+    [InlineData("ChatReasonEffortLevel.Low", "low")]
+    [InlineData("ChatReasonEffortLevel.Medium", "medium")]
+    [InlineData("ChatReasonEffortLevel.High", "high")]
+    public async Task GetChatMessageInReasoningEffortAsync(string? effortType, string? expectedEffortLevel)
+    {
+        // Assert
+        object? reasoningEffortObject = null;
+        switch (effortType)
+        {
+            case "string":
+                reasoningEffortObject = expectedEffortLevel;
+                break;
+            case "ChatReasonEffortLevel.Low":
+                reasoningEffortObject = ChatReasoningEffortLevel.Low;
+                break;
+            case "ChatReasonEffortLevel.Medium":
+                reasoningEffortObject = ChatReasoningEffortLevel.Medium;
+                break;
+            case "ChatReasonEffortLevel.High":
+                reasoningEffortObject = ChatReasoningEffortLevel.High;
+                break;
+        }
+
+        var modelId = "o1";
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient);
+        OpenAIPromptExecutionSettings executionSettings = new() { ReasoningEffort = reasoningEffortObject };
+        using var responseMessage =  new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(new ChatHistory("System message"), executionSettings);
+
+        // Assert
+        Assert.NotNull(result);
+
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        if (expectedEffortLevel is null)
+        {
+            Assert.False(optionsJson.TryGetProperty("reasoning_effort", out _));
+            return;
+        }
+
+        var requestedReasoningEffort = optionsJson.GetProperty("reasoning_effort").GetString();
+
+        Assert.Equal(expectedEffortLevel, requestedReasoningEffort);
+    }
+
+    [Theory]
     [MemberData(nameof(ToolCallBehaviors))]
     public async Task GetChatMessageContentsWorksCorrectlyAsync(ToolCallBehavior behavior)
     {
@@ -818,6 +878,49 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Equal(SystemMessage, messages[0].GetProperty("content").GetString());
         Assert.Equal("system", messages[0].GetProperty("role").GetString());
+
+        Assert.Equal(Prompt, messages[1].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsUsesDeveloperPromptAndSettingsCorrectlyAsync()
+    {
+        // Arrange
+        const string Prompt = "This is test prompt";
+        const string DeveloperMessage = "This is test system message";
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new AzureOpenAIPromptExecutionSettings() { ChatDeveloperPrompt = DeveloperMessage };
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => service);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync(Prompt, new(settings));
+
+        // Assert
+        Assert.Equal("Test chat response", result.ToString());
+
+        var requestContentByteArray = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContentByteArray);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContentByteArray));
+
+        var messages = requestContent.GetProperty("messages");
+
+        Assert.Equal(2, messages.GetArrayLength());
+
+        Assert.Equal(DeveloperMessage, messages[0].GetProperty("content").GetString());
+        Assert.Equal("developer", messages[0].GetProperty("role").GetString());
 
         Assert.Equal(Prompt, messages[1].GetProperty("content").GetString());
         Assert.Equal("user", messages[1].GetProperty("role").GetString());

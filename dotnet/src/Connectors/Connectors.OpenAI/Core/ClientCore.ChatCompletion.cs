@@ -520,7 +520,7 @@ internal partial class ClientCore
         return options;
     }
 
-    private static ChatReasoningEffortLevel? GetEffortLevel(OpenAIPromptExecutionSettings executionSettings)
+    protected static ChatReasoningEffortLevel? GetEffortLevel(OpenAIPromptExecutionSettings executionSettings)
     {
         var effortLevelObject = executionSettings.ReasoningEffort;
         if (effortLevelObject is null)

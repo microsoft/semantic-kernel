@@ -50,6 +50,7 @@ internal partial class AzureClientCore
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             StoredOutputEnabled = executionSettings.Store,
+            ReasoningEffortLevel = GetEffortLevel(executionSettings),
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
