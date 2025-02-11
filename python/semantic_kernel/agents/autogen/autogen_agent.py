@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from collections.abc import AsyncIterable, Iterable
 from typing import TYPE_CHECKING, Any, Callable
 
