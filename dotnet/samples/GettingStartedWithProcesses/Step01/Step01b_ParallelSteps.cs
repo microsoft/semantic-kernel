@@ -77,6 +77,7 @@ public class Step01b_ParallelSteps(ITestOutputHelper output) : BaseTest(output, 
         var runtime = new Microsoft.AutoGen.Core.InProcessRuntime();
         await runtime.StartAsync();
         using var runningProcess = await kernelProcess.StartAsync(kernel, runtime, new KernelProcessEvent() { Id = ParallelEvents.StartProcess, Data = null });
+        await runtime.StopAsync();
         Console.WriteLine($"=== End - Executing '{process.Name}' ===");
     }
 

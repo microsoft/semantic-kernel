@@ -18,7 +18,7 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
 {
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
-    private readonly Channel<KernelProcessEvent> _externalEventChannel;
+    private readonly Channel<KernelProcessEvent> _externalEventChannel; // %%% ANALYZE
     private readonly Lazy<ValueTask> _initializeTask;
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
@@ -29,7 +29,7 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
     private CancellationTokenSource? _processCancelSource;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LocalProcess"/> class.
+    /// Initializes a new instance of the <see cref="RuntimeProcess"/> class.
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
@@ -107,19 +107,6 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
         {
             this._processCancelSource.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Sends a message to the process. This does not start the process if it's not already running, in
-    /// this case the message will remain queued until the process is started.
-    /// </summary>
-    /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
-    /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
-    /// <returns>A <see cref="Task"/></returns>
-    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
-    {
-        Verify.NotNull(processEvent, nameof(processEvent));
-        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
     }
 
     /// <summary>
@@ -211,11 +198,13 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
                     };
             }
 
+            Console.WriteLine($"Registering Step Agent: {FormatAgentType(stepInfo.State.Id!)}:{stepInfo.State.Name}"); // %%% REMOVE
             await this.Runtime.RegisterAgentFactoryAsync(FormatAgentType(stepInfo.State.Id!), (_, _) => ValueTask.FromResult<IHostableAgent>(step)).ConfigureAwait(false);
 
             this._steps.Add(step);
         }
 
+        Console.WriteLine($"Registering Process Agent: {FormatAgentType(this._process.State.Id!)}:{this._process.State.Name}"); // %%% REMOVE
         await this.Runtime.RegisterAgentFactoryAsync(FormatAgentType(this._process.State.Id!), (_, _) => ValueTask.FromResult<IHostableAgent>(this)).ConfigureAwait(false);
     }
 
@@ -278,7 +267,6 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
                     var destinationStep = this._steps.First(v => v.StepId == message.DestinationId);
 
                     // Send a message to the step
-                    //messageTasks.Add(destinationStep.HandleMessageAsync(message));
                     messageTasks.Add(base.SendMessageAsync(message, destinationStep.Id, messageId: null, cancellationToken).AsTask());
                     finalStep = destinationStep;
                 }
@@ -362,7 +350,7 @@ internal sealed class RuntimeProcess : RuntimeStep, IDisposable
     }
 
     /// <summary>
-    /// Builds a <see cref="KernelProcess"/> from the current <see cref="LocalProcess"/>.
+    /// Builds a <see cref="KernelProcess"/> from the current <see cref="RuntimeProcess"/>.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
     /// <exception cref="InvalidOperationException"></exception>

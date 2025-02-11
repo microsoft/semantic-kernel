@@ -80,7 +80,9 @@ public class Step01a_ChatBot(ITestOutputHelper output) : BaseTest(output, redire
         Console.WriteLine($"=== Start - Executing '{process.Name}' ===");
         //using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
         var runtime = new Microsoft.AutoGen.Core.InProcessRuntime();
+        await runtime.StartAsync();
         using var runningProcess = await kernelProcess.StartAsync(kernel, runtime, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        await runtime.StopAsync();
         Console.WriteLine($"=== End - Executing '{process.Name}' ===");
     }
 

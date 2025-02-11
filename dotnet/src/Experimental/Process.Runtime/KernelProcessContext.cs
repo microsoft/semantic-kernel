@@ -48,8 +48,7 @@ public sealed class KernelProcessContext : IKernelProcessContext, IDisposable
     /// </summary>
     /// <param name="processEvent">The event to sent to the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    public override Task SendEventAsync(KernelProcessEvent processEvent) =>
-        this._process.SendMessageAsync(processEvent);
+    public override Task SendEventAsync(KernelProcessEvent processEvent) => Task.CompletedTask; // %%% BROKEN
 
     /// <summary>
     /// Stops the process.

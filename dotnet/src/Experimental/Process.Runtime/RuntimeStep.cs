@@ -306,9 +306,6 @@ internal class RuntimeStep : BaseAgent, IKernelProcessMessageChannel, IHandle<Pr
 
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
         await activateTask.ConfigureAwait(false);
-
-        // %%% Runtime.RegisterAgent ???
-        //await this.Runtime.RegisterAgentFactoryAsync(this._stepInfo.State.Id!, (_, _) => ValueTask.FromResult<IHostableAgent>(this)).ConfigureAwait(false); // %%% TOO LATE ???
     }
 
     /// <summary>
@@ -344,7 +341,7 @@ internal class RuntimeStep : BaseAgent, IKernelProcessMessageChannel, IHandle<Pr
     protected void EmitEvent(ProcessEvent localEvent)
     {
         var scopedEvent = this.ScopedEvent(localEvent);
-        this._outgoingEventQueue.Enqueue(scopedEvent);
+        this._outgoingEventQueue.Enqueue(scopedEvent); // %%% PUBLISH ???
     }
 
     /// <summary>

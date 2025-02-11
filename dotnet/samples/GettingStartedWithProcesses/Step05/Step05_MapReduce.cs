@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.Tools;
 using Resources;
+using Utilities;
 
 namespace Step05;
 
@@ -40,21 +42,14 @@ public class Step05_MapReduce : BaseTest
     public async Task RunMapReduceAsync()
     {
         // Define the process
-        KernelProcess process = SetupMapReduceProcess(nameof(RunMapReduceAsync), "Start");
+        KernelProcess process = await SetupMapReduceProcessAsync(nameof(RunMapReduceAsync), "Start");
 
         // Execute the process
         Kernel kernel = new();
-        //using LocalKernelProcessContext localProcess =
-        //    await process.StartAsync(
-        //        kernel,
-        //        new KernelProcessEvent
-        //        {
-        //            Id = "Start",
-        //            Data = this._sourceContent,
-        //        });
         var runtime = new Microsoft.AutoGen.Core.InProcessRuntime();
+        await runtime.StartAsync();
         using var runningProcess = await process.StartAsync(kernel, runtime, new KernelProcessEvent() { Id = "Start", Data = this._sourceContent });
-
+        await runtime.StopAsync();
 
         // Display the results
         Dictionary<string, int> results = (Dictionary<string, int>?)kernel.Data[ResultStep.ResultKey] ?? [];
@@ -64,7 +59,7 @@ public class Step05_MapReduce : BaseTest
         }
     }
 
-    private KernelProcess SetupMapReduceProcess(string processName, string inputEventId)
+    private async Task<KernelProcess> SetupMapReduceProcessAsync(string processName, string inputEventId)
     {
         ProcessBuilder process = new(processName);
 
@@ -82,6 +77,16 @@ public class Step05_MapReduce : BaseTest
         mapStep
             .OnEvent(CountStep.EventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(resultStep));
+
+        // Generate a Mermaid diagram for the process and print it to the console
+        string mermaidGraph = process.ToMermaid();
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine(mermaidGraph);
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+
+        // Generate an image from the Mermaid diagram
+        string generatedImagePath = await MermaidRenderer.GenerateMermaidImageAsync(mermaidGraph, "MapReduceProcess.png");
+        Console.WriteLine($"Diagram generated at: {generatedImagePath}");
 
         return process.Build();
     }

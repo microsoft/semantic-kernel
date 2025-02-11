@@ -62,35 +62,37 @@ internal sealed class RuntimeMap : RuntimeStep
                 mapOperations.Add((processTask, processContext, context));
             }
 
-            // Wait for all the map operations to complete
-            await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
+            return;
 
-            // Correlate the operation results to emit as the map result
-            Dictionary<string, Array> resultMap = [];
-            for (index = 0; index < mapOperations.Count; ++index)
-            {
-                foreach (KeyValuePair<string, Type> capturedEvent in capturedEvents)
-                {
-                    string eventName = capturedEvent.Key;
-                    Type resultType = capturedEvent.Value;
+            //// Wait for all the map operations to complete
+            //await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
 
-                    mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
-                    if (!resultMap.TryGetValue(eventName, out Array? results))
-                    {
-                        results = Array.CreateInstance(resultType, mapOperations.Count);
-                        resultMap[eventName] = results;
-                    }
+            //// Correlate the operation results to emit as the map result
+            //Dictionary<string, Array> resultMap = [];
+            //for (index = 0; index < mapOperations.Count; ++index)
+            //{
+            //    foreach (KeyValuePair<string, Type> capturedEvent in capturedEvents)
+            //    {
+            //        string eventName = capturedEvent.Key;
+            //        Type resultType = capturedEvent.Value;
 
-                    results.SetValue(result, index);
-                }
-            }
+            //        mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
+            //        if (!resultMap.TryGetValue(eventName, out Array? results))
+            //        {
+            //            results = Array.CreateInstance(resultType, mapOperations.Count);
+            //            resultMap[eventName] = results;
+            //        }
 
-            // Emit map results
-            foreach (string eventName in capturedEvents.Keys)
-            {
-                Array eventResult = resultMap[eventName];
-                await this.EmitEventAsync(new() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
-            }
+            //        results.SetValue(result, index);
+            //    }
+            //}
+
+            //// Emit map results
+            //foreach (string eventName in capturedEvents.Keys)
+            //{
+            //    Array eventResult = resultMap[eventName];
+            //    await this.EmitEventAsync(new() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
+            //}
         }
         finally
         {
