@@ -5,7 +5,7 @@ import logging
 
 from semantic_kernel.core_plugins.crew_ai import CrewAIEnterprise, InputMetadata
 from semantic_kernel.core_plugins.crew_ai.crew_ai_settings import CrewAISettings
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 
