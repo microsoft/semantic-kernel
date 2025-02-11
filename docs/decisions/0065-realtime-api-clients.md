@@ -191,7 +191,9 @@ ServiceEvent(
 
 This allows you to easily do pattern matching on the event_type, and then use the service_event to filter on the specific event type for service events, or just grab the contents for the other ones.
 
-Collectively these are known as *RealtimeEvents*, and are returned as an async generator from the client, so you can easily loop over them. And they are passed to the send method.
+There might be other abstracted types needed at some point, for instance errors, or session updates, but since the current two services have no agreement on the existence of these events and their structure, it is better to wait until there is a need for them.
+
+Collectively these are known as *RealtimeEvents* (and this could be a base class for all events or a type hint with union and discriminator), and are returned as an async generator from the client, so you can easily loop over them. And they are passed to the send method.
 
 One open item is whether to include a extra field in these types for tracking related pieces, however this becomes problematic because the way those are generated differs per service and is quite complex, for instance the OpenAI API returns a piece of audio transcript with the following ids: 
 - `event_id`: the unique id of the event
@@ -278,10 +280,10 @@ Chosen option: 3b AsyncGenerator that yields Events combined with priority handl
 This makes the programming model very easy, a minimal setup that should work for every service and protocol would look like this:
 ```python
 async for event in realtime_client.start_streaming():
-    match event.event_type:
-        case "audio":
+    match event:
+        case AudioEvent():
             await audio_player.add_audio(event.audio)
-        case "text":
+        case TextEvent():
             print(event.text.text)
 ```
 
@@ -367,16 +369,16 @@ This means that the interface will look like this:
 ```python
 
 class RealtimeClient:
-    async def create_session(self, settings: PromptExecutionSettings, chat_history: ChatHistory, **kwargs) -> None:
+    async def create_session(self, chat_history: ChatHistory, settings: PromptExecutionSettings, **kwargs) -> None:
         ...
 
-    async def update_session(self, settings: PromptExecutionSettings, chat_history: ChatHistory, **kwargs) -> None:
+    async def update_session(self, chat_history: ChatHistory, settings: PromptExecutionSettings, **kwargs) -> None:
         ...
 
     async def close_session(self, **kwargs) -> None:
         ...
 
-    async def receive(self, **kwargs) -> AsyncGenerator[RealtimeEvent, None]:
+    async def receive(self, chat_history: ChatHistory, **kwargs) -> AsyncGenerator[RealtimeEvent, None]:
         ...
 
     async def send(self, event: RealtimeEvent) -> None:
