@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
-using Amazon.BedrockAgent.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -10,11 +9,8 @@ namespace GettingStarted.BedrockAgents;
 /// <summary>
 /// This example demonstrates how to interact with a <see cref="BedrockAgent"/> with code interpreter enabled.
 /// </summary>
-public class Step02_BedrockAgent_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step02_BedrockAgent_CodeInterpreter(ITestOutputHelper output) : BaseBedrockAgentTest(output)
 {
-    private const string AgentName = "Semantic-Kernel-Test-Agent";
-    private const string AgentDescription = "A helpful assistant who helps users find information.";
-    private const string AgentInstruction = "You're a helpful assistant who helps users find information.";
     private const string UserQuery = @"Create a bar chart for the following data:
 Panda   5
 Tiger   8
@@ -25,17 +21,8 @@ Dolphin  2";
     [Fact]
     public async Task UseAgentWithCodeInterpreterAsync()
     {
-        // Define the agent
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = AgentName,
-            Description = AgentDescription,
-            Instruction = AgentInstruction,
-            AgentResourceRoleArn = TestConfiguration.BedrockAgent.AgentResourceRoleArn,
-            FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
-        };
-
-        var bedrock_agent = await BedrockAgent.CreateAsync(createAgentRequest, enableCodeInterpreter: true);
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step02_BedrockAgent_CodeInterpreter");
 
         // Respond to user input
         try
@@ -64,7 +51,7 @@ Dolphin  2";
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
                 binaryContent.Metadata!["Name"]!.ToString()!);
             this.Output.WriteLine($"Saving file to {filePath}");
-            binaryContent.WriteToFile(filePath);
+            binaryContent.WriteToFile(filePath, overwrite: true);
 
             // Expected output:
             // Here is the bar chart for the given data:
@@ -80,5 +67,10 @@ Dolphin  2";
         {
             await bedrock_agent.DeleteAsync(CancellationToken.None);
         }
+    }
+
+    protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
+    {
+        return await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName), enableCodeInterpreter: true);
     }
 }

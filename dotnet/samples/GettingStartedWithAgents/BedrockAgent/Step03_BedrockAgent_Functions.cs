@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
-using Amazon.BedrockAgent.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -10,38 +9,22 @@ namespace GettingStarted.BedrockAgents;
 /// <summary>
 /// This example demonstrates how to interact with a <see cref="BedrockAgent"/> with kernel functions.
 /// </summary>
-public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedrockAgentTest(output)
 {
-    private const string AgentName = "Semantic-Kernel-Test-Agent";
-    private const string AgentDescription = "A helpful assistant who helps users find information.";
-    private const string AgentInstruction = "You're a helpful assistant who helps users find information.";
-    private const string UserQuery = "What is the weather in Seattle?";
-
     [Fact]
     public async Task UseAgentWithFunctionsAsync()
     {
-        // Define the agent
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = AgentName,
-            Description = AgentDescription,
-            Instruction = AgentInstruction,
-            AgentResourceRoleArn = TestConfiguration.BedrockAgent.AgentResourceRoleArn,
-            FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
-        };
-
-        Kernel kernel = new();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
-
-        var bedrock_agent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            kernel: kernel,
-            enableKernelFunctions: true);
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions");
 
         // Respond to user input
         try
         {
-            var responses = bedrock_agent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            var responses = bedrock_agent.InvokeAsync(
+                BedrockAgent.CreateSessionId(),
+                "What is the weather in Seattle?",
+                null,
+                CancellationToken.None);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -56,6 +39,73 @@ public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseAgent
         }
     }
 
+    [Fact]
+    public async Task UseAgentStreamingWithFunctionsAsync()
+    {
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Streaming");
+
+        // Respond to user input
+        try
+        {
+            var streamingResponses = bedrock_agent.InvokeStreamingAsync(
+                BedrockAgent.CreateSessionId(),
+                "What is the weather forecast in Seattle?",
+                null,
+                CancellationToken.None);
+            await foreach (var response in streamingResponses)
+            {
+                if (response.Content != null)
+                {
+                    this.Output.WriteLine(response.Content);
+                }
+            }
+        }
+        finally
+        {
+            await bedrock_agent.DeleteAsync(CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task UseAgentWithParallelFunctionsAsync()
+    {
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Parallel");
+
+        // Respond to user input
+        try
+        {
+            var responses = bedrock_agent.InvokeAsync(
+                BedrockAgent.CreateSessionId(),
+                "What is the current weather in Seattle and what is the weather forecast in Seattle?",
+                null,
+                CancellationToken.None);
+            await foreach (var response in responses)
+            {
+                if (response.Content != null)
+                {
+                    this.Output.WriteLine(response.Content);
+                }
+            }
+        }
+        finally
+        {
+            await bedrock_agent.DeleteAsync(CancellationToken.None);
+        }
+    }
+
+    protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
+    {
+        Kernel kernel = new();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
+
+        return await BedrockAgent.CreateAsync(
+            this.GetCreateAgentRequest(agentName),
+            kernel: kernel,
+            enableKernelFunctions: true);
+    }
+
     private sealed class WeatherPlugin
     {
         [KernelFunction, Description("Provides realtime weather information.")]
@@ -63,6 +113,12 @@ public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseAgent
         public string Current([Description("The location to get the weather for.")] string location)
         {
             return $"The current weather in {location} is 72 degrees.";
+        }
+
+        [KernelFunction, Description("Forecast weather information.")]
+        public string Forecast([Description("The location to get the weather for.")] string location)
+        {
+            return $"The forecast for {location} is 75 degrees tomorrow.";
         }
     }
 }

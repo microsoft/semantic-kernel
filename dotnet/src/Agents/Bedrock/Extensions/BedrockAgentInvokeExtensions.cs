@@ -10,6 +10,7 @@ using Amazon.BedrockAgentRuntime.Model;
 using Amazon.Runtime.EventStreams.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
@@ -24,68 +25,58 @@ internal static class BedrockAgentInvokeExtensions
         KernelArguments? arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var invokeAgentResponse = await agent.GetRuntimeClient().InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
-
-        if (invokeAgentResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
+        // Session state is used to store the results of function calls to be passed back to the agent.
+        // https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/BedrockAgentRuntime/TSessionState.html
+        SessionState? sessionState = null;
+        for (var requestIndex = 0; ; requestIndex++)
         {
-            throw new HttpOperationException($"Failed to invoke agent. Status code: {invokeAgentResponse.HttpStatusCode}");
-        }
-
-        List<FunctionCallContent> functionCallContents = [];
-        await foreach (var responseEvent in invokeAgentResponse.Completion.ToAsyncEnumerable().ConfigureAwait(false))
-        {
-            // TODO: Handle exception events
-            var chatMessageContent =
-                HandleChunkEvent(agent, responseEvent) ??
-                HandleFilesEvent(agent, responseEvent) ??
-                HandleReturnControlEvent(agent, responseEvent, arguments) ??
-                HandleTraceEvent(agent, responseEvent) ??
-                throw new KernelException($"Failed to handle Bedrock Agent stream event: {responseEvent}");
-            if (chatMessageContent.Items.Count > 0 && chatMessageContent.Items[0] is FunctionCallContent functionCallContent)
+            if (sessionState != null)
             {
-                functionCallContents.AddRange(chatMessageContent.Items.Where(item => item is FunctionCallContent).Cast<FunctionCallContent>());
+                invokeAgentRequest.SessionState = sessionState;
+                sessionState = null;
+            }
+            var invokeAgentResponse = await agent.GetRuntimeClient().InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
+
+            if (invokeAgentResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new HttpOperationException($"Failed to invoke agent. Status code: {invokeAgentResponse.HttpStatusCode}");
+            }
+
+            List<FunctionCallContent> functionCallContents = [];
+            await foreach (var responseEvent in invokeAgentResponse.Completion.ToAsyncEnumerable().ConfigureAwait(false))
+            {
+                // TODO: Handle exception events
+                var chatMessageContent =
+                    HandleChunkEvent(agent, responseEvent) ??
+                    HandleFilesEvent(agent, responseEvent) ??
+                    HandleReturnControlEvent(agent, responseEvent, arguments) ??
+                    HandleTraceEvent(agent, responseEvent) ??
+                    throw new KernelException($"Failed to handle Bedrock Agent stream event: {responseEvent}");
+                if (chatMessageContent.Items.Count > 0 && chatMessageContent.Items[0] is FunctionCallContent functionCallContent)
+                {
+                    functionCallContents.AddRange(chatMessageContent.Items.Where(item => item is FunctionCallContent).Cast<FunctionCallContent>());
+                }
+                else
+                {
+                    yield return chatMessageContent;
+                }
+            }
+
+            // This is used to cap the auto function invocation loop to prevent infinite loops.
+            // It doesn't use the the `FunctionCallsProcessor` to process the functions because we do not need 
+            // many of the features it offers and we want to keep the code simple.
+            var functionChoiceBehaviorConfiguration = new FunctionCallsProcessor().GetConfiguration(
+                FunctionChoiceBehavior.Auto(), [], requestIndex, agent.Kernel);
+
+            if (functionCallContents.Count > 0 && functionChoiceBehaviorConfiguration!.AutoInvoke)
+            {
+                var functionResults = await InvokeFunctionCallsAsync(agent, functionCallContents, cancellationToken).ConfigureAwait(false);
+                sessionState = CreateSessionStateWithFunctionResults(functionResults, agent);
             }
             else
             {
-                yield return chatMessageContent;
+                break;
             }
-        }
-
-        if (functionCallContents.Count > 0)
-        {
-            var functionResults = await InvokeFunctionCallsAsync(agent, functionCallContents, cancellationToken).ConfigureAwait(false);
-            var sessionState = CreateSessionStateWithFunctionResults(functionResults);
-        }
-    }
-
-    public static async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
-        this BedrockAgent agent,
-        InvokeAgentRequest invokeAgentRequest,
-        KernelArguments? arguments,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var invokeAgentResponse = await agent.GetRuntimeClient().InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
-
-        if (invokeAgentResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
-        {
-            throw new HttpOperationException($"Failed to invoke agent. Status code: {invokeAgentResponse.HttpStatusCode}");
-        }
-
-        await foreach (var responseEvent in invokeAgentResponse.Completion.ToAsyncEnumerable().ConfigureAwait(false))
-        {
-            // TODO: Handle exception events
-            var chatMessageContent =
-                HandleChunkEvent(agent, responseEvent) ??
-                HandleFilesEvent(agent, responseEvent) ??
-                HandleReturnControlEvent(agent, responseEvent, arguments) ??
-                HandleTraceEvent(agent, responseEvent) ??
-                throw new KernelException($"Failed to handle Bedrock Agent stream event: {responseEvent}");
-            yield return new(chatMessageContent.Role, chatMessageContent.Content)
-            {
-                AuthorName = chatMessageContent.AuthorName,
-                ModelId = chatMessageContent.ModelId,
-                InnerContent = chatMessageContent.InnerContent,
-            };
         }
     }
 
@@ -202,30 +193,28 @@ internal static class BedrockAgentInvokeExtensions
         return [.. functionResults];
     }
 
-    private static SessionState CreateSessionStateWithFunctionResults(List<FunctionResultContent> functionResults)
+    private static SessionState CreateSessionStateWithFunctionResults(List<FunctionResultContent> functionResults, BedrockAgent agent)
     {
-        return new SessionState()
-        {
-            ReturnControlInvocationResults = [.. functionResults.Select(functionResult =>
+        return functionResults.Count == 0
+            ? throw new KernelException("No function results were returned.")
+            : new()
+            {
+                InvocationId = functionResults[0].CallId,
+                ReturnControlInvocationResults = [.. functionResults.Select(functionResult =>
             {
                 return new InvocationResultMember()
                 {
-                    FunctionResult = new()
+                    FunctionResult = new Amazon.BedrockAgentRuntime.Model.FunctionResult
                     {
-                        ActionGroup = functionResult.Metadata!["ActionGroup"] as string,
+                        ActionGroup = agent.GetKernelFunctionActionGroupSignature(),
                         Function = functionResult.FunctionName,
-                        ResponseBody = {
-                            {
-                                "TEXT",
-                                new()
-                                {
-                                    Body = functionResult.Result as string,
-                                }
-                            },
-                        },
-                    },
+                        ResponseBody = new Dictionary<string, ContentBody>
+                        {
+                            { "TEXT", new ContentBody() { Body = functionResult.Result as string } }
+                        }
+                    }
                 };
             })],
-        };
+            };
     }
 }

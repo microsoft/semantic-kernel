@@ -11,6 +11,7 @@ using AmazonBedrockAgentRuntimeModel = Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -191,11 +192,11 @@ public class BedrockAgent : KernelAgent
     /// <param name="message">The message to send to the agent.</param>    /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string sessionId,
         string message,
         KernelArguments? arguments,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var invokeAgentRequest = new AmazonBedrockAgentRuntimeModel.InvokeAgentRequest
         {
@@ -209,10 +210,22 @@ public class BedrockAgent : KernelAgent
             },
         };
 
-        return ActivityExtensions.RunWithActivityAsync(
+        // The Bedrock agent service has the same API for both streaming and non-streaming responses.
+        // We are invoking the same method as the non-streaming response with the streaming configuration set,
+        // and converting the chat message content to streaming chat message content.
+        await foreach (var chatMessageContent in ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => this.InternalInvokeStreamingAsync(invokeAgentRequest, arguments, cancellationToken),
-            cancellationToken);
+            () => this.InternalInvokeAsync(invokeAgentRequest, arguments, cancellationToken),
+            cancellationToken).ConfigureAwait(false))
+        {
+            yield return new StreamingChatMessageContent(chatMessageContent.Role, chatMessageContent.Content)
+            {
+                AuthorName = chatMessageContent.AuthorName,
+                ModelId = chatMessageContent.ModelId,
+                InnerContent = chatMessageContent.InnerContent,
+                Metadata = chatMessageContent.Metadata,
+            };
+        }
     }
 
     /// <summary>
@@ -224,7 +237,7 @@ public class BedrockAgent : KernelAgent
         {
             AgentId = this.Id,
             AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
-            ActionGroupName = $"{this.GetDisplayName()}_CodeInterpreter",
+            ActionGroupName = this.GetCodeInterpreterActionGroupSignature(),
             ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
             ParentActionGroupSignature = new(AmazonBedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
         };
@@ -241,7 +254,7 @@ public class BedrockAgent : KernelAgent
         {
             AgentId = this.Id,
             AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
-            ActionGroupName = $"{this.GetDisplayName()}_KernelFunctions",
+            ActionGroupName = this.GetKernelFunctionActionGroupSignature(),
             ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
             ActionGroupExecutor = new()
             {
@@ -274,4 +287,8 @@ public class BedrockAgent : KernelAgent
     internal AmazonBedrockAgent.AmazonBedrockAgentClient GetClient() => this._client;
     internal AmazonBedrockAgentRuntimeClient GetRuntimeClient() => this._runtimeClient;
     internal AmazonBedrockAgentModel.Agent GetAgentModel() => this._agentModel;
+
+    internal string GetCodeInterpreterActionGroupSignature() => $"{this.GetDisplayName()}_CodeInterpreter";
+    internal string GetKernelFunctionActionGroupSignature() => $"{this.GetDisplayName()}_KernelFunctions";
+
 }

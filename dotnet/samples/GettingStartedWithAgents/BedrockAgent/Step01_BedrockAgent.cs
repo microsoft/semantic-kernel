@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using Amazon.BedrockAgent.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 namespace GettingStarted.BedrockAgents;
@@ -8,27 +7,15 @@ namespace GettingStarted.BedrockAgents;
 /// <summary>
 /// This example demonstrates how to interact with a <see cref="BedrockAgent"/> in the most basic way.
 /// </summary>
-public class Step01_BedrockAgent(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTest(output)
 {
-    private const string AgentName = "Semantic-Kernel-Test-Agent";
-    private const string AgentDescription = "A helpful assistant who helps users find information.";
-    private const string AgentInstruction = "You're a helpful assistant who helps users find information.";
-    private const string UserQuery = "Why is the sky blue?";
+    private const string UserQuery = "Why is the sky blue in one sentence?";
 
     [Fact]
     public async Task UseNewAgentAsync()
     {
-        // Define the agent
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = AgentName,
-            Description = AgentDescription,
-            Instruction = AgentInstruction,
-            AgentResourceRoleArn = TestConfiguration.BedrockAgent.AgentResourceRoleArn,
-            FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
-        };
-
-        var bedrock_agent = await BedrockAgent.CreateAsync(createAgentRequest);
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step01_BedrockAgent");
 
         // Respond to user input
         try
@@ -48,17 +35,8 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseAgentsTest(outp
     [Fact]
     public async Task UseNewAgentStreamingAsync()
     {
-        // Define the agent
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = AgentName,
-            Description = AgentDescription,
-            Instruction = AgentInstruction,
-            AgentResourceRoleArn = TestConfiguration.BedrockAgent.AgentResourceRoleArn,
-            FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
-        };
-
-        var bedrock_agent = await BedrockAgent.CreateAsync(createAgentRequest);
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");
 
         // Respond to user input
         try
@@ -85,5 +63,10 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         // Create a thread for the agent conversation.
 
         // Local function to invoke agent and display the response.
+    }
+
+    protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
+    {
+        return await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName));
     }
 }
