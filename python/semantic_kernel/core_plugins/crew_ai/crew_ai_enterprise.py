@@ -135,31 +135,35 @@ class CrewAIEnterprise(KernelBaseModel):
             FunctionExecutionException: If the task fails or an error occurs while waiting for completion.
         """
         try:
-            status_response = None
-            status = CrewAIEnterpriseKickoffState.Pending
+            status_response: CrewAIStatusResponse | None = None
+            state: str = CrewAIEnterpriseKickoffState.Pending
 
             async def poll_status():
-                nonlocal status, status_response
-                while status not in [
+                nonlocal state, status_response
+                while state not in [
                     CrewAIEnterpriseKickoffState.Failed,
                     CrewAIEnterpriseKickoffState.Failure,
                     CrewAIEnterpriseKickoffState.Success,
                     CrewAIEnterpriseKickoffState.Not_Found,
                 ]:
                     logger.debug(
-                        f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {status}"
+                        f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {state}"
                     )
 
                     await asyncio.sleep(self.polling_interval)
                     status_response = await self.client.get_status(kickoff_id)
-                    status = status_response.state
+                    state = status_response.state
 
             await asyncio.wait_for(poll_status(), timeout=self.polling_timeout)
 
-            logger.info(f"CrewAI Crew with kickoff Id: {kickoff_id} completed with status: {status_response.state}")
-            if status in ["Failed", "Failure"]:
-                raise FunctionResultError(f"CrewAI Crew failed with error: {status_response.result}")
-            return status_response.result or ""
+            logger.info(f"CrewAI Crew with kickoff Id: {kickoff_id} completed with status: {state}")
+            result = (
+                status_response.result if status_response is not None and status_response.result is not None else ""
+            )
+
+            if state in ["Failed", "Failure"]:
+                raise FunctionResultError(f"CrewAI Crew failed with error: {result}")
+            return result
         except Exception as ex:
             raise FunctionExecutionException(
                 f"Failed to wait for completion of CrewAI Crew with kickoff Id: {kickoff_id}."
@@ -173,7 +177,7 @@ class CrewAIEnterprise(KernelBaseModel):
         task_webhook_url: str | None = None,
         step_webhook_url: str | None = None,
         crew_webhook_url: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> KernelPlugin:
         """Creates a kernel plugin that can be used to invoke the CrewAI Crew.
 
         Args:

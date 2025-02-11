@@ -4,23 +4,17 @@ from typing import Any
 
 import aiohttp
 
-from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
 from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
     CrewAIKickoffResponse,
     CrewAIRequiredInputs,
     CrewAIStatusResponse,
 )
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.http.utils import AsyncSession
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
-class CrewAIEnterpriseClient(KernelBaseModel):
+class CrewAIEnterpriseClient:
     """Client to interact with the Crew AI Enterprise API."""
-
-    endpoint: str
-    auth_token: str
-    request_header: dict[str, str]
-    session: aiohttp.ClientSession | None
 
     def __init__(
         self,
@@ -35,14 +29,14 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             auth_token (str): The authentication token.
             session (Optional[aiohttp.ClientSession], optional): The HTTP client session. Defaults to None.
         """
-        request_header = {
+        self.endpoint = endpoint
+        self.auth_token = auth_token
+        self._session = session
+        self.request_header = {
             "Authorization": f"Bearer {auth_token}",
             "Content-Type": "application/json",
             "user_agent": SEMANTIC_KERNEL_USER_AGENT,
         }
-
-        session = session
-        super().__init__(endpoint=endpoint, auth_token=auth_token, request_header=request_header, session=session)
 
     async def get_inputs(self) -> CrewAIRequiredInputs:
         """Get the required inputs for Crew AI.
@@ -51,7 +45,7 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             CrewAIRequiredInputs: The required inputs for Crew AI.
         """
         async with (
-            AsyncSession(self.session) as session,
+            AsyncSession(self._session) as session,
             session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,
         ):
             response.raise_for_status()
@@ -82,7 +76,7 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             "crewWebhookUrl": crew_webhook_url,
         }
         async with (
-            AsyncSession(self.session) as session,
+            AsyncSession(self._session) as session,
             session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,
         ):
             response.raise_for_status()
@@ -99,7 +93,7 @@ class CrewAIEnterpriseClient(KernelBaseModel):
             CrewAIStatusResponse: The status response of the task.
         """
         async with (
-            AsyncSession(self.session) as session,
+            AsyncSession(self._session) as session,
             session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,
         ):
             response.raise_for_status()

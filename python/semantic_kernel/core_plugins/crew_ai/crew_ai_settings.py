@@ -17,6 +17,6 @@ class CrewAISettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "CREW_AI_"
 
     endpoint: str
-    auth_token: SecretStr | None = None
+    auth_token: SecretStr
     polling_interval: float = 1.0
     polling_timeout: float = 30.0
