@@ -224,9 +224,9 @@ Some of the features we should consider:
 
 #### POC's
 
-1. SourceBrowser
-2. Static Web Site (AI Generated)
-3. TBD (WebApp)
+1. [SourceBrowser for SK](https://github.com/KirillOsenkov/SourceBrowser)
+2. [Static Web Site based on file name tokenization (AI 0 Shot Generated)](https://raw.githack.com/RogerBarreto/semantic-kernel/issues/10168-adr-concepts-restructure/dotnet/samples/Concepts/App/index.htm)
+3. TBD: Executable WebApp with Backend code (IDE required)
 
 ### Balancing Clarity (Copy and Paste) vs Usability
 
