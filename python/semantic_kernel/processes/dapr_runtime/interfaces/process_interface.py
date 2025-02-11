@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -59,8 +58,8 @@ class ProcessInterface(ActorInterface, ABC):
 
     @abstractmethod
     @actormethod(name="get_process_info")
-    async def get_process_info(self) -> "DaprProcessInfo":
-        """Retrieves the process information.
+    async def get_process_info(self) -> dict:
+        """Retrieves the process information as a dict of DaprProcessInfo.
 
         :return: An instance of DaprProcessInfo.
         """
