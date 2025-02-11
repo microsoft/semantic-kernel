@@ -4,8 +4,7 @@
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsTestProject>true</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <RootNamespace>VectorDataSpecificationTests</RootNamespace>
   </PropertyGroup>
 

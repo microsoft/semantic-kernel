@@ -12,8 +12,8 @@ public sealed class CosmosMongoDBTestStore : TestStore
 {
     public static CosmosMongoDBTestStore Instance { get; } = new();
 
-    public MongoClient? _client { get; private set; }
-    public IMongoDatabase? _database { get; private set; }
+    private MongoClient? _client;
+    private IMongoDatabase? _database;
     private AzureCosmosDBMongoDBVectorStore? _defaultVectorStore;
 
     public MongoClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
