@@ -12,7 +12,7 @@ informed: { Tao Chen, Dmytro Struk }
 
 ## Context and Problem Statement
 
-Multiple model providers are starting to enable realtime voice-to-voice or even multi-modal, realtime, two-way communication with their models, this includes OpenAI with their [Realtime API](https://openai.com/index/introducing-the-realtime-api/) and [Google Gemini](https://ai.google.dev/api/multimodal-live). These API's promise some very interesting new ways of using LLM's for different scenario's, which we want to enable with Semantic Kernel.
+Multiple model providers are starting to enable realtime voice-to-voice or even multi-modal, realtime, two-way communication with their models, this includes OpenAI with their [Realtime API][openai-realtime-api] and [Google Gemini][google-gemini]. These API's promise some very interesting new ways of using LLM's for different scenario's, which we want to enable with Semantic Kernel.
 
 The key feature that Semantic Kernel brings into this system is the ability to (re)use Semantic Kernel function as tools with these API's. There are also options for Google to use video and images as input, this will likely not be implemented first, but the abstraction should be able to deal with it.
 
@@ -403,3 +403,6 @@ await client.send(ServiceEvent(event_type='service', service_event='input_audio_
 
 The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this would be required to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
 
+
+[openai-realtime-api]: https://platform.openai.com/docs/guides/realtime
+[google-gemini]: https://ai.google.dev/api/multimodal-live
