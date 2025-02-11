@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using StackExchange.Redis;
 using Testcontainers.Redis;
@@ -20,7 +21,7 @@ internal sealed class RedisTestStore : TestStore
 
     public IDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
 
-    public override RedisVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public RedisVectorStore GetVectorStore(RedisVectorStoreOptions options)
         => new(this.Database, options);

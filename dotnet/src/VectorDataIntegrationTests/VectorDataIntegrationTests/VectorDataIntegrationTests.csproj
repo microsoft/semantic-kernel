@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
@@ -16,6 +16,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory.Data" />
   </ItemGroup>
 
 </Project>

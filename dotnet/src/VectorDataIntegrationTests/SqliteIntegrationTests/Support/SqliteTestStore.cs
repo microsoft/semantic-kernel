@@ -42,6 +42,14 @@ internal sealed class SqliteTestStore : TestStore
         this._defaultVectorStore = new SqliteVectorStore(this.Connection);
     }
 
+#if NET8_0_OR_GREATER
     protected override async Task StopAsync()
         => await this.Connection.DisposeAsync();
+#else
+    protected override Task StopAsync()
+    {
+        this.Connection.Dispose();
+        return Task.CompletedTask;
+    }
+#endif
 }

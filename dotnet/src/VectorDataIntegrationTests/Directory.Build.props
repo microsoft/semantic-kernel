@@ -12,4 +12,9 @@
     <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <!-- .NET Framework doesn't property support nullable reference types, suppress any warnings for that TFM -->
+    <NoWarn>$(NoWarn);CS8604;CS8602</NoWarn>
+  </PropertyGroup>
+
 </Project>

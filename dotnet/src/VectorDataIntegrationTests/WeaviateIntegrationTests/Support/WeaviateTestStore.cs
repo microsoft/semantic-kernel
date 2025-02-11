@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support.TestContainer;
@@ -16,7 +18,7 @@ public sealed class WeaviateTestStore : TestStore
 
     public HttpClient Client => this._httpClient ?? throw new InvalidOperationException("Not initialized");
 
-    public override WeaviateVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
         => new(this.Client, options);

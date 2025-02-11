@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 using QdrantIntegrationTests.Support.TestContainer;
@@ -19,7 +20,7 @@ internal sealed class QdrantTestStore : TestStore
 
     public QdrantClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override QdrantVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
         => new(this.Client, options);

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -22,7 +23,7 @@ internal sealed class PostgresTestStore : TestStore
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
 
-    public override PostgresVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
         => new(this.DataSource, options);
@@ -53,7 +54,7 @@ internal sealed class PostgresTestStore : TestStore
 
         await using var connection = this._dataSource.CreateConnection();
         await connection.OpenAsync();
-        await using var command = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection);
+        using var command = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection);
         await command.ExecuteNonQueryAsync();
         await connection.ReloadTypesAsync();
 

@@ -174,7 +174,7 @@ public abstract class FilterFixtureBase<TKey> : IAsyncLifetime
 #pragma warning disable CA1819 // Properties should not return arrays
 public class FilterRecord<TKey>
 {
-    public TKey Key { get; init; } = default!;
+    public TKey Key { get; set; } = default!;
     public ReadOnlyMemory<float>? Vector { get; set; }
 
     public int Int { get; set; }
