@@ -104,7 +104,8 @@ public static class EmbeddingGenerationExtensions
             this.Metadata = new EmbeddingGeneratorMetadata(
                 service.GetType().Name,
                 service.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
-                service.GetModelId());
+                service.GetModelId(),
+                service.GetDimensions());
         }
 
         /// <inheritdoc />
