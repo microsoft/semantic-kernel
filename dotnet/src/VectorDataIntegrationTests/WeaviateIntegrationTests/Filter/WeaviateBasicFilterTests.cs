@@ -23,8 +23,8 @@ public class WeaviateBasicFilterTests(WeaviateFilterFixture fixture) : BasicFilt
     public override Task NotEqual_with_null_captured()
         => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_captured());
 
-    public override Task NotEqual_with_null_referenceType()
-        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_referenceType());
+    public override Task NotEqual_with_null_reference_type()
+        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_reference_type());
 
     #endregion
 

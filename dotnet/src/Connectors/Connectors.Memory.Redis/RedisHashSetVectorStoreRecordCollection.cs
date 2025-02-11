@@ -300,6 +300,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 
         // Upsert.
         var maybePrefixedKey = this.PrefixKeyIfNeeded(redisHashSetRecord.Key);
+
         await this.RunOperationAsync(
             "HSET",
             () => this._database

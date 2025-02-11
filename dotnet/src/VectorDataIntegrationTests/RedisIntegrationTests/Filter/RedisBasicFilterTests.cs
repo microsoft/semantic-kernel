@@ -2,10 +2,11 @@
 
 using VectorDataSpecificationTests.Filter;
 using Xunit;
+using Xunit.Sdk;
 
 namespace RedisIntegrationTests.Filter;
 
-public class RedisBasicFilterTests(RedisFilterFixture fixture) : BasicFilterTestsBase<string>(fixture), IClassFixture<RedisFilterFixture>
+public abstract class RedisBasicFilterTests(FilterFixtureBase<string> fixture) : BasicFilterTestsBase<string>(fixture)
 {
     #region Equality with null
 
@@ -15,7 +16,7 @@ public class RedisBasicFilterTests(RedisFilterFixture fixture) : BasicFilterTest
     public override Task Equal_with_null_captured()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_with_null_captured());
 
-    public override Task NotEqual_with_null_referenceType()
+    public override Task NotEqual_with_null_reference_type()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_with_null_reference_type());
 
     public override Task NotEqual_with_null_captured()
@@ -48,4 +49,37 @@ public class RedisBasicFilterTests(RedisFilterFixture fixture) : BasicFilterTest
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_captured_string_array());
 
     #endregion
+}
+
+public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionFilterFixture fixture) : RedisBasicFilterTests(fixture), IClassFixture<RedisJsonCollectionFilterFixture>;
+
+public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionFilterFixture fixture) : RedisBasicFilterTests(fixture), IClassFixture<RedisHashSetCollectionFilterFixture>
+{
+    // Null values are not supported in Redis HashSet
+    public override Task Equal_with_null_reference_type()
+        => Assert.ThrowsAsync<ThrowsException>(() => base.Equal_with_null_reference_type());
+
+    public override Task Equal_with_null_captured()
+        => Assert.ThrowsAsync<ThrowsException>(() => base.Equal_with_null_captured());
+
+    public override Task NotEqual_with_null_reference_type()
+        => Assert.ThrowsAsync<ThrowsException>(() => base.NotEqual_with_null_reference_type());
+
+    public override Task NotEqual_with_null_captured()
+        => Assert.ThrowsAsync<ThrowsException>(() => base.NotEqual_with_null_captured());
+
+    // Array fields not supported on Redis HashSet
+    public override Task Contains_over_field_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_array());
+
+    public override Task Contains_over_field_string_List()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
+
+    [Obsolete("Legacy filter support")]
+    public override Task Legacy_AnyTagEqualTo_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_array());
+
+    [Obsolete("Legacy filter support")]
+    public override Task Legacy_AnyTagEqualTo_List()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_List());
 }

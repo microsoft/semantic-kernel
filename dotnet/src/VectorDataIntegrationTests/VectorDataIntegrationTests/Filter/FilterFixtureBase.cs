@@ -20,11 +20,14 @@ public abstract class FilterFixtureBase<TKey> : IAsyncLifetime
     protected virtual string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineSimilarity;
     protected virtual string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Flat;
 
+    protected virtual IVectorStoreRecordCollection<TKey, FilterRecord<TKey>> CreateCollection()
+        => this.TestStore.DefaultVectorStore.GetCollection<TKey, FilterRecord<TKey>>(this.StoreName, this.GetRecordDefinition());
+
     public virtual async Task InitializeAsync()
     {
         await this.TestStore.ReferenceCountingStartAsync();
 
-        this.Collection = this.TestStore.DefaultVectorStore.GetCollection<TKey, FilterRecord<TKey>>(this.StoreName, this.GetRecordDefinition());
+        this.Collection = this.CreateCollection();
 
         if (await this.Collection.CollectionExistsAsync())
         {

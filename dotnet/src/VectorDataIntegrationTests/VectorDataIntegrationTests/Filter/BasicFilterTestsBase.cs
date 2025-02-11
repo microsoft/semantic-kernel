@@ -57,7 +57,7 @@ public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture
         => this.TestFilterAsync(r => r.Int != 8);
 
     [ConditionalFact]
-    public virtual Task NotEqual_with_null_referenceType()
+    public virtual Task NotEqual_with_null_reference_type()
         => this.TestFilterAsync(r => r.String != null);
 
     [ConditionalFact]
