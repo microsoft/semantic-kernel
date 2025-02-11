@@ -20,7 +20,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     // If null, all tests will be enabled
     private const string? SkipReason = "The tests are for manual verification.";
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)

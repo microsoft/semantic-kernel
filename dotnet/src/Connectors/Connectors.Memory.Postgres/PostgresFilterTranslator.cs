@@ -27,15 +27,15 @@ internal class PostgresFilterTranslator
         LambdaExpression lambdaExpression,
         int startParamIndex)
     {
+        Debug.Assert(this._sql.Length == 0);
+
         this._storagePropertyNames = storagePropertyNames;
 
         this._parameterIndex = startParamIndex;
-        this._parameterValues.Clear();
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this._sql.Clear();
         this._sql.Append("WHERE ");
         this.Translate(lambdaExpression.Body);
         return (this._sql.ToString(), this._parameterValues);

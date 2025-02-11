@@ -6,8 +6,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
-#pragma warning disable CS0618 // FilterClause is obsolete
-
 /// <summary>
 /// Used to provide filtering when using <see cref="ITextSearch"/>.
 /// </summary>

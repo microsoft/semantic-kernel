@@ -40,7 +40,11 @@ public abstract class FilterFixtureBase<TKey> : IAsyncLifetime
         {
             var results = await this.Collection.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>([1, 2, 3]),
-                new() { Top = this.TestData.Count });
+                new()
+                {
+                    Top = this.TestData.Count,
+                    NewFilter = r => r.Int > 0
+                });
             var count = await results.Results.CountAsync();
             if (count == this.TestData.Count)
             {

@@ -15,7 +15,6 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Postgres;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 

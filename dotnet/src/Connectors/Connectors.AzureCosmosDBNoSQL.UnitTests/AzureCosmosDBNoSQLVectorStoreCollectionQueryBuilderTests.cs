@@ -183,10 +183,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
-        const string ExpectedQueryText = "" +
-            "SELECT x.key,x.property_1,x.property_2 " +
-            "FROM x " +
-            "WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0) ";
+        // const string ExpectedQueryText = "" +
+        //     "SELECT x.key,x.property_1,x.property_2 " +
+        //     "FROM x " +
+        //     "WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0) ";
+        const string ExpectedQueryText = """
+                                         SELECT x.key,x.property_1,x.property_2
+                                         FROM x
+                                         WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0)
+                                         """;
 
         const string KeyStoragePropertyName = "key_property";
         const string PartitionKeyPropertyName = "partition_key_property";

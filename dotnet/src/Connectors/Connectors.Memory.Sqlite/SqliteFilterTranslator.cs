@@ -24,14 +24,13 @@ internal class SqliteFilterTranslator
 
     internal (string Clause, Dictionary<string, object>) Translate(IReadOnlyDictionary<string, string> storagePropertyNames, LambdaExpression lambdaExpression)
     {
-        this._storagePropertyNames = storagePropertyNames;
+        Debug.Assert(this._sql.Length == 0);
 
-        this._parameters.Clear();
+        this._storagePropertyNames = storagePropertyNames;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this._sql.Clear();
         this.Translate(lambdaExpression.Body);
         return (this._sql.ToString(), this._parameters);
     }

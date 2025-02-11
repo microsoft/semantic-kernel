@@ -53,7 +53,6 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         return searchResultItems.First();
     }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Do a more complex vector search with pre-filtering.
     /// </summary>
@@ -72,7 +71,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
             new()
             {
                 Top = 1,
-                Filter = new VectorSearchFilter().EqualTo(nameof(Glossary.Category), "AI")
+                NewFilter = g => g.Category == "AI"
             });
         var searchResultItems = await searchResult.Results.ToListAsync();
 
@@ -80,7 +79,6 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         Console.WriteLine(searchResultItems.First().Record.Definition);
         Console.WriteLine(searchResultItems.First().Score);
     }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     private async Task<IVectorStoreRecordCollection<string, Glossary>> GetVectorStoreCollectionWithDataAsync()
     {

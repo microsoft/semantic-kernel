@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchFilterTranslator
 {
@@ -20,14 +20,17 @@ internal class AzureAISearchFilterTranslator
 
     private readonly StringBuilder _filter = new();
 
+    private static readonly char[] s_searchInDefaultDelimiter = [' ', ','];
+
     internal string Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
+        Debug.Assert(this._filter.Length == 0);
+
         this._storagePropertyNames = storagePropertyNames;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this._filter.Clear();
         this.Translate(lambdaExpression.Body);
         return this._filter.ToString();
     }
@@ -226,26 +229,16 @@ internal class AzureAISearchFilterTranslator
                 throw new NotSupportedException("Contains over non-string arrays is not supported");
             }
 
-            // The default delimiter for search.in() is comma or space.
-            // If any element contains a comma or space, we switch to using pipe as the delimiter.
-            // If any contains a pipe, we throw (for now).
-            var delimiter = ", ";
-            if (elements.Cast<string>().Any(s => s.Contains(' ') || s.Contains(',')))
-            {
-                if (elements.Cast<string>().Any(s => s.Contains('|')))
-                {
-                    throw new NotSupportedException("");
-                }
-
-                delimiter = "|";
-            }
-
             this._filter.Append("search.in(");
             this.Translate(item);
             this._filter.Append(", '");
 
+            string delimiter = ", ";
+            var startingPosition = this._filter.Length;
+
+RestartLoop:
             var isFirst = true;
-            foreach (var element in elements.Cast<string>())
+            foreach (string element in elements)
             {
                 if (isFirst)
                 {
@@ -254,6 +247,30 @@ internal class AzureAISearchFilterTranslator
                 else
                 {
                     this._filter.Append(delimiter);
+                }
+
+                // The default delimiter for search.in() is comma or space.
+                // If any element contains a comma or space, we switch to using pipe as the delimiter.
+                // If any contains a pipe, we throw (for now).
+                switch (delimiter)
+                {
+                    case ", ":
+                        if (element.IndexOfAny(s_searchInDefaultDelimiter) > -1)
+                        {
+                            delimiter = "|";
+                            this._filter.Length = startingPosition;
+                            goto RestartLoop;
+                        }
+
+                        break;
+
+                    case "|":
+                        if (element.Contains('|'))
+                        {
+                            throw new NotSupportedException("Some elements contain both commas/spaces and pipes, cannot translate Contains");
+                        }
+
+                        break;
                 }
 
                 this._filter.Append(element.Replace("'", "''"));

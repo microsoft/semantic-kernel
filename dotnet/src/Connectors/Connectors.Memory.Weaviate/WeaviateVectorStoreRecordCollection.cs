@@ -74,7 +74,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        // DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters =
         {
             new WeaviateDateTimeOffsetConverter(),

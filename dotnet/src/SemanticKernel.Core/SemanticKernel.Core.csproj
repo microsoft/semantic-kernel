@@ -8,6 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>$(NoWarn);SKEXP0001,SKEXP0120</NoWarn>
+<!--    <NoWarn>$(NoWarn);CS1685</NoWarn> &lt;!&ndash; The predefined type 'RuntimeHelpers' is defined in multiple assemblies in the global alias &ndash;&gt;-->
     <EnablePackageValidation>true</EnablePackageValidation>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
@@ -54,5 +55,5 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordPropertyVerification.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-  
+
 </Project>

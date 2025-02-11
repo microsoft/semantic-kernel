@@ -20,12 +20,13 @@ internal class RedisFilterTranslator
 
     internal string Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
+        Debug.Assert(this._filter.Length == 0);
+
         this._storagePropertyNames = storagePropertyNames;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this._filter.Clear();
         this.Translate(lambdaExpression.Body);
         return this._filter.ToString();
     }

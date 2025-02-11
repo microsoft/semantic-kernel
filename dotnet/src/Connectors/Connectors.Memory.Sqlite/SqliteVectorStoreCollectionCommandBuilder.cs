@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -277,7 +278,8 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
 
             whereClause += extraWhereFilter;
 
-            foreach (var p in extraParameters!)
+            Debug.Assert(extraParameters is not null, "extraParameters must be provided when extraWhereFilter is provided.");
+            foreach (var p in extraParameters)
             {
                 command.Parameters.Add(new SqliteParameter(p.Key, p.Value));
             }

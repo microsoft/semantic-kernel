@@ -18,19 +18,17 @@ internal class AzureCosmosDBNoSqlFilterTranslator
     private ParameterExpression _recordParameter = null!;
 
     private readonly Dictionary<string, object?> _parameters = new();
-
     private readonly StringBuilder _sql = new();
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
-        this._storagePropertyNames = storagePropertyNames;
+        Debug.Assert(this._sql.Length == 0);
 
-        this._parameters.Clear();
+        this._storagePropertyNames = storagePropertyNames;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this._sql.Clear();
         this.Translate(lambdaExpression.Body);
         return (this._sql.ToString(), this._parameters);
     }
