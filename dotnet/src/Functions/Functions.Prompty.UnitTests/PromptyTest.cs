@@ -97,7 +97,7 @@ public sealed class PromptyTest
         Assert.Equal(0, executionSettings.Temperature);
         Assert.Equal(1.0, executionSettings.TopP);
         Assert.Null(executionSettings.StopSequences);
-        Assert.Equal("json_object", executionSettings.ResponseFormat?.ToString());
+        Assert.Equal("{\"type\":\"json_object\"}", executionSettings.ResponseFormat?.ToString());
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Equal(3000, executionSettings.MaxTokens);
         Assert.Null(executionSettings.Seed);
@@ -342,7 +342,8 @@ public sealed class PromptyTest
             ---
             name: MyPrompt
             inputs:
-              question: What is the color of the sky?
+              - name: question
+                description: What is the color of the sky?
             ---
             {{a}} {{b}} {{c}}
             """;
