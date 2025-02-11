@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData;
 public interface IKeywordVectorizedHybridSearch<TRecord>
 {
     /// <summary>
-    /// Search the vector store using a hybrid search for records that match the given embedding and keywords, after applying the provided filters.
+    /// Performs a hybrid search for records that match the given embedding and keywords, after applying the provided filters.
     /// </summary>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>
