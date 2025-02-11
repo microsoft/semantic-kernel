@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed }
-contact: {Eduard van Valkenburg}
+status: { proposed }
+contact: { Eduard van Valkenburg}
 date: { 2025-01-31 }
 deciders: { Eduard van Valkenburg, Mark Wallace, Ben Thomas, Shawn Henry }
 consulted: { Weslie Steyn, Roger Barreto, Ben Thomas, Mark Wallace, Sergey Menshykh, Evan Mattson }
