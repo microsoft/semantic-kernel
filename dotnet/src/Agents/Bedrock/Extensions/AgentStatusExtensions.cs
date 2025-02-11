@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AmazonBedrockAgent = Amazon.BedrockAgent;
+using Amazon.BedrockAgent;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
@@ -22,7 +22,7 @@ internal static class BedrockAgentStatusExtensions
     /// <param name="maxAttempts">The maximum number of attempts to make. The default is 5 attempts.</param>
     public static async Task WaitForAgentStatusAsync(
         this BedrockAgent agent,
-        AmazonBedrockAgent.AgentStatus status,
+        AgentStatus status,
         CancellationToken cancellationToken,
         int interval = 2,
         int maxAttempts = 5)

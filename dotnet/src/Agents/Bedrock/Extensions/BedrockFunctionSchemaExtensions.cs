@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using AmazonBedrockAgentModel = Amazon.BedrockAgent.Model;
-using AmazonBedrockAgentRuntimeModel = Amazon.BedrockAgentRuntime.Model;
+using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 /// </summary>
 internal static class BedrockFunctionSchemaExtensions
 {
-    public static KernelArguments FromFunctionParameters(this List<AmazonBedrockAgentRuntimeModel.FunctionParameter> parameters, KernelArguments? arguments)
+    public static KernelArguments FromFunctionParameters(this List<FunctionParameter> parameters, KernelArguments? arguments)
     {
         KernelArguments kernelArguments = arguments ?? [];
         foreach (var parameter in parameters)
@@ -23,15 +23,15 @@ internal static class BedrockFunctionSchemaExtensions
         return kernelArguments;
     }
 
-    public static AmazonBedrockAgentModel.FunctionSchema ToFunctionSchema(this Kernel kernel)
+    public static Amazon.BedrockAgent.Model.FunctionSchema ToFunctionSchema(this Kernel kernel)
     {
         var plugins = kernel.Plugins;
-        List<AmazonBedrockAgentModel.Function> functions = [];
+        List<Function> functions = [];
         foreach (var plugin in plugins)
         {
             foreach (KernelFunction function in plugin)
             {
-                functions.Add(new AmazonBedrockAgentModel.Function
+                functions.Add(new Function
                 {
                     Name = function.Name,
                     Description = function.Description,
@@ -46,19 +46,19 @@ internal static class BedrockFunctionSchemaExtensions
             }
         }
 
-        return new AmazonBedrockAgentModel.FunctionSchema
+        return new Amazon.BedrockAgent.Model.FunctionSchema
         {
             Functions = functions,
         };
     }
 
-    private static Dictionary<string, AmazonBedrockAgentModel.ParameterDetail> CreateParameterSpec(
+    private static Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> CreateParameterSpec(
         this IReadOnlyList<KernelParameterMetadata> parameters)
     {
-        Dictionary<string, AmazonBedrockAgentModel.ParameterDetail> parameterSpec = [];
+        Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> parameterSpec = [];
         foreach (var parameter in parameters)
         {
-            parameterSpec.Add(parameter.Name, new AmazonBedrockAgentModel.ParameterDetail
+            parameterSpec.Add(parameter.Name, new Amazon.BedrockAgent.Model.ParameterDetail
             {
                 Description = parameter.Description,
                 Required = parameter.IsRequired,

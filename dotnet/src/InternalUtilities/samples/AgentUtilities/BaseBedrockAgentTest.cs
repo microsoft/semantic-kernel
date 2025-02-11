@@ -4,7 +4,7 @@ using Amazon.BedrockAgent.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
-/// Base class for samples that demonstrate the usage of agents.
+/// Base class for samples that demonstrate the usage of AWS Bedrock agents.
 /// </summary>
 public abstract class BaseBedrockAgentTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {

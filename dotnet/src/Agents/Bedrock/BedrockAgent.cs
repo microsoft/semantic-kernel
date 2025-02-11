@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AmazonBedrockAgent = Amazon.BedrockAgent;
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
-using AmazonBedrockAgentModel = Amazon.BedrockAgent.Model;
-using AmazonBedrockAgentRuntimeModel = Amazon.BedrockAgentRuntime.Model;
+using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
@@ -20,11 +20,11 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// </summary>
 public class BedrockAgent : KernelAgent
 {
-    private readonly AmazonBedrockAgent.AmazonBedrockAgentClient _client;
+    private readonly AmazonBedrockAgentClient _client;
 
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient;
 
-    private readonly AmazonBedrockAgentModel.Agent _agentModel;
+    private readonly Amazon.BedrockAgent.Model.Agent _agentModel;
 
     // There is a default alias created by Bedrock for the working draft version of the agent.
     // https://docs.aws.amazon.com/bedrock/latest/userguide/agents-deploy.html
@@ -37,8 +37,8 @@ public class BedrockAgent : KernelAgent
     /// <param name="client">A client used to interact with the Bedrock Agent service.</param>
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     public BedrockAgent(
-        AmazonBedrockAgentModel.Agent agentModel,
-        AmazonBedrockAgent.AmazonBedrockAgentClient client,
+        Amazon.BedrockAgent.Model.Agent agentModel,
+        AmazonBedrockAgentClient client,
         AmazonBedrockAgentRuntimeClient runtimeClient)
     {
         this._agentModel = agentModel;
@@ -64,16 +64,16 @@ public class BedrockAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An instance of the <see cref="BedrockAgent"/>.</returns>
     public static async Task<BedrockAgent> CreateAsync(
-        AmazonBedrockAgentModel.CreateAgentRequest request,
+        CreateAgentRequest request,
         bool enableCodeInterpreter = false,
         bool enableKernelFunctions = false,
-        AmazonBedrockAgent.AmazonBedrockAgentClient? client = null,
+        AmazonBedrockAgentClient? client = null,
         AmazonBedrockAgentRuntimeClient? runtimeClient = null,
         Kernel? kernel = null,
         KernelArguments? defaultArguments = null,
         CancellationToken cancellationToken = default)
     {
-        client ??= new AmazonBedrockAgent.AmazonBedrockAgentClient();
+        client ??= new AmazonBedrockAgentClient();
         runtimeClient ??= new AmazonBedrockAgentRuntimeClient();
         var createAgentResponse = await client.CreateAgentAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -85,7 +85,7 @@ public class BedrockAgent : KernelAgent
 
         // The agent will first enter the CREATING status.
         // When the agent is created, it will enter the NOT_PREPARED status.
-        await agent.WaitForAgentStatusAsync(AmazonBedrockAgent.AgentStatus.NOT_PREPARED, cancellationToken).ConfigureAwait(false);
+        await agent.WaitForAgentStatusAsync(AgentStatus.NOT_PREPARED, cancellationToken).ConfigureAwait(false);
 
         if (enableCodeInterpreter)
         {
@@ -114,13 +114,13 @@ public class BedrockAgent : KernelAgent
     /// <returns>An instance of the <see cref="BedrockAgent"/>.</returns>
     public static async Task<BedrockAgent> RetrieveAsync(
         string id,
-        AmazonBedrockAgent.AmazonBedrockAgentClient? client = null,
+        AmazonBedrockAgentClient? client = null,
         AmazonBedrockAgentRuntimeClient? runtimeClient = null,
         Kernel? kernel = null,
         KernelArguments? defaultArguments = null,
         CancellationToken cancellationToken = default)
     {
-        client ??= new AmazonBedrockAgent.AmazonBedrockAgentClient();
+        client ??= new AmazonBedrockAgentClient();
         runtimeClient ??= new AmazonBedrockAgentRuntimeClient();
         var getAgentResponse = await client.GetAgentAsync(new() { AgentId = id }, cancellationToken).ConfigureAwait(false);
 
@@ -154,7 +154,7 @@ public class BedrockAgent : KernelAgent
     public async Task PrepareAsync(CancellationToken cancellationToken)
     {
         await this._client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-        await this.WaitForAgentStatusAsync(AmazonBedrockAgent.AgentStatus.PREPARED, cancellationToken).ConfigureAwait(false);
+        await this.WaitForAgentStatusAsync(AgentStatus.PREPARED, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public class BedrockAgent : KernelAgent
         KernelArguments? arguments,
         CancellationToken cancellationToken)
     {
-        var invokeAgentRequest = new AmazonBedrockAgentRuntimeModel.InvokeAgentRequest
+        var invokeAgentRequest = new InvokeAgentRequest
         {
             AgentAliasId = WORKING_DRAFT_AGENT_ALIAS,
             AgentId = this.Id,
@@ -198,7 +198,7 @@ public class BedrockAgent : KernelAgent
         KernelArguments? arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var invokeAgentRequest = new AmazonBedrockAgentRuntimeModel.InvokeAgentRequest
+        var invokeAgentRequest = new InvokeAgentRequest
         {
             AgentAliasId = WORKING_DRAFT_AGENT_ALIAS,
             AgentId = this.Id,
@@ -233,13 +233,13 @@ public class BedrockAgent : KernelAgent
     /// </summary>
     private async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken)
     {
-        var createAgentActionGroupRequest = new AmazonBedrockAgentModel.CreateAgentActionGroupRequest
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
             AgentId = this.Id,
             AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
             ActionGroupName = this.GetCodeInterpreterActionGroupSignature(),
-            ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
-            ParentActionGroupSignature = new(AmazonBedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
+            ActionGroupState = ActionGroupState.ENABLED,
+            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
         };
 
         await this._client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
@@ -250,15 +250,15 @@ public class BedrockAgent : KernelAgent
     /// </summary>
     private async Task CreateKernelFunctionActionGroupAsync(CancellationToken cancellationToken)
     {
-        var createAgentActionGroupRequest = new AmazonBedrockAgentModel.CreateAgentActionGroupRequest
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
             AgentId = this.Id,
             AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
             ActionGroupName = this.GetKernelFunctionActionGroupSignature(),
-            ActionGroupState = AmazonBedrockAgent.ActionGroupState.ENABLED,
+            ActionGroupState = ActionGroupState.ENABLED,
             ActionGroupExecutor = new()
             {
-                CustomControl = AmazonBedrockAgent.CustomControlMethod.RETURN_CONTROL,
+                CustomControl = Amazon.BedrockAgent.CustomControlMethod.RETURN_CONTROL,
             },
             FunctionSchema = this.Kernel.ToFunctionSchema(),
         };
@@ -284,9 +284,9 @@ public class BedrockAgent : KernelAgent
         return Task.FromResult<AgentChannel>(new BedrockAgentChannel());
     }
 
-    internal AmazonBedrockAgent.AmazonBedrockAgentClient GetClient() => this._client;
+    internal AmazonBedrockAgentClient GetClient() => this._client;
     internal AmazonBedrockAgentRuntimeClient GetRuntimeClient() => this._runtimeClient;
-    internal AmazonBedrockAgentModel.Agent GetAgentModel() => this._agentModel;
+    internal Amazon.BedrockAgent.Model.Agent GetAgentModel() => this._agentModel;
 
     internal string GetCodeInterpreterActionGroupSignature() => $"{this.GetDisplayName()}_CodeInterpreter";
     internal string GetKernelFunctionActionGroupSignature() => $"{this.GetDisplayName()}_KernelFunctions";
