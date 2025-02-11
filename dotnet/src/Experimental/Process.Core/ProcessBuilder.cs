@@ -242,6 +242,15 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.AddStep(mapBuilder, aliases);
     }
 
+    public ProcessProxyBuilder AddProxyStep<TExternalMessageChannel>(IReadOnlyList<string> externalTopics, string? dependencyIdentifier = null, IReadOnlyList<string>? aliases = null)
+        where TExternalMessageChannel : IExternalKernelProcessMessageChannel
+    {
+        // TODO: store link between proxy step name and TExternalMessageChannel
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, dependencyIdentifier ?? typeof(TExternalMessageChannel).Name);
+
+        return this.AddStep(proxyBuilder, aliases);
+    }
+
     /// <summary>
     /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
     /// step inside the process for a given external event.

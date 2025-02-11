@@ -37,5 +37,6 @@ internal static class ProcessConstants
         Step,
         Process,
         Map,
+        Proxy,
     }
 }

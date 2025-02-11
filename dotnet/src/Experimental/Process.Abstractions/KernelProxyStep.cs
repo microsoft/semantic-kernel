@@ -1,0 +1,53 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
+
+namespace Microsoft.SemanticKernel.Process;
+
+/// <summary>
+/// Internal SK KernelProcessStep preconfiged to be used when emitting SK events outside of the SK Process Framework or inside with a different event name
+/// </summary>
+public sealed class KernelProxyStep : KernelProcessStep
+{
+    /// <summary>
+    /// SK Function names in this SK Step as entry points
+    /// </summary>
+    public static class Functions
+    {
+        /// <summary>
+        /// Function name used to emit events externally
+        /// </summary>
+        public const string EmitExternalEvent = nameof(EmitExternalEvent);
+
+        /// <summary>
+        /// Function name used to emit events internally
+        /// </summary>
+        public const string EmitInternalEvent = nameof(EmitInternalEvent);
+    }
+
+    /// <summary>
+    /// Step function used to emit events externally
+    /// </summary>
+    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
+    /// <param name="proxyEvent">event data passed to proxy step</param>
+    /// <returns></returns>
+    [KernelFunction(Functions.EmitExternalEvent)]
+    public async Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
+    {
+        Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));
+        await context.EmitExternalEventAsync(proxyEvent.ExternalTopicName!, proxyEvent).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Step function used to emit events internally with a different SK process event name
+    /// </summary>
+    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
+    /// <param name="proxyEvent">event data passed to proxy step</param>
+    /// <returns></returns>
+    [KernelFunction(Functions.EmitInternalEvent)]
+    public async Task EmitInternalProcessEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
+    {
+        Verify.NotNull(proxyEvent.ProxyEventName, nameof(proxyEvent.ProxyEventName));
+        await context.EmitEventAsync(proxyEvent.ProxyEventName, proxyEvent).ConfigureAwait(false);
+    }
+}

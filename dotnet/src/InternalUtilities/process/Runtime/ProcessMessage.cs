@@ -21,6 +21,8 @@ public record ProcessMessage(
     string FunctionName,
     Dictionary<string, object?> Values)
 {
+    public string? SourceEventId { get; init; }
+
     /// <summary>
     /// The Id of the target event. This may be null if the message is not targeting a sub-process.
     /// </summary>
