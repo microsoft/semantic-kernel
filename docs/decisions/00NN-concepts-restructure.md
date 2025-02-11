@@ -83,11 +83,17 @@ public class Ollama_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
 
 Fact method names, MUST provide a clear understanding of what is happening in the test.
 
-| Bad ❌                                     | Good ✅                                                         |
-| ------------------------------------------ | --------------------------------------------------------------- |
-| `OpenAI_ChatCompletion.ServicePromptAsync` | `OpenAI_ChatCompletion.UsingChatServiceWithStringPromptAsync`   |
-| `OpenAI_ChatCompletion.ChatPromptAsync`    | `OpenAI_ChatCompletion.UsingKernelChatPromptSyntaxAsync`        |
-| `OpenAI_CustomClient.RunAsync`             | `OpenAI_CustomHttpClient.AddingHeaderWithCustomHttpClientAsync` |
+1. Clear message of what is being sampled.
+
+2. Usage of underscores to separate words and help readability.
+
+3. Drop Async suffix for async methods.
+
+| Bad ❌                                     | Good ✅                                                     |
+| ------------------------------------------ | ----------------------------------------------------------- |
+| `OpenAI_ChatCompletion.ServicePromptAsync` | `OpenAI_ChatCompletion.Using_ChatService_WithStringPrompt`  |
+| `OpenAI_ChatCompletion.ChatPromptAsync`    | `OpenAI_ChatCompletion.Using_Kernel_WithChatPrompt_Syntax`  |
+| `OpenAI_CustomClient.RunAsync`             | `OpenAI_ChatCompletion.Adding_CustomHeaders_WithHttpClient` |
 
 ### 4. Each fact in the concepts MUST have xmldoc description
 
@@ -215,6 +221,19 @@ Some of the features we should consider:
 - Easy copy/paste. Consolidate all the code for the selected sample in a way that its dependencies are ready to be copied and run into a single Program.cs.
 
 - Enable export to Jupyter Notebook. This would be a great feature to allow users to easily run the samples in their own environment.
+
+### Balancing Clarity (Copy and Paste) vs Usability
+
+Much of our samples have plenty of repetitive code that can be refactored and extracted in Utilities or Helpers, this could reduce significantly the size of the samples even allowing them to be provider/service agnostic.
+
+The issue arises that such optimized samples would hide common code making it unusable for Copy and Paste, increasing significantly the cognitive load and patience (when looking from a GitHub UI) to know where to seek for the common implementation.
+
+Since Semantic Kernel is fundamentally stable and won't change, we may reconsider keeping a more verbose and repetitive code in the samples.
+
+Assuming we move forward with sample code generation in the WebApp, this might be a got thing to be revisited as the common code could be auto-generated and injected in a copy/paste friendly `Program.cs` demo.
+
+> [!NOTE]
+> Focusing too much in usability might move us away from the main decision drivers of this proposal.
 
 ## Decision Outcome
 
