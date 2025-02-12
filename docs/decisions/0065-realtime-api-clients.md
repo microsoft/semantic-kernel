@@ -185,7 +185,7 @@ Next to these we will have a generic event, called RealtimeServiceEvent, this is
 RealtimeServiceEvent(
   event_type="service", # single default value in order to discriminate easily
   service_event_type="conversation.item.create", # mandatory
-  event: { ... } # optional, because some events do not have content.
+  service_event: { ... } # optional, because some events do not have content.
 )
 ```
 
@@ -209,7 +209,7 @@ While Google has ID's only in some content items, like function calls, but not f
 Since the id's are always available through the raw event (either as inner_content or as .event), it is not necessary to add them to the content types, and it would make the content types more complex and harder to reuse across services.
 
 ### Rejected ideas
-Wrapping content in a `(Streaming)ChatMessageContent` first, this will add another layer of complexity and since a CMC can contain multiple items, to access audio, would look like this: `event.content.items[0].audio.data`, which is not as clear as `event.audio.data`.
+Wrapping content in a `(Streaming)ChatMessageContent` first, this will add another layer of complexity and since a CMC can contain multiple items, to access audio, would look like this: `service_event.content.items[0].audio.data`, which is not as clear as `service_event.audio.data`.
 
 # Programming model
 
@@ -397,14 +397,14 @@ The send method should handle all events types, but it might have to handle the 
 ```python
 audio = AudioContent(...)
 
-await client.send(AudioEvent(event_type='audio', audio=audio))
+await client.send(AudioEvent(audio=audio))
 ```
 
 should be equivalent to:
 ```python
 audio = AudioContent(...)
 
-await client.send(ServiceEvent(event_type='service', service_event_type='input_audio_buffer.append', event=audio))
+await client.send(ServiceEvent(service_event_type='input_audio_buffer.append', service_event=audio))
 ```
 
 The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this can for instance be used to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
