@@ -44,6 +44,9 @@ pn = "pn"                 # Kiota parameter
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
 
+[default.extend-ignore-identifiers-re]
+# spellchecker:<on|off>: "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on"
+
 [type.jupyter]
 extend-ignore-re = [
     '"[A-Fa-f0-9]{8}"', # cell id strings

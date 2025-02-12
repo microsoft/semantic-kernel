@@ -413,6 +413,7 @@ The developer should document which service event types are used by default for 
 
 Example of events coming from a few seconds of conversation with the OpenAI Realtime:
 <details>
+# spellchecker:off
 
 ```json
 [
