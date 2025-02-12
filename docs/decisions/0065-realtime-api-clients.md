@@ -135,7 +135,7 @@ This would introduce events, each event has a type, those can be core content ty
 Chosen option: 3 Treat Everything as Events
 
 This option was chosen to allow abstraction away from the raw events, while still allowing the developer to access the raw events if needed. 
-A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event which is filled with the event type from the service and a field for the actual content, with a name that corresponds to the event type, the actual content should use the inner_content field to capture the raw event.
+A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event_type which is filled with the name of the event from the service and a field for the actual content, with a name that corresponds to the event type, the actual content should use the inner_content field to capture the raw event.
 
 It might also be possible that a single event from the service contains multiple content items, for instance a response might contain both text and audio, in that case multiple events will be emitted. It might also be that a single service event is represented twice, i.e. once as a AudioEvent and once as a ServiceEvent, this once again gives the most flexibility to the developer.
 
