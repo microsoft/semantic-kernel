@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using Microsoft.SemanticKernel.Memory;
-using SqlServerIntegrationTests;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
@@ -12,8 +15,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
 /// <summary>
 /// Unit tests for <see cref="SqlServerMemoryStore"/> class.
 /// </summary>
-public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : IClassFixture<SqlServerContainerFixture>, IAsyncLifetime
+public class SqlServerMemoryStoreTests : IAsyncLifetime
 {
+    private const string? SkipReason = "Configure SQL Server or Azure SQL connection string and then set this to 'null'.";
+    //private const string? SkipReason = null;
     private const string SchemaName = "sk_it";
     private const string DefaultCollectionName = "test";
     private const int TestEmbeddingDimensionsCount = 5;
@@ -22,13 +27,16 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
 
     private SqlServerMemoryStore Store { get; set; } = null!;
 
-    private SqlServerContainerFixture Fixture { get; } = fixture;
-
     public async Task InitializeAsync()
     {
-        await this.Fixture.InitializeAsync();
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets<SqlServerMemoryStore>()
+            .Build();
 
-        string connectionString = this.Fixture.GetConnectionString();
+        var connectionString = configuration["SqlServer:ConnectionString"];
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -46,11 +54,9 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
     public async Task DisposeAsync()
     {
         await this.CleanupDatabaseAsync();
-
-        await this.Fixture.DisposeAsync();
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task CreateCollectionAsync()
     {
         Assert.False(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
@@ -59,7 +65,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.True(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task DropCollectionAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -67,7 +73,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.False(await this.Store.DoesCollectionExistAsync(DefaultCollectionName));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GetCollectionsAsync()
     {
         await this.Store.CreateCollectionAsync("collection1");
@@ -78,7 +84,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.Contains("collection2", collections);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -98,7 +104,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.Equal("Some id", id);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetAsync(bool withEmbeddings)
@@ -122,7 +128,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
             record.Embedding.ToArray());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertBatchAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -133,7 +139,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
             id => Assert.Equal("Some other id", id));
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetBatchAsync(bool withEmbeddings)
@@ -174,7 +180,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
             });
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task RemoveAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -185,7 +191,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.Null(await this.Store.GetAsync(DefaultCollectionName, "Some id"));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task RemoveBatchAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -198,7 +204,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.Null(await this.Store.GetAsync(DefaultCollectionName, "Some other id"));
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetNearestMatchesAsync(bool withEmbeddings)
@@ -242,7 +248,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
             });
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchesWithMinRelevanceScoreAsync()
     {
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
@@ -259,7 +265,7 @@ public class SqlServerMemoryStoreTests(SqlServerContainerFixture fixture) : ICla
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetNearestMatchAsync(bool withEmbeddings)

@@ -120,7 +120,6 @@
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.0.0" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.2.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.12.0" />
     <!-- Symbols -->
