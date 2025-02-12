@@ -19,12 +19,12 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     public async Task UseAgentWithFunctionsAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions");
+        var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions");
 
         // Respond to user input
         try
         {
-            var responses = bedrock_agent.InvokeAsync(
+            var responses = bedrockAgent.InvokeAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the weather in Seattle?",
                 null,
@@ -39,7 +39,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 
@@ -51,12 +51,12 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     public async Task UseAgentStreamingWithFunctionsAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Streaming");
+        var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Streaming");
 
         // Respond to user input
         try
         {
-            var streamingResponses = bedrock_agent.InvokeStreamingAsync(
+            var streamingResponses = bedrockAgent.InvokeStreamingAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the weather forecast in Seattle?",
                 null,
@@ -71,7 +71,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 
@@ -83,12 +83,12 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     public async Task UseAgentWithParallelFunctionsAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Parallel");
+        var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Parallel");
 
         // Respond to user input
         try
         {
-            var responses = bedrock_agent.InvokeAsync(
+            var responses = bedrockAgent.InvokeAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the current weather in Seattle and what is the weather forecast in Seattle?",
                 null,
@@ -103,7 +103,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 

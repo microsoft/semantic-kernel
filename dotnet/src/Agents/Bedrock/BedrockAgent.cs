@@ -396,18 +396,21 @@ public class BedrockAgent : KernelAgent
 
     #endregion
 
+    /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Return the channel keys for the BedrockAgent
         yield return typeof(BedrockAgentChannel).FullName!;
     }
 
+    /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         // Create and return a new BedrockAgentChannel
         return Task.FromResult<AgentChannel>(new BedrockAgentChannel());
     }
 
+    /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         // Restore and return a BedrockAgentChannel from the given state

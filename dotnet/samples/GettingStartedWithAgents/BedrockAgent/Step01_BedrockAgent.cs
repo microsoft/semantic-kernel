@@ -19,12 +19,12 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     public async Task UseNewAgentAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step01_BedrockAgent");
+        var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent");
 
         // Respond to user input
         try
         {
-            var responses = bedrock_agent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
             await foreach (var response in responses)
             {
                 this.Output.WriteLine(response.Content);
@@ -32,7 +32,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 
@@ -44,12 +44,12 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     public async Task UseNewAgentStreamingAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");
+        var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");
 
         // Respond to user input
         try
         {
-            var streamingResponses = bedrock_agent.InvokeStreamingAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            var streamingResponses = bedrockAgent.InvokeStreamingAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
             await foreach (var response in streamingResponses)
             {
                 this.Output.WriteLine(response.Content);
@@ -57,7 +57,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 

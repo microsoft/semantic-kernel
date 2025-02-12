@@ -27,13 +27,13 @@ Dolphin  2";
     public async Task UseAgentWithCodeInterpreterAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step02_BedrockAgent_CodeInterpreter");
+        var bedrockAgent = await this.CreateAgentAsync("Step02_BedrockAgent_CodeInterpreter");
 
         // Respond to user input
         try
         {
             BinaryContent? binaryContent = null;
-            var responses = bedrock_agent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -70,7 +70,7 @@ Dolphin  2";
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 

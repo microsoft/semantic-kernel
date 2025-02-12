@@ -31,14 +31,13 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
     }
 
     /// <summary>
-    /// Demonstrates how to inspect the thought process of a <see cref="BedrockAgent"/> by enabling trace.
+    /// Demonstrates how to use a <see cref="BedrockAgent"/> with file search.
     /// </summary>
-    // [Fact(Skip = "This test is skipped because it requires a valid KnowledgeBaseId.")]
-    [Fact]
+    [Fact(Skip = "This test is skipped because it requires a valid KnowledgeBaseId.")]
     public async Task UseAgentWithFileSearchAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step05_BedrockAgent_FileSearch");
+        var bedrockAgent = await this.CreateAgentAsync("Step05_BedrockAgent_FileSearch");
 
         // Respond to user input
         // Assuming the knowledge base contains information about Semantic Kernel.
@@ -50,14 +49,12 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
             InvokeAgentRequest invokeAgentRequest = new()
             {
                 AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = bedrock_agent.Id,
+                AgentId = bedrockAgent.Id,
                 SessionId = BedrockAgent.CreateSessionId(),
                 InputText = userQuery,
-                // Enable trace to inspect the agent's thought process
-                EnableTrace = true,
             };
 
-            var responses = bedrock_agent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -68,7 +65,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 }

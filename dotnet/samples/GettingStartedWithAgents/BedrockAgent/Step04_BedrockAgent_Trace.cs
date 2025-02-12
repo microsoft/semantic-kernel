@@ -19,7 +19,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
     public async Task UseAgentWithTraceAsync()
     {
         // Create the agent
-        var bedrock_agent = await this.CreateAgentAsync("Step04_BedrockAgent_Trace");
+        var bedrockAgent = await this.CreateAgentAsync("Step04_BedrockAgent_Trace");
 
         // Respond to user input
         var userQuery = "What is the current weather in Seattle and what is the weather forecast in Seattle?";
@@ -29,14 +29,14 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
             InvokeAgentRequest invokeAgentRequest = new()
             {
                 AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = bedrock_agent.Id,
+                AgentId = bedrockAgent.Id,
                 SessionId = BedrockAgent.CreateSessionId(),
                 InputText = userQuery,
                 // Enable trace to inspect the agent's thought process
                 EnableTrace = true,
             };
 
-            var responses = bedrock_agent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -51,7 +51,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
         }
         finally
         {
-            await bedrock_agent.DeleteAsync(CancellationToken.None);
+            await bedrockAgent.DeleteAsync(CancellationToken.None);
         }
     }
 
