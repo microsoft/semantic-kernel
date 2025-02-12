@@ -80,6 +80,17 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData("invalid")]
+    public void ConstructorThrowsOnInvalidApiVersion(string? apiVersion)
+    {
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() =>
+        {
+            _ = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        });
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
