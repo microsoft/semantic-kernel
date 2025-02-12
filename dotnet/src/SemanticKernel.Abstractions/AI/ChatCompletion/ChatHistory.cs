@@ -28,10 +28,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message
+    /// Creates a new instance of the <see cref="ChatHistory"/> with a single message using an optional role.
+    /// If not role is provided then the first message will default to <see cref="AuthorRole.System"/> role.
     /// </summary>
-    /// <param name="systemMessage">The system message to add to the history.</param>
-    /// <param name="role">Optional role to add as the first message. Defaults to system message</param>
+    /// <param name="systemMessage">The text message to add to the first message in chat history.</param>
+    /// <param name="role">Optional role to add as the first message. Defaults to <see cref="AuthorRole.System"/> role</param>
     public ChatHistory(string systemMessage, AuthorRole? role = null)
     {
         Verify.NotNullOrWhiteSpace(systemMessage);
