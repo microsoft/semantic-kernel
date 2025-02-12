@@ -91,13 +91,16 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
                     chatHistory.RemoveAt(chatHistory.Count - 1);
 
                     IChatCompletionService chatCompletionService = kernel.Services.GetRequiredKeyedService<IChatCompletionService>("eastus");
+                    
                     OpenAIPromptExecutionSettings settings = new()
                     {
                         ServiceId = "eastus",
                         FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                     };
+                    
                     kernel.Data.Remove("service_id");
                     kernel.Data.Add("service_id", "eastus");
+                    
                     var chatContent = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, context.Kernel);
 
                     context.Result = new FunctionResult(context.Result, chatContent);
