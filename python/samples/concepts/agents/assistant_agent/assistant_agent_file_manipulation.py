@@ -28,9 +28,14 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
     print(f"# {AuthorRole.USER}: '{input}'")
 
     async for content in agent.invoke(thread_id=thread_id):
-        print(f"# {content.role}: {content.content}")
+        if content.metadata.get("code", False):
+            print(f"# {content.role}:\n\n```python")
+            print(content.content)
+            print("```")
+        else:
+            print(f"# {content.role}: {content.content}")
 
-        if len(content.items) > 0:
+        if content.items:
             for item in content.items:
                 if isinstance(item, AnnotationContent):
                     print(f"\n`{item.quote}` => {item.file_id}")
@@ -42,38 +47,35 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Define a service_id for the sample
-    service_id = "agent"
-
     # Get the path to the sales.csv file
     csv_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
         "resources",
         "agent_assistant_file_manipulation",
         "sales.csv",
     )
 
-    # Create the assistant agent
-    agent = await AzureAssistantAgent.create(
-        kernel=kernel,
-        service_id=service_id,
-        name=AGENT_NAME,
-        instructions=AGENT_INSTRUCTIONS,
-        enable_code_interpreter=True,
-        code_interpreter_filenames=[csv_file_path],
-    )
-
-    # Create a thread and specify the file to use for code interpretation
-    thread_id = await agent.create_thread()
-
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="Which segment had the most sales?")
-        await invoke_agent(agent, thread_id=thread_id, input="List the top 5 countries that generated the most profit.")
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            input="Create a tab delimited file report of profit by each country per month.",
+        # Create the assistant agent
+        agent = await AzureAssistantAgent.create(
+            kernel=kernel,
+            name=AGENT_NAME,
+            instructions=AGENT_INSTRUCTIONS,
+            enable_code_interpreter=True,
+            code_interpreter_filenames=[csv_file_path],
         )
+
+        # Create a thread and specify the file to use for code interpretation
+        thread_id = await agent.create_thread()
+
+        user_inputs = [
+            "Which segment had the most sales?",
+            "List the top 5 countries that generated the most profit.",
+            "Create a tab delimited file report of profit by each country per month.",
+        ]
+
+        for input in user_inputs:
+            await invoke_agent(agent, thread_id=thread_id, input=input)
     finally:
         if agent is not None:
             [await agent.delete_file(file_id) for file_id in agent.code_interpreter_file_ids]
