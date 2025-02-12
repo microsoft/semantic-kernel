@@ -12,12 +12,19 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 RealtimeEvent: TypeAlias = Annotated[
-    Union["ServiceEvent", "AudioEvent", "TextEvent", "FunctionCallEvent", "FunctionResultEvent", "ImageEvent"],
+    Union[
+        "RealtimeServiceEvent",
+        "RealtimeAudioEvent",
+        "RealtimeTextEvent",
+        "RealtimeFunctionCallEvent",
+        "RealtimeFunctionResultEvent",
+        "RealtimeImageEvent",
+    ],
     Field(discriminator="event_type"),
 ]
 
 
-class ServiceEvent(KernelBaseModel):
+class RealtimeServiceEvent(KernelBaseModel):
     """Base class for all service events."""
 
     event: Any | None = Field(default=None, description="The event content.")
@@ -25,7 +32,7 @@ class ServiceEvent(KernelBaseModel):
     event_type: ClassVar[Literal["service"]] = "service"
 
 
-class AudioEvent(KernelBaseModel):
+class RealtimeAudioEvent(KernelBaseModel):
     """Audio event type."""
 
     audio: AudioContent = Field(..., description="Audio content.")
@@ -33,7 +40,7 @@ class AudioEvent(KernelBaseModel):
     event_type: ClassVar[Literal["audio"]] = "audio"
 
 
-class TextEvent(KernelBaseModel):
+class RealtimeTextEvent(KernelBaseModel):
     """Text event type."""
 
     text: TextContent = Field(..., description="Text content.")
@@ -41,7 +48,7 @@ class TextEvent(KernelBaseModel):
     event_type: ClassVar[Literal["text"]] = "text"
 
 
-class FunctionCallEvent(KernelBaseModel):
+class RealtimeFunctionCallEvent(KernelBaseModel):
     """Function call event type."""
 
     function_call: FunctionCallContent = Field(..., description="Function call content.")
@@ -49,7 +56,7 @@ class FunctionCallEvent(KernelBaseModel):
     event_type: ClassVar[Literal["function_call"]] = "function_call"
 
 
-class FunctionResultEvent(KernelBaseModel):
+class RealtimeFunctionResultEvent(KernelBaseModel):
     """Function result event type."""
 
     function_result: FunctionResultContent = Field(..., description="Function result content.")
@@ -57,7 +64,7 @@ class FunctionResultEvent(KernelBaseModel):
     event_type: ClassVar[Literal["function_result"]] = "function_result"
 
 
-class ImageEvent(KernelBaseModel):
+class RealtimeImageEvent(KernelBaseModel):
     """Image event type."""
 
     image: ImageContent = Field(..., description="Image content.")

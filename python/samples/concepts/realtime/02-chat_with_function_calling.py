@@ -117,11 +117,15 @@ async def main() -> None:
     chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    async with realtime_client, audio_player:
-        await realtime_client.update_session(
-            settings=settings, chat_history=chat_history, kernel=kernel, create_response=True
-        )
-        print("Mosscap (transcript): ", end="")
+    async with (
+        audio_player,
+        realtime_client(
+            settings=settings,
+            chat_history=chat_history,
+            kernel=kernel,
+            create_response=True,
+        ),
+    ):
         async for event in realtime_client.receive():
             match event.event_type:
                 case "text":
@@ -132,7 +136,7 @@ async def main() -> None:
                     match event.service_type:
                         case ListenEvents.RESPONSE_CREATED:
                             if print_transcript:
-                                print("")
+                                print("\nMosscap (transcript): ", end="")
                         case ListenEvents.ERROR:
                             logger.error(event.event)
 

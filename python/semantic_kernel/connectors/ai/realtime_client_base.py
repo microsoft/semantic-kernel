@@ -3,7 +3,9 @@
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
+
+from pydantic import PrivateAttr
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
@@ -14,13 +16,11 @@ from numpy import ndarray
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.events.realtime_event import RealtimeEvent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.contents.chat_history import ChatHistory
 
 
 @experimental_class
@@ -29,6 +29,9 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
     audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
+    _chat_history: ChatHistory | None = PrivateAttr(default=None)
+    _settings: PromptExecutionSettings | None = PrivateAttr(default=None)
+    _create_kwargs: dict[str, Any] | None = PrivateAttr(default=None)
 
     @abstractmethod
     async def send(self, event: RealtimeEvent) -> None:
@@ -55,8 +58,8 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def create_session(
         self,
-        settings: "PromptExecutionSettings | None" = None,
         chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> None:
         """Create a session in the service.
@@ -71,8 +74,8 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def update_session(
         self,
-        settings: "PromptExecutionSettings | None" = None,
         chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> None:
         """Update a session in the service.
@@ -106,9 +109,28 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
 
         Default implementation calls the create session method.
         """
-        await self.create_session()
+        await self.create_session(self._chat_history, self._settings)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         """Exit the context manager."""
         await self.close_session()
+
+    def __call__(
+        self,
+        chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> Self:
+        """Call the service and set the chat history and settings.
+
+        Args:
+            chat_history: Chat history.
+            settings: Prompt execution settings.
+            kwargs: Additional arguments, can include `kernel` or specific settings for the service.
+                Check the update_session method for the specific service for more details.
+        """
+        self._chat_history = chat_history
+        self._settings = settings
+        self._create_kwargs = kwargs
+        return self

@@ -1,21 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.contents.events.realtime_event import (
-    AudioEvent,
-    FunctionCallEvent,
-    FunctionResultEvent,
-    ImageEvent,
+    RealtimeAudioEvent,
     RealtimeEvent,
-    ServiceEvent,
-    TextEvent,
+    RealtimeFunctionCallEvent,
+    RealtimeFunctionResultEvent,
+    RealtimeImageEvent,
+    RealtimeServiceEvent,
+    RealtimeTextEvent,
 )
 
 __all__ = [
-    "AudioEvent",
-    "FunctionCallEvent",
-    "FunctionResultEvent",
-    "ImageEvent",
+    "RealtimeAudioEvent",
     "RealtimeEvent",
-    "ServiceEvent",
-    "TextEvent",
+    "RealtimeFunctionCallEvent",
+    "RealtimeFunctionResultEvent",
+    "RealtimeImageEvent",
+    "RealtimeServiceEvent",
+    "RealtimeTextEvent",
 ]

@@ -64,11 +64,7 @@ async def main() -> None:
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
-
-    print("Mosscap (transcript): ", end="")
-    async with realtime_client, audio_player:
-        await realtime_client.update_session(settings=settings, create_response=True)
-
+    async with audio_player, realtime_client(settings=settings, create_response=True):
         async for event in realtime_client.receive():
             match event.event_type:
                 # case "audio":
@@ -80,7 +76,7 @@ async def main() -> None:
                     if event.service_type == ListenEvents.SESSION_UPDATED:
                         print("Session updated")
                     if event.service_type == ListenEvents.RESPONSE_CREATED:
-                        print("")
+                        print("\nMosscap (transcript): ", end="")
                     if event.service_type == ListenEvents.ERROR:
                         logger.error(event.event)
 

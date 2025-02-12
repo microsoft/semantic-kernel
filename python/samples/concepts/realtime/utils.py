@@ -17,7 +17,7 @@ from sounddevice import InputStream, OutputStream
 
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events.realtime_event import AudioEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -225,7 +225,7 @@ class AudioRecorderWebsocket(KernelBaseModel):
                 data, _ = self._stream.read(self.frame_size)
 
                 await self.realtime_client.send(
-                    AudioEvent(audio=AudioContent(data=base64.b64encode(cast(Any, data)).decode("utf-8")))
+                    RealtimeAudioEvent(audio=AudioContent(data=base64.b64encode(cast(Any, data)).decode("utf-8")))
                 )
 
                 await asyncio.sleep(0)

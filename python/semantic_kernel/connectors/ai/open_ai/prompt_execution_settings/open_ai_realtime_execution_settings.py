@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Annotated, Any, Literal
 
 from pydantic import Field
@@ -10,16 +10,34 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class InputAudioTranscription(KernelBaseModel):
-    """Input audio transcription settings."""
+    """Input audio transcription settings.
+
+    Args:
+        model: The model to use for transcription, currently only "whisper-1" is supported.
+        language: The language of the audio, should be in ISO-639-1 format, like 'en'.
+        prompt: An optional text to guide the model's style or continue a previous audio segment.
+            The prompt should match the audio language.
+    """
 
     model: Literal["whisper-1"] | None = None
+    language: str | None = None
+    prompt: str | None = None
 
 
 class TurnDetection(KernelBaseModel):
-    """Turn detection settings."""
+    """Turn detection settings.
 
-    type: Literal["server_vad"] | None = None
-    threshold: Annotated[float | None, Field(ge=0, le=1)] = None
+    Args:
+        type: The type of turn detection, currently only "server_vad" is supported.
+        threshold: The threshold for voice activity detection, should be between 0 and 1.
+        prefix_padding_ms: The padding before the detected voice activity, in milliseconds.
+        silence_duration_ms: The duration of silence to detect the end of a turn, in milliseconds.
+        create_response: Whether to create a response for each detected turn.
+
+    """
+
+    type: Literal["server_vad"] = "server_vad"
+    threshold: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     prefix_padding_ms: Annotated[int | None, Field(ge=0)] = None
     silence_duration_ms: Annotated[int | None, Field(ge=0)] = None
     create_response: bool | None = None
@@ -34,7 +52,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     voice: str | None = None
     input_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
     output_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
-    input_audio_transcription: InputAudioTranscription | None = None
+    input_audio_transcription: Annotated[InputAudioTranscription | Mapping[str, str] | None, Field()] = None
     turn_detection: TurnDetection | None = None
     tools: Annotated[
         list[dict[str, Any]] | None,
