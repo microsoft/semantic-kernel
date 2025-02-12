@@ -31,48 +31,90 @@ The project connection string is of the following format: `<HostName>;<AzureSubs
 
 The .env should be placed in the root directory.
 
-### Configuring the AI Project Client
+## Configuring the AI Project Client
 
-Please make sure you have configured the proper resources to be able to run an Azure AI Agent.
+Ensure that your Azure AI Agent resources are properly configured with at least a Basic or Standard SKU.
 
-This can be done in one of two ways:
+### Required Imports
 
-```python
-ai_agent_settings = AzureAIAgentSettings.create()
-
-async with (
-    DefaultAzureCredential() as creds,
-    AIProjectClient.from_connection_string(
-        credential=creds,
-        conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-    ) as client,
-):
-# code
-```
-
-or 
+The required imports for the `Azure AI Agent` include async libraries:
 
 ```python
-ai_agent_settings = AzureAIAgentSettings.create()
-
-async with (
-    DefaultAzureCredential() as creds,
-    AIProjectClient(
-        credential=creds,
-        endpoint=ai_agent_settings.endpoint,
-        subscription_id=ai_agent_settings.subscription_id,
-        resource_group_name=ai_agent_settings.resource_group_name,
-        project_name=ai_agent_settings.project_name
-    ) as client,
-):
-# code
+from azure.ai.projects.aio import AIProjectClient
+from azure.identity.aio import DefaultAzureCredential
 ```
 
-### Requests and Rate Limits
+### Initializing the Agent
 
-Please note that your default rate limits/requests per minute may be low depending on how often you want to poll on the status of the run. You have two options:
+You can create an `AIProjectClient` using a connection string:
 
-1. Adjust the `polling_options` on the `AzureAIAgent` to slow down the number of times you make a server request for the status of the run. The default polling interval is 250 ms. You may adjust this to run every 1 second (or other desired value):
+```python
+async def main():
+    ai_agent_settings = AzureAIAgentSettings.create()
+
+    async with (
+        DefaultAzureCredential() as creds,
+        AIProjectClient.from_connection_string(
+            credential=creds,
+            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
+        ) as client,
+    ):
+    # code
+```
+
+Or by explicitly specifying the endpoint and credentials:
+
+```python
+async def main():
+    ai_agent_settings = AzureAIAgentSettings.create()
+
+    async with (
+        DefaultAzureCredential() as creds,
+        AIProjectClient(
+            credential=creds,
+            endpoint=ai_agent_settings.endpoint,
+            subscription_id=ai_agent_settings.subscription_id,
+            resource_group_name=ai_agent_settings.resource_group_name,
+            project_name=ai_agent_settings.project_name
+        ) as client,
+    ):
+    # code
+```
+
+### Creating an Agent Definition
+
+Once the client is initialized, you can define the agent:
+
+```python
+# Create agent definition
+agent_definition = await client.agents.create_agent(
+    model=ai_agent_settings.model_deployment_name,
+    name=AGENT_NAME,
+    instructions=AGENT_INSTRUCTIONS,
+)
+```
+
+Then, instantiate the `AzureAIAgent` with the `client` and `agent_definition`:
+
+```python
+# Create the AzureAI Agent
+agent = AzureAIAgent(
+    client=client,
+    definition=agent_definition,
+)
+```
+
+Now, you can create a thread, add chat messages to the agent, and invoke it with given inputs and optional parameters.
+
+## Requests and Rate Limits
+
+### Managing API Request Frequency
+
+Your default request limits may be low, affecting how often you can poll the status of a run. You have two options:
+
+1. Adjust the `polling_options` of the `AzureAIAgent`
+
+By default, the polling interval is 250 ms. You can slow it down to 1 second (or another preferred value) to reduce the number of API calls:
 
 ```python
 # Required imports
@@ -87,4 +129,6 @@ agent = AzureAIAgent(
 )
 ```
 
-2. Adjust your deployment's `Rate Limit (Tokens per minute)`, which in turn adjusts the allowed `Rate Limit (Requests per minute)`). This is done in the Azure AI Foundry under your project's deployment for your "Connected Azure OpenAI Service Resource."
+2. Increase Rate Limits in Azure AI Foundry
+
+You can also adjust your deployment's Rate Limit (Tokens per minute), which impacts the Rate Limit (Requests per minute). This can be configured in Azure AI Foundry under your project's deployment settings for the "Connected Azure OpenAI Service Resource."
