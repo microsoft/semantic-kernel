@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Memory.VectorStoreEmbeddingGeneration;
 
 /// <summary>
-/// Decorator for a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that generates embeddings for records on upsert and when using <see cref="VectorizableTextSearchAsync(string, VectorSearchOptions?, CancellationToken)"/>.
+/// Decorator for a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that generates embeddings for records on upsert and when using <see cref="VectorizableTextSearchAsync(string, VectorSearchOptions{TRecord}?, CancellationToken)"/>.
 /// </summary>
 /// <remarks>
 /// This class is part of the <see cref="VectorStore_EmbeddingGeneration"/> sample.
@@ -120,13 +120,13 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return this._decoratedVectorStoreRecordCollection.VectorizedSearchAsync(vector, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var embeddingValue = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
         return await this.VectorizedSearchAsync(embeddingValue, options, cancellationToken).ConfigureAwait(false);

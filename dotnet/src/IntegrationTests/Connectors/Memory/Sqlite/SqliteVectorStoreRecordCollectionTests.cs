@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Integration tests for <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>

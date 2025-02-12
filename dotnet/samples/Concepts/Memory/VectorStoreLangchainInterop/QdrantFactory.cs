@@ -76,6 +76,7 @@ public static class QdrantFactory
                 return (collection as IVectorStoreRecordCollection<TKey, TRecord>)!;
             }
 
+#if DISABLED_FOR_NOW // TODO: See note on MappingVectorStoreRecordCollection
             // If the user asked for a string key, we can add a decorator which converts back and forth between string and guid.
             // The string that the user provides will still need to contain a valid guid, since the Langchain created collection
             // uses guid keys.
@@ -92,6 +93,7 @@ public static class QdrantFactory
 
                 return (stringKeyCollection as IVectorStoreRecordCollection<TKey, TRecord>)!;
             }
+#endif
 
             throw new NotSupportedException("This VectorStore is only usable with Guid keys and LangchainDocument<Guid> record types or string keys and LangchainDocument<string> record types");
         }

@@ -34,7 +34,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Command builder for queries in SQLite database.</summary>
     private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
@@ -154,7 +154,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
@@ -189,15 +189,35 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
-        var filterConditions = this.GetFilterConditions(searchOptions.Filter, this._dataTableName);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        string? extraWhereFilter = null;
+        Dictionary<string, object>? extraParameters = null;
 
-        if (filterConditions is { Count: > 0 })
+        if (searchOptions.Filter is not null)
         {
-            conditions.AddRange(filterConditions);
+            if (searchOptions.NewFilter is not null)
+            {
+                throw new ArgumentException("Either Filter or NewFilter can be specified, but not both");
+            }
+
+            // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
+            var filterConditions = this.GetFilterConditions(searchOptions.Filter, this._dataTableName);
+
+            if (filterConditions is { Count: > 0 })
+            {
+                conditions.AddRange(filterConditions);
+            }
         }
+        else if (searchOptions.NewFilter is not null)
+        {
+            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.NewFilter);
+        }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
         var vectorSearchResults = new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(
             conditions,
+            extraWhereFilter,
+            extraParameters,
             searchOptions,
             cancellationToken));
 
@@ -288,7 +308,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         List<SqliteWhereCondition> conditions,
-        VectorSearchOptions searchOptions,
+        string? extraWhereFilter,
+        Dictionary<string, object>? extraParameters,
+        VectorSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "VectorizedSearch";
@@ -311,6 +333,8 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             leftTableProperties,
             this._dataTableStoragePropertyNames.Value,
             conditions,
+            extraWhereFilter,
+            extraParameters,
             DistancePropertyName);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -670,6 +694,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         return new SqliteVectorStoreRecordMapper<TRecord>(this._propertyReader);
     }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     private List<SqliteWhereCondition>? GetFilterConditions(VectorSearchFilter? filter, string? tableName = null)
     {
         var filterClauses = filter?.FilterClauses.ToList();
@@ -706,6 +731,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         return conditions;
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Gets vector table name.

@@ -12,6 +12,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
 public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)
 {

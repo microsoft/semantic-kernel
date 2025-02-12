@@ -57,6 +57,9 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/ReadOnlyMemoryConverter.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
   </ItemGroup>
   
 </Project>

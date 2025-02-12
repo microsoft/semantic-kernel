@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED_FOR_NOW // TODO: See note in MappingVectorStoreRecordCollection
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 
 namespace GettingStartedWithVectorStores;
+
 
 /// <summary>
 /// Example that shows that you can switch between different vector stores with the same code, in this case
@@ -193,3 +196,5 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
     }
 }
+
+#endif
