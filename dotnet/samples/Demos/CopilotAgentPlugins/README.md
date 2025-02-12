@@ -39,11 +39,11 @@ Our timelines may be subject to changes, at this time our current GA release cyc
 
 What to get going? Start your journey below! 
 
-## Use the CopilotAgentPluginDemoSample application to use and crate Plugins for Gen AI experiences in Microsoft 365
+## Use the CopilotAgentPluginDemoSample application to use and create Plugins for Gen AI experiences in Microsoft 365
 
 ### Prerequisites
 
-- A Entra ID/ AAD administrator account capable of registering an Appliation. You can get a development tenant for free by joining the [Microsoft 365 Developer Program](https://developer.microsoft.com/microsoft-365/dev-program).
+- A Entra ID/ AAD administrator account capable of registering an Application. You can get a development tenant for free by joining the [Microsoft 365 Developer Program](https://developer.microsoft.com/microsoft-365/dev-program).
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [Semantic Kernel](https://github.com/microsoft/semantic-kernel).
 
@@ -52,8 +52,8 @@ What to get going? Start your journey below!
 The sample has the following features:
 
 - This is a Console Application. The user will open a terminal and issue a command "dotnet run demo" or "dotnet run demo --debug" for debug mode. 
-- The user will then be presented with options to leverage platforms of "AzureOpenAI", "OpenAI", or locally with"Ollama" where the LLM is hosted.
-- The user will then determine which Plugins they would like to load for this sample. As of this writing there are 4 availalble, Contacts, Messages, Calendar, and DriveItems.
+- The user will then be presented with options to leverage platforms of "AzureOpenAI", "OpenAI", or locally with "Ollama" where the LLM is hosted.
+- The user will then determine which Plugins they would like to load for this sample. As of this writing there are 4 available, Contacts, Messages, Calendar, and DriveItems.
 - Once loaded the user will then have options to inspect the Manifest, Plugins, or run a prompt using the "Execute a Goal" option.
 - The user will enter a prompt that satisfies one or more of the plugins they loaded.
 - If a Auth token is not present, the user will be prompted to sign in with their Microsoft 365 account. This demonstrates how to use delegated authentication to run on a user's behalf.
@@ -63,7 +63,7 @@ The sample has the following features:
 ## Setting up the sample
 
 1. Register a Microsoft Identity platform application, and give it the right permissions.
-1. Create an applications.Development.json file that fits with the pattern in the sample applications.json file that is inlcuded in the sample
+1. Create an applications.Development.json file that fits with the pattern in the sample applications.json file that is included in the sample
 
 ### Register a Microsoft Identity platform application
 
@@ -107,7 +107,7 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
 
 1. Make sure that the **Microsoft APIs** tab is selected, then select **Microsoft Graph**.
 
-1. Select **Application permissions**, then find and enable the your desired permissions.
+1. Select **Application permissions**, then find and enable your desired permissions.
 
     > **Note:** To create subscriptions for other resources you need to select different permissions as documented [here](https://docs.microsoft.com/graph/api/subscription-post-subscriptions#permissions)
 
