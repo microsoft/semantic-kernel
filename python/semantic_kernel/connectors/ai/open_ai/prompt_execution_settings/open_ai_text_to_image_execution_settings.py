@@ -36,7 +36,7 @@ class OpenAITextToImageExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI text to image services."""
 
     prompt: str | None = None
-    ai_model_id: str | None = Field(None, serialization_alias="model")
+    ai_model_id: str | None = Field(default=None, serialization_alias="model")
     size: ImageSize | None = None
     quality: str | None = None
     style: str | None = None

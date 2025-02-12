@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData;
 public interface IVectorizableTextSearch<TRecord>
 {
     /// <summary>
-    /// Search the vector store for records that match the given text and filter. The text string will be vectorized downstream and used for the vector search.
+    /// Searches the vector store for records that match the given text and filter. The text string will be vectorized downstream and used for the vector search.
     /// </summary>
     /// <param name="searchText">The text to search the store with.</param>
     /// <param name="options">The options that control the behavior of the search.</param>

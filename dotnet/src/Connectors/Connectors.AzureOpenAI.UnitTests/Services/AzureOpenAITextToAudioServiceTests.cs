@@ -47,6 +47,23 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.Equal("deployment-name", service.Attributes["DeploymentName"]);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorTokenCredentialAddRequiredMetadata(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var service = includeLoggerFactory ?
+            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", Azure.Core.DelegatedTokenCredential.Create((context, ct)
+                => new Azure.Core.AccessToken("abc", DateTimeOffset.Now.AddMinutes(30))), "model-id", loggerFactory: this._mockLoggerFactory.Object) :
+            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", Azure.Core.DelegatedTokenCredential.Create((context, ct)
+                => new Azure.Core.AccessToken("abc", DateTimeOffset.Now.AddMinutes(30))), "model-id");
+
+        // Assert
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+        Assert.Equal("deployment-name", service.Attributes["DeploymentName"]);
+    }
+
     [Fact]
     public void ItThrowsIfModelIdIsNotProvided()
     {

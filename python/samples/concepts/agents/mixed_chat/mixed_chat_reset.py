@@ -49,6 +49,8 @@ async def main():
             instructions=INSTRUCTIONS,
         )
 
+        # Note: By default, `AgentGroupChat` does not terminate automatically.
+        # However, setting the maximum iterations to 5 forces the chat to end after 5 iterations.
         chat = AgentGroupChat()
 
         async def invoke_agent(agent: "Agent", input: str | None = None):

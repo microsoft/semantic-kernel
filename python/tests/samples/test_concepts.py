@@ -34,13 +34,6 @@ from samples.concepts.local_models.lm_studio_text_embedding import main as lm_st
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
 from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
 from samples.concepts.memory.memory import main as memory
-from samples.concepts.planners.azure_openai_function_calling_stepwise_planner import (
-    main as azure_openai_function_calling_stepwise_planner,
-)
-from samples.concepts.planners.openai_function_calling_stepwise_planner import (
-    main as openai_function_calling_stepwise_planner,
-)
-from samples.concepts.planners.sequential_planner import main as sequential_planner
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -53,10 +46,10 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from samples.getting_started_with_agents.step1_agent import main as step1_agent
-from samples.getting_started_with_agents.step2_plugins import main as step2_plugins
-from samples.getting_started_with_agents.step3_chat import main as step3_chat
-from samples.getting_started_with_agents.step7_assistant import main as step7_assistant
+from samples.getting_started_with_agents.chat_completion.step1_agent import main as step1_agent
+from samples.getting_started_with_agents.chat_completion.step2_plugins import main as step2_plugins
+from samples.getting_started_with_agents.chat_completion.step3_chat import main as step3_chat
+from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step7_assistant
 from tests.utils import retry
 
 # These environment variable names are used to control which samples are run during integration testing.
@@ -157,30 +150,6 @@ concepts = [
         grounded,
         [],
         id="grounded",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        azure_openai_function_calling_stepwise_planner,
-        [],
-        id="azure_openai_function_calling_stepwise_planner",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        openai_function_calling_stepwise_planner,
-        [],
-        id="openai_function_calling_stepwise_planner",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        sequential_planner,
-        [],
-        id="sequential_planner",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
