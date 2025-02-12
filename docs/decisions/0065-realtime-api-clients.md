@@ -874,7 +874,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "event_id": "event_AzlwGHwb6c55ZlpYaDNo2",
         "item": {
-            "id": "item_AzlwFKH1rmANdQLC7YZiXB",
+            "id": "item_AzlwFKH1rmAndQLC7YZiXB",
             "arguments": null,
             "call_id": null,
             "content": [],
@@ -892,7 +892,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "event_id": "event_AzlwG1HpISl5oA3oOqr66",
         "item": {
-            "id": "item_AzlwFKH1rmANdQLC7YZiXB",
+            "id": "item_AzlwFKH1rmAndQLC7YZiXB",
             "arguments": null,
             "call_id": null,
             "content": [],
@@ -909,7 +909,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "content_index": 0,
         "event_id": "event_AzlwGGTIXV6QmZ3IdILPu",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "part": {
             "audio": null,
@@ -924,7 +924,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": "I'm",
         "event_id": "event_AzlwG2WTBP9ZkRVE0PqZK",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -933,7 +933,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " doing",
         "event_id": "event_AzlwGevZG2oP5vCB5if8",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -942,7 +942,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " great",
         "event_id": "event_AzlwGJc6rHWUM5IXj9Tzf",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -951,7 +951,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": ",",
         "event_id": "event_AzlwG06k8F5N3lNd5Gpwh",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -960,7 +960,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " thanks",
         "event_id": "event_AzlwGmmSwayu6Mr4ntAxk",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -975,7 +975,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " for",
         "event_id": "event_AzlwGpVIIBxnfOKzDvxIc",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -984,7 +984,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " asking",
         "event_id": "event_AzlwGkHbM1FK69fw7Jobx",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -993,7 +993,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": "!",
         "event_id": "event_AzlwGdxNx8C8Po1ngipRk",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -1002,7 +1002,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " How",
         "event_id": "event_AzlwGkwYrqxgxr84NQCyk",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -1011,7 +1011,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " about",
         "event_id": "event_AzlwGJsK6FC0aUUK9OmuE",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -1020,7 +1020,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": " you",
         "event_id": "event_AzlwG8wlFjG4O8js1WzuA",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -1029,7 +1029,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
         "content_index": 0,
         "delta": "?",
         "event_id": "event_AzlwG7DkOS9QkRZiWrZu1",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio_transcript.delta"
@@ -1037,7 +1037,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "content_index": 0,
         "event_id": "event_AzlwGu2ND7Q4zRbR6M6eQ",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "type": "response.audio.done"
@@ -1045,7 +1045,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "content_index": 0,
         "event_id": "event_AzlwGafjEHKv6YhOyFwNc",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
         "transcript": "I'm doing great, thanks for asking! How about you?",
@@ -1054,7 +1054,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "content_index": 0,
         "event_id": "event_AzlwGZMcbxkDt4sOdZ7e8",
-        "item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "part": {
             "audio": null,
@@ -1068,7 +1068,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "event_id": "event_AzlwGGusUSHdwolBzHb1N",
         "item": {
-            "id": "item_AzlwFKH1rmANdQLC7YZiXB",
+            "id": "item_AzlwFKH1rmAndQLC7YZiXB",
             "arguments": null,
             "call_id": null,
             "content": [
@@ -1105,7 +1105,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
             "object": "realtime.response",
             "output": [
                 {
-                    "id": "item_AzlwFKH1rmANdQLC7YZiXB",
+                    "id": "item_AzlwFKH1rmAndQLC7YZiXB",
                     "arguments": null,
                     "call_id": null,
                     "content": [
@@ -1172,7 +1172,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "event_id": "event_AzlwJyl4yjBvQDUuh9wjn",
         "item_id": "item_AzlwJisejpLdAoXdNwm2Z",
-        "previous_item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "previous_item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "type": "input_audio_buffer.committed"
     },
     {
@@ -1197,7 +1197,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
             "status": "completed",
             "type": "message"
         },
-        "previous_item_id": "item_AzlwFKH1rmANdQLC7YZiXB",
+        "previous_item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "type": "conversation.item.created"
     },
     {
