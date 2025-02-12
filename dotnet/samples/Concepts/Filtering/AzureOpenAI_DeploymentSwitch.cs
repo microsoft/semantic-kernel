@@ -80,6 +80,9 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && serviceId.ToString().Equals("swedencentral", StringComparison.Ordinal))
             {
                 bool includesGetEyeColor = functionCalls.Any(fc => fc.FunctionName.Equals("GetEyeColor", StringComparison.Ordinal));
+                
+                // For the "GetEyeColor" function, switch to a different deployment. 
+                // If the function is not present in the collection of function calls, proceed with the request as usual.
                 if (!includesGetEyeColor)
                 {
                     await next(context);
