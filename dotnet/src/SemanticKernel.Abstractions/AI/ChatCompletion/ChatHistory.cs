@@ -28,24 +28,26 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ChatHistory"/> with a single message using an optional role.
+    /// Creates a new instance of the <see cref="ChatHistory"/> with a first message in the provided <see cref="AuthorRole"/>.
     /// If not role is provided then the first message will default to <see cref="AuthorRole.System"/> role.
     /// </summary>
-    /// <param name="systemMessage">The text message to add to the first message in chat history.</param>
-    /// <param name="role">Optional role to add as the first message. Defaults to <see cref="AuthorRole.System"/> role</param>
-    public ChatHistory(string systemMessage, AuthorRole? role = null)
+    /// <param name="message">The text message to add to the first message in chat history.</param>
+    /// <param name="role">The role to add as the first message.</param>
+    public ChatHistory(string message, AuthorRole role)
     {
-        Verify.NotNullOrWhiteSpace(systemMessage);
+        Verify.NotNullOrWhiteSpace(message);
 
         this._messages = [];
-        if (role is not null)
-        {
-            this.Add(new ChatMessageContent(role.Value, systemMessage));
-        }
-        else
-        {
-            this.AddSystemMessage(systemMessage);
-        }
+        this.Add(new ChatMessageContent(role, message));
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message.
+    /// </summary>
+    /// <param name="systemMessage">The system message to add to the history.</param>
+    public ChatHistory(string systemMessage)
+        : this(systemMessage, AuthorRole.System)
+    {
     }
 
     /// <summary>Initializes the history will all of the specified messages.</summary>

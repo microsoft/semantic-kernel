@@ -451,6 +451,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
+            ChatDeveloperPrompt = this.ChatDeveloperPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
