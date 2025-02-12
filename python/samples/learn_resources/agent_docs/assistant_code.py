@@ -96,27 +96,29 @@ async def main():
             )
 
             is_code = False
+            last_role = None
             async for response in agent.invoke_stream(thread_id=thread_id):
                 current_is_code = response.metadata.get("code", False)
 
-                if current_is_code and not is_code:
-                    print("\n\n```python")
-                    is_code = True
-
-                if not current_is_code and is_code:
-                    print("\n```\n")
-                    is_code = False
-
-                print(response.content, end="", flush=True)
-
+                if current_is_code:
+                    if not is_code:
+                        print("\n\n```python")
+                        is_code = True
+                    print(response.content, end="", flush=True)
+                else:
+                    if is_code:
+                        print("\n```")
+                        is_code = False
+                        last_role = None
+                    if hasattr(response, "role") and response.role is not None and last_role != response.role:
+                        print(f"\n# {response.role}: ", end="", flush=True)
+                        last_role = response.role
+                    print(response.content, end="", flush=True)
                 file_ids.extend([
                     item.file_id for item in response.items if isinstance(item, StreamingFileReferenceContent)
                 ])
-
             if is_code:
-                print("\n```\n")
-
-            print()
+                print("```\n")
 
             await download_response_image(agent, file_ids)
             file_ids.clear()

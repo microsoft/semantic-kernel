@@ -26,29 +26,37 @@ async def invoke_streaming_agent(agent: OpenAIAssistantAgent | AzureAssistantAge
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
-    first_chunk = True
-    async for content in agent.invoke_stream(thread_id=thread_id):
-        if content.role != AuthorRole.TOOL:
-            if first_chunk:
-                print(f"# {content.role}: ", end="", flush=True)
-                first_chunk = False
-            print(content.content, end="", flush=True)
-        elif content.role == AuthorRole.TOOL and content.metadata.get("code"):
-            print("")
-            print(f"# {content.role} (code):\n\n{content.content}")
-    print()
+    is_code = False
+    last_role = None
+
+    async for response in agent.invoke_stream(thread_id=thread_id):
+        current_is_code = response.metadata.get("code", False)
+
+        if current_is_code:
+            if not is_code:
+                print("\n\n```python")
+                is_code = True
+            print(response.content, end="", flush=True)
+        else:
+            if is_code:
+                print("\n```")
+                is_code = False
+                last_role = None
+            if hasattr(response, "role") and response.role is not None and last_role != response.role:
+                print(f"\n# {response.role}: ", end="", flush=True)
+                last_role = response.role
+            print(response.content, end="", flush=True)
+    if is_code:
+        print("```\n")
 
 
 async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Define a service_id for the sample
-    service_id = "agent"
-
     # Get the path to the sales.csv file
     csv_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
         "resources",
         "agent_assistant_file_manipulation",
         "sales.csv",
@@ -57,7 +65,6 @@ async def main():
     # Create the assistant agent
     agent = await AzureAssistantAgent.create(
         kernel=kernel,
-        service_id=service_id,
         name=AGENT_NAME,
         instructions=AGENT_INSTRUCTIONS,
         enable_code_interpreter=True,
@@ -68,15 +75,13 @@ async def main():
     thread_id = await agent.create_thread()
 
     try:
-        await invoke_streaming_agent(agent, thread_id=thread_id, input="Which segment had the most sales?")
-        await invoke_streaming_agent(
-            agent, thread_id=thread_id, input="List the top 5 countries that generated the most profit."
-        )
-        await invoke_streaming_agent(
-            agent,
-            thread_id=thread_id,
-            input="Create a tab delimited file report of profit by each country per month.",
-        )
+        user_inputs = [
+            "Which segment had the most sales?",
+            # "List the top 5 countries that generated the most profit.",
+            # "Create a tab delimited file report of profit by each country per month.",
+        ]
+        for input in user_inputs:
+            await invoke_streaming_agent(agent, thread_id=thread_id, input=input)
     finally:
         if agent is not None:
             [await agent.delete_file(file_id) for file_id in agent.code_interpreter_file_ids]
