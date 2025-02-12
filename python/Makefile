@@ -32,7 +32,7 @@ help:
 	echo ""
 	echo -e "\033[1mVARIABLES:\033[0m"
 	echo "  PYTHON_VERSION       - Python version to use. Default is 3.10"
-	echo "                        By default, 3.10, 3.11, and 3.12 are installed as well."
+	echo "                        By default, 3.10, 3.11, 3.12 and 3.13 are installed as well."
 
 ##############################
 #  INSTALL
@@ -68,8 +68,8 @@ endif
 ##############################
 .ONESHELL:
 install-python:
-	echo "Installing python 3.10, 3.11, 3.12"
-	uv python install 3.10 3.11 3.12
+	echo "Installing python versions"
+	uv python install 3.10 3.11 3.12 3.13
 
 ##############################
 #  INSTALL-PRE-COMMIT
@@ -87,7 +87,7 @@ install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
 	echo "Installing Semantic Kernel and all dependencies"
-	uv sync --all-extras --dev
+	uv sync --all-extras --dev --prerelease=if-necessary-or-explicit
 
 ##############################
 #  CLEAN

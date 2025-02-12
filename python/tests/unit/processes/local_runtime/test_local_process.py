@@ -271,6 +271,7 @@ def test_initialize_process(mock_process, mock_kernel, build_model):
                 mock_local_step_init.assert_called_with(
                     step_info=step_info,
                     kernel=mock_kernel,
+                    factories={},
                     parent_process_id=local_process.id,
                 )
 

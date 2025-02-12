@@ -13,9 +13,9 @@ class KernelParameterMetadata(KernelBaseModel):
     """The kernel parameter metadata."""
 
     name: str | None = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
-    description: str | None = Field(None)
+    description: str | None = None
     default_value: Any | None = None
-    type_: str | None = Field("str", alias="type")
+    type_: str | None = Field(default="str", alias="type")
     is_required: bool | None = False
     type_object: Any | None = None
     schema_data: dict[str, Any] | None = None
