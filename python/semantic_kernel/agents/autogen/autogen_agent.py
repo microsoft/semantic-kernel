@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import AsyncIterable, Iterable
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import AsyncIterable, Callable, Iterable
+from typing import TYPE_CHECKING, Any
 
 from autogen import ConversableAgent
 
@@ -70,11 +70,7 @@ class AutoGenAgent(Agent):
         arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
-        """A direct `invoke` method, similar to AzureAIAgent, for convenience.
-
-        Typically, in the SK environment, `AgentChat` calls create_channel, then calls channel.invoke.
-        But you can also allow the user to call `invoke` directly for a simpler usage pattern.
-        """
+        """A direct `invoke` method for the ConversableAgent."""
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -120,5 +116,5 @@ class AutoGenAgent(Agent):
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """A direct `invoke_stream` method for streaming usage."""
-        # TODO(evmattso): Implement this method.
+        # TODO(evmattso): Implement this method? Is there streaming in AG 0.2?
         raise NotImplementedError("invoke_stream is not yet implemented for AutoGenAgent.")
