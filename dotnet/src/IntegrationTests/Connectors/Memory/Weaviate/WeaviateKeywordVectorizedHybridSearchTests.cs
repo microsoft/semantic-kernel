@@ -10,9 +10,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 /// <summary>
 /// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
 /// </summary>
-/// <param name="fixture">Azure AI Search setup and teardown.</param>
+/// <param name="fixture">Weaviate setup and teardown.</param>
 [Collection("WeaviateVectorStoreCollection")]
-public class CommonKeywordVectorizedHybridSearchTests(WeaviateVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<Guid>
+public class WeaviateKeywordVectorizedHybridSearchTests(WeaviateVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<Guid>
 {
     protected override Guid Key1 => new("11111111-1111-1111-1111-111111111111");
     protected override Guid Key2 => new("22222222-2222-2222-2222-222222222222");
