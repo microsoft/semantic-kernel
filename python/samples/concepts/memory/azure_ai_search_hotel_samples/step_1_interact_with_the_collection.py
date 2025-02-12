@@ -25,6 +25,9 @@ from semantic_kernel.data import (
 
 first_run = False
 
+# Note: you may need to update this `collection_name` depending upon how your index is named.
+COLLECTION_NAME = "hotels-sample-index"
+
 
 async def add_vectors(collection: AzureAISearchCollection, vectorizer: VectorStoreRecordUtils):
     """This is a simple function that uses the VectorStoreRecordUtils to add vectors to the records in the collection.
@@ -38,7 +41,7 @@ async def add_vectors(collection: AzureAISearchCollection, vectorizer: VectorSto
     hotels = await collection.get_batch(ids)
     if hotels is not None and isinstance(hotels, list):
         for hotel in hotels:
-            if not hotel.description_vector or not hotel.description_fr_vector:
+            if not hotel.description_vector:
                 hotel = await vectorizer.add_vector_to_records(hotel, HotelSampleClass)
                 await collection.upsert(hotel)
 
@@ -53,15 +56,17 @@ async def main(query: str, first_run: bool = False):
     vectorizer = VectorStoreRecordUtils(kernel)
     # Create the Azure AI Search collection
     collection = AzureAISearchCollection[HotelSampleClass](
-        collection_name="hotels-sample-index-4", data_model_type=HotelSampleClass
+        collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass
     )
     # Check if the collection exists.
     if not await collection.does_collection_exist():
         raise ValueError(
             "Collection does not exist, please create using the "
             "Azure AI Search portal wizard -> Import Data -> Samples -> hotels-sample."
-            "During creation adopt the schema to add the description_vector and description_fr_vector fields."
+            "During creation adapt the index schema to add the description_vector and description_fr_vector fields."
+            "You may need to rename other fields to match the data model."
             "Then run this sample with `first_run=True` to add the vectors."
+            "Refer to the README for more information."
         )
 
     # If it is the first run and there are no vectors, add them.
@@ -100,5 +105,5 @@ async def main(query: str, first_run: bool = False):
 
 
 if __name__ == "__main__":
-    query = "which hotels are available with full-sized kitchens?"
+    query = "swimming pool and good internet connection"
     asyncio.run(main(query=query, first_run=first_run))

@@ -16,10 +16,12 @@ This guide walks you through setting up your Azure AI Search Service with the co
    - The Python sample uses **snake_case** field names. Update the default field names accordingly.
    - Since `HotelId` is the primary key, you cannot rename it directly. Instead, create a new field:
      - Click **+ Add Field** and name it `hotel_id`.
-     - Enable **Retrievable**, **Filterable**, and **Facetable** options.
-   - Rename other fields:
+     - Enable **Retrievable**, **Filterable**, **Facetable**, and **Searchable** options.
+   - Rename other fields to snake case:
      - `HotelName` → `hotel_name`
-     - Use the dropdown to rename complex fields like `Address` and `Rooms`.
+       - There may be a current issue with index config that has trouble mapping the `HotelName` -> `hotel_name`, so as to not hit issues
+         deselect `retrievable` for `hotel_name`. It should still be `searchable`.
+     - Use the dropdown to rename complex fields like `Address` -> `address` and `Rooms` -> `rooms` with their sub-fields renamed.
    - Add two new vector fields:
      - `description_vector`
      - `description_fr_vector`
