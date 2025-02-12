@@ -36,11 +36,3 @@ class CrewAIRequiredInputs(KernelBaseModel):
     """Represents the required inputs for Crew AI."""
 
     inputs: dict[str, str]
-
-
-class InputMetadata(KernelBaseModel):
-    """Represents the metadata for an input required by Crew AI."""
-
-    name: str
-    type: str
-    description: str | None

@@ -8,11 +8,7 @@ import aiohttp
 from pydantic import Field, ValidationError
 
 from semantic_kernel.core_plugins.crew_ai.crew_ai_enterprise_client import CrewAIEnterpriseClient
-from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
-    CrewAIEnterpriseKickoffState,
-    CrewAIStatusResponse,
-    InputMetadata,
-)
+from semantic_kernel.core_plugins.crew_ai.crew_ai_models import CrewAIEnterpriseKickoffState, CrewAIStatusResponse
 from semantic_kernel.core_plugins.crew_ai.crew_ai_settings import CrewAISettings
 from semantic_kernel.exceptions.function_exceptions import (
     FunctionExecutionException,
@@ -47,6 +43,8 @@ class CrewAIEnterprise(KernelBaseModel):
         polling_interval: float | None = 1.0,
         polling_timeout: float | None = 30.0,
         session: aiohttp.ClientSession | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Initialize a new instance of the class.  This object can be used directly or as a plugin in the Kernel.
 
@@ -56,6 +54,9 @@ class CrewAIEnterprise(KernelBaseModel):
             polling_interval (float, optional): The polling interval in seconds. Defaults to 1.0.
             polling_timeout (float, optional): The polling timeout in seconds. Defaults to 30.0.
             session (aiohttp.ClientSession | None, optional): The HTTP client session. Defaults to None.
+            env_file_path (str | None): Use the environment settings file as a
+                fallback to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         try:
             settings = CrewAISettings.create(
@@ -63,6 +64,8 @@ class CrewAIEnterprise(KernelBaseModel):
                 auth_token=auth_token,
                 polling_interval=polling_interval,
                 polling_timeout=polling_timeout,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
             raise PluginInitializationError("Failed to initialize CrewAI settings.") from ex
@@ -173,7 +176,7 @@ class CrewAIEnterprise(KernelBaseModel):
         self,
         name: str,
         description: str,
-        input_metadata: list[InputMetadata] | None = None,
+        input_metadata: list[KernelParameterMetadata] | None = None,
         task_webhook_url: str | None = None,
         step_webhook_url: str | None = None,
         crew_webhook_url: str | None = None,
@@ -192,17 +195,6 @@ class CrewAIEnterprise(KernelBaseModel):
         Returns:
             dict[str, Any]: A dictionary representing the kernel plugin.
         """
-
-        def build_metadata(input_metadata: InputMetadata) -> KernelParameterMetadata:
-            return KernelParameterMetadata(
-                name=input_metadata.name,
-                description=input_metadata.description,
-                default_value=None,
-                type=input_metadata.type,
-                is_required=True,
-            )
-
-        parameters = [build_metadata(input) for input in input_metadata or []]
 
         @kernel_function(description="Kickoff the CrewAI task.")
         async def kickoff(**kwargs: Any) -> str:
@@ -229,16 +221,18 @@ class CrewAIEnterprise(KernelBaseModel):
             name,
             description,
             {
-                "kickoff": KernelFunctionFromMethod(kickoff, stream_method=None, parameters=parameters),
+                "kickoff": KernelFunctionFromMethod(kickoff, stream_method=None, parameters=input_metadata),
                 "kickoff_and_wait": KernelFunctionFromMethod(
-                    kickoff_and_wait, stream_method=None, parameters=parameters
+                    kickoff_and_wait, stream_method=None, parameters=input_metadata
                 ),
                 "get_status": self.get_crew_kickoff_status,
                 "wait_for_completion": self.wait_for_crew_completion,
             },
         )
 
-    def _build_arguments(self, input_metadata: list[InputMetadata] | None, arguments: dict[str, Any]) -> dict[str, Any]:
+    def _build_arguments(
+        self, input_metadata: list[KernelParameterMetadata] | None, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """Builds the arguments for the CrewAI task from the provided metadata and arguments.
 
         Args:
