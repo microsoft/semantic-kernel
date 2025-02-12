@@ -48,7 +48,7 @@ async def using_crew_ai_enterprise():
         # The required inputs for the Crew must be known in advance. This example is modeled after the
         # Enterprise Content Marketing Crew Template and requires string inputs for the company and topic.
         # We need to describe the type and purpose of each input to allow the LLM to invoke the crew as expected.
-        crew_plugin_definitions = [
+        crew_input_parameters = [
             KernelParameterMetadata(
                 name="company",
                 type="string",
@@ -75,7 +75,7 @@ async def using_crew_ai_enterprise():
         crew_plugin = crew.create_kernel_plugin(
             name="EnterpriseContentMarketingCrew",
             description=crew_description,
-            input_metadata=crew_plugin_definitions,
+            parameters=crew_input_parameters,
         )
 
         # Configure the kernel for chat completion and add the CrewAI plugin.

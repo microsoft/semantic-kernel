@@ -137,46 +137,46 @@ class CrewAIEnterprise(KernelBaseModel):
         Raises:
             FunctionExecutionException: If the task fails or an error occurs while waiting for completion.
         """
-        try:
-            status_response: CrewAIStatusResponse | None = None
-            state: str = CrewAIEnterpriseKickoffState.Pending
+        status_response: CrewAIStatusResponse | None = None
+        state: str = CrewAIEnterpriseKickoffState.Pending
 
-            async def poll_status():
-                nonlocal state, status_response
-                while state not in [
-                    CrewAIEnterpriseKickoffState.Failed,
-                    CrewAIEnterpriseKickoffState.Failure,
-                    CrewAIEnterpriseKickoffState.Success,
-                    CrewAIEnterpriseKickoffState.Not_Found,
-                ]:
-                    logger.debug(
-                        f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {state}"
-                    )
+        async def poll_status():
+            nonlocal state, status_response
+            while state not in [
+                CrewAIEnterpriseKickoffState.Failed,
+                CrewAIEnterpriseKickoffState.Failure,
+                CrewAIEnterpriseKickoffState.Success,
+                CrewAIEnterpriseKickoffState.Not_Found,
+            ]:
+                logger.debug(
+                    f"Waiting for CrewAI Crew with kickoff Id: {kickoff_id} to complete. Current state: {state}"
+                )
 
-                    await asyncio.sleep(self.polling_interval)
+                await asyncio.sleep(self.polling_interval)
+
+                try:
                     status_response = await self.client.get_status(kickoff_id)
                     state = status_response.state
+                except Exception as ex:
+                    raise FunctionExecutionException(
+                        f"Failed to wait for completion of CrewAI Crew with kickoff Id: {kickoff_id}."
+                    ) from ex
 
-            await asyncio.wait_for(poll_status(), timeout=self.polling_timeout)
+        await asyncio.wait_for(poll_status(), timeout=self.polling_timeout)
 
-            logger.info(f"CrewAI Crew with kickoff Id: {kickoff_id} completed with status: {state}")
-            result = (
-                status_response.result if status_response is not None and status_response.result is not None else ""
-            )
+        logger.info(f"CrewAI Crew with kickoff Id: {kickoff_id} completed with status: {state}")
+        result = status_response.result if status_response is not None and status_response.result is not None else ""
 
-            if state in ["Failed", "Failure"]:
-                raise FunctionResultError(f"CrewAI Crew failed with error: {result}")
-            return result
-        except Exception as ex:
-            raise FunctionExecutionException(
-                f"Failed to wait for completion of CrewAI Crew with kickoff Id: {kickoff_id}."
-            ) from ex
+        if state in ["Failed", "Failure"]:
+            raise FunctionResultError(f"CrewAI Crew failed with error: {result}")
+
+        return result
 
     def create_kernel_plugin(
         self,
         name: str,
         description: str,
-        input_metadata: list[KernelParameterMetadata] | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
         task_webhook_url: str | None = None,
         step_webhook_url: str | None = None,
         crew_webhook_url: str | None = None,
@@ -186,7 +186,7 @@ class CrewAIEnterprise(KernelBaseModel):
         Args:
             name (str): The name of the kernel plugin.
             description (str): The description of the kernel plugin.
-            input_metadata (Optional[List[InputMetadata]], optional): The definitions of the Crew's
+            parameters (List[KernelParameterMetadata] | None, optional): The definitions of the Crew's
             required inputs. Defaults to None.
             task_webhook_url (Optional[str], optional): The task level webhook URL. Defaults to None.
             step_webhook_url (Optional[str], optional): The step level webhook URL. Defaults to None.
@@ -198,7 +198,7 @@ class CrewAIEnterprise(KernelBaseModel):
 
         @kernel_function(description="Kickoff the CrewAI task.")
         async def kickoff(**kwargs: Any) -> str:
-            args = self._build_arguments(input_metadata, kwargs)
+            args = self._build_arguments(parameters, kwargs)
             return await self.kickoff(
                 inputs=args,
                 task_webhook_url=task_webhook_url,
@@ -208,7 +208,7 @@ class CrewAIEnterprise(KernelBaseModel):
 
         @kernel_function(description="Kickoff the CrewAI task and wait for completion.")
         async def kickoff_and_wait(**kwargs: Any) -> str:
-            args = self._build_arguments(input_metadata, kwargs)
+            args = self._build_arguments(parameters, kwargs)
             kickoff_id = await self.kickoff(
                 inputs=args,
                 task_webhook_url=task_webhook_url,
@@ -221,9 +221,9 @@ class CrewAIEnterprise(KernelBaseModel):
             name,
             description,
             {
-                "kickoff": KernelFunctionFromMethod(kickoff, stream_method=None, parameters=input_metadata),
+                "kickoff": KernelFunctionFromMethod(kickoff, stream_method=None, parameters=parameters),
                 "kickoff_and_wait": KernelFunctionFromMethod(
-                    kickoff_and_wait, stream_method=None, parameters=input_metadata
+                    kickoff_and_wait, stream_method=None, parameters=parameters
                 ),
                 "get_status": self.get_crew_kickoff_status,
                 "wait_for_completion": self.wait_for_crew_completion,
@@ -231,20 +231,20 @@ class CrewAIEnterprise(KernelBaseModel):
         )
 
     def _build_arguments(
-        self, input_metadata: list[KernelParameterMetadata] | None, arguments: dict[str, Any]
+        self, parameters: list[KernelParameterMetadata] | None, arguments: dict[str, Any]
     ) -> dict[str, Any]:
-        """Builds the arguments for the CrewAI task from the provided metadata and arguments.
+        """Builds the arguments for the CrewAI task from the provided parameters and arguments.
 
         Args:
-            input_metadata (Optional[List[InputMetadata]]): The metadata for the inputs.
+            parameters (List[KernelParameterMetadata] | None): The metadata for the inputs.
             arguments (dict[str, Any]): The provided arguments.
 
         Returns:
             dict[str, Any]: The built arguments.
         """
         args = {}
-        if input_metadata:
-            for input in input_metadata:
+        if parameters:
+            for input in parameters:
                 name = input.name
                 if name not in arguments:
                     raise PluginInitializationError(f"Missing required input '{name}' for CrewAI.")
