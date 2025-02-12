@@ -121,7 +121,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
 /// <summary>
 /// Represents a chat client that performs inference using the first available chat client in the list, falling back to the next one if the previous client fails.
 /// </summary>
-internal class FallbackChatClient : IChatClient
+internal sealed class FallbackChatClient : IChatClient
 {
     private readonly IEnumerable<IChatClient> _chatClients;
     private static readonly List<HttpStatusCode> s_defaultFallbackStatusCodes = new()
