@@ -44,7 +44,7 @@ class CrewAIEnterpriseClient:
             CrewAIRequiredInputs: The required inputs for Crew AI.
         """
         async with (
-            self.session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,
+            self.session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,  # type: ignore
         ):
             response.raise_for_status()
             return CrewAIRequiredInputs.model_validate_json(await response.text())
@@ -74,7 +74,7 @@ class CrewAIEnterpriseClient:
             "crewWebhookUrl": crew_webhook_url,
         }
         async with (
-            self.session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,
+            self.session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,  # type: ignore
         ):
             response.raise_for_status()
             body = await response.text()
@@ -90,7 +90,7 @@ class CrewAIEnterpriseClient:
             CrewAIStatusResponse: The status response of the task.
         """
         async with (
-            self.session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,
+            self.session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,  # type: ignore
         ):
             response.raise_for_status()
             body = await response.text()
@@ -98,9 +98,9 @@ class CrewAIEnterpriseClient:
 
     async def __aenter__(self):
         """Enter the session."""
-        await self.session.__aenter__()
+        await self.session.__aenter__()  # type: ignore
         return self
 
     async def __aexit__(self, *args, **kwargs):
         """Close the session."""
-        await self.session.close()
+        await self.session.close()  # type: ignore
