@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status:  proposed 
-contact:  Eduard van Valkenburg
+contact:  eavanvalkenburg
 date:  2025-01-31 
-deciders:  Eduard van Valkenburg, Mark Wallace, Ben Thomas, Shawn Henry 
-consulted:  Weslie Steyn, Roger Barreto, Ben Thomas, Mark Wallace, Sergey Menshykh, Evan Mattson 
-informed: Tao Chen, Dmytro Struk
+deciders:  eavanvalkenburg, markwallace, alliscode, sphenry
+consulted:  westey-m, rbarreto, alliscode, markwallace, sergeymenshykh, moonbox3
+informed: taochenosu, dmytrostruk
 ---
 
 # Multi-modal Realtime API Clients
@@ -121,7 +121,7 @@ This would mean that all events are turned into Semantic Kernel content items, a
   - new content type needed for control events
 
 ### 3. Treat everything as events
-This would introduce events, each event has a type, those can be core content types, like audio, video, image, text, function call or function response, as well as a generic event for control events without content. Each event has a SK type, from above as well as a service_event field that contains the event type from the service. Finally the event has a content field, which corresponds to the type, and for the generic event contains the raw event from the service.
+This would introduce events, each event has a type, those can be core content types, like audio, video, image, text, function call or function response, as well as a generic event for control events without content. Each event has a SK type, from above as well as a service_event_type field that contains the event type from the service. Finally the event has a content field, which corresponds to the type, and for the generic event contains the raw event from the service.
 
 - Pro:
   - no transformation needed for service events
@@ -142,7 +142,7 @@ It might also be possible that a single event from the service contains multiple
 ```python
 RealtimeAudioEvent(
   event_type="audio", # single default value in order to discriminate easily
-  service_event="response.audio.delta", # optional
+  service_event_type="response.audio.delta", # optional
   audio: AudioContent(...)
 )
 ```
@@ -150,7 +150,7 @@ RealtimeAudioEvent(
 ```python
 RealtimeTextEvent(
   event_type="text", # single default value in order to discriminate easily
-  service_event="response.text.delta", # optional
+  service_event_type="response.text.delta", # optional
   text: TextContent(...)
 )
 ```
@@ -158,7 +158,7 @@ RealtimeTextEvent(
 ```python
 RealtimeFunctionCallEvent(
   event_type="function_call", # single default value in order to discriminate easily
-  service_event="response.function_call_arguments.delta", # optional
+  service_event_type="response.function_call_arguments.delta", # optional
   function_call: FunctionCallContent(...)
 )
 ```
@@ -166,7 +166,7 @@ RealtimeFunctionCallEvent(
 ```python
 RealtimeFunctionResultEvent(
   event_type="function_result", # single default value in order to discriminate easily
-  service_event="response.output_item.added", # optional
+  service_event_type="response.output_item.added", # optional
   function_result: FunctionResultContent(...)
 )
 ```
@@ -174,22 +174,22 @@ RealtimeFunctionResultEvent(
 ```python
 RealtimeImageEvent(
   event_type="image", # single default value in order to discriminate easily
-  service_event="response.image.delta", # optional
+  service_event_type="response.image.delta", # optional
   image: ImageContent(...)
 )
 ```
 
-Next to these we will have a generic event, called RealtimeServiceEvent, this is the catch-all, which has event_type: "service", the service_event field filled with the event type from the service and a field called 'event' which contains the raw event from the service. A key difference between this event and other events is that the service_event field cannot by None, it has to be filled.
+Next to these we will have a generic event, called RealtimeServiceEvent, this is the catch-all, which has event_type: "service", the service_event_type field filled with the event type from the service and a field called 'event' which contains the raw event from the service. A key difference between this event and other events is that the service_event_type field cannot by None, it has to be filled.
 
 ```python
 RealtimeServiceEvent(
   event_type="service", # single default value in order to discriminate easily
-  service_event="conversation.item.create", # mandatory
+  service_event_type="conversation.item.create", # mandatory
   event: { ... } # optional, because some events do not have content.
 )
 ```
 
-This allows you to easily do pattern matching on the event_type, and then use the service_event to filter on the specific event type for service events, or just grab the contents for the other ones.
+This allows you to easily do pattern matching on the event_type, and then use the service_event_type to filter on the specific event type for service events, or just grab the contents for the other ones.
 
 There might be other abstracted types needed at some point, for instance errors, or session updates, but since the current two services have no agreement on the existence of these events and their structure, it is better to wait until there is a need for them.
 
@@ -404,7 +404,7 @@ should be equivalent to:
 ```python
 audio = AudioContent(...)
 
-await client.send(ServiceEvent(event_type='service', service_event='input_audio_buffer.append', event=audio))
+await client.send(ServiceEvent(event_type='service', service_event_type='input_audio_buffer.append', event=audio))
 ```
 
 The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this can for instance be used to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
