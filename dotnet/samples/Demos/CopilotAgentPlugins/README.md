@@ -21,7 +21,17 @@ extensions:
 ---
 # Copilot Agent Plugins Sample for Semantic Kernel
 
-Sample created and managed by [Fabian G. Williams](https://github.com/fabianwilliams), Principal Product Manager, Microsoft
+Sample created and managed by [Fabian G. Williams](https://github.com/fabianwilliams), Principal Product Manager, Microsoft.  We believe that Copilot Agent Plugins (CAPs) empowers developers to effortlessly build AI-driven solutions by transforming natural language into seamless CRUD actions using Microsoft Graph and Semantic Kernel, thus revolutionizing the way we **developers** interact with Microsoft 365 data and innovate.
+
+## Watch the Videos
+
+### Why use Copilot Agent Plugins?
+[![Watch the video](https://img.youtube.com/vi/la1UDNn3eP4/0.jpg)](https://aka.ms/m365caps-videointro)
+
+### Live Demo of CAPs in Action
+[![Watch the video](https://img.youtube.com/vi/-D3KdiPySxw/0.jpg)](https://aka.ms/m365caps-videodemo)
+
+What to get going? Start your journey below! 
 
 ## Use the CopilotAgentPluginDemoSample application to use and crate Plugins for Gen AI experiences in Microsoft 365
 
