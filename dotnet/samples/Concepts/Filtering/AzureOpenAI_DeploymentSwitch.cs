@@ -47,6 +47,7 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             credentials: new DefaultAzureCredential(),
             httpClient: httpClient,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+        
         var kernel = kernelBuilder.Build();
 
         kernel.ImportPluginFromFunctions("HelperFunctions",
