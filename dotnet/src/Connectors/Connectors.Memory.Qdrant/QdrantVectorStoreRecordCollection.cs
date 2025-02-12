@@ -544,12 +544,16 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
         var vectorQuery = new PrefetchQuery
         {
             Filter = filter,
-            Using = vectorName,
             Query = new Query
             {
                 Nearest = new VectorInput(floatVector.ToArray()),
             },
         };
+
+        if (this._options.HasNamedVectors)
+        {
+            vectorQuery.Using = vectorName;
+        }
 
         // Build the keyword query.
         var keywordFilter = filter.Clone();
