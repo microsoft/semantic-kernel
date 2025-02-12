@@ -21,7 +21,7 @@ extensions:
 ---
 # Copilot Agent Plugins Sample for Semantic Kernel
 
-![Java CI with Maven](https://github.com/microsoftgraph/java-spring-webhooks-sample/workflows/Java%20CI%20with%20Maven/badge.svg?branch=main)
+Sample created and managed by [Fabian G. Williams](https://github.com/fabianwilliams), Principal Product Manager, Microsoft
 
 ## Use the CopilotAgentPluginDemoSample application to use and crate Plugins for Gen AI experiences in Microsoft 365
 
@@ -69,10 +69,13 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
 1. In creating a  **New Application**.Ensure the below values are set appropriately according to your Authentication Flow. The below is for device code.
 
     - Provide an appropriate name for your sample and copy down the **Application(client)ID** as well as the  **Directory(tenant)ID** and save them for later.
+
+    ![A screenshot of the Register an application page](images/ApplicationOverViewScreenClientIDetc.png)
+
     - Set **Supported account types** to **Accounts in this organizational directory only**. This ensures that your App only will authenticate users from this tenant only.
     - Under **Redirect URI**, ensure the value is set to `http://localhost`.
 
-    ![A screenshot of the Register an application page](images/ApplicationOverViewScreenClientIDetc.png)
+    ![A screenshot of the RedirectURI an application page](images/AppRegistration_Authentication_localhostredirecturi.png)
 
 1. In **Certificates & secrets** under **Manage**. Select the **New client secret** button. Enter a value in **Description** and select one of the options for **Expires** and select **Add**.
 
@@ -93,6 +96,8 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
     > **Note:** To create subscriptions for other resources you need to select different permissions as documented [here](https://docs.microsoft.com/graph/api/subscription-post-subscriptions#permissions)
 
 1. Select **Grant admin consent for `name of your organization`** and **Yes**. This grants consent to the permissions of the application registration you just created to the current organization.
+
+    ![A screenshot of a new secret in the Client secrets list](images/AppRegistration_APIPermissions.png)
 
 
 ### Update appsettings.Development.json
