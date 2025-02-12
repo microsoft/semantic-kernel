@@ -1,0 +1,74 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.SemanticKernel.Agents.Bedrock;
+
+namespace GettingStarted.BedrockAgents;
+
+/// <summary>
+/// This example demonstrates how to interact with a <see cref="BedrockAgent"/> that is associated with a knowledge base.
+/// A Bedrock Knowledge Base is a collection of documents that the agent uses to answer user queries.
+/// To learn more about Bedrock Knowledge Base, see:
+/// https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html
+/// </summary>
+public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedrockAgentTest(output)
+{
+    // Replace the KnowledgeBaseId with a valid KnowledgeBaseId
+    // To learn how to create a Knowledge Base, see:
+    // https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-create.html
+    private const string KnowledgeBaseId = "[KnowledgeBaseId]";
+
+    protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
+    {
+        var bedrockAgent = await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName));
+        // Associate the agent with a knowledge base
+        await bedrockAgent.AssociateAgentKnowledgeBaseAsync(
+            KnowledgeBaseId,
+            "You will find information here.",
+            CancellationToken.None);
+
+        return bedrockAgent;
+    }
+
+    /// <summary>
+    /// Demonstrates how to inspect the thought process of a <see cref="BedrockAgent"/> by enabling trace.
+    /// </summary>
+    // [Fact(Skip = "This test is skipped because it requires a valid KnowledgeBaseId.")]
+    [Fact]
+    public async Task UseAgentWithFileSearchAsync()
+    {
+        // Create the agent
+        var bedrock_agent = await this.CreateAgentAsync("Step05_BedrockAgent_FileSearch");
+
+        // Respond to user input
+        // Assuming the knowledge base contains information about Semantic Kernel.
+        // Feel free to modify the user query according to the information in your knowledge base.
+        var userQuery = "What is Semantic Kernel?";
+        try
+        {
+            // Customize the request for advanced scenarios
+            InvokeAgentRequest invokeAgentRequest = new()
+            {
+                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
+                AgentId = bedrock_agent.Id,
+                SessionId = BedrockAgent.CreateSessionId(),
+                InputText = userQuery,
+                // Enable trace to inspect the agent's thought process
+                EnableTrace = true,
+            };
+
+            var responses = bedrock_agent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
+            await foreach (var response in responses)
+            {
+                if (response.Content != null)
+                {
+                    this.Output.WriteLine(response.Content);
+                }
+            }
+        }
+        finally
+        {
+            await bedrock_agent.DeleteAsync(CancellationToken.None);
+        }
+    }
+}

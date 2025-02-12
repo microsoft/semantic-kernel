@@ -53,12 +53,15 @@ public class BedrockAgent : KernelAgent
         this.Instructions = agentModel.Instruction;
     }
 
+    #region static methods
+
     /// <summary>
     /// Create a Bedrock agent on the service.
     /// </summary>
     /// <param name="request">The request to create the agent.</param>
     /// <param name="enableCodeInterpreter">Whether to enable the code interpreter for the agent.</param>
     /// <param name="enableKernelFunctions">Whether to enable kernel functions for the agent.</param>
+    /// <param name="enableUserInput">Whether to enable user input for the agent.</param>
     /// <param name="client">The client to use.</param>
     /// <param name="runtimeClient">The runtime client to use.</param>
     /// <param name="kernel">A kernel instance for the agent to use.</param>
@@ -69,6 +72,7 @@ public class BedrockAgent : KernelAgent
         CreateAgentRequest request,
         bool enableCodeInterpreter = false,
         bool enableKernelFunctions = false,
+        bool enableUserInput = false,
         AmazonBedrockAgentClient? client = null,
         AmazonBedrockAgentRuntimeClient? runtimeClient = null,
         Kernel? kernel = null,
@@ -96,6 +100,10 @@ public class BedrockAgent : KernelAgent
         if (enableKernelFunctions)
         {
             await agent.CreateKernelFunctionActionGroupAsync(cancellationToken).ConfigureAwait(false);
+        }
+        if (enableUserInput)
+        {
+            await agent.EnableUserInputActionGroupAsync(cancellationToken).ConfigureAwait(false);
         }
 
         // Need to prepare the agent before it can be invoked.
@@ -140,6 +148,10 @@ public class BedrockAgent : KernelAgent
     {
         return Guid.NewGuid().ToString();
     }
+
+    #endregion
+
+    # region public methods
 
     /// <summary>
     /// Delete the Bedrock agent from the service.
@@ -278,6 +290,56 @@ public class BedrockAgent : KernelAgent
     }
 
     /// <summary>
+    /// Associate the agent with a knowledge base.
+    /// </summary>
+    /// <param name="knowledgeBaseId">The id of the knowledge base to associate with the agent.</param>
+    /// <param name="description">A description of what the agent should use the knowledge base for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task AssociateAgentKnowledgeBaseAsync(string knowledgeBaseId, string description, CancellationToken cancellationToken)
+    {
+        await this._client.AssociateAgentKnowledgeBaseAsync(new()
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+            KnowledgeBaseId = knowledgeBaseId,
+            Description = description,
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Disassociate the agent with a knowledge base.
+    /// </summary>
+    /// <param name="knowledgeBaseId">The id of the knowledge base to disassociate with the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task DisassociateAgentKnowledgeBaseAsync(string knowledgeBaseId, CancellationToken cancellationToken)
+    {
+        await this._client.DisassociateAgentKnowledgeBaseAsync(new()
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+            KnowledgeBaseId = knowledgeBaseId,
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// List the knowledge bases associated with the agent.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="ListAgentKnowledgeBasesResponse"/> containing the knowledge bases associated with the agent.</returns>
+    public async Task<ListAgentKnowledgeBasesResponse> ListAssociatedKnowledgeBasesAsync(CancellationToken cancellationToken)
+    {
+        return await this._client.ListAgentKnowledgeBasesAsync(new()
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    #endregion
+
+    #region private methods
+
+    /// <summary>
     /// Create a code interpreter action group for the agent.
     /// </summary>
     private async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken)
@@ -315,6 +377,25 @@ public class BedrockAgent : KernelAgent
         await this._client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Enable user input for the agent.
+    /// </summary>
+    private async Task EnableUserInputActionGroupAsync(CancellationToken cancellationToken)
+    {
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
+        {
+            AgentId = this.Id,
+            AgentVersion = this._agentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = this.GetUseInputActionGroupSignature(),
+            ActionGroupState = ActionGroupState.ENABLED,
+            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONUserInput),
+        };
+
+        await this._client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    #endregion
+
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Return the channel keys for the BedrockAgent
@@ -333,9 +414,14 @@ public class BedrockAgent : KernelAgent
         return Task.FromResult<AgentChannel>(new BedrockAgentChannel());
     }
 
+    #region internal methods
+
     internal AmazonBedrockAgentClient GetClient() => this._client;
     internal AmazonBedrockAgentRuntimeClient GetRuntimeClient() => this._runtimeClient;
     internal Amazon.BedrockAgent.Model.Agent GetAgentModel() => this._agentModel;
     internal string GetCodeInterpreterActionGroupSignature() => $"{this.GetDisplayName()}_CodeInterpreter";
     internal string GetKernelFunctionActionGroupSignature() => $"{this.GetDisplayName()}_KernelFunctions";
+    internal string GetUseInputActionGroupSignature() => $"{this.GetDisplayName()}_UserInput";
+
+    #endregion
 }

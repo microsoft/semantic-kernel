@@ -9,7 +9,7 @@ using Agent = Azure.AI.Projects.Agent;
 namespace GettingStarted.AzureAgents;
 
 /// <summary>
-/// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
+/// Demonstrate using <see cref="AzureAIAgent"/> with file search.
 /// </summary>
 public class Step04_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
