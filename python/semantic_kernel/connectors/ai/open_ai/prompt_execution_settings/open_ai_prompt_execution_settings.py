@@ -66,7 +66,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     messages: Annotated[
         list[dict[str, Any]] | None, Field(description="Do not set this manually. It is set by the service.")
     ] = None
-    parallel_tool_calls: bool | None = True
+    parallel_tool_calls: bool | None = None
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
