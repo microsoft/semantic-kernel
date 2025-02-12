@@ -92,7 +92,7 @@ internal static class BedrockAgentInvokeExtensions
                 AuthorName = agent.GetDisplayName(),
                 Content = Encoding.UTF8.GetString(payload.Bytes.ToArray()),
                 ModelId = agent.GetAgentModel().FoundationModel,
-                InnerContent = responseEvent,
+                InnerContent = payload,
             };
     }
 
@@ -123,7 +123,7 @@ internal static class BedrockAgentInvokeExtensions
             AuthorName = agent.GetDisplayName(),
             Items = binaryContents,
             ModelId = agent.GetAgentModel().FoundationModel,
-            InnerContent = responseEvent,
+            InnerContent = files,
         };
     }
 
@@ -160,7 +160,7 @@ internal static class BedrockAgentInvokeExtensions
             AuthorName = agent.GetDisplayName(),
             Items = functionCallContents,
             ModelId = agent.GetAgentModel().FoundationModel,
-            InnerContent = responseEvent,
+            InnerContent = returnControlPayload,
         };
     }
 
@@ -174,9 +174,8 @@ internal static class BedrockAgentInvokeExtensions
             {
                 Role = AuthorRole.Assistant,
                 AuthorName = agent.GetDisplayName(),
-                Content = "Trace received",
                 ModelId = agent.GetAgentModel().FoundationModel,
-                InnerContent = responseEvent,
+                InnerContent = trace,
             };
     }
 

@@ -11,6 +11,10 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
 {
     private const string UserQuery = "Why is the sky blue in one sentence?";
 
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> and interact with it.
+    /// The agent will respond to the user query.
+    /// </summary>
     [Fact]
     public async Task UseNewAgentAsync()
     {
@@ -32,6 +36,10 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         }
     }
 
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> and interact with it using streaming.
+    /// The agent will respond to the user query.
+    /// </summary>
     [Fact]
     public async Task UseNewAgentStreamingAsync()
     {

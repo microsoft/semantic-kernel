@@ -26,9 +26,11 @@ public class BedrockAgent : KernelAgent
 
     private readonly Amazon.BedrockAgent.Model.Agent _agentModel;
 
-    // There is a default alias created by Bedrock for the working draft version of the agent.
-    // https://docs.aws.amazon.com/bedrock/latest/userguide/agents-deploy.html
-    private const string WORKING_DRAFT_AGENT_ALIAS = "TSTALIASID";
+    /// <summary>
+    /// There is a default alias created by Bedrock for the working draft version of the agent.
+    /// https://docs.aws.amazon.com/bedrock/latest/userguide/agents-deploy.html
+    /// </summary>
+    public static readonly string WorkingDraftAgentAlias = "TSTALIASID";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BedrockAgent"/> class.
@@ -164,22 +166,40 @@ public class BedrockAgent : KernelAgent
     /// <param name="message">The message to send to the agent.</param>
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string sessionId,
         string message,
         KernelArguments? arguments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? agentAliasId = null)
     {
         var invokeAgentRequest = new InvokeAgentRequest
         {
-            AgentAliasId = WORKING_DRAFT_AGENT_ALIAS,
+            AgentAliasId = agentAliasId ?? WorkingDraftAgentAlias,
             AgentId = this.Id,
             SessionId = sessionId,
             InputText = message,
         };
 
-        return ActivityExtensions.RunWithActivityAsync(
+        return this.InvokeAsync(invokeAgentRequest, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
+    /// </summary>
+    /// <param name="invokeAgentRequest">The request to send to the agent.</param>
+    /// <param name="arguments">The arguments to use when invoking the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        InvokeAgentRequest invokeAgentRequest,
+        KernelArguments? arguments,
+        CancellationToken cancellationToken)
+    {
+        return invokeAgentRequest.StreamingConfigurations != null && invokeAgentRequest.StreamingConfigurations.StreamFinalResponse
+            ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
+            : ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => this.InternalInvokeAsync(invokeAgentRequest, arguments, cancellationToken),
             cancellationToken);
@@ -191,16 +211,18 @@ public class BedrockAgent : KernelAgent
     /// <param name="sessionId">The session id.</param>
     /// <param name="message">The message to send to the agent.</param>    /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string sessionId,
         string message,
         KernelArguments? arguments,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? agentAliasId = null)
     {
         var invokeAgentRequest = new InvokeAgentRequest
         {
-            AgentAliasId = WORKING_DRAFT_AGENT_ALIAS,
+            AgentAliasId = agentAliasId ?? WorkingDraftAgentAlias,
             AgentId = this.Id,
             SessionId = sessionId,
             InputText = message,
@@ -209,6 +231,33 @@ public class BedrockAgent : KernelAgent
                 StreamFinalResponse = true,
             },
         };
+
+        return this.InvokeStreamingAsync(invokeAgentRequest, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the Bedrock agent with the given request and streaming response. Use this method when you want to customize the request.
+    /// </summary>
+    /// <param name="invokeAgentRequest">The request to send to the agent.</param>
+    /// <param name="arguments">The arguments to use when invoking the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="StreamingChatMessageContent"/>.</returns>
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        InvokeAgentRequest invokeAgentRequest,
+        KernelArguments? arguments,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (invokeAgentRequest.StreamingConfigurations == null)
+        {
+            invokeAgentRequest.StreamingConfigurations = new()
+            {
+                StreamFinalResponse = true,
+            };
+        }
+        else if (!invokeAgentRequest.StreamingConfigurations.StreamFinalResponse)
+        {
+            throw new ArgumentException("The streaming configuration must have StreamFinalResponse set to true.");
+        }
 
         // The Bedrock agent service has the same API for both streaming and non-streaming responses.
         // We are invoking the same method as the non-streaming response with the streaming configuration set,
@@ -287,7 +336,6 @@ public class BedrockAgent : KernelAgent
     internal AmazonBedrockAgentClient GetClient() => this._client;
     internal AmazonBedrockAgentRuntimeClient GetRuntimeClient() => this._runtimeClient;
     internal Amazon.BedrockAgent.Model.Agent GetAgentModel() => this._agentModel;
-
     internal string GetCodeInterpreterActionGroupSignature() => $"{this.GetDisplayName()}_CodeInterpreter";
     internal string GetKernelFunctionActionGroupSignature() => $"{this.GetDisplayName()}_KernelFunctions";
 }

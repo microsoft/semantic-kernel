@@ -9,8 +9,12 @@ namespace GettingStarted.BedrockAgents;
 /// <summary>
 /// This example demonstrates how to interact with a <see cref="BedrockAgent"/> with kernel functions.
 /// </summary>
-public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedrockAgentTest(output)
+public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedrockAgentTest(output)
 {
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> with kernel functions enabled and interact with it.
+    /// The agent will respond to the user query by calling kernel functions to provide weather information.
+    /// </summary>
     [Fact]
     public async Task UseAgentWithFunctionsAsync()
     {
@@ -39,6 +43,10 @@ public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
     }
 
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> with kernel functions enabled and interact with it using streaming.
+    /// The agent will respond to the user query by calling kernel functions to provide weather information.
+    /// </summary>
     [Fact]
     public async Task UseAgentStreamingWithFunctionsAsync()
     {
@@ -67,6 +75,10 @@ public class Step02_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
     }
 
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> with kernel functions enabled and interact with it.
+    /// The agent will respond to the user query by calling multiple kernel functions in parallel to provide weather information.
+    /// </summary>
     [Fact]
     public async Task UseAgentWithParallelFunctionsAsync()
     {

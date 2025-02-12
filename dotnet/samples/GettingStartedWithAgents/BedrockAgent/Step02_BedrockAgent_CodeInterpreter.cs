@@ -18,6 +18,11 @@ Lion    3
 Monkey  6
 Dolphin  2";
 
+    /// <summary>
+    /// Demonstrates how to create a new <see cref="BedrockAgent"/> with code interpreter enabled and interact with it.
+    /// The agent will respond to the user query by creating a Python code that will be executed by the code interpreter.
+    /// The output of the code interpreter will be a file containing the bar chart, which will be returned to the user.
+    /// </summary>
     [Fact]
     public async Task UseAgentWithCodeInterpreterAsync()
     {
