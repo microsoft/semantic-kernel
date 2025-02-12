@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.ComponentModel;
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted.AzureAgents;
@@ -13,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 /// when the agent is created. This is useful if you want to retrieve the agent later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -74,23 +74,5 @@ public class Step06_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
                 this.WriteAgentChatMessage(response);
             }
         }
-    }
-
-    private sealed class MenuPlugin
-    {
-        [KernelFunction, Description("Provides a list of specials from the menu.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
-        public string GetSpecials() =>
-            """
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            """;
-
-        [KernelFunction, Description("Provides the price of the requested menu item.")]
-        public string GetItemPrice(
-            [Description("The name of the menu item.")]
-            string menuItem) =>
-            "$9.99";
     }
 }

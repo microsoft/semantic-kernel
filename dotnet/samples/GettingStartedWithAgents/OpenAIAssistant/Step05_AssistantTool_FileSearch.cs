@@ -12,7 +12,7 @@ namespace GettingStarted.OpenAIAssistants;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Step04_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseFileSearchToolWithAssistantAgentAsync()
