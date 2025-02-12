@@ -22,8 +22,8 @@ class CrewAIStatusResponse(KernelBaseModel):
     """Represents the status response from Crew AI."""
 
     state: CrewAIEnterpriseKickoffState
-    result: str | None
-    last_step: dict[str, Any] | None
+    result: str | None = None
+    last_step: dict[str, Any] | None = None
 
 
 class CrewAIKickoffResponse(KernelBaseModel):

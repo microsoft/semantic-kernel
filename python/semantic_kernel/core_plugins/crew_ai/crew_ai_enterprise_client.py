@@ -30,7 +30,7 @@ class CrewAIEnterpriseClient:
         """
         self.endpoint = endpoint
         self.auth_token = auth_token
-        self.session = session if session else aiohttp.ClientSession()
+        self.session = session if session is None else aiohttp.ClientSession()
         self.request_header = {
             "Authorization": f"Bearer {auth_token}",
             "Content-Type": "application/json",
