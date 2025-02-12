@@ -202,6 +202,8 @@ One open item is whether to include a extra field in these types for tracking re
 - `output_index`: the index of the output item in the response
 - `content_index`: The index of the content part in the item's content array
 
+For an example of the events emitted by OpenAI see the [details](#background-info) below.
+
 While Google has ID's only in some content items, like function calls, but not for audio or text content.
 
 Since the id's are always available through the raw event (either as inner_content or as .event), it is not necessary to add them to the content types, and it would make the content types more complex and harder to reuse across services.
