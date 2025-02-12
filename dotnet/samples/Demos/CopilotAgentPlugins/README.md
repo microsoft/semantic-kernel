@@ -31,6 +31,12 @@ Sample created and managed by [Fabian G. Williams](https://github.com/fabianwill
 ### Live Demo of CAPs in Action
 [![Watch the video](https://img.youtube.com/vi/-D3KdiPySxw/0.jpg)](https://aka.ms/m365caps-videodemo)
 
+## CAPS Public Roadmap
+
+Our timelines may be subject to changes, at this time our current GA release cycles are
+
+![A screenshot of the CAPs Public Roadmap ](images/CAPs_PublicRoadmap.png)
+
 What to get going? Start your journey below! 
 
 ## Use the CopilotAgentPluginDemoSample application to use and crate Plugins for Gen AI experiences in Microsoft 365
