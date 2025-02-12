@@ -152,7 +152,13 @@ jobs:
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
-          reporttypes: "JsonSummary"
+          reporttypes: "HtmlInline;JsonSummary"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoverageReport # Artifact name
+          path: ./TestResults/Reports # Directory containing files to upload
 
       - name: Check coverage
         shell: pwsh
