@@ -13,7 +13,7 @@ from pydantic_core import Url
 from semantic_kernel.contents.const import BINARY_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.data_uri import DataUri
-from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
+from semantic_kernel.exceptions.content_exceptions import ContentException, ContentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
@@ -142,6 +142,8 @@ class BinaryContent(KernelContent):
                 self._data_uri = DataUri(data_str=value, mime_type=self.mime_type)
             case bytes():
                 self._data_uri = DataUri(data_bytes=value, mime_type=self.mime_type)
+            case _:
+                raise ContentException("Data must be a string, bytes, or numpy array.")
 
     @property
     def mime_type(self) -> str:
