@@ -81,5 +81,52 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
                 this.Output.WriteLine($"Output token: {trace.OrchestrationTrace.ModelInvocationOutput.Metadata.Usage.OutputTokens}");
             }
         }
+        // Example output:
+        // ========== Orchestration trace ==========
+        // Orchestration input:
+        // {"system":"You're a helpful assistant who helps users find information.You have been provided with a set of functions to answer ...
+        // ========== Orchestration trace ==========
+        // Orchestration output:
+        // <thinking>
+        // To answer this question, I will need to call the following functions:
+        // 1. Step04_BedrockAgent_Trace_KernelFunctions::Current to get the current weather in Seattle
+        // 2. Step04_BedrockAgent_Trace_KernelFunctions::Forecast to get the weather forecast in Seattle
+        // </thinking>
+        //
+        // <function_calls>
+        // <invoke>
+        //     <tool_name>Step04_BedrockAgent_Trace_KernelFunctions::Current</tool_name>
+        //     <parameters>
+        //     <location>Seattle</location>
+        //     </parameters>
+        // Usage:
+        // Input token: 617
+        // Output token: 144
+        // ========== Orchestration trace ==========
+        // Orchestration input:
+        // {"system":"You're a helpful assistant who helps users find information.You have been provided with a set of functions to answer ...
+        // ========== Orchestration trace ==========
+        // Orchestration output:
+        // <thinking>Now that I have the current weather in Seattle, I will call the forecast function to get the weather forecast.</thinking>
+        //
+        // <function_calls>
+        // <invoke>
+        // <tool_name>Step04_BedrockAgent_Trace_KernelFunctions::Forecast</tool_name>
+        // <parameters>
+        // <location>Seattle</location>
+        // </parameters>
+        // Usage:
+        // Input token: 834
+        // Output token: 87
+        // ========== Orchestration trace ==========
+        // Orchestration input:
+        // {"system":"You're a helpful assistant who helps users find information.You have been provided with a set of functions to answer ...
+        // ========== Orchestration trace ==========
+        // Orchestration output:
+        // <answer>
+        // The current weather in Seattle is 72 degrees. The weather forecast for Seattle is 75 degrees tomorrow.
+        // Usage:
+        // Input token: 1003
+        // Output token: 31
     }
 }
