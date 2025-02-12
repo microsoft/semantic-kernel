@@ -256,3 +256,12 @@ class CrewAIEnterprise(KernelBaseModel):
                     raise PluginInitializationError(f"Missing required input '{name}' for CrewAI.")
                 args[name] = arguments[name]
         return args
+
+    async def __aenter__(self):
+        """Enter the session."""
+        await self.client.__aenter__()
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        """Close the session."""
+        await self.client.__aexit__()

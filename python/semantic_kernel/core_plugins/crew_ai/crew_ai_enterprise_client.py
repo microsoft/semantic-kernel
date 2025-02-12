@@ -9,7 +9,6 @@ from semantic_kernel.core_plugins.crew_ai.crew_ai_models import (
     CrewAIRequiredInputs,
     CrewAIStatusResponse,
 )
-from semantic_kernel.utils.http.utils import AsyncSession
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
@@ -27,11 +26,11 @@ class CrewAIEnterpriseClient:
         Args:
             endpoint (str): The API endpoint.
             auth_token (str): The authentication token.
-            session (Optional[aiohttp.ClientSession], optional): The HTTP client session. Defaults to None.
+            session (aiohttp.ClientSession | None, optional): The HTTP client session. Defaults to None.
         """
         self.endpoint = endpoint
         self.auth_token = auth_token
-        self._session = session
+        self.session = session if session else aiohttp.ClientSession()
         self.request_header = {
             "Authorization": f"Bearer {auth_token}",
             "Content-Type": "application/json",
@@ -45,8 +44,7 @@ class CrewAIEnterpriseClient:
             CrewAIRequiredInputs: The required inputs for Crew AI.
         """
         async with (
-            AsyncSession(self._session) as session,
-            session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,
+            self.session.get(f"{self.endpoint}/inputs", headers=self.request_header) as response,
         ):
             response.raise_for_status()
             return CrewAIRequiredInputs.model_validate_json(await response.text())
@@ -76,8 +74,7 @@ class CrewAIEnterpriseClient:
             "crewWebhookUrl": crew_webhook_url,
         }
         async with (
-            AsyncSession(self._session) as session,
-            session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,
+            self.session.post(f"{self.endpoint}/kickoff", json=content, headers=self.request_header) as response,
         ):
             response.raise_for_status()
             body = await response.text()
@@ -93,9 +90,17 @@ class CrewAIEnterpriseClient:
             CrewAIStatusResponse: The status response of the task.
         """
         async with (
-            AsyncSession(self._session) as session,
-            session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,
+            self.session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,
         ):
             response.raise_for_status()
             body = await response.text()
             return CrewAIStatusResponse.model_validate_json(body)
+
+    async def __aenter__(self):
+        """Enter the session."""
+        await self.session.__aenter__()
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        """Close the session."""
+        await self.session.close()
