@@ -34,13 +34,6 @@ from samples.concepts.local_models.lm_studio_text_embedding import main as lm_st
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
 from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
 from samples.concepts.memory.memory import main as memory
-from samples.concepts.planners.azure_openai_function_calling_stepwise_planner import (
-    main as azure_openai_function_calling_stepwise_planner,
-)
-from samples.concepts.planners.openai_function_calling_stepwise_planner import (
-    main as openai_function_calling_stepwise_planner,
-)
-from samples.concepts.planners.sequential_planner import main as sequential_planner
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -157,30 +150,6 @@ concepts = [
         grounded,
         [],
         id="grounded",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        azure_openai_function_calling_stepwise_planner,
-        [],
-        id="azure_openai_function_calling_stepwise_planner",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        openai_function_calling_stepwise_planner,
-        [],
-        id="openai_function_calling_stepwise_planner",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
-    ),
-    param(
-        sequential_planner,
-        [],
-        id="sequential_planner",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

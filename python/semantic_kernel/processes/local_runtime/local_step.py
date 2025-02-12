@@ -150,7 +150,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
         invoke_result = None
-        event_name = None
+        event_name: str = ""
         event_value = None
 
         try:
@@ -158,6 +158,8 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
                 f"Invoking plugin `{function.plugin_name}` and function `{function.name}` with arguments: {arguments}"
             )
             invoke_result = await self.invoke_function(function, self.kernel, arguments)
+            if invoke_result is None:
+                raise KernelException(f"Function {target_function} returned None.")
             event_name = f"{target_function}.OnResult"
             event_value = invoke_result.value
         except Exception as ex:

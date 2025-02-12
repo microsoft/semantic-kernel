@@ -14,6 +14,11 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// The role that instructs or sets the behavior of the assistant.
     /// </summary>
+    public static AuthorRole Developer { get; } = new("developer");
+
+    /// <summary>
+    /// The role that instructs or sets the behavior of the assistant.
+    /// </summary>
     public static AuthorRole System { get; } = new("system");
 
     /// <summary>

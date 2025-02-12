@@ -145,7 +145,7 @@ class LocalProcess(LocalStep):
                 assert step.state and step.state.id is not None  # nosec
 
                 # Create a LocalStep for the step
-                local_step = LocalStep(
+                local_step = LocalStep(  # type: ignore
                     step_info=step,
                     kernel=self.kernel,
                     factories=self.factories,

@@ -152,7 +152,7 @@ class Agenda:
             return "None"
         agenda_str = "\n".join(
             [
-                f"{i+1}. [{format_resource(item['resource'], ResourceConstraintUnit.TURNS)}] {item['title']}"
+                f"{i + 1}. [{format_resource(item['resource'], ResourceConstraintUnit.TURNS)}] {item['title']}"
                 for i, item in enumerate(agenda_items)
             ]
         )
