@@ -950,7 +950,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     {
         "content_index": 0,
         "delta": ",",
-        "event_id": "event_AzlwG06k8F5N3lNd5Gpwh",
+        "event_id": "event_AzlwG06k8F5N3lAnd5Gpwh",
         "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
@@ -1036,7 +1036,7 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
     },
     {
         "content_index": 0,
-        "event_id": "event_AzlwGu2ND7Q4zRbR6M6eQ",
+        "event_id": "event_AzlwGu2And7Q4zRbR6M6eQ",
         "item_id": "item_AzlwFKH1rmAndQLC7YZiXB",
         "output_index": 0,
         "response_id": "resp_AzlwF7CVNcKelcIOECR33",
