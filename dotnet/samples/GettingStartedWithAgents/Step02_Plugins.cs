@@ -46,7 +46,6 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         await InvokeAgentAsync(agent, chat, "Create a beautiful red colored widget for me.");
     }
 
-
     private ChatCompletionAgent CreateAgentWithPlugin(
         KernelPlugin plugin,
         string? instructions = null,
