@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
+NEWLINE = "\n"
+
 
 @experimental_class
 class CustomSelectionStrategy(SelectionStrategy):
@@ -80,7 +82,7 @@ Each message in the chat history contains the agent's name and the message conte
 Initially, the chat history may be empty.
 
 Here are the agents with their indices, names, and descriptions:
-{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
+{NEWLINE.join(f"[{index}] {agent.name}:{NEWLINE}{agent.description}" for index, agent in enumerate(agents))}
 
 Your task is to select the next agent based on the conversation history.
 

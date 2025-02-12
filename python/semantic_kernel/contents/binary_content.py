@@ -68,20 +68,20 @@ class BinaryContent(KernelContent):
                 ai_model_id (str | None): The id of the AI model that generated this response.
                 metadata (dict[str, Any]): Any metadata that should be attached to the response.
         """
-        _data_uri = None
+        temp_data_uri = None
         if data_uri:
-            _data_uri = DataUri.from_data_uri(data_uri, self.default_mime_type)
+            temp_data_uri = DataUri.from_data_uri(data_uri, self.default_mime_type)
             if "metadata" in kwargs:
-                kwargs["metadata"].update(_data_uri.parameters)
+                kwargs["metadata"].update(temp_data_uri.parameters)
             else:
-                kwargs["metadata"] = _data_uri.parameters
+                kwargs["metadata"] = temp_data_uri.parameters
         elif data:
             if isinstance(data, str):
-                _data_uri = DataUri(
+                temp_data_uri = DataUri(
                     data_str=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
             else:
-                _data_uri = DataUri(
+                temp_data_uri = DataUri(
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
 
@@ -92,7 +92,7 @@ class BinaryContent(KernelContent):
                 uri = Url(uri)
 
         super().__init__(uri=uri, **kwargs)
-        self._data_uri = _data_uri
+        self._data_uri = temp_data_uri
 
     @computed_field  # type: ignore
     @property
