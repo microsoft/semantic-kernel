@@ -41,7 +41,7 @@ async def add_vectors(collection: AzureAISearchCollection, vectorizer: VectorSto
     hotels = await collection.get_batch(ids)
     if hotels is not None and isinstance(hotels, list):
         for hotel in hotels:
-            if not hotel.description_vector:
+            if not hotel.description_vector or not hotel.description_fr_vector:
                 hotel = await vectorizer.add_vector_to_records(hotel, HotelSampleClass)
                 await collection.upsert(hotel)
 
