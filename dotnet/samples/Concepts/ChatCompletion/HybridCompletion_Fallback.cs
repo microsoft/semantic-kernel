@@ -123,7 +123,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
 /// </summary>
 internal sealed class FallbackChatClient : IChatClient
 {
-    private readonly IEnumerable<IChatClient> _chatClients;
+    private readonly IList<IChatClient> _chatClients;
     private static readonly List<HttpStatusCode> s_defaultFallbackStatusCodes = new()
     {
         HttpStatusCode.InternalServerError,
@@ -137,7 +137,7 @@ internal sealed class FallbackChatClient : IChatClient
     /// Initializes a new instance of the <see cref="FallbackChatClient"/> class.
     /// </summary>
     /// <param name="chatClients">The chat clients to fallback to.</param>
-    public FallbackChatClient(IEnumerable<IChatClient> chatClients)
+    public FallbackChatClient(IList<IChatClient> chatClients)
     {
         this._chatClients = chatClients?.Any() == true ? chatClients : throw new ArgumentException("At least one chat client must be provided.", nameof(chatClients));
     }
@@ -153,7 +153,7 @@ internal sealed class FallbackChatClient : IChatClient
     /// <inheritdoc/>
     public async Task<Microsoft.Extensions.AI.ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        for (int i = 0; i < this._chatClients.Count(); i++)
+        for (int i = 0; i < this._chatClients.Count; i++)
         {
             var chatClient = this._chatClients.ElementAt(i);
 
@@ -163,7 +163,7 @@ internal sealed class FallbackChatClient : IChatClient
             }
             catch (Exception ex)
             {
-                if (this.ShouldFallbackToNextClient(ex, i, this._chatClients.Count()))
+                if (this.ShouldFallbackToNextClient(ex, i, this._chatClients.Count))
                 {
                     continue;
                 }
@@ -179,7 +179,7 @@ internal sealed class FallbackChatClient : IChatClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        for (int i = 0; i < this._chatClients.Count(); i++)
+        for (int i = 0; i < this._chatClients.Count; i++)
         {
             var chatClient = this._chatClients.ElementAt(i);
 
@@ -199,7 +199,7 @@ internal sealed class FallbackChatClient : IChatClient
                 }
                 catch (Exception ex)
                 {
-                    if (this.ShouldFallbackToNextClient(ex, i, this._chatClients.Count()))
+                    if (this.ShouldFallbackToNextClient(ex, i, this._chatClients.Count))
                     {
                         continue;
                     }
