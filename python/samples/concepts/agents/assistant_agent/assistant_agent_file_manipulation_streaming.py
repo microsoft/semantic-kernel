@@ -77,8 +77,8 @@ async def main():
     try:
         user_inputs = [
             "Which segment had the most sales?",
-            # "List the top 5 countries that generated the most profit.",
-            # "Create a tab delimited file report of profit by each country per month.",
+            "List the top 5 countries that generated the most profit.",
+            "Create a tab delimited file report of profit by each country per month.",
         ]
         for input in user_inputs:
             await invoke_streaming_agent(agent, thread_id=thread_id, input=input)
