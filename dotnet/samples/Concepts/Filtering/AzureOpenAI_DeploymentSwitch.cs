@@ -77,7 +77,7 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             var chatHistory = context.ChatHistory;
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
 
-            if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && "swedencentral".Equals(serviceId.ToString(), StringComparison.Ordinal))
+            if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && serviceId.ToString().Equals("swedencentral", StringComparison.Ordinal))
             {
                 bool includesGetEyeColor = functionCalls.Any(fc => fc.FunctionName.Equals("GetEyeColor", StringComparison.Ordinal));
                 if (!includesGetEyeColor)
