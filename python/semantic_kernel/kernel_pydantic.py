@@ -35,8 +35,8 @@ class KernelBaseSettings(BaseSettings):
     """
 
     env_prefix: ClassVar[str] = ""
-    env_file_path: str | None = Field(None, exclude=True)
-    env_file_encoding: str = Field("utf-8", exclude=True)
+    env_file_path: str | None = Field(default=None, exclude=True)
+    env_file_encoding: str = Field(default="utf-8", exclude=True)
 
     model_config = SettingsConfigDict(
         extra="ignore",

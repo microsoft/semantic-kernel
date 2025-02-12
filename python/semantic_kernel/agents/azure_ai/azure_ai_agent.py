@@ -58,6 +58,7 @@ class AzureAIAgent(Agent):
         kernel: "Kernel | None" = None,
         arguments: "KernelArguments | None" = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Agent.
@@ -71,6 +72,7 @@ class AzureAIAgent(Agent):
             arguments: The KernelArguments instance
             prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
+            polling_options: The polling options for the agent.
             **kwargs: Additional keyword arguments
         """
         args: dict[str, Any] = {
@@ -106,6 +108,8 @@ class AzureAIAgent(Agent):
             if prompt_template_config.template is not None:
                 # Use the template from the prompt_template_config if it is provided
                 args["instructions"] = prompt_template_config.template
+        if polling_options is not None:
+            args["polling_options"] = polling_options
         if kwargs:
             args.update(kwargs)
 

@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 import logging
 import uuid
+from collections.abc import Callable
 from queue import Queue
 from typing import TYPE_CHECKING, Any
 
@@ -42,8 +43,15 @@ class LocalProcess(LocalStep):
     initialize_task: bool | None = False
     external_event_queue: Queue = Field(default_factory=Queue)
     process_task: asyncio.Task | None = None
+    factories: dict[str, Callable] = Field(default_factory=dict)
 
-    def __init__(self, process: "KernelProcess", kernel: Kernel, parent_process_id: str | None = None):
+    def __init__(
+        self,
+        process: "KernelProcess",
+        kernel: Kernel,
+        factories: dict[str, Callable] | None = None,
+        parent_process_id: str | None = None,
+    ):
         """Initializes the local process."""
         args: dict[str, Any] = {
             "step_info": process,
@@ -53,6 +61,9 @@ class LocalProcess(LocalStep):
             "process": process,
             "initialize_task": False,
         }
+
+        if factories:
+            args["factories"] = factories
 
         super().__init__(**args)
 
@@ -124,6 +135,7 @@ class LocalProcess(LocalStep):
                 process = LocalProcess(
                     process=step,
                     kernel=self.kernel,
+                    factorie=self.factories,
                     parent_process_id=self.id,
                 )
 
@@ -133,9 +145,10 @@ class LocalProcess(LocalStep):
                 assert step.state and step.state.id is not None  # nosec
 
                 # Create a LocalStep for the step
-                local_step = LocalStep(
+                local_step = LocalStep(  # type: ignore
                     step_info=step,
                     kernel=self.kernel,
+                    factories=self.factories,
                     parent_process_id=self.id,
                 )
 

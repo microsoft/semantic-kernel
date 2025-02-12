@@ -18,7 +18,7 @@
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="Prompty.Core" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
   </ItemGroup>
 </Project>

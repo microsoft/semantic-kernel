@@ -34,7 +34,10 @@ class AgentGroupChat(AgentChat):
     agents: list[Agent] = Field(default_factory=list)
 
     is_complete: bool = False
-    termination_strategy: TerminationStrategy = Field(default_factory=DefaultTerminationStrategy)
+    termination_strategy: TerminationStrategy = Field(
+        default_factory=DefaultTerminationStrategy,
+        description="The termination strategy to use. The default strategy never terminates and has a max iterations of 5.",  # noqa: E501
+    )
     selection_strategy: SelectionStrategy = Field(default_factory=SequentialSelectionStrategy)
 
     def __init__(
