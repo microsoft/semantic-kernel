@@ -61,7 +61,9 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             ServiceId = "swedencentral",
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
+        
         kernel.Data.Add("service_id", "swedencentral");
+        
         var reply = await kernel.InvokePromptAsync("What time is it and what is my eye color and what time is it?", new(settings));
 
         Console.WriteLine(reply);
