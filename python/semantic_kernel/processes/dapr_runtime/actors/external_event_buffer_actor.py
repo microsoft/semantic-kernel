@@ -30,17 +30,17 @@ class ExternalEventBufferActor(Actor, ExternalEventBufferInterface):
         super().__init__(ctx, actor_id)
         self.queue: Queue[str] = Queue()
 
-    async def enqueue(self, external_event: str) -> None:
+    async def enqueue(self, message: str) -> None:
         """Enqueues a message event into the buffer.
 
         Args:
-            external_event: The message event to enqueue as a JSON string.
+            message: The message event to enqueue as a JSON string.
 
         Raises:
             Exception: If an error occurs during enqueue operation.
         """
         try:
-            self.queue.put(external_event)
+            self.queue.put(message)
 
             queue_list = list(self.queue.queue)
             queue_state = json.dumps(queue_list)

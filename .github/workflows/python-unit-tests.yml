@@ -24,14 +24,6 @@ jobs:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: true
-          # - python-version: "3.13t"
-          #   os: "ubuntu-latest"
-          #   experimental: true
-          #   gil: 0
-          # - python-version: "3.13t"
-          #   os: "ubuntu-latest"
-          #   experimental: true
-          #   gil: 1
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
