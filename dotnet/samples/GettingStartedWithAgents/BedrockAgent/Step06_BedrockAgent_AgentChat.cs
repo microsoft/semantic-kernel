@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
