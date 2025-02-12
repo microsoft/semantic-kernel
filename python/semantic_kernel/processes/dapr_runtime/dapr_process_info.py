@@ -17,7 +17,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class DaprProcessInfo(DaprStepInfo):
     """A Dapr process info."""
 
-    type: Literal["DaprProcessInfo"] = Field(default="DaprProcessInfo")  # type: ignore
+    type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
     steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
     def to_kernel_process(self) -> KernelProcess:
