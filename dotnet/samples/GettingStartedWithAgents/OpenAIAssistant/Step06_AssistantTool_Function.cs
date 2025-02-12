@@ -23,7 +23,7 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
     {
         // Define the agent
         OpenAIClientProvider provider = this.GetClientProvider();
-        var client = provider.Client.GetAssistantClient();
+        AssistantClient client = provider.Client.GetAssistantClient();
         AssistantCreationOptions creationOptions =
             new()
             {
