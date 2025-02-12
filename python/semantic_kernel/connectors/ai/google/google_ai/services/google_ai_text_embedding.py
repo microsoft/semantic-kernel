@@ -93,7 +93,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         assert isinstance(settings, GoogleAIEmbeddingPromptExecutionSettings)  # nosec
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
-        response: BatchEmbeddingDict = await genai.embed_content_async(
+        response: BatchEmbeddingDict = await genai.embed_content_async(  # type: ignore
             model=self.service_settings.embedding_model_id,
             content=texts,
             **settings.prepare_settings_dict(),
