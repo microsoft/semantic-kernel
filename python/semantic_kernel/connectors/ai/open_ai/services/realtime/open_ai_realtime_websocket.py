@@ -20,7 +20,7 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events.realtime_event import AudioEvent, RealtimeEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent, RealtimeEvent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -53,7 +53,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                 if self.audio_output_callback:
                     await self.audio_output_callback(np.frombuffer(audio_bytes, dtype=np.int16))
                 try:
-                    yield AudioEvent(
+                    yield RealtimeAudioEvent(
                         audio=AudioContent(data=audio_bytes, data_format="base64", inner_content=event),
                         service_type=event.type,
                     )
@@ -75,8 +75,8 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
     @override
     async def create_session(
         self,
-        settings: "PromptExecutionSettings | None" = None,
         chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> None:
         """Create a session in the service."""

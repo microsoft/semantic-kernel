@@ -5,11 +5,13 @@ import logging
 
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
-    ListenEvents,
     OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
     TurnDetection,
 )
+from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")
@@ -61,14 +63,10 @@ async def main() -> None:
     flowery prose.
     """,
         voice="shimmer",
-        turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
+        turn_detection=TurnDetection(create_response=True, silence_duration_ms=800, threshold=0.8),
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    print("Mosscap (transcript): ", end="")
-
-    async with realtime_client, audio_player, audio_recorder:
-        await realtime_client.update_session(settings=settings, create_response=True)
-
+    async with realtime_client(settings=settings, create_response=True), audio_player, audio_recorder:
         async for event in realtime_client.receive():
             match event.event_type:
                 # this can be used as an alternative to the callback function used above,
@@ -82,7 +80,7 @@ async def main() -> None:
                     if event.service_type == ListenEvents.SESSION_UPDATED:
                         print("Session updated")
                     if event.service_type == ListenEvents.RESPONSE_CREATED:
-                        print("")
+                        print("\nMosscap (transcript): ", end="")
                     if event.service_type == ListenEvents.ERROR:
                         logger.error(event.event)
 

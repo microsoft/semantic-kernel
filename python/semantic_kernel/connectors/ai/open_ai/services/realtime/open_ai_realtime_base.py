@@ -38,11 +38,11 @@ from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBas
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.events.realtime_event import (
-    FunctionCallEvent,
-    FunctionResultEvent,
     RealtimeEvent,
-    ServiceEvent,
-    TextEvent,
+    RealtimeFunctionCallEvent,
+    RealtimeFunctionResultEvent,
+    RealtimeServiceEvent,
+    RealtimeTextEvent,
 )
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -78,7 +78,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         """
         match event.type:
             case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
-                yield TextEvent(
+                yield RealtimeTextEvent(
                     service_type=event.type,
                     text=StreamingTextContent(
                         inner_content=event,
@@ -90,7 +90,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 if event.item.type == "function_call" and event.item.call_id and event.item.name:
                     self._call_id_to_function_map[event.item.call_id] = event.item.name
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA.value:
-                yield FunctionCallEvent(
+                yield RealtimeFunctionCallEvent(
                     service_type=event.type,
                     function_call=FunctionCallContent(
                         id=event.item_id,
@@ -114,53 +114,77 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         # we put all event in the output buffer, but after the interpreted one.
         # so when dealing with them, make sure to check the type of the event, since they
         # might be of different types.
-        yield ServiceEvent(service_type=event.type, event=event)
+        yield RealtimeServiceEvent(service_type=event.type, event=event)
 
     @override
     async def update_session(
         self,
-        settings: PromptExecutionSettings | None = None,
         chat_history: ChatHistory | None = None,
+        settings: PromptExecutionSettings | None = None,
         create_response: bool = False,
         **kwargs: Any,
     ) -> None:
-        if "kernel" in kwargs:
-            self.kernel = kwargs["kernel"]
+        """Update the session in the service.
+
+        Args:
+            chat_history: Chat history.
+            settings: Prompt execution settings, if kernel is linked to the service or passed as
+                Kwargs, it will be used to update the settings for function calling.
+            create_response: Create a response, get the model to start responding, default is False.
+            kwargs: Additional arguments, if 'kernel' is passed, it will be used to update the
+                settings for function calling, others will be ignored.
+
+        """
+        if kwargs:
+            if self._create_kwargs:
+                kwargs = {**self._create_kwargs, **kwargs}
+        else:
+            kwargs = self._create_kwargs or {}
         if settings:
             self._current_settings = settings
-        if self._current_settings and self.kernel:
-            self._current_settings = prepare_settings_for_function_calling(
-                self._current_settings,
-                self.get_prompt_execution_settings_class(),
-                self._update_function_choice_settings_callback(),
-                kernel=self.kernel,  # type: ignore
-            )
+        if "kernel" in kwargs:
+            self.kernel = kwargs["kernel"]
+
+        if self._current_settings:
+            if self.kernel:
+                self._current_settings = prepare_settings_for_function_calling(
+                    self._current_settings,
+                    self.get_prompt_execution_settings_class(),
+                    self._update_function_choice_settings_callback(),
+                    kernel=self.kernel,  # type: ignore
+                )
             await self.send(
-                ServiceEvent(
+                RealtimeServiceEvent(
                     service_type=SendEvents.SESSION_UPDATE,
                     event={"settings": self._current_settings},
                 )
             )
+
         if chat_history and len(chat_history) > 0:
             for msg in chat_history.messages:
                 for item in msg.items:
                     match item:
                         case TextContent():
-                            await self.send(TextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=item))
+                            await self.send(
+                                RealtimeTextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=item)
+                            )
                         case FunctionCallContent():
                             await self.send(
-                                FunctionCallEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, function_call=item)
+                                RealtimeFunctionCallEvent(
+                                    service_type=SendEvents.CONVERSATION_ITEM_CREATE, function_call=item
+                                )
                             )
                         case FunctionResultContent():
                             await self.send(
-                                FunctionResultEvent(
+                                RealtimeFunctionResultEvent(
                                     service_type=SendEvents.CONVERSATION_ITEM_CREATE, function_result=item
                                 )
                             )
                         case _:
                             logger.error("Unsupported item type: %s", item)
-        if create_response:
-            await self.send(ServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
+
+        if create_response or kwargs.get("create_response", False) is True:
+            await self.send(RealtimeServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
 
     async def _parse_function_call_arguments_done(
         self,
@@ -187,18 +211,20 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             index=event.output_index,
             metadata={"call_id": event.call_id},
         )
-        yield FunctionCallEvent(service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, function_call=item)
+        yield RealtimeFunctionCallEvent(
+            service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, function_call=item
+        )
         chat_history = ChatHistory()
         await self.kernel.invoke_function_call(item, chat_history)
         created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
         # This returns the output to the service
-        result = FunctionResultEvent(
+        result = RealtimeFunctionResultEvent(
             service_type=SendEvents.CONVERSATION_ITEM_CREATE,
             function_result=created_output,
         )
         await self.send(result)
         # The model doesn't start responding to the tool call automatically, so triggering it here.
-        await self.send(ServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
+        await self.send(RealtimeServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
         # This allows a user to have a full conversation in his code
         yield result
 
@@ -405,8 +431,8 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     @override
     async def create_session(
         self,
-        settings: "PromptExecutionSettings | None" = None,
         chat_history: "ChatHistory | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> None:
         pass

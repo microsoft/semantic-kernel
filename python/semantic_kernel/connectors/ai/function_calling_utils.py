@@ -162,19 +162,6 @@ def prepare_settings_for_function_calling(
     if not isinstance(settings, settings_class):
         settings = settings_class.from_prompt_execution_settings(settings)
 
-    # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
-    # if this method is called with a `FunctionCallBehavior` object as part of the settings
-
-    from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
-    if hasattr(settings, "function_call_behavior") and isinstance(
-        settings.function_call_behavior, FunctionCallBehavior
-    ):
-        settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
-            settings.function_call_behavior
-        )
-
     if settings.function_choice_behavior:
         # Configure the function choice behavior into the settings object
         # that will become part of the request to the AI service
