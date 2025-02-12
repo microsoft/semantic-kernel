@@ -56,6 +56,8 @@ If your index already contains vectors:
 
 ### Example Search Results
 
+After running `step_1_interact_with_the_collection.py` you should see output similar to:
+
 #### **Text Search Results**
 ```text
 Search results using text: 
