@@ -44,7 +44,7 @@ pn = "pn"                 # Kiota parameter
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
 
-[default.extend-ignore-identifiers-re]
+[default.extend-ignore-re]
 # spellchecker:<on|off>: "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on"
 
 [type.jupyter]
