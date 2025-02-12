@@ -136,7 +136,7 @@ internal sealed class FallbackChatClient : IChatClient
     /// <summary>
     /// Initializes a new instance of the <see cref="FallbackChatClient"/> class.
     /// </summary>
-    /// <param name="chatClients">The chat clients to fallback to.</param></param>
+    /// <param name="chatClients">The chat clients to fallback to.</param>
     public FallbackChatClient(IEnumerable<IChatClient> chatClients)
     {
         this._chatClients = chatClients?.Any() == true ? chatClients : throw new ArgumentException("At least one chat client must be provided.", nameof(chatClients));
