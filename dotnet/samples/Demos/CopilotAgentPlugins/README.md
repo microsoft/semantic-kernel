@@ -116,7 +116,7 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
     ![A screenshot of a new secret in the Client secrets list](images/AppRegistration_APIPermissions.png)
 
 
-### Update appsettings.Development.json
+### Update appsettings Development File
 
 1. Rename the [appsettings.json](CopilotAgentPluginsDemoSample/appsettings.json) file to `appsettings.Development.json`. Open the file in Visual Studio code or any text editor.
 
@@ -125,7 +125,7 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
     - `TenantId`: set to the tenant ID from your app registration
     - `ClientId`: set to the client ID from your app registration
     - `ClientSecret`: set to the client secret from your app registration
-    - `RedirectUri`: set to the http://loalhost
+    - `RedirectUri`: set to the http://localhost
     - `OpenAI`: if you are using OpenAI as your LLM provider ensure that the
     - `ApiKey` : is filled out
     - `ModelId` : is filled out
@@ -137,7 +137,7 @@ This sample for demonstration purposes uses a [Device Code Authentication flow](
 
 ### Start the application
 
-Open the repository with Visual Studio Code. Open a **New Terminal** and tpye.
+Open the repository with Visual Studio Code. Open a **New Terminal** and type.
 
 To run without Debug Mode type:
 

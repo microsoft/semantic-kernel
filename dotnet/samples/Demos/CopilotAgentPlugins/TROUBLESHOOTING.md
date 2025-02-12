@@ -8,4 +8,4 @@ Make sure that your app registration includes the required permission for Micros
 
 ## You get a build error when you issue dotnet run demo command
 
-Ensure that you have copied the appsettings.json file into a new or renamed appsettings.Development.json file as directed in the [Update appsettings.Development.json](README.md#Update-appsettings.Development.json)
+Ensure that you have copied the appsettings.json file into a new or renamed appsettings.Development.json file as directed in the [Update appsettings.Development.json](README.md#update-appsettings-development-file)
