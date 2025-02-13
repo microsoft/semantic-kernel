@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
+using Resources;
 
 namespace GettingStarted;
 
@@ -38,6 +39,30 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agent
         ChatCompletionAgent agent = CreateAgentWithPlugin(
                 KernelPluginFactory.CreateFromType<WidgetFactory>());
+
+        /// Create the chat history to capture the agent interaction.
+        ChatHistory chat = [];
+
+        // Respond to user input, invoking functions where appropriate.
+        await InvokeAgentAsync(agent, chat, "Create a beautiful red colored widget for me.");
+    }
+
+    [Fact]
+    public async Task UseChatCompletionWithTemplateExecutionSettingsAsync()
+    {
+        // Read the template resource
+        string autoInvokeYaml = EmbeddedResource.Read("AutoInvokeTools.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(autoInvokeYaml);
+
+        // Define the agent:
+        // Execution-settings with auto-invocation of plubins defined via the config.
+        ChatCompletionAgent agent =
+            new(templateConfig)
+            {
+                Kernel = this.CreateKernelWithChatCompletion()
+            };
+
+        agent.Kernel.Plugins.AddFromType<WidgetFactory>();
 
         /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];

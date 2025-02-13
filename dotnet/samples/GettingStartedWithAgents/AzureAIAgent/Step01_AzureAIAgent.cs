@@ -24,7 +24,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         AgentsClient client = clientProvider.Client.GetAgentsClient();
         Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, clientProvider, new KernelPromptTemplateFactory())
+        AzureAIAgent agent = new(definition, clientProvider)
         {
             Kernel = new Kernel(),
             Arguments = new KernelArguments()
