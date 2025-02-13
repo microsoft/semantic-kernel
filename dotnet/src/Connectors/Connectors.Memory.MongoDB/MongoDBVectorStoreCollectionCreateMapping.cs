@@ -76,6 +76,34 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
+    /// Returns a list of of fields to index for full text search data properties.
+    /// </summary>
+    /// <param name="dataProperties">Collection of data properties for index creation.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    public static List<BsonElement> GetFullTextSearchableDataIndexFields(
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        Dictionary<string, string> storagePropertyNames)
+    {
+        var fieldElements = new List<BsonElement>();
+
+        // Create separate index for each data property
+        foreach (var property in dataProperties)
+        {
+            if (property.IsFullTextSearchable)
+            {
+                var dataPropertyName = storagePropertyNames[property.DataModelPropertyName];
+
+                fieldElements.Add(new BsonElement(dataPropertyName, new BsonArray()
+                {
+                    new BsonDocument() { { "type", "string" }, }
+                }));
+            }
+        }
+
+        return fieldElements;
+    }
+
+    /// <summary>
     /// More information about MongoDB distance functions here: <see href="https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#atlas-vector-search-index-fields" />.
     /// </summary>
     private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
