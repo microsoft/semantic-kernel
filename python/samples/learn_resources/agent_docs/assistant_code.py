@@ -4,10 +4,8 @@ import asyncio
 import logging
 import os
 
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingFileReferenceContent
 from semantic_kernel.kernel import Kernel
 
 logging.basicConfig(level=logging.ERROR)
