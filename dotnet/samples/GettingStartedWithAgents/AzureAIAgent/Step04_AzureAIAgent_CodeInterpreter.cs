@@ -10,7 +10,7 @@ namespace GettingStarted.AzureAgents;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-public class Step03_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseCodeInterpreterToolWithAgentAsync()

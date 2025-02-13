@@ -2,12 +2,15 @@
 
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
-from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if TYPE_CHECKING:
+    from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
+    from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 
 
 @experimental_class
@@ -35,7 +38,7 @@ class ProcessInterface(ActorInterface, ABC):
 
     @abstractmethod
     @actormethod(name="run_once")
-    async def run_once(self, process_event: KernelProcessEvent) -> None:
+    async def run_once(self, process_event: "KernelProcessEvent | str | None") -> None:
         """Starts the process with an initial event and then waits for the process to finish.
 
         :param process_event: Required. The KernelProcessEvent to start the process with.

@@ -38,13 +38,13 @@ class CustomObjectWithList:
 
 class AccountBalanceFrozen(KernelBaseModel):
     # Make the model frozen so it's hashable
-    balance: int = Field(..., alias="account_balance")
+    balance: int = Field(default=..., alias="account_balance")
     model_config = ConfigDict(frozen=True)
 
 
 class AccountBalanceNonFrozen(KernelBaseModel):
     # This model is not frozen and thus not hashable by default
-    balance: int = Field(..., alias="account_balance")
+    balance: int = Field(default=..., alias="account_balance")
 
 
 def test_init():
