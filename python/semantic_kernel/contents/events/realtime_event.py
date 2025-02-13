@@ -16,7 +16,7 @@ class RealtimeEvent(KernelBaseModel):
     """Base class for all service events."""
 
     service_event: Any | None = Field(default=None, description="The event content.")
-    service_type: str
+    service_type: str | None = None
     event_type: ClassVar[Literal["service"]] = "service"
 
 

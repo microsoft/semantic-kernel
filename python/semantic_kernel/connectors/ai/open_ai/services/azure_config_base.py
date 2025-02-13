@@ -3,9 +3,11 @@
 import logging
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
+from typing import Any
 
 from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
+from pydantic_core import Url
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
@@ -27,7 +29,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         deployment_name: str,
         ai_model_type: OpenAIModelTypes,
         endpoint: HttpsUrl | None = None,
-        base_url: HttpsUrl | None = None,
+        base_url: Url | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         service_id: str | None = None,
         api_key: str | None = None,
@@ -37,6 +39,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
         instruction_role: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
@@ -47,7 +50,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             deployment_name (str): Name of the deployment.
             ai_model_type (OpenAIModelTypes): The type of OpenAI model to deploy.
             endpoint (HttpsUrl): The specific endpoint URL for the deployment. (Optional)
-            base_url (HttpsUrl): The base URL for Azure services. (Optional)
+            base_url (Url): The base URL for Azure services. (Optional)
             api_version (str): Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
             service_id (str): Service ID for the deployment. (Optional)
             api_key (str): API key for Azure services. (Optional)
@@ -59,6 +62,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
             instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
                 prompts could use `developer` or `system`. (Optional)
+            kwargs: Additional keyword arguments.
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -82,9 +86,17 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             if not base_url:
                 if not endpoint:
                     raise ServiceInitializationError("Please provide an endpoint or a base_url")
-                base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+                if ai_model_type == OpenAIModelTypes.REALTIME:
+                    # wss://my-eastus2-openai-resource.openai.azure.com/openai/realtime?api-version=2024-12-17&deployment=gpt-4o-mini-realtime-preview-deployment-name
+                    temp_url = f"{str(endpoint).replace('https', 'wss').rstrip('/')}.openai.azure.com/openai/realtime"
+                else:
+                    temp_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
+            else:
+                # when supplying the base url instead of the endpoint, the developer should know what to use,
+                # when doing realtime, that includes using the wss protocol
+                temp_url = str(base_url)
             client = AsyncAzureOpenAI(
-                base_url=str(base_url),
+                base_url=temp_url,
                 api_version=api_version,
                 api_key=api_key,
                 azure_ad_token=ad_token,

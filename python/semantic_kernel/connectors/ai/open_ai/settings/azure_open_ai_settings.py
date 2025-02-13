@@ -55,6 +55,12 @@ class AzureOpenAISettings(KernelBaseSettings):
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
                 (Env var AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME)
+    - realtime_deployment_name: str - The name of the Azure Realtime deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+                (Env var AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME)
     - api_key: SecretStr - The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
@@ -85,6 +91,7 @@ class AzureOpenAISettings(KernelBaseSettings):
     text_to_image_deployment_name: str | None = None
     audio_to_text_deployment_name: str | None = None
     text_to_audio_deployment_name: str | None = None
+    realtime_deployment_name: str | None = None
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
