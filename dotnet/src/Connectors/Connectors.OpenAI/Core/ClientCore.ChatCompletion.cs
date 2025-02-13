@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -159,6 +160,7 @@ internal partial class ClientCore
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
+            var result = ModelReaderWriter.Write(chatOptions).ToString();
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;

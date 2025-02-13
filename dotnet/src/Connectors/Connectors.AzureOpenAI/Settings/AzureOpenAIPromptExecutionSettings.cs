@@ -17,6 +17,26 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSettings
 {
     /// <summary>
+    /// Enabling this property will enforce the new <c>max_completion_tokens</c> parameter to be send the Azure OpenAI API.
+    /// </summary>
+    /// <remarks>
+    /// This setting is temporary and flags the underlying Azure SDK to use the new <c>max_completion_tokens</c> parameter using the
+    /// <see href="https://github.com/Azure/azure-sdk-for-net/blob/c2aa8d8448bdb7378a5c1b7ba23aa75e39e6b425/sdk/openai/Azure.AI.OpenAI/CHANGELOG.md?plain=1#L34">
+    /// SetNewMaxCompletionTokensPropertyEnabled</see> extension.
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonIgnore]
+    public bool SetNewMaxCompletionTokensEnabled
+    {
+        get => this._setNewMaxCompletionTokensEnabled;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._setNewMaxCompletionTokensEnabled = value;
+        }
+    }
+
+    /// <summary>
     /// An abstraction of additional settings for chat completion, see https://learn.microsoft.com/en-us/dotnet/api/azure.ai.openai.azurechatextensionsoptions.
     /// This property is compatible only with Azure OpenAI.
     /// </summary>
@@ -103,6 +123,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     #region private ================================================================================
     [Experimental("SKEXP0010")]
     private AzureSearchChatDataSource? _azureChatDataSource;
+    private bool _setNewMaxCompletionTokensEnabled;
 
     #endregion
 }
