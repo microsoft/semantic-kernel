@@ -160,7 +160,6 @@ internal partial class ClientCore
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
-            var result = ModelReaderWriter.Write(chatOptions).ToString();
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
