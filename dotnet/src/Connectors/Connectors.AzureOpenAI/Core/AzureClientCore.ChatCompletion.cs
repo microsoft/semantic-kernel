@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel.Primitives;
 using System;
+using System.ClientModel.Primitives;
 using System.Diagnostics;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
