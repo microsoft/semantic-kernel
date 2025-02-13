@@ -121,7 +121,6 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     private sealed class WeatherPlugin
     {
         [KernelFunction, Description("Provides realtime weather information.")]
-        // [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string Current([Description("The location to get the weather for.")] string location)
         {
             return $"The current weather in {location} is 72 degrees.";

@@ -200,20 +200,21 @@ internal static class BedrockAgentInvokeExtensions
             {
                 InvocationId = functionResults[0].CallId,
                 ReturnControlInvocationResults = [.. functionResults.Select(functionResult =>
-            {
-                return new InvocationResultMember()
-                {
-                    FunctionResult = new Amazon.BedrockAgentRuntime.Model.FunctionResult
                     {
-                        ActionGroup = agent.GetKernelFunctionActionGroupSignature(),
-                        Function = functionResult.FunctionName,
-                        ResponseBody = new Dictionary<string, ContentBody>
+                        return new InvocationResultMember()
                         {
-                            { "TEXT", new ContentBody() { Body = functionResult.Result as string } }
-                        }
+                            FunctionResult = new Amazon.BedrockAgentRuntime.Model.FunctionResult
+                            {
+                                ActionGroup = agent.GetKernelFunctionActionGroupSignature(),
+                                Function = functionResult.FunctionName,
+                                ResponseBody = new Dictionary<string, ContentBody>
+                                {
+                                    { "TEXT", new ContentBody() { Body = functionResult.Result as string } }
+                                }
+                            }
+                        };
                     }
-                };
-            })],
+                )],
             };
     }
 }
