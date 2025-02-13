@@ -34,7 +34,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
     """OpenAI Realtime service."""
 
-    protocol: ClassVar[Literal["websocket"]] = "websocket"
+    protocol: ClassVar[Literal["websocket"]] = "websocket"  # type: ignore
     connection: AsyncRealtimeConnection | None = None
     connected: asyncio.Event = Field(default_factory=asyncio.Event)
 
@@ -52,16 +52,14 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                 audio_bytes = base64.b64decode(event.delta)
                 if self.audio_output_callback:
                     await self.audio_output_callback(np.frombuffer(audio_bytes, dtype=np.int16))
-                try:
-                    yield RealtimeAudioEvent(
-                        audio=AudioContent(data=audio_bytes, data_format="base64", inner_content=event),
-                        service_type=event.type,
-                    )
-                except Exception as e:
-                    logger.error(f"Error processing remote audio frame: {e!s}")
-            else:
-                async for event in self._parse_event(event):
-                    yield event
+                yield RealtimeAudioEvent(
+                    audio=AudioContent(data=audio_bytes, data_format="base64", inner_content=event),
+                    service_type=event.type,
+                    service_event=event,
+                )
+                continue
+            async for event in self._parse_event(event):
+                yield event
 
     async def _send(self, event: RealtimeClientEvent) -> None:
         await self.connected.wait()

@@ -6,7 +6,6 @@ from semantic_kernel.contents.events.realtime_event import (
     RealtimeFunctionCallEvent,
     RealtimeFunctionResultEvent,
     RealtimeImageEvent,
-    RealtimeServiceEvent,
     RealtimeTextEvent,
 )
 
@@ -16,6 +15,5 @@ __all__ = [
     "RealtimeFunctionCallEvent",
     "RealtimeFunctionResultEvent",
     "RealtimeImageEvent",
-    "RealtimeServiceEvent",
     "RealtimeTextEvent",
 ]
