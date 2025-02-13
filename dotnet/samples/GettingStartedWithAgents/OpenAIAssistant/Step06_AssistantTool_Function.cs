@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
+using Plugins;
 
 namespace GettingStarted.OpenAIAssistants;
 
@@ -13,7 +13,7 @@ namespace GettingStarted.OpenAIAssistants;
 /// when the assistant is created. This is useful if you want to retrieve the assistant later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step05_AssistantTool_Function(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -23,18 +23,17 @@ public class Step05_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
     {
         // Define the agent
         OpenAIClientProvider provider = this.GetClientProvider();
-        var client = provider.Client.GetAssistantClient();
+        AssistantClient client = provider.Client.GetAssistantClient();
         AssistantCreationOptions creationOptions =
             new()
             {
                 Name = HostName,
                 Instructions = HostInstructions,
+                Metadata =
+                {
+                    { AssistantSampleMetadataKey, bool.TrueString }
+                }
             };
-
-        foreach (var kv in AssistantSampleMetadata)
-        {
-            creationOptions.Metadata.Add(kv.Key, kv.Value);
-        }
 
         // In this sample the function tools are added to the assistant this is
         // important if you want to retrieve the assistant later and then dynamically check
@@ -81,22 +80,5 @@ public class Step05_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
                 this.WriteAgentChatMessage(response);
             }
         }
-    }
-    private sealed class MenuPlugin
-    {
-        [KernelFunction, Description("Provides a list of specials from the menu.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
-        public string GetSpecials() =>
-            """
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            """;
-
-        [KernelFunction, Description("Provides the price of the requested menu item.")]
-        public string GetItemPrice(
-            [Description("The name of the menu item.")]
-            string menuItem) =>
-            "$9.99";
     }
 }

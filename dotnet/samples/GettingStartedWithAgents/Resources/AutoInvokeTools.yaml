@@ -1,0 +1,7 @@
+﻿name: ToolAgent
+template_format: semantic-kernel
+description: An agent that is configured to auto-invoke plugins.
+execution_settings:
+  default:
+    function_choice_behavior:
+      type: auto

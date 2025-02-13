@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
@@ -10,14 +9,13 @@ using Agent = Azure.AI.Projects.Agent;
 namespace GettingStarted.AzureAgents;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="AzureAIAgent"/>
-/// and <see cref="ChatCompletionAgent"/> (see: Step 2).
+/// This example demonstrates invoking Open API functions using <see cref="AzureAIAgent" />.
 /// </summary>
 /// <remarks>
 /// Note: Open API invocation does not involve kernel function calling or kernel filters.
 /// Azure Function invocation is managed entirely by the Azure AI Agent service.
 /// </remarks>
-public class Step05_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseOpenAPIToolWithAgentAsync()
