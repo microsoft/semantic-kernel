@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 internal static class MongoDBVectorStoreCollectionSearchMapping
 {
-    /// <summary>Returns distance function specified on vector property or default <see cref="MongoDBConstants.DefaultDistanceFunction"/>.</summary>
-    public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : MongoDBConstants.DefaultDistanceFunction;
+    /// <summary>Returns distance function specified on vector property or default.</summary>
+    public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : DistanceFunction.CosineSimilarity;
 
     /// <summary>
     /// Build MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
@@ -275,11 +275,12 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
                 "$search", new BsonDocument
                 {
                     { "index", fullTextSearchIndexName },
-                    { "phrase",
+                    { "text",
                         new BsonDocument
                         {
-                            { "query", string.Join(" ", keywords) },
-                            { "path", textPropertyName }
+                            { "query", new BsonArray(keywords) },
+                            { "path", textPropertyName },
+                            { "matchCriteria", "any" }
                         }
                     }
                 }

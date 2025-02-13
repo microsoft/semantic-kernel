@@ -2,17 +2,16 @@
 
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
-using SemanticKernel.IntegrationTests.Connectors.MongoDB;
+using SemanticKernel.IntegrationTests.Connectors.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 /// <summary>
 /// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
 /// </summary>
-/// <param name="fixture">Azure AI Search setup and teardown.</param>
 [Collection("MongoDBVectorStoreCollection")]
-public class CommonKeywordVectorizedHybridSearchTests(MongoDBVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>
+public class MongoDBKeywordVectorizedHybridSearchTests(MongoDBVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>
 {
     protected override string Key1 => "1";
     protected override string Key2 => "2";
