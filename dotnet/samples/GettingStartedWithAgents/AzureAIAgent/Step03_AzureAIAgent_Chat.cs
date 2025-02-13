@@ -14,7 +14,7 @@ namespace GettingStarted.AzureAgents;
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
-public class Step02_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
