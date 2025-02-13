@@ -5,7 +5,7 @@ import logging
 
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIRealtime,
+    AzureRealtime,
     OpenAIRealtimeExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
@@ -48,7 +48,7 @@ async def main() -> None:
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
     audio_player = AudioPlayerWebsocket()
-    realtime_client = OpenAIRealtime(
+    realtime_client = AzureRealtime(
         "websocket",
         audio_output_callback=audio_player.client_callback,
     )
