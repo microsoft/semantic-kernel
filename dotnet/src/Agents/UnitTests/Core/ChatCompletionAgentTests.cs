@@ -44,6 +44,51 @@ public class ChatCompletionAgentTests
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
     [Fact]
+    public void VerifyChatCompletionAgentTemplate()
+    {
+        PromptTemplateConfig config =
+            new()
+            {
+                Name = "TestName",
+                Description = "TestDescription",
+                Template = "TestInstructions",
+                ExecutionSettings =
+                {
+                    {
+                        PromptExecutionSettings.DefaultServiceId,
+                        new PromptExecutionSettings()
+                        {
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                            ModelId = "gpt-new",
+                        }
+                    },
+                    {
+                        "manual",
+                        new PromptExecutionSettings()
+                        {
+                            ServiceId = "manual",
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
+                            ModelId = "gpt-old",
+                        }
+                    },
+                }
+            };
+
+        // Arrange
+        ChatCompletionAgent agent = new(config);
+
+        // Assert
+        Assert.NotNull(agent.Id);
+        Assert.Equal(config.Template, agent.Instructions);
+        Assert.Equal(config.Description, agent.Description);
+        Assert.Equal(config.Name, agent.Name);
+        Assert.Equal(config.ExecutionSettings, agent.Arguments.ExecutionSettings);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
     public async Task VerifyChatCompletionAgentInvocationAsync()
     {
         // Arrange
