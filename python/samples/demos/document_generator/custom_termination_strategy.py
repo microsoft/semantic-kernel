@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 TERMINATE_TRUE_KEYWORD = "yes"
 TERMINATE_FALSE_KEYWORD = "no"
 
+NEWLINE = "\n"
+
 
 class CustomTerminationStrategy(TerminationStrategy):
     NUM_OF_RETRIES: ClassVar[int] = 3
@@ -82,7 +84,7 @@ Each message in the chat history contains the agent's name and the message conte
 The chat history may start empty as no agents have spoken yet.
 
 Here are the agents with their indices, names, and descriptions:
-{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(self.agents))}
+{NEWLINE.join(f"[{index}] {agent.name}:{NEWLINE}{agent.description}" for index, agent in enumerate(self.agents))}
 
 Your task is NOT to continue the conversation. Determine if the latest content is approved by all agents.
 If approved, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".

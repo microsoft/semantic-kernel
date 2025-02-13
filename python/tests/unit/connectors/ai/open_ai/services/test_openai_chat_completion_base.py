@@ -265,7 +265,6 @@ async def test_cmc_function_choice_behavior(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=False,
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
-            parallel_tool_calls=True,
             tools=[
                 {
                     "type": "function",
@@ -757,7 +756,6 @@ async def test_scmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
-            parallel_tool_calls=True,
             tools=[
                 {
                     "type": "function",
