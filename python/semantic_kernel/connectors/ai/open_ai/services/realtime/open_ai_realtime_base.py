@@ -6,10 +6,6 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
-    OpenAIRealtimeExecutionSettings,
-)
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -27,6 +23,9 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     prepare_settings_for_function_calling,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    OpenAIRealtimeExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.utils import (
@@ -38,10 +37,10 @@ from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBas
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.events.realtime_event import (
+    RealtimeAudioEvent,
     RealtimeEvent,
     RealtimeFunctionCallEvent,
     RealtimeFunctionResultEvent,
-    RealtimeServiceEvent,
     RealtimeTextEvent,
 )
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -75,11 +74,16 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
         Audio delta has to be handled by the implementation of the protocol as some
         protocols have different ways of handling audio.
+
+        We put all event in the output buffer, but after the interpreted one.
+        so when dealing with them, make sure to check the type of the event, since they
+        might be of different types.
         """
         match event.type:
             case ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value:
                 yield RealtimeTextEvent(
                     service_type=event.type,
+                    service_event=event,
                     text=StreamingTextContent(
                         inner_content=event,
                         text=event.delta,
@@ -89,9 +93,11 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             case ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED.value:
                 if event.item.type == "function_call" and event.item.call_id and event.item.name:
                     self._call_id_to_function_map[event.item.call_id] = event.item.name
+                yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA.value:
                 yield RealtimeFunctionCallEvent(
                     service_type=event.type,
+                    service_event=event,
                     function_call=FunctionCallContent(
                         id=event.item_id,
                         name=self._call_id_to_function_map[event.call_id],
@@ -107,14 +113,13 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         yield parsed_event
             case ListenEvents.ERROR.value:
                 logger.error("Error received: %s", event.error)
-            case ListenEvents.SESSION_CREATED.value, ListenEvents.SESSION_UPDATED.value:
+                yield RealtimeEvent(service_type=event.type, service_event=event)
+            case ListenEvents.SESSION_CREATED.value | ListenEvents.SESSION_UPDATED.value:
                 logger.info("Session created or updated, session: %s", event.session)
+                yield RealtimeEvent(service_type=event.type, service_event=event)
             case _:
                 logger.debug(f"Received event: {event}")
-        # we put all event in the output buffer, but after the interpreted one.
-        # so when dealing with them, make sure to check the type of the event, since they
-        # might be of different types.
-        yield RealtimeServiceEvent(service_type=event.type, event=event)
+                yield RealtimeEvent(service_type=event.type, service_event=event)
 
     @override
     async def update_session(
@@ -154,9 +159,9 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                     kernel=self.kernel,  # type: ignore
                 )
             await self.send(
-                RealtimeServiceEvent(
+                RealtimeEvent(
                     service_type=SendEvents.SESSION_UPDATE,
-                    event={"settings": self._current_settings},
+                    service_event={"settings": self._current_settings},
                 )
             )
 
@@ -184,25 +189,35 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                             logger.error("Unsupported item type: %s", item)
 
         if create_response or kwargs.get("create_response", False) is True:
-            await self.send(RealtimeServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
+            await self.send(RealtimeEvent(service_type=SendEvents.RESPONSE_CREATE))
 
     async def _parse_function_call_arguments_done(
         self,
         event: ResponseFunctionCallArgumentsDoneEvent,
     ) -> AsyncGenerator[RealtimeEvent | None]:
-        """Handle response function call done."""
+        """Handle response function call done.
+
+        This always yields at least 1 event, either a RealtimeEvent or a RealtimeFunctionResultEvent with the raw event.
+
+        It then also yields any function results both back to the service, through `send` and to the developer.
+
+        """
+        # Step 1: check if function calling enabled:
         if not self.kernel or (
             self._current_settings
             and self._current_settings.function_choice_behavior
             and not self._current_settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
-            yield None
+            yield RealtimeEvent(service_type=event.type, service_event=event)
             return
+        # Step 2: check if there is a function that can be found.
         plugin_name, function_name = self._call_id_to_function_map.pop(event.call_id, "-").split("-", 1)
         if not plugin_name or not function_name:
             logger.error("Function call needs to have a plugin name and function name")
-            yield None
+            yield RealtimeEvent(service_type=event.type, service_event=event)
             return
+
+        # Step 3: Parse into the function call content, and yield that.
         item = FunctionCallContent(
             id=event.item_id,
             plugin_name=plugin_name,
@@ -212,20 +227,22 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             metadata={"call_id": event.call_id},
         )
         yield RealtimeFunctionCallEvent(
-            service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, function_call=item
+            service_type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, function_call=item, service_event=event
         )
+
+        # Step 4: Invoke the function call
         chat_history = ChatHistory()
         await self.kernel.invoke_function_call(item, chat_history)
         created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
-        # This returns the output to the service
+        # Step 5: Create the function result event
         result = RealtimeFunctionResultEvent(
             service_type=SendEvents.CONVERSATION_ITEM_CREATE,
             function_result=created_output,
         )
+        # Step 6: send the result to the service and call `create response`
         await self.send(result)
-        # The model doesn't start responding to the tool call automatically, so triggering it here.
-        await self.send(RealtimeServiceEvent(service_type=SendEvents.RESPONSE_CREATE))
-        # This allows a user to have a full conversation in his code
+        await self.send(RealtimeEvent(service_type=SendEvents.RESPONSE_CREATE))
+        # Step 7: yield the function result back to the developer as well
         yield result
 
     async def _send(self, event: RealtimeClientEvent) -> None:
@@ -234,14 +251,14 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
     @override
     async def send(self, event: RealtimeEvent, **kwargs: Any) -> None:
-        match event.event_type:
-            case "audio":
+        match event:
+            case RealtimeAudioEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND, audio=event.audio.to_base64_bytestring()
                     )
                 )
-            case "text":
+            case RealtimeTextEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
@@ -257,7 +274,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         ),
                     )
                 )
-            case "function_call":
+            case RealtimeFunctionCallEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
@@ -273,7 +290,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         ),
                     )
                 )
-            case "function_result":
+            case RealtimeFunctionResultEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
@@ -284,8 +301,8 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         ),
                     )
                 )
-            case "service":
-                data = event.event
+            case _:
+                data = event.service_event
                 match event.service_type:
                     case SendEvents.SESSION_UPDATE:
                         if not data:

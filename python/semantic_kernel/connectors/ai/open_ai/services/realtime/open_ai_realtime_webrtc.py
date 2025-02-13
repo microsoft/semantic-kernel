@@ -47,7 +47,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     """OpenAI WebRTC Realtime service."""
 
-    protocol: ClassVar[Literal["webrtc"]] = "webrtc"
+    protocol: ClassVar[Literal["webrtc"]] = "webrtc"  # type: ignore
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
     audio_track: MediaStreamTrack | None = None
@@ -149,6 +149,8 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                 # This is a MediaStreamTrack, so the type is AudioFrame
                 # this might need to be updated if video becomes part of this
                 frame: AudioFrame = await track.recv()  # type: ignore
+            except asyncio.CancelledError:
+                break
             except Exception as e:
                 logger.error(f"Error getting audio frame: {e!s}")
                 break
@@ -163,6 +165,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
                 await self._receive_buffer.put(
                     RealtimeAudioEvent(
                         audio=AudioContent(data=frame.to_ndarray(), data_format="np.int16", inner_content=frame),
+                        service_event=frame,
                         service_type=ListenEvents.RESPONSE_AUDIO_DELTA,
                     ),
                 )

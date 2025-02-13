@@ -145,7 +145,9 @@ class AudioRecorderWebRTC(KernelBaseModel, MediaStreamTrack):
 
             while self._is_recording:
                 await asyncio.sleep(0.1)
-        except asyncio.CancelledError | KeyboardInterrupt:
+        except asyncio.CancelledError:
+            logger.debug("Recording task was stopped.")
+        except KeyboardInterrupt:
             logger.debug("Recording task was stopped.")
         except Exception as e:
             logger.error(f"Error in audio recording: {e!s}")

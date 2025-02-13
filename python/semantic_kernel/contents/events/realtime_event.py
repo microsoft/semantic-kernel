@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Annotated, Any, ClassVar, Literal, TypeAlias, Union
+from typing import Any, ClassVar, Literal
 
 from pydantic import Field
 
@@ -11,62 +11,45 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-RealtimeEvent: TypeAlias = Annotated[
-    Union[
-        "RealtimeServiceEvent",
-        "RealtimeAudioEvent",
-        "RealtimeTextEvent",
-        "RealtimeFunctionCallEvent",
-        "RealtimeFunctionResultEvent",
-        "RealtimeImageEvent",
-    ],
-    Field(discriminator="event_type"),
-]
 
-
-class RealtimeServiceEvent(KernelBaseModel):
+class RealtimeEvent(KernelBaseModel):
     """Base class for all service events."""
 
-    event: Any | None = Field(default=None, description="The event content.")
+    service_event: Any | None = Field(default=None, description="The event content.")
     service_type: str
     event_type: ClassVar[Literal["service"]] = "service"
 
 
-class RealtimeAudioEvent(KernelBaseModel):
+class RealtimeAudioEvent(RealtimeEvent):
     """Audio event type."""
 
+    event_type: ClassVar[Literal["audio"]] = "audio"  # type: ignore
     audio: AudioContent = Field(..., description="Audio content.")
-    service_type: str | None = None
-    event_type: ClassVar[Literal["audio"]] = "audio"
 
 
-class RealtimeTextEvent(KernelBaseModel):
+class RealtimeTextEvent(RealtimeEvent):
     """Text event type."""
 
+    event_type: ClassVar[Literal["text"]] = "text"  # type: ignore
     text: TextContent = Field(..., description="Text content.")
-    service_type: str | None = None
-    event_type: ClassVar[Literal["text"]] = "text"
 
 
-class RealtimeFunctionCallEvent(KernelBaseModel):
+class RealtimeFunctionCallEvent(RealtimeEvent):
     """Function call event type."""
 
+    event_type: ClassVar[Literal["function_call"]] = "function_call"  # type: ignore
     function_call: FunctionCallContent = Field(..., description="Function call content.")
-    service_type: str | None = None
-    event_type: ClassVar[Literal["function_call"]] = "function_call"
 
 
-class RealtimeFunctionResultEvent(KernelBaseModel):
+class RealtimeFunctionResultEvent(RealtimeEvent):
     """Function result event type."""
 
+    event_type: ClassVar[Literal["function_result"]] = "function_result"  # type: ignore
     function_result: FunctionResultContent = Field(..., description="Function result content.")
-    service_type: str | None = None
-    event_type: ClassVar[Literal["function_result"]] = "function_result"
 
 
-class RealtimeImageEvent(KernelBaseModel):
+class RealtimeImageEvent(RealtimeEvent):
     """Image event type."""
 
+    event_type: ClassVar[Literal["image"]] = "image"  # type: ignore
     image: ImageContent = Field(..., description="Image content.")
-    service_type: str | None = None
-    event_type: ClassVar[Literal["image"]] = "image"

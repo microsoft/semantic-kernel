@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     TurnDetection,
 )
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.events import RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)
@@ -127,18 +128,18 @@ async def main() -> None:
         ),
     ):
         async for event in realtime_client.receive():
-            match event.event_type:
-                case "text":
+            match event:
+                case RealtimeTextEvent():
                     if print_transcript:
                         print(event.text.text, end="")
-                case "service":
+                case _:
                     # OpenAI Specific events
                     match event.service_type:
                         case ListenEvents.RESPONSE_CREATED:
                             if print_transcript:
                                 print("\nMosscap (transcript): ", end="")
                         case ListenEvents.ERROR:
-                            logger.error(event.event)
+                            logger.error(event.service_event)
 
 
 if __name__ == "__main__":

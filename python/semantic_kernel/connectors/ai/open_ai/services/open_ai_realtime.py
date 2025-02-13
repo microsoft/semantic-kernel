@@ -92,7 +92,7 @@ class OpenAIRealtime(OpenAIRealtimeBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.realtime_model_id:
-            raise ServiceInitializationError("The OpenAI text model ID is required.")
+            raise ServiceInitializationError("The OpenAI realtime model ID is required.")
         if audio_track:
             kwargs["audio_track"] = audio_track
         super().__init__(

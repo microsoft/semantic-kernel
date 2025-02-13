@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_rea
     TurnDetection,
 )
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
+from semantic_kernel.contents.events.realtime_event import RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")
@@ -66,23 +67,21 @@ async def main() -> None:
         turn_detection=TurnDetection(create_response=True, silence_duration_ms=800, threshold=0.8),
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    async with realtime_client(settings=settings, create_response=True), audio_player, audio_recorder:
+    async with audio_player, audio_recorder, realtime_client(settings=settings, create_response=True):
         async for event in realtime_client.receive():
-            match event.event_type:
+            match event:
                 # this can be used as an alternative to the callback function used above,
                 # the callback is faster and smoother
-                # case "audio":
+                # case RealtimeAudioEvent():
                 #     await audio_player.add_audio(event.audio)
-                case "text":
+                case RealtimeTextEvent():
                     print(event.text.text, end="")
-                case "service":
+                case _:
                     # OpenAI Specific events
                     if event.service_type == ListenEvents.SESSION_UPDATED:
                         print("Session updated")
                     if event.service_type == ListenEvents.RESPONSE_CREATED:
                         print("\nMosscap (transcript): ", end="")
-                    if event.service_type == ListenEvents.ERROR:
-                        logger.error(event.event)
 
 
 if __name__ == "__main__":
