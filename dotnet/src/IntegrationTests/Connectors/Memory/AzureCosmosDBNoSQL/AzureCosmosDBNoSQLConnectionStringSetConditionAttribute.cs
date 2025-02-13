@@ -10,7 +10,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 /// Attribute to use to skip tests if the connection string for CosmosDB NoSQL is not set.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-public sealed class AzureCosmosDBbNoSQLConnectionStringSetConditionAttribute : Attribute, ITestCondition
+public sealed class AzureCosmosDBNoSQLConnectionStringSetConditionAttribute : Attribute, ITestCondition
 {
     public ValueTask<bool> IsMetAsync()
     {
