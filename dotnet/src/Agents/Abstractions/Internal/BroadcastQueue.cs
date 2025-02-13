@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IReadOnlyList<Microsoft.SemanticKernel.ChatMessageContent>>;
@@ -36,6 +37,7 @@ internal sealed class BroadcastQueue
     /// </summary>
     /// <param name="channelRefs">The target channels for which to broadcast.</param>
     /// <param name="messages">The messages being broadcast.</param>
+    [Experimental("SKEXP0001")]
     public void Enqueue(IEnumerable<ChannelReference> channelRefs, IReadOnlyList<ChatMessageContent> messages)
     {
         // Ensure mutating _queues
@@ -69,6 +71,7 @@ internal sealed class BroadcastQueue
     /// <throws>
     /// When channel is out of sync.
     /// </throws>
+    [Experimental("SKEXP0001")]
     public async Task EnsureSynchronizedAsync(ChannelReference channelRef, CancellationToken cancellationToken = default)
     {
         // Either won race with Enqueue or lost race with ReceiveAsync.
@@ -117,6 +120,7 @@ internal sealed class BroadcastQueue
     /// <summary>
     /// Processes the specified queue with the provided channel, until queue is empty.
     /// </summary>
+    [Experimental("SKEXP0001")]
     private static async Task ReceiveAsync(ChannelReference channelRef, QueueReference queueRef, CancellationToken cancellationToken = default)
     {
         Exception? failure = null;

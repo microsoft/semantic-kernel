@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,6 +16,7 @@ public sealed class ChatMessageReference(ChatMessageContent message)
     /// <summary>
     /// Gets the referenced <see cref="ChatMessageContent.AuthorName"/> property.
     /// </summary>
+    [Experimental("SKEXP0001")]
     public string? AuthorName => message.AuthorName;
 
     /// <summary>

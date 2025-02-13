@@ -1,6 +1,3 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
-// This assembly is currently experimental.
-[assembly: Experimental("SKEXP0110")]
+// Add Experimental if the feature is not yet released.
