@@ -65,6 +65,8 @@ class AgentChat(KernelBaseModel):
         self.set_activity_or_throw()
 
         logger.info("Getting chat messages")
+
+        messages: AsyncIterable[ChatMessageContent] | None = None
         try:
             if agent is None:
                 messages = self.get_messages_in_descending_order()

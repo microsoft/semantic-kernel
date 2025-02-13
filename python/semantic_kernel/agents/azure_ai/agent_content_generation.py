@@ -337,8 +337,8 @@ def generate_streaming_code_interpreter_content(
 
     metadata: dict[str, bool] = {}
     for index, tool in enumerate(step_details.tool_calls):
-        if isinstance(tool.type, RunStepDeltaCodeInterpreterToolCall):
-            code_interpreter_tool_call: RunStepDeltaCodeInterpreterDetailItemObject = tool
+        if isinstance(tool, RunStepDeltaCodeInterpreterDetailItemObject):
+            code_interpreter_tool_call = tool
             if code_interpreter_tool_call.input:
                 items.append(
                     StreamingTextContent(
@@ -349,7 +349,11 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if code_interpreter_tool_call.outputs:
                 for output in code_interpreter_tool_call.outputs:
-                    if isinstance(output, RunStepDeltaCodeInterpreterImageOutput) and output.image.file_id:
+                    if (
+                        isinstance(output, RunStepDeltaCodeInterpreterImageOutput)
+                        and output.image is not None
+                        and output.image.file_id
+                    ):
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
