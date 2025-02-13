@@ -135,66 +135,72 @@ This would introduce events, each event has a type, those can be core content ty
 Chosen option: 3 Treat Everything as Events
 
 This option was chosen to allow abstraction away from the raw events, while still allowing the developer to access the raw events if needed. 
-A set of events are defined, for basic types, like 'audio', 'text', 'function_call', 'function_result', it then has two other fields, service_event_type which is filled with the name of the event from the service and a field for the actual content, with a name that corresponds to the event type, the actual content should use the inner_content field to capture the raw event.
+A base event type is added called `RealtimeEvent`, this has three fields, a `event_type`, `service_event_type` and `service_event`. It then has four subclasses, one each for audio, text, function call and function result.
 
-It might also be possible that a single event from the service contains multiple content items, for instance a response might contain both text and audio, in that case multiple events will be emitted. It might also be that a single service event is represented twice, i.e. once as a AudioEvent and once as a ServiceEvent, this once again gives the most flexibility to the developer.
+When a known piece of content has come in, it will be parsed into a SK content type and added, this content should also have the raw event in the inner_content, so events are then stored twice, once in the event, once in the content, this is by design so that if the developer needs to access the raw event, they can do so easily even when they remove the event layer.
+
+It might also be possible that a single event from the service contains multiple content items, for instance a response might contain both text and audio, in that case multiple events will be emitted. In principle a event has to be handled once, so if there is event that is parsable only the subtype is returned, since it has all the same information as the `RealtimeEvent` this will allow developers to trigger directly off the service_event_type and service_event if they don't want to use the abstracted types.
 
 ```python
-RealtimeAudioEvent(
+RealtimeEvent(
+  event_type="service", # single default value in order to discriminate easily
+  service_event_type="conversation.item.create", # optional
+  service_event: { ... } # optional, because some events do not have content.
+)
+```
+
+```python
+RealtimeAudioEvent(RealtimeEvent)(
   event_type="audio", # single default value in order to discriminate easily
   service_event_type="response.audio.delta", # optional
+  service_event: { ... } 
   audio: AudioContent(...)
 )
 ```
 
 ```python
-RealtimeTextEvent(
+RealtimeTextEvent(RealtimeEvent)(
   event_type="text", # single default value in order to discriminate easily
   service_event_type="response.text.delta", # optional
+  service_event: { ... } 
   text: TextContent(...)
 )
 ```
 
 ```python
-RealtimeFunctionCallEvent(
+RealtimeFunctionCallEvent(RealtimeEvent)(
   event_type="function_call", # single default value in order to discriminate easily
   service_event_type="response.function_call_arguments.delta", # optional
+  service_event: { ... } 
   function_call: FunctionCallContent(...)
 )
 ```
 
 ```python
-RealtimeFunctionResultEvent(
+RealtimeFunctionResultEvent(RealtimeEvent)(
   event_type="function_result", # single default value in order to discriminate easily
   service_event_type="response.output_item.added", # optional
+  service_event: { ... } 
   function_result: FunctionResultContent(...)
 )
 ```
 
 ```python
-RealtimeImageEvent(
+RealtimeImageEvent(RealtimeEvent)(
   event_type="image", # single default value in order to discriminate easily
   service_event_type="response.image.delta", # optional
+  service_event: { ... } 
   image: ImageContent(...)
 )
 ```
 
-Next to these we will have a generic event, called RealtimeServiceEvent, this is the catch-all, which has event_type: "service", the service_event_type field filled with the event type from the service and a field called 'event' which contains the raw event from the service. A key difference between this event and other events is that the service_event_type field cannot by None, it has to be filled.
-
-```python
-RealtimeServiceEvent(
-  event_type="service", # single default value in order to discriminate easily
-  service_event_type="conversation.item.create", # mandatory
-  service_event: { ... } # optional, because some events do not have content.
-)
-```
-
-This allows you to easily do pattern matching on the event_type, and then use the service_event_type to filter on the specific event type for service events, or just grab the contents for the other ones.
+This allows you to easily do pattern matching on the event_type, or use the service_event_type to filter on the specific event type for service events, or match on the type of the event and get the SK contents from it.
 
 There might be other abstracted types needed at some point, for instance errors, or session updates, but since the current two services have no agreement on the existence of these events and their structure, it is better to wait until there is a need for them.
 
-Collectively these are known as *RealtimeEvents* (and this could be a base class for all events or a type hint with union and discriminator), and are returned as an async generator from the client, so you can easily loop over them. And they are passed to the send method.
+### Rejected ideas
 
+#### ID Handling
 One open item is whether to include a extra field in these types for tracking related pieces, however this becomes problematic because the way those are generated differs per service and is quite complex, for instance the OpenAI API returns a piece of audio transcript with the following ids: 
 - `event_id`: the unique id of the event
 - `response_id`: the id of the response
@@ -208,7 +214,7 @@ While Google has ID's only in some content items, like function calls, but not f
 
 Since the id's are always available through the raw event (either as inner_content or as .event), it is not necessary to add them to the content types, and it would make the content types more complex and harder to reuse across services.
 
-### Rejected ideas
+#### Wrapping content in a (Streaming)ChatMessageContent
 Wrapping content in a `(Streaming)ChatMessageContent` first, this will add another layer of complexity and since a CMC can contain multiple items, to access audio, would look like this: `service_event.content.items[0].audio.data`, which is not as clear as `service_event.audio.data`.
 
 # Programming model
