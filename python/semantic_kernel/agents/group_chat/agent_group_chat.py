@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncIterable
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from pydantic import Field
 
@@ -217,11 +217,12 @@ class AgentGroupChat(AgentChat):
         if not isinstance(self.history, ChatHistoryReducer):
             return False
 
-        reducer = await self.history.reduce()
-        if reducer is not None:
-            reduced_history = deepcopy(reducer.messages)
-            await self.reset()
-            await self.add_chat_messages(reduced_history)
-            return True
+        result = await self.history.reduce()
+        if result is None:
+            return False
 
-        return False
+        reducer = cast(ChatHistoryReducer, result)
+        reduced_history = deepcopy(reducer.messages)
+        await self.reset()
+        await self.add_chat_messages(reduced_history)
+        return True
