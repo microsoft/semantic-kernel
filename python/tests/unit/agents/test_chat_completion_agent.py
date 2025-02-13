@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import AsyncGenerator, Callable
 from unittest.mock import AsyncMock, create_autospec, patch
 
 import pytest
@@ -18,15 +19,13 @@ from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture
-def mock_streaming_chat_completion_response() -> AsyncMock:
-    """A fixture that returns a mock response for a streaming chat completion response."""
-
+def mock_streaming_chat_completion_response() -> Callable[..., AsyncGenerator[list[ChatMessageContent], None]]:
     async def mock_response(
         chat_history: ChatHistory,
         settings: PromptExecutionSettings,
         kernel: Kernel,
         arguments: KernelArguments,
-    ):
+    ) -> AsyncGenerator[list[ChatMessageContent], None]:
         content1 = ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1")
         content2 = ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2")
         chat_history.messages.append(content1)
@@ -242,3 +241,41 @@ async def test_create_channel():
     channel = await agent.create_channel()
 
     assert isinstance(channel, ChatHistoryChannel)
+
+
+async def test_setup_agent_chat_history_with_formatted_instructions():
+    agent = ChatCompletionAgent(
+        name="TestAgent", id="test_id", description="Test Description", instructions="Test Instructions"
+    )
+    with patch.object(
+        ChatCompletionAgent, "format_instructions", new=AsyncMock(return_value="Formatted instructions for testing")
+    ) as mock_format_instructions:
+        dummy_kernel = create_autospec(Kernel)
+        dummy_args = KernelArguments(param="value")
+        user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
+        history = ChatHistory(messages=[user_message])
+        result_history = await agent._setup_agent_chat_history(history, dummy_kernel, dummy_args)
+        mock_format_instructions.assert_awaited_once_with(dummy_kernel, dummy_args)
+        assert len(result_history.messages) == 2
+        system_message = result_history.messages[0]
+        assert system_message.role == AuthorRole.SYSTEM
+        assert system_message.content == "Formatted instructions for testing"
+        assert system_message.name == agent.name
+        assert result_history.messages[1] == user_message
+
+
+async def test_setup_agent_chat_history_without_formatted_instructions():
+    agent = ChatCompletionAgent(
+        name="TestAgent", id="test_id", description="Test Description", instructions="Test Instructions"
+    )
+    with patch.object(
+        ChatCompletionAgent, "format_instructions", new=AsyncMock(return_value=None)
+    ) as mock_format_instructions:
+        dummy_kernel = create_autospec(Kernel)
+        dummy_args = KernelArguments(param="value")
+        user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
+        history = ChatHistory(messages=[user_message])
+        result_history = await agent._setup_agent_chat_history(history, dummy_kernel, dummy_args)
+        mock_format_instructions.assert_awaited_once_with(dummy_kernel, dummy_args)
+        assert len(result_history.messages) == 1
+        assert result_history.messages[0] == user_message

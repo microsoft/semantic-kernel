@@ -4,14 +4,21 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterable, Iterable
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, cast
 
 from openai import AsyncOpenAI
-from openai.resources.beta.assistants import Assistant
-from openai.resources.beta.threads.messages import Message
-from openai.resources.beta.threads.runs.runs import Run
-from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
-from openai.types.beta.threads.runs import RunStep
+from openai.types.beta.assistant import Assistant
+from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
+from openai.types.beta.file_search_tool import FileSearchTool
+from openai.types.beta.threads.message import Message
+from openai.types.beta.threads.run import Run
+from openai.types.beta.threads.runs import (
+    MessageCreationStepDetails,
+    RunStep,
+    RunStepDeltaEvent,
+    ToolCallDeltaObject,
+    ToolCallsStepDetails,
+)
 from pydantic import Field
 
 from semantic_kernel.agents import Agent
@@ -326,7 +333,7 @@ class OpenAIAssistantBase(Agent):
             if "metadata" not in create_assistant_kwargs:
                 create_assistant_kwargs["metadata"] = {}
             if self._options_metadata_key not in create_assistant_kwargs["metadata"]:
-                create_assistant_kwargs["metadata"][self._options_metadata_key] = {}
+                create_assistant_kwargs["metadata"][self._options_metadata_key] = ""
             create_assistant_kwargs["metadata"][self._options_metadata_key] = json.dumps(execution_settings)
 
         self.assistant = await self.client.beta.assistants.create(
@@ -874,7 +881,8 @@ class OpenAIAssistantBase(Agent):
                         f"thread `{thread_id}`"
                     )
                     assert hasattr(completed_step.step_details, "tool_calls")  # nosec
-                    for tool_call in completed_step.step_details.tool_calls:
+                    tool_call_details = cast(ToolCallsStepDetails, completed_step.step_details)
+                    for tool_call in tool_call_details.tool_calls:
                         is_visible = False
                         content: "ChatMessageContent | None" = None
                         if tool_call.type == "code_interpreter":
@@ -1092,20 +1100,20 @@ class OpenAIAssistantBase(Agent):
                         content = generate_streaming_message_content(self.name, event.data)
                         yield content
                     elif event.event == "thread.run.step.completed":
+                        step_completed = cast(RunStep, event.data)
                         logger.info(f"Run step completed with ID: {event.data.id}")
-                        if hasattr(event.data.step_details, "message_creation"):
-                            message_id = event.data.step_details.message_creation.message_id
+                        if isinstance(step_completed.step_details, MessageCreationStepDetails):
+                            message_id = step_completed.step_details.message_creation.message_id
                             if message_id not in active_messages:
                                 active_messages[message_id] = event.data
                     elif event.event == "thread.run.step.delta":
+                        run_step_event: RunStepDeltaEvent = event.data
+                        details = run_step_event.delta.step_details
+                        if not details:
+                            continue
                         step_details = event.data.delta.step_details
-                        if (
-                            step_details is not None
-                            and hasattr(step_details, "tool_calls")
-                            and step_details.tool_calls is not None
-                            and isinstance(step_details.tool_calls, list)
-                        ):
-                            for tool_call in step_details.tool_calls:
+                        if isinstance(details, ToolCallDeltaObject) and details.tool_calls:
+                            for tool_call in details.tool_calls:
                                 tool_content = None
                                 if tool_call.type == "function":
                                     tool_content = generate_streaming_function_content(self.name, step_details)
