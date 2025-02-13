@@ -10,238 +10,83 @@ deciders: markwallace, sergey, dmytro, weslie, evan, shawn
 
 ## Context and Problem Statement
 
-Currently the Concepts project has is divided per folder where the examples don't follow a same approach and pattern. Method names aren't descriptive, some class have many examples making it harder to find and debug it.
+Currently, the Concepts project has grown considerably, with many samples that do not consistently follow a structured pattern or guideline.
 
-## Decision Drivers
+A revisit of our sample patterns in favor of key drivers needs to be considered.
 
-- Samples should be easier to find
-- Safe for copy and paste into a console application.
-- Fully documented explaining every aspect of what is happening with the code.
-- Structured, for docs (readme or ipynb) and source generation
+This ADR starts by suggesting rules we might follow to keep new concepts following good patterns that make them easy to comprehend, find, and descriptive.
 
-## Problem
+The Semantic Kernel audience can vary greatly—from pro-devs, beginners, and non-developers. We understand that making sure examples and guidelines are as straightforward as possible is of our highest priority.
 
-A caching example like [Caching/SemanticCachingWithFilters.cs](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Caching/SemanticCachingWithFilters.cs) touches a lot of different concepts like: `Cache`, `Connectors`, `Embeddings`, `Filters`, `Function Invocation Filters`, `Prompt Render Filter`, `Vector Store`, `Vector Store Record`, `Kernel`, `Azure OpenAI`, `OpenAI`, `Dependency Injection`, `Chat Completion`, `Prompt Template`, `Basic Semantic Kernel Template`
+### Decision Drivers
 
-Currently this is not an isolated scenario but actually apply for all our samples where in one simple example it can reference a mix of different concepts that makes it very difficult to organize in a definitive folder/file structure.
+- Easy to find
+- Easy to understand
+- Easy to set up
+- Easy to execute
 
-If we were to find the definitive solution, it would be need to consider all potential permutations which would make it impractical to maintain.
+The above drivers focus on ensuring that we follow good practices, patterns, and a structure for our samples, guaranteeing proper documentation, simplification of code for easier understanding, as well as the usage of descriptive classes, methods, and variables.
+
+We also understand how important it is to ensure our samples are copy-and-paste friendly (work "as is"), being as frictionless as possible.
 
 ## Solution
 
-We can apply a set of guidelines to the Concepts project to make it easier to find, understand and use the examples. This will also make it easier to generate documentation and source code from the examples in the future. Those guidelines also will help to implement new and existing examples in a consistent way.
+Applying a set of easy-to-follow guidelines and good practices to the Concepts project will help maintain a good collection of samples that are easy to find, understand, set up, and execute.
 
-### Balancing Clarity (Copy and Paste) vs Usability
-
-For the majority of developers the most frustrating part is copying a sample that actually doesn't work or compile because it has a missing part (not just the credentials).
-
-Much of our samples have plenty of repetitive code that can be refactored and extracted in Utilities or Helpers, this could reduce significantly the size of the samples even allowing them to be provider/service agnostic.
-
-The issue arises that such optimized samples would hide common code making it unusable for Copy and Paste, increasing significantly the cognitive load and patience (when looking from a GitHub UI) to know where to seek for the common implementation.
-
-Since Semantic Kernel is fundamentally stable and won't change, we may reconsider keeping a more verbose and repetitive code in the samples.
-
-Assuming we move forward with sample code generation in the WebApp, this might be a got thing to be revisited as the common code could be auto-generated and injected in a copy/paste friendly `Program.cs` demo.
+This guideline will be applied for any maintenance or newly added samples to the Concepts project. The contents may be added to a new CONTRIBUTING.md file in the Concepts project.
 
 > [!NOTE]
-> Focusing too much in usability might move us away from the main decision drivers of this proposal.
+> Rules/Conventions that are already ensured by analyzers are not mentioned in the list below.
 
-### 1. Decorate concepts test classes
+## Rules
 
-Using Concept Attributes on our classes, allowing indexing of samples by multiple concept tags. This also adds the benefit of being specific, compilable and less prone for mistaking add or using a non-existing concept.
+### Sample Classes
 
-Note: Can be easily setup using a proper AI prompt.
+Each class in the Concepts project MUST have an xmldoc description of what is being sampled, with clear information on what is being sampled.
 
-```csharp
-[UsedConcepts(
-    Concepts.Kernel,
-    Concepts.FunctionCalling,
-    Concepts.AutoFunctionChoiceBehavior,
-    ...)]
-public class AzureAIInference_FunctionCalling : BaseTest
-```
+✅ DO have xmldoc description detailing what is being sampled.
 
-### 2. Each test class MUST have a xmldoc description
+✅ DO have xmldoc remarks for the required packages.
 
-There are plenty of test demos in Concepts that lack a better detail and explanation of what is the purpose of the sample, this is very helpful for documentation and user orientation.
+✅ CONSIDER using xmldoc remarks for additional information.
 
-Note: Can be easily setup using a proper AI prompt.
+❌ AVOID using generic descriptions.
 
-✅ Good
+✅ DO name classes with at least two words, separated by an underscore `First_Second_Third_Fourth`.
 
-```csharp
-/// <summary>
-/// An example showing how use the VectorStore abstractions to consume data from a Qdrant data store,
-/// that was created using the MemoryStore abstractions.
-/// </summary>
-/// <remarks>
-/// The IMemoryStore abstraction has limitations that constrain its use in many scenarios
-/// e.g. it only supports a single fixed schema and does not allow search filtering.
-/// To provide more flexibility, the Vector Store abstraction has been introduced.
-///
-/// To run this sample, you need a local instance of Docker running, since the associated fixture
-/// will try and start a Qdrant container in the local docker instance to run against.
-/// </remarks>
-public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
-{
-```
+✅ DO name classes with the `First` word reserved for the given concept or provider name (e.g., `OpenAI_ChatCompletion`).
 
-❌ Missing detail and is not a XmlDoc
+When the file has examples for a specific `<provider>`, it should start with the `<provider>` as the first word. `<provider>` here can also include runtime, platform, protocol, or service names.
 
-```csharp
-// The following example shows how to use Semantic Kernel with Ollama API.
-public class Ollama_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
-{
-```
+✅ CONSIDER naming `Second` and later words to create the best grouping for examples,  
+e.g., `AzureAISearch_VectorStore_ConsumeFromMemoryStore`.
 
-### 3. Each fact in the concepts MUST have a descriptive name
+✅ CONSIDER naming when there are more than two words, using a left-to-right grouping,  
+e.g., `AzureAISearch_VectorStore_ConsumeFromMemoryStore`: for `AzureAISearch` within `VectorStore` grouping, there's a `ConsumeFromMemoryStore` example.
 
-Fact method names, MUST provide a clear understanding of what is happening in the test.
+### Sample Methods
 
-1. Clear message of what is being sampled.
+✅ DO have an xmldoc description detailing what is being sampled when the class has more than one sample method.
 
-2. Usage of underscores to separate words and help readability.
+✅ DO have descriptive method names limited to five words, separated by an underscore,  
+e.g., `[Fact] public Task First_Second_Third_Fourth_Fifth()`.
 
-3. Drop Async suffix for async methods.
+❌ DO NOT use `Async` suffix for Tasks.
 
-| Bad ❌                                     | Good ✅                                                     |
-| ------------------------------------------ | ----------------------------------------------------------- |
-| `OpenAI_ChatCompletion.ServicePromptAsync` | `OpenAI_ChatCompletion.Using_ChatService_WithStringPrompt`  |
-| `OpenAI_ChatCompletion.ChatPromptAsync`    | `OpenAI_ChatCompletion.Using_Kernel_WithChatPrompt_Syntax`  |
-| `OpenAI_CustomClient.RunAsync`             | `OpenAI_ChatCompletion.Adding_CustomHeaders_WithHttpClient` |
+❌ AVOID using parameters in the method signature.
 
-### 4. Each fact in the concepts MUST have xmldoc description
+❌ DO NOT have more than 3 samples in a single class. Split the samples into multiple classes when needed.
 
-Similar to the class description, each fact should have a description of what is the purpose of the fact, this is very helpful for documentation and user orientation.
+### Code
 
-This will be very helpful for later Roslyn scrap when needed (ipynb) generation or other dynamic UI indexing.
+✅ DO keep code clear and concise. For the most part, variable names and APIs should be self-explanatory.
 
-Note: Can be easily setup using a proper AI prompt with file context.
+✅ CONSIDER commenting the code for large sample methods.
 
-### 5. Keep the code commented.
+❌ DO NOT use acronyms or short names for variables, methods, or classes.
 
-The code should be commented in a way that it is easy to understand what is happening in the code. This is very helpful for documentation and user orientation.
-This way during the UI rendering each line of comments can be extracted into different code blocks sections automatically.
-
-Note: Can be easily setup using a proper AI prompt with file context.
-
-### 6. Test File Name and Size
-
-The overall rule is to have try to keep as less as possible examples in a single file, splitting the files per group of examples whenever possible.
-
-Normally samples with single file names tends to have multiple examples in the same file, this is not a good practice as it makes it harder to search as well as added cognitive load to understand the file.
-
-File names:
-
-1. Should have at least two words, separated by an underscore, where the first word is the concept or provider and the second is the example name or a group of examples that match the same approach.
-
-2. When the file has examples for a specific `<provider>` it should start with the `<provider>` as the first word. By `<provider>` here also can reflect runtimes, platforms, protocals or services.
-
-Note: Can be easily fixed using a proper AI prompt with file context.
-
-✅ Number of samples: 2
-
-✅ File name: ChatCompletion/Onnx_ChatCompletion.cs - Two words (`<provider>` + Group of tests)
-
-```csharp
-public class Onnx_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
-{
-    [Fact]
-    public async Task UsingChatServiceWithStringPromptAsync()
-    {
-    }
-
-    [Fact]
-    public async Task UsingKernelChatPromptSyntaxAsync()
-    {
-    }
-}
-```
-
-❌ Number of samples: 3+
-
-❌ File name: FunctionCalling/FunctionCalling.cs - Single name
-
-```csharp
-public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
-
-    [Fact]
-    public async Task RunPromptWithAutoFunctionChoiceBehaviorAdvertisingAllKernelFunctionsInvokedAutomaticallyAsync()
-
-    [Fact]
-    public async Task RunPromptWithRequiredFunctionChoiceBehaviorAdvertisingOneFunctionInvokedAutomaticallyAsync()
-
-    [Fact]
-    public async Task RunPromptWithNoneFunctionChoiceBehaviorAdvertisingAllKernelFunctionsAsync()
-
-    /// Many more
-```
-
-✅ Number of samples: 1
-
-❌ File name: Memory/VectorStore_ConsumeFromMemoryStore_Qdrant.cs - Three words ✅, `<provider>` is the last ❌
-
-```csharp
-/// <summary> .. detailed description .. </summary>
-public class VectorStore_ConsumeFromMemoryStore_Qdrant
-{
-    [Fact]
-    public async Task ConsumeExampleAsync()
-}
-```
-
-### 7. Simplify folder structure
-
-This is not a mandatory requirement for indexing but would simplify the overall structure of the project.
-
-Common and broader concepts, like `Memory`, `Vector Store`, `Caching`, `Optimization`, `Function Calling`, `Functions`, `Kernel`, `Planners`, `Optimization`, `Prompt Templates`, `Dependency Injection`, `RAG`, `Local Models`, don't need to live in a separate folder structure, but rather can cross cut the folders and examples, with proper tagging they can be easily found thru GUI search or in the proposed Web App.
-
-Proposed simplified folders:
-
-- VectorData
-- Chat
-- Text (Combining TextTo*Any*)
-- Embedding
-- Audio (Combining AudioTo*Any*)
-- Image (Combining ImageTo*Any*)
-- Agents
-- Filters
-- Plugins
-- Process
-- Search
-
-Sorting orfans approach:
-
-- `PromptTemplate/ChatCompletionPrompts.cs` -> `Chat/PromptTemplate_ChatCompletionPrompts.cs`
-- `FunctionCalling/Gemini_FunctionCalling.cs` -> `Chat/Gemini_FunctionCalling.cs`
-- `Caching/SemanticCachingWithFilters.cs` -> `Filters/Caching_WithFilters.cs`
-- `DependencyInjection/HttpClient_Registration.cs` -> `Chat/OpenAI_DependencyInjection_HttpClient_Registration.cs`
-- `DependencyInjection/HttpClient_Resiliency.cs` -> `Chat/OpenAI_DependencyInjection_HttpClient_Resiliency.cs`
-- `TextToAudio/OpenAI_TextToAudio.cs` -> `Text/OpenAI_TextToAudio.cs`
-- `TextToImage/OpenAI_TextToImage.cs` -> `Text/OpenAI_TextToImage.cs`
-- `TextGeneration/Ollama_TextGeneration.cs` -> `Text/Ollama_TextGeneration.cs`
-- `Memory/TextMemoryPlugin_GeminiEmbeddingGeneration.cs` -> `Plugins/TextMemoryPlugin_GeminiEmbeddingGeneration.cs`
-- `Memory/VectorStore_ConsumeFromMemoryStore_AzureAISearch.cs` -> `VectorData/AzureAISearch_VectorStore_ConsumeFromMemoryStore.cs`
-
-### Search Engine for Concept Examples
-
-As a medium term goal, with all the cleanup and restructuring applied, we could consider upgrading the Concepts project to become a flawless and friendly Web Application simply by clicking in the Run button IDE we start it providing an easy WebUI for sample discovery, setup and execution.
-
-To improve easy of access for everyone, we can host the WebApp use it as a link on our official Concepts documentation publishing it as part of the release pipeline, so devs would also be able to easily access our demos without necessarily needing to setup their own envs.
-
-Some of the features we should consider:
-
-- Allow a smart seach by concept and description, ensuring it can index the tests and show them in a HTML or MARKDOWN complying with all the Decision drivers provided above.
-
-- Easy copy/paste. Consolidate all the code for the selected sample in a way that its dependencies are ready to be copied and run into a single Program.cs.
-
-- Enable export to Jupyter Notebook. This would be a great feature to allow users to easily run the samples in their own environment.
-
-#### POC's
-
-1. [SourceBrowser for SK](https://github.com/KirillOsenkov/SourceBrowser)
-2. [Static Web Site based on file name tokenization (AI 0 Shot Generated)](https://raw.githack.com/RogerBarreto/semantic-kernel/issues/10168-adr-concepts-restructure/dotnet/samples/Concepts/App/index.htm)
-3. TBD: Executable WebApp with Backend code (IDE required)
+❌ AVOID any references to common helper classes or methods that are not part of the sample file,  
+e.g., avoid methods like `BaseTest.OutputLastMessage`.
 
 ## Decision Outcome
 
