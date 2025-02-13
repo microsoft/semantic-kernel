@@ -6,12 +6,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
-using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
