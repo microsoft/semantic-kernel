@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable CA1056 // URI-like properties should not be strings
