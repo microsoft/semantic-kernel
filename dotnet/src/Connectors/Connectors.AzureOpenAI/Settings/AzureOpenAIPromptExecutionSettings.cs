@@ -58,6 +58,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     {
         var settings = base.Clone<AzureOpenAIPromptExecutionSettings>();
         settings.AzureChatDataSource = this.AzureChatDataSource;
+        settings.SetNewMaxCompletionTokensEnabled = this.SetNewMaxCompletionTokensEnabled;
         return settings;
     }
 
