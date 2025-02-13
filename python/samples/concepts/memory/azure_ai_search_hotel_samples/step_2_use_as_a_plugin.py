@@ -41,6 +41,9 @@ from semantic_kernel.functions import (
     KernelParameterMetadata,
 )
 
+# Note: you may need to update this `collection_name` depending upon how your index is named.
+COLLECTION_NAME = "hotels-sample-index"
+
 # Create Kernel and add both chat completion and text embeddings services.
 kernel = Kernel()
 service_id = "chat"
@@ -54,7 +57,7 @@ vectorizer = VectorStoreRecordUtils(kernel)
 # You can also choose to use the `from_vectorized_search` method to use vector search.
 # Or the `from_vectorizable_text_search` method if the collection is setup to vectorize incoming texts.
 text_search = VectorStoreTextSearch.from_vector_text_search(
-    AzureAISearchCollection[HotelSampleClass](collection_name="hotels-sample-index", data_model_type=HotelSampleClass)
+    AzureAISearchCollection[HotelSampleClass](collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass)
 )
 
 
@@ -139,7 +142,14 @@ plugin = kernel.add_functions(
                     type="str",
                     is_required=True,
                     type_object=str,
-                )
+                ),
+                KernelParameterMetadata(
+                    name="hotel_name",
+                    description="The name of the hotel.",
+                    type="str",
+                    type_object=str,
+                    is_required=True,
+                ),
             ],
             # it uses the default update options that will turn the hotel_id into a filter.
         ),

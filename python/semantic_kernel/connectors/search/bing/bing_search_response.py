@@ -14,9 +14,9 @@ class BingWebPages(KernelBaseModel):
     """The web pages from a Bing search."""
 
     id: str | None = None
-    some_results_removed: bool | None = Field(None, alias="someResultsRemoved")
-    total_estimated_matches: int | None = Field(None, alias="totalEstimatedMatches")
-    web_search_url: str | None = Field(None, alias="webSearchUrl")
+    some_results_removed: bool | None = Field(default=None, alias="someResultsRemoved")
+    total_estimated_matches: int | None = Field(default=None, alias="totalEstimatedMatches")
+    web_search_url: str | None = Field(default=None, alias="webSearchUrl")
     value: list[BingWebPage] = Field(default_factory=list)
 
 
@@ -24,6 +24,6 @@ class BingWebPages(KernelBaseModel):
 class BingSearchResponse(KernelBaseModel):
     """The response from a Bing search."""
 
-    type_: str = Field("", alias="_type")
+    type_: str = Field(default="", alias="_type")
     query_context: dict[str, Any] = Field(default_factory=dict, validation_alias="queryContext")
-    web_pages: BingWebPages | None = Field(None, alias="webPages")
+    web_pages: BingWebPages | None = Field(default=None, alias="webPages")
