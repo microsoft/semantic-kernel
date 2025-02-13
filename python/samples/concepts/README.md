@@ -102,12 +102,6 @@
 - [Azure Chat GPT with Data API Function Calling](./on_your_data/azure_chat_gpt_with_data_api_function_calling.py)
 - [Azure Chat GPT with Data API Vector Search](./on_your_data/azure_chat_gpt_with_data_api_vector_search.py)
 
-### Planners - Showing the uses of [`Planners`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/planners)
-
-- [Sequential Planner](./planners/sequential_planner.py)
-- [OpenAI Function Calling Stepwise Planner](./planners/openai_function_calling_stepwise_planner.py)
-- [Azure OpenAI Function Calling Stepwise Planner](./planners/azure_openai_function_calling_stepwise_planner.py)
-
 ### Plugins - Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_plugin.py)
 
 - [Azure Key Vault Settings](./plugins/azure_key_vault_settings.py)

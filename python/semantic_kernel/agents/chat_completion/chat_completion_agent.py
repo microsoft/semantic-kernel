@@ -123,6 +123,9 @@ class ChatCompletionAgent(Agent):
         else:
             arguments.update(kwargs)
 
+        # Add the chat history to the args in the event that it is needed for prompt template configuration
+        arguments["chat_history"] = history
+
         kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
@@ -188,6 +191,9 @@ class ChatCompletionAgent(Agent):
         else:
             arguments.update(kwargs)
 
+        # Add the chat history to the args in the event that it is needed for prompt template configuration
+        arguments["chat_history"] = history
+
         kernel = kernel or self.kernel
         arguments = self.merge_arguments(arguments)
 
@@ -245,11 +251,13 @@ class ChatCompletionAgent(Agent):
         self, history: ChatHistory, kernel: "Kernel", arguments: KernelArguments
     ) -> ChatHistory:
         """Setup the agent chat history."""
-        return (
-            ChatHistory(messages=history.messages)
-            if self.instructions is None
-            else ChatHistory(system_message=self.instructions, messages=history.messages)
-        )
+        formatted_instructions = await self.format_instructions(kernel, arguments)
+        messages = []
+        if formatted_instructions:
+            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=formatted_instructions, name=self.name))
+        if history.messages:
+            messages.extend(history.messages)
+        return ChatHistory(messages=messages)
 
     async def _get_chat_completion_service_and_settings(
         self, kernel: "Kernel", arguments: KernelArguments
