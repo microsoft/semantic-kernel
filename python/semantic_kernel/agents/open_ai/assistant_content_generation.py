@@ -3,13 +3,15 @@
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
+from openai.types.beta.threads.file_citation_annotation import FileCitationAnnotation
 from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
+from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
 from openai.types.beta.threads.file_path_delta_annotation import FilePathDeltaAnnotation
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
 from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
 from openai.types.beta.threads.runs import CodeInterpreterLogs
-from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreter
+from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreterOutputImage
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
@@ -29,9 +31,8 @@ from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
-    from openai.resources.beta.threads.messages import Message
-    from openai.resources.beta.threads.runs.runs import Run
-    from openai.types.beta.threads.annotation import Annotation
+    from openai.types.beta.threads.message import Message
+    from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.runs import RunStep
     from openai.types.beta.threads.runs.tool_call import ToolCall
     from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
@@ -348,7 +349,7 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if tool.code_interpreter.outputs:
                 for output in tool.code_interpreter.outputs:
-                    if isinstance(output, CodeInterpreter) and output.image.file_id:
+                    if isinstance(output, CodeInterpreterOutputImage) and output.image.file_id:
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
@@ -376,13 +377,14 @@ def generate_streaming_code_interpreter_content(
 
 
 @experimental_function
-def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
+def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnnotation) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    if hasattr(annotation, "file_path"):
-        file_id = annotation.file_path.file_id
-    elif hasattr(annotation, "file_citation"):
-        file_id = annotation.file_citation.file_id
+    match annotation:
+        case FilePathAnnotation():
+            file_id = annotation.file_path.file_id
+        case FileCitationAnnotation():
+            file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
@@ -393,13 +395,16 @@ def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
 
 
 @experimental_function
-def generate_streaming_annotation_content(annotation: "Annotation") -> StreamingAnnotationContent:
+def generate_streaming_annotation_content(
+    annotation: FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
+) -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
-    if hasattr(annotation, "file_path") and annotation.file_path:
-        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
-    elif hasattr(annotation, "file_citation") and annotation.file_citation:
-        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
+    match annotation:
+        case FilePathDeltaAnnotation():
+            file_id = annotation.file_path.file_id if annotation.file_path is not None else None
+        case FileCitationDeltaAnnotation():
+            file_id = annotation.file_citation.file_id if annotation.file_citation is not None else None
 
     return StreamingAnnotationContent(
         file_id=file_id,

@@ -332,7 +332,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
         invoke_result = None
-        event_name = None
+        event_name: str = ""
         event_value = None
 
         try:
@@ -340,6 +340,8 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 f"Invoking plugin `{function.plugin_name}` and function `{function.name}` with arguments: {arguments}"
             )
             invoke_result = await self.invoke_function(function, self.kernel, arguments)
+            if invoke_result is None:
+                raise KernelException(f"Function {target_function} returned None.")
             event_name = f"{target_function}.OnResult"
             event_value = invoke_result.value
 
@@ -406,7 +408,9 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             raise ValueError("The inner step type must be initialized before converting to DaprStepInfo.")
 
         step_info = DaprStepInfo(
-            inner_step_python_type=self.inner_step_type, state=self.step_info.state, edges=self.step_info.edges
+            inner_step_python_type=self.inner_step_type,
+            state=self.step_info.state,
+            edges=self.step_info.edges,
         )
 
         return step_info.model_dump_json()
