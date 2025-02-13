@@ -61,18 +61,6 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         }
     }
 
-    [Fact]
-    public async Task UseTemplateForAssistantAgentAsync()
-    {
-        // Define the agent
-
-        // Instructions, Name and Description properties defined via the config.
-
-        // Create a thread for the agent conversation.
-
-        // Local function to invoke agent and display the response.
-    }
-
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
         return await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName));

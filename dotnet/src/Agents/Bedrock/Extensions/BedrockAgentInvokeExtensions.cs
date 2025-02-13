@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Amazon.Runtime.EventStreams.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -25,7 +26,7 @@ internal static class BedrockAgentInvokeExtensions
         KernelArguments? arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        // Session state is used to store the results of function calls to be passed back to the agent.
+        // This session state is used to store the results of function calls to be passed back to the agent.
         // https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/BedrockAgentRuntime/TSessionState.html
         SessionState? sessionState = null;
         for (var requestIndex = 0; ; requestIndex++)
@@ -45,7 +46,11 @@ internal static class BedrockAgentInvokeExtensions
             List<FunctionCallContent> functionCallContents = [];
             await foreach (var responseEvent in invokeAgentResponse.Completion.ToAsyncEnumerable().ConfigureAwait(false))
             {
-                // TODO: Handle exception events
+                if (responseEvent is BedrockAgentRuntimeEventStreamException bedrockAgentRuntimeEventStreamException)
+                {
+                    throw new KernelException("Failed to handle Bedrock Agent stream event.", bedrockAgentRuntimeEventStreamException);
+                }
+
                 var chatMessageContent =
                     HandleChunkEvent(agent, responseEvent) ??
                     HandleFilesEvent(agent, responseEvent) ??
