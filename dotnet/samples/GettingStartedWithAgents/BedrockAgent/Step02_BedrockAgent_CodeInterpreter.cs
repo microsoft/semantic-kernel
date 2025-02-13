@@ -40,9 +40,9 @@ Dolphin  2";
                 {
                     this.Output.WriteLine(response.Content);
                 }
-                if (binaryContent == null && response.Items.Count > 0 && response.Items[0] is BinaryContent binary)
+                if (binaryContent == null && response.Items.Count > 0)
                 {
-                    binaryContent = binary;
+                    binaryContent = response.Items.OfType<BinaryContent>().FirstOrDefault();
                 }
             }
 

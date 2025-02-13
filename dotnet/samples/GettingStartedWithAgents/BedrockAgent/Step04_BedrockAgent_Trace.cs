@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 namespace GettingStarted.BedrockAgents;
@@ -10,7 +12,7 @@ namespace GettingStarted.BedrockAgents;
 /// To learn more about different traces available, see:
 /// https://docs.aws.amazon.com/bedrock/latest/userguide/trace-events.html
 /// </summary>
-public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_BedrockAgent_Functions(output)
+public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAgentTest(output)
 {
     /// <summary>
     /// Demonstrates how to inspect the thought process of a <see cref="BedrockAgent"/> by enabling trace.
@@ -43,9 +45,17 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
                 {
                     this.Output.WriteLine(response.Content);
                 }
-                else if (response.InnerContent is TracePart tracePart)
+                if (response.InnerContent is List<object?> innerContents)
                 {
-                    this.OutputTrace(tracePart.Trace);
+                    // There could be multiple traces and they are stored in the InnerContent property
+                    var traceParts = innerContents.OfType<TracePart>().ToList();
+                    if (traceParts is not null)
+                    {
+                        foreach (var tracePart in traceParts)
+                        {
+                            this.OutputTrace(tracePart.Trace);
+                        }
+                    }
                 }
             }
         }
@@ -128,5 +138,30 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : Step03_Bedroc
         // Usage:
         // Input token: 1003
         // Output token: 31
+    }
+    protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
+    {
+        Kernel kernel = new();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
+
+        return await BedrockAgent.CreateAsync(
+            this.GetCreateAgentRequest(agentName),
+            kernel: kernel,
+            enableKernelFunctions: true);
+    }
+
+    private sealed class WeatherPlugin
+    {
+        [KernelFunction, Description("Provides realtime weather information.")]
+        public string Current([Description("The location to get the weather for.")] string location)
+        {
+            return $"The current weather in {location} is 72 degrees.";
+        }
+
+        [KernelFunction, Description("Forecast weather information.")]
+        public string Forecast([Description("The location to get the weather for.")] string location)
+        {
+            return $"The forecast for {location} is 75 degrees tomorrow.";
+        }
     }
 }

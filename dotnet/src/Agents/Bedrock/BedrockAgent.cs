@@ -11,6 +11,7 @@ using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
@@ -211,10 +212,48 @@ public class BedrockAgent : KernelAgent
     {
         return invokeAgentRequest.StreamingConfigurations != null && invokeAgentRequest.StreamingConfigurations.StreamFinalResponse
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
-            : ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => this.InternalInvokeAsync(invokeAgentRequest, arguments, cancellationToken),
-            cancellationToken);
+            : InvokeInternal();
+
+        // Collect all responses from the agent and return them as a single chat message content since this
+        // is a non-streaming API.
+        // The Bedrock Agent API streams beck different types of responses, i.e. text, files, metadata, etc.
+        // The Bedrock Agent API also won't stream back any content when it needs to call a function. It will
+        // only start streaming back content after the function has been called and the response is ready.
+        async IAsyncEnumerable<ChatMessageContent> InvokeInternal()
+        {
+            ChatMessageContentItemCollection items = [];
+            string content = "";
+            Dictionary<string, object?> metadata = [];
+            List<object?> innerContents = [];
+
+            await foreach (var message in ActivityExtensions.RunWithActivityAsync(
+                () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+                () => this.InternalInvokeAsync(invokeAgentRequest, arguments, cancellationToken),
+                cancellationToken).ConfigureAwait(false))
+            {
+                items.AddRange(message.Items);
+                content += message.Content ?? "";
+                if (message.Metadata != null)
+                {
+                    foreach (var key in message.Metadata.Keys)
+                    {
+                        metadata[key] = message.Metadata[key];
+                    }
+                }
+                innerContents.Add(message.InnerContent);
+            }
+
+            yield return content.Length == 0
+                ? throw new KernelException("No content was returned from the agent.")
+                : new ChatMessageContent(AuthorRole.Assistant, content)
+                {
+                    AuthorName = this.GetDisplayName(),
+                    Items = items,
+                    ModelId = this._agentModel.FoundationModel,
+                    Metadata = metadata,
+                    InnerContent = innerContents,
+                };
+        }
     }
 
     /// <summary>
