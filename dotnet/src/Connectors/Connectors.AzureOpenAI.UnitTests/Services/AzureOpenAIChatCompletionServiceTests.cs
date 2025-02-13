@@ -273,7 +273,6 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(expectedResponseType, content.GetProperty("response_format").GetProperty("type").GetString());
     }
 
-
     [Theory]
     [InlineData(true, "max_completion_tokens")]
     [InlineData(false, "max_tokens")]
