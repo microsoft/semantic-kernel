@@ -99,7 +99,7 @@ class AzureRealtime(OpenAIRealtimeBase):
                 api_key=api_key,
                 base_url=base_url,
                 endpoint=endpoint,
-                realtime_model_id=deployment_name,
+                realtime_deployment_name=deployment_name,
                 api_version=api_version,
                 token_endpoint=token_endpoint,
                 env_file_path=env_file_path,
@@ -144,7 +144,7 @@ class AzureRealtimeWebRTC(AzureRealtime, OpenAIRealtimeWebRTCBase, AzureOpenAICo
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIRealtime service using WebRTC protocol."""
-        raise NotImplementedError("Azure Realtime WebRTC is not yet supported.")
+        raise NotImplementedError("Azure Realtime with WebRTC is not yet supported.")
 
 
 class AzureRealtimeWebsocket(AzureRealtime, OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase):
