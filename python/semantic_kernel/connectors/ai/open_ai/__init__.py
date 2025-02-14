@@ -23,6 +23,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    InputAudioTranscription,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
@@ -71,6 +72,7 @@ __all__ = [
     "DataSourceFieldsMapping",
     "DataSourceFieldsMapping",
     "ExtraBody",
+    "InputAudioTranscription",
     "ListenEvents",
     "OpenAIAudioToText",
     "OpenAIAudioToTextExecutionSettings",
