@@ -8,10 +8,12 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -26,6 +28,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Kernel _emptyKernel;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
@@ -314,7 +317,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             await OpenAIAssistantAgent.RetrieveAsync(
                 this.CreateTestConfiguration(),
                 "#id",
-                this._emptyKernel);
+                this._emptyKernel,
+                loggerFactory: this._mockLoggerFactory.Object);
 
         // Act and Assert
         ValidateAgentDefinition(agent, definition);
@@ -337,7 +341,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 "#id",
                 this._emptyKernel,
                 new KernelArguments(),
-                new KernelPromptTemplateFactory());
+                new KernelPromptTemplateFactory(),
+                loggerFactory: this._mockLoggerFactory.Object);
 
         // Act and Assert
         ValidateAgentDefinition(agent, definition);
@@ -750,6 +755,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
         this._emptyKernel = new Kernel();
+        this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
     private async Task VerifyAgentCreationAsync(OpenAIAssistantDefinition definition)
@@ -760,7 +766,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             await OpenAIAssistantAgent.CreateAsync(
                 this.CreateTestConfiguration(),
                 definition,
-                this._emptyKernel);
+                this._emptyKernel,
+                loggerFactory: this._mockLoggerFactory.Object);
 
         ValidateAgentDefinition(agent, definition);
     }
@@ -779,7 +786,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this._emptyKernel,
                 new KernelArguments(),
                 templateConfig,
-                templateFactory);
+                templateFactory,
+                loggerFactory: this._mockLoggerFactory.Object);
 
         ValidateAgentDefinition(agent, capabilities, templateConfig);
     }
@@ -880,7 +888,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             OpenAIAssistantAgent.CreateAsync(
                 this.CreateTestConfiguration(),
                 definition,
-                this._emptyKernel);
+                this._emptyKernel,
+                loggerFactory: this._mockLoggerFactory.Object);
     }
 
     private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)

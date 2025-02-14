@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -24,12 +25,30 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 public sealed class OpenAIAssistantAgentTests
 {
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+    /// <summary>
+    /// The configuration
+    /// </summary>
+    private readonly IConfigurationRoot _configuration;
+
+    /// <summary>
+    /// The logger factory
+    /// </summary>
+    private readonly ILoggerFactory _loggerFactory;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
+    /// </summary>
+    public OpenAIAssistantAgentTests()
+    {
+        this._configuration = new ConfigurationBuilder()
+            .AddJsonFile("testsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAIAssistantAgentTests>()
             .Build();
+
+        this._loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+    }
 
     /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
@@ -117,7 +136,8 @@ public sealed class OpenAIAssistantAgentTests
             await OpenAIAssistantAgent.CreateAsync(
                 OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+                new Kernel(),
+                loggerFactory: this._loggerFactory);
 
         string threadId = await agent.CreateThreadAsync();
         ChatMessageContent functionResultMessage = new(AuthorRole.Assistant, [new FunctionResultContent("mock-function", result: "A result value")]);
@@ -155,7 +175,8 @@ public sealed class OpenAIAssistantAgentTests
                         MaxCompletionTokens = 16,
                     }
                 },
-                new Kernel());
+                new Kernel(),
+                loggerFactory: this._loggerFactory);
 
         string threadId = await agent.CreateThreadAsync();
         ChatMessageContent functionResultMessage = new(AuthorRole.User, "A long time ago there lived a king who was famed for his wisdom through all the land. Nothing was hidden from him, and it seemed as if news of the most secret things was brought to him through the air. But he had a strange custom; every day after dinner, when the table was cleared, and no one else was present, a trusty servant had to bring him one more dish. It was covered, however, and even the servant did not know what was in it, neither did anyone know, for the king never took off the cover to eat of it until he was quite alone.");
@@ -185,7 +206,8 @@ public sealed class OpenAIAssistantAgentTests
             await OpenAIAssistantAgent.CreateAsync(
                 OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+                new Kernel(),
+                loggerFactory: this._loggerFactory);
 
         OpenAIThreadCreationOptions threadOptions = new()
         {
@@ -238,7 +260,8 @@ public sealed class OpenAIAssistantAgentTests
             await OpenAIAssistantAgent.CreateAsync(
                 provider,
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+                new Kernel(),
+                loggerFactory: this._loggerFactory);
 
         // Upload file - Using a table of fictional employees.
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
@@ -291,7 +314,8 @@ public sealed class OpenAIAssistantAgentTests
                 {
                     Instructions = "Answer questions about the menu.",
                 },
-                kernel);
+                kernel,
+                loggerFactory: this._loggerFactory);
 
         try
         {
@@ -337,7 +361,8 @@ public sealed class OpenAIAssistantAgentTests
                 {
                     Instructions = "Answer questions about the menu.",
                 },
-                kernel);
+                kernel,
+                loggerFactory: this._loggerFactory);
 
         AgentGroupChat chat = new();
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));

@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -59,16 +60,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
 
     /// <summary>
-    /// Create a new <see cref="OpenAIAssistantAgent"/>.
+    /// Create a new <see cref="OpenAIAssistantAgent" />.
     /// </summary>
     /// <param name="clientProvider">The OpenAI client provider for accessing the API service.</param>
     /// <param name="capabilities">The assistant's capabilities.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel" /> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings" />.</param>
     /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate" /> for the agent.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default is <see cref="CancellationToken.None" />.</param>
+    /// <returns>
+    /// An <see cref="OpenAIAssistantAgent" /> instance.
+    /// </returns>
     public async static Task<OpenAIAssistantAgent> CreateFromTemplateAsync(
         OpenAIClientProvider clientProvider,
         OpenAIAssistantCapabilities capabilities,
@@ -76,6 +80,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         KernelArguments defaultArguments,
         PromptTemplateConfig templateConfig,
         IPromptTemplateFactory? templateFactory = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -97,7 +102,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(model, clientProvider, client)
+            new OpenAIAssistantAgent(model, clientProvider, client, loggerFactory ?? NullLoggerFactory.Instance)
             {
                 Kernel = kernel,
                 Arguments = defaultArguments,
@@ -106,19 +111,23 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <summary>
-    /// Create a new <see cref="OpenAIAssistantAgent"/>.
+    /// Create a new <see cref="OpenAIAssistantAgent" />.
     /// </summary>
     /// <param name="clientProvider">The OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    /// <param name="kernel">The <see cref="Kernel" /> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings" />.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default is <see cref="CancellationToken.None" />.</param>
+    /// <returns>
+    /// An <see cref="OpenAIAssistantAgent" /> instance.
+    /// </returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -135,7 +144,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(model, clientProvider, client)
+            new OpenAIAssistantAgent(model, clientProvider, client, loggerFactory ?? NullLoggerFactory.Instance)
             {
                 Kernel = kernel,
                 Arguments = defaultArguments ?? [],
@@ -143,21 +152,25 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <summary>
-    /// Create a new <see cref="OpenAIAssistantAgent"/>.
+    /// Create a new <see cref="OpenAIAssistantAgent" />.
     /// </summary>
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="modelId">OpenAI model id.</param>
     /// <param name="creationOptions">The assistant creation options.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
+    /// <param name="kernel">The <see cref="Kernel" /> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings" />.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default is <see cref="CancellationToken.None" />.</param>
+    /// <returns>
+    /// An <see cref="OpenAIAssistantAgent" /> instance
+    /// </returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         OpenAIClientProvider clientProvider,
         string modelId,
         AssistantCreationOptions creationOptions,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -173,7 +186,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(model, clientProvider, client)
+            new OpenAIAssistantAgent(model, clientProvider, client, loggerFactory ?? NullLoggerFactory.Instance)
             {
                 Kernel = kernel,
                 Arguments = defaultArguments ?? [],
@@ -201,21 +214,25 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <summary>
-    /// Retrieves an <see cref="OpenAIAssistantAgent"/> by identifier.
+    /// Retrieves an <see cref="OpenAIAssistantAgent" /> by identifier.
     /// </summary>
     /// <param name="clientProvider">The configuration for accessing the API service.</param>
     /// <param name="id">The agent identifier.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    /// <param name="kernel">The <see cref="Kernel" /> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings" />.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate" /> for the agent.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken" /> to monitor for cancellation requests. The default is <see cref="CancellationToken.None" />.</param>
+    /// <returns>
+    /// An <see cref="OpenAIAssistantAgent" /> instance.
+    /// </returns>
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
         OpenAIClientProvider clientProvider,
         string id,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
         IPromptTemplateFactory? templateFactory = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -237,7 +254,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(model, clientProvider, client)
+            new OpenAIAssistantAgent(model, clientProvider, client, loggerFactory ?? NullLoggerFactory.Instance)
             {
                 Kernel = kernel,
                 Arguments = defaultArguments ?? [],
@@ -502,7 +519,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private OpenAIAssistantAgent(
         Assistant model,
         OpenAIClientProvider provider,
-        AssistantClient client)
+        AssistantClient client, ILoggerFactory loggerFactory) : base()
     {
         this._provider = provider;
         this._assistant = model;
@@ -515,6 +532,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Id = this._assistant.Id;
         this.Name = this._assistant.Name;
         this.Instructions = this._assistant.Instructions;
+
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
