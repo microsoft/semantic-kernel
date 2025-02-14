@@ -138,7 +138,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
-                Arguments = defaultArguments
+                Arguments = defaultArguments ?? [],
             };
     }
 
@@ -176,7 +176,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
-                Arguments = defaultArguments
+                Arguments = defaultArguments ?? [],
             };
     }
 
@@ -240,7 +240,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
-                Arguments = defaultArguments,
+                Arguments = defaultArguments ?? [],
                 Template = template,
             };
     }

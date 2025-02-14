@@ -61,6 +61,8 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            # Optionally configure polling options
+            # polling_options=RunPollingOptions(run_polling_interval=timedelta(seconds=1)),
         )
 
         # Add the sample plugin to the kernel
