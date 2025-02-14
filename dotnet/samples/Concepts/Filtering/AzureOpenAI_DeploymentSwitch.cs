@@ -21,8 +21,9 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
         Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
 
         // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        var httpClient = new HttpClient(handler);
+        using var httpHandler = new HttpClientHandler();
+        using var loggingHandler = new LoggingHandler(httpHandler, this.Output);
+        using var httpClient = new HttpClient(loggingHandler);
 
         // Create KernelBuilder with an auto function invocation filter
         var kernelBuilder = Kernel.CreateBuilder();
