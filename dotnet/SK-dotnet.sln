@@ -445,6 +445,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI.UnitTests", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process.Runtime", "src\Experimental\Process.Runtime\Process.Runtime.csproj", "{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1196,6 +1198,12 @@ Global
 		{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1360,6 +1368,7 @@ Global
 		{0C64EC81-8116-4388-87AD-BA14D4B59974} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
+		{FE34140D-6ECC-4160-9A83-E0AF3D4BF83A} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
