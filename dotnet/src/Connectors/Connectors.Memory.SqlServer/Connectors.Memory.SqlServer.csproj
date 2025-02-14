@@ -26,4 +26,8 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SqlServerIntegrationTests" />
+  </ItemGroup>
+
 </Project>

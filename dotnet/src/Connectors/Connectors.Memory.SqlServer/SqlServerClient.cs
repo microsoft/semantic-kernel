@@ -101,16 +101,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var cmd = this._connection.CreateCommand();
-            cmd.CommandText = """
-                SELECT TABLE_NAME
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_TYPE = 'BASE TABLE'
-                    AND TABLE_SCHEMA = @schema
-                    AND TABLE_NAME = @tableName
-                """;
-            cmd.Parameters.AddWithValue("@schema", this._schema);
-            cmd.Parameters.AddWithValue("@tableName", tableName);
+            using var cmd = SqlServerCommandBuilder.SelectTableName(this._connection, this._schema, tableName);
             using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -121,11 +112,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var cmd = this._connection.CreateCommand();
-            var fullTableName = this.GetSanitizedFullTableName(tableName);
-            cmd.CommandText = $"""
-                DROP TABLE IF EXISTS {fullTableName}
-                """;
+            using var cmd = SqlServerCommandBuilder.DropTable(this._connection, this._schema, tableName);
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
