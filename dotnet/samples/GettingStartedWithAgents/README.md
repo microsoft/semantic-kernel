@@ -57,10 +57,10 @@ Example|Description
 ---|---
 [Step01_BedrockAgent](./BedrockAgent/Step01_BedrockAgent.cs)|How to create a Bedrock agent and interact with it in the most basic way.
 [Step02_BedrockAgent_CodeInterpreter](./BedrockAgent/Step02_BedrockAgent_CodeInterpreter.cs)|How to use the code-interpreter tool with a Bedrock agent.
-[Step03_BedrockAgent_Functions](./BedrockAgent/Step02_BedrockAgent_Functions.cs)|How to use kernel functions with a Bedrock agent.
-[Step04_BedrockAgent_Trace](./BedrockAgent/Step02_BedrockAgent_Trace.cs)|How to enable tracing for a Bedrock agent to inspect the chain of thoughts.
-[Step05_BedrockAgent_FileSearch](./BedrockAgent/Step02_BedrockAgent_FileSearch.cs)|How to use file search with a Bedrock agent (i.e. Bedrock knowledge base).
-[Step06_BedrockAgent_AgentChat](./BedrockAgent/Step02_BedrockAgent_AgentChat.cs)|How to create a conversation between two agents and one of them in a Bedrock agent.
+[Step03_BedrockAgent_Functions](./BedrockAgent/Step03_BedrockAgent_Functions.cs)|How to use kernel functions with a Bedrock agent.
+[Step04_BedrockAgent_Trace](./BedrockAgent/Step04_BedrockAgent_Trace.cs)|How to enable tracing for a Bedrock agent to inspect the chain of thoughts.
+[Step05_BedrockAgent_FileSearch](./BedrockAgent/Step05_BedrockAgent_FileSearch.cs)|How to use file search with a Bedrock agent (i.e. Bedrock knowledge base).
+[Step06_BedrockAgent_AgentChat](./BedrockAgent/Step06_BedrockAgent_AgentChat.cs)|How to create a conversation between two agents and one of them in a Bedrock agent.
 
 ## Legacy Agents
 

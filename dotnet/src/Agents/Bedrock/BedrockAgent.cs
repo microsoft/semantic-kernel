@@ -87,7 +87,7 @@ public class BedrockAgent : KernelAgent
         BedrockAgent agent = new(createAgentResponse.Agent, client, runtimeClient)
         {
             Kernel = kernel ?? new(),
-            Arguments = defaultArguments,
+            Arguments = defaultArguments ?? [],
         };
 
         // The agent will first enter the CREATING status.
@@ -138,7 +138,7 @@ public class BedrockAgent : KernelAgent
         return new(getAgentResponse.Agent, client, runtimeClient)
         {
             Kernel = kernel ?? new(),
-            Arguments = defaultArguments,
+            Arguments = defaultArguments ?? [],
         };
     }
 
