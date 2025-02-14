@@ -44,7 +44,7 @@ semantic_kernel/connectors/ai
 """
 
 load_dotenv()
-AZURE_APP_INSIGHTS_CONNECTION_STRING = os.getenv("AZURE_APP_INSIGHTS_CONNECTION_STRING", None)
+AZURE_APP_INSIGHTS_CONNECTION_STRING = os.getenv("AZURE_APP_INSIGHTS_CONNECTION_STRING")
 
 resource = Resource.create({ResourceAttributes.SERVICE_NAME: "Document Generator"})
 
