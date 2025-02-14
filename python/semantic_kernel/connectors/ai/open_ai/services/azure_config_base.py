@@ -83,26 +83,29 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
                 )
 
-            if not base_url:
-                if not endpoint:
-                    raise ServiceInitializationError("Please provide an endpoint or a base_url")
-                if ai_model_type == OpenAIModelTypes.REALTIME:
-                    # wss://my-eastus2-openai-resource.openai.azure.com/openai/realtime?api-version=2024-12-17&deployment=gpt-4o-mini-realtime-preview-deployment-name
-                    temp_url = f"{str(endpoint).replace('https', 'wss').rstrip('/')}.openai.azure.com/openai/realtime"
-                else:
-                    temp_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
-            else:
-                # when supplying the base url instead of the endpoint, the developer should know what to use,
-                # when doing realtime, that includes using the wss protocol
-                temp_url = str(base_url)
-            client = AsyncAzureOpenAI(
-                base_url=temp_url,
-                api_version=api_version,
-                api_key=api_key,
-                azure_ad_token=ad_token,
-                azure_ad_token_provider=ad_token_provider,
-                default_headers=merged_headers,
-            )
+            if not endpoint and not base_url:
+                raise ServiceInitializationError("Please provide an endpoint or a base_url")
+
+            args: dict[str, Any] = {
+                "default_headers": merged_headers,
+            }
+            if api_version:
+                args["api_version"] = api_version
+            if ad_token:
+                args["azure_ad_token"] = ad_token
+            if ad_token_provider:
+                args["azure_ad_token_provider"] = ad_token_provider
+            if api_key:
+                args["api_key"] = api_key
+            if base_url:
+                args["base_url"] = str(base_url)
+            if endpoint and not base_url:
+                args["azure_endpoint"] = str(endpoint)
+            # TODO (eavanvalkenburg): Remove the check on model type when the package fixes: https://github.com/openai/openai-python/issues/2120
+            if deployment_name and ai_model_type != OpenAIModelTypes.REALTIME:
+                args["azure_deployment"] = deployment_name
+
+            client = AsyncAzureOpenAI(**args)
         args = {
             "ai_model_id": deployment_name,
             "client": client,
@@ -112,7 +115,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             args["service_id"] = service_id
         if instruction_role:
             args["instruction_role"] = instruction_role
-        super().__init__(**args)
+        super().__init__(**args, **kwargs)
 
     def to_dict(self) -> dict[str, str]:
         """Convert the configuration to a dictionary."""

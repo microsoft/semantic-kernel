@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from pydantic import SecretStr
+from pydantic_core import Url
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -93,7 +94,7 @@ class AzureOpenAISettings(KernelBaseSettings):
     text_to_audio_deployment_name: str | None = None
     realtime_deployment_name: str | None = None
     endpoint: HttpsUrl | None = None
-    base_url: HttpsUrl | None = None
+    base_url: Url | None = None
     api_key: SecretStr | None = None
     api_version: str = DEFAULT_AZURE_API_VERSION
     token_endpoint: str = "https://cognitiveservices.azure.com/.default"
