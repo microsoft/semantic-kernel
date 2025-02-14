@@ -4,8 +4,6 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -16,6 +14,7 @@ from samples.demos.document_generator.plugins.repo_file_plugin import RepoFilePl
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
