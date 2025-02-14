@@ -43,6 +43,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         this.Name = templateConfig.Name;
         this.Description = templateConfig.Description;
         this.Instructions = templateConfig.Template;
+        this.Arguments = new(templateConfig.ExecutionSettings.Values);
         this.Template = templateFactory?.Create(templateConfig);
     }
 

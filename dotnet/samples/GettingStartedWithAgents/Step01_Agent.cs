@@ -62,14 +62,14 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Instructions, Name and Description properties defined via the config.
         ChatCompletionAgent agent =
-            new(templateConfig, new KernelPromptTemplateFactory())
+            new(templateConfig)
             {
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments()
-                {
-                    { "topic", "Dog" },
-                    { "length", "3" },
-                }
+                Arguments =
+                    {
+                        { "topic", "Dog" },
+                        { "length", "3" },
+                    }
             };
 
         /// Create the chat history to capture the agent interaction.
