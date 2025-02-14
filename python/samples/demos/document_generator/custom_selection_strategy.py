@@ -61,7 +61,7 @@ class CustomSelectionStrategy(SelectionStrategy):
                     AzureChatPromptExecutionSettings(),
                 )
 
-                if not completion:
+                if completion is None:
                     continue
 
                 try:
