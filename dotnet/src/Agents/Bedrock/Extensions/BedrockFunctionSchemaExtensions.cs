@@ -85,7 +85,17 @@ internal static class BedrockFunctionSchemaExtensions
             "Single" => Amazon.BedrockAgent.Type.Number,
             "Double" => Amazon.BedrockAgent.Type.Number,
             "Decimal" => Amazon.BedrockAgent.Type.Number,
-            // TODO: Add support for array type.
+            "String[]" => Amazon.BedrockAgent.Type.Array,
+            "Boolean[]" => Amazon.BedrockAgent.Type.Array,
+            "Int16[]" => Amazon.BedrockAgent.Type.Array,
+            "UInt16[]" => Amazon.BedrockAgent.Type.Array,
+            "Int32[]" => Amazon.BedrockAgent.Type.Array,
+            "UInt32[]" => Amazon.BedrockAgent.Type.Array,
+            "Int64[]" => Amazon.BedrockAgent.Type.Array,
+            "UInt64[]" => Amazon.BedrockAgent.Type.Array,
+            "Single[]" => Amazon.BedrockAgent.Type.Array,
+            "Double[]" => Amazon.BedrockAgent.Type.Array,
+            "Decimal[]" => Amazon.BedrockAgent.Type.Array,
             _ => throw new ArgumentException($"Unsupported parameter type: {typeString}"),
         };
     }
