@@ -691,7 +691,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task PromptExecutionSettingsArePropagatedFromInvokeStreamingPromptToFilterContextAsync()
+    public async Task PromptExecutionSettingsArePropagatedFromInvokePromptStreamingToFilterContextAsync()
     {
         // Arrange
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
