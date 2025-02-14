@@ -3,7 +3,9 @@
 import sys
 from abc import ABC
 from collections.abc import AsyncIterable
-from typing import ClassVar
+from typing import Any, ClassVar
+
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -27,7 +29,13 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
         return kernel
 
     @override
-    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
+    async def invoke(
+        self,
+        history: ChatHistory,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
         # Since the history contains internal messages from other agents,
         # we will do our best to filter out those. Unfortunately, there will
         # be a side effect of losing the context of the conversation internal
@@ -41,5 +49,5 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
             if content:
                 filtered_chat_history.add_message(message)
 
-        async for response in super().invoke(filtered_chat_history):
+        async for response in super().invoke(filtered_chat_history, arguments=arguments, kernel=kernel, **kwargs):
             yield response
