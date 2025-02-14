@@ -28,7 +28,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Kernel _emptyKernel;
-    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
+    private readonly Mock<ILogger<OpenAIAssistantAgent>> _mockLogger = new();
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
@@ -880,6 +882,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
     {
+        // Ensure _mockLoggerFactory returns the mock logger when CreateLogger is called
+        this._mockLoggerFactory
+            .Setup(f => f.CreateLogger(It.IsAny<string>()))
+            .Returns(this._mockLogger.Object);
+
         OpenAIAssistantDefinition definition = new("testmodel");
 
         this.SetupResponse(HttpStatusCode.OK, definition);

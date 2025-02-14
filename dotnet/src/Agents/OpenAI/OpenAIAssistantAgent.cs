@@ -519,7 +519,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private OpenAIAssistantAgent(
         Assistant model,
         OpenAIClientProvider provider,
-        AssistantClient client, ILoggerFactory loggerFactory) : base()
+        AssistantClient client,
+        ILoggerFactory loggerFactory) : base()
     {
         this._provider = provider;
         this._assistant = model;
