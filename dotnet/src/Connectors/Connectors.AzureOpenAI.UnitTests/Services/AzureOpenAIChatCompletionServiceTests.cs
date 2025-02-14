@@ -274,6 +274,39 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData(true, "max_completion_tokens")]
+    [InlineData(false, "max_tokens")]
+    public async Task GetChatMessageContentsHandlesMaxTokensCorrectlyAsync(bool useNewMaxTokens, string expectedPropertyName)
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new AzureOpenAIPromptExecutionSettings
+        {
+            SetNewMaxCompletionTokensEnabled = useNewMaxTokens,
+            MaxTokens = 123
+        };
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings);
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        Assert.True(content.TryGetProperty(expectedPropertyName, out var propertyValue));
+        Assert.Equal(123, propertyValue.GetInt32());
+    }
+
+    [Theory]
     [InlineData(null, null)]
     [InlineData("string", "low")]
     [InlineData("string", "medium")]
