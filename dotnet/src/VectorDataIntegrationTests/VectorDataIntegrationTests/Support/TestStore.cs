@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
+using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
 
 namespace VectorDataSpecificationTests.Support;
@@ -11,10 +13,15 @@ public abstract class TestStore
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
 
+    public virtual string DefaultDistanceFunction => DistanceFunction.CosineSimilarity;
+    public virtual string DefaultIndexKind => IndexKind.Flat;
+
     protected abstract Task StartAsync();
 
     protected virtual Task StopAsync()
         => Task.CompletedTask;
+
+    public abstract IVectorStore DefaultVectorStore { get; }
 
     public virtual async Task ReferenceCountingStartAsync()
     {
@@ -48,5 +55,46 @@ public abstract class TestStore
         }
     }
 
-    public abstract IVectorStore DefaultVectorStore { get; }
+    public virtual TKey GenerateKey<TKey>(int value)
+        => typeof(TKey) switch
+        {
+            _ when typeof(TKey) == typeof(int) => (TKey)(object)value,
+            _ when typeof(TKey) == typeof(long) => (TKey)(object)(long)value,
+            _ when typeof(TKey) == typeof(ulong) => (TKey)(object)(ulong)value,
+            _ when typeof(TKey) == typeof(string) => (TKey)(object)value.ToString(CultureInfo.InvariantCulture),
+            _ when typeof(TKey) == typeof(Guid) => (TKey)(object)new Guid($"00000000-0000-0000-0000-00{value:0000000000}"),
+
+            _ => throw new NotSupportedException($"Unsupported key of type '{typeof(TKey).Name}', override {nameof(TestStore)}.{nameof(this.GenerateKey)}")
+        };
+
+    /// <summary>Loops until the expected number of records is visible in the given collection.</summary>
+    /// <remarks>Some databases upsert asynchronously, meaning that our seed data may not be visible immediately to tests.</remarks>
+    public virtual async Task WaitForDataAsync<TKey, TRecord>(
+        IVectorStoreRecordCollection<TKey, TRecord> collection,
+        int recordCount,
+        Expression<Func<TRecord, bool>>? filter = null)
+        where TKey : notnull
+    {
+        for (var i = 0; i < 20; i++)
+        {
+            var results = await collection.VectorizedSearchAsync(
+                new ReadOnlyMemory<float>([1, 2, 3]),
+                new()
+                {
+                    Top = recordCount,
+                    // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
+                    // so filtered searches show empty results. Add a filter to the seed data check below.
+                    NewFilter = filter
+                });
+            var count = await results.Results.CountAsync();
+            if (count == recordCount)
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+        }
+
+        throw new InvalidOperationException("Data did not appear in the collection within the expected time.");
+    }
 }

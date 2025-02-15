@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using PostgresIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
+using VectorDataSpecificationTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
 namespace PostgresIntegrationTests.Filter;
 
-public class PostgresBasicFilterTests(PostgresFilterFixture fixture) : BasicFilterTestsBase<int>(fixture), IClassFixture<PostgresFilterFixture>
+public class PostgresBasicFilterTests(PostgresBasicFilterTests.Fixture fixture)
+    : BasicFilterTests<int>(fixture), IClassFixture<PostgresBasicFilterTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -29,4 +32,9 @@ public class PostgresBasicFilterTests(PostgresFilterFixture fixture) : BasicFilt
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()
         => Assert.ThrowsAsync<ArgumentException>(() => base.Legacy_AnyTagEqualTo_array());
+
+    public new class Fixture : BasicFilterTests<int>.Fixture
+    {
+        public override TestStore TestStore => PostgresTestStore.Instance;
+    }
 }

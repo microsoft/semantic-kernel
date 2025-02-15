@@ -1,12 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Redis;
+using RedisIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
+using VectorDataSpecificationTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
 namespace RedisIntegrationTests.Filter;
 
-public abstract class RedisBasicFilterTests(FilterFixtureBase<string> fixture) : BasicFilterTestsBase<string>(fixture)
+public abstract class RedisBasicFilterTests(BasicFilterTests<string>.Fixture fixture)
+    : BasicFilterTests<string>(fixture)
 {
     #region Equality with null
 
@@ -51,9 +56,32 @@ public abstract class RedisBasicFilterTests(FilterFixtureBase<string> fixture) :
     #endregion
 }
 
-public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionFilterFixture fixture) : RedisBasicFilterTests(fixture), IClassFixture<RedisJsonCollectionFilterFixture>;
+public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterTests.Fixture fixture)
+    : RedisBasicFilterTests(fixture), IClassFixture<RedisJsonCollectionBasicFilterTests.Fixture>
+{
+    public new class Fixture : BasicFilterTests<string>.Fixture
+    {
+        public override TestStore TestStore => RedisTestStore.Instance;
 
-public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionFilterFixture fixture) : RedisBasicFilterTests(fixture), IClassFixture<RedisHashSetCollectionFilterFixture>
+        protected override string CollectionName => "JsonCollectionFilterTests";
+
+        // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
+            };
+
+        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
+            => new RedisJsonVectorStoreRecordCollection<FilterRecord>(
+                RedisTestStore.Instance.Database,
+                this.CollectionName,
+                new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
+    }
+}
+
+public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicFilterTests.Fixture fixture)
+    : RedisBasicFilterTests(fixture), IClassFixture<RedisHashSetCollectionBasicFilterTests.Fixture>
 {
     // Null values are not supported in Redis HashSet
     public override Task Equal_with_null_reference_type()
@@ -82,4 +110,40 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionFilter
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Legacy_AnyTagEqualTo_List());
+
+    public new class Fixture : BasicFilterTests<string>.Fixture
+    {
+        public override TestStore TestStore => RedisTestStore.Instance;
+
+        protected override string CollectionName => "HashSetCollectionFilterTests";
+
+        // Override to remove the bool property, which isn't (currently) supported on Redis
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties = base.GetRecordDefinition().Properties.Where(p =>
+                    p.PropertyType != typeof(bool) &&
+                    p.PropertyType != typeof(string[]) &&
+                    p.PropertyType != typeof(List<string>)).ToList()
+            };
+
+        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
+            => new RedisHashSetVectorStoreRecordCollection<FilterRecord>(
+                RedisTestStore.Instance.Database,
+                this.CollectionName,
+                new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
+
+        protected override List<FilterRecord> BuildTestData()
+        {
+            var testData = base.BuildTestData();
+
+            foreach (var record in testData)
+            {
+                // Null values are not supported in Redis hashsets
+                record.String ??= string.Empty;
+            }
+
+            return testData;
+        }
+    }
 }

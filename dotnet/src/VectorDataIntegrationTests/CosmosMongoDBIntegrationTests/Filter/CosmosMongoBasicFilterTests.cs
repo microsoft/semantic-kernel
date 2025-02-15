@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MongoDBIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
+using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
 namespace MongoDBIntegrationTests.Filter;
 
-public class CosmosMongoBasicFilterTests(CosmosMongoFilterFixture fixture) : BasicFilterTestsBase<string>(fixture), IClassFixture<CosmosMongoFilterFixture>
+public class CosmosMongoBasicFilterTests(CosmosMongoBasicFilterTests.Fixture fixture)
+    : BasicFilterTests<string>(fixture), IClassFixture<CosmosMongoBasicFilterTests.Fixture>
 {
     // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
@@ -56,4 +59,12 @@ public class CosmosMongoBasicFilterTests(CosmosMongoFilterFixture fixture) : Bas
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
+
+    public new class Fixture : BasicFilterTests<string>.Fixture
+    {
+        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+
+        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;
+        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
+    }
 }

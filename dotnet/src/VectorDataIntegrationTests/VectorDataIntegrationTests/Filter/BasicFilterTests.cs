@@ -2,12 +2,13 @@
 
 using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
+using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
 namespace VectorDataSpecificationTests.Filter;
 
-public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture)
+public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixture)
     where TKey : notnull
 {
     #region Equality
@@ -214,7 +215,7 @@ public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture
     #endregion Legacy filter support
 
     protected virtual async Task TestFilterAsync(
-        Expression<Func<FilterRecord<TKey>, bool>> filter,
+        Expression<Func<FilterRecord, bool>> filter,
         bool expectZeroResults = false,
         bool expectAllResults = false)
     {
@@ -249,7 +250,7 @@ public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture
     [Obsolete("Legacy filter support")]
     protected virtual async Task TestLegacyFilterAsync(
         VectorSearchFilter legacyFilter,
-        Expression<Func<FilterRecord<TKey>, bool>> expectedFilter,
+        Expression<Func<FilterRecord, bool>> expectedFilter,
         bool expectZeroResults = false,
         bool expectAllResults = false)
     {
@@ -279,5 +280,119 @@ public abstract class BasicFilterTestsBase<TKey>(FilterFixtureBase<TKey> fixture
             e.Int == a.Int &&
             e.String == a.String &&
             e.Int2 == a.Int2);
+    }
+
+#pragma warning disable CS1819 // Properties should not return arrays
+#pragma warning disable CA1819 // Properties should not return arrays
+    public class FilterRecord
+    {
+        public TKey Key { get; set; } = default!;
+        public ReadOnlyMemory<float>? Vector { get; set; }
+
+        public int Int { get; set; }
+        public string? String { get; set; }
+        public bool Bool { get; set; }
+        public int Int2 { get; set; }
+        public string[] StringArray { get; set; } = null!;
+        public List<string> StringList { get; set; } = null!;
+    }
+#pragma warning restore CA1819 // Properties should not return arrays
+#pragma warning restore CS1819
+
+    public abstract class Fixture : VectorStoreCollectionFixture<TKey, FilterRecord>
+    {
+        protected override string CollectionName => "FilterTests";
+
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
+                    new VectorStoreRecordVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?))
+                    {
+                        Dimensions = 3,
+                        DistanceFunction = this.DistanceFunction,
+                        IndexKind = this.IndexKind
+                    },
+
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.String), typeof(string)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsFilterable = true }
+                ]
+            };
+
+        protected override List<FilterRecord> BuildTestData()
+        {
+            // All records have the same vector - this fixture is about testing criteria filtering only
+            var vector = new ReadOnlyMemory<float>([1, 2, 3]);
+
+            return
+            [
+                new()
+                {
+                    Key = this.GenerateNextKey<TKey>(),
+                    Int = 8,
+                    String = "foo",
+                    Bool = true,
+                    Int2 = 80,
+                    StringArray = ["x", "y"],
+                    StringList = ["x", "y"],
+                    Vector = vector
+                },
+                new()
+                {
+                    Key = this.GenerateNextKey<TKey>(),
+                    Int = 9,
+                    String = "bar",
+                    Bool = false,
+                    Int2 = 90,
+                    StringArray = ["a", "b"],
+                    StringList = ["a", "b"],
+                    Vector = vector
+                },
+                new()
+                {
+                    Key = this.GenerateNextKey<TKey>(),
+                    Int = 9,
+                    String = "foo",
+                    Bool = true,
+                    Int2 = 9,
+                    StringArray = ["x"],
+                    StringList = ["x"],
+                    Vector = vector
+                },
+                new()
+                {
+                    Key = this.GenerateNextKey<TKey>(),
+                    Int = 10,
+                    String = null,
+                    Bool = false,
+                    Int2 = 100,
+                    StringArray = ["x", "y", "z"],
+                    StringList = ["x", "y", "z"],
+                    Vector = vector
+                },
+                new()
+                {
+                    Key = this.GenerateNextKey<TKey>(),
+                    Int = 11,
+                    Bool = true,
+                    String = """with some special"characters'and\stuff""",
+                    Int2 = 101,
+                    StringArray = ["y", "z"],
+                    StringList = ["y", "z"],
+                    Vector = vector
+                }
+            ];
+        }
+
+        // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
+        // so filtered searches show empty results. Add a filter to the seed data check below.
+        protected override Task WaitForDataAsync()
+            => this.TestStore.WaitForDataAsync(this.Collection, recordCount: this.TestData.Count, r => r.Int > 0);
     }
 }
