@@ -7,15 +7,13 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using ReasoningEffortModels.Options;
 
-#pragma warning disable SKEXP0110, SKEXP0001, SKEXP0050, CS8600, CS8604
-
 namespace ReasoningEffortModels;
 
 public abstract class AgentBase
 {
-    protected readonly Kernel _kernel;
+    private protected readonly Kernel _kernel;
     // Store the reasoning effort level for use later
-    protected readonly ChatReasoningEffortLevel _reasoningEffort;
+    private protected readonly ChatReasoningEffortLevel _reasoningEffort;
 
     public abstract string AgentName { get; }
     public abstract string AgentPrompt { get; }
@@ -27,7 +25,7 @@ public abstract class AgentBase
     /// <param name="customKernel">An optional custom kernel.</param>
     /// <param name="deploymentName">An optional deployment name. If not provided, DefaultDeploymentName is used.</param>
     /// <param name="reasoningEffort">An optional reasoning effort level. Defaults to Medium if not provided.</param>
-    public AgentBase(
+    protected AgentBase(
         Kernel? customKernel = null,
         string? deploymentName = null,
         ChatReasoningEffortLevel? reasoningEffort = null)
@@ -40,7 +38,6 @@ public abstract class AgentBase
             .Build();
 
         var azureOpenAIOptions = config.GetSection(AzureOpenAIOptions.SectionName).Get<AzureOpenAIOptions>();
-
 
         string chosenDeployment = string.IsNullOrWhiteSpace(deploymentName)
             ? this.DefaultDeploymentName

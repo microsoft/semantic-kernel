@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
 
@@ -10,7 +8,7 @@ using OpenAI.Chat;
 
 namespace ReasoningEffortModels;
 
-internal class Program
+internal sealed class Program
 {
     // Entry point: creates and runs three agents with different reasoning efforts.
     private static async Task Main(string[] args)
