@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -95,9 +96,46 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         throw new NotImplementedException();
     }
 
-    public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(record);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        TKey? key = (TKey)this._propertyReader.KeyPropertyInfo.GetValue(record);
+        Dictionary<string, object?> map = Map(record, this._propertyReader, key);
+        using SqlCommand command = key is null
+            // When the key is null, we are inserting a new record.
+            ? SqlServerCommandBuilder.InsertInto(
+                this._sqlConnection,
+                this._options,
+                this.CollectionName,
+                this._propertyReader.KeyProperty,
+                this._propertyReader.DataProperties,
+                this._propertyReader.VectorProperties,
+                map)
+            : SqlServerCommandBuilder.MergeInto(
+                this._sqlConnection,
+                this._options,
+                this.CollectionName,
+                this._propertyReader.KeyProperty,
+                this._propertyReader.DataProperties,
+                this._propertyReader.VectorProperties,
+                map);
+
+        if (key is not null)
+        {
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            return key;
+        }
+
+        if (typeof(int) == typeof(TKey))
+        {
+            return (TKey)(object)await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        SqlDataReader sqlDataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        return await sqlDataReader.GetFieldValueAsync<TKey>(0, cancellationToken).ConfigureAwait(false);
     }
 
     public IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -108,5 +146,30 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+    }
+
+    private static Dictionary<string, object?> Map(TRecord record, VectorStoreRecordPropertyReader propertyReader, TKey key)
+    {
+        Dictionary<string, object?> map = new(StringComparer.Ordinal);
+        map[propertyReader.KeyProperty.DataModelPropertyName] = key;
+
+        var dataProperties = propertyReader.DataProperties;
+        for (int i = 0; i < dataProperties.Count; i++)
+        {
+            map[dataProperties[i].DataModelPropertyName] = propertyReader.DataPropertiesInfo[i].GetValue(record);
+        }
+        var vectorProperties = propertyReader.VectorProperties;
+        for (int i = 0; i < vectorProperties.Count; i++)
+        {
+            // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
+            ReadOnlyMemory<float> floats = (ReadOnlyMemory<float>)propertyReader.VectorPropertiesInfo[i].GetValue(record);
+            // We know that SqlServer supports JSON serialization, so we can serialize the vector as JSON now,
+            // so the SqlServerCommandBuilder does not need to worry about that.
+            // TODO adsitnik perf: we could remove the dependency to System.Text.Json
+            // by using a hand-written serializer.
+            map[vectorProperties[i].DataModelPropertyName] = JsonSerializer.Serialize(floats);
+        }
+
+        return map;
     }
 }

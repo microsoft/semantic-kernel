@@ -92,13 +92,116 @@ public class SqlServerCommandBuilderTests
             expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL\n" + expectedCommand;
         }
 
-        if (OperatingSystem.IsWindows())
-        {
-            expectedCommand = expectedCommand.Replace("\n", "\r\n");
-        }
-
-        Assert.Equal(expectedCommand, command.CommandText);
+        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
     }
+
+    [Fact]
+    public void InsertInto()
+    {
+        SqlServerVectorStoreOptions options = new()
+        {
+            Schema = "schema"
+        };
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordDataProperty[] dataProperties =
+        [
+            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
+            new VectorStoreRecordDataProperty("simpleInt", typeof(int))
+        ];
+        VectorStoreRecordVectorProperty[] vectorProperties =
+        [
+            new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10
+            }
+        ];
+
+        using SqlConnection connection = CreateConnection();
+        using SqlCommand command = SqlServerCommandBuilder.InsertInto(connection, options, "table",
+            keyProperty, dataProperties, vectorProperties,
+            new Dictionary<string, object>
+            {
+                { "id", null },
+                { "simpleString", "nameValue" },
+                { "simpleInt", 134 },
+                { "embedding1", "{ 10.0 }" }
+            });
+
+        string expectedCommand =
+        """
+        INSERT INTO [schema].[table] ([simpleString],[simpleInt],[embedding1])
+        OUTPUT inserted.[id]
+        VALUES (@simpleString,@simpleInt,@embedding1);
+        """;
+
+        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
+        Assert.Equal("@simpleString", command.Parameters[0].ParameterName);
+        Assert.Equal("nameValue", command.Parameters[0].Value);
+        Assert.Equal("@simpleInt", command.Parameters[1].ParameterName);
+        Assert.Equal(134, command.Parameters[1].Value);
+        Assert.Equal("@embedding1", command.Parameters[2].ParameterName);
+        Assert.Equal("{ 10.0 }", command.Parameters[2].Value);
+    }
+
+    [Fact]
+    public void MergeInto()
+    {
+        SqlServerVectorStoreOptions options = new()
+        {
+            Schema = "schema"
+        };
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordDataProperty[] dataProperties =
+        [
+            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
+            new VectorStoreRecordDataProperty("simpleInt", typeof(int))
+        ];
+        VectorStoreRecordVectorProperty[] vectorProperties =
+        [
+            new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10
+            }
+        ];
+
+        using SqlConnection connection = CreateConnection();
+        using SqlCommand command = SqlServerCommandBuilder.MergeInto(connection, options, "table",
+            keyProperty, dataProperties, vectorProperties,
+            new Dictionary<string, object>
+            {
+                { "id", null },
+                { "simpleString", "nameValue" },
+                { "simpleInt", 134 },
+                { "embedding1", "{ 10.0 }" }
+            });
+
+        string expectedCommand =
+        """"
+        MERGE INTO [schema].[table] AS t
+        USING (VALUES (@id,@simpleString,@simpleInt,@embedding1)) AS s ([id],[simpleString],[simpleInt],[embedding1])
+        ON (t.[id] = s.[id])
+        WHEN MATCHED THEN
+        UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding1] = s.[embedding1]
+        WHEN NOT MATCHED THEN
+        INSERT ([id],[simpleString],[simpleInt],[embedding1])
+        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding1]);
+        """";
+
+        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
+        Assert.Equal("@id", command.Parameters[0].ParameterName);
+        Assert.Equal(DBNull.Value, command.Parameters[0].Value);
+        Assert.Equal("@simpleString", command.Parameters[1].ParameterName);
+        Assert.Equal("nameValue", command.Parameters[1].Value);
+        Assert.Equal("@simpleInt", command.Parameters[2].ParameterName);
+        Assert.Equal(134, command.Parameters[2].Value);
+        Assert.Equal("@embedding1", command.Parameters[3].ParameterName);
+        Assert.Equal("{ 10.0 }", command.Parameters[3].Value);
+    }
+
+    private static string HandleNewLines(string expectedCommand)
+        => OperatingSystem.IsWindows()
+            ? expectedCommand.Replace("\n", "\r\n")
+            : expectedCommand;
 
     // We create a connection using a fake connection string just to be able to create the SqlCommand.
     private static SqlConnection CreateConnection()

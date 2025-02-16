@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+#pragma warning disable CA1851 // Possible multiple enumerations of IEnumerable
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -65,8 +67,6 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return command;
 
-        static string GetColumnName(VectorStoreRecordProperty property) => property.StoragePropertyName ?? property.DataModelPropertyName;
-
         static (string sqlName, bool isNullable) Map(Type type) => type switch
         {
             Type t when t == typeof(int) => ("INT", false),
@@ -106,4 +106,104 @@ internal static class SqlServerCommandBuilder
         command.Parameters.AddWithValue("@tableName", tableName); // the name is not escaped by us, just provided as parameter
         return command;
     }
+
+    internal static SqlCommand InsertInto(
+        SqlConnection connection,
+        SqlServerVectorStoreOptions options,
+        string tableName,
+        VectorStoreRecordKeyProperty keyProperty,
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
+        Dictionary<string, object?> record)
+    {
+        SqlCommand command = connection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(options.Schema, tableName);
+        StringBuilder sb = new(200);
+        sb.AppendFormat("INSERT INTO {0} (", fullTableName);
+        // Use square brackets to escape column names.
+        foreach (VectorStoreRecordProperty property in dataProperties.Concat<VectorStoreRecordProperty>(vectorProperties))
+        {
+            sb.AppendFormat("[{0}],", GetColumnName(property));
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.AppendLine();
+        sb.AppendFormat("OUTPUT inserted.[{0}]", GetColumnName(keyProperty));
+        sb.AppendLine();
+        sb.Append("VALUES (");
+        foreach (VectorStoreRecordProperty property in dataProperties.Concat<VectorStoreRecordProperty>(vectorProperties))
+        {
+            int index = sb.Length;
+            sb.AppendFormat("@{0},", GetColumnName(property));
+            string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+            command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.Append(';');
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
+    internal static SqlCommand MergeInto(
+        SqlConnection connection,
+        SqlServerVectorStoreOptions options,
+        string tableName,
+        VectorStoreRecordKeyProperty keyProperty,
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
+        Dictionary<string, object?> record)
+    {
+        SqlCommand command = connection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(options.Schema, tableName);
+        StringBuilder sb = new(200);
+        sb.AppendFormat("MERGE INTO {0} AS t", fullTableName).AppendLine();
+        sb.Append("USING (VALUES (");
+        var allProperties = new VectorStoreRecordProperty[] { keyProperty }.Concat<VectorStoreRecordProperty>(dataProperties).Concat<VectorStoreRecordProperty>(vectorProperties);
+        foreach (VectorStoreRecordProperty property in allProperties)
+        {
+            int index = sb.Length;
+            sb.AppendFormat("@{0},", GetColumnName(property));
+            string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+            command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.AppendFormat(") AS s (");
+        foreach (VectorStoreRecordProperty property in allProperties)
+        {
+            sb.AppendFormat("[{0}],", GetColumnName(property));
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.AppendLine();
+        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", GetColumnName(keyProperty)).AppendLine();
+        sb.AppendLine("WHEN MATCHED THEN");
+        sb.Append("UPDATE SET ");
+        foreach (VectorStoreRecordProperty property in dataProperties.Concat<VectorStoreRecordProperty>(vectorProperties))
+        {
+            sb.AppendFormat("t.[{0}] = s.[{0}],", GetColumnName(property));
+        }
+        --sb.Length; // remove the last comma
+        sb.AppendLine();
+        sb.Append("WHEN NOT MATCHED THEN");
+        sb.AppendLine();
+        sb.Append("INSERT (");
+        foreach (VectorStoreRecordProperty property in allProperties)
+        {
+            sb.AppendFormat("[{0}],", GetColumnName(property));
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.AppendLine();
+        sb.Append("VALUES (");
+        foreach (VectorStoreRecordProperty property in allProperties)
+        {
+            sb.AppendFormat("s.[{0}],", GetColumnName(property));
+        }
+        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+        sb.Append(';');
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
+    private static string GetColumnName(VectorStoreRecordProperty property)
+        => property.StoragePropertyName ?? property.DataModelPropertyName;
 }

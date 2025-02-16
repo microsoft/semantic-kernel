@@ -17,5 +17,7 @@ public sealed class SqlServerVectorStoreOptions
     /// <summary>
     /// Number of dimensions that stored embeddings will use.
     /// </summary>
+    // TODO: adsitnik: this design most likely won't need this setting,
+    // as it up to the TRecrod to define the dimensions.
     public int EmbeddingDimensionsCount { get; init; } = 1536;
 }

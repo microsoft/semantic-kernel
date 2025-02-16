@@ -11,6 +11,8 @@ namespace Microsoft.Extensions.VectorData;
 /// The characteristics defined here will influence how the property is treated by the vector store.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+// TODO adsitnik design: this attribute does not allow us to tell the DB to insert the key
+// and upsert expects us to handle such scenario.
 public sealed class VectorStoreRecordKeyAttribute : Attribute
 {
     /// <summary>

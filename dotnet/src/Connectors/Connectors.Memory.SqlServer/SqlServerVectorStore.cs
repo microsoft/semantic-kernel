@@ -12,6 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// An implementation of <see cref="IVectorStore"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
+// TODO adsitnik: design: the interface is not generic, so I am not sure how the users can customize the
+// mapping between the record and the table. Am I missing something?
+// The interface I am talking about: public IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>.
 public sealed class SqlServerVectorStore : IVectorStore, IDisposable
 {
     private static readonly ConcurrentDictionary<Type, VectorStoreRecordPropertyReader> s_propertyReaders = new();
