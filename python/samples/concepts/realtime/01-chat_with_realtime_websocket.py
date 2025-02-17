@@ -6,21 +6,15 @@ import logging
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtime,
+    ListenEvents,
     OpenAIRealtimeExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
-from semantic_kernel.contents.events.realtime_event import RealtimeTextEvent
+from semantic_kernel.contents.events import RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")
 utils_log.setLevel(logging.INFO)
-aiortc_log = logging.getLogger("aiortc")
-aiortc_log.setLevel(logging.WARNING)
-aioice_log = logging.getLogger("aioice")
-aioice_log.setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
