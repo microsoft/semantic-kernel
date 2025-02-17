@@ -5,20 +5,19 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any, ClassVar
 
-from pydantic import PrivateAttr
-
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
 
 from numpy import ndarray
+from pydantic import PrivateAttr
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.events.realtime_event import RealtimeEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeEvents
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -34,7 +33,7 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     _create_kwargs: dict[str, Any] | None = PrivateAttr(default=None)
 
     @abstractmethod
-    async def send(self, event: RealtimeEvent) -> None:
+    async def send(self, event: RealtimeEvents) -> None:
         """Send an event to the service.
 
         Args:
@@ -47,7 +46,7 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     def receive(
         self,
         **kwargs: Any,
-    ) -> AsyncGenerator[RealtimeEvent, None]:
+    ) -> AsyncGenerator[RealtimeEvents, None]:
         """Starts listening for messages from the service, generates events.
 
         Args:

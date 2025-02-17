@@ -24,12 +24,11 @@ logger.setLevel(logging.DEBUG)
 # This simple sample demonstrates how to use the OpenAI Realtime API to create
 # a chat bot that can listen and respond directly through audio.
 # It requires installing:
-# - semantic-kernel[openai_realtime]
+# - semantic-kernel[realtime]
 # - pyaudio
 # - sounddevice
 # - pydub
-# - aiortc
-# e.g. pip install pyaudio sounddevice pydub
+# e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
 
 
 @kernel_function
@@ -64,8 +63,9 @@ async def main() -> None:
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebsocket()
-    # create the realtime client and optionally add the audio output function, this is optional
+    # create the realtime client and add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
+    # (at this time Azure only support websockets)
     # they will behave the same way, even though the underlying protocol is quite different
     realtime_client = AzureRealtime(
         protocol="websocket",

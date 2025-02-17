@@ -20,7 +20,7 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent, RealtimeEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent, RealtimeEvents
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
     async def receive(
         self,
         **kwargs: Any,
-    ) -> AsyncGenerator[RealtimeEvent, None]:
+    ) -> AsyncGenerator[RealtimeEvents, None]:
         await self.connected.wait()
         if not self.connection:
             raise ValueError("Connection is not established.")
