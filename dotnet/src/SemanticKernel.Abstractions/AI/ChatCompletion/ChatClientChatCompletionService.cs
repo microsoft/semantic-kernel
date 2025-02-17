@@ -158,13 +158,19 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                 else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
                     entry.Value is { } responseFormat)
                 {
-                    options.ResponseFormat = responseFormat switch
+                    if (TryConvert(responseFormat, out string? responseFormatString))
                     {
-                        "text" => ChatResponseFormat.Text,
-                        "json_object" => ChatResponseFormat.Json,
-                        JsonElement e => ChatResponseFormat.ForJsonSchema(e),
-                        _ => null,
-                    };
+                        options.ResponseFormat = responseFormatString switch
+                        {
+                            "text" => ChatResponseFormat.Text,
+                            "json_object" => ChatResponseFormat.Json,
+                            _ => null,
+                        };
+                    }
+                    else
+                    {
+                        options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
+                    }
                 }
                 else
                 {

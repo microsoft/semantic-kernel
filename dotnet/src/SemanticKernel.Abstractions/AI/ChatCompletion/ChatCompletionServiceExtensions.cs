@@ -169,15 +169,15 @@ public static class ChatCompletionServiceExtensions
 
                 case Microsoft.SemanticKernel.ImageContent ic:
                     aiContent =
-                        ic.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ic.DataUri, ic.MimeType) :
-                        ic.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ic.Uri, ic.MimeType) :
+                        ic.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ic.DataUri, ic.MimeType ?? "image/*") :
+                        ic.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ic.Uri, ic.MimeType ?? "image/*") :
                         null;
                     break;
 
                 case Microsoft.SemanticKernel.AudioContent ac:
                     aiContent =
-                        ac.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ac.DataUri, ac.MimeType) :
-                        ac.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ac.Uri, ac.MimeType) :
+                        ac.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ac.DataUri, ac.MimeType ?? "audio/*") :
+                        ac.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ac.Uri, ac.MimeType ?? "audio/*") :
                         null;
                     break;
 
