@@ -204,6 +204,63 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
+    internal static SqlCommand DeleteSingle(
+        SqlConnection connection, string schema, string tableName,
+        VectorStoreRecordKeyProperty keyProperty, object key)
+    {
+        SqlCommand command = connection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(schema, tableName);
+        string keyParamName = $"@{GetColumnName(keyProperty)}";
+        command.CommandText =
+        $""""
+        DELETE
+        FROM {fullTableName}
+        WHERE [{GetColumnName(keyProperty)}] = {keyParamName}
+        """";
+        command.Parameters.AddWithValue(keyParamName, key);
+        return command;
+    }
+
+
+    internal static SqlCommand DeleteMany<TKey>(
+        SqlConnection connection, string schema, string tableName,
+        VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
+    {
+        SqlCommand command = connection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(schema, tableName);
+        string keyParamName = $"@{GetColumnName(keyProperty)}";
+
+        StringBuilder keyParams = new();
+        int keyIndex = 0;
+        foreach (TKey key in keys)
+        {
+            // The caller ensures that keys collection is not null.
+            // We need to ensure that none of the keys is null.
+            Verify.NotNull(key);
+            int index = keyParams.Length;
+            keyParams.AppendFormat("@k{0},", keyIndex++);
+            string keyParam = keyParams.ToString(index, keyParams.Length - index - 1); // 1 is for the comma
+            command.Parameters.AddWithValue(keyParam, key);
+        }
+
+        if (keyParams.Length == 0)
+        {
+            // TODO adsitnik design: should we throw or simply do nothing?
+            throw new ArgumentException("The value cannot be empty.", nameof(keys));
+        }
+
+        keyParams.Length--; // remove the last comma
+
+        command.CommandText =
+        $""""
+        DELETE
+        FROM {fullTableName}
+        WHERE [{GetColumnName(keyProperty)}] IN ({keyParams})
+        """";
+
+        return command;
+    }
+
     private static string GetColumnName(VectorStoreRecordProperty property)
         => property.StoragePropertyName ?? property.DataModelPropertyName;
 }

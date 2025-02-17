@@ -39,8 +39,10 @@ public class SqlServerVectorStoreTests
         }
     }
 
-    [Fact]
-    public async Task CanInsertRecord()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanInsertAndDeleteRecord(bool deleteBatch)
     {
         SqlServerTestStore testStore = new();
 
@@ -57,8 +59,16 @@ public class SqlServerVectorStoreTests
                 Id = "MyId",
                 Number = 100
             });
-
             Assert.Equal("MyId", key);
+
+            if (deleteBatch)
+            {
+                await collection.DeleteBatchAsync(["MyId"]);
+            }
+            else
+            {
+                await collection.DeleteAsync("MyId");
+            }
         }
         finally
         {

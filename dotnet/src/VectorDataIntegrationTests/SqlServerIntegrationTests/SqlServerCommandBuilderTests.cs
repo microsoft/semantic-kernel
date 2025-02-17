@@ -119,7 +119,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = SqlServerCommandBuilder.InsertInto(connection, options, "table",
             keyProperty, dataProperties, vectorProperties,
-            new Dictionary<string, object>
+            new Dictionary<string, object?>
             {
                 { "id", null },
                 { "simpleString", "nameValue" },
@@ -167,7 +167,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = SqlServerCommandBuilder.MergeInto(connection, options, "table",
             keyProperty, dataProperties, vectorProperties,
-            new Dictionary<string, object>
+            new Dictionary<string, object?>
             {
                 { "id", null },
                 { "simpleString", "nameValue" },
@@ -196,6 +196,48 @@ public class SqlServerCommandBuilderTests
         Assert.Equal(134, command.Parameters[2].Value);
         Assert.Equal("@embedding1", command.Parameters[3].ParameterName);
         Assert.Equal("{ 10.0 }", command.Parameters[3].Value);
+    }
+
+    [Fact]
+    public void DeleteSingle()
+    {
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        using SqlConnection connection = CreateConnection();
+
+        using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(connection,
+            "schema", "tableName", keyProperty, 123L);
+
+        Assert.Equal(
+        """""
+        DELETE
+        FROM [schema].[tableName]
+        WHERE [id] = @id
+        """"", command.CommandText);
+        Assert.Equal(123L, command.Parameters[0].Value);
+        Assert.Equal("@id", command.Parameters[0].ParameterName);
+    }
+
+    [Fact]
+    public void DeleteMany()
+    {
+        string[] keys = ["key1", "key2"];
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(string));
+        using SqlConnection connection = CreateConnection();
+
+        using SqlCommand command = SqlServerCommandBuilder.DeleteMany(connection,
+            "schema", "tableName", keyProperty, keys);
+
+        Assert.Equal(
+            """""
+            DELETE
+            FROM [schema].[tableName]
+            WHERE [id] IN (@k0,@k1)
+            """"", command.CommandText);
+        for (int i = 0; i < keys.Length; i++)
+        {
+            Assert.Equal(keys[i], command.Parameters[i].Value);
+            Assert.Equal($"@k{i}", command.Parameters[i].ParameterName);
+        }
     }
 
     private static string HandleNewLines(string expectedCommand)

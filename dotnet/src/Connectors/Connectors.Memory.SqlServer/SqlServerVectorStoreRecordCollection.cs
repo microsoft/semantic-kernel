@@ -66,9 +66,9 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     {
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-        using SqlCommand cmd = SqlServerCommandBuilder.DropTable(this._sqlConnection, this._options.Schema, this.CollectionName);
+        using SqlCommand command = SqlServerCommandBuilder.DropTable(this._sqlConnection, this._options.Schema, this.CollectionName);
 
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private Task EnsureConnectionIsOpenedAsync(CancellationToken cancellationToken)
@@ -76,14 +76,36 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
             ? Task.CompletedTask
             : this._sqlConnection.OpenAsync(cancellationToken);
 
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(key);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(
+            this._sqlConnection,
+            this._options.Schema,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            key);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public async Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(keys);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.DeleteMany(
+            this._sqlConnection,
+            this._options.Schema,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            keys);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
