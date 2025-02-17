@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -20,7 +21,7 @@ public sealed class KernelFunctionNoop : KernelFunction
     /// </summary>
     /// <param name="executionSettings">Option: Prompt execution settings.</param>
     public KernelFunctionNoop(IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings) :
-        base(string.Empty, string.Empty, [], null, executionSettings?.ToDictionary(static kv => kv.Key, static kv => kv.Value))
+        base($"Function_{Guid.NewGuid():N}", string.Empty, [], null, executionSettings?.ToDictionary(static kv => kv.Key, static kv => kv.Value))
     {
     }
 
