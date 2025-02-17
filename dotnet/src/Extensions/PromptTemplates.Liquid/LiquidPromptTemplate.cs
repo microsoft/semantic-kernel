@@ -32,11 +32,11 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     private readonly Dictionary<string, object> _inputVariables;
 
 #if NET
-    [GeneratedRegex(@"(?<role>system|assistant|user|function):\s+")]
+    [GeneratedRegex(@"(?<role>system|assistant|user|function|developer):\s+")]
     private static partial Regex RoleRegex();
 #else
     private static Regex RoleRegex() => s_roleRegex;
-    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
+    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function|developer):\s+", RegexOptions.Compiled);
 #endif
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
@@ -106,7 +106,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         // xxxx
         //
         // turn it into
-        // <message role="system|assistant|user|function">
+        // <message role="system|assistant|user|function|developer">
         // xxxx
         // </message>
         var splits = RoleRegex().Split(renderedResult);
