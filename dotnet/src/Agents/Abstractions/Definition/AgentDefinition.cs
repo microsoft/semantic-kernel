@@ -1,0 +1,128 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Generic;
+using Microsoft.SemanticKernel.Agents.Definition;
+
+namespace Microsoft.SemanticKernel;
+
+/// <summary>
+/// Defines an agent.
+/// </summary>
+public sealed class AgentDefinition
+{
+    /// <summary>
+    /// Gets or sets the id of the deployed agent.
+    /// </summary>
+    public string? Id
+    {
+        get => this._id;
+        set
+        {
+            Verify.NotNull(value);
+            this._id = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the name of the  agent.
+    /// </summary>
+    public string? Name
+    {
+        get => this._name;
+        set
+        {
+            Verify.NotNull(value);
+            this._name = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the description of the agent.
+    /// </summary>
+    public string? Description
+    {
+        get => this._description;
+        set
+        {
+            Verify.NotNull(value);
+            this._description = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the system instructions for the agent to use.
+    /// </summary>
+    public string? Instructions
+    {
+        get => this._instructions;
+        set
+        {
+            Verify.NotNull(value);
+            this._instructions = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the metadata associated with the agent.
+    /// </summary>
+    public IDictionary<string, object>? Metadata
+    {
+        get => this._metadata;
+        set
+        {
+            Verify.NotNull(value);
+            this._metadata = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the model used by the agent.
+    /// </summary>
+    public ModelDefinition? Model
+    {
+        get => this._model;
+        set
+        {
+            Verify.NotNull(value);
+            this._model = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the collection of input variables used by the agent.
+    /// </summary>
+    public IList<InputVariable> Inputs
+    {
+        get => this._inputs ??= [];
+        set
+        {
+            Verify.NotNull(value);
+            this._inputs = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the collection of output variables supported by the agent.
+    /// </summary>
+    public IList<OutputVariable> Outputs
+    {
+        get => this._outputs ??= [];
+        set
+        {
+            Verify.NotNull(value);
+            this._outputs = value;
+        }
+    }
+
+    #region
+    private string? _id;
+    private string? _name;
+    private string? _description;
+    private string? _instructions;
+    private IDictionary<string, object>? _metadata;
+    private ModelDefinition? _model;
+    private IList<InputVariable>? _inputs;
+    private IList<OutputVariable>? _outputs;
+    #endregion
+
+}
