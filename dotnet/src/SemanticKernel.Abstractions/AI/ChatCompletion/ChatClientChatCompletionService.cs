@@ -34,7 +34,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var attrs = new Dictionary<string, object?>();
         this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
-        var metadata = (ChatClientMetadata?)chatClient.GetService(typeof(ChatClientMetadata));
+        var metadata = chatClient.GetService<ChatClientMetadata>();
         if (metadata?.ProviderUri is not null)
         {
             attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();

@@ -39,7 +39,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
         // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
         IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather, new AIFunctionFactoryOptions { Name = "GetWeather" })] };
+        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
 
         var result = await fallbackChatClient.GetResponseAsync("Do I need an umbrella?", chatOptions);
 
@@ -64,7 +64,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
         // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
         IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather, new AIFunctionFactoryOptions { Name = "GetWeather" })] };
+        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
 
         var result = fallbackChatClient.GetStreamingResponseAsync("Do I need an umbrella?", chatOptions);
 

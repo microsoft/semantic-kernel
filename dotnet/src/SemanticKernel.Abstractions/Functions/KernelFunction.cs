@@ -534,8 +534,9 @@ public abstract class KernelFunction
         }
 
         public override string Name { get; }
-        public override string Description => this._kernelFunction.Description;
         public override JsonElement JsonSchema { get; }
+        public override string Description => this._kernelFunction.Description;
+        public override JsonSerializerOptions JsonSerializerOptions => this._kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
 
         protected override async Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
