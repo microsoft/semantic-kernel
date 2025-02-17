@@ -255,7 +255,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             case RealtimeAudioEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
-                        event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND, audio=event.audio.to_base64_bytestring()
+                        event_type=SendEvents.INPUT_AUDIO_BUFFER_APPEND, audio=event.audio.data_string
                     )
                 )
             case RealtimeTextEvent():
