@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_we
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
@@ -27,6 +28,7 @@ _T = TypeVar("_T", bound="OpenAIRealtime")
 __all__ = ["OpenAIRealtime"]
 
 
+@experimental_class
 class OpenAIRealtime(OpenAIRealtimeBase):
     """OpenAI Realtime service."""
 
@@ -109,6 +111,7 @@ class OpenAIRealtime(OpenAIRealtimeBase):
         )
 
 
+@experimental_class
 class OpenAIRealtimeWebRTC(OpenAIRealtime, OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebRTC protocol.
 
@@ -130,6 +133,7 @@ class OpenAIRealtimeWebRTC(OpenAIRealtime, OpenAIRealtimeWebRTCBase, OpenAIConfi
         )
 
 
+@experimental_class
 class OpenAIRealtimeWebSocket(OpenAIRealtime, OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebSocket protocol.
 
