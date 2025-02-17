@@ -55,45 +55,22 @@ async with DefaultAzureCredential() as credential:
 The required imports for the `Azure AI Agent` include async libraries:
 
 ```python
-from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
 ```
 
 ### Initializing the Agent
 
-You can create an `AIProjectClient` using a connection string:
+You can pass in a connection string (shown above) to create the client:
 
 ```python
-async def main():
-    ai_agent_settings = AzureAIAgentSettings.create()
-
-    async with (
+async with (
         DefaultAzureCredential() as creds,
-        AIProjectClient.from_connection_string(
+        AzureAIAgent.create_client(
             credential=creds,
             conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
         ) as client,
     ):
-    # code
-```
-
-Or by explicitly specifying the endpoint and credentials:
-
-```python
-async def main():
-    ai_agent_settings = AzureAIAgentSettings.create()
-
-    async with (
-        DefaultAzureCredential() as creds,
-        AIProjectClient(
-            credential=creds,
-            endpoint=ai_agent_settings.endpoint,
-            subscription_id=ai_agent_settings.subscription_id,
-            resource_group_name=ai_agent_settings.resource_group_name,
-            project_name=ai_agent_settings.project_name
-        ) as client,
-    ):
-    # code
+        # operational logic
 ```
 
 ### Creating an Agent Definition
