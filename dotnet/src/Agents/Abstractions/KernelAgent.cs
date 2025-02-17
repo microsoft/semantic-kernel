@@ -22,9 +22,6 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// Gets the instructions for the agent (optional).
     /// </summary>
-    /// <remarks>
-    /// Instructions can be formatted in "semantic-kernel" template format (<see cref="KernelPromptTemplateFactory"/>).
-    /// </remarks>
     public string? Instructions { get; init; }
 
     /// <summary>
@@ -49,16 +46,10 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // If <see cref="Template"/> is not set, default instructions may be treated as "semantic-kernel" template.
+        // If <see cref="Template"/> is not set, use the default instructions.
         if (this.Template == null)
         {
-            if (string.IsNullOrWhiteSpace(this.Instructions))
-            {
-                return null;
-            }
-
-            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory);
-            this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
+            return Task.FromResult<string?>(this.Instructions).Result;
         }
 
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
