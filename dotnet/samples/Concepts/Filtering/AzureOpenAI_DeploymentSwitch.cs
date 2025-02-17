@@ -48,7 +48,7 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             credentials: new DefaultAzureCredential(),
             httpClient: httpClient,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
-        
+
         var kernel = kernelBuilder.Build();
 
         kernel.ImportPluginFromFunctions("HelperFunctions",
@@ -62,9 +62,9 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             ServiceId = "swedencentral",
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
-        
+
         kernel.Data.Add("service_id", "swedencentral");
-        
+
         var reply = await kernel.InvokePromptAsync("What time is it and what is my eye color and what time is it?", new(settings));
 
         Console.WriteLine(reply);
@@ -78,10 +78,10 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             var chatHistory = context.ChatHistory;
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
 
-            if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && serviceId.ToString().Equals("swedencentral", StringComparison.Ordinal))
+            if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && "swedencentral".Equals(serviceId.ToString(), StringComparison.Ordinal))
             {
                 bool includesGetEyeColor = functionCalls.Any(fc => fc.FunctionName.Equals("GetEyeColor", StringComparison.Ordinal));
-                
+
                 // For the "GetEyeColor" function, switch to a different deployment. 
                 // If the function is not present in the collection of function calls, proceed with the request as usual.
                 if (!includesGetEyeColor)
@@ -95,16 +95,16 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
                     chatHistory.RemoveAt(chatHistory.Count - 1);
 
                     IChatCompletionService chatCompletionService = kernel.Services.GetRequiredKeyedService<IChatCompletionService>("eastus");
-                    
+
                     OpenAIPromptExecutionSettings settings = new()
                     {
                         ServiceId = "eastus",
                         FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                     };
-                    
+
                     kernel.Data.Remove("service_id");
                     kernel.Data.Add("service_id", "eastus");
-                    
+
                     var chatContent = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, context.Kernel);
 
                     context.Result = new FunctionResult(context.Result, chatContent);
