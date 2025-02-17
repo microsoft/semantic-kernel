@@ -1,8 +1,4 @@
-## OpenAI Assistant Agents
-
-The following getting started samples show how to use OpenAI Assistant agents with Semantic Kernel.
-
-### Azure Assistant Agents
+## Azure Assistant Agents
 
 Azure Assistant Agents are currently in preview and require a `-preview` API version (minimum version: `2024-05-01-preview`). As new features are introduced, API versions will be updated accordingly. For the latest versioning details, please refer to the [Azure OpenAI API preview lifecycle](/azure/ai-services/openai/api-version-deprecation).
 
