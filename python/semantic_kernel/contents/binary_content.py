@@ -111,6 +111,14 @@ class BinaryContent(KernelContent):
             return self._data_uri.to_string(self.metadata)
         return ""
 
+    @computed_field  # type: ignore
+    @property
+    def data_string(self) -> str:
+        """Returns the data as a string, using the data format."""
+        if self._data_uri:
+            return self._data_uri._data_str()
+        return ""
+
     @data_uri.setter
     def data_uri(self, value: str):
         """Set the data uri."""
@@ -193,13 +201,3 @@ class BinaryContent(KernelContent):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "binary", "binary": {"uri": str(self)}}
-
-    def to_base64_bytestring(self, encoding: str = "utf-8") -> str:
-        """Convert the instance to a bytestring."""
-        if self._data_uri and self._data_uri.data_array is not None:
-            return b64encode(self._data_uri.data_array.tobytes()).decode(encoding)
-        if self._data_uri and self._data_uri.data_bytes:
-            return self._data_uri.data_bytes.decode(encoding)
-        if self._data_uri and self._data_uri.data_str:
-            return self._data_uri.data_str
-        return ""
