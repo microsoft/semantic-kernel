@@ -111,7 +111,6 @@ class BinaryContent(KernelContent):
             return self._data_uri.to_string(self.metadata)
         return ""
 
-    @computed_field  # type: ignore
     @property
     def data_string(self) -> str:
         """Returns the data as a string, using the data format."""
