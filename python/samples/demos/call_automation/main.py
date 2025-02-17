@@ -14,7 +14,7 @@
 #     "Quart",
 #     "azure-eventgrid",
 #     "azure-communication-callautomation==1.4.0b1",
-#     "semantic-kernel[openai_realtime]",
+#     "semantic-kernel[realtime]",
 # ]
 #
 # [tool.uv.sources]
@@ -42,16 +42,16 @@ from numpy import ndarray
 from quart import Quart, Response, json, request, websocket
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     InputAudioTranscription,
+    ListenEvents,
+    OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtime
-from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents import AudioContent
 from semantic_kernel.contents.events import RealtimeAudioEvent
 from semantic_kernel.functions import kernel_function
 
@@ -94,7 +94,7 @@ class HelperPlugin:
 
 kernel.add_plugin(plugin=HelperPlugin(), plugin_name="helpers", description="Helper functions for the realtime client.")
 
-# region: handlers for audio and data streams
+# region: Handlers for audio and data streams
 
 
 async def from_realtime_to_acs(audio: ndarray):
@@ -155,7 +155,7 @@ async def handle_realtime_messages(client: RealtimeClientBase):
                 print(f" AI:-- {event.service_event.transcript}")
 
 
-# region: Quart routes
+# region: Routes
 
 
 # WebSocket.
@@ -283,6 +283,9 @@ async def callbacks(contextId):
 @app.route("/")
 def home():
     return "Hello SKxACS CallAutomation!"
+
+
+# region: Main
 
 
 if __name__ == "__main__":

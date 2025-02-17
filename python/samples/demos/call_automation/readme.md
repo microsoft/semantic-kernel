@@ -22,6 +22,7 @@ Create and activate python virtual environment and install required packages usi
 ```
 pip install -r requirements.txt
 ```
+Alternatively, if you have `uv` installed, you can ship this step.
 
 ### Setup and host your Azure DevTunnel
 
@@ -46,7 +47,10 @@ Copy the `.env.example` file to `.env` and update the following values:
 
 ## Run app locally
 
-1. Navigate to `call_automation` folder and run `main.py` in debug mode or use command `python ./main.py` to run it from PowerShell, Command Prompt or Unix Terminal
+1. Navigate to `call_automation` folder and do one of the following to start the main application:
+   - run `main.py` in debug from your IDE 
+   - use command `python ./main.py` to run it from PowerShell, Command Prompt or Unix Terminal. 
+   - execute `./main.py` directly (this uses `uv`, which will then install the requirements in a temporary virtual environment).
 2. Browser should pop up with the below page. If not navigate it to `http://localhost:8080/`or your dev tunnel url.
 3. Register an EventGrid Webhook for the IncomingCall(`https://<devtunnelurl>/api/incomingCall`) event that points to your devtunnel URI. Instructions [here](https://learn.microsoft.com/en-us/azure/communication-services/concepts/call-automation/incoming-call-notification).
 

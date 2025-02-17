@@ -86,8 +86,3 @@ class AudioContent(BinaryContent):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {"type": "audio_url", "audio_url": {"uri": str(self)}}
-
-    @classmethod
-    def from_ndarray(cls: type[_T], data: ndarray, mime_type: str) -> _T:
-        """Create an instance from an ndarray."""
-        return cls(data=data, mime_type=mime_type)

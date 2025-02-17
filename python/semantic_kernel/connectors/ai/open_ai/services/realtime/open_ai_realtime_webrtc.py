@@ -31,8 +31,7 @@ from pydantic import PrivateAttr
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events import RealtimeEvent
-from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent, RealtimeEvents
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -51,13 +50,13 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
     audio_track: MediaStreamTrack | None = None
-    _receive_buffer: asyncio.Queue[RealtimeEvent] = PrivateAttr(default_factory=asyncio.Queue)
+    _receive_buffer: asyncio.Queue[RealtimeEvents] = PrivateAttr(default_factory=asyncio.Queue)
 
     @override
     async def receive(
         self,
         **kwargs: Any,
-    ) -> AsyncGenerator[RealtimeEvent, None]:
+    ) -> AsyncGenerator[RealtimeEvents, None]:
         while True:
             event = await self._receive_buffer.get()
             yield event

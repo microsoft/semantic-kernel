@@ -39,6 +39,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.events.realtime_event import (
     RealtimeAudioEvent,
     RealtimeEvent,
+    RealtimeEvents,
     RealtimeFunctionCallEvent,
     RealtimeFunctionResultEvent,
     RealtimeTextEvent,
@@ -69,7 +70,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     _current_settings: PromptExecutionSettings | None = PrivateAttr(default=None)
     _call_id_to_function_map: dict[str, str] = PrivateAttr(default_factory=dict)
 
-    async def _parse_event(self, event: RealtimeServerEvent) -> AsyncGenerator[RealtimeEvent, None]:
+    async def _parse_event(self, event: RealtimeServerEvent) -> AsyncGenerator[RealtimeEvents, None]:
         """Handle all events but audio delta.
 
         Audio delta has to be handled by the implementation of the protocol as some
@@ -194,7 +195,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     async def _parse_function_call_arguments_done(
         self,
         event: ResponseFunctionCallArgumentsDoneEvent,
-    ) -> AsyncGenerator[RealtimeEvent | None]:
+    ) -> AsyncGenerator[RealtimeEvents | None]:
         """Handle response function call done.
 
         This always yields at least 1 event, either a RealtimeEvent or a RealtimeFunctionResultEvent with the raw event.
@@ -250,7 +251,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         raise NotImplementedError
 
     @override
-    async def send(self, event: RealtimeEvent, **kwargs: Any) -> None:
+    async def send(self, event: RealtimeEvents, **kwargs: Any) -> None:
         match event:
             case RealtimeAudioEvent():
                 await self._send(
@@ -455,7 +456,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         pass
 
     @override
-    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvent, None]:
+    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvents, None]:
         pass
 
     @override

@@ -128,10 +128,9 @@ dapr = [
     "dapr-ext-fastapi>=1.14.0",
     "flask-dapr>=1.14.0"
 ]
-openai_realtime = [
-    "openai[realtime] ~= 1.0",
+realtime = [
+    "websockets >= 13, < 15",
     "aiortc>=1.9.0",
-    "sounddevice>=0.5.1",
 ]
 
 [tool.uv]

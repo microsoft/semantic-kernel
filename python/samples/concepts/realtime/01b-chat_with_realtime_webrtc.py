@@ -3,30 +3,33 @@
 import asyncio
 import logging
 
-from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
+from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
-    AzureRealtime,
     ListenEvents,
+    OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
-from semantic_kernel.contents.events import RealtimeTextEvent
+from semantic_kernel.contents.events.realtime_event import RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")
 utils_log.setLevel(logging.INFO)
+aiortc_log = logging.getLogger("aiortc")
+aiortc_log.setLevel(logging.WARNING)
+aioice_log = logging.getLogger("aioice")
+aioice_log.setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # This simple sample demonstrates how to use the OpenAI Realtime API to create
 # a chat bot that can listen and respond directly through audio.
 # It requires installing:
-# - semantic-kernel[openai_realtime]
+# - semantic-kernel[realtime]
 # - pyaudio
 # - sounddevice
 # - pydub
-# - aiortc
-# e.g. pip install pyaudio sounddevice pydub
+# e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
 
 # The characterics of your speaker and microphone are a big factor in a smooth conversation
 # so you may need to try out different devices for each.
@@ -41,12 +44,12 @@ async def main() -> None:
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    audio_player = AudioPlayerWebsocket()
-    realtime_client = AzureRealtime(
-        "websocket",
+    audio_player = AudioPlayerWebRTC()
+    realtime_client = OpenAIRealtime(
+        "webrtc",
         audio_output_callback=audio_player.client_callback,
+        audio_track=AudioRecorderWebRTC(),
     )
-    audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
     # Create the settings for the session
     settings = OpenAIRealtimeExecutionSettings(
         instructions="""
@@ -57,17 +60,13 @@ async def main() -> None:
     effectively, but you tend to answer with long
     flowery prose.
     """,
-        voice="shimmer",
-        turn_detection=TurnDetection(create_response=True, silence_duration_ms=800, threshold=0.8),
+        voice="alloy",
+        turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
     )
     # the context manager calls the create_session method on the client and start listening to the audio stream
-    async with audio_player, audio_recorder, realtime_client(settings=settings, create_response=True):
+    async with audio_player, realtime_client(settings=settings, create_response=True):
         async for event in realtime_client.receive():
-            match event:
-                # this can be used as an alternative to the callback function used above,
-                # the callback is faster and smoother
-                # case RealtimeAudioEvent():
-                #     await audio_player.add_audio(event.audio)
+            match event.service_type:
                 case RealtimeTextEvent():
                     print(event.text.text, end="")
                 case _:

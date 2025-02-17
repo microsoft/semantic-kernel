@@ -31,12 +31,11 @@ logger.setLevel(logging.INFO)
 # This simple sample demonstrates how to use the OpenAI Realtime API to create
 # a chat bot that can listen and respond directly through audio.
 # It requires installing:
-# - semantic-kernel[openai_realtime]
+# - semantic-kernel[realtime]
 # - pyaudio
 # - sounddevice
 # - pydub
-# - aiortc
-# e.g. pip install pyaudio sounddevice pydub
+# e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
 
 # The characterics of your speaker and microphone are a big factor in a smooth conversation
 # so you may need to try out different devices for each.

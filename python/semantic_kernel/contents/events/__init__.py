@@ -3,6 +3,7 @@
 from semantic_kernel.contents.events.realtime_event import (
     RealtimeAudioEvent,
     RealtimeEvent,
+    RealtimeEvents,
     RealtimeFunctionCallEvent,
     RealtimeFunctionResultEvent,
     RealtimeImageEvent,
@@ -12,6 +13,7 @@ from semantic_kernel.contents.events.realtime_event import (
 __all__ = [
     "RealtimeAudioEvent",
     "RealtimeEvent",
+    "RealtimeEvents",
     "RealtimeFunctionCallEvent",
     "RealtimeFunctionResultEvent",
     "RealtimeImageEvent",

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal, Union
 
 from pydantic import Field
 
@@ -10,6 +10,18 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+RealtimeEvents = Annotated[
+    Union[
+        "RealtimeEvent",
+        "RealtimeAudioEvent",
+        "RealtimeTextEvent",
+        "RealtimeFunctionCallEvent",
+        "RealtimeFunctionResultEvent",
+        "RealtimeImageEvent",
+    ],
+    Field(discriminator="event_type"),
+]
 
 
 class RealtimeEvent(KernelBaseModel):
