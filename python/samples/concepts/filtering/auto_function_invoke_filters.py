@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -29,10 +28,7 @@ kernel = Kernel()
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
 kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
-plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
-# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-# kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")

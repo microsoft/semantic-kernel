@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncIterable
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from pydantic import Field
 
@@ -34,7 +34,10 @@ class AgentGroupChat(AgentChat):
     agents: list[Agent] = Field(default_factory=list)
 
     is_complete: bool = False
-    termination_strategy: TerminationStrategy = Field(default_factory=DefaultTerminationStrategy)
+    termination_strategy: TerminationStrategy = Field(
+        default_factory=DefaultTerminationStrategy,
+        description="The termination strategy to use. The default strategy never terminates and has a max iterations of 5.",  # noqa: E501
+    )
     selection_strategy: SelectionStrategy = Field(default_factory=SequentialSelectionStrategy)
 
     def __init__(
@@ -214,11 +217,12 @@ class AgentGroupChat(AgentChat):
         if not isinstance(self.history, ChatHistoryReducer):
             return False
 
-        reducer = await self.history.reduce()
-        if reducer is not None:
-            reduced_history = deepcopy(reducer.messages)
-            await self.reset()
-            await self.add_chat_messages(reduced_history)
-            return True
+        result = await self.history.reduce()
+        if result is None:
+            return False
 
-        return False
+        reducer = cast(ChatHistoryReducer, result)
+        reduced_history = deepcopy(reducer.messages)
+        await self.reset()
+        await self.add_chat_messages(reduced_history)
+        return True

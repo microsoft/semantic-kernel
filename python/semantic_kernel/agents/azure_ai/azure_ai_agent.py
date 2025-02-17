@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import AsyncIterable, Iterable
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
@@ -29,15 +29,23 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    SEMANTIC_KERNEL_USER_AGENT,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from azure.identity.aio import DefaultAzureCredential
+
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 AgentsApiResponseFormatOption = (
     str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
 )
+
+_T = TypeVar("_T", bound="AzureAIAgent")
 
 
 @experimental_class
@@ -58,6 +66,7 @@ class AzureAIAgent(Agent):
         kernel: "Kernel | None" = None,
         arguments: "KernelArguments | None" = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Agent.
@@ -71,6 +80,7 @@ class AzureAIAgent(Agent):
             arguments: The KernelArguments instance
             prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
+            polling_options: The polling options for the agent.
             **kwargs: Additional keyword arguments
         """
         args: dict[str, Any] = {
@@ -106,10 +116,33 @@ class AzureAIAgent(Agent):
             if prompt_template_config.template is not None:
                 # Use the template from the prompt_template_config if it is provided
                 args["instructions"] = prompt_template_config.template
+        if polling_options is not None:
+            args["polling_options"] = polling_options
         if kwargs:
             args.update(kwargs)
 
         super().__init__(**args)
+
+    @classmethod
+    def create_client(
+        cls: type[_T], credential: "DefaultAzureCredential", conn_str: str, **kwargs: Any
+    ) -> AIProjectClient:
+        """Create the Azure AI Project client using the connection string.
+
+        Args:
+            credential: The credential
+            conn_str: The connection string
+            kwargs: Additional keyword arguments
+
+        Returns:
+            AIProjectClient: The Azure AI Project client
+        """
+        return AIProjectClient.from_connection_string(
+            credential=credential,
+            conn_str=conn_str,
+            **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
+            **kwargs,
+        )
 
     async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "ThreadMessage | None":
         """Add a chat message to the thread.

@@ -669,7 +669,6 @@ async def test_cmc_tool_calling_parallel_tool_calls(
             model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
             stream=False,
             messages=azure_chat_completion._prepare_chat_history_for_request(orig_chat_history),
-            parallel_tool_calls=True,
             tools=[
                 {
                     "type": "function",

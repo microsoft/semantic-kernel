@@ -23,7 +23,8 @@ extend-exclude = [
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
     "WomensSuffrage.txt",
-    "SK-dotnet.sln.DotSettings"
+    "SK-dotnet.sln.DotSettings",
+    "**/azure_ai_search_hotel_samples/README.md"
 ]
 
 [default.extend-words]

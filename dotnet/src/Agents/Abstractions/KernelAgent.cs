@@ -17,7 +17,7 @@ public abstract class KernelAgent : Agent
     /// <remarks>
     /// Also includes <see cref="PromptExecutionSettings"/>.
     /// </remarks>
-    public KernelArguments? Arguments { get; init; }
+    public KernelArguments Arguments { get; init; } = [];
 
     /// <summary>
     /// Gets the instructions for the agent (optional).
@@ -73,14 +73,8 @@ public abstract class KernelAgent : Agent
     /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    protected KernelArguments? MergeArguments(KernelArguments? arguments)
+    protected KernelArguments MergeArguments(KernelArguments? arguments)
     {
-        // Avoid merge when default arguments are not set.
-        if (this.Arguments == null)
-        {
-            return arguments;
-        }
-
         // Avoid merge when override arguments are not set.
         if (arguments == null)
         {

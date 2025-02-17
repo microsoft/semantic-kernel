@@ -541,7 +541,8 @@ class AgentThreadActions:
             if sub_event_type == AgentStreamEvent.THREAD_MESSAGE_DELTA:
                 yield generate_streaming_message_content(agent.name, sub_event_data)
             elif sub_event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
-                logger.info(f"Run completed with ID: {sub_event_data.id}")
+                thread_run = cast(ThreadRun, sub_event_data)
+                logger.info(f"Run completed with ID: {thread_run.id}")
                 if active_messages:
                     for msg_id, step in active_messages.items():
                         message = await cls._retrieve_message(agent=agent, thread_id=thread_id, message_id=msg_id)
@@ -551,7 +552,7 @@ class AgentThreadActions:
                                 messages.append(final_content)
                 return
             elif sub_event_type == AgentStreamEvent.THREAD_RUN_FAILED:
-                run_failed: ThreadRun = sub_event_data
+                run_failed = cast(ThreadRun, sub_event_data)
                 error_message = (
                     run_failed.last_error.message if run_failed.last_error and run_failed.last_error.message else ""
                 )
