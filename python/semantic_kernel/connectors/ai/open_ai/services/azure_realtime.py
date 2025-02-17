@@ -17,6 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_we
 )
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
@@ -28,6 +29,7 @@ _T = TypeVar("_T", bound="AzureRealtime")
 __all__ = ["AzureRealtime"]
 
 
+@experimental_class
 class AzureRealtime(OpenAIRealtimeBase):
     """Azure OpenAI Realtime service."""
 
@@ -129,6 +131,7 @@ class AzureRealtime(OpenAIRealtimeBase):
         )
 
 
+@experimental_class
 class AzureRealtimeWebRTC(AzureRealtime, OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
     """OpenAI Realtime service using WebRTC protocol.
 
@@ -147,6 +150,7 @@ class AzureRealtimeWebRTC(AzureRealtime, OpenAIRealtimeWebRTCBase, AzureOpenAICo
         raise NotImplementedError("Azure Realtime with WebRTC is not yet supported.")
 
 
+@experimental_class
 class AzureRealtimeWebsocket(AzureRealtime, OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase):
     """OpenAI Realtime service using WebSocket protocol.
 
