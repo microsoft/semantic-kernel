@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
+from pydantic import Field
 
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -27,11 +28,7 @@ class CustomTerminationStrategy(TerminationStrategy):
     NUM_OF_RETRIES: ClassVar[int] = 3
 
     maximum_iterations: int = 20
-    chat_completion_service: ChatCompletionClientBase
-
-    def __init__(self, **kwargs):
-        chat_completion_service = OpenAIChatCompletion()
-        super().__init__(chat_completion_service=chat_completion_service, **kwargs)
+    chat_completion_service: ChatCompletionClientBase = Field(default_factory=lambda: OpenAIChatCompletion())
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
         """Check if the agent should terminate.
@@ -61,6 +58,9 @@ class CustomTerminationStrategy(TerminationStrategy):
                     chat_history,
                     AzureChatPromptExecutionSettings(),
                 )
+
+                if not completion:
+                    continue
 
                 if TERMINATE_FALSE_KEYWORD in completion.content.lower():
                     return False
