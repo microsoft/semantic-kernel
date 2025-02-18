@@ -159,7 +159,7 @@ public class ServiceConversionExtensionsTests
             ]),
             new(ChatRole.User,
             [
-                new Microsoft.Extensions.AI.DataContent ("http://audiourl", mediaType : "audio/mpeg"),
+                new Microsoft.Extensions.AI.DataContent("http://audiourl", mediaType: "audio/mpeg"),
                 new Microsoft.Extensions.AI.TextContent("some other text"),
             ]),
             new(ChatRole.Assistant,
