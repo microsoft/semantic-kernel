@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
+from pydantic import Field
 
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
+NEWLINE = "\n"
+
 
 @experimental_class
 class CustomSelectionStrategy(SelectionStrategy):
@@ -24,12 +27,7 @@ class CustomSelectionStrategy(SelectionStrategy):
 
     NUM_OF_RETRIES: ClassVar[int] = 3
 
-    chat_completion_service: ChatCompletionClientBase
-
-    def __init__(self, **kwargs):
-        chat_completion_service = OpenAIChatCompletion()
-
-        super().__init__(chat_completion_service=chat_completion_service, **kwargs)
+    chat_completion_service: ChatCompletionClientBase = Field(default_factory=lambda: OpenAIChatCompletion())
 
     async def next(self, agents: list["Agent"], history: list["ChatMessageContent"]) -> "Agent":
         """Select the next agent to interact with.
@@ -63,6 +61,9 @@ class CustomSelectionStrategy(SelectionStrategy):
                     AzureChatPromptExecutionSettings(),
                 )
 
+                if completion is None:
+                    continue
+
                 try:
                     return agents[int(completion.content)]
                 except ValueError as ex:
@@ -80,7 +81,7 @@ Each message in the chat history contains the agent's name and the message conte
 Initially, the chat history may be empty.
 
 Here are the agents with their indices, names, and descriptions:
-{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(agents))}
+{NEWLINE.join(f"[{index}] {agent.name}:{NEWLINE}{agent.description}" for index, agent in enumerate(agents))}
 
 Your task is to select the next agent based on the conversation history.
 

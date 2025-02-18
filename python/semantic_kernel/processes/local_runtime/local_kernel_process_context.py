@@ -36,7 +36,7 @@ class LocalKernelProcessContext(KernelBaseModel):
             factories=process.factories,
         )
 
-        super().__init__(local_process=local_process)
+        super().__init__(local_process=local_process)  # type: ignore
 
     async def start_with_event(self, initial_event: "KernelProcessEvent") -> None:
         """Starts the local process with an initial event."""

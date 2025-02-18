@@ -18,6 +18,7 @@ from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.bedrock_agent_settings import BedrockAgentSettings
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.binary_content import BinaryContent
@@ -44,7 +45,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
     Manages the interaction with Amazon Bedrock Agent Service.
     """
 
-    channel_type: ClassVar[type[BedrockAgentChannel]] = BedrockAgentChannel
+    channel_type: ClassVar[type[AgentChannel]] = BedrockAgentChannel
 
     def __init__(
         self,
@@ -93,9 +94,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
             raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
 
         bedrock_agent_model = BedrockAgentModel(
-            agent_id=id,
-            agent_name=name,
-            foundation_model=bedrock_agent_settings.foundation_model,
+            agentId=id,
+            agentName=name,
+            foundationModel=bedrock_agent_settings.foundation_model,
         )
 
         prompt_template: PromptTemplateBase | None = None

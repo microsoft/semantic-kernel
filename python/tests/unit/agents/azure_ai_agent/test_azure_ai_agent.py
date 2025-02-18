@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
+from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -111,3 +112,27 @@ async def test_azure_ai_agent_create_channel():
         ch = await agent.create_channel()
         assert isinstance(ch, AgentChannel)
         assert ch.thread_id == "t"
+
+
+def test_create_client():
+    conn_str = "endpoint;subscription_id;resource_group;project_name"
+    credential = MagicMock(spec=DefaultAzureCredential)
+
+    with patch("azure.ai.projects.aio.AIProjectClient.from_connection_string") as mock_from_conn_str:
+        mock_client = MagicMock(spec=AIProjectClient)
+        mock_from_conn_str.return_value = mock_client
+
+        client = AzureAIAgent.create_client(
+            credential=credential,
+            conn_str=conn_str,
+            extra_arg="extra_value",
+        )
+
+        mock_from_conn_str.assert_called_once()
+        _, actual_kwargs = mock_from_conn_str.call_args
+
+        assert actual_kwargs["credential"] is credential
+        assert actual_kwargs["conn_str"] == conn_str
+        assert actual_kwargs["extra_arg"] == "extra_value"
+        assert actual_kwargs["user_agent"] is not None
+        assert client is mock_client

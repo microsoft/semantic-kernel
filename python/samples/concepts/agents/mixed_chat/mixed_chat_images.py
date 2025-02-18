@@ -64,6 +64,8 @@ async def main():
             name=SUMMARIZER_NAME,
         )
 
+        # Note: By default, `AgentGroupChat` does not terminate automatically.
+        # However, setting the maximum iterations to 5 forces the chat to end after 5 iterations.
         chat = AgentGroupChat()
 
         await invoke_agent(
