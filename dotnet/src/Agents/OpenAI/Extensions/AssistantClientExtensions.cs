@@ -112,7 +112,6 @@ public static class AssistantClientExtensions
         IReadOnlyDictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default)
     {
-        PromptExecutionSettings? executionSettings = config.DefaultExecutionSettings;
         return
             client.CreateAssistantAsync(
                 modelId,

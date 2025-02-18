@@ -349,17 +349,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentDeleteAsync()
     {
-        await Task.Delay(0);
-        // %%% TODO
-        //// Arrange
-        //OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-        //this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
 
-        //// Act
-        //AssistantDeletionResult result = await agent._client.DeleteAssistantAsync(agent.Id);
+        // Act
+        bool isDeleted = await agent.DeleteAsync();
 
-        //// Assert
-        //Assert.True(result.Deleted);
+        // Assert
+        Assert.True(isDeleted);
     }
 
     /// <summary>

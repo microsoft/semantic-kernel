@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI.Assistants;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -159,6 +161,115 @@ internal static class OpenAIAssistantResponseContent
             if (metadataCount > 0)
             {
                 foreach (var (key, value) in capabilities.Metadata!)
+                {
+                    builder.AppendLine(@$"    ""{key}"": ""{value}""{(index < metadataCount - 1 ? "," : string.Empty)}");
+                    ++index;
+                }
+            }
+
+            builder.AppendLine("  }");
+        }
+
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// The response for creating or querying an assistant definition.
+    /// </summary>
+    public static string AssistantDefinition(
+        string modelId,
+        string? name = null,
+        string? description = null,
+        string? instructions = null,
+        bool enableCodeInterpreter = false,
+        IReadOnlyList<string>? codeInterpreterFileIds = null,
+        bool enableFileSearch = false,
+        string? vectorStoreId = null,
+        float? temperature = null,
+        float? topP = null,
+        AssistantResponseFormat? responseFormat = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("{");
+        builder.AppendLine(@$"  ""id"": ""{AssistantId}"",");
+        builder.AppendLine(@"  ""object"": ""assistant"",");
+        builder.AppendLine(@"  ""created_at"": 1698984975,");
+        builder.AppendLine(@$"  ""name"": ""{name}"",");
+        builder.AppendLine(@$"  ""description"": ""{description}"",");
+        builder.AppendLine(@$"  ""instructions"": ""{instructions}"",");
+        builder.AppendLine(@$"  ""model"": ""{modelId}"",");
+
+        bool hasCodeInterpreterFiles = (codeInterpreterFileIds?.Count ?? 0) > 0;
+        bool hasCodeInterpreter = enableCodeInterpreter || hasCodeInterpreterFiles;
+        bool hasFileSearch = enableFileSearch || vectorStoreId != null;
+        if (!hasCodeInterpreter && !hasFileSearch)
+        {
+            builder.AppendLine(@"  ""tools"": [],");
+        }
+        else
+        {
+            builder.AppendLine(@"  ""tools"": [");
+
+            if (hasCodeInterpreter)
+            {
+                builder.Append(@$"  {{ ""type"": ""code_interpreter"" }}{(hasFileSearch ? "," : string.Empty)}");
+            }
+
+            if (hasFileSearch)
+            {
+                builder.AppendLine(@"  { ""type"": ""file_search"" }");
+            }
+
+            builder.AppendLine("    ],");
+        }
+
+        if (!hasCodeInterpreterFiles && !hasFileSearch)
+        {
+            builder.AppendLine(@"  ""tool_resources"": {},");
+        }
+        else
+        {
+            builder.AppendLine(@"  ""tool_resources"": {");
+
+            if (hasCodeInterpreterFiles)
+            {
+                string fileIds = string.Join(",", codeInterpreterFileIds!.Select(fileId => "\"" + fileId + "\""));
+                builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
+            }
+
+            if (hasFileSearch && vectorStoreId != null)
+            {
+                builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{vectorStoreId}""] }}");
+            }
+
+            builder.AppendLine("    },");
+        }
+
+        if (temperature.HasValue)
+        {
+            builder.AppendLine(@$"  ""temperature"": {temperature},");
+        }
+
+        if (topP.HasValue)
+        {
+            builder.AppendLine(@$"  ""top_p"": {topP},");
+        }
+        int metadataCount = (metadata?.Count ?? 0);
+        if (metadataCount == 0)
+        {
+            builder.AppendLine(@"  ""metadata"": {}");
+        }
+        else
+        {
+            int index = 0;
+            builder.AppendLine(@"  ""metadata"": {");
+
+            if (metadataCount > 0)
+            {
+                foreach (var (key, value) in metadata!)
                 {
                     builder.AppendLine(@$"    ""{key}"": ""{value}""{(index < metadataCount - 1 ? "," : string.Empty)}");
                     ++index;
