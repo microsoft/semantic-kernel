@@ -195,6 +195,7 @@ class BinaryContent(KernelContent):
             self._data_uri.data_array.tofile(path)
             return
         with open(path, "wb") as file:
+            assert isinstance(self.data, bytes)  # nosec
             file.write(self.data)
 
     def to_dict(self) -> dict[str, Any]:
