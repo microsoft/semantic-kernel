@@ -354,13 +354,4 @@ public sealed class AssistantClientExtensionsTests : IDisposable
 
     private void SetupResponse(HttpStatusCode statusCode, string content) =>
         this._messageHandlerStub.SetupResponses(statusCode, content);
-
-    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
-        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
-
-    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
-        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(capabilities, templateConfig));
-
-    private void SetupResponses(HttpStatusCode statusCode, params string[] content) =>
-        this._messageHandlerStub.SetupResponses(statusCode, content);
 }
