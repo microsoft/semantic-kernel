@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -13,9 +12,7 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using OpenAI;
 using OpenAI.Assistants;
-using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
