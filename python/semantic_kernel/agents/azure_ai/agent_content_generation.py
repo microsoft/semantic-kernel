@@ -386,16 +386,16 @@ def generate_annotation_content(
 ) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    if isinstance(annotation, MessageTextFilePathAnnotation):
+    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
         file_id = annotation.file_path.file_id
-    elif isinstance(annotation, MessageTextFileCitationAnnotation):
+    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
         file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )
 
 
@@ -413,6 +413,6 @@ def generate_streaming_annotation_content(
     return StreamingAnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )

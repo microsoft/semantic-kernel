@@ -2,7 +2,6 @@
 
 import asyncio
 
-from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import CodeInterpreterTool
 from azure.identity.aio import DefaultAzureCredential
 
@@ -22,7 +21,7 @@ async def main() -> None:
 
     async with (
         DefaultAzureCredential() as creds,
-        AIProjectClient.from_connection_string(
+        AzureAIAgent.create_client(
             credential=creds,
             conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
         ) as client,
