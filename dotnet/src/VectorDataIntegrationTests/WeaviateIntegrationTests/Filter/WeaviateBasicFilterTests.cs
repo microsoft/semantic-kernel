@@ -2,12 +2,15 @@
 
 using Microsoft.Extensions.VectorData;
 using VectorDataSpecificationTests.Filter;
+using VectorDataSpecificationTests.Support;
+using WeaviateIntegrationTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
 namespace WeaviateIntegrationTests.Filter;
 
-public class WeaviateBasicFilterTests(WeaviateFilterFixture fixture) : BasicFilterTestsBase<Guid>(fixture), IClassFixture<WeaviateFilterFixture>
+public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
+    : BasicFilterTests<Guid>(fixture), IClassFixture<WeaviateBasicFilterTests.Fixture>
 {
     #region Filter by null
 
@@ -59,4 +62,11 @@ public class WeaviateBasicFilterTests(WeaviateFilterFixture fixture) : BasicFilt
     // (https://weaviate.io/developers/weaviate/api/graphql/filters#multi-word-queries-in-equal-filters)
     public override Task Equal_with_string_is_not_Contains()
         => Assert.ThrowsAsync<EqualException>(() => base.Equal_with_string_is_not_Contains());
+
+    public new class Fixture : BasicFilterTests<Guid>.Fixture
+    {
+        public override TestStore TestStore => WeaviateTestStore.Instance;
+
+        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
+    }
 }
