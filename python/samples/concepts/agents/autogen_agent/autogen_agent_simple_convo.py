@@ -30,7 +30,7 @@ async def main():
     autogen_agent = AutoGenAgent(conversable_agent=cathy)
 
     async for content in autogen_agent.invoke(
-        recipient=joe, message="Tell me a joke about NVDA and TESLA stock prices.", max_turns=3
+        recipient=joe, message="Tell me a joke about the stock market.", max_turns=3
     ):
         print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 

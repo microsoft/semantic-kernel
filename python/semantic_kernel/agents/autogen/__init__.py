@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.agents.autogen.autogen_agent import AutoGenAgent
+from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConversableAgent
 
-__all__ = ["AutoGenAgent"]
+__all__ = ["AutoGenConversableAgent"]

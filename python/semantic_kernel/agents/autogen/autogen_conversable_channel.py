@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import TYPE_CHECKING, Any, AsyncIterable
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -13,7 +19,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AutoGenChannel(AgentChannel):
+class AutoGenConversableAgentChannel(AgentChannel):
     """Minimal bridging channel between a Semantic Kernel conversation and an AutoGen ConversableAgent.
 
     We store conversation messages in memory
@@ -21,21 +27,24 @@ class AutoGenChannel(AgentChannel):
     """
 
     def __init__(self, conversable_agent: "ConversableAgent") -> None:
-        """Initialize the AutoGenChannel."""
+        """Initialize the AutoGenConversableAgent Channel."""
         pass
 
+    @override
     async def receive(self, history: list[ChatMessageContent]) -> None:
         """Receive a message and store it in the local conversation buffer."""
-        raise NotImplementedError("AutoGenChannel does not support receive.")
+        raise NotImplementedError("AutoGenConversableAgent Channel does not support receive.")
 
+    @override
     def invoke(
         self,
         agent: "Agent",
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Invoke the agent with a single message."""
-        raise NotImplementedError("AutoGenChannel does not support invoke.")
+        raise NotImplementedError("AutoGenConversableAgent Channel does not support invoke.")
 
+    @override
     def invoke_stream(
         self,
         agent: "Agent",
@@ -43,12 +52,14 @@ class AutoGenChannel(AgentChannel):
         **kwargs,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Invoke the agent with a stream of messages."""
-        raise NotImplementedError("AutoGenChannel does not support streaming.")
+        raise NotImplementedError("AutoGenConversableAgent Channel does not support streaming.")
 
-    async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
+    @override
+    async def get_history(self) -> AsyncIterable[ChatMessageContent]:  # type: ignore
         """Return the conversation messages so far in reverse (latest first)."""
-        raise NotImplementedError("AutoGenChannel does not support get_history.")
+        raise NotImplementedError("AutoGenConversableAgent Channel does not support get_history.")
 
+    @override
     async def reset(self) -> None:
         """Clear the local conversation buffer."""
-        raise NotImplementedError("AutoGenChannel does not support reset.")
+        raise NotImplementedError("AutoGenConversableAgent Channel does not support reset.")
