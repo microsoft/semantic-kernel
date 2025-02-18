@@ -4,7 +4,6 @@ import asyncio
 import json
 import os
 
-from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import (
     OpenApiAnonymousAuthDetails,
     OpenApiTool,
@@ -27,7 +26,7 @@ async def main() -> None:
 
     async with (
         DefaultAzureCredential() as creds,
-        AIProjectClient.from_connection_string(
+        AzureAIAgent.create_client(
             credential=creds,
             conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
         ) as client,

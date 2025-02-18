@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
+from pydantic import Field
 
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -26,12 +27,7 @@ class CustomSelectionStrategy(SelectionStrategy):
 
     NUM_OF_RETRIES: ClassVar[int] = 3
 
-    chat_completion_service: ChatCompletionClientBase
-
-    def __init__(self, **kwargs):
-        chat_completion_service = OpenAIChatCompletion()
-
-        super().__init__(chat_completion_service=chat_completion_service, **kwargs)
+    chat_completion_service: ChatCompletionClientBase = Field(default_factory=lambda: OpenAIChatCompletion())
 
     async def next(self, agents: list["Agent"], history: list["ChatMessageContent"]) -> "Agent":
         """Select the next agent to interact with.
@@ -64,6 +60,9 @@ class CustomSelectionStrategy(SelectionStrategy):
                     chat_history,
                     AzureChatPromptExecutionSettings(),
                 )
+
+                if completion is None:
+                    continue
 
                 try:
                     return agents[int(completion.content)]
