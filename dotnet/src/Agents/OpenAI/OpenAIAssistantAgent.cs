@@ -48,7 +48,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Assistant definition,
         OpenAIClientProvider provider,
         IEnumerable<KernelPlugin>? plugins = null,
-        PromptTemplateConfig templateConfig = null,
+        PromptTemplateConfig? templateConfig = null,
         IPromptTemplateFactory? templateFactory = null)
     {
         this._openAIClient = provider.Client;
