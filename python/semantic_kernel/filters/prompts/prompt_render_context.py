@@ -9,12 +9,12 @@ if TYPE_CHECKING:
 
 
 class PromptRenderContext(FilterContextBase):
-    """Context for prompt rendering filters.
+    """The context for prompt rendering filtering.
 
     When prompt rendering is expensive (for instance when there are expensive functions being called.)
-    This filter can be used to set the rendered_prompt directly and returning.
+    This filter can be used to set the rendered_prompt or function result directly and returning.
 
-    Attributes:
+    Args:
         function: The function invoked.
         kernel: The kernel used.
         arguments: The arguments used to call the function.

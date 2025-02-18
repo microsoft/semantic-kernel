@@ -2,8 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
@@ -50,7 +49,7 @@ class WeatherPlugin:
 
 async def retry_filter(
     context: FunctionInvocationContext,
-    next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
+    next: Callable[[FunctionInvocationContext], Awaitable[None]],
 ) -> None:
     """A filter that retries the function invocation if it fails.
 

@@ -2,8 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -33,7 +32,7 @@ class RetryFilter:
     async def retry_filter(
         self,
         context: FunctionInvocationContext,
-        next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
+        next: Callable[[FunctionInvocationContext], Awaitable[None]],
     ) -> None:
         """A filter that retries the function invocation with a different model if it fails."""
         try:

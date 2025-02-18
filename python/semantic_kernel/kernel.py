@@ -316,6 +316,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
         arguments: "KernelArguments | None" = None,
+        execution_settings: "PromptExecutionSettings | None" = None,
         function_call_count: int | None = None,
         request_index: int | None = None,
         function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
@@ -383,6 +384,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             kernel=self,
             arguments=args_cloned,
             chat_history=chat_history,
+            execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
             function_count=function_call_count or 0,
             request_sequence_index=request_index or 0,
