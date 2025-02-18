@@ -151,13 +151,11 @@ public class SqlServerCommandBuilderTests
             Schema = "schema"
         };
         VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordDataProperty[] dataProperties =
+        VectorStoreRecordProperty[] properties =
         [
+            keyProperty,
             new VectorStoreRecordDataProperty("simpleString", typeof(string)),
-            new VectorStoreRecordDataProperty("simpleInt", typeof(int))
-        ];
-        VectorStoreRecordVectorProperty[] vectorProperties =
-        [
+            new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
             new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 10
@@ -166,7 +164,7 @@ public class SqlServerCommandBuilderTests
 
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = SqlServerCommandBuilder.MergeInto(connection, options, "table",
-            keyProperty, dataProperties, vectorProperties,
+            keyProperty, properties,
             new Dictionary<string, object?>
             {
                 { "id", null },
@@ -207,12 +205,7 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(connection,
             "schema", "tableName", keyProperty, 123L);
 
-        Assert.Equal(
-        """""
-        DELETE
-        FROM [schema].[tableName]
-        WHERE [id] = @id
-        """"", command.CommandText);
+        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] = @id", command.CommandText);
         Assert.Equal(123L, command.Parameters[0].Value);
         Assert.Equal("@id", command.Parameters[0].ParameterName);
     }
@@ -227,12 +220,7 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.DeleteMany(connection,
             "schema", "tableName", keyProperty, keys);
 
-        Assert.Equal(
-            """""
-            DELETE
-            FROM [schema].[tableName]
-            WHERE [id] IN (@k0,@k1)
-            """"", command.CommandText);
+        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] IN (@k0,@k1)", command.CommandText);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);

@@ -176,8 +176,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
                 this._options,
                 this.CollectionName,
                 this._propertyReader.KeyProperty,
-                this._propertyReader.DataProperties,
-                this._propertyReader.VectorProperties,
+                this._propertyReader.Properties,
                 map);
 
         if (key is not null)
