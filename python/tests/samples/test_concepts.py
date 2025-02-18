@@ -26,6 +26,7 @@ from samples.concepts.filtering.auto_function_invoke_filters import main as auto
 from samples.concepts.filtering.function_invocation_filters import main as function_invocation_filters
 from samples.concepts.filtering.function_invocation_filters_stream import main as function_invocation_filters_stream
 from samples.concepts.filtering.prompt_filters import main as prompt_filters
+from samples.concepts.filtering.retry_with_different_model import main as retry_with_different_model
 from samples.concepts.functions.kernel_arguments import main as kernel_arguments
 from samples.concepts.grounding.grounded import main as grounded
 from samples.concepts.images.image_generation import main as image_generation
@@ -136,6 +137,15 @@ concepts = [
         id="prompt_filters",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        retry_with_different_model,
+        [],
+        id="retry_with_different_model",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None,
+            reason="Not running completion samples.",
         ),
     ),
     param(
