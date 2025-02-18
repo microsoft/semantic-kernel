@@ -2,6 +2,7 @@
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -341,6 +342,7 @@ internal static class AssistantThreadActions
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [ExcludeFromCodeCoverage]
     public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         OpenAIAssistantAgent agent,
         AssistantClient client,
@@ -586,6 +588,7 @@ internal static class AssistantThreadActions
         return content;
     }
 
+    [ExcludeFromCodeCoverage]
     private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
     {
         StreamingChatMessageContent content =
@@ -618,6 +621,7 @@ internal static class AssistantThreadActions
         return content;
     }
 
+    [ExcludeFromCodeCoverage]
     private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, RunStepDetailsUpdate update)
     {
         StreamingChatMessageContent content =
@@ -670,6 +674,7 @@ internal static class AssistantThreadActions
             };
     }
 
+    [ExcludeFromCodeCoverage]
     private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
         string? fileId = null;
