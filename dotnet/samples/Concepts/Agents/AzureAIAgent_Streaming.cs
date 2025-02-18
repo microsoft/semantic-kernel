@@ -25,7 +25,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.ClientProvider);
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
@@ -51,7 +51,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.ClientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
@@ -84,7 +84,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             null,
             AgentInstructions,
             [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.ClientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };

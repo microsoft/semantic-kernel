@@ -19,7 +19,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.ClientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };

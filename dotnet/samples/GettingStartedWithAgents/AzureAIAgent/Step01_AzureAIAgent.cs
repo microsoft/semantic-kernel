@@ -22,7 +22,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
 
         Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, this.ClientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Arguments =
             {

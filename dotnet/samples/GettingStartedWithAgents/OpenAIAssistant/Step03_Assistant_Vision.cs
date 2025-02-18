@@ -27,7 +27,7 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;

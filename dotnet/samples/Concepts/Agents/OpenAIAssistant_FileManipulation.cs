@@ -28,7 +28,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();

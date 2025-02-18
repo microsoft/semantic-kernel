@@ -29,7 +29,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent assistantAgent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent assistantAgent = new(assistant, this.AssistantClient);
 
         ChatCompletionAgent chatAgent =
             new()

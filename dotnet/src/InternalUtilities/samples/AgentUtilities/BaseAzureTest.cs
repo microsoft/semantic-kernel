@@ -10,17 +10,18 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="AzureAIAgent"/>.
 /// </summary>
-public abstract class BaseAzureAgentTest : BaseAgentsTest<AzureAIClientProvider>
+public abstract class BaseAzureAgentTest : BaseAgentsTest<AIProjectClient>
 {
     protected BaseAzureAgentTest(ITestOutputHelper output) : base(output)
     {
-        this.ClientProvider = AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        var clientProvider = AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
 
-        this.AgentsClient = this.ClientProvider.Client.GetAgentsClient();
+        this.Client = clientProvider.Client;
+        this.AgentsClient = clientProvider.AgentsClient;
     }
 
     /// <inheritdoc/>
-    protected override AzureAIClientProvider ClientProvider { get; }
+    protected override AIProjectClient Client { get; }
 
     /// <summary>
     /// Gets the <see cref="AgentsClient"/>.

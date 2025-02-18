@@ -16,7 +16,7 @@ using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 /// Base class for samples that demonstrate the usage of host agents
 /// based on API's such as Open AI Assistants or Azure AI Agents.
 /// </summary>
-public abstract class BaseAgentsTest<TProvider>(ITestOutputHelper output) : BaseAgentsTest(output)
+public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
     /// Metadata key to indicate the assistant as created for a sample.
@@ -38,9 +38,9 @@ public abstract class BaseAgentsTest<TProvider>(ITestOutputHelper output) : Base
         });
 
     /// <summary>
-    /// Gets the client provider for the agent.
+    /// Gets the root client for the service.
     /// </summary>
-    protected abstract TProvider ClientProvider { get; }
+    protected abstract TClient Client { get; }
 }
 
 /// <summary>

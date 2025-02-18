@@ -35,7 +35,7 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
                 }
             },
             metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
-        AzureAIAgent agent = new(agentModel, this.ClientProvider);
+        AzureAIAgent agent = new(agentModel, this.AgentsClient);
 
         // Create a thread associated for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);

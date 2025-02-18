@@ -71,7 +71,7 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
             null,
             instructions);
 
-        AzureAIAgent agent = new(definition, this.ClientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };

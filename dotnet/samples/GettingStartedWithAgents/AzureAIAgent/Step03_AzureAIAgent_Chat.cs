@@ -44,13 +44,13 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
             ReviewerName,
             null,
             ReviewerInstructions);
-        AzureAIAgent agentReviewer = new(reviewerModel, this.ClientProvider);
+        AzureAIAgent agentReviewer = new(reviewerModel, this.AgentsClient);
         Agent writerModel = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             CopyWriterName,
             null,
             CopyWriterInstructions);
-        AzureAIAgent agentWriter = new(writerModel, this.ClientProvider);
+        AzureAIAgent agentWriter = new(writerModel, this.AgentsClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =

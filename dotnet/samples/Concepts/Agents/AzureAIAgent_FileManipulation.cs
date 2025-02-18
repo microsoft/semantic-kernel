@@ -32,7 +32,7 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
                         FileIds = { fileInfo.Id },
                     }
                 });
-        AzureAIAgent agent = new(definition, this.ClientProvider);
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();

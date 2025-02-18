@@ -402,25 +402,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentUploadFileAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
-
-        // Act
-        await using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
-        string fileId = await agent.UploadFileAsync(stream, "text.txt");
-
-        // Assert
-        Assert.NotNull(fileId);
-    }
-
-    /// <summary>
     /// Verify invocation via <see cref="AgentGroupChat"/>.
     /// </summary>
     [Fact]

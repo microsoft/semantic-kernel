@@ -13,27 +13,23 @@ using OpenAI.Files;
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-public abstract class BaseAssistantTest : BaseAgentsTest<OpenAIClientProvider>
+public abstract class BaseAssistantTest : BaseAgentsTest<OpenAIClient>
 {
     protected BaseAssistantTest(ITestOutputHelper output) : base(output)
     {
-        this.ClientProvider =
+        var clientProvider =
             this.UseOpenAIConfig ?
                 OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
                 !string.IsNullOrWhiteSpace(this.ApiKey) ?
                     OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
                     OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
 
-        this.AssistantClient = this.ClientProvider.Client.GetAssistantClient();
+        this.Client = clientProvider.Client;
+        this.AssistantClient = clientProvider.AssistantClient;
     }
 
     /// <inheritdoc/>
-    protected override OpenAIClientProvider ClientProvider { get; }
-
-    /// <summary>
-    /// Gets the the <see cref="OpenAIClient"/>.
-    /// </summary>
-    protected OpenAIClient Client => this.ClientProvider.Client;
+    protected override OpenAIClient Client { get; }
 
     /// <summary>
     /// Gets the the <see cref="AssistantClient"/>.

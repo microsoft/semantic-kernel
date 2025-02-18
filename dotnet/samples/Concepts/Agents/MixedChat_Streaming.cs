@@ -55,7 +55,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agentWriter = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =

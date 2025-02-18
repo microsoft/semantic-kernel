@@ -72,7 +72,7 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantT
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider, [plugin]);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin]);
 
         return agent;
     }

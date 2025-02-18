@@ -49,7 +49,7 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agentCounter = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agentCounter = new(assistant, this.AssistantClient);
 
         AgentGroupChat chat = CreateGroupChat();
 

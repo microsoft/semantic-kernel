@@ -128,7 +128,7 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
 
         // Create the agent
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider, [plugin])
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin])
         {
             Kernel = kernel
         };

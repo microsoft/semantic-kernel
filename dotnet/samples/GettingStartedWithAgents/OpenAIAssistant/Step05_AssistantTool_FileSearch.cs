@@ -24,7 +24,7 @@ public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAss
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Upload file - Using a table of fictional employees.
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;

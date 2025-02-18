@@ -26,7 +26,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistan
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();

@@ -113,7 +113,7 @@ public sealed class OpenAIAssistantAgentTests
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, clientProvider);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
 
         AssistantThread thread = await clientProvider.AssistantClient.CreateThreadAsync();
         ChatMessageContent functionResultMessage = new(AuthorRole.Assistant, [new FunctionResultContent("mock-function", result: "A result value")]);
@@ -140,7 +140,7 @@ public sealed class OpenAIAssistantAgentTests
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!, instructions: "Repeat the user all of the user messages");
-        OpenAIAssistantAgent agent = new(definition, clientProvider)
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient)
         {
             RunOptions = new()
             {
@@ -172,7 +172,7 @@ public sealed class OpenAIAssistantAgentTests
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, clientProvider);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
 
         ThreadCreationOptions threadOptions = new()
         {
@@ -221,7 +221,7 @@ public sealed class OpenAIAssistantAgentTests
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
-        OpenAIAssistantAgent agent = new(definition, clientProvider);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
 
         // Upload file - Using a table of fictional employees.
         OpenAIFileClient fileClient = clientProvider.Client.GetOpenAIFileClient();
@@ -268,7 +268,7 @@ public sealed class OpenAIAssistantAgentTests
         kernel.Plugins.Add(plugin);
 
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
-        OpenAIAssistantAgent agent = new(definition, clientProvider);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
 
         try
         {
@@ -306,7 +306,7 @@ public sealed class OpenAIAssistantAgentTests
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
-        OpenAIAssistantAgent agent = new(definition, clientProvider, [plugin]);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient, [plugin]);
 
         AgentGroupChat chat = new();
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));

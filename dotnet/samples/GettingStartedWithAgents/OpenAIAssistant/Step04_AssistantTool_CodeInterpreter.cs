@@ -22,7 +22,7 @@ public class Step04_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a thread for the agent conversation.
         string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);

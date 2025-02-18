@@ -96,7 +96,7 @@ public sealed class MixedAgentTests
 
         // Configure assistant agent with the plugin.
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
-        OpenAIAssistantAgent assistantAgent = new(definition, clientProvider, [plugin]);
+        OpenAIAssistantAgent assistantAgent = new(definition, clientProvider.AssistantClient, [plugin]);
 
         // Act & Assert
         try

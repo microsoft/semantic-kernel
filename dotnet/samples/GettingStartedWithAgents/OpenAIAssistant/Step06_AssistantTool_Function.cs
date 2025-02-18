@@ -39,7 +39,7 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssis
         plugin.Select(f => f.ToToolDefinition(plugin.Name)).ToList().ForEach(td => creationOptions.Tools.Add(td));
 
         Assistant definition = await this.AssistantClient.CreateAssistantAsync(this.Model, creationOptions);
-        OpenAIAssistantAgent agent = new(definition, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(definition, this.AssistantClient);
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);

@@ -24,7 +24,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a thread for the agent conversation.
         string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
@@ -51,7 +51,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
 
         // Create the agent
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider, [plugin]);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin]);
 
         // Create a thread for the agent conversation.
         string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
@@ -77,7 +77,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a thread for the agent conversation.
         string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
