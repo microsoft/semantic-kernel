@@ -88,12 +88,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
-        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
-        KernelFunction nullPrompt = new KernelFunctionNoop(arguments?.ExecutionSettings);
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
             kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
                 kernel,
-                nullPrompt,
+                arguments?.ExecutionSettings,
                 arguments ?? []);
 
         return (chatCompletionService, executionSettings);

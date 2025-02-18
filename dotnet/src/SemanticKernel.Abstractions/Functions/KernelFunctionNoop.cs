@@ -14,13 +14,13 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
 [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-public sealed class KernelFunctionNoop : KernelFunction
+internal sealed class KernelFunctionNoop : KernelFunction
 {
     /// <summary>
     /// Creates a new instance of the <see cref="KernelFunctionNoop"/> class.
     /// </summary>
     /// <param name="executionSettings">Option: Prompt execution settings.</param>
-    public KernelFunctionNoop(IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings) :
+    internal KernelFunctionNoop(IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings) :
         base($"Function_{Guid.NewGuid():N}", string.Empty, [], null, executionSettings?.ToDictionary(static kv => kv.Key, static kv => kv.Value))
     {
     }
