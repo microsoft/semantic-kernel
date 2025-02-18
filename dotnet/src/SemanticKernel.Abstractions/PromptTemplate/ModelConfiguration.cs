@@ -3,29 +3,35 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Agents.Definition;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Defines the options used by a model.
+/// Defines the configuration for a model.
 /// </summary>
-public sealed class ModelOptions
+public sealed class ModelConfiguration
 {
     /// <summary>
-    /// The ID of the model.
+    /// The type of the model configuration.
     /// </summary>
-    public string? ModelId
+    /// <remarks>
+    /// Used to identify where the model is deployed e.g., azure_openai, openai, ...
+    /// </remarks>
+    public string? Type
     {
-        get => this._modelId;
+        get => this._type;
         set
         {
             Verify.NotNull(value);
-            this._modelId = value;
+            this._type = value;
         }
     }
 
     /// <summary>
-    /// Extra properties that may be included in the serialized model options.
+    /// Extra properties that may be included in the serialized model configuration.
     /// </summary>
+    /// <remarks>
+    /// Used to store model specific configuration e.g., the deployment name, endpoint, etc.
+    /// </remarks>
     [JsonExtensionData]
     public IDictionary<string, object>? ExtensionData
     {
@@ -38,7 +44,7 @@ public sealed class ModelOptions
     }
 
     #region private
-    private string? _modelId;
+    private string? _type;
     private IDictionary<string, object>? _extensionData;
     #endregion
 }

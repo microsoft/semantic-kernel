@@ -64,12 +64,12 @@ internal static class AssistantCreationOptionsFactory
 
         if (definition.EnableCodeInterpreter)
         {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
+            assistantCreationOptions.Tools.Add(global::OpenAI.Assistants.ToolDefinition.CreateCodeInterpreter());
         }
 
         if (definition.EnableFileSearch)
         {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+            assistantCreationOptions.Tools.Add(global::OpenAI.Assistants.ToolDefinition.CreateFileSearch());
         }
 
         return assistantCreationOptions;

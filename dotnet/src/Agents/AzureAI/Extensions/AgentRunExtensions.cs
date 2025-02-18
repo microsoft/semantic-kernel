@@ -40,7 +40,7 @@ internal static class AgentRunExtensions
         string threadId,
         AzureAIAgent agent,
         string? instructions,
-        ToolDefinition[] tools,
+        Azure.AI.Projects.ToolDefinition[] tools,
         AzureAIInvocationOptions? invocationOptions,
         CancellationToken cancellationToken)
     {
@@ -91,7 +91,7 @@ internal static class AgentRunExtensions
         string threadId,
         AzureAIAgent agent,
         string? instructions,
-        ToolDefinition[] tools,
+        Azure.AI.Projects.ToolDefinition[] tools,
         AzureAIInvocationOptions? invocationOptions,
         CancellationToken cancellationToken)
     {

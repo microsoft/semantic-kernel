@@ -165,7 +165,7 @@ internal static class AssistantThreadActions
 
         logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
 
-        List<ToolDefinition> tools = new(agent.Tools);
+        List<global::OpenAI.Assistants.ToolDefinition> tools = new(agent.Tools);
 
         // Add unique functions from the Kernel which are not already present in the agent's tools
         var functionToolNames = new HashSet<string>(tools.OfType<FunctionToolDefinition>().Select(t => t.FunctionName));
@@ -404,7 +404,7 @@ internal static class AssistantThreadActions
 
         logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
 
-        ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+        global::OpenAI.Assistants.ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 

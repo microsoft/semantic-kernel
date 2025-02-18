@@ -56,7 +56,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Gets the predefined tools for run processing.
     /// </summary>
-    internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
+    internal IReadOnlyList<global::OpenAI.Assistants.ToolDefinition> Tools => this._assistant.Tools;
 
     /// <summary>
     /// Create a new <see cref="OpenAIAssistantAgent"/>.

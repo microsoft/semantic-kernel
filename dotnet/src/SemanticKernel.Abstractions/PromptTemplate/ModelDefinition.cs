@@ -41,7 +41,7 @@ public sealed class ModelDefinition
     /// <summary>
     /// Gets or sets the options used by the model.
     /// </summary>
-    public ModelOptions? Options
+    public PromptExecutionSettings? Options
     {
         get => this._options;
         set
@@ -67,7 +67,7 @@ public sealed class ModelDefinition
     #region
     private string? _id;
     private string? _api;
-    private ModelOptions? _options;
+    private PromptExecutionSettings? _options;
     private ModelConfiguration? _configuration;
     #endregion
 }

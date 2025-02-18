@@ -74,13 +74,13 @@ internal static class AgentMessageFactory
         }
     }
 
-    private static readonly Dictionary<string, ToolDefinition> s_toolMetadata = new()
+    private static readonly Dictionary<string, Azure.AI.Projects.ToolDefinition> s_toolMetadata = new()
     {
         { AzureAIAgent.Tools.CodeInterpreter, new CodeInterpreterToolDefinition() },
         { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() },
     };
 
-    private static IEnumerable<ToolDefinition> GetToolDefinition(IEnumerable<string>? tools)
+    private static IEnumerable<Azure.AI.Projects.ToolDefinition> GetToolDefinition(IEnumerable<string>? tools)
     {
         if (tools is null)
         {
@@ -89,7 +89,7 @@ internal static class AgentMessageFactory
 
         foreach (string tool in tools)
         {
-            if (s_toolMetadata.TryGetValue(tool, out ToolDefinition? toolDefinition))
+            if (s_toolMetadata.TryGetValue(tool, out Azure.AI.Projects.ToolDefinition? toolDefinition))
             {
                 yield return toolDefinition;
             }

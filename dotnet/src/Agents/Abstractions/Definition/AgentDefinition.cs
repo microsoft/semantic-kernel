@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Agents.Definition;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines an agent.
@@ -20,6 +20,19 @@ public sealed class AgentDefinition
         {
             Verify.NotNull(value);
             this._id = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the type of the  agent.
+    /// </summary>
+    public string? Type
+    {
+        get => this._type;
+        set
+        {
+            Verify.NotNull(value);
+            this._type = value;
         }
     }
 
@@ -114,7 +127,34 @@ public sealed class AgentDefinition
         }
     }
 
+    /// <summary>
+    /// Gets or sets the template options used by the agent.
+    /// </summary>
+    public TemplateOptions? Template
+    {
+        get => this._template;
+        set
+        {
+            Verify.NotNull(value);
+            this._template = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the collection of tools used by the agent.
+    /// </summary>
+    public IList<ToolDefinition> Tools
+    {
+        get => this._tools ??= [];
+        set
+        {
+            Verify.NotNull(value);
+            this._tools = value;
+        }
+    }
+
     #region
+    private string? _type;
     private string? _id;
     private string? _name;
     private string? _description;
@@ -123,6 +163,7 @@ public sealed class AgentDefinition
     private ModelDefinition? _model;
     private IList<InputVariable>? _inputs;
     private IList<OutputVariable>? _outputs;
+    private TemplateOptions? _template;
+    private IList<ToolDefinition>? _tools;
     #endregion
-
 }
