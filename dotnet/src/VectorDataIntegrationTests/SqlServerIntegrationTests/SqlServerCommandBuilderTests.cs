@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Text;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using Xunit;
@@ -11,10 +12,13 @@ public class SqlServerCommandBuilderTests
     [InlineData("schema", "name", "[schema].[name]")]
     [InlineData("schema", "[brackets]", "[schema].[[brackets]]]")]
     [InlineData("needs]escaping", "[brackets]", "[needs]]escaping].[[brackets]]]")]
-    public void GetSanitizedFullTableName(string schema, string table, string expectedFullName)
+    public void AppendTableName(string schema, string table, string expectedFullName)
     {
-        string result = SqlServerCommandBuilder.GetSanitizedFullTableName(schema, table);
-        Assert.Equal(expectedFullName, result);
+        StringBuilder result = new();
+
+        SqlServerCommandBuilder.AppendTableName(result, schema, table);
+
+        Assert.Equal(expectedFullName, result.ToString());
     }
 
     [Theory]
@@ -23,6 +27,7 @@ public class SqlServerCommandBuilderTests
     public void DropTable(string schema, string table, string expectedTable)
     {
         using SqlConnection connection = CreateConnection();
+
         using SqlCommand command = SqlServerCommandBuilder.DropTable(connection, schema, table);
 
         Assert.Equal($"DROP TABLE IF EXISTS [{schema}].{expectedTable}", command.CommandText);
@@ -34,6 +39,7 @@ public class SqlServerCommandBuilderTests
     public void SelectTableName(string schema, string table)
     {
         using SqlConnection connection = CreateConnection();
+
         using SqlCommand command = SqlServerCommandBuilder.SelectTableName(connection, schema, table);
 
         Assert.Equal(
@@ -45,7 +51,6 @@ public class SqlServerCommandBuilderTests
             AND TABLE_NAME = @tableName
         """
         , command.CommandText);
-
         Assert.Equal(schema, command.Parameters[0].Value);
         Assert.Equal(table, command.Parameters[1].Value);
     }
@@ -72,8 +77,8 @@ public class SqlServerCommandBuilderTests
                 Dimensions = 10
             }
         ];
-
         using SqlConnection connection = CreateConnection();
+
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, options, "table",
             ifNotExists, keyProperty, dataProperties, vectorProperties);
 
@@ -115,8 +120,8 @@ public class SqlServerCommandBuilderTests
                 Dimensions = 10
             }
         ];
-
         using SqlConnection connection = CreateConnection();
+
         using SqlCommand command = SqlServerCommandBuilder.InsertInto(connection, options, "table",
             keyProperty, dataProperties, vectorProperties,
             new Dictionary<string, object?>
@@ -144,7 +149,7 @@ public class SqlServerCommandBuilderTests
     }
 
     [Fact]
-    public void MergeInto()
+    public void MergeIntoSingle()
     {
         SqlServerVectorStoreOptions options = new()
         {
@@ -163,7 +168,7 @@ public class SqlServerCommandBuilderTests
         ];
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeInto(connection, options, "table",
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, options, "table",
             keyProperty, properties,
             new Dictionary<string, object?>
             {
@@ -194,6 +199,78 @@ public class SqlServerCommandBuilderTests
         Assert.Equal(134, command.Parameters[2].Value);
         Assert.Equal("@embedding1", command.Parameters[3].ParameterName);
         Assert.Equal("{ 10.0 }", command.Parameters[3].Value);
+    }
+
+    [Fact]
+    public void MergeIntoMany()
+    {
+        SqlServerVectorStoreOptions options = new()
+        {
+            Schema = "schema"
+        };
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordProperty[] properties =
+        [
+            keyProperty,
+            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
+            new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10
+            }
+        ];
+        Dictionary<string, object?>[] records =
+        [
+            new Dictionary<string, object?>
+            {
+                { "id", 0L },
+                { "simpleString", "nameValue0" },
+                { "simpleInt", 134 },
+                { "embedding", "{ 10.0 }" }
+            },
+            new Dictionary<string, object?>
+            {
+                { "id", 1L },
+                { "simpleString", "nameValue1" },
+                { "simpleInt", 135 },
+                { "embedding", "{ 11.0 }" }
+            }
+        ];
+
+        using SqlConnection connection = CreateConnection();
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(connection, options, "table",
+            keyProperty, properties, records);
+
+        string expectedCommand =
+        """"
+        DECLARE @InsertedKeys TABLE (KeyColumn BIGINT);
+        MERGE INTO [schema].[table] AS t
+        USING (VALUES
+        (@id_0,@simpleString_0,@simpleInt_0,@embedding_0),
+        (@id_1,@simpleString_1,@simpleInt_1,@embedding_1)) AS s ([id],[simpleString],[simpleInt],[embedding])
+        ON (t.[id] = s.[id])
+        WHEN MATCHED THEN
+        UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding] = s.[embedding]
+        WHEN NOT MATCHED THEN
+        INSERT ([id],[simpleString],[simpleInt],[embedding])
+        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding])
+        OUTPUT inserted.[id] INTO @InsertedKeys (KeyColumn);
+        SELECT KeyColumn FROM @InsertedKeys;
+        """";
+
+        Assert.Equal(expectedCommand, command.CommandText);
+
+        for (int i = 0; i < records.Length; i++)
+        {
+            Assert.Equal($"@id_{i}", command.Parameters[4 * i].ParameterName);
+            Assert.Equal((long)i, command.Parameters[4 * i].Value);
+            Assert.Equal($"@simpleString_{i}", command.Parameters[4 * i + 1].ParameterName);
+            Assert.Equal($"nameValue{i}", command.Parameters[4 * i + 1].Value);
+            Assert.Equal($"@simpleInt_{i}", command.Parameters[4 * i + 2].ParameterName);
+            Assert.Equal(134 + i, command.Parameters[4 * i + 2].Value);
+            Assert.Equal($"@embedding_{i}", command.Parameters[4 * i + 3].ParameterName);
+            Assert.Equal($"{{ 1{i}.0 }}", command.Parameters[4 * i + 3].Value);
+        }
     }
 
     [Fact]

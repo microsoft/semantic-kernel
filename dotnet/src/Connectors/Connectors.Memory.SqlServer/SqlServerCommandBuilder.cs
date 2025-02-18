@@ -52,22 +52,6 @@ internal static class SqlServerCommandBuilder
         sb.Append(')'); // end the table definition
 
         return connection.CreateCommand(sb);
-
-        static (string sqlName, bool isNullable) Map(Type type) => type switch
-        {
-            Type t when t == typeof(int) => ("INT", false),
-            Type t when t == typeof(long) => ("BIGINT", false),
-            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", false),
-            Type t when t == typeof(string) => ("NVARCHAR(255) COLLATE Latin1_General_100_BIN2", true),
-            Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", true),
-            Type t when t == typeof(bool) => ("BIT", false),
-            Type t when t == typeof(DateTime) => ("DATETIME", false),
-            Type t when t == typeof(TimeSpan) => ("TIME", false),
-            Type t when t == typeof(decimal) => ("DECIMAL", false),
-            Type t when t == typeof(double) => ("FLOAT", false),
-            Type t when t == typeof(float) => ("REAL", false),
-            _ => throw new NotSupportedException($"Type {type} is not supported.")
-        };
     }
 
     internal static SqlCommand DropTable(SqlConnection connection, string schema, string tableName)
@@ -129,7 +113,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand MergeInto(
+    internal static SqlCommand MergeIntoSingle(
         SqlConnection connection,
         SqlServerVectorStoreOptions options,
         string tableName,
@@ -151,7 +135,7 @@ internal static class SqlServerCommandBuilder
             command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
-        sb.AppendFormat(") AS s (");
+        sb.Append(") AS s (");
         sb.AppendColumnNames(properties);
         sb.AppendLine(")");
         sb.AppendFormat("ON (t.[{0}] = s.[{0}])", GetColumnName(keyProperty)).AppendLine();
@@ -174,6 +158,82 @@ internal static class SqlServerCommandBuilder
         sb.Append("VALUES (");
         sb.AppendColumnNames(properties, prefix: "s.");
         sb.Append(");");
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
+    internal static SqlCommand MergeIntoMany(
+        SqlConnection connection,
+        SqlServerVectorStoreOptions options,
+        string tableName,
+        VectorStoreRecordKeyProperty keyProperty,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
+        IEnumerable<Dictionary<string, object?>> records)
+    {
+        SqlCommand command = connection.CreateCommand();
+
+        StringBuilder sb = new(200);
+        // The DECLARE statement creates a table variable to store the keys of the inserted rows.
+        sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty.PropertyType).sqlName);
+        sb.AppendLine();
+        // The MERGE statement performs the upsert operation and outputs the keys of the inserted rows into the table variable.
+        sb.Append("MERGE INTO ");
+        sb.AppendTableName(options.Schema, tableName);
+        sb.AppendLine(" AS t"); // t stands for target
+        sb.AppendLine("USING (VALUES");
+        int rowIndex = 0;
+        foreach (var record in records)
+        {
+            sb.Append('(');
+            foreach (VectorStoreRecordProperty property in properties)
+            {
+                int index = sb.Length;
+                sb.AppendFormat("@{0}_{1},", GetColumnName(property), rowIndex);
+                string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+                command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+            }
+            sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
+            sb.AppendLine(",");
+            rowIndex++;
+        }
+
+        if (rowIndex == 0)
+        {
+            // TODO adsitnik clarify: should we throw or simply do nothing?
+            throw new ArgumentException("The value cannot be empty.", nameof(records));
+        }
+
+        sb.Length -= (1 + Environment.NewLine.Length); // remove the last comma and newline
+
+        sb.Append(") AS s ("); // s stands for source
+        sb.AppendColumnNames(properties);
+        sb.AppendLine(")");
+        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", GetColumnName(keyProperty)).AppendLine();
+        sb.AppendLine("WHEN MATCHED THEN");
+        sb.Append("UPDATE SET ");
+        foreach (VectorStoreRecordProperty property in properties)
+        {
+            if (property != keyProperty) // don't update the key
+            {
+                sb.AppendFormat("t.[{0}] = s.[{0}],", GetColumnName(property));
+            }
+        }
+        --sb.Length; // remove the last comma
+        sb.AppendLine();
+        sb.Append("WHEN NOT MATCHED THEN");
+        sb.AppendLine();
+        sb.Append("INSERT (");
+        sb.AppendColumnNames(properties);
+        sb.AppendLine(")");
+        sb.Append("VALUES (");
+        sb.AppendColumnNames(properties, prefix: "s.");
+        sb.AppendLine(")");
+        sb.AppendFormat("OUTPUT inserted.[{0}] INTO @InsertedKeys (KeyColumn);", GetColumnName(keyProperty));
+        sb.AppendLine();
+
+        // The SELECT statement returns the keys of the inserted rows.
+        sb.Append("SELECT KeyColumn FROM @InsertedKeys;");
 
         command.CommandText = sb.ToString();
         return command;
@@ -264,13 +324,7 @@ internal static class SqlServerCommandBuilder
     internal static string GetColumnName(VectorStoreRecordProperty property)
         => property.StoragePropertyName ?? property.DataModelPropertyName;
 
-    // If possible, prefer AppendTableName over this method (it's exposed only for testing purposes).
-    internal static string GetSanitizedFullTableName(string schema, string tableName)
-        => new StringBuilder(1 + schema.Length + 3 + tableName.Length + 1) // [schema].[table]
-                .AppendTableName(schema, tableName)
-                .ToString();
-
-    private static StringBuilder AppendTableName(this StringBuilder sb, string schema, string tableName)
+    internal static StringBuilder AppendTableName(this StringBuilder sb, string schema, string tableName)
     {
         // If the column name contains a ], then escape it by doubling it.
         // "Name with [brackets]" becomes [Name with [brackets]]].
@@ -341,4 +395,20 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return command;
     }
+
+    private static (string sqlName, bool isNullable) Map(Type type) => type switch
+    {
+        Type t when t == typeof(int) => ("INT", false),
+        Type t when t == typeof(long) => ("BIGINT", false),
+        Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", false),
+        Type t when t == typeof(string) => ("NVARCHAR(255) COLLATE Latin1_General_100_BIN2", true),
+        Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", true),
+        Type t when t == typeof(bool) => ("BIT", false),
+        Type t when t == typeof(DateTime) => ("DATETIME", false),
+        Type t when t == typeof(TimeSpan) => ("TIME", false),
+        Type t when t == typeof(decimal) => ("DECIMAL", false),
+        Type t when t == typeof(double) => ("FLOAT", false),
+        Type t when t == typeof(float) => ("REAL", false),
+        _ => throw new NotSupportedException($"Type {type} is not supported.")
+    };
 }

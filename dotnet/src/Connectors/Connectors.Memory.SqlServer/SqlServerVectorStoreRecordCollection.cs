@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,8 +33,10 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     {
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-        using SqlCommand command = SqlServerCommandBuilder.SelectTableName(this._sqlConnection, this._options.Schema, this.CollectionName);
+        using SqlCommand command = SqlServerCommandBuilder.SelectTableName(
+            this._sqlConnection, this._options.Schema, this.CollectionName);
         using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -42,7 +46,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     // TODO adsitnik: design: We typically don't provide such methods in BCL.
     // 1. I totally see why we want to provide it, we just need to make sure it's the right thing to do.
     // 2. An alternative would be to make CreateCollectionAsync a nop when the collection already exists
-    // or extend it with an optional boolan parameter that would control the behavior.
+    // or extend it with an optional boolean parameter that would control the behavior.
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
         => this.CreateCollectionAsync(ifNotExists: true, cancellationToken);
 
@@ -66,15 +70,11 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     {
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-        using SqlCommand command = SqlServerCommandBuilder.DropTable(this._sqlConnection, this._options.Schema, this.CollectionName);
+        using SqlCommand command = SqlServerCommandBuilder.DropTable(
+            this._sqlConnection, this._options.Schema, this.CollectionName);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
-
-    private Task EnsureConnectionIsOpenedAsync(CancellationToken cancellationToken)
-        => this._sqlConnection.State == System.Data.ConnectionState.Open
-            ? Task.CompletedTask
-            : this._sqlConnection.OpenAsync(cancellationToken);
 
     public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
@@ -122,15 +122,15 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
             this._propertyReader.Properties,
             key);
 
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
         using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
             ? Map(reader, this._propertyReader)
             : default;
     }
 
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -143,8 +143,6 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
             keys);
-
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
         using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -160,7 +158,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
         TKey? key = (TKey)this._propertyReader.KeyPropertyInfo.GetValue(record);
-        Dictionary<string, object?> map = Map(record, this._propertyReader, key);
+        Dictionary<string, object?> map = Map(record, this._propertyReader);
         using SqlCommand command = key is null
             // When the key is null, we are inserting a new record.
             ? SqlServerCommandBuilder.InsertInto(
@@ -171,7 +169,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
                 this._propertyReader.DataProperties,
                 this._propertyReader.VectorProperties,
                 map)
-            : SqlServerCommandBuilder.MergeInto(
+            : SqlServerCommandBuilder.MergeIntoSingle(
                 this._sqlConnection,
                 this._options,
                 this.CollectionName,
@@ -194,9 +192,26 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         return await sqlDataReader.GetFieldValueAsync<TKey>(0, cancellationToken).ConfigureAwait(false);
     }
 
-    public IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(records);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(
+                this._sqlConnection,
+                this._options,
+                this.CollectionName,
+                this._propertyReader.KeyProperty,
+                this._propertyReader.Properties,
+                records.Select(record => Map(record, this._propertyReader)));
+
+        using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return reader.GetFieldValue<TKey>(0);
+        }
     }
 
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
@@ -204,10 +219,15 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         throw new NotImplementedException();
     }
 
-    private static Dictionary<string, object?> Map(TRecord record, VectorStoreRecordPropertyReader propertyReader, TKey key)
+    private Task EnsureConnectionIsOpenedAsync(CancellationToken cancellationToken)
+        => this._sqlConnection.State == System.Data.ConnectionState.Open
+            ? Task.CompletedTask
+            : this._sqlConnection.OpenAsync(cancellationToken);
+
+    private static Dictionary<string, object?> Map(TRecord record, VectorStoreRecordPropertyReader propertyReader)
     {
         Dictionary<string, object?> map = new(StringComparer.Ordinal);
-        map[propertyReader.KeyProperty.DataModelPropertyName] = key;
+        map[propertyReader.KeyProperty.DataModelPropertyName] = propertyReader.KeyPropertyInfo.GetValue(record);
 
         var dataProperties = propertyReader.DataProperties;
         for (int i = 0; i < dataProperties.Count; i++)

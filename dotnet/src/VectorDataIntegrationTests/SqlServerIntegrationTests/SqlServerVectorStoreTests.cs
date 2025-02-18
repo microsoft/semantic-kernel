@@ -40,10 +40,8 @@ public class SqlServerVectorStoreTests
         }
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanInsertAndDeleteRecord(bool deleteBatch)
+    [Fact]
+    public async Task RecordCRUD()
     {
         SqlServerTestStore testStore = new();
 
@@ -55,40 +53,33 @@ public class SqlServerVectorStoreTests
         {
             await collection.CreateCollectionIfNotExistsAsync();
 
-            ReadOnlyMemory<float> floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray();
-            string key = await collection.UpsertAsync(new TestModel()
+            TestModel inserted = new()
             {
                 Id = "MyId",
                 Number = 100,
-                Floats = floats
-            });
-            Assert.Equal("MyId", key);
+                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
+            };
+            string key = await collection.UpsertAsync(inserted);
+            Assert.Equal(inserted.Id, key);
 
-            TestModel? record = await collection.GetAsync("MyId");
-            Assert.NotNull(record);
-            Assert.Equal(100, record.Number);
-            Assert.Equal("MyId", record.Id);
-            Assert.Equal(floats, record.Floats);
-            Assert.Null(record.Text);
+            TestModel? received = await collection.GetAsync(inserted.Id);
+            AssertEquality(inserted, received);
 
-            record = await collection.GetBatchAsync(["MyId"]).SingleAsync();
-            Assert.NotNull(record);
-            Assert.Equal(100, record.Number);
-            Assert.Equal("MyId", record.Id);
-            Assert.Equal(floats, record.Floats);
-            Assert.Null(record.Text);
-
-            if (deleteBatch)
+            TestModel updated = new()
             {
-                await collection.DeleteBatchAsync(["MyId"]);
-            }
-            else
-            {
-                await collection.DeleteAsync("MyId");
-            }
+                Id = inserted.Id,
+                Number = inserted.Number + 200, // change one property
+                Floats = inserted.Floats
+            };
+            key = await collection.UpsertAsync(updated);
+            Assert.Equal(inserted.Id, key);
 
-            Assert.Null(await collection.GetAsync("MyId"));
-            Assert.False(await collection.GetBatchAsync(["MyId"]).AnyAsync());
+            received = await collection.GetAsync(updated.Id);
+            AssertEquality(updated, received);
+
+            await collection.DeleteAsync(inserted.Id);
+
+            Assert.Null(await collection.GetAsync(inserted.Id));
         }
         finally
         {
@@ -96,6 +87,78 @@ public class SqlServerVectorStoreTests
 
             await testStore.ReferenceCountingStopAsync();
         }
+    }
+
+    [Fact]
+    public async Task BatchCRUD()
+    {
+        SqlServerTestStore testStore = new();
+
+        await testStore.ReferenceCountingStartAsync();
+
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>("other");
+
+        try
+        {
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            TestModel[] inserted = Enumerable.Range(0, 10).Select(i => new TestModel()
+            {
+                Id = $"MyId{i}",
+                Number = 100 + i,
+                Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
+            }).ToArray();
+
+            string[] keys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+            for (int i = 0; i < inserted.Length; i++)
+            {
+                Assert.Equal(inserted[i].Id, keys[i]);
+            }
+
+            TestModel[] received = await collection.GetBatchAsync(keys).ToArrayAsync();
+            for (int i = 0; i < inserted.Length; i++)
+            {
+                AssertEquality(inserted[i], received[i]);
+            }
+
+            TestModel[] updated = inserted.Select(i => new TestModel()
+            {
+                Id = i.Id,
+                Number = i.Number + 200, // change one property
+                Floats = i.Floats
+            }).ToArray();
+
+            keys = await collection.UpsertBatchAsync(updated).ToArrayAsync();
+            for (int i = 0; i < updated.Length; i++)
+            {
+                Assert.Equal(updated[i].Id, keys[i]);
+            }
+
+            received = await collection.GetBatchAsync(keys).ToArrayAsync();
+            for (int i = 0; i < updated.Length; i++)
+            {
+                AssertEquality(updated[i], received[i]);
+            }
+
+            await collection.DeleteBatchAsync(keys);
+
+            Assert.False(await collection.GetBatchAsync(keys).AnyAsync());
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+
+            await testStore.ReferenceCountingStopAsync();
+        }
+    }
+
+    private static void AssertEquality(TestModel inserted, TestModel? received)
+    {
+        Assert.NotNull(received);
+        Assert.Equal(inserted.Number, received.Number);
+        Assert.Equal(inserted.Id, received.Id);
+        Assert.Equal(inserted.Floats, received.Floats);
+        Assert.Null(received.Text); // testing DBNull code path
     }
 
     public sealed class TestModel
