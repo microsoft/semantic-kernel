@@ -7,7 +7,7 @@
 
 ## Before running the samples
 
-You need to set up some user secrets run the samples.
+You need to set up some user secrets to run the samples.
 
 ### `BedrockAgent:AgentResourceRoleArn`
 

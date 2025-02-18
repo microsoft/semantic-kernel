@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -34,9 +35,10 @@ public class BedrockAgentChannel : AgentChannel<BedrockAgent>
     {
         foreach (var incomingMessage in history)
         {
-            if (incomingMessage.Content is null)
+            if (string.IsNullOrEmpty(incomingMessage.Content))
             {
-                throw new InvalidOperationException("Message content cannot be null.");
+                this.Logger.LogWarning("Received a message with no content. Skipping.");
+                continue;
             }
 
             if (this._history.Count == 0 || this._history.Last().Role != incomingMessage.Role)

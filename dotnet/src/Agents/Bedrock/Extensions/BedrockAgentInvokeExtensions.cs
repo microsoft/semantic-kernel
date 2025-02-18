@@ -36,7 +36,7 @@ internal static class BedrockAgentInvokeExtensions
                 invokeAgentRequest.SessionState = sessionState;
                 sessionState = null;
             }
-            var invokeAgentResponse = await agent.GetRuntimeClient().InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
+            var invokeAgentResponse = await agent.RuntimeClient.InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
 
             if (invokeAgentResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
             {
@@ -96,7 +96,7 @@ internal static class BedrockAgentInvokeExtensions
                 Role = AuthorRole.Assistant,
                 AuthorName = agent.GetDisplayName(),
                 Content = Encoding.UTF8.GetString(payload.Bytes.ToArray()),
-                ModelId = agent.GetAgentModel().FoundationModel,
+                ModelId = agent.AgentModel.FoundationModel,
                 InnerContent = payload,
             };
     }
@@ -127,7 +127,7 @@ internal static class BedrockAgentInvokeExtensions
             Role = AuthorRole.Assistant,
             AuthorName = agent.GetDisplayName(),
             Items = binaryContents,
-            ModelId = agent.GetAgentModel().FoundationModel,
+            ModelId = agent.AgentModel.FoundationModel,
             InnerContent = files,
         };
     }
@@ -164,7 +164,7 @@ internal static class BedrockAgentInvokeExtensions
             Role = AuthorRole.Assistant,
             AuthorName = agent.GetDisplayName(),
             Items = functionCallContents,
-            ModelId = agent.GetAgentModel().FoundationModel,
+            ModelId = agent.AgentModel.FoundationModel,
             InnerContent = returnControlPayload,
         };
     }
@@ -179,7 +179,7 @@ internal static class BedrockAgentInvokeExtensions
             {
                 Role = AuthorRole.Assistant,
                 AuthorName = agent.GetDisplayName(),
-                ModelId = agent.GetAgentModel().FoundationModel,
+                ModelId = agent.AgentModel.FoundationModel,
                 InnerContent = trace,
             };
     }
@@ -210,7 +210,7 @@ internal static class BedrockAgentInvokeExtensions
                         {
                             FunctionResult = new Amazon.BedrockAgentRuntime.Model.FunctionResult
                             {
-                                ActionGroup = agent.GetKernelFunctionActionGroupSignature(),
+                                ActionGroup = agent.KernelFunctionActionGroupSignature,
                                 Function = functionResult.FunctionName,
                                 ResponseBody = new Dictionary<string, ContentBody>
                                 {

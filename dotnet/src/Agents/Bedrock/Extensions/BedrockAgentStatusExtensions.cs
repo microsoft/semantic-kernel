@@ -29,7 +29,7 @@ internal static class BedrockAgentStatusExtensions
     {
         for (var i = 0; i < maxAttempts; i++)
         {
-            var getAgentResponse = await agent.GetClient().GetAgentAsync(new() { AgentId = agent.Id }, cancellationToken).ConfigureAwait(false);
+            var getAgentResponse = await agent.Client.GetAgentAsync(new() { AgentId = agent.Id }, cancellationToken).ConfigureAwait(false);
 
             if (getAgentResponse.Agent.AgentStatus == status)
             {
