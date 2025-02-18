@@ -101,7 +101,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider, plugins: null) // %%% TODO: templateFactory
+        OpenAIAssistantAgent agent = new(assistant, this.ClientProvider, plugins: null, config, templateFactory)
         {
             Arguments =
             {

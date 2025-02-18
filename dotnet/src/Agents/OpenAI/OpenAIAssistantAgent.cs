@@ -42,10 +42,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="definition">The assistant definition.</param>
     /// <param name="provider">The OpenAI client provider for accessing the API service.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
+    /// <param name="templateConfig">The prompt template configuration.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     public OpenAIAssistantAgent(
         Assistant definition,
         OpenAIClientProvider provider,
-        IEnumerable<KernelPlugin>? plugins = null)
+        IEnumerable<KernelPlugin>? plugins = null,
+        PromptTemplateConfig templateConfig = null,
+        IPromptTemplateFactory? templateFactory = null)
     {
         this._openAIClient = provider.Client;
         this._client = provider.Client.GetAssistantClient();
@@ -56,10 +60,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Description = this.Definition.Description;
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
-        this.Instructions = this.Definition.Instructions;
+        this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
 
-        //IPromptTemplateFactory? templateFactory = null  TODO
-        //this.Template = templateFactory?.Create(new PromptTemplateConfig(this.Instructions));
+        if (templateConfig != null)
+        {
+            this.Template = templateFactory?.Create(templateConfig);
+        }
 
         if (plugins != null)
         {
