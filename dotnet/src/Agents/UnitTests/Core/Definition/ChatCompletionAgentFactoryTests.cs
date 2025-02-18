@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
@@ -15,7 +16,7 @@ public class ChatCompletionAgentFactoryTests
     /// Verify can create an instance of <see cref="ChatCompletionAgent"/>.
     /// </summary>
     [Fact]
-    public void VerifyCanCreateChatCompletionAgent()
+    public async Task VerifyCanCreateChatCompletionAgentAsync()
     {
         // Arrange
         AgentDefinition agentDefinition = new()
@@ -34,10 +35,9 @@ public class ChatCompletionAgentFactoryTests
         Kernel kernel = new();
 
         // Act
-        var result = factory.TryCreate(kernel, agentDefinition, out var agent);
+        var agent = await factory.CreateAsync(kernel, agentDefinition);
 
         // Assert
-        Assert.True(result);
         Assert.NotNull(agent);
         Assert.Equal(agentDefinition.Name, agent.Name);
         Assert.Equal(agentDefinition.Description, agent.Description);

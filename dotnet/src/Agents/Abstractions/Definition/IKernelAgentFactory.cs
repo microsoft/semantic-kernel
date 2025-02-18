@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Agents.Factory;
 
@@ -14,6 +15,7 @@ public interface IKernelAgentFactory
     /// </summary>
     /// <param name="kernel">Kernel instance to associate with the agent.</param>
     /// <param name="agentDefinition">Definition of the agent to create.</param>
-    /// <param name="result">The created agent, if null the agent type is not supported.</param>
-    bool TryCreate(Kernel kernel, AgentDefinition agentDefinition, [NotNullWhen(true)] out KernelAgent? result);
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <return>The created <see cref="KernelAgent"/>, if null the agent type is not supported.</return>
+    Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default);
 }

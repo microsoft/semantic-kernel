@@ -43,6 +43,17 @@ public sealed class ModelConfiguration
         }
     }
 
+    /// <summary>
+    /// Gets the value associated with the specified key.
+    /// </summary>
+    /// <param name="key">The key whose value to get.</param>
+    /// <param name="value">When this method returns, the value associated with the specified key, if the key is found; otherwise, the default value for the type of the value parameter. This parameter is passed uninitialized.</param>
+    public bool TryGetValue(string key, out object? value)
+    {
+        value = null;
+        return this._extensionData?.TryGetValue(key, out value) ?? false;
+    }
+
     #region private
     private string? _type;
     private IDictionary<string, object>? _extensionData;

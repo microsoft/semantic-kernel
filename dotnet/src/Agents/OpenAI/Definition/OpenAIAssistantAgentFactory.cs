@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Factory;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
+/// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
 {
@@ -16,51 +17,22 @@ public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
     public static string OpenAIAssistantAgentType => "openai_assistant";
 
     /// <inheritdoc/>
-    public bool TryCreate(Kernel kernel, AgentDefinition agentDefinition, [NotNullWhen(true)] out KernelAgent? result)
+    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
+        KernelAgent? kernelAgent = null;
         if (agentDefinition.Type?.Equals(OpenAIAssistantAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            result = new OpenAIAssistantAgent()
-            {
-                Name = agentDefinition.Name,
-                Description = agentDefinition.Description,
-                Instructions = agentDefinition.Instructions,
-                Arguments = GetKernelArguments(agentDefinition),
-                Kernel = kernel,
-                LoggerFactory = kernel.LoggerFactory,
-            };
-            return true;
+            kernelAgent = await OpenAIAssistantAgent.CreateAsync(
+                clientProvider: kernel.GetOpenAIClientProvider(agentDefinition),
+                definition: agentDefinition.GetOpenAIAssistantDefinition(),
+                kernel: kernel,
+                defaultArguments: agentDefinition.GetDefaultKernelArguments(),
+                cancellationToken: cancellationToken
+                ).ConfigureAwait(false);
         }
 
-        result = null;
-        return false;
+        return Task.FromResult<KernelAgent?>(kernelAgent).Result;
     }
-
-    #region private
-    private static OpenAIClientProvider GetClientProvider(this Kernel kernel)
-    {
-
-    }
-
-    private static KernelArguments GetKernelArguments(AgentDefinition agentDefinition)
-    {
-        var arguments = new KernelArguments(agentDefinition?.Model?.Options);
-
-        if (agentDefinition is not null)
-        {
-            // Add default arguments for the agent
-            foreach (var input in agentDefinition.Inputs)
-            {
-                if (!input.IsRequired && input.Default is not null)
-                {
-                    arguments.Add(input.Name, input.Default);
-                }
-            }
-        }
-
-        return arguments;
-    }
-    #endregion
 }

@@ -1,0 +1,90 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.ClientModel;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.OpenAI;
+using Xunit;
+
+namespace SemanticKernel.Agents.UnitTests.OpenAI.Definition;
+
+/// <summary>
+/// Unit testing of <see cref="OpenAIAssistantAgentFactory"/>.
+/// </summary>
+public class OpenAIAssistantAgentFactoryTests : IDisposable
+{
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
+    private readonly Kernel _kernel;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
+    /// </summary>
+    public OpenAIAssistantAgentFactoryTests()
+    {
+        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<OpenAIClientProvider>(OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient));
+        this._kernel = builder.Build();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        this._messageHandlerStub.Dispose();
+        this._httpClient.Dispose();
+    }
+
+    /// <summary>
+    /// Verify can create an instance of <see cref="OpenAIAssistantAgentFactory"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyCanCreateChatCompletionAgentAsync()
+    {
+        // Arrange
+        AgentDefinition agentDefinition = new()
+        {
+            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType,
+            Name = "OpenAIAssistantAgent",
+            Description = "OpenAIAssistantAgent Description",
+            Instructions = "OpenAIAssistantAgent Instructions",
+            Model = new()
+            {
+                Id = "gpt-4o-mini"
+            },
+            Tools = [
+                new ToolDefinition()
+                {
+                    Name = "tool1",
+                    Type = ToolDefinition.CodeInterpreter,
+                },
+            ]
+        };
+        OpenAIAssistantAgentFactory factory = new();
+        this.SetupResponse(HttpStatusCode.OK, agentDefinition.GetOpenAIAssistantDefinition());
+
+        // Act
+        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+
+        // Assert
+        Assert.NotNull(agent);
+        Assert.Equal(agentDefinition.Name, agent.Name);
+        Assert.Equal(agentDefinition.Description, agent.Description);
+        Assert.Equal(agentDefinition.Instructions, agent.Instructions);
+        Assert.Equal(this._kernel, agent.Kernel);
+    }
+
+    #region private
+    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
+        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+
+    #endregion
+}

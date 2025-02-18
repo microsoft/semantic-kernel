@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Factory;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -16,46 +17,26 @@ public sealed class ChatCompletionAgentFactory : IKernelAgentFactory
     public static string ChatCompletionAgentType => "chat_completion_agent";
 
     /// <inheritdoc/>
-    public bool TryCreate(Kernel kernel, AgentDefinition agentDefinition, [NotNullWhen(true)] out KernelAgent? result)
+    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
+        // TODO Implement template handling
+
+        ChatCompletionAgent? kernelAgent = null;
         if (agentDefinition.Type?.Equals(ChatCompletionAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            result = new ChatCompletionAgent()
+            kernelAgent = new ChatCompletionAgent()
             {
                 Name = agentDefinition.Name,
                 Description = agentDefinition.Description,
                 Instructions = agentDefinition.Instructions,
-                Arguments = GetKernelArguments(agentDefinition),
+                Arguments = agentDefinition.GetDefaultKernelArguments(),
                 Kernel = kernel,
                 LoggerFactory = kernel.LoggerFactory,
             };
-            return true;
         }
 
-        result = null;
-        return false;
+        return Task.FromResult<KernelAgent?>(kernelAgent).Result;
     }
-
-    #region private
-    private static KernelArguments GetKernelArguments(AgentDefinition agentDefinition)
-    {
-        var arguments = new KernelArguments(agentDefinition?.Model?.Options);
-
-        if (agentDefinition is not null)
-        {
-            // Add default arguments for the agent
-            foreach (var input in agentDefinition.Inputs)
-            {
-                if (!input.IsRequired && input.Default is not null)
-                {
-                    arguments.Add(input.Name, input.Default);
-                }
-            }
-        }
-
-        return arguments;
-    }
-    #endregion
 }

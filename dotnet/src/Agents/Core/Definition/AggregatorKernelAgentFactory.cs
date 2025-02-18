@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Factory;
 
 namespace Microsoft.SemanticKernel.Agents.Definition;
@@ -26,19 +27,22 @@ public sealed class AggregatorKernelAgentFactory : IKernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public bool TryCreate(Kernel kernel, AgentDefinition agentDefinition, [NotNullWhen(true)] out KernelAgent? result)
+    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
         foreach (var kernelAgentFactory in this._kernelAgentFactories)
         {
-            if (kernelAgentFactory?.TryCreate(kernel, agentDefinition, out result) is true && result is not null)
+            if (kernelAgentFactory is not null)
             {
-                return true;
+                var kernelAgent = await kernelAgentFactory.CreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
+                if (kernelAgent is not null)
+                {
+                    return Task.FromResult(kernelAgent).Result;
+                }
             }
         }
 
-        result = null;
-        return false;
+        return Task.FromResult<KernelAgent?>(null).Result;
     }
 }

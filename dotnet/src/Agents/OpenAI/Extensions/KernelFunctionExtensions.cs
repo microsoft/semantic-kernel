@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Extensions for <see cref="KernelFunction"/> to support OpenAI specific operations.
 /// </summary>
-public static class KernelFunctionExtensions
+internal static class KernelFunctionExtensions
 {
     /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.

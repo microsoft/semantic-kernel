@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.ClientModel;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 
 /// <summary>
-/// 
+/// Provides extension methods for <see cref="Kernel"/>.
 /// </summary>
 internal static class KernelExtensions
 {
@@ -14,29 +15,11 @@ internal static class KernelExtensions
     private const string ConfigApiKey = "api_key";
 
     /// <summary>
-    /// Retrieve a kernel function based on the tool name.
+    /// Return the <see cref="AzureAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="functionName"></param>
-    /// <param name="delimiter"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    public static KernelFunction GetKernelFunction(this Kernel kernel, string functionName, char delimiter)
-    {
-        string[] nameParts = functionName.Split(delimiter);
-        return nameParts.Length switch
-        {
-            2 => kernel.Plugins.GetFunction(nameParts[0], nameParts[1]),
-            _ => throw new KernelException($"Agent Failure - Unknown tool: {functionName}"),
-        };
-    }
-
-    /// <summary>
-    /// Return the <see cref="OpenAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
-    /// </summary>
-    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="OpenAIClientProvider"/>.</param>
-    /// <param name="agentDefinition">Agent definition whih will be used t provide configuration for the <see cref="OpenAIClientProvider"/>.</param>
-    public static OpenAIClientProvider GetOpenAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AzureAIClientProvider"/>.</param>
+    /// <param name="agentDefinition">Agent definition whih will be used t provide configuration for the <see cref="AzureAIClientProvider"/>.</param>
+    public static AzureAIClientProvider GetAzureAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 
@@ -63,12 +46,12 @@ internal static class KernelExtensions
         }
 
         // Return the service registered on the kernel
-        var clientProvider = kernel.GetAllServices<OpenAIClientProvider>().FirstOrDefault();
+        var clientProvider = kernel.GetAllServices<AzureAIClientProvider>().FirstOrDefault();
         if (clientProvider is not null)
         {
             return clientProvider;
         }
 
-        throw new InvalidOperationException("OpenAI client provider not found.");
+        throw new InvalidOperationException("AzureAI client provider not found.");
     }
 }
