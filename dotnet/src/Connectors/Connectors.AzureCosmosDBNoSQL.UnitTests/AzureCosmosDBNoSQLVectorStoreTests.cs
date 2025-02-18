@@ -45,6 +45,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
         Assert.NotNull(collectionWithCompositeKey);
     }
 
+#pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -73,6 +74,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()

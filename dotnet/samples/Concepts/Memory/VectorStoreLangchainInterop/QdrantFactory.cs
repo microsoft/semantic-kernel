@@ -35,23 +35,14 @@ public static class QdrantFactory
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(QdrantClient qdrantClient)
-    {
-        // Create a vector store that uses our custom factory for creating collections
-        // so that the collection can be configured to be compatible with Langchain.
-        return new QdrantVectorStore(
-            qdrantClient,
-            new()
-            {
-                VectorStoreCollectionFactory = new QdrantVectorStoreRecordCollectionFactory()
-            });
-    }
+        => new QdrantLangchainInteropVectorStore(qdrantClient);
 
-    /// <summary>
-    /// Factory that is used to inject the appropriate <see cref="VectorStoreRecordDefinition"/> and mapper for Langchain interoperability.
-    /// </summary>
-    private sealed class QdrantVectorStoreRecordCollectionFactory : IQdrantVectorStoreRecordCollectionFactory
+    private sealed class QdrantLangchainInteropVectorStore(QdrantClient qdrantClient)
+        : QdrantVectorStore(qdrantClient)
     {
-        public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(QdrantClient qdrantClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
+        private readonly QdrantClient _qdrantClient = qdrantClient;
+
+        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {
             // Create a Qdrant collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the
@@ -61,7 +52,7 @@ public static class QdrantFactory
             // Since langchain creates collections without named vector support
             // we should set HasNamedVectors to false.
             var collection = new QdrantVectorStoreRecordCollection<LangchainDocument<Guid>>(
-                qdrantClient,
+                _qdrantClient,
                 name,
                 new()
                 {
