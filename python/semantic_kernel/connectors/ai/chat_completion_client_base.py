@@ -290,6 +290,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                             function_call=function_call,
                             chat_history=chat_history,
                             arguments=kwargs.get("arguments"),
+                            is_streaming=True,
                             execution_settings=settings,
                             function_call_count=fc_count,
                             request_index=request_index,

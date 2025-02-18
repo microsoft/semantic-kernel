@@ -24,6 +24,7 @@ class AutoFunctionInvocationContext(FilterContextBase):
         function: The function invoked.
         kernel: The kernel used.
         arguments: The arguments used to call the function.
+        is_streaming: Whether the function is streaming.
         chat_history: The chat history or None.
         function_result: The function result or None.
         request_sequence_index: The request sequence index.

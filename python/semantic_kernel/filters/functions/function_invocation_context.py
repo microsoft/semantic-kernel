@@ -24,5 +24,4 @@ class FunctionInvocationContext(FilterContextBase):
 
     """
 
-    is_streaming: bool = False
     result: "FunctionResult | None" = None

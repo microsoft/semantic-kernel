@@ -320,6 +320,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         execution_settings: "PromptExecutionSettings | None" = None,
         function_call_count: int | None = None,
         request_index: int | None = None,
+        is_streaming: bool = False,
         function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
@@ -384,6 +385,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             function=function_to_call,
             kernel=self,
             arguments=args_cloned,
+            is_streaming=is_streaming,
             chat_history=chat_history,
             execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),

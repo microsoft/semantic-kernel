@@ -18,6 +18,7 @@ class PromptRenderContext(FilterContextBase):
         function: The function invoked.
         kernel: The kernel used.
         arguments: The arguments used to call the function.
+        is_streaming: Whether the function is streaming.
         rendered_prompt: The result of the prompt rendering.
         function_result: The result of the function that used the prompt.
 

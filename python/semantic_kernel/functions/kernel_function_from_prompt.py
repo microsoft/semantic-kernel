@@ -208,7 +208,7 @@ through prompt_template_config or in the prompt_template."
 
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Invokes the function stream with the given arguments."""
-        prompt_render_result = await self._render_prompt(context)
+        prompt_render_result = await self._render_prompt(context, is_streaming=True)
         if prompt_render_result.function_result is not None:
             context.result = prompt_render_result.function_result
             return
@@ -233,12 +233,16 @@ through prompt_template_config or in the prompt_template."
             function=self.metadata, value=value, rendered_prompt=prompt_render_result.rendered_prompt
         )
 
-    async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
+    async def _render_prompt(
+        self, context: FunctionInvocationContext, is_streaming: bool = False
+    ) -> PromptRenderingResult:
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
 
         _rebuild_prompt_render_context()
-        prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
+        prompt_render_context = PromptRenderContext(
+            function=self, kernel=context.kernel, arguments=context.arguments, is_streaming=is_streaming
+        )
 
         stack = context.kernel.construct_call_stack(
             filter_type=FilterTypes.PROMPT_RENDERING,
