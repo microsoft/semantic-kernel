@@ -221,15 +221,85 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     internal static SqlCommand DeleteMany<TKey>(
         SqlConnection connection, string schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
     {
         SqlCommand command = connection.CreateCommand();
         string fullTableName = GetSanitizedFullTableName(schema, tableName);
-        string keyParamName = $"@{GetColumnName(keyProperty)}";
+        StringBuilder keyParams = CreateKeyParameterList(keys, command);
 
+        command.CommandText =
+        $""""
+        DELETE
+        FROM {fullTableName}
+        WHERE [{GetColumnName(keyProperty)}] IN ({keyParams})
+        """";
+
+        return command;
+    }
+
+    internal static SqlCommand SelectSingle(
+        SqlConnection sqlConnection, string schema, string collectionName,
+        VectorStoreRecordKeyProperty keyProperty,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
+        object key)
+    {
+        SqlCommand command = sqlConnection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(schema, collectionName);
+        string keyParamName = $"@{GetColumnName(keyProperty)}";
+        command.Parameters.AddWithValue(keyParamName, key);
+
+        StringBuilder sb = new(200);
+        sb.AppendFormat("SELECT ");
+        AppendColumnNames(properties, sb);
+        sb.AppendLine();
+        sb.AppendFormat("FROM {0}", fullTableName);
+        sb.AppendLine();
+        sb.AppendFormat("WHERE [{0}] = {1}", GetColumnName(keyProperty), keyParamName);
+        command.CommandText = sb.ToString();
+
+        return command;
+    }
+
+    internal static SqlCommand SelectMany<TKey>(
+        SqlConnection connection, string schema, string tableName,
+        VectorStoreRecordKeyProperty keyProperty,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
+        IEnumerable<TKey> keys)
+    {
+        SqlCommand command = connection.CreateCommand();
+        string fullTableName = GetSanitizedFullTableName(schema, tableName);
+        StringBuilder keyParams = CreateKeyParameterList(keys, command);
+
+        StringBuilder sb = new(200);
+        sb.AppendFormat("SELECT ");
+        AppendColumnNames(properties, sb);
+        sb.AppendLine();
+        sb.AppendFormat("FROM {0}", fullTableName);
+        sb.AppendLine();
+        sb.AppendFormat("WHERE [{0}] IN ({1})", GetColumnName(keyProperty), keyParams);
+
+        command.CommandText = sb.ToString();
+
+        return command;
+    }
+
+    private static void AppendColumnNames(IReadOnlyList<VectorStoreRecordProperty> properties, StringBuilder sb)
+    {
+        foreach (VectorStoreRecordProperty property in properties)
+        {
+            sb.AppendFormat("[{0}],", GetColumnName(property));
+        }
+
+        if (properties.Count > 0)
+        {
+            --sb.Length; // remove the last comma
+        }
+    }
+
+    private static StringBuilder CreateKeyParameterList<TKey>(IEnumerable<TKey> keys, SqlCommand command)
+    {
         StringBuilder keyParams = new();
         int keyIndex = 0;
         foreach (TKey key in keys)
@@ -245,22 +315,14 @@ internal static class SqlServerCommandBuilder
 
         if (keyParams.Length == 0)
         {
-            // TODO adsitnik design: should we throw or simply do nothing?
+            // TODO adsitnik clarify: should we throw or simply do nothing?
             throw new ArgumentException("The value cannot be empty.", nameof(keys));
         }
 
         keyParams.Length--; // remove the last comma
-
-        command.CommandText =
-        $""""
-        DELETE
-        FROM {fullTableName}
-        WHERE [{GetColumnName(keyProperty)}] IN ({keyParams})
-        """";
-
-        return command;
+        return keyParams;
     }
 
-    private static string GetColumnName(VectorStoreRecordProperty property)
+    internal static string GetColumnName(VectorStoreRecordProperty property)
         => property.StoragePropertyName ?? property.DataModelPropertyName;
 }

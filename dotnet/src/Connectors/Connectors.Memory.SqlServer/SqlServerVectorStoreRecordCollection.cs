@@ -108,14 +108,49 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(key);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
+            this._sqlConnection,
+            this._options.Schema,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            this._propertyReader.Properties,
+            key);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        return await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+            ? Map(reader, this._propertyReader)
+            : default;
     }
 
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(keys);
+
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectMany(
+            this._sqlConnection,
+            this._options.Schema,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            this._propertyReader.Properties,
+            keys);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return Map(reader, this._propertyReader);
+        }
     }
 
     public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
@@ -193,5 +228,34 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         }
 
         return map;
+    }
+
+    private static TRecord Map(SqlDataReader reader, VectorStoreRecordPropertyReader propertyReader)
+    {
+        TRecord record = Activator.CreateInstance<TRecord>()!;
+        propertyReader.KeyPropertyInfo.SetValue(record, reader[SqlServerCommandBuilder.GetColumnName(propertyReader.KeyProperty)]);
+        var data = propertyReader.DataProperties;
+        var dataInfo = propertyReader.DataPropertiesInfo;
+        for (int i = 0; i < data.Count; i++)
+        {
+            object value = reader[SqlServerCommandBuilder.GetColumnName(data[i])];
+            if (value is not DBNull)
+            {
+                dataInfo[i].SetValue(record, value);
+            }
+        }
+        var vector = propertyReader.VectorProperties;
+        var vectorInfo = propertyReader.VectorPropertiesInfo;
+        for (int i = 0; i < vector.Count; i++)
+        {
+            object value = reader[SqlServerCommandBuilder.GetColumnName(vector[i])];
+            if (value is not DBNull)
+            {
+                // We know that it has to be a ReadOnlyMemory<float> because that's what we serialized.
+                ReadOnlyMemory<float> embedding = JsonSerializer.Deserialize<ReadOnlyMemory<float>>((string)value);
+                vectorInfo[i].SetValue(record, embedding);
+            }
+        }
+        return record;
     }
 }

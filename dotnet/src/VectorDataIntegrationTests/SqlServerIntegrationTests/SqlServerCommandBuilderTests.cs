@@ -240,6 +240,66 @@ public class SqlServerCommandBuilderTests
         }
     }
 
+    [Fact]
+    public void SelectSingle()
+    {
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordProperty[] properties = [
+            keyProperty,
+            new VectorStoreRecordDataProperty("name", typeof(string)),
+            new VectorStoreRecordDataProperty("age", typeof(int)),
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10
+            }
+        ];
+        using SqlConnection connection = CreateConnection();
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection,
+            "schema", "tableName", keyProperty, properties, 123L);
+
+        Assert.Equal(HandleNewLines(
+        """""
+        SELECT [id],[name],[age],[embedding]
+        FROM [schema].[tableName]
+        WHERE [id] = @id
+        """""), command.CommandText);
+        Assert.Equal(123L, command.Parameters[0].Value);
+        Assert.Equal("@id", command.Parameters[0].ParameterName);
+    }
+
+    [Fact]
+    public void SelectMany()
+    {
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordProperty[] properties = [
+            keyProperty,
+            new VectorStoreRecordDataProperty("name", typeof(string)),
+            new VectorStoreRecordDataProperty("age", typeof(int)),
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10
+            }
+        ];
+        long[] keys = [123L, 456L, 789L];
+        using SqlConnection connection = CreateConnection();
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
+            "schema", "tableName", keyProperty, properties, keys);
+
+        Assert.Equal(HandleNewLines(
+        """""
+        SELECT [id],[name],[age],[embedding]
+        FROM [schema].[tableName]
+        WHERE [id] IN (@k0,@k1,@k2)
+        """""), command.CommandText);
+        for (int i = 0; i < keys.Length; i++)
+        {
+            Assert.Equal(keys[i], command.Parameters[i].Value);
+            Assert.Equal($"@k{i}", command.Parameters[i].ParameterName);
+        }
+    }
+
     private static string HandleNewLines(string expectedCommand)
         => OperatingSystem.IsWindows()
             ? expectedCommand.Replace("\n", "\r\n")

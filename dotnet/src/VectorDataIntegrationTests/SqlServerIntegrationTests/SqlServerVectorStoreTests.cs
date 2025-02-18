@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.VectorData;
+﻿using System.Linq;
+using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
 using Xunit;
 
@@ -54,12 +55,28 @@ public class SqlServerVectorStoreTests
         {
             await collection.CreateCollectionIfNotExistsAsync();
 
+            ReadOnlyMemory<float> floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray();
             string key = await collection.UpsertAsync(new TestModel()
             {
                 Id = "MyId",
-                Number = 100
+                Number = 100,
+                Floats = floats
             });
             Assert.Equal("MyId", key);
+
+            TestModel? record = await collection.GetAsync("MyId");
+            Assert.NotNull(record);
+            Assert.Equal(100, record.Number);
+            Assert.Equal("MyId", record.Id);
+            Assert.Equal(floats, record.Floats);
+            Assert.Null(record.Text);
+
+            record = await collection.GetBatchAsync(["MyId"]).SingleAsync();
+            Assert.NotNull(record);
+            Assert.Equal(100, record.Number);
+            Assert.Equal("MyId", record.Id);
+            Assert.Equal(floats, record.Floats);
+            Assert.Null(record.Text);
 
             if (deleteBatch)
             {
@@ -69,6 +86,9 @@ public class SqlServerVectorStoreTests
             {
                 await collection.DeleteAsync("MyId");
             }
+
+            Assert.Null(await collection.GetAsync("MyId"));
+            Assert.False(await collection.GetBatchAsync(["MyId"]).AnyAsync());
         }
         finally
         {
@@ -83,7 +103,13 @@ public class SqlServerVectorStoreTests
         [VectorStoreRecordKey(StoragePropertyName = "key")]
         public string Id { get; set; }
 
+        [VectorStoreRecordData(StoragePropertyName = "text")]
+        public string? Text { get; set; }
+
         [VectorStoreRecordData(StoragePropertyName = "column")]
         public int Number { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
+        public ReadOnlyMemory<float> Floats { get; set; }
     }
 }
