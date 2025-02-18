@@ -114,7 +114,7 @@ public sealed class MixedAgentTests
         }
         finally
         {
-            await clientProvider.DeleteAssistantAsync(assistantAgent);
+            await clientProvider.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
         }
     }
 
