@@ -17,13 +17,6 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public static class OpenAIClientExtensions
 {
     /// <summary>
-    /// Represents a file definition with a name and content stream.
-    /// </summary>
-    /// <param name="Name">The name of the file.</param>
-    /// <param name="Content">The content stream of the file.</param>
-    public record FileDefinition(string Name, Stream Content);
-
-    /// <summary>
     /// Creates a vector store asynchronously.
     /// </summary>
     /// <param name="client">The OpenAI client instance.</param>
@@ -100,23 +93,6 @@ public static class OpenAIClientExtensions
         OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 
         return fileInfo.Id;
-    }
-
-    /// <summary>
-    /// Uploads multiple files to use with the assistant.
-    /// </summary>
-    /// <param name="client">The OpenAI client instance.</param>
-    /// <param name="files">The collection of file definitions to upload.</param>
-    /// <param name="cancellationToken">The cancellation token to monitor for cancellation requests.</param>
-    /// <returns>An array of file identifiers.</returns>
-    public static async Task<string[]> UploadAssistantFilesAsync(
-        this OpenAIClient client,
-        IEnumerable<FileDefinition> files,
-        CancellationToken cancellationToken = default)
-    {
-        Task<string>[] uploadTasks = files.Select(file => client.UploadAssistantFileAsync(file.Content, file.Name, cancellationToken)).ToArray();
-        string[] fileIds = await Task.WhenAll(uploadTasks).ConfigureAwait(false);
-        return fileIds;
     }
 
     /// <summary>
