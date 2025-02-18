@@ -39,9 +39,9 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
         // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
         IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather, new AIFunctionFactoryCreateOptions { Name = "GetWeather" })] };
+        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
 
-        var result = await fallbackChatClient.CompleteAsync("Do I need an umbrella?", chatOptions);
+        var result = await fallbackChatClient.GetResponseAsync("Do I need an umbrella?", chatOptions);
 
         Output.WriteLine(result);
 
@@ -64,9 +64,9 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
         // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
         IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather, new AIFunctionFactoryCreateOptions { Name = "GetWeather" })] };
+        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
 
-        var result = fallbackChatClient.CompleteStreamingAsync("Do I need an umbrella?", chatOptions);
+        var result = fallbackChatClient.GetStreamingResponseAsync("Do I need an umbrella?", chatOptions);
 
         await foreach (var update in result)
         {
@@ -151,7 +151,7 @@ internal sealed class FallbackChatClient : IChatClient
     public ChatClientMetadata Metadata => new();
 
     /// <inheritdoc/>
-    public async Task<Microsoft.Extensions.AI.ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < this._chatClients.Count; i++)
         {
@@ -159,7 +159,7 @@ internal sealed class FallbackChatClient : IChatClient
 
             try
             {
-                return await chatClient.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+                return await chatClient.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -177,15 +177,15 @@ internal sealed class FallbackChatClient : IChatClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < this._chatClients.Count; i++)
         {
             var chatClient = this._chatClients.ElementAt(i);
 
-            IAsyncEnumerable<StreamingChatCompletionUpdate> completionStream = chatClient.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+            IAsyncEnumerable<ChatResponseUpdate> completionStream = chatClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
 
-            ConfiguredCancelableAsyncEnumerable<StreamingChatCompletionUpdate>.Enumerator enumerator = completionStream.ConfigureAwait(false).GetAsyncEnumerator();
+            ConfiguredCancelableAsyncEnumerable<ChatResponseUpdate>.Enumerator enumerator = completionStream.ConfigureAwait(false).GetAsyncEnumerator();
 
             try
             {

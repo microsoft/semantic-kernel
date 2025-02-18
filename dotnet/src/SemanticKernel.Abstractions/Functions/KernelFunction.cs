@@ -16,6 +16,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions;
 
 namespace Microsoft.SemanticKernel;
 
@@ -517,6 +518,7 @@ public abstract class KernelFunction
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
     private sealed class KernelAIFunction : AIFunction
     {
+        private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
         private readonly KernelFunction _kernelFunction;
         private readonly Kernel? _kernel;
 
@@ -524,37 +526,17 @@ public abstract class KernelFunction
         {
             this._kernelFunction = kernelFunction;
             this._kernel = kernel;
-
-            string name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
+            this.Name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
                 kernelFunction.Name :
                 $"{kernelFunction.PluginName}-{kernelFunction.Name}";
 
-            this.Metadata = new AIFunctionMetadata(name)
-            {
-                Description = kernelFunction.Description,
-
-                JsonSerializerOptions = kernelFunction.JsonSerializerOptions,
-
-                Parameters = kernelFunction.Metadata.Parameters.Select(p => new AIFunctionParameterMetadata(p.Name)
-                {
-                    Description = p.Description,
-                    ParameterType = p.ParameterType,
-                    IsRequired = p.IsRequired,
-                    HasDefaultValue = p.DefaultValue is not null,
-                    DefaultValue = p.DefaultValue,
-                    Schema = p.Schema?.RootElement,
-                }).ToList(),
-
-                ReturnParameter = new AIFunctionReturnParameterMetadata()
-                {
-                    Description = kernelFunction.Metadata.ReturnParameter.Description,
-                    ParameterType = kernelFunction.Metadata.ReturnParameter.ParameterType,
-                    Schema = kernelFunction.Metadata.ReturnParameter.Schema?.RootElement,
-                },
-            };
+            this.JsonSchema = BuildFunctionSchema(kernelFunction);
         }
 
-        public override AIFunctionMetadata Metadata { get; }
+        public override string Name { get; }
+        public override JsonElement JsonSchema { get; }
+        public override string Description => this._kernelFunction.Description;
+        public override JsonSerializerOptions JsonSerializerOptions => this._kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
 
         protected override async Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
@@ -575,6 +557,26 @@ public abstract class KernelFunction
             return functionResult.Value is object value ?
                 JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), this._kernelFunction.JsonSerializerOptions)) :
                 null;
+        }
+
+        private static JsonElement BuildFunctionSchema(KernelFunction function)
+        {
+            KernelFunctionSchemaModel schemaModel = new()
+            {
+                Type = "object",
+                Description = function.Description,
+            };
+
+            foreach (var parameter in function.Metadata.Parameters)
+            {
+                schemaModel.Properties[parameter.Name] = parameter.Schema?.RootElement ?? s_defaultSchema;
+                if (parameter.IsRequired)
+                {
+                    (schemaModel.Required ??= []).Add(parameter.Name);
+                }
+            }
+
+            return JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
         }
     }
 }
