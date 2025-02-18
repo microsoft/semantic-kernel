@@ -34,7 +34,7 @@ class WeatherPlugin:
         self._invocation_count = 0
 
     @kernel_function(name="GetWeather", description="Get the weather of the day at the current location.")
-    def get_wather(self) -> str:
+    def get_weather(self) -> str:
         """Get the weather of the day at the current location.
 
         Simulates a call to an external service to get the weather.
