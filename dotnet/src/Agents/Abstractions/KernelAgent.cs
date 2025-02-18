@@ -38,6 +38,14 @@ public abstract class KernelAgent : Agent
     public IPromptTemplate? Template { get; protected set; }
 
     /// <summary>
+    /// Gets or sets a prompt template factory on the agent instructions.
+    /// </summary>
+    /// <remarks>
+    /// If provided, will treat the instructions as a prompt template and will render using this factory.
+    /// </remarks>
+    public IPromptTemplateFactory? TemplateFactory { get; protected set; }
+
+    /// <summary>
     /// Formats the system instructions for the agent.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
@@ -46,13 +54,21 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // If <see cref="Template"/> is not set, use the default instructions.
-        if (this.Template == null)
+        // Use the provide template factory to format the instructions
+        if (this.TemplateFactory is not null && !string.IsNullOrEmpty(this.Instructions))
         {
-            return Task.FromResult<string?>(this.Instructions).Result;
+            var template = this.TemplateFactory.Create(new PromptTemplateConfig(this.Instructions!));
+            return await template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         }
 
-        return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        // Use the provided template as the instructions
+        if (this.Template is not null)
+        {
+            return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        }
+
+        // Use the instructions as-is
+        return Task.FromResult<string?>(this.Instructions).Result;
     }
 
     /// <summary>
