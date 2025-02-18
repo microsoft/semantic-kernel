@@ -108,6 +108,31 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
+    /// Returns a list of of fields to index for full text search data properties.
+    /// </summary>
+    /// <param name="dataProperties">Collection of data properties for index creation.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    public static BsonDocument GetFullTextSearchableDataIndexFields(
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        Dictionary<string, string> storagePropertyNames)
+    {
+        var fieldElement = new BsonDocument();
+
+        // Create separate index for each data property
+        foreach (var property in dataProperties)
+        {
+            if (property.IsFullTextSearchable)
+            {
+                var dataPropertyName = storagePropertyNames[property.DataModelPropertyName];
+
+                fieldElement.AddRange(new BsonDocument(dataPropertyName, "text"));
+            }
+        }
+
+        return fieldElement;
+    }
+
+    /// <summary>
     /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)

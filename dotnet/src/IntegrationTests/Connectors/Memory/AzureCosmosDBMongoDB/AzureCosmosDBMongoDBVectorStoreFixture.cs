@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
@@ -12,7 +13,14 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 {
-    private readonly List<string> _testCollections = ["sk-test-hotels", "sk-test-contacts", "sk-test-addresses"];
+    /// <summary>
+    /// Gets the test index name postfix that is derived from the local machine name used to avoid clashes between test runs from different callers.
+    /// </summary>
+#pragma warning disable CA1308 // Normalize strings to uppercase
+    public static string TestIndexPostfix { get; private set; } = new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+    private readonly List<string> _testCollections = ["sk-test-hotels" + TestIndexPostfix, "sk-test-contacts" + TestIndexPostfix, "sk-test-addresses" + TestIndexPostfix];
 
     /// <summary>Main test collection for tests.</summary>
     public string TestCollection => this._testCollections[0];
@@ -32,10 +40,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(
                 path: "testsettings.development.json",
-                optional: false,
+                optional: true,
                 reloadOnChange: true
             )
             .AddEnvironmentVariables()
+            .AddUserSecrets<AzureCosmosDBMongoDBVectorStoreFixture>()
             .Build();
 
         var connectionString = GetConnectionString(configuration);

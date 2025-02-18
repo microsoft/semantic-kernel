@@ -40,22 +40,27 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
-        var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
-        await this.CreateCollectionAndAddDataAsync(sut, vector);
+        try
+        {
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
 
-        // Act
-        // All records have the same vector, but the third contains Grapes, so searching for
-        // Grapes should return the third record first.
-        var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Grapes"]);
+            // Act
+            // All records have the same vector, but the third contains Grapes, so searching for
+            // Grapes should return the third record first.
+            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Grapes"]);
 
-        // Assert
-        var results = await searchResult.Results.ToListAsync();
-        Assert.Equal(3, results.Count);
+            // Assert
+            var results = await searchResult.Results.ToListAsync();
+            Assert.Equal(3, results.Count);
 
-        Assert.Equal(this.Key3, results[0].Record.Key);
-
-        // Cleanup
-        await sut.DeleteCollectionAsync();
+            Assert.Equal(this.Key3, results[0].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     [VectorStoreFact]
@@ -68,26 +73,31 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
-        var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
-        await this.CreateCollectionAndAddDataAsync(sut, vector);
-
-        // Act
-        // All records have the same vector, but the second contains Oranges, however
-        // adding the filter should limit the results to only the first.
-        var options = new KeywordVectorizedHybridSearchOptions
+        try
         {
-            Filter = new VectorSearchFilter().EqualTo("Code", 1)
-        };
-        var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], options);
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
 
-        // Assert
-        var results = await searchResult.Results.ToListAsync();
-        Assert.Single(results);
+            // Act
+            // All records have the same vector, but the second contains Oranges, however
+            // adding the filter should limit the results to only the first.
+            var options = new KeywordVectorizedHybridSearchOptions
+            {
+                Filter = new VectorSearchFilter().EqualTo("Code", 1)
+            };
+            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], options);
 
-        Assert.Equal(this.Key1, results[0].Record.Key);
+            // Assert
+            var results = await searchResult.Results.ToListAsync();
+            Assert.Single(results);
 
-        // Cleanup
-        await sut.DeleteCollectionAsync();
+            Assert.Equal(this.Key1, results[0].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     [VectorStoreFact]
@@ -100,22 +110,27 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
-        var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
-        await this.CreateCollectionAndAddDataAsync(sut, vector);
+        try
+        {
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
 
-        // Act
-        // All records have the same vector, but the second contains Oranges, so the
-        // second should be returned first.
-        var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], new() { Top = 1 });
+            // Act
+            // All records have the same vector, but the second contains Oranges, so the
+            // second should be returned first.
+            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], new() { Top = 1 });
 
-        // Assert
-        var results = await searchResult.Results.ToListAsync();
-        Assert.Single(results);
+            // Assert
+            var results = await searchResult.Results.ToListAsync();
+            Assert.Single(results);
 
-        Assert.Equal(this.Key2, results[0].Record.Key);
-
-        // Cleanup
-        await sut.DeleteCollectionAsync();
+            Assert.Equal(this.Key2, results[0].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     [VectorStoreFact]
@@ -128,22 +143,27 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
-        var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
-        await this.CreateCollectionAndAddDataAsync(sut, vector);
+        try
+        {
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
 
-        // Act
-        // All records have the same vector, but the first and third contain healthy,
-        // so when skipping the first two results, we should get the second record.
-        var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["healthy"], new() { Skip = 2 });
+            // Act
+            // All records have the same vector, but the first and third contain healthy,
+            // so when skipping the first two results, we should get the second record.
+            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["healthy"], new() { Skip = 2 });
 
-        // Assert
-        var results = await searchResult.Results.ToListAsync();
-        Assert.Single(results);
+            // Assert
+            var results = await searchResult.Results.ToListAsync();
+            Assert.Single(results);
 
-        Assert.Equal(this.Key2, results[0].Record.Key);
-
-        // Cleanup
-        await sut.DeleteCollectionAsync();
+            Assert.Equal(this.Key2, results[0].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     [VectorStoreFact]
@@ -156,22 +176,66 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
 
         var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
-        var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
-        await this.CreateCollectionAndAddDataAsync(sut, vector);
+        try
+        {
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
 
-        // Act
-        var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["tangy", "nourishing"]);
+            // Act
+            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["tangy", "nourishing"]);
 
-        // Assert
-        var results = await searchResult.Results.ToListAsync();
-        Assert.Equal(3, results.Count);
+            // Assert
+            var results = await searchResult.Results.ToListAsync();
+            Assert.Equal(3, results.Count);
 
-        Assert.True(results[0].Record.Key.Equals(this.Key1) || results[0].Record.Key.Equals(this.Key2));
-        Assert.True(results[1].Record.Key.Equals(this.Key1) || results[1].Record.Key.Equals(this.Key2));
-        Assert.Equal(this.Key3, results[2].Record.Key);
+            Assert.True(results[0].Record.Key.Equals(this.Key1) || results[0].Record.Key.Equals(this.Key2));
+            Assert.True(results[1].Record.Key.Equals(this.Key1) || results[1].Record.Key.Equals(this.Key2));
+            Assert.Equal(this.Key3, results[2].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
+    }
 
-        // Cleanup
-        await sut.DeleteCollectionAsync();
+    [VectorStoreFact]
+    public async Task SearchWithMultiTextRecordSearchesRequestedFieldAsync()
+    {
+        // Arrange
+        var sut = this.GetTargetRecordCollection<MultiSearchStringRecord<TKey>>(
+            "kwmultitexthybrid",
+            this.MultiSearchStringRecordDefinition);
+
+        var hybridSearch = sut as IKeywordVectorizedHybridSearch<MultiSearchStringRecord<TKey>>;
+
+        try
+        {
+            var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
+            await this.CreateCollectionAndAddDataAsync(sut, vector);
+
+            // Act
+            var searchResult1 = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Apples"], new() { FullTextPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult2 = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], new() { FullTextPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+
+            // Assert
+            var results1 = await searchResult1.Results.ToListAsync();
+            Assert.Equal(2, results1.Count);
+
+            Assert.Equal(this.Key2, results1[0].Record.Key);
+            Assert.Equal(this.Key1, results1[1].Record.Key);
+
+            var results2 = await searchResult2.Results.ToListAsync();
+            Assert.Equal(2, results2.Count);
+
+            Assert.Equal(this.Key1, results2[0].Record.Key);
+            Assert.Equal(this.Key2, results2[1].Record.Key);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     private async Task CreateCollectionAndAddDataAsync(IVectorStoreRecordCollection<TKey, KeyWithVectorAndStringRecord<TKey>> sut, ReadOnlyMemory<float> vector)
@@ -205,6 +269,30 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
     }
 
+    private async Task CreateCollectionAndAddDataAsync(IVectorStoreRecordCollection<TKey, MultiSearchStringRecord<TKey>> sut, ReadOnlyMemory<float> vector)
+    {
+        await sut.CreateCollectionIfNotExistsAsync();
+        await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
+
+        var record1 = new MultiSearchStringRecord<TKey>
+        {
+            Key = this.Key1,
+            Text1 = "Apples",
+            Text2 = "Oranges",
+            Vector = vector
+        };
+        var record2 = new MultiSearchStringRecord<TKey>
+        {
+            Key = this.Key2,
+            Text1 = "Oranges",
+            Text2 = "Apples",
+            Vector = vector
+        };
+
+        await sut.UpsertBatchAsync([record1, record2]).ToListAsync();
+        await Task.Delay(this.DelayAfterUploadInMilliseconds);
+    }
+
     private VectorStoreRecordDefinition KeyWithVectorAndStringRecordDefinition => new()
     {
         Properties = new List<VectorStoreRecordProperty>()
@@ -223,6 +311,28 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         public string Text { get; set; } = string.Empty;
 
         public int Code { get; set; }
+
+        public ReadOnlyMemory<float> Vector { get; set; }
+    }
+
+    private VectorStoreRecordDefinition MultiSearchStringRecordDefinition => new()
+    {
+        Properties = new List<VectorStoreRecordProperty>()
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
+            new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+        }
+    };
+
+    private sealed class MultiSearchStringRecord<TRecordKey>
+    {
+        public TRecordKey Key { get; set; } = default!;
+
+        public string Text1 { get; set; } = string.Empty;
+
+        public string Text2 { get; set; } = string.Empty;
 
         public ReadOnlyMemory<float> Vector { get; set; }
     }

@@ -25,9 +25,6 @@ internal static class MongoDBConstants
     /// <summary>Default index kind for vector search.</summary>
     internal const string DefaultIndexKind = IndexKind.IvfFlat;
 
-    /// <summary>Default distance function for vector search.</summary>
-    internal const string DefaultDistanceFunction = DistanceFunction.CosineSimilarity;
-
     /// <summary>Reserved key property name in MongoDB.</summary>
     internal const string MongoReservedKeyPropertyName = "_id";
 
