@@ -32,7 +32,7 @@ __all__ = ["OpenAIRealtime"]
 class OpenAIRealtime(OpenAIRealtimeBase):
     """OpenAI Realtime service."""
 
-    def __new__(cls: type["_T"], protocol: str, *args: Any, **kwargs: Any) -> "_T":
+    def __new__(cls: type["_T"], protocol: Literal["websocket", "webrtc"], *args: Any, **kwargs: Any) -> "_T":
         """Pick the right subclass, based on protocol."""
         subclass_map = {subcl.protocol: subcl for subcl in cls.__subclasses__()}
         subclass = subclass_map[protocol]
