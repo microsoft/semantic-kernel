@@ -336,7 +336,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestProvider(),
                 "#id",
                 this._emptyKernel,
-                new KernelArguments(),
+                [],
                 new KernelPromptTemplateFactory());
 
         // Act and Assert
@@ -413,7 +413,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
 
         // Act
-        using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
+        await using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
         string fileId = await agent.UploadFileAsync(stream, "text.txt");
 
         // Assert
@@ -764,7 +764,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestProvider(),
                 capabilities,
                 this._emptyKernel,
-                new KernelArguments(),
+                [],
                 templateConfig,
                 templateFactory);
 

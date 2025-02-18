@@ -556,6 +556,42 @@ internal static class OpenAIAssistantResponseContent
         }
         """;
 
+    public static string DeleteFile =
+        """
+        {
+          "id": "file-abc123",
+          "object": "file",
+          "deleted": true
+        }
+        """;
+
+    public static string CreateVectorStore =
+        """
+        {
+          "id": "vs_abc123",
+          "object": "vector_store",
+          "created_at": 1699061776,
+          "name": "test store",
+          "bytes": 139920,
+          "file_counts": {
+            "in_progress": 0,
+            "completed": 3,
+            "failed": 0,
+            "cancelled": 0,
+            "total": 3
+          }
+        }      
+        """;
+
+    public static string DeleteVectorStore =
+        """
+        {
+          "id": "vs-abc123",
+          "object": "vector_store.deleted",
+          "deleted": true
+        }
+        """;
+
     #endregion
 
     /// <summary>
