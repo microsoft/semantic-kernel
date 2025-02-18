@@ -45,7 +45,7 @@
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.67.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
     <PackageVersion Include="OllamaSharp" Version="5.0.7" />
