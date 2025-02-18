@@ -13,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 /// when the agent is created. This is useful if you want to retrieve the agent later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -22,8 +22,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
     public async Task UseSingleAgentWithFunctionToolsAsync()
     {
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
+        AgentsClient client = this.ClientProvider.Client.GetAgentsClient();
 
         // In this sample the function tools are added to the agent this is
         // important if you want to retrieve the agent later and then dynamically check
@@ -37,7 +36,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.ClientProvider)
         {
             Kernel = new Kernel(),
         };
@@ -46,7 +45,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await client.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using SemanticKernel.Agents.UnitTests.Test;
 using Xunit;
 

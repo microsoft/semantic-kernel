@@ -121,7 +121,7 @@ internal static class OpenAIAssistantResponseContent
                 builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
             }
 
-            if (hasFileSearch)
+            if (hasFileSearch && capabilities.VectorStoreId != null)
             {
                 builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{capabilities.VectorStoreId}""] }}");
             }

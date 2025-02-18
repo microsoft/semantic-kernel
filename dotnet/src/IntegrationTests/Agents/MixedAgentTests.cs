@@ -71,7 +71,7 @@ public sealed class MixedAgentTests
 
     private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
-        OpenAIClientProvider config,
+        OpenAIClientProvider clientProvider,
         string modelName,
         bool useNewFunctionCallingModel)
     {
@@ -96,7 +96,7 @@ public sealed class MixedAgentTests
         // Configure assistant agent with the plugin.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-                config,
+                clientProvider,
                 new(modelName)
                 {
                     Name = "Assistant",
@@ -114,7 +114,7 @@ public sealed class MixedAgentTests
         }
         finally
         {
-            await assistantAgent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(assistantAgent);
         }
     }
 

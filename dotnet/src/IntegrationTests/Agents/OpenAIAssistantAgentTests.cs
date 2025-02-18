@@ -93,11 +93,10 @@ public sealed class OpenAIAssistantAgentTests
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentStreamingAsync(string input, string expectedAnswerContains)
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
 
         await this.ExecuteStreamingAgentAsync(
-            OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+            CreateClientProvider(azureOpenAIConfiguration),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
@@ -110,12 +109,11 @@ public sealed class OpenAIAssistantAgentTests
     [RetryFact(typeof(HttpOperationException))]
     public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                clientProvider,
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
                 new Kernel());
 
@@ -130,7 +128,7 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(agent);
         }
     }
 
@@ -141,12 +139,11 @@ public sealed class OpenAIAssistantAgentTests
     [RetryFact(typeof(HttpOperationException))]
     public async Task AzureOpenAIAssistantAgentTokensAsync()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                clientProvider,
                 new(azureOpenAIConfiguration.ChatDeploymentName!)
                 {
                     Instructions = "Repeat the user all of the user messages",
@@ -167,7 +164,7 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(agent);
         }
     }
 
@@ -178,12 +175,11 @@ public sealed class OpenAIAssistantAgentTests
     [RetryFact(typeof(HttpOperationException))]
     public async Task AzureOpenAIAssistantAgentAdditionalMessagesAsync()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+                clientProvider,
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
                 new Kernel());
 
@@ -219,7 +215,7 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(agent);
         }
     }
 
@@ -230,23 +226,21 @@ public sealed class OpenAIAssistantAgentTests
     [Fact]
     public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint));
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                provider,
+                clientProvider,
                 new(azureOpenAIConfiguration.ChatDeploymentName!),
                 new Kernel());
 
         // Upload file - Using a table of fictional employees.
-        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+        OpenAIFileClient fileClient = clientProvider.Client.GetOpenAIFileClient();
         await using Stream stream = File.OpenRead("TestData/employees.pdf")!;
         OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream, "employees.pdf", FileUploadPurpose.Assistants);
 
         // Create a vector-store
-        VectorStoreClient vectorStoreClient = provider.Client.GetVectorStoreClient();
+        VectorStoreClient vectorStoreClient = clientProvider.Client.GetVectorStoreClient();
         CreateVectorStoreOperation result =
             await vectorStoreClient.CreateVectorStoreAsync(waitUntilCompleted: false,
                 new VectorStoreCreationOptions()
@@ -266,14 +260,14 @@ public sealed class OpenAIAssistantAgentTests
         finally
         {
             await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(agent);
             await vectorStoreClient.DeleteVectorStoreAsync(result.VectorStoreId);
             await fileClient.DeleteFileAsync(fileInfo.Id);
         }
     }
 
     private async Task ExecuteAgentAsync(
-        OpenAIClientProvider config,
+        OpenAIClientProvider clientProvider,
         string modelName,
         string input,
         string expected)
@@ -286,7 +280,7 @@ public sealed class OpenAIAssistantAgentTests
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                config,
+                clientProvider,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
@@ -314,7 +308,7 @@ public sealed class OpenAIAssistantAgentTests
         }
         finally
         {
-            await agent.DeleteAsync();
+            await clientProvider.DeleteAssistantAsync(agent);
         }
     }
 
@@ -370,6 +364,18 @@ public sealed class OpenAIAssistantAgentTests
         }
 
         Assert.Equal(string.IsNullOrEmpty(message.AuthorName) ? AuthorRole.User : AuthorRole.Assistant, message.Role);
+    }
+
+    private AzureOpenAIConfiguration ReadAzureConfiguration()
+    {
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+        return azureOpenAIConfiguration;
+    }
+
+    private static OpenAIClientProvider CreateClientProvider(AzureOpenAIConfiguration azureOpenAIConfiguration)
+    {
+        return OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint));
     }
 
     public sealed class MenuPlugin
