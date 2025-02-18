@@ -315,6 +315,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         self,
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
+        *,
         arguments: "KernelArguments | None" = None,
         execution_settings: "PromptExecutionSettings | None" = None,
         function_call_count: int | None = None,

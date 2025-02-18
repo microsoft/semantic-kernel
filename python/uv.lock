@@ -1274,7 +1274,7 @@ wheels = [
 
 [[package]]
 name = "google-cloud-aiplatform"
-version = "1.79.0"
+version = "1.80.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docstring-parser", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -1290,9 +1290,9 @@ dependencies = [
     { name = "shapely", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/8e/93e9f5a7059883c21a82adf8687248c6615d4b833b3bf665631a768b8ebd/google_cloud_aiplatform-1.79.0.tar.gz", hash = "sha256:362bfd16716dcfb6c131736f25246790002b29c99a246fcf4c08a7c71bd2301f", size = 8455732 }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/88/d36384280cc4653e190a4a30025e66b285fbaef06024f68a4264cc588a33/google_cloud_aiplatform-1.80.0.tar.gz", hash = "sha256:bcaa4570a6fb56d3d29cb6b8f92588d4d1a1931de5f90cf07761853dab4c76fd", size = 8459480 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d9/df/a7629fc1c405ead82249a70903068992932cc5a8c494c396e22995b4429d/google_cloud_aiplatform-1.79.0-py2.py3-none-any.whl", hash = "sha256:e52d518c386ce2b4ce57f1b73b46c57531d9a6ccd70c21a37b349f428bfc1c3f", size = 7086167 },
+    { url = "https://files.pythonhosted.org/packages/b5/57/5e761e7a8b03efc8e7faa4c0b2775991177bbd4dae7a6656a60dfd092ca8/google_cloud_aiplatform-1.80.0-py2.py3-none-any.whl", hash = "sha256:45d2a170f22431dae977551eccb740400bdb899807d0c8d4c16c53b2c1dbc6a5", size = 7089949 },
 ]
 
 [[package]]
@@ -4891,7 +4891,7 @@ requires-dist = [
     { name = "dapr-ext-fastapi", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "flask-dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
-    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.79.0" },
+    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.80.0" },
     { name = "google-generativeai", marker = "extra == 'google'", specifier = "~=0.8" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = "~=6.29" },
     { name = "jinja2", specifier = "~=3.1" },
