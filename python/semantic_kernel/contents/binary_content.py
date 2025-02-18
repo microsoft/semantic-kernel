@@ -111,13 +111,6 @@ class BinaryContent(KernelContent):
             return self._data_uri.to_string(self.metadata)
         return ""
 
-    @property
-    def data_string(self) -> str:
-        """Returns the data as a string, using the data format."""
-        if self._data_uri:
-            return self._data_uri._data_str()
-        return ""
-
     @data_uri.setter
     def data_uri(self, value: str):
         """Set the data uri."""
@@ -126,6 +119,13 @@ class BinaryContent(KernelContent):
         else:
             self._data_uri.update_data(value)
         self.metadata.update(self._data_uri.parameters)
+
+    @property
+    def data_string(self) -> str:
+        """Returns the data as a string, using the data format."""
+        if self._data_uri:
+            return self._data_uri._data_str()
+        return ""
 
     @property
     def data(self) -> bytes | ndarray:

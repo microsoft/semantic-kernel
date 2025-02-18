@@ -57,8 +57,8 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
                     service_event=event,
                 )
                 continue
-            async for event in self._parse_event(event):
-                yield event
+            async for realtime_event in self._parse_event(event):
+                yield realtime_event
 
     async def _send(self, event: RealtimeClientEvent) -> None:
         await self.connected.wait()

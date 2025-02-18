@@ -87,36 +87,36 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                     service_event=event,
                     text=StreamingTextContent(
                         inner_content=event,
-                        text=event.delta,
+                        text=event.delta,  # type: ignore
                         choice_index=0,
                     ),
                 )
             case ListenEvents.RESPONSE_OUTPUT_ITEM_ADDED.value:
-                if event.item.type == "function_call" and event.item.call_id and event.item.name:
-                    self._call_id_to_function_map[event.item.call_id] = event.item.name
+                if event.item.type == "function_call" and event.item.call_id and event.item.name:  # type: ignore
+                    self._call_id_to_function_map[event.item.call_id] = event.item.name  # type: ignore
                 yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA.value:
                 yield RealtimeFunctionCallEvent(
                     service_type=event.type,
                     service_event=event,
                     function_call=FunctionCallContent(
-                        id=event.item_id,
-                        name=self._call_id_to_function_map[event.call_id],
-                        arguments=event.delta,
-                        index=event.output_index,
-                        metadata={"call_id": event.call_id},
+                        id=event.item_id,  # type: ignore
+                        name=self._call_id_to_function_map[event.call_id],  # type: ignore
+                        arguments=event.delta,  # type: ignore
+                        index=event.output_index,  # type: ignore
+                        metadata={"call_id": event.call_id},  # type: ignore
                         inner_content=event,
                     ),
                 )
             case ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE.value:
-                async for parsed_event in self._parse_function_call_arguments_done(event):
+                async for parsed_event in self._parse_function_call_arguments_done(event):  # type: ignore
                     if parsed_event:
                         yield parsed_event
             case ListenEvents.ERROR.value:
-                logger.error("Error received: %s", event.error)
+                logger.error("Error received: %s", event.error.model_dump_json())  # type: ignore
                 yield RealtimeEvent(service_type=event.type, service_event=event)
             case ListenEvents.SESSION_CREATED.value | ListenEvents.SESSION_UPDATED.value:
-                logger.info("Session created or updated, session: %s", event.session)
+                logger.info("Session created or updated, session: %s", event.session.model_dump_json())  # type: ignore
                 yield RealtimeEvent(service_type=event.type, service_event=event)
             case _:
                 logger.debug(f"Received event: {event}")
@@ -445,20 +445,3 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         self,
     ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
-
-    @override
-    async def create_session(
-        self,
-        chat_history: "ChatHistory | None" = None,
-        settings: "PromptExecutionSettings | None" = None,
-        **kwargs: Any,
-    ) -> None:
-        pass
-
-    @override
-    def receive(self, **kwargs: Any) -> AsyncGenerator[RealtimeEvents, None]:
-        pass
-
-    @override
-    async def close_session(self) -> None:
-        pass
