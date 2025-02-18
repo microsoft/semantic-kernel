@@ -112,11 +112,8 @@ public sealed class OpenAIAssistantAgentTests
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider,
-                new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
+        OpenAIAssistantAgent agent = new(definition, clientProvider);
 
         AssistantThread thread = await clientProvider.AssistantClient.CreateThreadAsync();
         ChatMessageContent functionResultMessage = new(AuthorRole.Assistant, [new FunctionResultContent("mock-function", result: "A result value")]);
@@ -142,18 +139,14 @@ public sealed class OpenAIAssistantAgentTests
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider,
-                new(azureOpenAIConfiguration.ChatDeploymentName!)
-                {
-                    Instructions = "Repeat the user all of the user messages",
-                    ExecutionOptions = new()
-                    {
-                        MaxCompletionTokens = 16,
-                    }
-                },
-                new Kernel());
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!, instructions: "Repeat the user all of the user messages");
+        OpenAIAssistantAgent agent = new(definition, clientProvider)
+        {
+            RunOptions = new()
+            {
+                MaxOutputTokenCount = 16,
+            }
+        };
 
         AssistantThread thread = await clientProvider.AssistantClient.CreateThreadAsync();
         ChatMessageContent functionResultMessage = new(AuthorRole.User, "A long time ago there lived a king who was famed for his wisdom through all the land. Nothing was hidden from him, and it seemed as if news of the most secret things was brought to him through the air. But he had a strange custom; every day after dinner, when the table was cleared, and no one else was present, a trusty servant had to bring him one more dish. It was covered, however, and even the servant did not know what was in it, neither did anyone know, for the king never took off the cover to eat of it until he was quite alone.");
@@ -178,11 +171,8 @@ public sealed class OpenAIAssistantAgentTests
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider,
-                new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
+        OpenAIAssistantAgent agent = new(definition, clientProvider);
 
         ThreadCreationOptions threadOptions = new()
         {
@@ -230,11 +220,8 @@ public sealed class OpenAIAssistantAgentTests
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
         OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider,
-                new(azureOpenAIConfiguration.ChatDeploymentName!),
-                new Kernel());
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
+        OpenAIAssistantAgent agent = new(definition, clientProvider);
 
         // Upload file - Using a table of fictional employees.
         OpenAIFileClient fileClient = clientProvider.Client.GetOpenAIFileClient();
@@ -280,14 +267,8 @@ public sealed class OpenAIAssistantAgentTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
 
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider,
-                new(modelName)
-                {
-                    Instructions = "Answer questions about the menu.",
-                },
-                kernel);
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
+        OpenAIAssistantAgent agent = new(definition, clientProvider);
 
         try
         {
@@ -315,7 +296,7 @@ public sealed class OpenAIAssistantAgentTests
     }
 
     private async Task ExecuteStreamingAgentAsync(
-        OpenAIClientProvider config,
+        OpenAIClientProvider clientProvider,
         string modelName,
         string input,
         string expected)
@@ -324,16 +305,8 @@ public sealed class OpenAIAssistantAgentTests
         Kernel kernel = new();
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        kernel.Plugins.Add(plugin);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                config,
-                new(modelName)
-                {
-                    Instructions = "Answer questions about the menu.",
-                },
-                kernel);
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
+        OpenAIAssistantAgent agent = new(definition, clientProvider, [plugin]);
 
         AgentGroupChat chat = new();
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));

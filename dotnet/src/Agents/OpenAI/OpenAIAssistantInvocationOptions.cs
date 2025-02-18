@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
