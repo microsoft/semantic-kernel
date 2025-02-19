@@ -21,7 +21,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
     // Add OpenTelemetry as a logging provider
     builder.AddOpenTelemetry(options =>
     {
-        options.AddOtlpExporter(exporter => {exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc;});
+        options.AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; });
         // Format log messages. This defaults to false.
         options.IncludeFormattedMessage = true;
     });
@@ -32,32 +32,26 @@ var loggerFactory = LoggerFactory.Create(builder =>
 
 using var traceProvider = Sdk.CreateTracerProviderBuilder()
     .AddSource("Microsoft.SemanticKernel*")
-    .AddOtlpExporter(exporter => {exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc;})
+    .AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; })
     .Build();
 
 using var meterProvider = Sdk.CreateMeterProviderBuilder()
     .AddMeter("Microsoft.SemanticKernel*")
-    .AddOtlpExporter(exporter => {exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc;})
+    .AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; })
     .Build();
 
-builder.Services.AddOpenApi();
 builder.AddServiceDefaults();
 builder.AddAzureOpenAIClient("openAiConnectionName");
-builder.Services.AddSingleton(builder => {
+builder.Services.AddSingleton(builder =>
+{
     var kernelBuilder = Kernel.CreateBuilder();
 
     kernelBuilder.AddAzureOpenAIChatCompletion("gpt-4o", builder.GetService<AzureOpenAIClient>());
-    
+
     return kernelBuilder.Build();
 });
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
 
@@ -78,15 +72,14 @@ app.MapPost("/api/summaryagent", async (Kernel kernel, SummarizeRequest summariz
     chat.Add(new ChatMessageContent(AuthorRole.User, summarizeRequest.TextToSummarize));
 
     // Generate the agent response(s)
-    await foreach (var response in summaryAgent.InvokeAsync(chat))
+    await foreach (var response in summaryAgent.InvokeAsync(chat).ConfigureAwait(false))
     {
         chat.AddAssistantMessage(response.ToString());
         return response.Items.Last().ToString();
     }
 
     return null;
-})
-.WithName("SummaryAgent");
+});
 
 app.MapDefaultEndpoints();
 

@@ -41,7 +41,6 @@ using var meterProvider = Sdk.CreateMeterProviderBuilder()
     .AddOtlpExporter(exporter => {exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc;})
     .Build();
 
-builder.Services.AddOpenApi();
 builder.AddServiceDefaults();
 builder.Services.AddHttpClient<TranslatorAgentHttpClient>(client => { client.BaseAddress = new("https+http://translatoragent"); });
 builder.Services.AddHttpClient<SummaryAgentHttpClient>(client => { client.BaseAddress = new("https+http://summaryagent"); });
@@ -55,11 +54,6 @@ builder.Services.AddSingleton(builder => {
 });
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
 
@@ -89,8 +83,7 @@ app.MapGet("/api/processdoc", async (Kernel kernel) =>
     );
 
     return Results.Ok("Process completed successfully");
-})
-.WithName("ProcessDoc");
+});
 
 app.MapDefaultEndpoints();
 
