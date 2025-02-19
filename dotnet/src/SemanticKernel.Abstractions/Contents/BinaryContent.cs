@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -117,31 +116,6 @@ public class BinaryContent : KernelContent
 
         this.MimeType = mimeType;
         this.Data = data;
-    }
-
-    /// <summary>
-    /// Write the binary content to a file.
-    /// </summary>
-    /// <param name="filePath">The path to the file to write the content to.</param>
-    /// <param name="overwrite">Whether to overwrite the file if it already exists.</param>
-    public void WriteToFile(string filePath, bool overwrite = false)
-    {
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
-        }
-
-        if (!overwrite && File.Exists(filePath))
-        {
-            throw new InvalidOperationException("File already exists.");
-        }
-
-        if (!this.CanRead)
-        {
-            throw new InvalidOperationException("No content to write to file.");
-        }
-
-        File.WriteAllBytes(filePath, this.Data!.Value.ToArray());
     }
 
     #region Private

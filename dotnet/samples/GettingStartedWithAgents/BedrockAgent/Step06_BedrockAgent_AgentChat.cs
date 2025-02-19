@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -15,7 +16,11 @@ public class Step06_BedrockAgent_AgentChat(ITestOutputHelper output) : BaseBedro
 {
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
-        return await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new agent on the Bedrock Agent service and prepare it for use
+        var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new BedrockAgent instance with the agent model and the client
+        // so that we can interact with the agent using Semantic Kernel contents.
+        return new BedrockAgent(agentModel, this.Client);
     }
 
     /// <summary>
@@ -65,7 +70,7 @@ public class Step06_BedrockAgent_AgentChat(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 

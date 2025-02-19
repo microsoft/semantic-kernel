@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -38,7 +39,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
                 EnableTrace = true,
             };
 
-            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -61,7 +62,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -141,13 +142,21 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
     }
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
+        // Create a new agent on the Bedrock Agent service and prepare it for use
+        var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new kernel with plugins
         Kernel kernel = new();
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
+        // Create a new BedrockAgent instance with the agent model and the client
+        // so that we can interact with the agent using Semantic Kernel contents.
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client)
+        {
+            Kernel = kernel,
+        };
+        // Create the kernel function action group and prepare the agent for interaction
+        await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 
-        return await BedrockAgent.CreateAsync(
-            this.GetCreateAgentRequest(agentName),
-            kernel: kernel,
-            enableKernelFunctions: true);
+        return bedrockAgent;
     }
 
     private sealed class WeatherPlugin

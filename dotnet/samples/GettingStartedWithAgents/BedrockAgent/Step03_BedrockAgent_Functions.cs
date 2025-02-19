@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -27,8 +28,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
             var responses = bedrockAgent.InvokeAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the weather in Seattle?",
-                null,
-                CancellationToken.None);
+                null);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -39,7 +39,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -59,8 +59,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
             var streamingResponses = bedrockAgent.InvokeStreamingAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the weather forecast in Seattle?",
-                null,
-                CancellationToken.None);
+                null);
             await foreach (var response in streamingResponses)
             {
                 if (response.Content != null)
@@ -71,7 +70,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -91,8 +90,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
             var responses = bedrockAgent.InvokeAsync(
                 BedrockAgent.CreateSessionId(),
                 "What is the current weather in Seattle and what is the weather forecast in Seattle?",
-                null,
-                CancellationToken.None);
+                null);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -103,19 +101,27 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
+        // Create a new agent on the Bedrock Agent service and prepare it for use
+        var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new kernel with plugins
         Kernel kernel = new();
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
+        // Create a new BedrockAgent instance with the agent model and the client
+        // so that we can interact with the agent using Semantic Kernel contents.
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client)
+        {
+            Kernel = kernel,
+        };
+        // Create the kernel function action group and prepare the agent for interaction
+        await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 
-        return await BedrockAgent.CreateAsync(
-            this.GetCreateAgentRequest(agentName),
-            kernel: kernel,
-            enableKernelFunctions: true);
+        return bedrockAgent;
     }
 
     private sealed class WeatherPlugin

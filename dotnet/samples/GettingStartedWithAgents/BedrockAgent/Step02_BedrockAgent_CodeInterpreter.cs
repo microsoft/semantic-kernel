@@ -3,6 +3,7 @@
 using System.Reflection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -33,7 +34,7 @@ Dolphin  2";
         try
         {
             BinaryContent? binaryContent = null;
-            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null, CancellationToken.None);
+            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
             await foreach (var response in responses)
             {
                 if (response.Content != null)
@@ -70,12 +71,20 @@ Dolphin  2";
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
-        return await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName), enableCodeInterpreter: true);
+        // Create a new agent on the Bedrock Agent service and prepare it for use
+        var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new BedrockAgent instance with the agent model and the client
+        // so that we can interact with the agent using Semantic Kernel contents.
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client);
+        // Create the code interpreter action group and prepare the agent for interaction
+        await bedrockAgent.CreateCodeInterpreterActionGroupAsync();
+
+        return bedrockAgent;
     }
 }

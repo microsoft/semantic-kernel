@@ -2,6 +2,7 @@
 
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -20,12 +21,15 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
 
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)
     {
-        var bedrockAgent = await BedrockAgent.CreateAsync(this.GetCreateAgentRequest(agentName));
-        // Associate the agent with a knowledge base
+        // Create a new agent on the Bedrock Agent service and prepare it for use
+        var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
+        // Create a new BedrockAgent instance with the agent model and the client
+        // so that we can interact with the agent using Semantic Kernel contents.
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client);
+        // Associate the agent with a knowledge base and prepare the agent
         await bedrockAgent.AssociateAgentKnowledgeBaseAsync(
             KnowledgeBaseId,
-            "You will find information here.",
-            CancellationToken.None);
+            "You will find information here.");
 
         return bedrockAgent;
     }
@@ -65,7 +69,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
         }
         finally
         {
-            await bedrockAgent.DeleteAsync(CancellationToken.None);
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 }

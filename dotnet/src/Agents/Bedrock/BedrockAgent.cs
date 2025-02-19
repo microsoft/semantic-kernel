@@ -43,12 +43,12 @@ public class BedrockAgent : KernelAgent
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     public BedrockAgent(
         Amazon.BedrockAgent.Model.Agent agentModel,
-        AmazonBedrockAgentClient client,
-        AmazonBedrockAgentRuntimeClient runtimeClient)
+        AmazonBedrockAgentClient? client = null,
+        AmazonBedrockAgentRuntimeClient? runtimeClient = null)
     {
         this.AgentModel = agentModel;
-        this.Client = client;
-        this.RuntimeClient = runtimeClient;
+        this.Client ??= new AmazonBedrockAgentClient();
+        this.RuntimeClient ??= new AmazonBedrockAgentRuntimeClient();
 
         this.Id = agentModel.AgentId;
         this.Name = agentModel.AgentName;
@@ -57,63 +57,6 @@ public class BedrockAgent : KernelAgent
     }
 
     #region static methods
-
-    /// <summary>
-    /// Create a Bedrock agent on the service.
-    /// </summary>
-    /// <param name="request">The request to create the agent.</param>
-    /// <param name="enableCodeInterpreter">Whether to enable the code interpreter for the agent.</param>
-    /// <param name="enableKernelFunctions">Whether to enable kernel functions for the agent.</param>
-    /// <param name="enableUserInput">Whether to enable user input for the agent.</param>
-    /// <param name="client">The client to use.</param>
-    /// <param name="runtimeClient">The runtime client to use.</param>
-    /// <param name="kernel">A kernel instance for the agent to use.</param>
-    /// <param name="defaultArguments">Optional default arguments.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An instance of the <see cref="BedrockAgent"/>.</returns>
-    public static async Task<BedrockAgent> CreateAsync(
-        CreateAgentRequest request,
-        bool enableCodeInterpreter = false,
-        bool enableKernelFunctions = false,
-        bool enableUserInput = false,
-        AmazonBedrockAgentClient? client = null,
-        AmazonBedrockAgentRuntimeClient? runtimeClient = null,
-        Kernel? kernel = null,
-        KernelArguments? defaultArguments = null,
-        CancellationToken cancellationToken = default)
-    {
-        client ??= new AmazonBedrockAgentClient();
-        runtimeClient ??= new AmazonBedrockAgentRuntimeClient();
-        var createAgentResponse = await client.CreateAgentAsync(request, cancellationToken).ConfigureAwait(false);
-
-        BedrockAgent agent = new(createAgentResponse.Agent, client, runtimeClient)
-        {
-            Kernel = kernel ?? new(),
-            Arguments = defaultArguments ?? [],
-        };
-
-        // The agent will first enter the CREATING status.
-        // When the agent is created, it will enter the NOT_PREPARED status.
-        await agent.WaitForAgentStatusAsync(AgentStatus.NOT_PREPARED, cancellationToken).ConfigureAwait(false);
-
-        if (enableCodeInterpreter)
-        {
-            await agent.CreateCodeInterpreterActionGroupAsync(cancellationToken).ConfigureAwait(false);
-        }
-        if (enableKernelFunctions)
-        {
-            await agent.CreateKernelFunctionActionGroupAsync(cancellationToken).ConfigureAwait(false);
-        }
-        if (enableUserInput)
-        {
-            await agent.EnableUserInputActionGroupAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        // Need to prepare the agent before it can be invoked.
-        await agent.PrepareAsync(cancellationToken).ConfigureAwait(false);
-
-        return agent;
-    }
 
     /// <summary>
     /// Convenient method to create an unique session id.
@@ -125,25 +68,7 @@ public class BedrockAgent : KernelAgent
 
     #endregion
 
-    # region public methods
-
-    /// <summary>
-    /// Delete the Bedrock agent from the service.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public async Task DeleteAsync(CancellationToken cancellationToken)
-    {
-        await this.Client.DeleteAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Prepare the Bedrock agent for use.
-    /// </summary>
-    private async Task PrepareAsync(CancellationToken cancellationToken)
-    {
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-        await this.WaitForAgentStatusAsync(AgentStatus.PREPARED, cancellationToken).ConfigureAwait(false);
-    }
+    #region public methods
 
     /// <summary>
     /// Invoke the Bedrock agent with the given message.
@@ -151,15 +76,15 @@ public class BedrockAgent : KernelAgent
     /// <param name="sessionId">The session id.</param>
     /// <param name="message">The message to send to the agent.</param>
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string sessionId,
         string message,
         KernelArguments? arguments,
-        CancellationToken cancellationToken,
-        string? agentAliasId = null)
+        string? agentAliasId = null,
+        CancellationToken cancellationToken = default)
     {
         var invokeAgentRequest = new InvokeAgentRequest
         {
@@ -181,7 +106,7 @@ public class BedrockAgent : KernelAgent
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         return invokeAgentRequest.StreamingConfigurations != null && invokeAgentRequest.StreamingConfigurations.StreamFinalResponse
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
@@ -233,16 +158,17 @@ public class BedrockAgent : KernelAgent
     /// Invoke the Bedrock agent with the given request and streaming response.
     /// </summary>
     /// <param name="sessionId">The session id.</param>
-    /// <param name="message">The message to send to the agent.</param>    /// <param name="arguments">The arguments to use when invoking the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="message">The message to send to the agent.</param>
+    /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string sessionId,
         string message,
         KernelArguments? arguments,
-        CancellationToken cancellationToken,
-        string? agentAliasId = null)
+        string? agentAliasId = null,
+        CancellationToken cancellationToken = default)
     {
         var invokeAgentRequest = new InvokeAgentRequest
         {
@@ -269,7 +195,7 @@ public class BedrockAgent : KernelAgent
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         if (invokeAgentRequest.StreamingConfigurations == null)
         {
@@ -312,7 +238,7 @@ public class BedrockAgent : KernelAgent
     /// <param name="knowledgeBaseId">The id of the knowledge base to associate with the agent.</param>
     /// <param name="description">A description of what the agent should use the knowledge base for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public async Task AssociateAgentKnowledgeBaseAsync(string knowledgeBaseId, string description, CancellationToken cancellationToken)
+    public async Task AssociateAgentKnowledgeBaseAsync(string knowledgeBaseId, string description, CancellationToken cancellationToken = default)
     {
         await this.Client.AssociateAgentKnowledgeBaseAsync(new()
         {
@@ -321,6 +247,8 @@ public class BedrockAgent : KernelAgent
             KnowledgeBaseId = knowledgeBaseId,
             Description = description,
         }, cancellationToken).ConfigureAwait(false);
+
+        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -328,7 +256,7 @@ public class BedrockAgent : KernelAgent
     /// </summary>
     /// <param name="knowledgeBaseId">The id of the knowledge base to disassociate with the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public async Task DisassociateAgentKnowledgeBaseAsync(string knowledgeBaseId, CancellationToken cancellationToken)
+    public async Task DisassociateAgentKnowledgeBaseAsync(string knowledgeBaseId, CancellationToken cancellationToken = default)
     {
         await this.Client.DisassociateAgentKnowledgeBaseAsync(new()
         {
@@ -336,6 +264,8 @@ public class BedrockAgent : KernelAgent
             AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
             KnowledgeBaseId = knowledgeBaseId,
         }, cancellationToken).ConfigureAwait(false);
+
+        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -343,7 +273,7 @@ public class BedrockAgent : KernelAgent
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="ListAgentKnowledgeBasesResponse"/> containing the knowledge bases associated with the agent.</returns>
-    public async Task<ListAgentKnowledgeBasesResponse> ListAssociatedKnowledgeBasesAsync(CancellationToken cancellationToken)
+    public async Task<ListAgentKnowledgeBasesResponse> ListAssociatedKnowledgeBasesAsync(CancellationToken cancellationToken = default)
     {
         return await this.Client.ListAgentKnowledgeBasesAsync(new()
         {
@@ -352,14 +282,10 @@ public class BedrockAgent : KernelAgent
         }, cancellationToken).ConfigureAwait(false);
     }
 
-    #endregion
-
-    #region private methods
-
     /// <summary>
-    /// Create a code interpreter action group for the agent.
+    /// Create a code interpreter action group for the agent and prepare the agent.
     /// </summary>
-    private async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken)
+    public async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken = default)
     {
         var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
@@ -371,12 +297,13 @@ public class BedrockAgent : KernelAgent
         };
 
         await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Create a kernel function action group for the agent.
+    /// Create a kernel function action group for the agent and prepare the agent.
     /// </summary>
-    private async Task CreateKernelFunctionActionGroupAsync(CancellationToken cancellationToken)
+    public async Task CreateKernelFunctionActionGroupAsync(CancellationToken cancellationToken = default)
     {
         var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
@@ -392,12 +319,13 @@ public class BedrockAgent : KernelAgent
         };
 
         await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Enable user input for the agent.
+    /// Enable user input for the agent and prepare the agent.
     /// </summary>
-    private async Task EnableUserInputActionGroupAsync(CancellationToken cancellationToken)
+    public async Task EnableUserInputActionGroupAsync(CancellationToken cancellationToken = default)
     {
         var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
@@ -409,6 +337,7 @@ public class BedrockAgent : KernelAgent
         };
 
         await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

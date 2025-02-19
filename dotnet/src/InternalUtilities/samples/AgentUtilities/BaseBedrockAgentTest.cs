@@ -1,15 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of AWS Bedrock agents.
 /// </summary>
-public abstract class BaseBedrockAgentTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public abstract class BaseBedrockAgentTest : BaseTest
 {
     protected const string AgentDescription = "A helpful assistant who helps users find information.";
     protected const string AgentInstruction = "You're a helpful assistant who helps users find information.";
+    protected readonly AmazonBedrockAgentClient Client;
+
+    protected BaseBedrockAgentTest(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
+    {
+        Client = new AmazonBedrockAgentClient();
+    }
 
     protected CreateAgentRequest GetCreateAgentRequest(string agentName) => new()
     {
@@ -20,8 +27,13 @@ public abstract class BaseBedrockAgentTest(ITestOutputHelper output) : BaseTest(
         FoundationModel = TestConfiguration.BedrockAgent.FoundationModel,
     };
 
+    protected override void Dispose(bool disposing)
+    {
+        Client?.Dispose();
+        base.Dispose(disposing);
+    }
+
     /// <summary>
-    /// Create a new <see cref="BedrockAgent"/> instance.
     /// Override this method to create an agent with desired settings.
     /// </summary>
     /// <param name="agentName">The name of the agent to create. Must be unique.</param>
