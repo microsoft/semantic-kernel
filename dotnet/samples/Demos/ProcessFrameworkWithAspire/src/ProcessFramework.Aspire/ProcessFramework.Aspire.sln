@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.0.0
+MinimumVisualStudioVersion = 17.8.0.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessFramework.Aspire.AppHost", "ProcessFramework.Aspire.AppHost\ProcessFramework.Aspire.AppHost.csproj", "{1FB70B08-D2C5-40ED-818A-5D2F31E521D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessFramework.Aspire.ServiceDefaults", "ProcessFramework.Aspire.ServiceDefaults\ProcessFramework.Aspire.ServiceDefaults.csproj", "{903A0677-B4F0-418E-A2FE-16E31473A5B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.SummaryAgent", "ProcessFramework.Aspire.SummaryAgent\ProcessFramework.Aspire.SummaryAgent.csproj", "{A105D26C-285E-4E2D-AC77-E58784D5756B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.Shared", "ProcessFramework.Aspire.Shared\ProcessFramework.Aspire.Shared.csproj", "{FC445032-BC5C-4C83-86F8-8E321407F25A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.TranslatorAgent", "ProcessFramework.Aspire.TranslatorAgent\ProcessFramework.Aspire.TranslatorAgent.csproj", "{CCD33FD5-3D9C-4820-B042-CA0B1D162022}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.ProcessOrchestrator", "ProcessFramework.Aspire.ProcessOrchestrator\ProcessFramework.Aspire.ProcessOrchestrator.csproj", "{5410A3B2-7E39-4D43-92D4-C96A4542A105}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1FB70B08-D2C5-40ED-818A-5D2F31E521D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FB70B08-D2C5-40ED-818A-5D2F31E521D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FB70B08-D2C5-40ED-818A-5D2F31E521D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FB70B08-D2C5-40ED-818A-5D2F31E521D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{903A0677-B4F0-418E-A2FE-16E31473A5B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{903A0677-B4F0-418E-A2FE-16E31473A5B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{903A0677-B4F0-418E-A2FE-16E31473A5B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{903A0677-B4F0-418E-A2FE-16E31473A5B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A105D26C-285E-4E2D-AC77-E58784D5756B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A105D26C-285E-4E2D-AC77-E58784D5756B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A105D26C-285E-4E2D-AC77-E58784D5756B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A105D26C-285E-4E2D-AC77-E58784D5756B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC445032-BC5C-4C83-86F8-8E321407F25A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC445032-BC5C-4C83-86F8-8E321407F25A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC445032-BC5C-4C83-86F8-8E321407F25A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC445032-BC5C-4C83-86F8-8E321407F25A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCD33FD5-3D9C-4820-B042-CA0B1D162022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCD33FD5-3D9C-4820-B042-CA0B1D162022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCD33FD5-3D9C-4820-B042-CA0B1D162022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCD33FD5-3D9C-4820-B042-CA0B1D162022}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5410A3B2-7E39-4D43-92D4-C96A4542A105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5410A3B2-7E39-4D43-92D4-C96A4542A105}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5410A3B2-7E39-4D43-92D4-C96A4542A105}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5410A3B2-7E39-4D43-92D4-C96A4542A105}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {68DF9F6C-5729-4251-B34A-3FFFA8E45AE1}
+	EndGlobalSection
+EndGlobal
