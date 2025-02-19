@@ -6,12 +6,12 @@ using System.Linq;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// 
+/// Provides extension methods for <see cref="Kernel"/>.
 /// </summary>
 internal static class KernelExtensions
 {
-    private const string ConfigEndpoint = "endpoint";
-    private const string ConfigApiKey = "api_key";
+    private const string Endpoint = "endpoint";
+    private const string ApiKey = "api_key";
 
     /// <summary>
     /// Retrieve a kernel function based on the tool name.
@@ -19,7 +19,6 @@ internal static class KernelExtensions
     /// <param name="kernel"></param>
     /// <param name="functionName"></param>
     /// <param name="delimiter"></param>
-    /// <returns></returns>
     /// <exception cref="KernelException"></exception>
     public static KernelFunction GetKernelFunction(this Kernel kernel, string functionName, char delimiter)
     {
@@ -44,8 +43,8 @@ internal static class KernelExtensions
         var configuration = agentDefinition?.Model?.Configuration;
         if (configuration is not null)
         {
-            var hasEndpoint = configuration.TryGetValue(ConfigEndpoint, out var endpoint) && endpoint is not null;
-            var hasApiKey = configuration.TryGetValue(ConfigApiKey, out var apiKey) && apiKey is not null;
+            var hasEndpoint = configuration.TryGetValue(Endpoint, out var endpoint) && endpoint is not null;
+            var hasApiKey = configuration.TryGetValue(ApiKey, out var apiKey) && apiKey is not null;
             if (hasApiKey && hasEndpoint)
             {
                 return OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(apiKey!.ToString()!), new Uri(endpoint!.ToString()!));
@@ -64,11 +63,6 @@ internal static class KernelExtensions
 
         // Return the service registered on the kernel
         var clientProvider = kernel.GetAllServices<OpenAIClientProvider>().FirstOrDefault();
-        if (clientProvider is not null)
-        {
-            return clientProvider;
-        }
-
-        throw new InvalidOperationException("OpenAI client provider not found.");
+        return (OpenAIClientProvider?)clientProvider ?? throw new InvalidOperationException("OpenAI client provider not found.");
     }
 }

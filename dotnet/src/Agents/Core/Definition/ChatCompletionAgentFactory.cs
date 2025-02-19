@@ -17,7 +17,7 @@ public sealed class ChatCompletionAgentFactory : IKernelAgentFactory
     public static string ChatCompletionAgentType => "chat_completion_agent";
 
     /// <inheritdoc/>
-    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
@@ -37,6 +37,6 @@ public sealed class ChatCompletionAgentFactory : IKernelAgentFactory
             };
         }
 
-        return Task.FromResult<KernelAgent?>(kernelAgent).Result;
+        return Task.FromResult<KernelAgent?>(kernelAgent);
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
     private static readonly FluidParser s_parser = new();
-    private static readonly TemplateOptions s_templateOptions = new()
+    private static readonly Fluid.TemplateOptions s_templateOptions = new()
     {
         MemberAccessStrategy = new UnsafeMemberAccessStrategy() { MemberNameStrategy = MemberNameStrategies.SnakeCase },
     };

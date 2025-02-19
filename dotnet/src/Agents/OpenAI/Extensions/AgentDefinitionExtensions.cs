@@ -37,8 +37,8 @@ internal static class AgentDefinitionExtensions
             EnableJsonResponse = agentDefinition?.Model?.Options?.IsEnableJsonResponse() ?? false,
             Temperature = agentDefinition?.Model?.Options?.GetTemperature(),
             TopP = agentDefinition?.Model?.Options?.GetTopP(),
-            ExecutionOptions = agentDefinition.GetExecutionOptions(),
-            Metadata = agentDefinition.GetMetadata(),
+            ExecutionOptions = agentDefinition?.GetExecutionOptions(),
+            Metadata = agentDefinition?.GetMetadata(),
         };
     }
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel.Agents.Factory;
 
-namespace Microsoft.SemanticKernel.Agents.AzureAI.Definition;
+namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
 /// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
@@ -36,7 +36,8 @@ public sealed class AzureAIAgentFactory : IKernelAgentFactory
                 description: agentDefinition.Description,
                 instructions: agentDefinition.Instructions,
                 tools: agentDefinition.GetAzureToolDefinitions(),
-                metadata: agentDefinition.GetMetadata(kernel));
+                metadata: agentDefinition.GetMetadata(),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             kernelAgent = new AzureAIAgent(agent, clientProvider)
             {

@@ -8,12 +8,12 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Definition;
 
 /// <summary>
-/// Unit testing of <see cref="ChatCompletionAgentFactory"/>.
+/// Unit tests for <see cref="ChatCompletionAgentFactory"/>.
 /// </summary>
 public class ChatCompletionAgentFactoryTests
 {
     /// <summary>
-    /// Verify can create an instance of <see cref="ChatCompletionAgent"/>.
+    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="ChatCompletionAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateChatCompletionAgentAsync()

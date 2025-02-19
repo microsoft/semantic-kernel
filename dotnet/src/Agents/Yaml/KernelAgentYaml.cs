@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Factory;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -11,15 +13,21 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public static class KernelAgentYaml
 {
-    public static KernelAgent FromAgentYaml(
-        string text,
-        ILoggerFactory? loggerFactory = null)
+    /// <summary>
+    /// Create a <see cref="KernelAgent"/> from the given YAML text.
+    /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="text"></param>
+    /// <param name="kernelAgentFactory"></param>
+    /// <param name="cancellationToken"></param>
+    public static async Task<KernelAgent?> FromAgentYamlAsync(Kernel kernel, string text, IKernelAgentFactory kernelAgentFactory, CancellationToken cancellationToken = default)
     {
         var agentDefinition = ToAgentDefinition(text);
 
-        return KernelAgentFactory.CreateFromDefinition(
+        return await kernelAgentFactory.CreateAsync(
+            kernel,
             agentDefinition,
-            loggerFactory);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Definition;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIAssistantAgentFactory"/>.
+/// Unit tests for <see cref="OpenAIAssistantAgentFactory"/>.
 /// </summary>
 public class OpenAIAssistantAgentFactoryTests : IDisposable
 {
@@ -44,10 +44,10 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="OpenAIAssistantAgentFactory"/>.
+    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="OpenAIAssistantAgentFactory"/>
     /// </summary>
     [Fact]
-    public async Task VerifyCanCreateChatCompletionAgentAsync()
+    public async Task VerifyCanCreateOpenAIAssistantAsync()
     {
         // Arrange
         AgentDefinition agentDefinition = new()
@@ -85,6 +85,5 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
     #region private
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
         this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
-
     #endregion
 }
