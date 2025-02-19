@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using Resources;
 
 namespace GettingStarted.OpenAIAssistants;
@@ -9,7 +10,7 @@ namespace GettingStarted.OpenAIAssistants;
 /// <summary>
 /// Demonstrate providing image input to <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     /// <summary>
     /// Azure currently only supports message of type=text.
@@ -19,23 +20,21 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
     [Fact]
     public async Task UseImageContentWithAssistantAsync()
     {
-        // Define the agent
-        OpenAIClientProvider provider = this.GetClientProvider();
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                provider,
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
-        string fileId = await agent.UploadFileAsync(imageStream, "cat.jpg");
+        string fileId = await this.Client.UploadAssistantFileAsync(imageStream, "cat.jpg");
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -48,9 +47,9 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
-            await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await this.Client.DeleteFileAsync(fileId);
         }
 
         // Local function to invoke agent and display the conversation messages.

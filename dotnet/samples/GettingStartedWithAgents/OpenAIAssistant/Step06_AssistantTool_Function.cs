@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,7 +12,7 @@ namespace GettingStarted.OpenAIAssistants;
 /// when the assistant is created. This is useful if you want to retrieve the assistant later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -22,8 +21,6 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
     public async Task UseSingleAssistantWithFunctionToolsAsync()
     {
         // Define the agent
-        OpenAIClientProvider provider = this.GetClientProvider();
-        AssistantClient client = provider.Client.GetAssistantClient();
         AssistantCreationOptions creationOptions =
             new()
             {
@@ -31,8 +28,8 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
                 Instructions = HostInstructions,
                 Metadata =
                 {
-                    { AssistantSampleMetadataKey, bool.TrueString }
-                }
+                    { SampleMetadataKey, bool.TrueString }
+                },
             };
 
         // In this sample the function tools are added to the assistant this is
@@ -41,18 +38,14 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         plugin.Select(f => f.ToToolDefinition(plugin.Name)).ToList().ForEach(td => creationOptions.Tools.Add(td));
 
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider: this.GetClientProvider(),
-                modelId: this.Model,
-                creationOptions: creationOptions,
-                kernel: new Kernel());
+        Assistant definition = await this.AssistantClient.CreateAssistantAsync(this.Model, creationOptions);
+        OpenAIAssistantAgent agent = new(definition, this.AssistantClient);
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -64,8 +57,8 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAgent
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
