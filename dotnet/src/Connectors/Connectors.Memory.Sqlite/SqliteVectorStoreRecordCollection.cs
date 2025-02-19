@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class SqliteVectorStoreRecordCollection<TRecord> :
+public class SqliteVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<ulong, TRecord>,
     IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
@@ -115,7 +115,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "TableCount";
 
@@ -131,19 +131,19 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         return this.InternalCreateCollectionAsync(ifNotExists: false, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public virtual Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.InternalCreateCollectionAsync(ifNotExists: true, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         await this.DropTableAsync(this._dataTableName, cancellationToken).ConfigureAwait(false);
 
@@ -154,7 +154,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
@@ -227,37 +227,37 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetAsync(key, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetBatchAsync(keys, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public virtual Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         return this.InternalUpsertAsync<ulong>(record, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         return this.InternalUpsertBatchAsync<ulong>(records, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
     {
         return this.InternalDeleteAsync(key, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         return this.InternalDeleteBatchAsync(keys, cancellationToken);
     }
@@ -267,13 +267,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     #region Implementation of IVectorStoreRecordCollection<string, TRecord>
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetAsync(key, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetBatchAsync(keys, options, cancellationToken);
     }
@@ -291,13 +291,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         return this.InternalDeleteAsync(key, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         return this.InternalDeleteBatchAsync(keys, cancellationToken);
     }

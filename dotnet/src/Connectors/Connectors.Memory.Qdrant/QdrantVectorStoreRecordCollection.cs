@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
+public class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
@@ -128,7 +128,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     public string CollectionName => this._collectionName;
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "CollectionExists",
@@ -136,7 +136,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         if (!this._options.HasNamedVectors)
         {
@@ -222,7 +222,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -231,7 +231,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "DeleteCollection",
@@ -239,7 +239,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -248,7 +248,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -257,19 +257,19 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -283,7 +283,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -297,7 +297,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -311,7 +311,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -325,7 +325,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public virtual async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -363,7 +363,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -458,7 +458,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 

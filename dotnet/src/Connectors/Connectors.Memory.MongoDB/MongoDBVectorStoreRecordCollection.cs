@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -95,11 +95,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("ListCollectionNames", () => this.InternalCollectionExistsAsync(cancellationToken));
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
@@ -113,7 +113,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -122,7 +122,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -131,7 +131,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -140,11 +140,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.CollectionName, cancellationToken));
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -174,7 +174,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(
+    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(
         IEnumerable<string> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -204,7 +204,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public virtual Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -230,7 +230,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -247,7 +247,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)

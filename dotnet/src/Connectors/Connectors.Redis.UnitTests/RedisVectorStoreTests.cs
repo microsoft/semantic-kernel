@@ -55,6 +55,7 @@ public class RedisVectorStoreTests
         Assert.IsType<RedisHashSetVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
     }
 
+#pragma warning disable CS0618 // IRedisVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionCallsFactoryIfProvided()
     {
@@ -73,6 +74,7 @@ public class RedisVectorStoreTests
         Assert.Equal(collectionMock.Object, actual);
         factoryMock.Verify(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null), Times.Once);
     }
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()

@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
+public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 {
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
@@ -37,9 +37,10 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
+#pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
@@ -47,6 +48,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 name,
                 vectorStoreRecordDefinition);
         }
+#pragma warning restore CS0618
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
         {
@@ -66,7 +68,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string Query = "SELECT VALUE(c.id) FROM c";
 
