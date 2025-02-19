@@ -90,40 +90,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand InsertInto(
-        SqlConnection connection,
-        SqlServerVectorStoreOptions options,
-        string tableName,
-        VectorStoreRecordKeyProperty keyProperty,
-        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
-        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
-        Dictionary<string, object?> record)
-    {
-        SqlCommand command = connection.CreateCommand();
-
-        StringBuilder sb = new(200);
-        sb.Append("INSERT INTO ");
-        sb.AppendTableName(options.Schema, tableName);
-        sb.Append(" (");
-        var nonKeyProperties = dataProperties.Concat<VectorStoreRecordProperty>(vectorProperties);
-        sb.AppendColumnNames(nonKeyProperties);
-        sb.AppendLine(")");
-        sb.AppendFormat("OUTPUT inserted.[{0}]", GetColumnName(keyProperty));
-        sb.AppendLine();
-        sb.Append("VALUES (");
-        int paramIndex = 0;
-        foreach (VectorStoreRecordProperty property in nonKeyProperties)
-        {
-            sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
-        }
-        sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
-        sb.Append(';');
-
-        command.CommandText = sb.ToString();
-        return command;
-    }
-
     internal static SqlCommand MergeIntoSingle(
         SqlConnection connection,
         SqlServerVectorStoreOptions options,
@@ -172,7 +138,8 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine(")");
         sb.Append("VALUES (");
         sb.AppendColumnNames(propertiesToInsert, prefix: "s.");
-        sb.Append(");");
+        sb.AppendLine(")");
+        sb.AppendFormat("OUTPUT inserted.[{0}];", GetColumnName(keyProperty));
 
         command.CommandText = sb.ToString();
         return command;

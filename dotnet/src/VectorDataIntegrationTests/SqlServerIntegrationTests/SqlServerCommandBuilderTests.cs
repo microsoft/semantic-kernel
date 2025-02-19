@@ -144,61 +144,13 @@ public class SqlServerCommandBuilderTests
     }
 
     [Fact]
-    public void InsertInto()
-    {
-        SqlServerVectorStoreOptions options = new()
-        {
-            Schema = "schema"
-        };
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordDataProperty[] dataProperties =
-        [
-            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
-            new VectorStoreRecordDataProperty("simpleInt", typeof(int))
-        ];
-        VectorStoreRecordVectorProperty[] vectorProperties =
-        [
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
-        using SqlConnection connection = CreateConnection();
-
-        using SqlCommand command = SqlServerCommandBuilder.InsertInto(connection, options, "table",
-            keyProperty, dataProperties, vectorProperties,
-            new Dictionary<string, object?>
-            {
-                { "id", null },
-                { "simpleString", "nameValue" },
-                { "simpleInt", 134 },
-                { "embedding", "{ 10.0 }" }
-            });
-
-        string expectedCommand =
-        """
-        INSERT INTO [schema].[table] ([simpleString],[simpleInt],[embedding])
-        OUTPUT inserted.[id]
-        VALUES (@simpleString_0,@simpleInt_1,@embedding_2);
-        """;
-
-        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
-        Assert.Equal("@simpleString_0", command.Parameters[0].ParameterName);
-        Assert.Equal("nameValue", command.Parameters[0].Value);
-        Assert.Equal("@simpleInt_1", command.Parameters[1].ParameterName);
-        Assert.Equal(134, command.Parameters[1].Value);
-        Assert.Equal("@embedding_2", command.Parameters[2].ParameterName);
-        Assert.Equal("{ 10.0 }", command.Parameters[2].Value);
-    }
-
-    [Fact]
     public void MergeIntoSingle()
     {
         SqlServerVectorStoreOptions options = new()
         {
             Schema = "schema"
         };
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long), autoGenerate: true);
         VectorStoreRecordProperty[] properties =
         [
             keyProperty,
@@ -229,8 +181,9 @@ public class SqlServerCommandBuilderTests
         WHEN MATCHED THEN
         UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding] = s.[embedding]
         WHEN NOT MATCHED THEN
-        INSERT ([id],[simpleString],[simpleInt],[embedding])
-        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding]);
+        INSERT ([simpleString],[simpleInt],[embedding])
+        VALUES (s.[simpleString],s.[simpleInt],s.[embedding])
+        OUTPUT inserted.[id];
         """";
 
         Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);

@@ -158,36 +158,17 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
 
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-        TKey? key = (TKey)this._propertyReader.KeyPropertyInfo.GetValue(record);
-        Dictionary<string, object?> map = Map(record, this._propertyReader);
-
-        if (key is null || key.Equals(default(TKey)))
-        {
-            // When the key was not provided, we are inserting a new record.
-            using SqlCommand insertCommand = SqlServerCommandBuilder.InsertInto(
-                this._sqlConnection,
-                this._options,
-                this.CollectionName,
-                this._propertyReader.KeyProperty,
-                this._propertyReader.DataProperties,
-                this._propertyReader.VectorProperties,
-                map);
-
-            using SqlDataReader reader = await insertCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-            return reader.GetFieldValue<TKey>(0);
-        }
-
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             this._sqlConnection,
             this._options,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
-            map);
+            Map(record, this._propertyReader));
 
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        return key;
+        using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        return reader.GetFieldValue<TKey>(0);
     }
 
     public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records,
