@@ -17,4 +17,4 @@ Install the `semantic-kernel` package with the optional `autogen` dependency:
 pip install semantic-kernel[autogen]
 ```
 
-For an example of how to integrate an AutoGen Conversable Agent using the Semantic Kernel Agent abstraction, please refer to [`autogen_agent_simple_convo.py`](../../../samples/concepts/agents/autogen_agent/autogen_agent_simple_convo.py).
+For an example of how to integrate an AutoGen Conversable Agent using the Semantic Kernel Agent abstraction, please refer to [`autogen_conversable_agent_simple_convo.py`](../../../samples/concepts/agents/autogen_conversable_agent/autogen_conversable_agent_simple_convo.py).
