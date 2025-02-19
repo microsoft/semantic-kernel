@@ -1,6 +1,6 @@
-using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process;
 using ProcessFramework.Aspire.ProcessOrchestrator.Models;
 
 namespace ProcessFramework.Aspire.ProcessOrchestrator.Steps;

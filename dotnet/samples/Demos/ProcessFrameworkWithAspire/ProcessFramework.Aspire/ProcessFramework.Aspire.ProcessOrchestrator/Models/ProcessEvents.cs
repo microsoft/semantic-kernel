@@ -1,4 +1,6 @@
-﻿namespace ProcessFramework.Aspire.ProcessOrchestrator.Models;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace ProcessFramework.Aspire.ProcessOrchestrator.Models;
 
 public static class ProcessEvents
 {
