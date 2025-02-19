@@ -26,7 +26,7 @@ The business logic of this sample is pretty simple: we want to define a process 
 
 ### Running with .NET Aspire
 
-To run thi sample with .NET Aspire, simply clone the repository and run the following command:
+To run this sample with .NET Aspire, simply clone the repository and run the following command:
 
 ```bash
 cd scr/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost
