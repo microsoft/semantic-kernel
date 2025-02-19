@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
-using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
@@ -229,114 +228,6 @@ public class BedrockAgent : KernelAgent
                 };
             }
         }
-    }
-
-    /// <summary>
-    /// Associate the agent with a knowledge base.
-    /// </summary>
-    /// <param name="knowledgeBaseId">The id of the knowledge base to associate with the agent.</param>
-    /// <param name="description">A description of what the agent should use the knowledge base for.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public async Task AssociateAgentKnowledgeBaseAsync(string knowledgeBaseId, string description, CancellationToken cancellationToken = default)
-    {
-        await this.Client.AssociateAgentKnowledgeBaseAsync(new()
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-            KnowledgeBaseId = knowledgeBaseId,
-            Description = description,
-        }, cancellationToken).ConfigureAwait(false);
-
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Disassociate the agent with a knowledge base.
-    /// </summary>
-    /// <param name="knowledgeBaseId">The id of the knowledge base to disassociate with the agent.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public async Task DisassociateAgentKnowledgeBaseAsync(string knowledgeBaseId, CancellationToken cancellationToken = default)
-    {
-        await this.Client.DisassociateAgentKnowledgeBaseAsync(new()
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-            KnowledgeBaseId = knowledgeBaseId,
-        }, cancellationToken).ConfigureAwait(false);
-
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// List the knowledge bases associated with the agent.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A <see cref="ListAgentKnowledgeBasesResponse"/> containing the knowledge bases associated with the agent.</returns>
-    public async Task<ListAgentKnowledgeBasesResponse> ListAssociatedKnowledgeBasesAsync(CancellationToken cancellationToken = default)
-    {
-        return await this.Client.ListAgentKnowledgeBasesAsync(new()
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-        }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Create a code interpreter action group for the agent and prepare the agent.
-    /// </summary>
-    public async Task CreateCodeInterpreterActionGroupAsync(CancellationToken cancellationToken = default)
-    {
-        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-            ActionGroupName = this.CodeInterpreterActionGroupSignature,
-            ActionGroupState = ActionGroupState.ENABLED,
-            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
-        };
-
-        await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Create a kernel function action group for the agent and prepare the agent.
-    /// </summary>
-    public async Task CreateKernelFunctionActionGroupAsync(CancellationToken cancellationToken = default)
-    {
-        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-            ActionGroupName = this.KernelFunctionActionGroupSignature,
-            ActionGroupState = ActionGroupState.ENABLED,
-            ActionGroupExecutor = new()
-            {
-                CustomControl = Amazon.BedrockAgent.CustomControlMethod.RETURN_CONTROL,
-            },
-            FunctionSchema = this.Kernel.ToFunctionSchema(),
-        };
-
-        await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Enable user input for the agent and prepare the agent.
-    /// </summary>
-    public async Task EnableUserInputActionGroupAsync(CancellationToken cancellationToken = default)
-    {
-        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
-        {
-            AgentId = this.Id,
-            AgentVersion = this.AgentModel.AgentVersion ?? "DRAFT",
-            ActionGroupName = this.UseInputActionGroupSignature,
-            ActionGroupState = ActionGroupState.ENABLED,
-            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONUserInput),
-        };
-
-        await this.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
-        await this.Client.PrepareAgentAsync(new() { AgentId = this.Id }, cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

@@ -29,17 +29,152 @@ public static class BedrockAgentExtensions
         // When the operation finishes, it will enter the NOT_PREPARED status.
         // We need to wait for the agent to reach the NOT_PREPARED status before we can prepare it.
         await client.WaitForAgentStatusAsync(createAgentResponse.Agent, AgentStatus.NOT_PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return await client.PrepareAgentAsync(createAgentResponse.Agent, cancellationToken).ConfigureAwait(false);
+        return await client.PrepareAgentAndWaitUntilPreparedAsync(createAgentResponse.Agent, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAsync(
+    /// <summary>
+    /// Associates an agent with a knowledge base.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="knowledgeBaseId">The knowledge base ID.</param>
+    /// <param name="description">The description of the association.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
+    public static async Task AssociateAgentKnowledgeBaseAsync(
+        this BedrockAgent agent,
+        string knowledgeBaseId,
+        string description,
+        CancellationToken cancellationToken = default)
+    {
+        await agent.Client.AssociateAgentKnowledgeBaseAsync(new()
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+            KnowledgeBaseId = knowledgeBaseId,
+            Description = description,
+        }, cancellationToken).ConfigureAwait(false);
+
+        await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Disassociate the agent with a knowledge base.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="knowledgeBaseId">The id of the knowledge base to disassociate with the agent.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task DisassociateAgentKnowledgeBaseAsync(
+        this BedrockAgent agent,
+        string knowledgeBaseId,
+        CancellationToken cancellationToken = default)
+    {
+        await agent.Client.DisassociateAgentKnowledgeBaseAsync(new()
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+            KnowledgeBaseId = knowledgeBaseId,
+        }, cancellationToken).ConfigureAwait(false);
+
+        await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// List the knowledge bases associated with the agent.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="ListAgentKnowledgeBasesResponse"/> containing the knowledge bases associated with the agent.</returns>
+    public static async Task<ListAgentKnowledgeBasesResponse> ListAssociatedKnowledgeBasesAsync(
+        this BedrockAgent agent,
+        CancellationToken cancellationToken = default)
+    {
+        return await agent.Client.ListAgentKnowledgeBasesAsync(new()
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a code interpreter action group for the agent and prepare the agent.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task CreateCodeInterpreterActionGroupAsync(
+        this BedrockAgent agent,
+        CancellationToken cancellationToken = default)
+    {
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = agent.CodeInterpreterActionGroupSignature,
+            ActionGroupState = ActionGroupState.ENABLED,
+            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
+        };
+
+        await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a kernel function action group for the agent and prepare the agent.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task CreateKernelFunctionActionGroupAsync(
+        this BedrockAgent agent,
+        CancellationToken cancellationToken = default)
+    {
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = agent.KernelFunctionActionGroupSignature,
+            ActionGroupState = ActionGroupState.ENABLED,
+            ActionGroupExecutor = new()
+            {
+                CustomControl = Amazon.BedrockAgent.CustomControlMethod.RETURN_CONTROL,
+            },
+            FunctionSchema = agent.Kernel.ToFunctionSchema(),
+        };
+
+        await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Enable user input for the agent and prepare the agent.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task EnableUserInputActionGroupAsync(
+        this BedrockAgent agent,
+        CancellationToken cancellationToken = default)
+    {
+        var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
+        {
+            AgentId = agent.Id,
+            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+            ActionGroupName = agent.UseInputActionGroupSignature,
+            ActionGroupState = ActionGroupState.ENABLED,
+            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONUserInput),
+        };
+
+        await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
+        await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAndWaitUntilPreparedAsync(
         this AmazonBedrockAgentClient client,
         Amazon.BedrockAgent.Model.Agent agent,
         CancellationToken cancellationToken = default)
     {
         var prepareAgentResponse = await client.PrepareAgentAsync(new() { AgentId = agent.AgentId }, cancellationToken).ConfigureAwait(false);
 
-        // The agent will enter the PREPARING status.
+        // The agent will take some time to enter the PREPARING status after the prepare operation is called.
+        // We need to wait for the agent to reach the PREPARING status before we can proceed, otherwise we
+        // will return immediately if the agent is already in PREPARED status.
+        await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARING, cancellationToken: cancellationToken).ConfigureAwait(false);
         // When the agent is prepared, it will enter the PREPARED status.
         return await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
     }

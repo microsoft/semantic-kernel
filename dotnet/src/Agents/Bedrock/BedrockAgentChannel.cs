@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,71 +64,67 @@ public class BedrockAgentChannel : AgentChannel<BedrockAgent>
     }
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+    protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         BedrockAgent agent,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        return this._history.Count == 0 ? throw new InvalidOperationException("No messages to send.") : InvokeInternalAsync();
-
-        async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeInternalAsync()
+        if (!this.PrepareAndValidateHistory())
         {
-            this.EnsureHistoryAlternates();
-            this.EnsureLastMessageIsUser();
-            InvokeAgentRequest invokeAgentRequest = new()
+            yield break;
+        }
+
+        InvokeAgentRequest invokeAgentRequest = new()
+        {
+            AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
+            AgentId = agent.Id,
+            SessionId = BedrockAgent.CreateSessionId(),
+            InputText = this._history.Last().Content,
+            SessionState = this.ParseHistoryToSessionState(),
+        };
+        await foreach (var message in agent.InvokeAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
+        {
+            if (message.Content is not null)
             {
-                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = agent.Id,
-                SessionId = BedrockAgent.CreateSessionId(),
-                InputText = this._history.Last().Content ?? throw new InvalidOperationException("Message content cannot be null."),
-                SessionState = this.ParseHistoryToSessionState(),
-            };
-            await foreach (var message in agent.InvokeAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
-            {
-                if (message.Content is not null)
-                {
-                    this._history.Add(message);
-                    // All messages from Bedrock agents are user facing, i.e., function calls are not returned as messages
-                    yield return (true, message);
-                }
+                this._history.Add(message);
+                // All messages from Bedrock agents are user facing, i.e., function calls are not returned as messages
+                yield return (true, message);
             }
         }
     }
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         BedrockAgent agent,
         IList<ChatMessageContent> messages,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        return this._history.Count == 0 ? throw new InvalidOperationException("No messages to send.") : InvokeInternalAsync();
-
-        async IAsyncEnumerable<StreamingChatMessageContent> InvokeInternalAsync()
+        if (!this.PrepareAndValidateHistory())
         {
-            this.EnsureHistoryAlternates();
-            this.EnsureLastMessageIsUser();
-            InvokeAgentRequest invokeAgentRequest = new()
+            yield break;
+        }
+
+        InvokeAgentRequest invokeAgentRequest = new()
+        {
+            AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
+            AgentId = agent.Id,
+            SessionId = BedrockAgent.CreateSessionId(),
+            InputText = this._history.Last().Content,
+            SessionState = this.ParseHistoryToSessionState(),
+        };
+        await foreach (var message in agent.InvokeStreamingAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
+        {
+            if (message.Content is not null)
             {
-                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = agent.Id,
-                SessionId = BedrockAgent.CreateSessionId(),
-                InputText = this._history.Last().Content ?? throw new InvalidOperationException("Message content cannot be null."),
-                SessionState = this.ParseHistoryToSessionState(),
-            };
-            await foreach (var message in agent.InvokeStreamingAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
-            {
-                if (message.Content is not null)
+                this._history.Add(new()
                 {
-                    this._history.Add(new()
-                    {
-                        Role = AuthorRole.Assistant,
-                        Content = message.Content,
-                        AuthorName = message.AuthorName,
-                        InnerContent = message.InnerContent,
-                        ModelId = message.ModelId,
-                    });
-                    // All messages from Bedrock agents are user facing, i.e., function calls are not returned as messages
-                    yield return message;
-                }
+                    Role = AuthorRole.Assistant,
+                    Content = message.Content,
+                    AuthorName = message.AuthorName,
+                    InnerContent = message.InnerContent,
+                    ModelId = message.ModelId,
+                });
+                // All messages from Bedrock agents are user facing, i.e., function calls are not returned as messages
+                yield return message;
             }
         }
     }
@@ -151,6 +148,25 @@ public class BedrockAgentChannel : AgentChannel<BedrockAgent>
         => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
 
     #region private methods
+
+    private bool PrepareAndValidateHistory()
+    {
+        if (this._history.Count == 0)
+        {
+            this.Logger.LogWarning("No messages to send. Bedrock requires at least one message to start a conversation.");
+            return false;
+        }
+
+        this.EnsureHistoryAlternates();
+        this.EnsureLastMessageIsUser();
+        if (string.IsNullOrEmpty(this._history.Last().Content))
+        {
+            this.Logger.LogWarning("Last message has no content. Bedrock doesn't support empty messages.");
+            return false;
+        }
+
+        return true;
+    }
 
     private void EnsureHistoryAlternates()
     {
