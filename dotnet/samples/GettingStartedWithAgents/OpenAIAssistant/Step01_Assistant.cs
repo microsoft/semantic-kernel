@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI.Assistants;
 using Resources;
 
 namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
-/// This example demonstrates similarity between using <see cref="OpenAIAssistantAgent"/>
-/// and other agent types.
+/// This example demonstrates using <see cref="OpenAIAssistantAgent"/> with templatized instructions.
 /// </summary>
-public class Step01_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
     public async Task UseTemplateForAssistantAgentAsync()
@@ -19,23 +19,18 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
 
         // Instructions, Name and Description properties defined via the config.
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateFromTemplateAsync(
-                clientProvider: this.GetClientProvider(),
-                capabilities: new OpenAIAssistantCapabilities(this.Model)
-                {
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel(),
-                defaultArguments: new KernelArguments()
-                {
-                    { "topic", "Dog" },
-                    { "length", "3" },
-                },
-                templateConfig);
+        Assistant definition = await this.AssistantClient.CreateAssistantFromTemplateAsync(this.Model, templateConfig, metadata: SampleMetadata);
+        OpenAIAssistantAgent agent = new(definition, this.AssistantClient)
+        {
+            Arguments =
+            {
+                { "topic", "Dog" },
+                { "length", "3" },
+            },
+        };
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         try
         {
@@ -52,8 +47,8 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.

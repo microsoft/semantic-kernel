@@ -12,17 +12,8 @@ namespace GettingStarted.AzureAgents;
 /// Demonstrate creation of <see cref="AzureAIAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Step02_AzureAIAgent_Plugins : BaseAgentsTest
+public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
-    private readonly AzureAIClientProvider _clientProvider;
-    private readonly AgentsClient _client;
-
-    public Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : base(output)
-    {
-        this._clientProvider = this.GetAzureProvider();
-        this._client = this._clientProvider.Client.GetAgentsClient();
-    }
-
     [Fact]
     public async Task UseAzureAgentWithPluginAsync()
     {
@@ -33,7 +24,7 @@ public class Step02_AzureAIAgent_Plugins : BaseAgentsTest
                 name: "Host");
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this._client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -45,8 +36,8 @@ public class Step02_AzureAIAgent_Plugins : BaseAgentsTest
         }
         finally
         {
-            await this._client.DeleteThreadAsync(thread.Id);
-            await this._client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -57,7 +48,7 @@ public class Step02_AzureAIAgent_Plugins : BaseAgentsTest
         AzureAIAgent agent = await CreateAzureAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this._client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -66,21 +57,21 @@ public class Step02_AzureAIAgent_Plugins : BaseAgentsTest
         }
         finally
         {
-            await this._client.DeleteThreadAsync(thread.Id);
-            await this._client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
     }
 
     private async Task<AzureAIAgent> CreateAzureAgentAsync(KernelPlugin plugin, string? instructions = null, string? name = null)
     {
         // Define the agent
-        Agent definition = await this._client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             name,
             null,
             instructions);
 
-        AzureAIAgent agent = new(definition, _clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };

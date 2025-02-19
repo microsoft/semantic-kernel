@@ -11,7 +11,7 @@ namespace GettingStarted.AzureAgents;
 /// This example demonstrates similarity between using <see cref="AzureAIAgent"/>
 /// and other agent types.
 /// </summary>
-public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
     public async Task UseTemplateForAzureAgentAsync()
@@ -20,14 +20,11 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
 
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
-            Kernel = new Kernel(),
-            Arguments = new KernelArguments()
+            Arguments =
             {
                 { "topic", "Dog" },
                 { "length", "3" },
@@ -35,7 +32,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         try
         {
@@ -52,8 +49,8 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAgentsTest(outp
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.
