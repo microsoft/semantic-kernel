@@ -70,7 +70,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     {
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-        using SqlCommand command = SqlServerCommandBuilder.DropTable(
+        using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
             this._sqlConnection, this._options.Schema, this.CollectionName);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -183,12 +183,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
             return key;
         }
 
-        if (typeof(int) == typeof(TKey))
-        {
-            return (TKey)(object)await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        SqlDataReader sqlDataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using SqlDataReader sqlDataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         return await sqlDataReader.GetFieldValueAsync<TKey>(0, cancellationToken).ConfigureAwait(false);
     }
 
@@ -200,12 +195,12 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
 
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(
-                this._sqlConnection,
-                this._options,
-                this.CollectionName,
-                this._propertyReader.KeyProperty,
-                this._propertyReader.Properties,
-                records.Select(record => Map(record, this._propertyReader)));
+            this._sqlConnection,
+            this._options,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            this._propertyReader.Properties,
+            records.Select(record => Map(record, this._propertyReader)));
 
         using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))

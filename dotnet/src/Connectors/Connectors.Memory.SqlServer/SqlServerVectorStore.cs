@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
@@ -121,8 +122,13 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        using SqlCommand cmd = SqlServerCommandBuilder.SelectTableNames(this._connection, this._options.Schema);
+        using SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return reader.GetString(reader.GetOrdinal("table_name"));
+        }
     }
 }

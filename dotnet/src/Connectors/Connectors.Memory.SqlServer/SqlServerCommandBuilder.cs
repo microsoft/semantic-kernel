@@ -44,6 +44,7 @@ internal static class SqlServerCommandBuilder
         }
         for (int i = 0; i < vectorProperties.Count; i++)
         {
+            // TODO adsitnik design: should we require Dimensions to be always provided in explicit way or use some default?
             sb.AppendFormat("[{0}] VECTOR({1}),", GetColumnName(vectorProperties[i]), vectorProperties[i].Dimensions);
             sb.AppendLine();
         }
@@ -54,7 +55,7 @@ internal static class SqlServerCommandBuilder
         return connection.CreateCommand(sb);
     }
 
-    internal static SqlCommand DropTable(SqlConnection connection, string schema, string tableName)
+    internal static SqlCommand DropTableIfExists(SqlConnection connection, string schema, string tableName)
     {
         StringBuilder sb = new(50);
         sb.Append("DROP TABLE IF EXISTS ");
@@ -75,6 +76,19 @@ internal static class SqlServerCommandBuilder
                 """;
         command.Parameters.AddWithValue("@schema", schema);
         command.Parameters.AddWithValue("@tableName", tableName); // the name is not escaped by us, just provided as parameter
+        return command;
+    }
+
+    internal static SqlCommand SelectTableNames(SqlConnection connection, string schema)
+    {
+        SqlCommand command = connection.CreateCommand();
+        command.CommandText = """
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                    AND TABLE_SCHEMA = @schema
+                """;
+        command.Parameters.AddWithValue("@schema", schema);
         return command;
     }
 

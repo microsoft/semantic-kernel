@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.Extensions.VectorData;
+﻿using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
 using Xunit;
 
@@ -8,21 +7,25 @@ namespace SqlServerIntegrationTests;
 public class SqlServerVectorStoreTests
 {
     [Fact]
-    public async Task CanCreateAndDeleteTheCollections()
+    public async Task CollectionCRUD()
     {
+        const string CollectionName = "collection";
         SqlServerTestStore testStore = new();
 
         await testStore.ReferenceCountingStartAsync();
 
-        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>("collection");
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(CollectionName);
 
         try
         {
             Assert.False(await collection.CollectionExistsAsync());
 
+            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
+
             await collection.CreateCollectionAsync();
 
             Assert.True(await collection.CollectionExistsAsync());
+            Assert.True(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
 
             await collection.CreateCollectionIfNotExistsAsync();
 
@@ -31,6 +34,7 @@ public class SqlServerVectorStoreTests
             await collection.DeleteCollectionAsync();
 
             Assert.False(await collection.CollectionExistsAsync());
+            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
         }
         finally
         {

@@ -28,7 +28,7 @@ public class SqlServerCommandBuilderTests
     {
         using SqlConnection connection = CreateConnection();
 
-        using SqlCommand command = SqlServerCommandBuilder.DropTable(connection, schema, table);
+        using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(connection, schema, table);
 
         Assert.Equal($"DROP TABLE IF EXISTS [{schema}].{expectedTable}", command.CommandText);
     }
@@ -53,6 +53,26 @@ public class SqlServerCommandBuilderTests
         , command.CommandText);
         Assert.Equal(schema, command.Parameters[0].Value);
         Assert.Equal(table, command.Parameters[1].Value);
+    }
+
+    [Fact]
+    public void SelectTableNames()
+    {
+        const string SchemaName = "theSchemaName";
+        using SqlConnection connection = CreateConnection();
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, SchemaName);
+
+        Assert.Equal(
+        """
+        SELECT TABLE_NAME
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_TYPE = 'BASE TABLE'
+            AND TABLE_SCHEMA = @schema
+        """
+        , command.CommandText);
+        Assert.Equal(SchemaName, command.Parameters[0].Value);
+        Assert.Equal("@schema", command.Parameters[0].ParameterName);
     }
 
     [Theory]
