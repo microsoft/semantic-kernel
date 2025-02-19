@@ -18,6 +18,6 @@ public class SummarizeStep : KernelProcessStep
         var summaryAgentHttpClient = kernel.GetRequiredService<SummaryAgentHttpClient>();
         var summarizedText = await summaryAgentHttpClient.SummarizeAsync(textToSummarize);
         Console.WriteLine($"Summarized text: {summarizedText}");
-        await context.EmitEventAsync(new () { Id = ProcessEvents.DocumentSummarized, Data = summarizedText });
+        await context.EmitEventAsync(new() { Id = ProcessEvents.DocumentSummarized, Data = summarizedText });
     }
 }

@@ -18,6 +18,6 @@ public class TranslateStep : KernelProcessStep
         var translatorAgentHttpClient = kernel.GetRequiredService<TranslatorAgentHttpClient>();
         var translatedText = await translatorAgentHttpClient.TranslateAsync(textToTranslate);
         Console.WriteLine($"Translated text: {translatedText}");
-        await context.EmitEventAsync(new () { Id = ProcessEvents.DocumentTranslated, Data = translatedText });
+        await context.EmitEventAsync(new() { Id = ProcessEvents.DocumentTranslated, Data = translatedText });
     }
 }
