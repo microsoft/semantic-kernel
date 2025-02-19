@@ -15,7 +15,7 @@ namespace GettingStarted.AzureAgents;
 /// Note: Open API invocation does not involve kernel function calling or kernel filters.
 /// Azure Function invocation is managed entirely by the Azure AI Agent service.
 /// </remarks>
-public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
     public async Task UseOpenAPIToolWithAgentAsync()
@@ -25,22 +25,20 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAgentsT
         string apiWeather = EmbeddedResource.Read("weather.json");
 
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools:
             [
                 new OpenApiToolDefinition("RestCountries", "Retrieve country information", BinaryData.FromString(apiCountries), new OpenApiAnonymousAuthDetails()),
                 new OpenApiToolDefinition("Weather", "Retrieve weather by location", BinaryData.FromString(apiWeather), new OpenApiAnonymousAuthDetails())
             ]);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -50,8 +48,8 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAgentsT
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
