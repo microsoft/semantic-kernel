@@ -1,5 +1,7 @@
 dirs: 
   - .
+excludedFiles:
+  - *.http
 ignorePatterns:
   - pattern: "/github/"
   - pattern: "./actions"
@@ -7,7 +9,6 @@ ignorePatterns:
   - pattern: "./issues"
   - pattern: "./discussions"
   - pattern: "./pulls"
-  - pattern: "./dotnet/samples/Demos/ProcessFrameworkWithAspire/**/*.http"
   - pattern: "^http://localhost"
   - pattern: "^https://localhost"
   - pattern: "^https://platform.openai.com"
