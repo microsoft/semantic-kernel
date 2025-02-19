@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// Present a <see cref="ChatMessageForPrompt"/> for serialization without metadata.
 /// </summary>
 /// <param name="message">The referenced message</param>
+[Experimental("SKEXP0110")]
 internal sealed class ChatMessageForPrompt(ChatMessageContent message)
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
@@ -24,7 +26,9 @@ internal sealed class ChatMessageForPrompt(ChatMessageContent message)
     /// The referenced <see cref="ChatMessageContent.AuthorName"/> property.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+#pragma warning disable SKEXP0001
     public string? Name => message.AuthorName;
+#pragma warning restore SKEXP0001
 
     /// <summary>
     /// The referenced <see cref="ChatMessageContent.Content"/> property.

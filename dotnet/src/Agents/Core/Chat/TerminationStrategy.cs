@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Provides a base strategy class for defining termination criteria for an <see cref="AgentGroupChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public abstract class TerminationStrategy
 {
     /// <summary>

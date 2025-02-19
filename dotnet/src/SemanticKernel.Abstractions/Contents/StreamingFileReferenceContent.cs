@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Content type to support file references.
 /// </summary>
-[Experimental("SKEXP0110")]
 public class StreamingFileReferenceContent : StreamingKernelContent
 {
     /// <summary>

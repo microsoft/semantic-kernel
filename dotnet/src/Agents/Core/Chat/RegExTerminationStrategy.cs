@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Signals termination when the most recent message matches against the defined regular expressions
 /// for the specified agent (if provided).
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class RegexTerminationStrategy : TerminationStrategy
 {
     private readonly Regex[] _expressions;

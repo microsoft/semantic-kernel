@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Content type to support message annotations.
 /// </summary>
-[Experimental("SKEXP0110")]
 public class AnnotationContent : KernelContent
 {
     /// <summary>

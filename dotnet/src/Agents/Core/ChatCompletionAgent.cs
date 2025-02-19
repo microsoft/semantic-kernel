@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -56,10 +57,12 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         var agentName = this.GetDisplayName();
 
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
     }
 
     /// <inheritdoc/>
@@ -71,13 +74,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         var agentName = this.GetDisplayName();
 
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         ChatHistory history =

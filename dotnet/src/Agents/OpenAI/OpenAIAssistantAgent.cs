@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -371,10 +372,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
             cancellationToken);
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
@@ -432,10 +435,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeStreamingAsync(),
             cancellationToken);
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
@@ -447,6 +452,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Distinguish from other channel types.
@@ -456,6 +462,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         this.Logger.LogOpenAIAssistantAgentCreatingChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel));
@@ -479,6 +486,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         string threadId = channelState;

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Represents an <see cref="AgentChat"/> that supports multi-turn interactions.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class AgentGroupChat : AgentChat
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test O(1) vs O(n) for list.

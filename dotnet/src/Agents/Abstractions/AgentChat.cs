@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <see cref="AgentChat" /> instances don't support concurrent invocation and
 /// will throw an exception if concurrent activity is attempted for any public method.
 /// </remarks>
+[Experimental("SKEXP0110")]
 public abstract class AgentChat
 {
     private readonly BroadcastQueue _broadcastQueue;
