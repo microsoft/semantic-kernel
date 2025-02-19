@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import AsyncIterable, Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -12,6 +13,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 if TYPE_CHECKING:
@@ -19,6 +21,8 @@ if TYPE_CHECKING:
 
     from semantic_kernel.agents.channels.agent_channel import AgentChannel
     from semantic_kernel.kernel import Kernel
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AutoGenConversableAgent(Agent):
@@ -50,13 +54,11 @@ class AutoGenConversableAgent(Agent):
 
     def get_channel_keys(self) -> Iterable[str]:
         """Distinguish from other channels and incorporate the agent's identity."""
-        yield f"{AutoGenConversableAgent.__name__}"
-        yield self.id
-        yield self.name
+        raise NotImplementedError("AutoGenConversableAgent does not currently support group chat.")
 
     async def create_channel(self) -> "AgentChannel":
         """Create an AutoGenChannel that uses the wrapped conversable_agent."""
-        raise NotImplementedError("AutoGenConversableAgent does not support create_channel.")
+        raise NotImplementedError("AutoGenConversableAgent does not currently support group chat.")
 
     async def invoke(
         self,
@@ -112,19 +114,23 @@ class AutoGenConversableAgent(Agent):
                 **kwargs,
             )
 
+            logger.info(f"Called AutoGenConversableAgent.a_initiate_chat with recipient: {recipient}")
+
             for message in chat_result.chat_history:
-                yield self._translate_message(message)
+                yield self._to_chat_message_content(message)  # type: ignore
         else:
             reply = await self.conversable_agent.a_generate_reply(
                 messages=[{"role": "user", "content": message}],
             )
+
+            logger.info(f"Called AutoGenConversableAgent.a_generate_reply with recipient: {recipient}")
 
             if isinstance(reply, str):
                 yield ChatMessageContent(content=reply, role=AuthorRole.ASSISTANT)
             elif isinstance(reply, dict):
                 yield ChatMessageContent(**reply)
             else:
-                raise ValueError(f"Unexpected reply type: {type(reply)}")
+                raise AgentInvokeException(f"Unexpected reply type from `a_generate_reply`: {type(reply)}")
 
     async def invoke_stream(
         self,
@@ -133,13 +139,12 @@ class AutoGenConversableAgent(Agent):
         arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
-        """A direct `invoke_stream` method for streaming usage."""
-        # TODO(evmattso): Implement this method? Is there streaming in AG 0.2?
-        raise NotImplementedError("invoke_stream is not yet implemented for AutoGenConversableAgent.")
+        """Invoke the agent with a stream of messages."""
+        raise NotImplementedError("The AutoGenConversableAgent does not support streaming.")
 
-    def _translate_message(self, message: dict) -> ChatMessageContent:
+    def _to_chat_message_content(self, message: dict[str, Any]) -> ChatMessageContent:
         """Translate an AutoGen message to a Semantic Kernel ChatMessageContent."""
-        items = []
+        items: list[TextContent | FunctionCallContent | FunctionResultContent] = []
         role = AuthorRole.ASSISTANT
         match message.get("role"):
             case "user":
@@ -179,4 +184,4 @@ class AutoGenConversableAgent(Agent):
                         )
                     )
 
-        return ChatMessageContent(role=role, items=items, name=name)
+        return ChatMessageContent(role=role, items=items, name=name)  # type: ignore

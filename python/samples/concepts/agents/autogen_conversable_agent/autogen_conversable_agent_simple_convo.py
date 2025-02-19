@@ -5,7 +5,15 @@ import os
 
 from autogen import ConversableAgent
 
-from semantic_kernel.agents.autogen.autogen_agent import AutoGenAgent
+from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConversableAgent
+
+"""
+The following sample demonstrates how to use the AutoGenConversableAgent to create a conversation between two agents
+where one agent suggests a joke and the other agent generates a joke.
+
+The sample follows the AutoGen flow outlined here:
+https://microsoft.github.io/autogen/0.2/docs/tutorial/introduction#roles-and-conversations
+"""
 
 
 async def main():
@@ -27,7 +35,7 @@ async def main():
         human_input_mode="NEVER",  # Never ask for human input.
     )
 
-    autogen_agent = AutoGenAgent(conversable_agent=cathy)
+    autogen_agent = AutoGenConversableAgent(conversable_agent=cathy)
 
     async for content in autogen_agent.invoke(
         recipient=joe, message="Tell me a joke about the stock market.", max_turns=3

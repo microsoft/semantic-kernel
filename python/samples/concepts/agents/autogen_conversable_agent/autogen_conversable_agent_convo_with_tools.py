@@ -10,6 +10,19 @@ from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConv
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 
+"""
+The following sample demonstrates how to use the AutoGenConversableAgent to create a conversation between two agents
+where one agent suggests a tool function call and the other agent executes the tool function call.
+
+In this example, the assistant agent suggests a calculator tool function call to the user proxy agent. The user proxy
+agent executes the calculator tool function call. The assistant agent and the user proxy agent are created using the
+ConversableAgent class. The calculator tool function is registered with the assistant agent and the user proxy agent.
+
+This sample follows the AutoGen flow outlined here:
+https://microsoft.github.io/autogen/0.2/docs/tutorial/tool-use
+"""
+
+
 Operator = Literal["+", "-", "*", "/"]
 
 
