@@ -108,7 +108,7 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
 collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILARITY)
+DataModel = get_data_model_array(IndexKind.IVF_FLAT, DistanceFunction.COSINE_SIMILARITY)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -250,7 +250,7 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             try:
                 search_results = await record_collection.vectorized_search(
                     vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                    options=VectorSearchOptions(vector_field_name="vector", include_vectors=True),
+                    options=options,
                 )
                 if search_results.total_count == 0:
                     print("\nNothing found...\n")

@@ -5,6 +5,15 @@ import sys
 from importlib import metadata
 from typing import Any, TypeVar
 
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.exceptions.vector_store_exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreOperationException,
+)
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -123,7 +132,11 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
         await self._get_database().command(command=self._get_vector_index(**kwargs))
 
     def _get_vector_index(self, **kwargs: Any) -> dict[str, Any]:
-        indexes = []
+        indexes = [
+            {"name": f"{field.name}_", "key": {field.name: 1}}
+            for field in self.data_model_definition.fields.values()
+            if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+        ]
         for vector_field in self.data_model_definition.vector_fields:
             index_name = f"{vector_field.name}_"
 
@@ -163,3 +176,45 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             indexes.append(index)
 
         return {"createIndexes": self.collection_name, "indexes": indexes}
+
+    @override
+    async def _inner_search(
+        self,
+        options: VectorSearchOptions,
+        search_text: str | None = None,
+        vectorizable_text: str | None = None,
+        vector: list[float | int] | None = None,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        collection = self._get_collection()
+        vector_search_query: dict[str, Any] = {
+            "k": options.top + options.skip,
+            "index": f"{options.vector_field_name}_",
+        }
+        if options.filter.filters:
+            vector_search_query["filter"] = self._build_filter_dict(options.filter)
+        if vector is not None:
+            vector_search_query["vector"] = vector
+            vector_search_query["path"] = options.vector_field_name
+        if "vector" not in vector_search_query:
+            raise VectorStoreOperationException("Vector is required for search.")
+
+        projection_query: dict[str, int | dict] = {
+            field: 1
+            for field in self.data_model_definition.get_field_names(
+                include_vector_fields=options.include_vectors,
+                include_key_field=False,  # _id is always included
+            )
+        }
+        projection_query["score"] = {"$meta": "searchScore"}
+        try:
+            raw_results = await collection.aggregate([
+                {"$search": {"cosmosSearch": vector_search_query}},
+                {"$project": projection_query},
+            ])
+        except Exception as exc:
+            raise VectorSearchExecutionException("Failed to search the collection.") from exc
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(raw_results, options),
+            total_count=None,  # no way to get a count before looping through the result cursor
+        )
