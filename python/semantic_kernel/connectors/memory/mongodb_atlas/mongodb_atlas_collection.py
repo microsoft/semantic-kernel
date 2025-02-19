@@ -166,7 +166,6 @@ class MongoDBAtlasCollection(
             )
             ids.append(record[MONGODB_ID_FIELD])
         result = await self._get_collection().bulk_write(operations, ordered=False)
-        logger.debug("Upserted records:", result)
         return [str(value) for key, value in result.upserted_ids.items()]
 
     @override
