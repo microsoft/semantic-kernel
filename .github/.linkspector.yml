@@ -1,7 +1,8 @@
 dirs: 
   - .
 excludedFiles:
-  - *.http
+  - ProcessFramework.Aspire.SummaryAgent.http
+  - ProcessFramework.Aspire.TranslatorAgent.http
 ignorePatterns:
   - pattern: "/github/"
   - pattern: "./actions"
