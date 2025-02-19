@@ -33,7 +33,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         }
         finally
         {
-            // await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
