@@ -17,6 +17,7 @@ from samples.concepts.auto_function_calling.functions_defined_in_json_prompt imp
 from samples.concepts.auto_function_calling.functions_defined_in_yaml_prompt import (
     main as function_defined_in_yaml_prompt,
 )
+from samples.concepts.caching.semantic_caching import main as semantic_caching
 from samples.concepts.chat_completion.simple_chatbot import main as simple_chatbot
 from samples.concepts.chat_completion.simple_chatbot_kernel_function import main as simple_chatbot_kernel_function
 from samples.concepts.chat_completion.simple_chatbot_logit_bias import main as simple_chatbot_logit_bias
@@ -26,6 +27,7 @@ from samples.concepts.filtering.auto_function_invoke_filters import main as auto
 from samples.concepts.filtering.function_invocation_filters import main as function_invocation_filters
 from samples.concepts.filtering.function_invocation_filters_stream import main as function_invocation_filters_stream
 from samples.concepts.filtering.prompt_filters import main as prompt_filters
+from samples.concepts.filtering.retry_with_different_model import main as retry_with_different_model
 from samples.concepts.functions.kernel_arguments import main as kernel_arguments
 from samples.concepts.grounding.grounded import main as grounded
 from samples.concepts.images.image_generation import main as image_generation
@@ -58,6 +60,14 @@ COMPLETIONS_CONCEPT_SAMPLE = "COMPLETIONS_CONCEPT_SAMPLE"
 MEMORY_CONCEPT_SAMPLE = "MEMORY_CONCEPT_SAMPLE"
 
 concepts = [
+    param(
+        semantic_caching,
+        [],
+        id="semantic_caching",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
     param(
         simple_chatbot,
         ["Why is the sky blue in one sentence?", "exit"],
@@ -136,6 +146,15 @@ concepts = [
         id="prompt_filters",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        retry_with_different_model,
+        [],
+        id="retry_with_different_model",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None,
+            reason="Not running completion samples.",
         ),
     ),
     param(
