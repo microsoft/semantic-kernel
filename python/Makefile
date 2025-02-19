@@ -57,7 +57,13 @@ else ifeq ($(CONTINUE),1)
 else
 	echo "uv could not be found."
 	echo "Installing uv..."
-	curl -LsSf https://astral.sh/uv/install.sh | sh
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+	    echo "Detected virtual environment at $$VIRTUAL_ENV, installing uv there..."; \
+	    curl -LsSf https://astral.sh/uv/install.sh | INSTALL_DIR="$$VIRTUAL_ENV/bin" sh; \
+	else \
+	    echo "No virtual environment detected, installing uv globally..."; \
+	    curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
 	echo "uv installed."
 	echo "Re-executing shell so uv is immediately available on PATH..."
 	exec $$SHELL -c 'make install CONTINUE=1'
