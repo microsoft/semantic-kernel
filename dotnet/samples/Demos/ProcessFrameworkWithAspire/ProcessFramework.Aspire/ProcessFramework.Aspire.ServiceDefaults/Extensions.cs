@@ -1,20 +1,41 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-// This project should be referenced by each service project in your solution.
-// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-public static class Extensions
+/// <summary>
+/// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
+/// This project should be referenced by each service project in your solution.
+/// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+/// </summary>
+public static class ServiceExtensions
 {
+    /// <summary>
+    /// Gets a configuration setting from the WebApplicationBuilder.
+    /// </summary>
+    /// <param name="builder">The WebApplicationBuilder instance.</param>
+    /// <param name="settingName">The name of the configuration setting.</param>
+    /// <returns>The value of the configuration setting.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the configuration setting is missing.</exception>
+    public static string GetConfiguration(this WebApplicationBuilder builder, string settingName)
+    {
+        return builder.Configuration[settingName] ?? throw new InvalidOperationException($"Missing configuration setting: {settingName}");
+    }
+
+    /// <summary>
+    /// Adds default services to the application builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
+    /// <param name="builder">The application builder instance.</param>
+    /// <returns>The application builder instance with default services added.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -41,6 +62,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Configures OpenTelemetry for the application builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
+    /// <param name="builder">The application builder instance.</param>
+    /// <returns>The application builder instance with OpenTelemetry configured.</returns>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -70,6 +97,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds OpenTelemetry exporters to the application builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
+    /// <param name="builder">The application builder instance.</param>
+    /// <returns>The application builder instance with OpenTelemetry exporters added.</returns>
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
@@ -89,6 +122,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds default health checks to the application builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
+    /// <param name="builder">The application builder instance.</param>
+    /// <returns>The application builder instance with default health checks added.</returns>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
@@ -98,6 +137,11 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Maps default endpoints for the application.
+    /// </summary>
+    /// <param name="app">The WebApplication instance.</param>
+    /// <returns>The WebApplication instance with default endpoints mapped.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
