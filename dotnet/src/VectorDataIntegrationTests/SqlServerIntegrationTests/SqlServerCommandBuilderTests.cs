@@ -22,6 +22,29 @@ public class SqlServerCommandBuilderTests
     }
 
     [Theory]
+    [InlineData("name", "@name_")] // typical name
+    [InlineData("na me", "@na_")] // contains a whitespace, an illegal parameter name character
+    [InlineData("123", "@_")] // starts with a digit, also not allowed
+    [InlineData("ĄŻŚĆ_doesNotStartWithAscii", "@_")] // starts with a non-ASCII character
+    public void AppendParameterName(string propertyName, string expectedPrefix)
+    {
+        StringBuilder builder = new();
+        StringBuilder expectedBuilder = new();
+        VectorStoreRecordKeyProperty keyProperty = new(propertyName, typeof(string));
+
+        int paramIndex = 0; // we need a dedicated variable to ensure that AppendParameterName increments the index
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.Equal(paramIndex, i);
+            SqlServerCommandBuilder.AppendParameterName(builder, keyProperty, ref paramIndex, out string parameterName);
+            Assert.Equal($"{expectedPrefix}{i}", parameterName);
+            expectedBuilder.Append(parameterName);
+        }
+
+        Assert.Equal(expectedBuilder.ToString(), builder.ToString());
+    }
+
+    [Theory]
     [InlineData("schema", "simpleName", "[simpleName]")]
     [InlineData("schema", "[needsEscaping]", "[[needsEscaping]]]")]
     public void DropTable(string schema, string table, string expectedTable)
@@ -92,7 +115,7 @@ public class SqlServerCommandBuilderTests
         ];
         VectorStoreRecordVectorProperty[] vectorProperties =
         [
-            new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 10
             }
@@ -108,7 +131,7 @@ public class SqlServerCommandBuilderTests
         [id] BIGINT NOT NULL,
         [simpleName] NVARCHAR(255) COLLATE Latin1_General_100_BIN2,
         [with space] INT NOT NULL,
-        [embedding1] VECTOR(10),
+        [embedding] VECTOR(10),
         PRIMARY KEY NONCLUSTERED ([id])
         )
         """;
@@ -135,7 +158,7 @@ public class SqlServerCommandBuilderTests
         ];
         VectorStoreRecordVectorProperty[] vectorProperties =
         [
-            new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 10
             }
@@ -149,22 +172,22 @@ public class SqlServerCommandBuilderTests
                 { "id", null },
                 { "simpleString", "nameValue" },
                 { "simpleInt", 134 },
-                { "embedding1", "{ 10.0 }" }
+                { "embedding", "{ 10.0 }" }
             });
 
         string expectedCommand =
         """
-        INSERT INTO [schema].[table] ([simpleString],[simpleInt],[embedding1])
+        INSERT INTO [schema].[table] ([simpleString],[simpleInt],[embedding])
         OUTPUT inserted.[id]
-        VALUES (@simpleString,@simpleInt,@embedding1);
+        VALUES (@simpleString_0,@simpleInt_1,@embedding_2);
         """;
 
         Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
-        Assert.Equal("@simpleString", command.Parameters[0].ParameterName);
+        Assert.Equal("@simpleString_0", command.Parameters[0].ParameterName);
         Assert.Equal("nameValue", command.Parameters[0].Value);
-        Assert.Equal("@simpleInt", command.Parameters[1].ParameterName);
+        Assert.Equal("@simpleInt_1", command.Parameters[1].ParameterName);
         Assert.Equal(134, command.Parameters[1].Value);
-        Assert.Equal("@embedding1", command.Parameters[2].ParameterName);
+        Assert.Equal("@embedding_2", command.Parameters[2].ParameterName);
         Assert.Equal("{ 10.0 }", command.Parameters[2].Value);
     }
 
@@ -181,7 +204,7 @@ public class SqlServerCommandBuilderTests
             keyProperty,
             new VectorStoreRecordDataProperty("simpleString", typeof(string)),
             new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 10
             }
@@ -195,29 +218,29 @@ public class SqlServerCommandBuilderTests
                 { "id", null },
                 { "simpleString", "nameValue" },
                 { "simpleInt", 134 },
-                { "embedding1", "{ 10.0 }" }
+                { "embedding", "{ 10.0 }" }
             });
 
         string expectedCommand =
         """"
         MERGE INTO [schema].[table] AS t
-        USING (VALUES (@id,@simpleString,@simpleInt,@embedding1)) AS s ([id],[simpleString],[simpleInt],[embedding1])
+        USING (VALUES (@id_0,@simpleString_1,@simpleInt_2,@embedding_3)) AS s ([id],[simpleString],[simpleInt],[embedding])
         ON (t.[id] = s.[id])
         WHEN MATCHED THEN
-        UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding1] = s.[embedding1]
+        UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding] = s.[embedding]
         WHEN NOT MATCHED THEN
-        INSERT ([id],[simpleString],[simpleInt],[embedding1])
-        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding1]);
+        INSERT ([id],[simpleString],[simpleInt],[embedding])
+        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding]);
         """";
 
         Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
-        Assert.Equal("@id", command.Parameters[0].ParameterName);
+        Assert.Equal("@id_0", command.Parameters[0].ParameterName);
         Assert.Equal(DBNull.Value, command.Parameters[0].Value);
-        Assert.Equal("@simpleString", command.Parameters[1].ParameterName);
+        Assert.Equal("@simpleString_1", command.Parameters[1].ParameterName);
         Assert.Equal("nameValue", command.Parameters[1].Value);
-        Assert.Equal("@simpleInt", command.Parameters[2].ParameterName);
+        Assert.Equal("@simpleInt_2", command.Parameters[2].ParameterName);
         Assert.Equal(134, command.Parameters[2].Value);
-        Assert.Equal("@embedding1", command.Parameters[3].ParameterName);
+        Assert.Equal("@embedding_3", command.Parameters[3].ParameterName);
         Assert.Equal("{ 10.0 }", command.Parameters[3].Value);
     }
 
@@ -266,8 +289,8 @@ public class SqlServerCommandBuilderTests
         DECLARE @InsertedKeys TABLE (KeyColumn BIGINT);
         MERGE INTO [schema].[table] AS t
         USING (VALUES
-        (@id_0,@simpleString_0,@simpleInt_0,@embedding_0),
-        (@id_1,@simpleString_1,@simpleInt_1,@embedding_1)) AS s ([id],[simpleString],[simpleInt],[embedding])
+        (@id_0,@simpleString_1,@simpleInt_2,@embedding_3),
+        (@id_4,@simpleString_5,@simpleInt_6,@embedding_7)) AS s ([id],[simpleString],[simpleInt],[embedding])
         ON (t.[id] = s.[id])
         WHEN MATCHED THEN
         UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding] = s.[embedding]
@@ -282,13 +305,13 @@ public class SqlServerCommandBuilderTests
 
         for (int i = 0; i < records.Length; i++)
         {
-            Assert.Equal($"@id_{i}", command.Parameters[4 * i].ParameterName);
-            Assert.Equal((long)i, command.Parameters[4 * i].Value);
-            Assert.Equal($"@simpleString_{i}", command.Parameters[4 * i + 1].ParameterName);
+            Assert.Equal($"@id_{4 * i + 0}", command.Parameters[4 * i + 0].ParameterName);
+            Assert.Equal((long)i, command.Parameters[4 * i + 0].Value);
+            Assert.Equal($"@simpleString_{4 * i + 1}", command.Parameters[4 * i + 1].ParameterName);
             Assert.Equal($"nameValue{i}", command.Parameters[4 * i + 1].Value);
-            Assert.Equal($"@simpleInt_{i}", command.Parameters[4 * i + 2].ParameterName);
+            Assert.Equal($"@simpleInt_{4 * i + 2}", command.Parameters[4 * i + 2].ParameterName);
             Assert.Equal(134 + i, command.Parameters[4 * i + 2].Value);
-            Assert.Equal($"@embedding_{i}", command.Parameters[4 * i + 3].ParameterName);
+            Assert.Equal($"@embedding_{4 * i + 3}", command.Parameters[4 * i + 3].ParameterName);
             Assert.Equal($"{{ 1{i}.0 }}", command.Parameters[4 * i + 3].Value);
         }
     }
@@ -302,9 +325,9 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(connection,
             "schema", "tableName", keyProperty, 123L);
 
-        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] = @id", command.CommandText);
+        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] = @id_0", command.CommandText);
         Assert.Equal(123L, command.Parameters[0].Value);
-        Assert.Equal("@id", command.Parameters[0].ParameterName);
+        Assert.Equal("@id_0", command.Parameters[0].ParameterName);
     }
 
     [Fact]
@@ -317,11 +340,11 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.DeleteMany(connection,
             "schema", "tableName", keyProperty, keys);
 
-        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] IN (@k0,@k1)", command.CommandText);
+        Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] IN (@id_0,@id_1)", command.CommandText);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);
-            Assert.Equal($"@k{i}", command.Parameters[i].ParameterName);
+            Assert.Equal($"@id_{i}", command.Parameters[i].ParameterName);
         }
     }
 
@@ -347,10 +370,10 @@ public class SqlServerCommandBuilderTests
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
-        WHERE [id] = @id
+        WHERE [id] = @id_0
         """""), command.CommandText);
         Assert.Equal(123L, command.Parameters[0].Value);
-        Assert.Equal("@id", command.Parameters[0].ParameterName);
+        Assert.Equal("@id_0", command.Parameters[0].ParameterName);
     }
 
     [Fact]
@@ -376,12 +399,12 @@ public class SqlServerCommandBuilderTests
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
-        WHERE [id] IN (@k0,@k1,@k2)
+        WHERE [id] IN (@id_0,@id_1,@id_2)
         """""), command.CommandText);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);
-            Assert.Equal($"@k{i}", command.Parameters[i].ParameterName);
+            Assert.Equal($"@id_{i}", command.Parameters[i].ParameterName);
         }
     }
 

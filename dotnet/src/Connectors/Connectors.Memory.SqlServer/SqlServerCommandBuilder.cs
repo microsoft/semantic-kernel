@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-#pragma warning disable CA1851 // Possible multiple enumerations of IEnumerable
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -32,7 +30,6 @@ internal static class SqlServerCommandBuilder
         sb.Append("CREATE TABLE ");
         sb.AppendTableName(options.Schema, tableName);
         sb.AppendLine(" (");
-        // Use square brackets to escape column names.
         string keyColumnName = GetColumnName(keyProperty);
         sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, Map(keyProperty.PropertyType).sqlName);
         sb.AppendLine();
@@ -113,11 +110,10 @@ internal static class SqlServerCommandBuilder
         sb.AppendFormat("OUTPUT inserted.[{0}]", GetColumnName(keyProperty));
         sb.AppendLine();
         sb.Append("VALUES (");
+        int paramIndex = 0;
         foreach (VectorStoreRecordProperty property in nonKeyProperties)
         {
-            int index = sb.Length;
-            sb.AppendFormat("@{0},", GetColumnName(property));
-            string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+            sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
             command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
@@ -141,11 +137,10 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(options.Schema, tableName);
         sb.AppendLine(" AS t");
         sb.Append("USING (VALUES (");
+        int paramIndex = 0;
         foreach (VectorStoreRecordProperty property in properties)
         {
-            int index = sb.Length;
-            sb.AppendFormat("@{0},", GetColumnName(property));
-            string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+            sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
             command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
@@ -196,15 +191,13 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(options.Schema, tableName);
         sb.AppendLine(" AS t"); // t stands for target
         sb.AppendLine("USING (VALUES");
-        int rowIndex = 0;
+        int rowIndex = 0, paramIndex = 0;
         foreach (var record in records)
         {
             sb.Append('(');
             foreach (VectorStoreRecordProperty property in properties)
             {
-                int index = sb.Length;
-                sb.AppendFormat("@{0}_{1},", GetColumnName(property), rowIndex);
-                string paramName = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
+                sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
                 command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
             }
             sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
@@ -259,13 +252,13 @@ internal static class SqlServerCommandBuilder
     {
         SqlCommand command = connection.CreateCommand();
 
-        string keyParamName = $"@{GetColumnName(keyProperty)}";
-        command.Parameters.AddWithValue(keyParamName, key);
-
+        int paramIndex = 0;
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
-        sb.AppendFormat(" WHERE [{0}] = {1}", GetColumnName(keyProperty), keyParamName);
+        sb.AppendFormat(" WHERE [{0}] = ", GetColumnName(keyProperty));
+        sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
+        command.Parameters.AddWithValue(keyParamName, key);
 
         command.CommandText = sb.ToString();
         return command;
@@ -281,7 +274,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendFormat(" WHERE [{0}] IN (", GetColumnName(keyProperty));
-        sb.AppendKeyParameterList(keys, command);
+        sb.AppendKeyParameterList(keys, command, keyProperty);
         sb.Append(')'); // close the IN clause
 
         command.CommandText = sb.ToString();
@@ -296,9 +289,7 @@ internal static class SqlServerCommandBuilder
     {
         SqlCommand command = sqlConnection.CreateCommand();
 
-        string keyParamName = $"@{GetColumnName(keyProperty)}";
-        command.Parameters.AddWithValue(keyParamName, key);
-
+        int paramIndex = 0;
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
         sb.AppendColumnNames(properties);
@@ -306,7 +297,9 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, collectionName);
         sb.AppendLine();
-        sb.AppendFormat("WHERE [{0}] = {1}", GetColumnName(keyProperty), keyParamName);
+        sb.AppendFormat("WHERE [{0}] = ", GetColumnName(keyProperty));
+        sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
+        command.Parameters.AddWithValue(keyParamName, key);
 
         command.CommandText = sb.ToString();
         return command;
@@ -328,7 +321,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
         sb.AppendFormat("WHERE [{0}] IN (", GetColumnName(keyProperty));
-        sb.AppendKeyParameterList(keys, command);
+        sb.AppendKeyParameterList(keys, command, keyProperty);
         sb.Append(')'); // close the IN clause
 
         command.CommandText = sb.ToString();
@@ -337,6 +330,38 @@ internal static class SqlServerCommandBuilder
 
     internal static string GetColumnName(VectorStoreRecordProperty property)
         => property.StoragePropertyName ?? property.DataModelPropertyName;
+
+    internal static StringBuilder AppendParameterName(this StringBuilder sb, VectorStoreRecordProperty property, ref int paramIndex, out string parameterName)
+    {
+        // In SQL Server, parameter names cannot be just a number like "@1".
+        // Parameter names must start with an alphabetic character or an underscore
+        // and can be followed by alphanumeric characters or underscores.
+        // Since we can't guarantee that the value returned by StoragePropertyName and DataModelPropertyName
+        // is valid parameter name (it can contain whitespaces, or start with a number),
+        // we just append the ASCII letters, stop on the first non-ASCII letter
+        // and append the index.
+        string columnName = GetColumnName(property);
+        int index = sb.Length;
+        sb.Append('@');
+        foreach (char character in columnName)
+        {
+            // We don't call APIs like char.IsWhitespace as they are expensive
+            // as they need to handle all Unicode characters.
+            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z')))
+            {
+                break;
+            }
+            sb.Append(character);
+        }
+        // In case the column name is empty or does not start with ASCII letters,
+        // we provide the underscore as a prefix (allowed).
+        sb.Append('_');
+        // To ensure the generated parameter id is unique, we append the index.
+        sb.Append(paramIndex++);
+        parameterName = sb.ToString(index, sb.Length - index);
+
+        return sb;
+    }
 
     internal static StringBuilder AppendTableName(this StringBuilder sb, string schema, string tableName)
     {
@@ -367,6 +392,7 @@ internal static class SqlServerCommandBuilder
             {
                 sb.Append(prefix);
             }
+            // Use square brackets to escape column names.
             sb.AppendFormat("[{0}],", GetColumnName(property));
             any = true;
         }
@@ -379,7 +405,8 @@ internal static class SqlServerCommandBuilder
         return sb;
     }
 
-    private static StringBuilder AppendKeyParameterList<TKey>(this StringBuilder sb, IEnumerable<TKey> keys, SqlCommand command)
+    private static StringBuilder AppendKeyParameterList<TKey>(this StringBuilder sb,
+        IEnumerable<TKey> keys, SqlCommand command, VectorStoreRecordKeyProperty keyProperty)
     {
         int keyIndex = 0;
         foreach (TKey key in keys)
@@ -387,10 +414,10 @@ internal static class SqlServerCommandBuilder
             // The caller ensures that keys collection is not null.
             // We need to ensure that none of the keys is null.
             Verify.NotNull(key);
-            int index = sb.Length;
-            sb.AppendFormat("@k{0},", keyIndex++);
-            string keyParam = sb.ToString(index, sb.Length - index - 1); // 1 is for the comma
-            command.Parameters.AddWithValue(keyParam, key);
+
+            sb.AppendParameterName(keyProperty, ref keyIndex, out string keyParamName);
+            sb.Append(',');
+            command.Parameters.AddWithValue(keyParamName, key);
         }
 
         if (keyIndex == 0)
