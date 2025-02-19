@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -39,6 +40,9 @@ public abstract class KernelAgent : Agent
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
     public IPromptTemplate? Template { get; protected set; }
+
+    /// <inheritdoc/>
+    protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
 
     /// <summary>
     /// Formats the system instructions for the agent.
