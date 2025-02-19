@@ -15,20 +15,20 @@ public static class KernelFunctionExtensions
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string? pluginName = null)
     {
         if (function.Metadata.Parameters.Count > 0)
         {
             BinaryData parameterData = function.Metadata.CreateParameterSpec();
 
-            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName))
             {
                 Description = function.Description,
                 Parameters = parameterData,
             };
         }
 
-        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName))
         {
             Description = function.Description
         };
