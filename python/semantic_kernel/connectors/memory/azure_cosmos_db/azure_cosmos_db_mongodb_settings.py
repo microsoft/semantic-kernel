@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from pydantic import SecretStr
 
-from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME
+from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -30,12 +30,9 @@ class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
        on Azure CosmosDB NoSQL resource model:
        https://learn.microsoft.com/en-us/azure/cosmos-db/resource-model
        (Env var name: AZURE_COSMOS_DB_MONGODB_DATABASE_NAME)
-    - index_name: str - MongoDB Atlas search index name, defaults to 'default'
-       (Env var AZURE_COSMOS_DB_MONGODB_NAME_INDEX_NAME)
     """
 
     env_prefix: ClassVar[str] = "AZURE_COSMOS_DB_MONGODB_"
 
     connection_string: SecretStr | None = None
     database_name: str | None = DEFAULT_DB_NAME
-    index_name: str | None = DEFAULT_SEARCH_INDEX_NAME

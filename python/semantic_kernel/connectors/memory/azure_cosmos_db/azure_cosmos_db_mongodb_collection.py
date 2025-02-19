@@ -20,7 +20,6 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.const import (
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     DEFAULT_DB_NAME,
-    DEFAULT_SEARCH_INDEX_NAME,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
@@ -43,7 +42,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
         collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
-        index_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
         **kwargs: Any,
     ) -> None:
@@ -55,7 +53,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             collection_name: The name of the collection, optional.
             mongo_client: The MongoDB client for interacting with Azure CosmosDB for MongoDB,
                 used for creating and deleting collections.
-            index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
             **kwargs: Additional keyword arguments, including:
                 The same keyword arguments used for AzureCosmosDBforMongoDBStore:
                     database_name: The name of the database, will be filled from the env when this is not set.
@@ -72,7 +69,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
                 mongo_client=mongo_client,
                 collection_name=collection_name,
                 database_name=kwargs.get("database_name", DEFAULT_DB_NAME),
-                index_name=index_name or DEFAULT_SEARCH_INDEX_NAME,
                 managed_client=managed_client,
             )
             return
@@ -87,7 +83,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
                 env_file_encoding=kwargs.get("env_file_encoding"),
                 connection_string=kwargs.get("connection_string"),
                 database_name=kwargs.get("database_name"),
-                index_name=index_name,
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create Azure CosmosDB for MongoDB settings.") from exc
@@ -106,7 +101,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             mongo_client=mongo_client,
             managed_client=managed_client,
             database_name=settings.database_name,
-            index_name=settings.index_name,
         )
 
     @override
