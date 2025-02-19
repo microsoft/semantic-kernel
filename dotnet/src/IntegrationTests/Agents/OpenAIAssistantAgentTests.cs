@@ -265,10 +265,8 @@ public sealed class OpenAIAssistantAgentTests
         Kernel kernel = new();
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        kernel.Plugins.Add(plugin);
-
         Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
-        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient, [plugin]);
 
         try
         {
