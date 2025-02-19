@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <remarks>
 /// This class is not applicable to <see cref="AgentChat"/> usage.
 /// </remarks>
+[Obsolete("Use RunCreationOptions to specify assistant invocation behavior.")]
 public sealed class OpenAIAssistantInvocationOptions
 {
     /// <summary>

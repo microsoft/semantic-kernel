@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -9,11 +8,13 @@ namespace Agents;
 
 public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    [InlineData("SchedulingAssistant.json", "Read the body of my last five emails, if any contain a meeting request for today, check that it's already on my calendar, if not, call out which email it is.")]
+    [InlineData(
+        "SchedulingAssistant.json",
+        "Read the body of my last five emails, if any contain a meeting request for today, check that it's already on my calendar, if not, call out which email it is.")]
     [Theory]
     public async Task LoadsAgentFromDeclarativeAgentManifestAsync(string agentFileName, string input)
     {
-        var kernel = CreateKernel();
+        var kernel = this.CreateKernelWithChatCompletion();
         kernel.AutoFunctionInvocationFilters.Add(new ExpectedSchemaFunctionFilter());
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "DeclarativeAgents");
         var manifestFilePath = Path.Combine(manifestLookupDirectory, agentFileName);
@@ -30,9 +31,8 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
         Assert.NotNull(agent.Instructions);
         Assert.NotEmpty(agent.Instructions);
 
-        ChatMessageContent message = new(AuthorRole.User, input);
-        ChatHistory chatHistory = [message];
-        StringBuilder sb = new();
+        ChatHistory chatHistory = [new ChatMessageContent(AuthorRole.User, input)];
+
         var kernelArguments = new KernelArguments(new PromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
@@ -42,23 +42,14 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
                     }
                 )
         });
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chatHistory, kernelArguments))
-        {
-            chatHistory.Add(response);
-            sb.Append(response.Content);
-        }
-        Assert.NotEmpty(chatHistory.Skip(1));
-    }
-    private Kernel CreateKernel()
-    {
-        IKernelBuilder builder = Kernel.CreateBuilder();
 
-        base.AddChatCompletionToKernel(builder);
-
-        return builder.Build();
+        var responses = await agent.InvokeAsync(chatHistory, kernelArguments).ToArrayAsync();
+        Assert.NotEmpty(responses);
     }
+
     private sealed class ExpectedSchemaFunctionFilter : IAutoFunctionInvocationFilter
-    {//TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
+    {
+        //TODO: this eventually needs to be added to all CAP or DA but we're still discussing where should those facilitators live
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             await next(context);
