@@ -6,9 +6,6 @@ from typing import Any, ClassVar, TypeVar
 
 from pydantic import Field
 
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -16,6 +13,8 @@ else:
 
 from semantic_kernel.connectors.memory.in_memory.const import DISTANCE_FUNCTION_MAP
 from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
@@ -29,6 +28,7 @@ from semantic_kernel.data.vector_search.vector_text_search import VectorTextSear
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.list_handler import empty_generator
 
 KEY_TYPES = str | int | float
 
@@ -171,7 +171,7 @@ class InMemoryVectorCollection(
                 ),
                 total_count=len(return_records) if options and options.include_total_count else None,
             )
-        return KernelSearchResults(results=None)
+        return KernelSearchResults(results=empty_generator())
 
     async def _generate_return_list(
         self, return_records: dict[KEY_TYPES, float], options: VectorSearchOptions | None
