@@ -24,7 +24,8 @@ extend-exclude = [
     "PopulationByAdmin1.csv",
     "WomensSuffrage.txt",
     "SK-dotnet.sln.DotSettings",
-    "**/azure_ai_search_hotel_samples/README.md"
+    "**/azure_ai_search_hotel_samples/README.md",
+	"**/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs"
 ]
 
 [default.extend-words]
