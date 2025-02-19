@@ -48,6 +48,17 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         this.Template = templateFactory?.Create(templateConfig);
     }
 
+    /// <summary>
+    /// Gets the role used for the agent instructions.  Defaults to "system".
+    /// </summary>
+    /// <remarks>
+    /// Certain versions of "O*" series (deep reasoning) models require the instructions
+    /// to be provided as "developer" role.  Other versions support neither role and
+    /// an agent targeting such a model cannot provide instructions.  Agent functionality
+    /// will be dictated entirely by the provided plugins.
+    /// </remarks>
+    public AuthorRole InstructionsRole { get; init; } = AuthorRole.System;
+
     /// <inheritdoc/>
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
@@ -119,7 +130,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
-            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(this.InstructionsRole, instructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);
