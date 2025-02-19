@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
@@ -29,11 +29,13 @@ from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     DEFAULT_DB_NAME,
     DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_ID_FIELD,
+    MONGODB_SCORE_FIELD,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_vector_field
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
 from semantic_kernel.data.vector_search import (
     VectorSearchFilter,
     VectorSearchOptions,
@@ -57,6 +59,7 @@ TModel = TypeVar("TModel")
 class MongoDBAtlasCollection(
     VectorSearchBase[str, TModel],
     VectorizedSearchMixin[TModel],
+    VectorTextSearchMixin[TModel],
     Generic[TModel],
 ):
     """MongoDB Atlas collection implementation."""
@@ -249,18 +252,30 @@ class MongoDBAtlasCollection(
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        if vector is not None:
+            return await self._inner_vectorized_search(options, vector, **kwargs)
+        if search_text is not None:
+            return await self._inner_text_search(options, search_text, **kwargs)
+        raise VectorStoreOperationException("Vector or text is required for search.")
+
+    async def _inner_text_search(
+        self,
+        options: VectorSearchOptions,
+        search_text: str,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_search_query: dict[str, Any] = {
+        search_query: dict[str, Any] = {
             "limit": options.top + options.skip,
-            "index": f"{options.vector_field_name}_",
+            "query": search_text,
+            "path": [
+                field.name
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
+            ],
         }
         if options.filter.filters:
-            vector_search_query["filter"] = self._build_filter_dict(options.filter)
-        if vector is not None:
-            vector_search_query["queryVector"] = vector
-            vector_search_query["path"] = options.vector_field_name
-        if "queryVector" not in vector_search_query:
-            raise VectorStoreOperationException("Vector is required for search.")
+            search_query["filter"] = self._build_filter_dict(options.filter)
 
         projection_query: dict[str, int | dict] = {
             field: 1
@@ -269,7 +284,43 @@ class MongoDBAtlasCollection(
                 include_key_field=False,  # _id is always included
             )
         }
-        projection_query["score"] = {"$meta": "vectorSearchScore"}
+        projection_query[MONGODB_SCORE_FIELD] = {"$meta": "searchScore"}
+        try:
+            raw_results = await collection.aggregate([
+                {"$search": {"text": search_query}},
+                {"$project": projection_query},
+            ])
+        except Exception as exc:
+            raise VectorSearchExecutionException("Failed to search the collection.") from exc
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(raw_results, options),
+            total_count=None,  # no way to get a count before looping through the result cursor
+        )
+
+    async def _inner_vectorized_search(
+        self,
+        options: VectorSearchOptions,
+        vector: list[float | int],
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        collection = self._get_collection()
+        vector_search_query: dict[str, Any] = {
+            "limit": options.top + options.skip,
+            "index": f"{options.vector_field_name}_",
+            "queryVector": vector,
+            "path": options.vector_field_name,
+        }
+        if options.filter.filters:
+            vector_search_query["filter"] = self._build_filter_dict(options.filter)
+
+        projection_query: dict[str, int | dict] = {
+            field: 1
+            for field in self.data_model_definition.get_field_names(
+                include_vector_fields=options.include_vectors,
+                include_key_field=False,  # _id is always included
+            )
+        }
+        projection_query[MONGODB_SCORE_FIELD] = {"$meta": "vectorSearchScore"}
         try:
             raw_results = await collection.aggregate([
                 {"$vectorSearch": vector_search_query},
@@ -298,7 +349,7 @@ class MongoDBAtlasCollection(
 
     @override
     def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
-        return result.get("score")
+        return result.get(MONGODB_SCORE_FIELD)
 
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
