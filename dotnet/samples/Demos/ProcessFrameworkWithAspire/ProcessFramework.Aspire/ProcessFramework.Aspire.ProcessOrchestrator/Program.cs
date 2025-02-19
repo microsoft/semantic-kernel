@@ -58,7 +58,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-
 app.MapGet("/api/processdoc", async (Kernel kernel) =>
 {
     var processBuilder = new ProcessBuilder("ProcessDocument");

@@ -57,7 +57,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-
 app.MapPost("/api/translatoragent", async (Kernel kernel, TranslationRequest translationRequest) =>
 {
     ChatCompletionAgent summaryAgent =
