@@ -16,7 +16,10 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCollection
+from semantic_kernel.connectors.memory.azure_cosmos_db import (
+    AzureCosmosDBforMongoDBCollection,
+    AzureCosmosDBNoSQLCollection,
+)
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -124,6 +127,8 @@ DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILAR
 #   https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Cpython&pivots=api-nosql
 #   Please see the link above to learn how to set up the Azure Cosmos NoSQL emulator on your machine.
 #   For this sample to work with Azure Cosmos NoSQL, please adjust the index_kind of the data model to QUANTIZED_FLAT.
+# - azure_cosmos_mongodb: Azure Cosmos MongoDB
+#   https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/introduction
 # This is represented as a mapping from the collection name to a
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
@@ -162,6 +167,10 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
         create_database=True,
     ),
+    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection(
+        data_model_type=DataModel,
+        collection_name=collection_name,
+    ),
 }
 
 
@@ -172,6 +181,8 @@ def print_record(result: VectorSearchResult | None = None, record: DataModel | N
     print(f"    Content: {record.content}")
     if record.vector is not None:
         print(f"    Vector (first five): {record.vector[:5]}")
+    if result and result.score is not None:
+        print(f"    Score: {result.score}")
 
 
 async def main(collection: str, use_azure_openai: bool, embedding_model: str):
@@ -276,5 +287,4 @@ if __name__ == "__main__":
         "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
     )
     args = parser.parse_args()
-
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai, embedding_model=args.model))

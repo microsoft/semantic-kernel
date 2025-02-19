@@ -6,23 +6,31 @@ from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
 from pydantic import ValidationError
-from pymongo import AsyncMongoClient
+from pymongo import AsyncMongoClient, ReplaceOne
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.driver_info import DriverInfo
+from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     DEFAULT_DB_NAME,
     DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_ID_FIELD,
 )
-from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_index_definition
+from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_vector_field
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
@@ -146,8 +154,20 @@ class MongoDBAtlasCollection(
         records: Sequence[Any],
         **kwargs: Any,
     ) -> Sequence[str]:
-        result = await self._get_collection().update_many(update=records, upsert=True, **kwargs)
-        return [str(ids) for ids in result.upserted_id]
+        operations = []
+        ids = []
+        for record in records:
+            operations.append(
+                ReplaceOne(
+                    filter={MONGODB_ID_FIELD: record[MONGODB_ID_FIELD]},
+                    replacement=record,
+                    upsert=True,
+                )
+            )
+            ids.append(record[MONGODB_ID_FIELD])
+        result = await self._get_collection().bulk_write(operations, ordered=False)
+        logger.debug("Upserted records:", result)
+        return [str(value) for key, value in result.upserted_ids.items()]
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
@@ -185,7 +205,7 @@ class MongoDBAtlasCollection(
 
     @override
     async def create_collection(self, **kwargs) -> None:
-        """Create a new collection in MongoDB Atlas.
+        """Create a new collection in MongoDB.
 
         This first creates a collection, with the kwargs.
         Then creates a search index based on the data model definition.
@@ -194,7 +214,24 @@ class MongoDBAtlasCollection(
             **kwargs: Additional keyword arguments.
         """
         collection = await self._get_database().create_collection(self.collection_name, **kwargs)
-        await collection.create_search_index(create_index_definition(self.data_model_definition, self.index_name))
+        await collection.create_search_index(self._create_index_definition())
+
+    def _create_index_definition(self) -> SearchIndexModel:
+        """Create an index definition.
+
+        Returns:
+            SearchIndexModel: The index definition.
+        """
+        vector_fields = [create_vector_field(field) for field in self.data_model_definition.vector_fields]
+        data_fields = [
+            {"path": field.name, "type": "filter"}
+            for field in self.data_model_definition.fields
+            if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+        ]
+        key_field = [{"path": self.data_model_definition.key_field.name, "type": "filter"}]
+        return SearchIndexModel(
+            type="vectorSearch", name=self.index_name, definition={"fields": vector_fields + data_fields + key_field}
+        )
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
@@ -216,7 +253,7 @@ class MongoDBAtlasCollection(
         collection = self._get_collection()
         vector_search_query: dict[str, Any] = {
             "limit": options.top + options.skip,
-            "index": self.index_name,
+            "index": f"{options.vector_field_name}_",
         }
         if options.filter.filters:
             vector_search_query["filter"] = self._build_filter_dict(options.filter)
@@ -270,7 +307,7 @@ class MongoDBAtlasCollection(
         if self.managed_client:
             await self.mongo_client.close()
 
-    async def __aenter__(self) -> "MongoDBAtlasCollection":
+    async def __aenter__(self) -> Self:
         """Enter the context manager."""
         await self.mongo_client.aconnect()
         return self
