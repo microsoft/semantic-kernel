@@ -72,6 +72,8 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
+        if not settings.connection_string:
+            raise VectorStoreInitializationException("The connection string is missing.")
         if not mongo_client:
             mongo_client = AsyncMongoClient(
                 settings.connection_string.get_secret_value(),

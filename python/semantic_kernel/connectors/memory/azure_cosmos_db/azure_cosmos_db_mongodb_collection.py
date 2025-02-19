@@ -23,7 +23,6 @@ from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     DEFAULT_SEARCH_INDEX_NAME,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
-from semantic_kernel.data.const import IndexKind
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
@@ -92,6 +91,8 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create Azure CosmosDB for MongoDB settings.") from exc
+        if not settings.connection_string:
+            raise VectorStoreInitializationException("The Azure CosmosDB for MongoDB connection string is required.")
         if not mongo_client:
             mongo_client = AsyncMongoClient(
                 settings.connection_string.get_secret_value(),
@@ -131,13 +132,18 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
         indexes = []
         for vector_field in self.data_model_definition.vector_fields:
             index_name = f"{vector_field.name}_"
-            similarity = DISTANCE_FUNCTION_MAPPING_MONGODB.get(vector_field.distance_function)
-            kind = INDEX_KIND_MAPPING_MONGODB.get(vector_field.index_kind)
+
+            similarity = (
+                DISTANCE_FUNCTION_MAPPING_MONGODB.get(vector_field.distance_function)
+                if vector_field.distance_function
+                else "COS"
+            )
+            kind = INDEX_KIND_MAPPING_MONGODB.get(vector_field.index_kind) if vector_field.index_kind else "vector-ivf"
             if similarity is None:
                 raise VectorStoreInitializationException(f"Invalid distance function: {vector_field.distance_function}")
             if kind is None:
                 raise VectorStoreInitializationException(f"Invalid index kind: {vector_field.index_kind}")
-            index = {
+            index: dict[str, Any] = {
                 "name": index_name,
                 "key": {vector_field.name: "cosmosSearch"},
                 "cosmosSearchOptions": {
@@ -146,18 +152,18 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
                     "dimensions": vector_field.dimensions,
                 },
             }
-            match vector_field.index_kind:
-                case IndexKind.DISK_ANN:
+            match kind:
+                case "vector-diskann":
                     if "maxDegree" in kwargs:
                         index["cosmosSearchOptions"]["maxDegree"] = kwargs["maxDegree"]
                     if "lBuild" in kwargs:
                         index["cosmosSearchOptions"]["lBuild"] = kwargs["lBuild"]
-                case IndexKind.HNSW:
+                case "vector-hnsw":
                     if "m" in kwargs:
                         index["cosmosSearchOptions"]["m"] = kwargs["m"]
                     if "efConstruction" in kwargs:
                         index["cosmosSearchOptions"]["efConstruction"] = kwargs["efConstruction"]
-                case IndexKind.IVF_FLAT:
+                case "vector-ivf":
                     if "numList" in kwargs:
                         index["cosmosSearchOptions"]["numList"] = kwargs["numList"]
             indexes.append(index)

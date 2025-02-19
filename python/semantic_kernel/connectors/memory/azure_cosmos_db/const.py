@@ -10,6 +10,7 @@ INDEX_KIND_MAPPING = {
     IndexKind.QUANTIZED_FLAT: "quantizedFlat",
     IndexKind.DISK_ANN: "diskANN",
 }
+
 INDEX_KIND_MAPPING_MONGODB = {
     IndexKind.IVF_FLAT: "vector-ivf",
     IndexKind.HNSW: "vector-hnsw",

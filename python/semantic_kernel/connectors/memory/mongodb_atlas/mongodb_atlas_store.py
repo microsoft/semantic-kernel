@@ -51,31 +51,33 @@ class MongoDBAtlasStore(VectorStore):
         mongo_client: AsyncMongoClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasStore client.
 
         Args:
-        connection_string (str): The connection string for MongoDB Atlas, optional.
+        connection_string: The connection string for MongoDB Atlas, optional.
             Can be read from environment variables.
-        database_name (str): The name of the database, optional. Can be read from environment variables.
-        mongo_client (MongoClient): The MongoDB client, optional.
-        env_file_path (str): Use the environment settings file as a fallback
+        database_name: The name of the database, optional. Can be read from environment variables.
+        mongo_client: The MongoDB client, optional.
+        env_file_path: Use the environment settings file as a fallback
             to environment variables.
-        env_file_encoding (str): The encoding of the environment settings file.
-
+        env_file_encoding: The encoding of the environment settings file.
+        kwargs: Additional keyword arguments.
         """
         from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import (
             MongoDBAtlasSettings,
         )
 
+        managed_client = kwargs.get("managed_client", not mongo_client)
+
         if mongo_client and database_name:
             super().__init__(
                 mongo_client=mongo_client,
-                managed_client=False,
+                managed_client=managed_client,
                 database_name=database_name,
             )
             return
-        managed_client: bool = False
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings.create(
                 env_file_path=env_file_path,
@@ -85,12 +87,13 @@ class MongoDBAtlasStore(VectorStore):
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
+        if not mongodb_atlas_settings.connection_string:
+            raise VectorStoreInitializationException("The connection string is missing.")
         if not mongo_client:
             mongo_client = AsyncMongoClient(
                 mongodb_atlas_settings.connection_string.get_secret_value(),
                 driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
             )
-            managed_client = True
 
         super().__init__(
             mongo_client=mongo_client,
