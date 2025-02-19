@@ -5,6 +5,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="3.7.416.4" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="3.7.418.3" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
@@ -60,6 +62,7 @@
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
     <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
