@@ -47,6 +47,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
     // 1. I totally see why we want to provide it, we just need to make sure it's the right thing to do.
     // 2. An alternative would be to make CreateCollectionAsync a nop when the collection already exists
     // or extend it with an optional boolean parameter that would control the behavior.
+    // 3. We may need it to avoid TOCTOU issues.
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
         => this.CreateCollectionAsync(ifNotExists: true, cancellationToken);
 

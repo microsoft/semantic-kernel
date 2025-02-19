@@ -76,7 +76,7 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
     public void Dispose() => this._connection.Dispose();
 
     // TODO: adsitnik: design
-    // I find the creation process uniutive: the IVectorStoreRecordCollection.Create
+    // I find the creation process not intuitive: the IVectorStoreRecordCollection.Create
     // method does take only table name as an arugment, the metadata needs to be provided
     // a step before that by passing the VectorStoreRecordDefinition to the GetCollection method.
     // I would expect VectorStoreRecordDefinition to be argument of the CreateCollectionAsync.

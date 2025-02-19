@@ -118,6 +118,7 @@ internal sealed class VectorStoreRecordPropertyReader
 
         this._parameterlessConstructorInfo = new Lazy<ConstructorInfo>(() =>
         {
+            // TODO adsitnik: design: why don't we requrie TRecord to be always : new()?
             var constructor = dataModelType.GetConstructor(Type.EmptyTypes);
             if (constructor == null)
             {
