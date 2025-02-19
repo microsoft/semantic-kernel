@@ -179,4 +179,111 @@ public class SqlServerVectorStoreTests
         [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
+
+    [Fact]
+    public Task CanUseFancyModels_Int() => this.CanUseFancyModels<int>();
+
+    [Fact]
+    public Task CanUseFancyModels_Long() => this.CanUseFancyModels<long>();
+
+    [Fact]
+    public Task CanUseFancyModels_Guid() => this.CanUseFancyModels<Guid>();
+
+    private async Task CanUseFancyModels<TKey>() where TKey : notnull
+    {
+        SqlServerTestStore testStore = new();
+
+        await testStore.ReferenceCountingStartAsync();
+
+        var collection = testStore.DefaultVectorStore.GetCollection<TKey, FancyTestModel<TKey>>("other");
+
+        try
+        {
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            FancyTestModel<TKey> inserted = new()
+            {
+                // We let the DB assign Id!
+                Number8 = byte.MaxValue,
+                Number16 = short.MaxValue,
+                Number32 = int.MaxValue,
+                Number64 = long.MaxValue,
+                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray(),
+                Bytes = [1, 2, 3],
+                ArrayOfStrings = ["a", "b", "c"],
+                ListOfStrings = ["d", "e", "f"]
+            };
+            TKey key = await collection.UpsertAsync(inserted);
+            Assert.NotEqual(default(TKey), key); // key should be assigned by the DB (auto-increment)
+
+            FancyTestModel<TKey>? received = await collection.GetAsync(key);
+            AssertEquality(inserted, received, key);
+
+            FancyTestModel<TKey> updated = new()
+            {
+                Id = key,
+                Number16 = short.MinValue, // change one property
+                Floats = inserted.Floats
+            };
+            key = await collection.UpsertAsync(updated);
+            Assert.Equal(updated.Id, key);
+
+            received = await collection.GetAsync(updated.Id);
+            AssertEquality(updated, received, key);
+
+            await collection.DeleteAsync(inserted.Id);
+
+            Assert.Null(await collection.GetAsync(inserted.Id));
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+
+            await testStore.ReferenceCountingStopAsync();
+        }
+
+        void AssertEquality(FancyTestModel<TKey> expected, FancyTestModel<TKey>? received, TKey expectedKey)
+        {
+            Assert.NotNull(received);
+            Assert.Equal(expectedKey, received.Id);
+            Assert.Equal(expected.Number8, received.Number8);
+            Assert.Equal(expected.Number16, received.Number16);
+            Assert.Equal(expected.Number32, received.Number32);
+            Assert.Equal(expected.Number64, received.Number64);
+            Assert.Equal(expected.Floats, received.Floats);
+            Assert.Equal(expected.Bytes, received.Bytes);
+            Assert.Equal(expected.ArrayOfStrings, received.ArrayOfStrings);
+            Assert.Equal(expected.ListOfStrings, received.ListOfStrings);
+        }
+    }
+
+    public sealed class FancyTestModel<TKey> where TKey : notnull
+    {
+        [VectorStoreRecordKey(StoragePropertyName = "key", AutoGenerate = true)]
+        public TKey Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "byte")]
+        public byte Number8 { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "short")]
+        public short Number16 { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "int")]
+        public int Number32 { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "long")]
+        public long Number64 { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "bytes")]
+        public byte[]? Bytes { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "array_of_strings")]
+        public string[]? ArrayOfStrings { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "list_of_strings")]
+        public List<string>? ListOfStrings { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
+        public ReadOnlyMemory<float> Floats { get; set; }
+    }
 }

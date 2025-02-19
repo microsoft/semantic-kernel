@@ -107,7 +107,7 @@ public class SqlServerCommandBuilderTests
         {
             Schema = "schema"
         };
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long), autoGenerate: true);
         VectorStoreRecordDataProperty[] dataProperties =
         [
             new VectorStoreRecordDataProperty("simpleName", typeof(string)),
@@ -128,9 +128,9 @@ public class SqlServerCommandBuilderTests
         string expectedCommand =
         """
         CREATE TABLE [schema].[table] (
-        [id] BIGINT NOT NULL,
+        [id] BIGINT IDENTITY(1,1),
         [simpleName] NVARCHAR(255) COLLATE Latin1_General_100_BIN2,
-        [with space] INT NOT NULL,
+        [with space] INT,
         [embedding] VECTOR(10),
         PRIMARY KEY NONCLUSTERED ([id])
         )

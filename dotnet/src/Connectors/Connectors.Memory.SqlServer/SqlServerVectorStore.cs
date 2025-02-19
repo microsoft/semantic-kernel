@@ -26,12 +26,15 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
         typeof(long), // BIGINT
         typeof(string), // VARCHAR 
         typeof(Guid), // UNIQUEIDENTIFIER
-        // TODO adsitnik: do we want to support DATETIME (DateTime) and VARBINARY (byte[])?
+        typeof(DateTime), // DATETIME
+        typeof(byte[]) // VARBINARY
     ];
 
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
         typeof(int), // INT
+        typeof(short), // SMALLINT
+        typeof(byte), // TINYINT
         typeof(long), // BIGINT.
         typeof(Guid), // UNIQUEIDENTIFIER.
         typeof(string), // NVARCHAR
@@ -41,10 +44,12 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
         typeof(TimeSpan), // TIME
         typeof(decimal), // DECIMAL
         typeof(double), // FLOAT
-        typeof(float) // REAL
+        typeof(float), // REAL,
+        typeof(string[]), // NVARCHAR accessed as JSON
+        typeof(List<string>) // NVARCHAR accessed as JSON
     ];
 
-    private static readonly HashSet<Type> s_supportedVectorTypes =
+    internal static readonly HashSet<Type> s_supportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>), // VECTOR
         typeof(ReadOnlyMemory<float>?)
@@ -106,9 +111,15 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
                 });
 
             propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-            // TODO adsitnik: get the list of supported ienumerable types
-            propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: true);
+            propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: false);
             propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+
+            if (propertyReader.KeyProperty.AutoGenerate
+                && !(typeof(TKey) == typeof(int) || typeof(TKey) == typeof(long) || typeof(TKey) == typeof(Guid)))
+            {
+                // SQL Server does not support auto-generated keys for types other than int, long, and Guid.
+                throw new ArgumentException("Key property cannot be auto-generated.");
+            }
 
             // Add to the cache once we have verified the record definition.
             s_propertyReaders.TryAdd(typeof(TRecord), propertyReader);

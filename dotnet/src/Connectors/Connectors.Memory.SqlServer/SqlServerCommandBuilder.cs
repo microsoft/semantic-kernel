@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.SqlClient;
@@ -31,12 +32,12 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(options.Schema, tableName);
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
-        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, Map(keyProperty.PropertyType).sqlName);
+        var keyMapping = Map(keyProperty.PropertyType);
+        sb.AppendFormat("[{0}] {1} {2},", keyColumnName, keyMapping.sqlName, keyProperty.AutoGenerate ? keyMapping.autoGenerate : "NOT NULL");
         sb.AppendLine();
         for (int i = 0; i < dataProperties.Count; i++)
         {
-            (string sqlName, bool isNullable) = Map(dataProperties[i].PropertyType);
-            sb.AppendFormat(isNullable ? "[{0}] {1}," : "[{0}] {1} NOT NULL,", GetColumnName(dataProperties[i]), sqlName);
+            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i].PropertyType).sqlName);
             sb.AppendLine();
         }
         for (int i = 0; i < vectorProperties.Count; i++)
@@ -114,7 +115,7 @@ internal static class SqlServerCommandBuilder
         foreach (VectorStoreRecordProperty property in nonKeyProperties)
         {
             sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+            command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
         sb.Append(';');
@@ -141,7 +142,7 @@ internal static class SqlServerCommandBuilder
         foreach (VectorStoreRecordProperty property in properties)
         {
             sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+            command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
         sb.Append(") AS s (");
@@ -159,13 +160,18 @@ internal static class SqlServerCommandBuilder
         }
         --sb.Length; // remove the last comma
         sb.AppendLine();
+
+        // We must not try to insert the key if it is auto-generated.
+        var propertiesToInsert = keyProperty.AutoGenerate
+            ? properties.Where(p => p != keyProperty)
+            : properties;
         sb.Append("WHEN NOT MATCHED THEN");
         sb.AppendLine();
         sb.Append("INSERT (");
-        sb.AppendColumnNames(properties);
+        sb.AppendColumnNames(propertiesToInsert);
         sb.AppendLine(")");
         sb.Append("VALUES (");
-        sb.AppendColumnNames(properties, prefix: "s.");
+        sb.AppendColumnNames(propertiesToInsert, prefix: "s.");
         sb.Append(");");
 
         command.CommandText = sb.ToString();
@@ -198,7 +204,7 @@ internal static class SqlServerCommandBuilder
             foreach (VectorStoreRecordProperty property in properties)
             {
                 sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-                command.Parameters.AddWithValue(paramName, record[property.DataModelPropertyName] ?? (object)DBNull.Value);
+                command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
             }
             sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
             sb.AppendLine(",");
@@ -258,7 +264,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendFormat(" WHERE [{0}] = ", GetColumnName(keyProperty));
         sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
-        command.Parameters.AddWithValue(keyParamName, key);
+        command.AddParameter(keyProperty, keyParamName, key);
 
         command.CommandText = sb.ToString();
         return command;
@@ -299,7 +305,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine();
         sb.AppendFormat("WHERE [{0}] = ", GetColumnName(keyProperty));
         sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
-        command.Parameters.AddWithValue(keyParamName, key);
+        command.AddParameter(keyProperty, keyParamName, key);
 
         command.CommandText = sb.ToString();
         return command;
@@ -417,7 +423,7 @@ internal static class SqlServerCommandBuilder
 
             sb.AppendParameterName(keyProperty, ref keyIndex, out string keyParamName);
             sb.Append(',');
-            command.Parameters.AddWithValue(keyParamName, key);
+            command.AddParameter(keyProperty, keyParamName, key);
         }
 
         if (keyIndex == 0)
@@ -437,19 +443,48 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    private static (string sqlName, bool isNullable) Map(Type type) => type switch
+    private static void AddParameter(this SqlCommand command, VectorStoreRecordProperty property, string name, object? value)
     {
-        Type t when t == typeof(int) => ("INT", false),
-        Type t when t == typeof(long) => ("BIGINT", false),
-        Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", false),
-        Type t when t == typeof(string) => ("NVARCHAR(255) COLLATE Latin1_General_100_BIN2", true),
-        Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", true),
-        Type t when t == typeof(bool) => ("BIT", false),
-        Type t when t == typeof(DateTime) => ("DATETIME", false),
-        Type t when t == typeof(TimeSpan) => ("TIME", false),
-        Type t when t == typeof(decimal) => ("DECIMAL", false),
-        Type t when t == typeof(double) => ("FLOAT", false),
-        Type t when t == typeof(float) => ("REAL", false),
-        _ => throw new NotSupportedException($"Type {type} is not supported.")
-    };
+        switch (value)
+        {
+            case null when property.PropertyType == typeof(byte[]):
+                command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
+                break;
+            case null:
+                command.Parameters.AddWithValue(name, DBNull.Value);
+                break;
+            case byte[] buffer:
+                command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = buffer;
+                break;
+            default:
+                command.Parameters.AddWithValue(name, value);
+                break;
+        }
+    }
+
+    private static (string sqlName, string? autoGenerate) Map(Type type)
+    {
+        const string NVARCHAR = "NVARCHAR(255) COLLATE Latin1_General_100_BIN2";
+        return type switch
+        {
+            Type t when t == typeof(byte) => ("TINYINT", null),
+            Type t when t == typeof(short) => ("SMALLINT", null),
+            Type t when t == typeof(int) => ("INT", "IDENTITY(1,1)"),
+            Type t when t == typeof(long) => ("BIGINT", "IDENTITY(1,1)"),
+            // TODO adsitnik: discuss using NEWID() vs NEWSEQUENTIALID().
+            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWID()"),
+            Type t when t == typeof(string) => (NVARCHAR, null),
+            Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", null),
+            Type t when t == typeof(bool) => ("BIT", null),
+            Type t when t == typeof(DateTime) => ("DATETIME", null),
+            Type t when t == typeof(TimeSpan) => ("TIME", null),
+            Type t when t == typeof(decimal) => ("DECIMAL", null),
+            Type t when t == typeof(double) => ("FLOAT", null),
+            Type t when t == typeof(float) => ("REAL", null),
+            // Collections don't have good native support, we store them as JSON
+            Type t when t == typeof(string[]) => (NVARCHAR, null),
+            Type t when t == typeof(List<string>) => (NVARCHAR, null),
+            _ => throw new NotSupportedException($"Type {type} is not supported.")
+        };
+    }
 }

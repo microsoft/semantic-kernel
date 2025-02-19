@@ -160,32 +160,34 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
 
         TKey? key = (TKey)this._propertyReader.KeyPropertyInfo.GetValue(record);
         Dictionary<string, object?> map = Map(record, this._propertyReader);
-        using SqlCommand command = key is null
-            // When the key is null, we are inserting a new record.
-            ? SqlServerCommandBuilder.InsertInto(
+
+        if (key is null || key.Equals(default(TKey)))
+        {
+            // When the key was not provided, we are inserting a new record.
+            using SqlCommand insertCommand = SqlServerCommandBuilder.InsertInto(
                 this._sqlConnection,
                 this._options,
                 this.CollectionName,
                 this._propertyReader.KeyProperty,
                 this._propertyReader.DataProperties,
                 this._propertyReader.VectorProperties,
-                map)
-            : SqlServerCommandBuilder.MergeIntoSingle(
-                this._sqlConnection,
-                this._options,
-                this.CollectionName,
-                this._propertyReader.KeyProperty,
-                this._propertyReader.Properties,
                 map);
 
-        if (key is not null)
-        {
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            return key;
+            using SqlDataReader reader = await insertCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+            return reader.GetFieldValue<TKey>(0);
         }
 
-        using SqlDataReader sqlDataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        return await sqlDataReader.GetFieldValueAsync<TKey>(0, cancellationToken).ConfigureAwait(false);
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
+            this._sqlConnection,
+            this._options,
+            this.CollectionName,
+            this._propertyReader.KeyProperty,
+            this._propertyReader.Properties,
+            map);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        return key;
     }
 
     public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records,
@@ -228,7 +230,16 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         var dataProperties = propertyReader.DataProperties;
         for (int i = 0; i < dataProperties.Count; i++)
         {
-            map[dataProperties[i].DataModelPropertyName] = propertyReader.DataPropertiesInfo[i].GetValue(record);
+            object value = propertyReader.DataPropertiesInfo[i].GetValue(record);
+            // SQL Server does not support arrays, so we need to serialize them to JSON.
+            object? mappedValue = value switch
+            {
+                string[] array => JsonSerializer.Serialize(array),
+                List<string> list => JsonSerializer.Serialize(list),
+                _ => value
+            };
+
+            map[dataProperties[i].DataModelPropertyName] = mappedValue;
         }
         var vectorProperties = propertyReader.VectorProperties;
         for (int i = 0; i < vectorProperties.Count; i++)
@@ -254,11 +265,30 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
         for (int i = 0; i < data.Count; i++)
         {
             object value = reader[SqlServerCommandBuilder.GetColumnName(data[i])];
-            if (value is not DBNull)
+            if (value is DBNull)
+            {
+                // There is no need to call the reflection to set the null,
+                // as it's the default value of every .NET reference type field.
+                continue;
+            }
+
+            if (value is not string text)
             {
                 dataInfo[i].SetValue(record, value);
             }
+            else
+            {
+                // SQL Server does not support arrays, so we need to deserialize them from JSON.
+                object? mappedValue = data[i].PropertyType switch
+                {
+                    Type t when t == typeof(string[]) => JsonSerializer.Deserialize<string[]>(text),
+                    Type t when t == typeof(List<string>) => JsonSerializer.Deserialize<List<string>>(text),
+                    _ => text
+                };
+                dataInfo[i].SetValue(record, mappedValue);
+            }
         }
+
         var vector = propertyReader.VectorProperties;
         var vectorInfo = propertyReader.VectorPropertiesInfo;
         for (int i = 0; i < vector.Count; i++)

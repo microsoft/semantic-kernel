@@ -513,7 +513,7 @@ internal sealed class VectorStoreRecordPropertyReader
             var keyAttribute = keyProperty.GetCustomAttribute<VectorStoreRecordKeyAttribute>();
             if (keyAttribute is not null)
             {
-                definitionProperties.Add(new VectorStoreRecordKeyProperty(keyProperty.Name, keyProperty.PropertyType)
+                definitionProperties.Add(new VectorStoreRecordKeyProperty(keyProperty.Name, keyProperty.PropertyType, keyAttribute.AutoGenerate)
                 {
                     StoragePropertyName = keyAttribute.StoragePropertyName
                 });
