@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -37,6 +38,9 @@ public abstract class KernelAgent : Agent
     /// </summary>
     public IPromptTemplate? Template { get; protected set; }
 
+    /// <inheritdoc/>
+    protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
+
     /// <summary>
     /// Gets or sets a prompt template factory on the agent instructions.
     /// </summary>
@@ -54,7 +58,7 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // Use the provide template factory to format the instructions
+        // Use the provided template factory to format the instructions
         if (this.TemplateFactory is not null && !string.IsNullOrEmpty(this.Instructions))
         {
             var template = this.TemplateFactory.Create(new PromptTemplateConfig(this.Instructions!));
@@ -68,7 +72,7 @@ public abstract class KernelAgent : Agent
         }
 
         // Use the instructions as-is
-        return Task.FromResult<string?>(this.Instructions).Result;
+        return this.Instructions;
     }
 
     /// <summary>

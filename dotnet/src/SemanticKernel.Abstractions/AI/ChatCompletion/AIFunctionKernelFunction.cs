@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +14,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>Provides a <see cref="KernelFunction"/> that wraps an <see cref="AIFunction"/>.</summary>
 /// <remarks>
-/// The implementation should largely be unused, other than for its <see cref="AIFunction.Metadata"/>. The implementation of
-/// <see cref="ChatCompletionServiceChatClient"/> only manufactures these to pass along to the underlying
+/// The implementation of <see cref="ChatCompletionServiceChatClient"/> only manufactures these to pass along to the underlying
 /// <see cref="IChatCompletionService"/> with autoInvoke:false, which means the <see cref="IChatCompletionService"/>
 /// implementation shouldn't be invoking these functions at all. As such, the <see cref="InvokeCoreAsync"/> and
 /// <see cref="InvokeStreamingCoreAsync"/> methods both unconditionally throw, even though they could be implemented.
@@ -23,28 +24,15 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     private readonly AIFunction _aiFunction;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
-        base(aiFunction.Metadata.Name,
-            aiFunction.Metadata.Description,
-            aiFunction.Metadata.Parameters.Select(p => new KernelParameterMetadata(p.Name, AbstractionsJsonContext.Default.Options)
-            {
-                Description = p.Description,
-                DefaultValue = p.DefaultValue,
-                IsRequired = p.IsRequired,
-                ParameterType = p.ParameterType,
-                Schema =
-                    p.Schema is JsonElement je ? new KernelJsonSchema(je) :
-                    p.Schema is string s ? new KernelJsonSchema(JsonSerializer.Deserialize(s, AbstractionsJsonContext.Default.JsonElement)) :
-                    null,
-            }).ToList(),
-            AbstractionsJsonContext.Default.Options,
+        base(aiFunction.Name,
+            aiFunction.Description,
+            MapParameterMetadata(aiFunction),
+            aiFunction.JsonSerializerOptions,
             new KernelReturnParameterMetadata(AbstractionsJsonContext.Default.Options)
             {
-                Description = aiFunction.Metadata.ReturnParameter.Description,
-                ParameterType = aiFunction.Metadata.ReturnParameter.ParameterType,
-                Schema =
-                    aiFunction.Metadata.ReturnParameter.Schema is JsonElement je ? new KernelJsonSchema(je) :
-                    aiFunction.Metadata.ReturnParameter.Schema is string s ? new KernelJsonSchema(JsonSerializer.Deserialize(s, AbstractionsJsonContext.Default.JsonElement)) :
-                    null,
+                Description = aiFunction.UnderlyingMethod?.ReturnParameter.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                ParameterType = aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType,
+                Schema = new KernelJsonSchema(AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
             })
     {
         this._aiFunction = aiFunction;
@@ -72,5 +60,31 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     {
         // This should never be invoked, as instances are always passed with autoInvoke:false.
         throw new NotSupportedException();
+    }
+
+    private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
+    {
+        if (!aiFunction.JsonSchema.TryGetProperty("properties", out JsonElement properties))
+        {
+            return Array.Empty<KernelParameterMetadata>();
+        }
+
+        List<KernelParameterMetadata> kernelParams = [];
+        var parameterInfos = aiFunction.UnderlyingMethod?.GetParameters().ToDictionary(p => p.Name!, StringComparer.Ordinal);
+        foreach (var param in properties.EnumerateObject())
+        {
+            ParameterInfo? paramInfo = null;
+            parameterInfos?.TryGetValue(param.Name, out paramInfo);
+            kernelParams.Add(new(param.Name, aiFunction.JsonSerializerOptions)
+            {
+                Description = param.Value.TryGetProperty("description", out JsonElement description) ? description.GetString() : null,
+                DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue) ? defaultValue : null,
+                IsRequired = param.Value.TryGetProperty("required", out JsonElement required) && required.GetBoolean(),
+                ParameterType = paramInfo?.ParameterType,
+                Schema = param.Value.TryGetProperty("schema", out JsonElement schema) ? new KernelJsonSchema(schema) : null,
+            });
+        }
+
+        return kernelParams;
     }
 }

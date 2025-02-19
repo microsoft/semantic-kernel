@@ -38,14 +38,19 @@ public abstract class Agent
     public string? Name { get; init; }
 
     /// <summary>
-    /// Gets an <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
+    /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
     /// </summary>
-    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+    public ILoggerFactory? LoggerFactory { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="ILogger"/> associated with this <see cref="Agent"/>.
+    /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
-    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+    protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
+    /// Get the active logger factory, if defined; otherwise, provide the default.
+    /// </summary>
+    protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
