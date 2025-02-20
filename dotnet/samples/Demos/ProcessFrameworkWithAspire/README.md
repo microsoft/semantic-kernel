@@ -13,7 +13,7 @@ The business logic of this sample is straightforward: it defines a process that 
 ## What is .NET Aspire?
 
 .NET Aspire is a set of tools, templates, and packages for building observable, production ready apps. .NET Aspire is delivered through a collection of NuGet packages that bootstrap or improve common challenges in modern app development.
-.NET Aspire allows you to replace or extend parts with your preferred tools and workflows. Key features include:
+Key features include:
 
 - Dev-Time Orchestration: .NET Aspire provides features for running and connecting multi-project applications, container resources, and other dependencies for local development environments.
 - Integrations: .NET Aspire integrations are NuGet packages for commonly used services, such as Redis or Postgres, with standardized interfaces ensuring they connect consistently and seamlessly with your app.
