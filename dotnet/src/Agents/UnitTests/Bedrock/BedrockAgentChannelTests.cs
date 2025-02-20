@@ -260,8 +260,18 @@ public class BedrockAgentChannelTests
     private (Mock<AmazonBedrockAgentClient>, Mock<AmazonBedrockAgentRuntimeClient>) CreateMockClients()
     {
 #pragma warning disable Moq1410 // Moq: Set MockBehavior to Strict
-        Mock<AmazonBedrockAgentClient> mockClient = new();
-        Mock<AmazonBedrockAgentRuntimeClient> mockRuntimeClient = new();
+        Mock<AmazonBedrockAgentConfig> mockClientConfig = new();
+        Mock<AmazonBedrockAgentRuntimeConfig> mockRuntimeClientConfig = new();
+        mockClientConfig.Setup(x => x.Validate()).Verifiable();
+        mockRuntimeClientConfig.Setup(x => x.Validate()).Verifiable();
+        Mock<AmazonBedrockAgentClient> mockClient = new(
+            "fakeAccessId",
+            "fakeSecretKey",
+            mockClientConfig.Object);
+        Mock<AmazonBedrockAgentRuntimeClient> mockRuntimeClient = new(
+            "fakeAccessId",
+            "fakeSecretKey",
+            mockRuntimeClientConfig.Object);
 #pragma warning restore Moq1410 // Moq: Set MockBehavior to Strict
         mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
             It.IsAny<InvokeAgentRequest>(),
