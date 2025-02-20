@@ -55,7 +55,9 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
             """
             Write a one verse poem on the requested topic in the styles of {{$style}}.
             Always state the requested style of the poem.
-            """);
+            """,
+            PromptTemplateConfig.SemanticKernelTemplateFormat,
+            new KernelPromptTemplateFactory());
     }
 
     [Fact]
