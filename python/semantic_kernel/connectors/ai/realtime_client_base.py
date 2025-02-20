@@ -17,7 +17,7 @@ from semantic_kernel.connectors.ai.function_call_choice_configuration import Fun
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.events.realtime_event import RealtimeEvents
+from semantic_kernel.contents.realtime_events.realtime_event import RealtimeEvents
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 

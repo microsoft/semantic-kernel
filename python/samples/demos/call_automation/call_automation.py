@@ -1,25 +1,30 @@
 #!/usr/bin/env uv run # noqa: CPY001
 ####################################################################
 # Copyright (c) Microsoft. All rights reserved.                    #
-# Sample Quart webapp with that connects to OpenAI or Azure OpenAI #
-# If you have `uv` installed and the `OPENAI_API_KEY`              #
-# environment variable set, you can run this example with just     #
+# Sample Quart webapp with that connects to Azure OpenAI           #
+# If you have `uv` installed and the environment variables set:    #
+# `ACS_CONNECTION_STRING`                                          #
+# `CALLBACK_URI_HOST`                                              #
+# `AZURE_OPENAI_ENDPOINT`                                          #
+# `AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME`                          #
+# `AZURE_OPENAI_API_VERSION`                                       #
+# `AZURE_OPENAI_API_KEY` (optionally)                              #
+#  See the readme.md for more info                                 #
+#  You can run this example with just                              #
 #                                                                  #
-# `.python/samples/demo/call_automation/main.py`                   #
+# `.call_automation.py`                                            #
 ####################################################################
 #
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.10"
 # dependencies = [
 #     "Quart",
 #     "azure-eventgrid",
 #     "azure-communication-callautomation==1.4.0b1",
 #     "semantic-kernel[realtime]",
 # ]
-#
-# [tool.uv.sources]
-# semantic-kernel = { path = "../../../", editable = true }
 # ///
+
 import asyncio
 import base64
 import os
@@ -44,15 +49,15 @@ from quart import Quart, Response, json, request, websocket
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeWebsocket,
     InputAudioTranscription,
     ListenEvents,
-    OpenAIRealtime,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents import AudioContent
-from semantic_kernel.contents.events import RealtimeAudioEvent
+from semantic_kernel.contents.realtime_events import RealtimeAudioEvent
 from semantic_kernel.functions import kernel_function
 
 # Callback events URI to handle callback events.
@@ -119,7 +124,7 @@ async def from_acs_to_realtime(client: RealtimeClientBase):
                     )
                 )
         except Exception:
-            print("Websocket connection closed.")
+            app.logger.info("Websocket connection closed.")
             break
 
 
@@ -161,10 +166,10 @@ async def handle_realtime_messages(client: RealtimeClientBase):
 # WebSocket.
 @app.websocket("/ws")
 async def ws():
-    print("Client connected to WebSocket")
+    app.logger.info("Client connected to WebSocket")
 
     # create the client, using the audio callback
-    client = OpenAIRealtime("websocket", audio_output_callback=from_realtime_to_acs)
+    client = AzureRealtimeWebsocket(audio_output_callback=from_realtime_to_acs)
     settings = OpenAIRealtimeExecutionSettings(
         instructions="""You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.

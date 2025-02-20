@@ -2,6 +2,8 @@
 
 This is a sample application. It highlights an integration of Azure Communication Services with Semantic Kernel, using the Azure OpenAI Service to enable intelligent conversational agents.
 
+Original code for this sample can be found [here](https://github.com/Azure-Samples/communication-services-python-quickstarts/tree/main/callautomation-openai-sample).
+
 ## Prerequisites
 
 - An Azure account with an active subscription. [Create an account for free](https://azure.microsoft.com/free/?WT.mc_id=A261C142F). 
@@ -14,7 +16,7 @@ This is a sample application. It highlights an integration of Azure Communicatio
 
 1. Open an instance of PowerShell, Windows Terminal, Command Prompt or equivalent and navigate to the directory that you would like to clone the sample to.
 2. git clone `https://github.com/microsoft/semantic-kernel.git`.
-3. Navigate to `python/samples/demos/call_automation` folder and open `main.py` file.
+3. Navigate to `python/samples/demos/call_automation` folder and open `call_automation.py` file.
 
 ### Setup the Python environment
 
@@ -40,17 +42,17 @@ Copy the `.env.example` file to `.env` and update the following values:
 
 1. `ACS_CONNECTION_STRING`: Azure Communication Service resource's connection string.
 2. `CALLBACK_URI_HOST`: Base url of the app. (For local development use dev tunnel url)
-1. `AZURE_OPENAI_SERVICE_ENDPOINT`: Azure Open AI service endpoint
+1. `AZURE_OPENAI_ENDPOINT`: Azure Open AI service endpoint
 2. `AZURE_OPENAI_DEPLOYMENT_MODEL_NAME`: Azure Open AI deployment name
-3. 'AZURE_OPENAI_API_VERSION': Azure Open AI API version, this should be one that includes the realtime api, for instance '2024-10-01-preview'
-4. `AZURE_OPENAI_SERVICE_KEY`: Azure Open AI service key, optionally, you can also use Entra Auth.
+3. `AZURE_OPENAI_API_VERSION`: Azure Open AI API version, this should be one that includes the realtime api, for instance '2024-10-01-preview'
+4. `AZURE_OPENAI_API_KEY`: Azure Open AI API key, optionally, you can also use Entra Auth.
 
 ## Run app locally
 
 1. Navigate to `call_automation` folder and do one of the following to start the main application:
-   - run `main.py` in debug from your IDE 
-   - use command `python ./main.py` to run it from PowerShell, Command Prompt or Unix Terminal. 
-   - execute `./main.py` directly (this uses `uv`, which will then install the requirements in a temporary virtual environment).
+   - run `call_automation.py` in debug from your IDE 
+   - use command `python ./call_automation.py` to run it from PowerShell, Command Prompt or another Terminal. 
+   - execute `./call_automation.py` directly in your terminal (this uses `uv`, which will then install the requirements in a temporary virtual environment, see [uv docs](https://docs.astral.sh/uv/guides/scripts) for more info).
 2. Browser should pop up with the below page. If not navigate it to `http://localhost:8080/`or your dev tunnel url.
 3. Register an EventGrid Webhook for the IncomingCall(`https://<devtunnelurl>/api/incomingCall`) event that points to your devtunnel URI. Instructions [here](https://learn.microsoft.com/en-us/azure/communication-services/concepts/call-automation/incoming-call-notification).
 
