@@ -11,7 +11,7 @@ Currently, there are some limitations to note:
 
 ### Installation
 
-Install the `semantic-kernel` package with the optional `autogen` dependency:
+Install the `semantic-kernel` package with the `autogen` extra:
 
 ```bash
 pip install semantic-kernel[autogen]

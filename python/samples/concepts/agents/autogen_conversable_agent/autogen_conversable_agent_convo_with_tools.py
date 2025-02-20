@@ -81,19 +81,14 @@ async def main():
         message="What is (44232 + 13312 / (232 - 32)) * 5?",
         max_turns=10,
     ):
-        if any(isinstance(item, FunctionResultContent) for item in content.items):
-            for item in content.items:
-                if isinstance(item, FunctionResultContent):
-                    print(f"# {content.role} - {content.name or '*'}: '{item.result}'")
-        elif any(isinstance(item, FunctionCallContent) for item in content.items):
-            for item in content.items:
-                if isinstance(item, FunctionCallContent):
-                    print(
-                        f"# {content.role} - {content.name or '*'}: Function Name: '{item.function_name}' "
-                        f", Arguments: '{item.arguments}'"
-                    )
-        else:
-            print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        for item in content.items:
+            match item:
+                case FunctionResultContent(result=r):
+                    print(f"# {content.role} - {content.name or '*'}: '{r}'")
+                case FunctionCallContent(function_name=fn, arguments=arguments):
+                    print(f"# {content.role} - {content.name or '*'}: Function Name: '{fn}', Arguments: '{arguments}'")
+                case _:
+                    print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
 
 if __name__ == "__main__":

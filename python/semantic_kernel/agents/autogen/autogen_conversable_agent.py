@@ -24,7 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AutoGenConversableAgent(Agent):
-    """A wrapper around an AutoGen 0.2 `ConversableAgent`.
+    """A Semantic Kernel wrapper around an AutoGen 0.2 `ConversableAgent`.
 
     This allows one to use it as a Semantic Kernel `Agent`. Note: this agent abstraction
     does not currently allow for the use of AgentGroupChat within Semantic Kernel.
