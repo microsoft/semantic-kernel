@@ -17,7 +17,7 @@ Key features include:
 
 - Dev-Time Orchestration: provides features for running and connecting multi-project applications, container resources, and other dependencies for local development environments.
 - Integrations: offers standardized NuGet packages for frequently used services such as Redis and Postgres, with standardized interfaces ensuring they consistent and seamless connectivity.
-- Tooling: .NET Aspire comes with project templates and tooling experiences for Visual Studio, Visual Studio Code, and the .NET CLI to help you create and interact with .NET Aspire projects.
+- Tooling: includes project templates and tools for Visual Studio, Visual Studio Code, and the .NET CLI to help creating and interacting with .NET Aspire projects.
 
 .NET Aspire orchestration assists with the following concerns:
 
