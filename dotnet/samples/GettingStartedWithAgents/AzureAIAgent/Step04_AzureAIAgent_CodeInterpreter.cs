@@ -10,24 +10,22 @@ namespace GettingStarted.AzureAgents;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
 /// </summary>
-public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
     public async Task UseCodeInterpreterToolWithAgentAsync()
     {
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -36,8 +34,8 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

@@ -13,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 /// when the agent is created. This is useful if you want to retrieve the agent later and
 /// then dynamically check what function tools it requires.
 /// </summary>
-public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -22,22 +22,19 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
     public async Task UseSingleAgentWithFunctionToolsAsync()
     {
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-
         // In this sample the function tools are added to the agent this is
         // important if you want to retrieve the agent later and then dynamically check
         // what function tools it requires.
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             model: TestConfiguration.AzureAI.ChatModelId,
             name: HostName,
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
@@ -46,7 +43,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -58,8 +55,8 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAgent
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
