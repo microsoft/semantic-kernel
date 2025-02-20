@@ -60,4 +60,14 @@ public static class ChatClientExtensions
             chatCompletionService :
             new ChatClientChatCompletionService(client, serviceProvider);
     }
+
+    /// <summary>
+    /// Get the model identifier for the specified <see cref="IChatClient"/>.
+    /// </summary>
+    public static string? GetModelId(this IChatClient client)
+    {
+        Verify.NotNull(client);
+
+        return client.GetService<ChatClientMetadata>()?.ModelId;
+    }
 }

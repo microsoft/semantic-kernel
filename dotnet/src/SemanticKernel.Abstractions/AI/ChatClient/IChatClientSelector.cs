@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Services;
 
@@ -8,14 +9,14 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
 /// </summary>
-public interface IAIServiceSelector
+public interface IChatClientSelector
 {
     /// <summary>
-    /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
+    /// Resolves an <see cref="IChatClient"/> and associated <see cref="PromptExecutionSettings"/> from the specified
     /// <see cref="Kernel"/> based on a <see cref="KernelFunction"/> and associated <see cref="KernelArguments"/>.
     /// </summary>
     /// <typeparam name="T">
-    /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
+    /// Specifies the type of the <see cref="IChatClient"/> required. This must be the same type
     /// with which the service was registered in the <see cref="IServiceCollection"/> or via
     /// the <see cref="IKernelBuilder"/>.
     /// </typeparam>
@@ -26,11 +27,11 @@ public interface IAIServiceSelector
     /// <param name="serviceSettings">The settings associated with the selected service. This may be null even if a service is selected.</param>
     /// <returns>true if a matching service was selected; otherwise, false.</returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    bool TrySelectAIService<T>(
+    bool TrySelectChatClient<T>(
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
-        out PromptExecutionSettings? serviceSettings) where T : class, IAIService;
+        out PromptExecutionSettings? serviceSettings) where T : class, IChatClient;
 #pragma warning restore CA1716
 }

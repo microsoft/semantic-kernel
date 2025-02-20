@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Services;
 
@@ -12,12 +13,12 @@ namespace Microsoft.SemanticKernel.Services;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
 /// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
-internal sealed class OrderedAIServiceSelector : IAIServiceSelector
+internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClientSelector
 {
     public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
-    public bool TrySelectAIService<T>(
+    private bool TrySelect<T>(
         Kernel kernel, KernelFunction function, KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
         out PromptExecutionSettings? serviceSettings) where T : class
@@ -97,17 +98,16 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class
     {
-        // If T is IAIService, delegate to the existing implementation.
         foreach (var service in kernel.GetAllServices<T>())
         {
             string? serviceModelId = null;
-            if (typeof(IAIService).IsAssignableFrom(typeof(T)))
+            if (service is IAIService aiService)
             {
-                serviceModelId = ((IAIService)service).GetModelId();
+                serviceModelId = aiService.GetModelId();
             }
-            else if (typeof(IChatClient).IsAssignableFrom(typeof(T)))
+            else if (service is IChatClient chatClient)
             {
-                serviceModelId = ((IChatClient)service).GetService<ChatClientMetadata>()?.ModelId;
+                serviceModelId = chatClient.GetModelId();
             }
 
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
@@ -118,4 +118,12 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
         return null;
     }
+
+    /// <inheritdoc/>
+    public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+        => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
+
+    /// <inheritdoc/>
+    public bool TrySelectChatClient<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
+        => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
 }

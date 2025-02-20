@@ -502,9 +502,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         }
 
-        if (aiService is null)
+        if (aiService is null && serviceSelector is IChatClientSelector chatClientServiceSelector)
         {
-            serviceSelector.TrySelectAIService<IChatClient>(kernel, this, arguments, out IChatClient? chatClient, out PromptExecutionSettings options);
+            chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out IChatClient? chatClient, out PromptExecutionSettings options);
             if (chatClient is not null)
             {
                 aiService = new AIServiceChatClient(chatClient);

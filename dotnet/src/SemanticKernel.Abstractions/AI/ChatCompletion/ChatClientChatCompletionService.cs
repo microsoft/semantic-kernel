@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -51,7 +52,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
+        var messageList = chatHistory.ToChatMessageList();
         var currentSize = messageList.Count;
 
         var completion = await this._chatClient.GetResponseAsync(
@@ -62,9 +63,9 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         chatHistory.AddRange(
             messageList
                 .Skip(currentSize)
-                .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+                .Select(m => m.ToChatMessageContent()));
 
-        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
+        return completion.Choices.Select(m => m.ToChatMessageContent(completion)).ToList();
     }
 
     /// <inheritdoc/>
@@ -74,7 +75,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         Verify.NotNull(chatHistory);
 
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
-            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
+            chatHistory.ToChatMessageList(),
             executionSettings.ToChatOptions(kernel),
             cancellationToken).ConfigureAwait(false))
         {

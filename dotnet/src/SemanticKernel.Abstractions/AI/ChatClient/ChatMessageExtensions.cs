@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using System;
 
-namespace Microsoft.SemanticKernel.AI.ChatClient;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 internal static class ChatMessageExtensions
 {
