@@ -99,8 +99,8 @@ async def test_autogen_conversable_agent_invoke_with_invalid_recipient_type(mock
     mock_conversable_agent.a_generate_reply = AsyncMock(return_value=12345)
     agent = AutoGenConversableAgent(mock_conversable_agent)
 
-    recepient = MagicMock()
+    recipient = MagicMock()
 
     with pytest.raises(AgentInvokeException):
-        async for _ in agent.invoke(recipient=recepient, message="Hello"):
+        async for _ in agent.invoke(recipient=recipient, message="Hello"):
             pass
