@@ -2,30 +2,30 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Step04_AssistantTool_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step04_AssistantTool_CodeInterpreter(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
     public async Task UseCodeInterpreterToolWithAssistantAgentAsync()
     {
-        // Define the agent
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider: this.GetClientProvider(),
-                definition: new(this.Model)
-                {
-                    EnableCodeInterpreter = true,
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                enableCodeInterpreter: true,
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -34,8 +34,8 @@ public class Step04_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
