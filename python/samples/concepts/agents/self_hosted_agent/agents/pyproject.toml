@@ -1,0 +1,15 @@
+[project]
+name = "agents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiohttp>=3.11.12",
+    "azure-ai-projects>=1.0.0b5",
+    "azure-identity>=1.20.0",
+    "fastapi[standard]>=0.115.8",
+    "openai>=1.62.0",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+]
