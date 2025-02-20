@@ -446,6 +446,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProcessFrameworkWithAspire", "ProcessFrameworkWithAspire", "{3F260A77-B6C9-97FD-1304-4B34DA936CF4}"
+	ProjectSection(SolutionItems) = preProject
+		samples\Demos\ProcessFrameworkWithAspire\README.md = samples\Demos\ProcessFrameworkWithAspire\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.AppHost", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.AppHost\ProcessFramework.Aspire.AppHost.csproj", "{2756FED3-ABC1-4F58-932E-5DD05A5EE066}"
 EndProject
@@ -458,6 +461,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.SummaryAgent", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.SummaryAgent\ProcessFramework.Aspire.SummaryAgent.csproj", "{37381352-4F10-427F-AB8A-51FEAB265201}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.TranslatorAgent", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.TranslatorAgent\ProcessFramework.Aspire.TranslatorAgent.csproj", "{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Bedrock", "src\Agents\Bedrock\Agents.Bedrock.csproj", "{8C658E1E-83C8-4127-B8BF-27A638A45DDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1246,6 +1250,12 @@ Global
 		{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1417,6 +1427,7 @@ Global
 		{6FE977F6-D508-4DF0-951F-749B0D5C7109} = {3F260A77-B6C9-97FD-1304-4B34DA936CF4}
 		{37381352-4F10-427F-AB8A-51FEAB265201} = {3F260A77-B6C9-97FD-1304-4B34DA936CF4}
 		{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A} = {3F260A77-B6C9-97FD-1304-4B34DA936CF4}
+		{8C658E1E-83C8-4127-B8BF-27A638A45DDD} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

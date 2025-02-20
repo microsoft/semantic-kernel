@@ -1,8 +1,8 @@
-using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace ProcessFramework.Aspire.ProcessOrchestrator.Models;
 
-public class ProcessEvents
+public static class ProcessEvents
 {
     public static readonly string TranslateDocument = nameof(TranslateDocument);
     public static readonly string DocumentTranslated = nameof(DocumentTranslated);

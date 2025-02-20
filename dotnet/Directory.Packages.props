@@ -5,6 +5,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="3.7.416.4" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="3.7.418.3" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
@@ -35,10 +37,8 @@
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore"
-      Version="2.0.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues"
-      Version="5.5.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.SDK" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
@@ -71,6 +71,7 @@
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
     <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
@@ -80,10 +81,8 @@
     <PackageVersion Include="SharpToken" Version="2.0.3" />
     <!-- Microsoft.Extensions.* -->
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25114.11" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions"
-      Version="9.3.0-preview.1.25114.11" />
-    <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference"
-      Version="9.3.0-preview.1.25114.11" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.3.0-preview.1.25114.11" />
+    <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.3.0-preview.1.25114.11" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25114.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
@@ -148,40 +147,40 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.12.19" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="xunit.analyzers" Version="1.17.0" />
-    <PackageVersion Include="xunit.analyzers">
+    <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="Moq.Analyzers" Version="0.3.0" />
-    <PackageVersion Include="Moq.Analyzers">
+    <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="Roslynator.Analyzers" Version="[4.12.10]" />
-    <PackageVersion Include="Roslynator.Analyzers">
+    <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers">
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.11]" />
-    <PackageVersion Include="Roslynator.Formatting.Analyzers">
+    <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageReference>
     <!-- OnnxRuntimeGenAI -->
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.5.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.5.2" />

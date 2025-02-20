@@ -1,3 +1,5 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -11,8 +13,8 @@ using ProcessFramework.Aspire.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var otelExporterEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-var otelExporterHeaders = builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"];
+string otelExporterEndpoint = builder.GetConfiguration("OTEL_EXPORTER_OTLP_ENDPOINT");
+string otelExporterHeaders = builder.GetConfiguration("OTEL_EXPORTER_OTLP_HEADERS");
 
 AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
 
@@ -54,7 +56,6 @@ builder.Services.AddSingleton(builder =>
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
 
 app.MapPost("/api/translatoragent", async (Kernel kernel, TranslationRequest translationRequest) =>
 {
