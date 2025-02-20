@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using SemanticKernel.Agents.UnitTests.AzureAI.Definition;
 using SemanticKernel.Agents.UnitTests.OpenAI;
 using Xunit;
 
@@ -79,10 +80,9 @@ public class KernelAgentYamlTests : IDisposable
                   type: auto
             """;
         ChatCompletionAgentFactory factory = new();
-        Kernel kernel = new();
 
         // Act
-        var agent = await KernelAgentYaml.FromAgentYamlAsync(kernel, text, factory);
+        var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
 
         // Assert
         Assert.NotNull(agent);
@@ -90,7 +90,7 @@ public class KernelAgentYamlTests : IDisposable
         Assert.Equal("ChatCompletionAgent", agent.Name);
         Assert.Equal("ChatCompletionAgent Description", agent.Description);
         Assert.Equal("ChatCompletionAgent Instructions", agent.Instructions);
-        Assert.Equal(kernel, agent.Kernel);
+        Assert.Equal(this._kernel, agent.Kernel);
     }
 
     /// <summary>
@@ -119,14 +119,57 @@ public class KernelAgentYamlTests : IDisposable
         var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
 
         // Assert
-        // Assert
         Assert.NotNull(agent);
         Assert.True(agent is OpenAIAssistantAgent);
+        Assert.Equal("OpenAIAssistantAgent", agent.Name);
+        Assert.Equal("OpenAIAssistantAgent Description", agent.Description);
+        Assert.Equal("OpenAIAssistantAgent Instructions", agent.Instructions);
+        Assert.Equal(this._kernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="AzureAIAgentFactory"/>
+    /// </summary>
+    [Fact]
+    public async Task VerifyCanCreateAzureAIAgentAsync()
+    {
+        // Arrange
+        var text =
+            """
+            type: azureai_agent
+            name: AzureAIAgent
+            description: AzureAIAgent Description
+            instructions: AzureAIAgent Instructions
+            model:
+              id: gpt-4o-mini
+            tools:
+                - name: tool1
+                  type: code_interpreter
+            """;
+        AzureAIAgentFactory factory = new();
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+
+        // Act
+        var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
+
+        // Assert
+        Assert.NotNull(agent);
+        Assert.True(agent is AzureAIAgent);
+        Assert.Equal("AzureAIAgent", agent.Name);
+        Assert.Equal("AzureAIAgent Description", agent.Description);
+        Assert.Equal("AzureAIAgent Instructions", agent.Instructions);
         Assert.Equal(this._kernel, agent.Kernel);
     }
 
     #region private
     private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
         this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+
+    private void SetupResponse(HttpStatusCode statusCode, string response) =>
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
+        {
+            Content = new StringContent(response)
+        });
     #endregion
 }

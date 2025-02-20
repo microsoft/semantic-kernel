@@ -88,8 +88,10 @@ public class AzureAIAgentFactoryTests : IDisposable
         Assert.Equal(this._kernel, agent.Kernel);
     }
 
-    #region private
-    private const string AzureAIAgentResponse =
+    /// <summary>
+    /// Azure AI Agent response.
+    /// </summary>
+    public const string AzureAIAgentResponse =
         """
         {
           "id": "asst_thdyqg4yVC9ffeILVdEWLONT",
@@ -108,6 +110,7 @@ public class AzureAIAgentFactoryTests : IDisposable
         }
         """;
 
+    #region private
     private void SetupResponse(HttpStatusCode statusCode, string response) =>
 #pragma warning disable CA2000 // Dispose objects before losing scope
         this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
