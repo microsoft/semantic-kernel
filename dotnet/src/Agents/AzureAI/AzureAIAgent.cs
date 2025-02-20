@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides a specialized <see cref="KernelAgent"/> based on an Azure AI agent.
 /// </summary>
-public sealed class AzureAIAgent : KernelAgent
+public sealed partial class AzureAIAgent : KernelAgent
 {
     /// <summary>
     /// Provides tool definitions used when associating a file attachment to an input message:

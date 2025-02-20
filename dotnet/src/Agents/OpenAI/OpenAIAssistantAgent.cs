@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
-public sealed class OpenAIAssistantAgent : KernelAgent
+public sealed partial class OpenAIAssistantAgent : KernelAgent
 {
     /// <summary>
     /// The metadata key that identifies code-interpreter content.
@@ -273,7 +273,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             cancellationToken);
 
     /// <summary>
-    /// Creates a new assistant thread.
+    /// Deletes an assistant thread.
     /// </summary>
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -322,7 +322,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if the assistant definition was deleted.</returns>
     /// <remarks>
-    /// An assistant-based agent is not useable after deletion.
+    /// An assistant-based agent is not usable after deletion.
     /// </remarks>
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to remove or otherwise modify the Assistant definition.")]
     public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
