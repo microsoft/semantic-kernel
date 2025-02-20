@@ -11,7 +11,6 @@ namespace SqlServerIntegrationTests.Filter;
 public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture)
     : BasicFilterTests<int>(fixture), IClassFixture<SqlServerBasicFilterTests.Fixture>
 {
-    // SQL Server doesn't support the null semantics that the default implementation relies on
     // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is fine
     // "SELECT * FROM MyTable WHERE BooleanColumn;" is not
     // TODO adsitnik: get it to work anyway
