@@ -104,7 +104,7 @@ class OpenAIAssistantBase(Agent):
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
     error_message_states: ClassVar[list[str]] = ["failed", "cancelled", "expired", "incomplete"]
 
-    channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel
+    channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel  # type: ignore
 
     _is_deleted: bool = False
 

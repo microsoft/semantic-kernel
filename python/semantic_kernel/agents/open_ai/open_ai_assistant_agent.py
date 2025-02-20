@@ -1,328 +1,159 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Awaitable, Callable
 from copy import copy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from openai import AsyncOpenAI
-from pydantic import ValidationError
+from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai.types.beta.assistant import Assistant
+from pydantic import Field, ValidationError
 
-from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.naming import generate_random_ascii_name
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelArguments
+    from openai import AsyncOpenAI
+    from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
+    from openai.types.beta.assistant_tool_param import AssistantToolParam
+    from openai.types.beta.threads.message import Message
+    from openai.types.beta.threads.run_create_params import TruncationStrategy
+
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+_T = TypeVar("_T", bound="OpenAIAssistantAgent")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class OpenAIAssistantAgent(OpenAIAssistantBase):
+class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 
     Provides the ability to interact with OpenAI Assistants.
     """
 
     # region Agent Initialization
+    client: AsyncOpenAI
+    definition: Assistant
+
+    polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
+
+    channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel  # type: ignore
 
     def __init__(
         self,
         *,
+        client: AsyncOpenAI,
+        definition: Assistant,
         kernel: "Kernel | None" = None,
         arguments: "KernelArguments | None" = None,
-        service_id: str | None = None,
-        ai_model_id: str | None = None,
-        api_key: str | None = None,
-        org_id: str | None = None,
-        client: AsyncOpenAI | None = None,
-        default_headers: dict[str, str] | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-        description: str | None = None,
-        id: str | None = None,
-        instructions: str | None = None,
-        name: str | None = None,
-        enable_code_interpreter: bool | None = None,
-        enable_file_search: bool | None = None,
-        enable_json_response: bool | None = None,
-        code_interpreter_file_ids: list[str] | None = None,
-        temperature: float | None = None,
-        top_p: float | None = None,
-        vector_store_id: str | None = None,
-        metadata: dict[str, str] | None = None,
-        max_completion_tokens: int | None = None,
-        max_prompt_tokens: int | None = None,
-        parallel_tool_calls_enabled: bool | None = True,
-        truncation_message_count: int | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant service.
 
         Args:
-            kernel: The Kernel instance. (optional)
-            arguments: The arguments to pass to the function. (optional)
-            service_id: The service ID. (optional) If not provided the default service name (default) is used.
-            ai_model_id: The AI model ID. (optional)
-            api_key: The OpenAI API key. (optional)
-            org_id: The OpenAI organization ID. (optional)
-            client: The OpenAI client. (optional)
-            default_headers: The default headers. (optional)
-            env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional)
-            description: The assistant description. (optional)
-            id: The assistant ID. (optional)
-            instructions: The assistant instructions. (optional)
-            name: The assistant name. (optional)
-            enable_code_interpreter: Enable code interpreter. (optional)
-            enable_file_search: Enable file search. (optional)
-            enable_json_response: Enable JSON response. (optional)
-            code_interpreter_file_ids: The file IDs. (optional)
-            temperature: The temperature. (optional)
-            top_p: The top p. (optional)
-            vector_store_id: The vector store ID. (optional)
-            metadata: The assistant metadata. (optional)
-            max_completion_tokens: The max completion tokens. (optional)
-            max_prompt_tokens: The max prompt tokens. (optional)
-            parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
-            truncation_message_count: The truncation message count. (optional)
-            prompt_template_config: The prompt template configuration. (optional)
+            client: The OpenAI client.
+            definition: The assistant definition.
+            kernel: The Kernel instance.
+            arguments: The arguments to pass to the function.
+            prompt_template_config: The prompt template configuration.
+            run_polling_options: The run polling options.
             kwargs: Additional keyword arguments.
-
-        Raises:
-            AgentInitializationError: If the api_key is not provided in the configuration.
         """
-        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
-            api_key=api_key,
-            org_id=org_id,
-            ai_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-
-        if not client and not openai_settings.api_key:
-            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
-        if not openai_settings.chat_model_id:
-            raise AgentInitializationException("The OpenAI chat model ID is required.")
-
-        if not client:
-            client = self._create_client(
-                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
-                org_id=openai_settings.org_id,
-                default_headers=default_headers,
-            )
-
-        service_id = service_id if service_id else DEFAULT_SERVICE_NAME
-
         args: dict[str, Any] = {
-            "ai_model_id": openai_settings.chat_model_id,
-            "service_id": service_id,
             "client": client,
-            "description": description,
-            "instructions": instructions,
-            "enable_code_interpreter": enable_code_interpreter,
-            "enable_file_search": enable_file_search,
-            "enable_json_response": enable_json_response,
-            "code_interpreter_file_ids": code_interpreter_file_ids or [],
-            "temperature": temperature,
-            "top_p": top_p,
-            "vector_store_id": vector_store_id,
-            "metadata": metadata or {},
-            "max_completion_tokens": max_completion_tokens,
-            "max_prompt_tokens": max_prompt_tokens,
-            "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
-            "truncation_message_count": truncation_message_count,
+            "definition": definition,
+            "name": definition.name or f"azure_agent_{generate_random_ascii_name(length=8)}",
+            "description": definition.description,
         }
 
-        if name is not None:
-            args["name"] = name
-        if id is not None:
-            args["id"] = id
+        if definition.id is not None:
+            args["id"] = definition.id
         if kernel is not None:
             args["kernel"] = kernel
         if arguments is not None:
             args["arguments"] = arguments
+        if (
+            definition.instructions
+            and prompt_template_config
+            and definition.instructions != prompt_template_config.template
+        ):
+            logger.info(
+                f"Both `instructions` ({definition.instructions}) and `prompt_template_config` "
+                f"({prompt_template_config.template}) were provided. Using template in `prompt_template_config` "
+                "and ignoring `instructions`."
+            )
+
+        if definition.instructions is not None:
+            args["instructions"] = definition.instructions
         if prompt_template_config is not None:
-            args["prompt_template_config"] = prompt_template_config
+            args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )
+            if prompt_template_config.template is not None:
+                # Use the template from the prompt_template_config if it is provided
+                args["instructions"] = prompt_template_config.template
+        if polling_options is not None:
+            args["polling_options"] = polling_options
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
 
     @classmethod
-    async def create(
-        cls,
+    def create_openai_client(
+        cls: type[_T],
         *,
-        kernel: "Kernel | None" = None,
-        arguments: "KernelArguments | None" = None,
-        service_id: str | None = None,
-        ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
-        client: AsyncOpenAI | None = None,
-        default_headers: dict[str, str] | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        description: str | None = None,
-        id: str | None = None,
-        instructions: str | None = None,
-        name: str | None = None,
-        enable_code_interpreter: bool | None = None,
-        code_interpreter_filenames: list[str] | None = None,
-        code_interpreter_file_ids: list[str] | None = None,
-        enable_file_search: bool | None = None,
-        vector_store_filenames: list[str] | None = None,
-        vector_store_file_ids: list[str] | None = None,
-        enable_json_response: bool | None = None,
-        temperature: float | None = None,
-        top_p: float | None = None,
-        vector_store_id: str | None = None,
-        metadata: dict[str, str] | None = None,
-        max_completion_tokens: int | None = None,
-        max_prompt_tokens: int | None = None,
-        parallel_tool_calls_enabled: bool | None = True,
-        truncation_message_count: int | None = None,
-        prompt_template_config: "PromptTemplateConfig | None" = None,
+        default_headers: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> "OpenAIAssistantAgent":
-        """Asynchronous class method used to create the OpenAI Assistant Agent.
-
-        Args:
-            kernel: The Kernel instance. (optional)
-            arguments: The arguments to pass to the function. (optional)
-            service_id: The service ID. (optional) If not provided the default service name (default) is used.
-            ai_model_id: The AI model ID. (optional)
-            api_key: The OpenAI API key. (optional)
-            org_id: The OpenAI organization ID. (optional)
-            client: The OpenAI client. (optional)
-            default_headers: The default headers. (optional)
-            env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional)
-            description: The assistant description. (optional)
-            id: The assistant ID. (optional)
-            instructions: The assistant instructions. (optional)
-            name: The assistant name. (optional)
-            enable_code_interpreter: Enable code interpreter. (optional)
-            code_interpreter_filenames: The filenames/paths for files to use with code interpreter. (optional)
-            code_interpreter_file_ids: The existing file IDs to use with the code interpreter. (optional)
-            enable_file_search: Enable the file search. (optional)
-            vector_store_filenames: The filenames/paths for files to use with file search. (optional)
-            vector_store_file_ids: The existing file IDs to use with file search. (optional)
-            enable_json_response: Enable JSON response. (optional)
-            temperature: The temperature. (optional)
-            top_p: The top p. (optional)
-            vector_store_id: The vector store ID. (optional)
-            metadata: The assistant metadata. (optional)
-            max_completion_tokens: The max completion tokens. (optional)
-            max_prompt_tokens: The max prompt tokens. (optional)
-            parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
-            truncation_message_count: The truncation message count. (optional)
-            prompt_template_config: The prompt template configuration. (optional)
-            kwargs: Additional keyword arguments.
-
-        Returns:
-            An OpenAIAssistantAgent instance.
-        """
-        agent = cls(
-            kernel=kernel,
-            arguments=arguments,
-            service_id=service_id,
-            ai_model_id=ai_model_id,
-            api_key=api_key,
-            org_id=org_id,
-            client=client,
-            default_headers=default_headers,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-            description=description,
-            id=id,
-            instructions=instructions,
-            name=name,
-            enable_code_interpreter=enable_code_interpreter,
-            enable_file_search=enable_file_search,
-            enable_json_response=enable_json_response,
-            temperature=temperature,
-            top_p=top_p,
-            vector_store_id=vector_store_id,
-            metadata=metadata or {},
-            max_completion_tokens=max_completion_tokens,
-            max_prompt_tokens=max_prompt_tokens,
-            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
-            truncation_message_count=truncation_message_count,
-            prompt_template_config=prompt_template_config,
-            **kwargs,
-        )
-
-        assistant_create_kwargs: dict[str, Any] = {}
-
-        code_interpreter_file_ids_combined: list[str] = []
-
-        if code_interpreter_file_ids is not None:
-            code_interpreter_file_ids_combined.extend(code_interpreter_file_ids)
-
-        if code_interpreter_filenames is not None:
-            for file_path in code_interpreter_filenames:
-                try:
-                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
-                    code_interpreter_file_ids_combined.append(file_id)
-                except FileNotFoundError as ex:
-                    logger.error(
-                        f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
-                    )
-                    raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
-
-        if code_interpreter_file_ids_combined:
-            agent.code_interpreter_file_ids = code_interpreter_file_ids_combined
-            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids_combined
-
-        vector_store_file_ids_combined: list[str] = []
-
-        if vector_store_file_ids is not None:
-            vector_store_file_ids_combined.extend(vector_store_file_ids)
-
-        if vector_store_filenames is not None:
-            for file_path in vector_store_filenames:
-                try:
-                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
-                    vector_store_file_ids_combined.append(file_id)
-                except FileNotFoundError as ex:
-                    logger.error(f"Failed to upload vector store file with path: `{file_path}` with exception: {ex}")
-                    raise AgentInitializationException("Failed to upload vector store files.", ex) from ex
-
-        if vector_store_file_ids_combined:
-            agent.file_search_file_ids = vector_store_file_ids_combined
-            if enable_file_search or agent.enable_file_search:
-                vector_store_id = await agent.create_vector_store(file_ids=vector_store_file_ids_combined)
-                agent.vector_store_id = vector_store_id
-                assistant_create_kwargs["vector_store_id"] = vector_store_id
-
-        if prompt_template_config is not None:
-            assistant_create_kwargs["prompt_template_config"] = prompt_template_config
-
-        agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
-        return agent
-
-    @staticmethod
-    def _create_client(
-        api_key: str | None = None, org_id: str | None = None, default_headers: dict[str, str] | None = None
     ) -> AsyncOpenAI:
         """An internal method to create the OpenAI client from the provided arguments.
 
         Args:
-            api_key: The OpenAI API key.
-            org_id: The OpenAI organization ID. (optional)
-            default_headers: The default headers. (optional)
+            api_key: The API key.
+            org_id: The organization ID.
+            env_file_path: The environment file path.
+            env_file_encoding: The environment file encoding.
+            default_headers: The default headers.
+            kwargs: Additional keyword arguments.
 
         Returns:
             An OpenAI client instance.
         """
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+
+        if not openai_settings.api_key:
+            raise AgentInitializationException("The OpenAI API key is required.")
+
         merged_headers = dict(copy(default_headers)) if default_headers else {}
         if default_headers:
             merged_headers.update(default_headers)
@@ -330,122 +161,194 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        if not api_key:
-            raise AgentInitializationException("Please provide an OpenAI api_key")
-
         return AsyncOpenAI(
-            api_key=api_key,
-            organization=org_id,
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            organization=openai_settings.org_id,
             default_headers=merged_headers,
+            **kwargs,
         )
-
-    @staticmethod
-    def _create_open_ai_settings(
-        api_key: str | None = None,
-        org_id: str | None = None,
-        ai_model_id: str | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-    ) -> OpenAISettings:
-        """An internal method to create the OpenAI settings from the provided arguments.
-
-        Args:
-            api_key: The OpenAI API key.
-            org_id: The OpenAI organization ID. (optional)
-            ai_model_id: The AI model ID. (optional)
-            env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional)
-
-        Returns:
-            An OpenAI settings instance.
-        """
-        try:
-            openai_settings = OpenAISettings.create(
-                api_key=api_key,
-                org_id=org_id,
-                chat_model_id=ai_model_id,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        except ValidationError as ex:
-            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
-
-        return openai_settings
-
-    async def list_definitions(self) -> AsyncIterable[dict[str, Any]]:
-        """List the assistant definitions.
-
-        Yields:
-            An AsyncIterable of dictionaries representing the OpenAIAssistantDefinition.
-        """
-        assistants = await self.client.beta.assistants.list(order="desc")
-        for assistant in assistants.data:
-            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
     @classmethod
-    async def retrieve(
-        cls,
+    def create_azure_openai_client(
+        cls: type[_T],
         *,
-        id: str,
-        kernel: "Kernel | None" = None,
-        arguments: "KernelArguments | None" = None,
+        ad_token: str | None = None,
+        ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
         api_key: str | None = None,
-        org_id: str | None = None,
-        ai_model_id: str | None = None,
-        client: AsyncOpenAI | None = None,
+        api_version: str | None = None,
+        base_url: str | None = None,
         default_headers: dict[str, str] | None = None,
+        deployment_name: str | None = None,
+        endpoint: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        prompt_template_config: "PromptTemplateConfig | None" = None,
-    ) -> "OpenAIAssistantAgent":
-        """Retrieve an assistant by ID.
+        token_scope: str | None = None,
+        **kwargs: Any,
+    ) -> AsyncAzureOpenAI:
+        """An internal method to create the OpenAI client from the provided arguments.
 
         Args:
-            id: The assistant ID.
-            kernel: The Kernel instance. (optional)
-            arguments: The arguments to pass to the function. (optional)
-            api_key: The OpenAI API key. (optional)
-            org_id: The OpenAI organization ID. (optional)
-            ai_model_id: The AI model ID. (optional)
-            client: The OpenAI client. (optional)
-            default_headers: The default headers. (optional)
-            env_file_path: The environment file path. (optional)
-            env_file_encoding: The environment file encoding. (optional)
-            prompt_template_config: The prompt template configuration. (optional)
+            ad_token: The Azure AD token.
+            ad_token_provider: The Azure AD token provider.
+            api_key: The API key
+            api_version: The API version.
+            base_url: The base URL in the form https://<resource>.azure.openai.com/openai/deployments/<deployment_name>
+            default_headers: The default headers.
+            deployment_name: The deployment name.
+            endpoint: The endpoint in the form https://<resource>.azure.openai.com
+            env_file_path: The environment file path.
+            env_file_encoding: The environment file encoding.
+            token_scope: The token scope.
+            kwargs: Additional keyword arguments.
 
         Returns:
-            An OpenAIAssistantAgent instance.
+            An OpenAI client instance.
         """
-        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
-            api_key=api_key,
-            org_id=org_id,
-            ai_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-        if not client and not openai_settings.api_key:
-            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
-        if not openai_settings.chat_model_id:
-            raise AgentInitializationException("The OpenAI chat model ID is required.")
-        if not client:
-            client = OpenAIAssistantAgent._create_client(
-                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
-                org_id=openai_settings.org_id,
-                default_headers=default_headers,
+        try:
+            azure_openai_settings = AzureOpenAISettings.create(
+                api_key=api_key,
+                base_url=base_url,
+                endpoint=endpoint,
+                chat_deployment_name=deployment_name,
+                api_version=api_version,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+                token_endpoint=token_scope,
             )
-        assistant = await client.beta.assistants.retrieve(id)
-        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(
+        except ValidationError as exc:
+            raise AgentInitializationException(f"Failed to create Azure OpenAI settings: {exc}") from exc
+
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        if not azure_openai_settings.base_url:
+            if not azure_openai_settings.endpoint:
+                raise AgentInitializationException("Please provide an endpoint or a base_url")
+            azure_openai_settings.base_url = HttpsUrl(  # type: ignore
+                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.chat_deployment_name}"
+            )
+        return AsyncAzureOpenAI(
+            base_url=str(azure_openai_settings.base_url),
+            api_version=azure_openai_settings.api_version,
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            azure_ad_token=ad_token,
+            azure_ad_token_provider=ad_token_provider,
+            default_headers=merged_headers,
+            **kwargs,
+        )
+
+    # endregion
+
+    # region Message Handling
+
+    async def add_chat_message(
+        self, thread_id: str, message: "str | ChatMessageContent", **kwargs: Any
+    ) -> "Message | None":
+        """Add a chat message to the thread.
+
+        Args:
+            thread_id: The ID of the thread
+            message: The chat message to add
+            kwargs: Additional keyword arguments
+
+        Returns:
+            The thread message or None
+        """
+        return await AssistantThreadActions.create_message(
+            client=self.client, thread_id=thread_id, message=message, **kwargs
+        )
+
+    # endregion
+
+    # region Invocation Methods
+
+    @trace_agent_invocation
+    async def invoke(
+        self,
+        thread_id: str,
+        *,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: "list[ChatMessageContent] | None" = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        metadata: dict[str, str] | None = None,
+        model: str | None = None,
+        parallel_tool_calls: bool | None = None,
+        reasoning_effort: Literal["low", "medium", "high"] | None = None,
+        response_format: "AssistantResponseFormatOptionParam | None" = None,
+        tools: "list[AssistantToolParam] | None" = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        truncation_strategy: "TruncationStrategy | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Invoke the agent.
+
+        Args:
+            thread_id: The ID of the thread.
+            arguments: The kernel arguments.
+            kernel: The kernel.
+            instructions_override: The instructions override.
+            additional_instructions: Additional instructions.
+            additional_messages: Additional messages.
+            max_completion_tokens: The maximum completion tokens.
+            max_prompt_tokens: The maximum prompt tokens.
+            metadata: The metadata.
+            model: The model.
+            parallel_tool_calls: Parallel tool calls.
+            reasoning_effort: The reasoning effort.
+            response_format: The response format.
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            truncation_strategy: The truncation strategy.
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            The chat message content.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
+        run_level_params = {
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "instructions_override": instructions_override,
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "metadata": metadata,
+            "model": model,
+            "parallel_tool_calls": parallel_tool_calls,
+            "reasoning_effort": reasoning_effort,
+            "response_format": response_format,
+            "temperature": temperature,
+            "tools": tools,
+            "top_p": top_p,
+            "truncation_strategy": truncation_strategy,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
+        async for is_visible, message in AssistantThreadActions.invoke(
+            agent=self,
+            thread_id=thread_id,
             kernel=kernel,
             arguments=arguments,
-            assistant=assistant,
-            client=client,
-            api_key=api_key,
-            default_headers=default_headers,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-            prompt_template_config=prompt_template_config,
-            **assistant_definition,
-        )
+            **run_level_params,
+        ):
+            if is_visible:
+                yield message
 
     # endregion
