@@ -9,9 +9,6 @@ from self_hosted_api_chat_completion import SelfHostedChatCompletion
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
-    AzureAIInferenceChatCompletion,
-)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -44,9 +41,6 @@ COPYWRITER_NAME = "CopyWriter"
 async def main():
     try:
         kernel = Kernel()
-
-        chat_service = AzureAIInferenceChatCompletion(ai_model_id=os.getenv("AZURE_AI_INFERENCE_MODEL_DEPLOYMENT_NAME"))
-        kernel.add_service(chat_service)
 
         kernel.add_service(
             SelfHostedChatCompletion(

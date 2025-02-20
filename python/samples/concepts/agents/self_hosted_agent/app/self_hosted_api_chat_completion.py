@@ -20,12 +20,11 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceD
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from openai.types.chat.chat_completion_message import FunctionCall
 from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall
-from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
@@ -44,9 +43,6 @@ from semantic_kernel.exceptions import (
     ServiceInvalidResponseError,
     ServiceResponseException,
 )
-from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
-    AutoFunctionInvocationContext,
-)
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
@@ -56,12 +52,10 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.functions.kernel_arguments import KernelArguments
-    from semantic_kernel.kernel import Kernel
 
 
 class SelfHostedChatCompletion(ChatCompletionClientBase):
-    """OpenAI Chat completion class."""
+    """Self-Hosted Agent Chat completion class."""
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "customapi"
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
@@ -100,53 +94,6 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
         assert isinstance(response, ChatCompletion)  # nosec
         response_metadata = self._get_metadata_from_chat_response(response)
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
-
-    async def _send_completion_request(
-        self,
-        settings: OpenAIChatPromptExecutionSettings,
-    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
-        """Execute the appropriate call to OpenAI models."""
-        try:
-            settings_dict = settings.prepare_settings_dict()
-            self._handle_structured_output(settings, settings_dict)
-            if settings.tools is None:
-                settings_dict.pop("parallel_tool_calls", None)
-            response = requests.post(self.url, json=settings_dict, timeout=30).json()
-            return ChatCompletion(**response)
-        except BadRequestError as ex:
-            if ex.code == "content_filter":
-                raise ContentFilterAIException(
-                    f"{type(self)} service encountered a content error",
-                    ex,
-                ) from ex
-            raise ServiceResponseException(
-                f"{type(self)} service failed to complete the prompt",
-                ex,
-            ) from ex
-        except Exception as ex:
-            raise ServiceResponseException(
-                f"{type(self)} service failed to complete the prompt",
-                ex,
-            ) from ex
-
-    def _handle_structured_output(
-        self, request_settings: OpenAIChatPromptExecutionSettings, settings: dict[str, Any]
-    ) -> None:
-        response_format = getattr(request_settings, "response_format", None)
-        if getattr(request_settings, "structured_json_response", False) and response_format:
-            # Case 1: response_format is a type and subclass of BaseModel
-            if isinstance(response_format, type) and issubclass(response_format, BaseModel):
-                settings["response_format"] = type_to_response_format_param(response_format)
-            # Case 2: response_format is a type but not a subclass of BaseModel
-            elif isinstance(response_format, type):
-                generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
-                assert generated_schema is not None  # nosec
-                settings["response_format"] = generate_structured_output_response_format_schema(
-                    name=response_format.__name__, schema=generated_schema
-                )
-            # Case 3: response_format is a dictionary, pass it without modification
-            elif isinstance(response_format, dict):
-                settings["response_format"] = response_format
 
     @override
     @trace_streaming_chat_completion(MODEL_PROVIDER_NAME)
@@ -221,6 +168,52 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
     # endregion
 
     # region content creation
+    async def _send_completion_request(
+        self,
+        settings: OpenAIChatPromptExecutionSettings,
+    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
+        """Execute the appropriate call to self-hosted agents."""
+        try:
+            settings_dict = settings.prepare_settings_dict()
+            self._handle_structured_output(settings, settings_dict)
+            if settings.tools is None:
+                settings_dict.pop("parallel_tool_calls", None)
+            response = requests.post(self.url, json=settings_dict, timeout=30).json()
+            return ChatCompletion(**response)
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                raise ContentFilterAIException(
+                    f"{type(self)} service encountered a content error",
+                    ex,
+                ) from ex
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
+
+    def _handle_structured_output(
+        self, request_settings: OpenAIChatPromptExecutionSettings, settings: dict[str, Any]
+    ) -> None:
+        response_format = getattr(request_settings, "response_format", None)
+        if getattr(request_settings, "structured_json_response", False) and response_format:
+            # Case 1: response_format is a type and subclass of BaseModel
+            if isinstance(response_format, type) and issubclass(response_format, BaseModel):
+                settings["response_format"] = type_to_response_format_param(response_format)
+            # Case 2: response_format is a type but not a subclass of BaseModel
+            elif isinstance(response_format, type):
+                generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
+                assert generated_schema is not None  # nosec
+                settings["response_format"] = generate_structured_output_response_format_schema(
+                    name=response_format.__name__, schema=generated_schema
+                )
+            # Case 3: response_format is a dictionary, pass it without modification
+            elif isinstance(response_format, dict):
+                settings["response_format"] = response_format
 
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
@@ -359,29 +352,5 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
             for message in chat_history.messages
             if not isinstance(message, (AnnotationContent, FileReferenceContent))
         ]
-
-    # endregion
-
-    # region function calling
-    @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
-    async def _process_function_call(
-        self,
-        function_call: FunctionCallContent,
-        chat_history: ChatHistory,
-        kernel: "Kernel",
-        arguments: "KernelArguments | None",
-        function_call_count: int,
-        request_index: int,
-        function_call_behavior: FunctionChoiceBehavior,
-    ) -> "AutoFunctionInvocationContext | None":
-        """Processes the tool calls in the result and update the chat history."""
-        return await kernel.invoke_function_call(
-            function_call=function_call,
-            chat_history=chat_history,
-            arguments=arguments,
-            function_call_count=function_call_count,
-            request_index=request_index,
-            function_behavior=function_call_behavior,
-        )
 
     # endregion
