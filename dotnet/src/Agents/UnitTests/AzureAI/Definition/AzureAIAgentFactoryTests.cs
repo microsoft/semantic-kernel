@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
-using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -51,10 +50,10 @@ public class AzureAIAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="OpenAIAssistantAgentFactory"/>
+    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="AzureAIAgentFactory"/>
     /// </summary>
     [Fact]
-    public async Task VerifyCanCreateOpenAIAssistantAsync()
+    public async Task VerifyCanCreateAzureAIAgentAsync()
     {
         // Arrange
         AgentDefinition agentDefinition = new()
@@ -76,7 +75,7 @@ public class AzureAIAgentFactoryTests : IDisposable
             ]
         };
         AzureAIAgentFactory factory = new();
-        //this.SetupResponse(HttpStatusCode.OK, agentDefinition.GetOpenAIAssistantDefinition());
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentResponse);
 
         // Act
         var agent = await factory.CreateAsync(this._kernel, agentDefinition);
@@ -89,21 +88,32 @@ public class AzureAIAgentFactoryTests : IDisposable
         Assert.Equal(this._kernel, agent.Kernel);
     }
 
-
     #region private
-    private class FakeTokenCredential : TokenCredential
-    {
-        /// <inheritdoc/>
-        public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    private const string AzureAIAgentResponse =
+        """
         {
-            return new AccessToken("fakeToken", DateTimeOffset.Now.AddHours(1));
+          "id": "asst_thdyqg4yVC9ffeILVdEWLONT",
+          "object": "assistant",
+          "created_at": 1739991984,
+          "name": "AzureAIAgent",
+          "description": "AzureAIAgent Description",
+          "model": "gpt-4o",
+          "instructions": "AzureAIAgent Instructions",
+          "tools": [],
+          "top_p": 1.0,
+          "temperature": 1.0,
+          "tool_resources": {},
+          "metadata": {},
+          "response_format": "auto"
         }
+        """;
 
-        /// <inheritdoc/>
-        public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    private void SetupResponse(HttpStatusCode statusCode, string response) =>
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
         {
-            return new ValueTask<AccessToken>(new AccessToken("fakeToken", DateTimeOffset.Now.AddHours(1)));
-        }
-    }
+            Content = new StringContent(response)
+        });
+#pragma warning restore CA2000 // Dispose objects before losing scope
     #endregion
 }
