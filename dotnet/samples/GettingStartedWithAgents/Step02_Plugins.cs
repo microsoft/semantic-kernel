@@ -2,7 +2,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
 using Resources;
 
@@ -55,7 +54,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(autoInvokeYaml);
 
         // Define the agent:
-        // Execution-settings with auto-invocation of plubins defined via the config.
+        // Execution-settings with auto-invocation of plugins defined via the config.
         ChatCompletionAgent agent =
             new(templateConfig)
             {
@@ -82,7 +81,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                     Instructions = instructions,
                     Name = name,
                     Kernel = this.CreateKernelWithChatCompletion(),
-                    Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                    Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
                 };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
