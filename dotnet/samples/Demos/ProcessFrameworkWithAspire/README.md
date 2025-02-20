@@ -36,7 +36,7 @@ dotnet run
 A dashboard will then be displayed in the browser, similar to this:
 ![Aspire Dashboard](./docs/aspire-dashboard.png)
 
-By invoking the `ProcessOrchestrator` service, we can start the process. I've provided a [`ProcessFramework.Aspire.ProcessOrchestrator.http``](./ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.http) with a predefined request to start the process.
+By invoking the `ProcessOrchestrator` service, the process can be started. A predefined request is available in [`ProcessFramework.Aspire.ProcessOrchestrator.http``](./ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.http).
 
 This will generate a trace in the Aspire dashboard that looks like this:
 ![Aspire Trace](./docs/aspire-traces.png)
