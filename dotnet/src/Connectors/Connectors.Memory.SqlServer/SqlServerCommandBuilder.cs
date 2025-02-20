@@ -347,6 +347,7 @@ internal static class SqlServerCommandBuilder
             {
                 command.AddParameter(vectorProperty, $"@_{startParamIndex++}", parameter);
             }
+            sb.AppendLine();
         }
         sb.AppendLine("ORDER BY [score] DESC");
         // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.

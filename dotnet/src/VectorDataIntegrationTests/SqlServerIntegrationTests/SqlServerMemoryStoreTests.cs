@@ -79,7 +79,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync("collection1");
         await this.Store.CreateCollectionAsync("collection2");
 
-        var collections = await this.Store.GetCollectionsAsync().ToListAsync();
+        var collections = await this.Store.GetCollectionsAsync().ToArrayAsync();
         Assert.Contains("collection1", collections);
         Assert.Contains("collection2", collections);
     }
@@ -212,8 +212,8 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
         await this.InsertSampleDataAsync();
 
-        List<(MemoryRecord Record, double SimilarityScore)> results =
-            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync();
+        (MemoryRecord Record, double SimilarityScore)[] results =
+            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToArrayAsync();
 
         Assert.All(results, t => Assert.True(t.SimilarityScore > 0));
 
@@ -254,13 +254,13 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
         await this.InsertSampleDataAsync();
 
-        List<(MemoryRecord Record, double SimilarityScore)> results =
-            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToListAsync();
+        (MemoryRecord Record, double SimilarityScore)[] results =
+            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToArrayAsync();
 
         var firstId = results[0].Record.Metadata.Id;
         var firstSimilarityScore = results[0].SimilarityScore;
 
-        results = await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToListAsync();
+        results = await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToArrayAsync();
 
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }
