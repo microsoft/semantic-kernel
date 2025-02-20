@@ -33,7 +33,7 @@ cd scr/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost
 dotnet run
 ```
 
-We will see in the browser a dashboard that looks like this:
+A dashboard will then be displayed in the browser, similar to this:
 ![Aspire Dashboard](./docs/aspire-dashboard.png)
 
 By invoking the `ProcessOrchestrator` service, we can start the process. I've provided a [`ProcessFramework.Aspire.ProcessOrchestrator.http``](./ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.http) with a predefined request to start the process.
