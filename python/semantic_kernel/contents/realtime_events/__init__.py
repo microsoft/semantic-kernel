@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.contents.events.realtime_event import (
+from semantic_kernel.contents.realtime_events.realtime_event import (
     RealtimeAudioEvent,
     RealtimeEvent,
     RealtimeEvents,

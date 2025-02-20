@@ -36,7 +36,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.events.realtime_event import (
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.realtime_events.realtime_event import (
     RealtimeAudioEvent,
     RealtimeEvent,
     RealtimeEvents,
@@ -44,8 +46,6 @@ from semantic_kernel.contents.events.realtime_event import (
     RealtimeFunctionResultEvent,
     RealtimeTextEvent,
 )
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel import Kernel

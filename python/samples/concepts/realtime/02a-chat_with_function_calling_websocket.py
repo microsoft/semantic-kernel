@@ -9,13 +9,13 @@ from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderW
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
-    AzureRealtime,
+    AzureRealtimeWebsocket,
     ListenEvents,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.events import RealtimeTextEvent
+from semantic_kernel.contents.realtime_events import RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
@@ -67,8 +67,7 @@ async def main() -> None:
     # you can define the protocol to use, either "websocket" or "webrtc"
     # (at this time Azure only support websockets)
     # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = AzureRealtime(
-        protocol="websocket",
+    realtime_client = AzureRealtimeWebsocket(
         audio_output_callback=audio_player.client_callback,
     )
     audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
@@ -88,6 +87,7 @@ async def main() -> None:
     # the "input_audio_buffer.commit" and "response.create" event to the realtime api
     # to signal the end of the user's turn and start the response.
     # manual VAD is not part of this sample
+    # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
     settings = OpenAIRealtimeExecutionSettings(
         instructions=instructions,
         voice="alloy",
@@ -99,7 +99,7 @@ async def main() -> None:
     chat_history.add_user_message("Hi there, who are you?")
     chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-    # the context manager calls the create_session method on the client and start listening to the audio stream
+    # the context manager calls the create_session method on the client and starts listening to the audio stream
     async with (
         audio_player,
         audio_recorder,
@@ -128,7 +128,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instruction: start speaking, when you stop the API should detect you finished and start responding. "
+        "Instructions: Begin speaking. The API will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())

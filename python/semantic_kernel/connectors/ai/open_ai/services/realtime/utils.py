@@ -19,6 +19,7 @@ from openai.types.beta.realtime.response_create_event import Response
 from openai.types.beta.realtime.session_update_event import Session
 
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import SendEvents
+from semantic_kernel.exceptions import ContentException
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -50,7 +51,14 @@ def update_settings_from_function_call_configuration(
 def kernel_function_metadata_to_function_call_format(
     metadata: "KernelFunctionMetadata",
 ) -> dict[str, Any]:
-    """Convert the kernel function metadata to function calling format."""
+    """Convert the kernel function metadata to function calling format.
+
+    Function calling in the realtime API, uses a slightly different format than the chat completion API.
+    See https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-tools
+    for more details.
+
+    TLDR: there is no "function" key, and the function details are at the same level as "type".
+    """
     return {
         "type": "function",
         "name": metadata.fully_qualified_name,
@@ -66,6 +74,7 @@ def kernel_function_metadata_to_function_call_format(
 
 
 def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
+    """Create an OpenAI Realtime client event from a event type and kwargs."""
     match event_type:
         case SendEvents.SESSION_UPDATE:
             return SessionUpdateEvent(
@@ -123,4 +132,4 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
                 **kwargs,
             )
         case _:
-            raise ValueError(f"Unknown event type: {event_type}")
+            raise ContentException(f"Unknown event type: {event_type}")

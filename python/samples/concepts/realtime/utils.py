@@ -12,13 +12,12 @@ import sounddevice as sd
 from aiortc.mediastreams import MediaStreamError, MediaStreamTrack
 from av.audio.frame import AudioFrame
 from av.frame import Frame
-from pydantic import PrivateAttr
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 from sounddevice import InputStream, OutputStream
 
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.events.realtime_event import RealtimeAudioEvent
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.contents import AudioContent
+from semantic_kernel.contents.realtime_events import RealtimeAudioEvent
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +39,13 @@ def check_audio_devices():
 # region: Recorders
 
 
-class AudioRecorderWebRTC(KernelBaseModel, MediaStreamTrack):
-    """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice."""
+class AudioRecorderWebRTC(BaseModel, MediaStreamTrack):
+    """A simple class that implements the WebRTC MediaStreamTrack for audio from sounddevice.
+
+    This class is meant as a demo sample and is not meant for production use.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True)
 
     kind: ClassVar[str] = "audio"
     device: str | int | None = None
@@ -156,8 +160,13 @@ class AudioRecorderWebRTC(KernelBaseModel, MediaStreamTrack):
             self._is_recording = False
 
 
-class AudioRecorderWebsocket(KernelBaseModel):
-    """A simple class that implements a sounddevice for use with websockets."""
+class AudioRecorderWebsocket(BaseModel):
+    """A simple class that implements a sounddevice for use with websockets.
+
+    This class is meant as a demo sample and is not meant for production use.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True)
 
     realtime_client: RealtimeClientBase
     device: str | int | None = None
@@ -247,8 +256,10 @@ class AudioRecorderWebsocket(KernelBaseModel):
 # region: Players
 
 
-class AudioPlayerWebRTC(KernelBaseModel):
+class AudioPlayerWebRTC(BaseModel):
     """Simple class that plays audio using sounddevice.
+
+    This class is meant as a demo sample and is not meant for production use.
 
     Make sure the device_id is set to the correct device for your system.
 
@@ -264,6 +275,8 @@ class AudioPlayerWebRTC(KernelBaseModel):
         frame_duration: The duration of each audio frame in milliseconds
 
     """
+
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True)
 
     device: int | None = None
     sample_rate: int = SAMPLE_RATE_WEBRTC
@@ -356,8 +369,10 @@ class AudioPlayerWebRTC(KernelBaseModel):
         logger.error(f"Unknown audio content: {audio_content}")
 
 
-class AudioPlayerWebsocket(KernelBaseModel):
+class AudioPlayerWebsocket(BaseModel):
     """Simple class that plays audio using sounddevice.
+
+    This class is meant as a demo sample and is not meant for production use.
 
     Make sure the device_id is set to the correct device for your system.
 
@@ -373,6 +388,8 @@ class AudioPlayerWebsocket(KernelBaseModel):
         frame_duration: The duration of each audio frame in milliseconds
 
     """
+
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True)
 
     device: int | None = None
     sample_rate: int = SAMPLE_RATE

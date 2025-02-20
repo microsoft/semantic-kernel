@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable, Coroutine, Mapping
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
+from typing import Any
 
 from numpy import ndarray
 from openai import AsyncAzureOpenAI
@@ -10,8 +10,6 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_webrtc import OpenAIRealtimeWebRTCBase
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_websocket import (
     OpenAIRealtimeWebsocketBase,
 )
@@ -19,32 +17,14 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
-if TYPE_CHECKING:
-    from aiortc.mediastreams import MediaStreamTrack
-
-
-_T = TypeVar("_T", bound="AzureRealtime")
-
-
-__all__ = ["AzureRealtime"]
-
 
 @experimental_class
-class AzureRealtime(OpenAIRealtimeBase):
-    """Azure OpenAI Realtime service."""
-
-    def __new__(cls: type["_T"], protocol: Literal["websocket", "webrtc"], *args: Any, **kwargs: Any) -> "_T":
-        """Pick the right subclass, based on protocol."""
-        subclass_map = {subcl.protocol: subcl for subcl in cls.__subclasses__()}
-        subclass = subclass_map[protocol]
-        return super(AzureRealtime, subclass).__new__(subclass)
+class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase):
+    """Azure OpenAI Realtime service using WebSocket protocol."""
 
     def __init__(
         self,
-        protocol: Literal["websocket", "webrtc"],
-        *,
         audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
-        audio_track: "MediaStreamTrack | None" = None,
         service_id: str | None = None,
         api_key: str | None = None,
         deployment_name: str | None = None,
@@ -60,10 +40,9 @@ class AzureRealtime(OpenAIRealtimeBase):
         env_file_encoding: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """Initialize an OpenAIRealtime service.
+        """Initialize an AzureRealtimeWebsocket service.
 
         Args:
-            protocol: The protocol to use, must be either "websocket" or "webrtc".
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
@@ -71,29 +50,26 @@ class AzureRealtime(OpenAIRealtimeBase):
                 It is called first in both websockets and webrtc.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
-            audio_track: The audio track to use for the service, only used by WebRTC.
-                A default is supplied if not provided.
-                It can be any class that implements the AudioStreamTrack interface.
-            service_id (str | None): The service ID for the Azure deployment. (Optional)
-            api_key  (str | None): The optional api key. If provided, will override the value in the
+            service_id: The service ID for the Azure deployment. (Optional)
+            api_key: The optional api key. If provided, will override the value in the
                 env vars or .env file.
-            deployment_name  (str | None): The optional deployment. If provided, will override the value
+            deployment_name: The optional deployment. If provided, will override the value
                 (chat_deployment_name) in the env vars or .env file.
-            endpoint (str | None): The optional deployment endpoint. If provided will override the value
+            endpoint: The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
-            base_url (str | None): The optional deployment base_url. If provided will override the value
+            base_url: The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
-            api_version (str | None): The optional deployment api version. If provided will override the value
+            api_version: The optional deployment api version. If provided will override the value
                 in the env vars or .env file.
-            ad_token (str | None): The Azure Active Directory token. (Optional)
-            ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
-            token_endpoint (str | None): The token endpoint to request an Azure token. (Optional)
-            default_headers (Mapping[str, str]): The default headers mapping of string keys to
+            ad_token: The Azure Active Directory token. (Optional)
+            ad_token_provider: The Azure Active Directory token provider. (Optional)
+            token_endpoint: The token endpoint to request an Azure token. (Optional)
+            default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
-            env_file_path (str | None): Use the environment settings file as a fallback to
+            async_client: An existing client to use. (Optional)
+            env_file_path: Use the environment settings file as a fallback to
                 environment variables. (Optional)
-            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+            env_file_encoding: The encoding of the environment settings file. (Optional)
             kwargs: Additional arguments.
         """
         try:
@@ -111,10 +87,7 @@ class AzureRealtime(OpenAIRealtimeBase):
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not azure_openai_settings.realtime_deployment_name:
             raise ServiceInitializationError("The OpenAI realtime model ID is required.")
-        if audio_track:
-            kwargs["audio_track"] = audio_track
         super().__init__(
-            protocol=protocol,
             audio_output_callback=audio_output_callback,
             deployment_name=azure_openai_settings.realtime_deployment_name,
             endpoint=azure_openai_settings.endpoint,
@@ -127,45 +100,5 @@ class AzureRealtime(OpenAIRealtimeBase):
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
-            **kwargs,
-        )
-
-
-@experimental_class
-class AzureRealtimeWebRTC(AzureRealtime, OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
-    """OpenAI Realtime service using WebRTC protocol.
-
-    This should not be used directly, use OpenAIRealtime instead.
-    Set protocol="webrtc" to use this class.
-    """
-
-    protocol: ClassVar[Literal["webrtc"]] = "webrtc"
-
-    def __init__(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        """Initialize an OpenAIRealtime service using WebRTC protocol."""
-        raise NotImplementedError("Azure Realtime with WebRTC is not yet supported.")
-
-
-@experimental_class
-class AzureRealtimeWebsocket(AzureRealtime, OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase):
-    """OpenAI Realtime service using WebSocket protocol.
-
-    This should not be used directly, use OpenAIRealtime instead.
-    Set protocol="websocket" to use this class.
-    """
-
-    protocol: ClassVar[Literal["websocket"]] = "websocket"
-
-    def __init__(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            *args,
             **kwargs,
         )
