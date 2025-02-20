@@ -25,8 +25,8 @@ extend-exclude = [
     "WomensSuffrage.txt",
     "SK-dotnet.sln.DotSettings",
     "**/azure_ai_search_hotel_samples/README.md",
-	"**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
-	"**/Demos/ProcessFrameworkWithAspire/**/*.http"
+    "**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
+    "**/Demos/ProcessFrameworkWithAspire/**/*.http"
 ]
 
 [default.extend-words]
