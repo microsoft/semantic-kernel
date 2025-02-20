@@ -52,11 +52,12 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         // Read the template resource
         string autoInvokeYaml = EmbeddedResource.Read("AutoInvokeTools.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(autoInvokeYaml);
+        KernelPromptTemplateFactory templateFactory = new();
 
         // Define the agent:
         // Execution-settings with auto-invocation of plugins defined via the config.
         ChatCompletionAgent agent =
-            new(templateConfig)
+            new(templateConfig, templateFactory)
             {
                 Kernel = this.CreateKernelWithChatCompletion()
             };
