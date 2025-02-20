@@ -79,7 +79,7 @@ public abstract class KernelAgent : Agent
     /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    private KernelArguments MergeArguments(KernelArguments? arguments)
+    internal KernelArguments MergeArguments(KernelArguments? arguments)
     {
         // Avoid merge when override arguments are not set.
         if (arguments == null)
