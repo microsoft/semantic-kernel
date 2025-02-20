@@ -210,7 +210,10 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
         else if (searchOptions.NewFilter is not null)
         {
-            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.NewFilter);
+            SqlFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, searchOptions.NewFilter);
+            translator.Translate(appendWhere: false);
+            extraWhereFilter = translator.Clause.ToString();
+            extraParameters = translator.Parameters;
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 

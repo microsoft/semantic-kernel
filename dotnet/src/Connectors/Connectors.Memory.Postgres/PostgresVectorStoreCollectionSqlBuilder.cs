@@ -383,7 +383,7 @@ WHERE "{keyColumn}" = ANY($1);
         {
             (not null, not null) => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
             (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, propertyReader.RecordDefinition.Properties, legacyFilter, startParamIndex: 2),
-            (null, not null) => new PostgresFilterTranslator().Translate(propertyReader.StoragePropertyNamesMap, newFilter, startParamIndex: 2),
+            (null, not null) => GenerateNewFilterWhereClause(propertyReader, newFilter),
             _ => (Clause: string.Empty, Parameters: [])
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -424,6 +424,15 @@ FROM ({commandText}) AS subquery
             Parameters = [new NpgsqlParameter { Value = vectorValue }, .. parameters.Select(p => new NpgsqlParameter { Value = p })]
         };
     }
+
+    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordPropertyReader propertyReader, LambdaExpression newFilter)
+    {
+        SqlFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, newFilter);
+        translator.Initialize(startParamIndex: 2);
+        translator.Translate(appendWhere: true);
+        return (translator.Clause.ToString(), translator.ParameterValues);
+    }
+
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorSearchFilter legacyFilter, int startParamIndex)
     {

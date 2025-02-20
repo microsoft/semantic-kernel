@@ -338,10 +338,10 @@ internal static class SqlServerCommandBuilder
         {
             int startParamIndex = command.Parameters.Count;
 
-            List<object> parameters = new SqlServerFilterTranslator(sb, schema).Translate(
-                storagePropertyNamesMap,
-                options.NewFilter,
-                startParamIndex);
+            SqlFilterTranslator translator = new(storagePropertyNamesMap, options.NewFilter, sb);
+            translator.Initialize(startParamIndex: startParamIndex);
+            translator.Translate(appendWhere: true);
+            List<object> parameters = translator.ParameterValues;
 
             foreach (object parameter in parameters)
             {
