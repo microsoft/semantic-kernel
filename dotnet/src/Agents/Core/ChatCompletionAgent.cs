@@ -32,7 +32,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// a <see cref="PromptTemplateConfig"/>.
     /// </summary>
     /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFactory">The prompt template factory used to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     public ChatCompletionAgent(
         PromptTemplateConfig templateConfig,
         IPromptTemplateFactory templateFactory)

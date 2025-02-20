@@ -46,7 +46,7 @@ public class ChatCompletionAgentTests
     [Fact]
     public void VerifyChatCompletionAgentTemplate()
     {
-        PromptTemplateConfig config =
+        PromptTemplateConfig promptConfig =
             new()
             {
                 Name = "TestName",
@@ -73,16 +73,17 @@ public class ChatCompletionAgentTests
                     },
                 }
             };
+        KernelPromptTemplateFactory templateFactory = new();
 
         // Arrange
-        ChatCompletionAgent agent = new(config);
+        ChatCompletionAgent agent = new(promptConfig, templateFactory);
 
         // Assert
         Assert.NotNull(agent.Id);
-        Assert.Equal(config.Template, agent.Instructions);
-        Assert.Equal(config.Description, agent.Description);
-        Assert.Equal(config.Name, agent.Name);
-        Assert.Equal(config.ExecutionSettings, agent.Arguments.ExecutionSettings);
+        Assert.Equal(promptConfig.Template, agent.Instructions);
+        Assert.Equal(promptConfig.Description, agent.Description);
+        Assert.Equal(promptConfig.Name, agent.Name);
+        Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments.ExecutionSettings);
     }
 
     /// <summary>
