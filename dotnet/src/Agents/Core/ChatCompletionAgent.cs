@@ -65,7 +65,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        string? agentName = this.GetDisplayName();
+        string agentName = this.GetDisplayName();
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
@@ -80,7 +80,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        string? agentName = this.GetDisplayName();
+        string agentName = this.GetDisplayName();
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
