@@ -2,9 +2,8 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
-from collections.abc import Sequence
 
 from openai import AsyncOpenAI
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
