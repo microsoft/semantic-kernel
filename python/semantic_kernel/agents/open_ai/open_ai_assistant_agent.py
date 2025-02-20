@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from openai.types.beta.assistant import Assistant
-from pydantic import Field, ValidationError
+from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -51,7 +51,7 @@ class OpenAIAssistantAgent(Agent):
     # region Agent Initialization
     client: AsyncOpenAI
     definition: Assistant
-
+    plugins: list[Any] = Field(default_factory=list)
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
     channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel  # type: ignore
@@ -59,12 +59,13 @@ class OpenAIAssistantAgent(Agent):
     def __init__(
         self,
         *,
+        arguments: "KernelArguments | None" = None,
         client: AsyncOpenAI,
         definition: Assistant,
         kernel: "Kernel | None" = None,
-        arguments: "KernelArguments | None" = None,
-        prompt_template_config: "PromptTemplateConfig | None" = None,
+        plugins: Any | None = None,
         polling_options: RunPollingOptions | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant service.
@@ -85,12 +86,15 @@ class OpenAIAssistantAgent(Agent):
             "description": definition.description,
         }
 
-        if definition.id is not None:
-            args["id"] = definition.id
-        if kernel is not None:
-            args["kernel"] = kernel
         if arguments is not None:
             args["arguments"] = arguments
+        if definition.id is not None:
+            args["id"] = definition.id
+        if definition.instructions is not None:
+            args["instructions"] = definition.instructions
+        if kernel is not None:
+            args["kernel"] = kernel
+
         if (
             definition.instructions
             and prompt_template_config
@@ -102,8 +106,9 @@ class OpenAIAssistantAgent(Agent):
                 "and ignoring `instructions`."
             )
 
-        if definition.instructions is not None:
-            args["instructions"] = definition.instructions
+        if plugins is not None:
+            args["plugins"] = plugins
+
         if prompt_template_config is not None:
             args["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
@@ -116,6 +121,14 @@ class OpenAIAssistantAgent(Agent):
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
+
+    @model_validator(mode="after")
+    def configure_kernel(self) -> None:
+        """Configure the kernel."""
+        if self.plugins:
+            # Note, plugins provided via the constructor take precedence over those already in the kernel
+            for plugin in self.plugins:
+                self.kernel.add_plugins(plugin)
 
     @classmethod
     def create_openai_client(
