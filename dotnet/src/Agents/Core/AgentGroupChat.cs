@@ -192,7 +192,7 @@ public sealed class AgentGroupChat : AgentChat
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
     /// <param name="templateFactory">
-    /// On optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
+    /// An optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
     /// The default factory is used when none is provided.
     /// </param>
     /// <param name="safeParameterNames">The parameter names to exclude from being HTML encoded.</param>

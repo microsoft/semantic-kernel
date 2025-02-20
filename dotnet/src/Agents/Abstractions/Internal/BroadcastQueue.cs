@@ -28,8 +28,8 @@ internal sealed class BroadcastQueue
     private readonly Dictionary<string, QueueReference> _queues = [];
 
     /// <summary>
-    /// Defines the yield duration when waiting on a channel-queue to synchronize.
-    /// to drain.
+    /// Defines the yield duration when waiting on a channel-queue to synchronize
+    /// and drain.
     /// </summary>
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(0.1);
 

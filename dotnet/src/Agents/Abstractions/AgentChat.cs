@@ -39,7 +39,7 @@ public abstract class AgentChat
 
     /// <summary>
     /// Gets a value that indicates whether a chat operation is active. Activity is defined as
-    /// any the execution of any public method.
+    /// any execution of a public method.
     /// </summary>
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
@@ -199,7 +199,7 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> and a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -258,7 +258,7 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> and a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
