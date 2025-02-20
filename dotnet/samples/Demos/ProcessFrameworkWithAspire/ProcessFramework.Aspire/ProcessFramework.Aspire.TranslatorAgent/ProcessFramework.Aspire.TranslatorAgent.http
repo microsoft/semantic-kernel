@@ -1,4 +1,4 @@
-POST https://localhost:7228/api/translatoragent
+POST https://localhost:7228/api/translator
 Accept: application/json
 Content-Type: application/json
 

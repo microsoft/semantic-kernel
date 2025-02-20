@@ -12,7 +12,7 @@ public class SummaryAgentHttpClient(HttpClient httpClient)
     {
         var payload = new SummarizeRequest { TextToSummarize = textToSummarize };
 #pragma warning disable CA2234 // We cannot pass uri here since we are using a customer http client with a base address
-        var response = await httpClient.PostAsync("/api/summaryagent", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+        var response = await httpClient.PostAsync("/api/summary", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         var responseContent = await response.Content.ReadAsStringAsync();
         return responseContent;

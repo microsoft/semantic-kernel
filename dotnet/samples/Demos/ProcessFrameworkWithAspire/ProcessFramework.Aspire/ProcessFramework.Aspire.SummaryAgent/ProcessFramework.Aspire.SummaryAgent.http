@@ -1,4 +1,4 @@
-POST https://localhost:7261/api/summaryagent
+POST https://localhost:7261/api/summary
 Accept: application/json
 Content-Type: application/json
 

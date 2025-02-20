@@ -57,7 +57,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.MapPost("/api/summaryagent", async (Kernel kernel, SummarizeRequest summarizeRequest) =>
+app.MapPost("/api/summary", async (Kernel kernel, SummarizeRequest summarizeRequest) =>
 {
     ChatCompletionAgent summaryAgent =
     new()
