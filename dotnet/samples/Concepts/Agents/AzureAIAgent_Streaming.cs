@@ -11,7 +11,7 @@ namespace Agents;
 /// <summary>
 /// Demonstrate consuming "streaming" message for <see cref="AzureAIAgent"/>.
 /// </summary>
-public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
+public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
     public async Task UseStreamingAgentAsync()
@@ -20,17 +20,15 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
         const string AgentInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, clientProvider);
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, thread.Id, "Fortune favors the bold.");
@@ -48,14 +46,12 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
         const string AgentInstructions = "Answer questions about the menu.";
 
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
@@ -65,7 +61,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, thread.Id, "What is the special soup and its price?");
@@ -82,21 +78,19 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAgentsTest(o
         const string AgentInstructions = "Solve math problems with code.";
 
         // Define the agent
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent definition = await client.CreateAgentAsync(
+        Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions,
             [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, clientProvider)
+        AzureAIAgent agent = new(definition, this.AgentsClient)
         {
             Kernel = new Kernel(),
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, thread.Id, "Is 191 a prime number?");

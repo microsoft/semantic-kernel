@@ -9,9 +9,9 @@ using Agent = Azure.AI.Projects.Agent;
 namespace GettingStarted.AzureAgents;
 
 /// <summary>
-/// Demonstrate using code-interpreter on <see cref="AzureAIAgent"/> .
+/// Demonstrate using <see cref="AzureAIAgent"/> with file search.
 /// </summary>
-public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
     public async Task UseFileSearchToolWithAgentAsync()
@@ -19,14 +19,12 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgen
         // Define the agent
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
 
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        AgentFile fileInfo = await client.UploadFileAsync(stream, AgentFilePurpose.Agents, "employees.pdf");
+        AgentFile fileInfo = await this.AgentsClient.UploadFileAsync(stream, AgentFilePurpose.Agents, "employees.pdf");
         VectorStore fileStore =
-            await client.CreateVectorStoreAsync(
+            await this.AgentsClient.CreateVectorStoreAsync(
                 [fileInfo.Id],
-                metadata: new Dictionary<string, string>() { { AssistantSampleMetadataKey, bool.TrueString } });
-        Agent agentModel = await client.CreateAgentAsync(
+                metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
+        Agent agentModel = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new FileSearchToolDefinition()],
             toolResources: new()
@@ -36,11 +34,11 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgen
                     VectorStoreIds = { fileStore.Id },
                 }
             },
-            metadata: new Dictionary<string, string>() { { AssistantSampleMetadataKey, bool.TrueString } });
-        AzureAIAgent agent = new(agentModel, clientProvider);
+            metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
+        AzureAIAgent agent = new(agentModel, this.AgentsClient);
 
         // Create a thread associated for the agent conversation.
-        AgentThread thread = await client.CreateThreadAsync(metadata: AssistantSampleMetadata);
+        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -51,10 +49,10 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAgen
         }
         finally
         {
-            await client.DeleteThreadAsync(thread.Id);
-            await client.DeleteAgentAsync(agent.Id);
-            await client.DeleteVectorStoreAsync(fileStore.Id);
-            await client.DeleteFileAsync(fileInfo.Id);
+            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.AgentsClient.DeleteVectorStoreAsync(fileStore.Id);
+            await this.AgentsClient.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

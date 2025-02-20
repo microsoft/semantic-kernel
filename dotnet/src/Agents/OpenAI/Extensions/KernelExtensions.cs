@@ -14,23 +14,6 @@ internal static class KernelExtensions
     private const string ApiKey = "api_key";
 
     /// <summary>
-    /// Retrieve a kernel function based on the tool name.
-    /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="functionName"></param>
-    /// <param name="delimiter"></param>
-    /// <exception cref="KernelException"></exception>
-    public static KernelFunction GetKernelFunction(this Kernel kernel, string functionName, char delimiter)
-    {
-        string[] nameParts = functionName.Split(delimiter);
-        return nameParts.Length switch
-        {
-            2 => kernel.Plugins.GetFunction(nameParts[0], nameParts[1]),
-            _ => throw new KernelException($"Agent Failure - Unknown tool: {functionName}"),
-        };
-    }
-
-    /// <summary>
     /// Return the <see cref="OpenAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="OpenAIClientProvider"/>.</param>
