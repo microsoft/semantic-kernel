@@ -15,6 +15,8 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
     where TKey : notnull
 {
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
     private readonly SqlConnection _sqlConnection;
     private readonly SqlServerVectorStoreOptions _options;
     private readonly VectorStoreRecordPropertyReader _propertyReader;
@@ -195,7 +197,53 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
 
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(vector);
+
+        if (vector is not ReadOnlyMemory<float> allowed)
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vector.GetType().FullName} is not supported by the SQL Server connector. " +
+                $"Supported types are: {string.Join(", ", SqlServerVectorStore.s_supportedVectorTypes.Select(l => l.FullName))}");
+        }
+
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
+
+        var results = this.ReadVectorSearchResultsAsync(allowed, vectorProperty, searchOptions, cancellationToken);
+        return Task.FromResult(new VectorSearchResults<TRecord>(results));
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(
+        ReadOnlyMemory<float> vector,
+        VectorStoreRecordVectorProperty vectorProperty,
+        VectorSearchOptions<TRecord> searchOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await this.EnsureConnectionIsOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+            this._sqlConnection,
+            this._options.Schema,
+            this.CollectionName,
+            vectorProperty,
+            this._propertyReader.Properties,
+            searchOptions,
+            vector);
+
+        using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        int scoreIndex = -1;
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            if (scoreIndex < 0)
+            {
+                scoreIndex = reader.GetOrdinal("score");
+            }
+
+            yield return new VectorSearchResult<TRecord>(
+                Map(reader, this._propertyReader),
+                reader.GetDouble(scoreIndex));
+        }
     }
 
     private Task EnsureConnectionIsOpenedAsync(CancellationToken cancellationToken)

@@ -499,6 +499,34 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <see cref="VectorProperty"/> if not.
+    /// </summary>
+    /// <param name="vectorFieldName">The vector field name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name or when no vector property was defined.</exception>
+    public VectorStoreRecordVectorProperty GetVectorPropertyForSearch(string? vectorFieldName)
+    {
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorFieldName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this.VectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{vectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this.VectorProperty
+            ?? throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible."); ;
+    }
+
+    /// <summary>
     /// Create a <see cref="VectorStoreRecordDefinition"/> by reading the attributes on the provided <see cref="PropertyInfo"/> objects.
     /// </summary>
     /// <param name="propertiesInfo"><see cref="PropertyInfo"/> objects to build a <see cref="VectorStoreRecordDefinition"/> from.</param>

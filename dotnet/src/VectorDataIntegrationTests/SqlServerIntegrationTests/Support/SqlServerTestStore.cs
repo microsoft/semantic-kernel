@@ -14,6 +14,8 @@ public sealed class SqlServerTestStore : TestStore
     public override IVectorStore DefaultVectorStore
         => this._connectedStore ?? throw new InvalidOperationException("Not initialized");
 
+    public override string DefaultDistanceFunction => DistanceFunction.CosineDistance;
+
     private SqlServerVectorStore? _connectedStore;
 
     protected override async Task StartAsync()

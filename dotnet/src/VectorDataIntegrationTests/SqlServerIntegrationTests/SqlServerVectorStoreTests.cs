@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.VectorData;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
 using Xunit;
 
@@ -168,7 +170,7 @@ public class SqlServerVectorStoreTests
     public sealed class TestModel
     {
         [VectorStoreRecordKey(StoragePropertyName = "key")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "text")]
         public string? Text { get; set; }
@@ -214,7 +216,7 @@ public class SqlServerVectorStoreTests
                 ListOfStrings = ["d", "e", "f"]
             };
             TKey key = await collection.UpsertAsync(inserted);
-            Assert.NotEqual(default(TKey), key); // key should be assigned by the DB (auto-increment)
+            Assert.NotEqual(default, key); // key should be assigned by the DB (auto-increment)
 
             FancyTestModel<TKey>? received = await collection.GetAsync(key);
             AssertEquality(inserted, received, key);
@@ -257,10 +259,10 @@ public class SqlServerVectorStoreTests
         }
     }
 
-    public sealed class FancyTestModel<TKey> where TKey : notnull
+    public sealed class FancyTestModel<TKey>
     {
         [VectorStoreRecordKey(StoragePropertyName = "key", AutoGenerate = true)]
-        public TKey Id { get; set; }
+        public TKey? Id { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "byte")]
         public byte Number8 { get; set; }
@@ -275,10 +277,12 @@ public class SqlServerVectorStoreTests
         public long Number64 { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "bytes")]
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[]? Bytes { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "array_of_strings")]
         public string[]? ArrayOfStrings { get; set; }
+#pragma warning restore CA1819 // Properties should not return arrays
 
         [VectorStoreRecordData(StoragePropertyName = "list_of_strings")]
         public List<string>? ListOfStrings { get; set; }

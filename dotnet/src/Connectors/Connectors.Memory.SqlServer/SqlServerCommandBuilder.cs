@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 
@@ -296,6 +298,45 @@ internal static class SqlServerCommandBuilder
         sb.AppendFormat("WHERE [{0}] IN (", GetColumnName(keyProperty));
         sb.AppendKeyParameterList(keys, command, keyProperty);
         sb.Append(')'); // close the IN clause
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
+    internal static SqlCommand SelectVector<TRecord>(
+        SqlConnection connection, string schema, string tableName,
+        VectorStoreRecordVectorProperty vectorProperty,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
+        VectorSearchOptions<TRecord> options,
+        ReadOnlyMemory<float> vector)
+    {
+        string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
+        // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
+        string distanceMetric = distanceFunction switch
+        {
+            DistanceFunction.CosineDistance => "cosine",
+            DistanceFunction.EuclideanDistance => "euclidean",
+            DistanceFunction.DotProductSimilarity => "dot",
+            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
+        };
+
+        SqlCommand command = connection.CreateCommand();
+        command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(vector));
+
+        StringBuilder sb = new(200);
+        sb.AppendFormat("SELECT ");
+        sb.AppendColumnNames(properties);
+        sb.AppendLine(",");
+        sb.AppendFormat("1 - VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
+            distanceMetric, GetColumnName(vectorProperty), vector.Length);
+        sb.AppendLine();
+        sb.Append("FROM ");
+        sb.AppendTableName(schema, tableName);
+        sb.AppendLine();
+        sb.AppendLine("ORDER BY [score] DESC");
+        // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.
+        // 0 is a legal value for OFFSET.
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, options.Top);
 
         command.CommandText = sb.ToString();
         return command;

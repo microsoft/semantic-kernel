@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
