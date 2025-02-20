@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
@@ -10,8 +11,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -253,6 +256,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             IChatCompletionService chatCompletion => await this.GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             ITextGenerationService textGeneration => await this.GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
+            IChatClient chatClient => await this.GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
     }
@@ -450,13 +454,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
 
     /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<int>(
+    private static readonly Histogram<long> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<long>(
         name: "semantic_kernel.function.invocation.token_usage.prompt",
         unit: "{token}",
         description: "Measures the prompt token usage");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<int>(
+    private static readonly Histogram<long> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<long>(
         name: "semantic_kernel.function.invocation.token_usage.completion",
         unit: "{token}",
         description: "Measures the completion token usage");
@@ -496,6 +500,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
             // throwing if it's not available.
             (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+        }
+
+        if (aiService is null)
+        {
+            serviceSelector.TrySelectAIService<IChatClient>(kernel, this, arguments, out IChatClient? chatClient, out PromptExecutionSettings options);
+            if (chatClient is not null)
+            {
+                aiService = new AIServiceChatClient(chatClient);
+            }
         }
 
         Verify.NotNull(aiService);
@@ -615,6 +628,46 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    private void CaptureUsageDetails(string? modelId, UsageDetails? usageDetails, ILogger logger)
+    {
+        if (!logger.IsEnabled(LogLevel.Information) &&
+            !s_invocationTokenUsageCompletion.Enabled &&
+            !s_invocationTokenUsagePrompt.Enabled)
+        {
+            // Bail early to avoid unnecessary work.
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            logger.LogInformation("No model ID provided to capture usage details.");
+            return;
+        }
+
+        if (usageDetails is null)
+        {
+            logger.LogInformation("No usage details was provided.");
+            return;
+        }
+
+        if (usageDetails.InputTokenCount.HasValue && usageDetails.OutputTokenCount.HasValue)
+        {
+            TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
+            s_invocationTokenUsagePrompt.Record(usageDetails.InputTokenCount.Value, in tags);
+            s_invocationTokenUsageCompletion.Record(usageDetails.OutputTokenCount.Value, in tags);
+        }
+        else
+        {
+            logger.LogWarning("Unable to get token details from model result.");
+        }
+    }
+
     private async Task<FunctionResult> GetChatCompletionResultAsync(
         IChatCompletionService chatCompletion,
         Kernel kernel,
@@ -644,6 +697,48 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         // Otherwise, return multiple results
         return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+    }
+
+    private async Task<FunctionResult> GetChatClientResultAsync(
+       IChatClient chatClient,
+       Kernel kernel,
+       PromptRenderingResult promptRenderingResult,
+       CancellationToken cancellationToken)
+    {
+        var chatContents = await chatClient.GetResponseAsync(
+            promptRenderingResult.RenderedPrompt,
+            promptRenderingResult.ExecutionSettings,
+            kernel,
+            cancellationToken).ConfigureAwait(false);
+
+        if (chatContents.Choices is { Count: 0 })
+        {
+            return new FunctionResult(this, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+        }
+
+        var modelId = chatClient.GetService<ChatClientMetadata>()?.ModelId;
+
+        // Usage details are global and duplicated for each chat message content, use first one to get usage information
+        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.ModelId, chatContents.Usage, this._logger);
+
+        // If collection has one element, return single result
+        if (chatContents.Choices.Count == 1)
+        {
+            return new FunctionResult(this, chatContents.Message)
+            {
+                Culture = kernel.Culture,
+                Metadata = chatContents.Message.AdditionalProperties,
+                RenderedPrompt = promptRenderingResult.RenderedPrompt
+            };
+        }
+
+        // Otherwise, return multiple results
+        return new FunctionResult(this, chatContents.Choices)
+        {
+            Culture = kernel.Culture,
+            RenderedPrompt = promptRenderingResult.RenderedPrompt,
+            Metadata = chatContents.AdditionalProperties,
+        };
     }
 
     private async Task<FunctionResult> GetTextGenerationResultAsync(

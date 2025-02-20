@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.AI.ChatClient;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -40,12 +41,12 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
-        return new(ChatCompletionServiceExtensions.ToChatMessage(response))
+        return new(response.ToChatMessage())
         {
             ModelId = response.ModelId,
             RawRepresentation = response.InnerContent,
@@ -58,7 +59,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))

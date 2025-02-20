@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Services;
 
@@ -15,8 +16,8 @@ public interface IAIServiceSelector
     /// <see cref="Kernel"/> based on a <see cref="KernelFunction"/> and associated <see cref="KernelArguments"/>.
     /// </summary>
     /// <typeparam name="T">
-    /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
-    /// with which the service was registered in the <see cref="IServiceCollection"/> orvia
+    /// Specifies the type of the <see cref="IAIService"/> or <see cref="IChatClient"/> required. This must be the same type
+    /// with which the service was registered in the <see cref="IServiceCollection"/> or via
     /// the <see cref="IKernelBuilder"/>.
     /// </typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -31,6 +32,6 @@ public interface IAIServiceSelector
         KernelFunction function,
         KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
-        out PromptExecutionSettings? serviceSettings) where T : class, IAIService;
+        out PromptExecutionSettings? serviceSettings) where T : class;
 #pragma warning restore CA1716
 }

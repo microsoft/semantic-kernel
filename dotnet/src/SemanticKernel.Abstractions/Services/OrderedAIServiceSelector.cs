@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel.Services;
@@ -19,7 +20,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     public bool TrySelectAIService<T>(
         Kernel kernel, KernelFunction function, KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
-        out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+        out PromptExecutionSettings? serviceSettings) where T : class
     {
         // Allow the execution settings from the kernel arguments to take precedence
         var executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
@@ -94,11 +95,21 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 kernel.Services.GetService<T>();
     }
 
-    private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
+    private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class
     {
+        // If T is IAIService, delegate to the existing implementation.
         foreach (var service in kernel.GetAllServices<T>())
         {
-            string? serviceModelId = service.GetModelId();
+            string? serviceModelId = null;
+            if (typeof(IAIService).IsAssignableFrom(typeof(T)))
+            {
+                serviceModelId = ((IAIService)service).GetModelId();
+            }
+            else if (typeof(IChatClient).IsAssignableFrom(typeof(T)))
+            {
+                serviceModelId = ((IChatClient)service).GetService<ChatClientMetadata>()?.ModelId;
+            }
+
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
             {
                 return service;

@@ -25,7 +25,7 @@ public class ServiceConversionExtensionsTests
         Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGenerationExtensions.AsEmbeddingGenerationService<string, float>(null!));
 
         Assert.Throws<ArgumentNullException>("service", () => ChatCompletionServiceExtensions.AsChatClient(null!));
-        Assert.Throws<ArgumentNullException>("client", () => ChatCompletionServiceExtensions.AsChatCompletionService(null!));
+        Assert.Throws<ArgumentNullException>("client", () => Microsoft.SemanticKernel.ChatCompletion.ChatClientExtensions.AsChatCompletionService(null!));
     }
 
     [Fact]
