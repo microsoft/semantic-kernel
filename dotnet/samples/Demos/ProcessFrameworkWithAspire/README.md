@@ -41,5 +41,5 @@ By invoking the `ProcessOrchestrator` service, the process can be started. A pre
 This will generate a trace in the Aspire dashboard that looks like this:
 ![Aspire Trace](./docs/aspire-traces.png)
 
-And we can also monitor the metrics of each agents in the Metrics tab:
+Additionally, the metrics for each agent can be monitored in the Metrics tab:
 ![Aspire Metrics](./docs/aspire-metrics.png)
