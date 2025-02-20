@@ -1,7 +1,6 @@
 [run]
 source = semantic_kernel
 omit = 
-    semantic_kernel/agents/autogen/autogen_conversable_channel.py
     semantic_kernel/connectors/memory/astradb/*
     semantic_kernel/connectors/memory/azure_cognitive_search/*
     semantic_kernel/connectors/memory/azure_cosmosdb/*

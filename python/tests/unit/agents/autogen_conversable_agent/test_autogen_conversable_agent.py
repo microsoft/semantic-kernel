@@ -27,18 +27,6 @@ async def test_autogen_conversable_agent_initialization(mock_conversable_agent):
     assert agent.conversable_agent == mock_conversable_agent
 
 
-def test_autogen_conversable_agent_get_channel_keys(mock_conversable_agent):
-    agent = AutoGenConversableAgent(mock_conversable_agent)
-    with pytest.raises(NotImplementedError):
-        agent.get_channel_keys()
-
-
-async def test_autogen_conversable_agent_create_channel_raises_not_implemented(mock_conversable_agent):
-    agent = AutoGenConversableAgent(mock_conversable_agent)
-    with pytest.raises(NotImplementedError):
-        await agent.create_channel()
-
-
 async def test_autogen_conversable_agent_invoke_with_recipient(mock_conversable_agent):
     mock_conversable_agent.a_initiate_chat = AsyncMock()
     mock_conversable_agent.a_initiate_chat.return_value = MagicMock(
@@ -48,7 +36,8 @@ async def test_autogen_conversable_agent_invoke_with_recipient(mock_conversable_
         ]
     )
     agent = AutoGenConversableAgent(mock_conversable_agent)
-    recipient_agent = MagicMock(spec=ConversableAgent)
+    recipient_agent = MagicMock(spec=AutoGenConversableAgent)
+    recipient_agent.conversable_agent = MagicMock(spec=ConversableAgent)
 
     messages = []
     async for msg in agent.invoke(recipient=recipient_agent, message="Test message", arg1="arg1"):
@@ -103,4 +92,15 @@ async def test_autogen_conversable_agent_invoke_without_recipient_unexpected_typ
 
     with pytest.raises(AgentInvokeException):
         async for _ in agent.invoke(message="Hello"):
+            pass
+
+
+async def test_autogen_conversable_agent_invoke_with_invalid_recipient_type(mock_conversable_agent):
+    mock_conversable_agent.a_generate_reply = AsyncMock(return_value=12345)
+    agent = AutoGenConversableAgent(mock_conversable_agent)
+
+    recepient = MagicMock()
+
+    with pytest.raises(AgentInvokeException):
+        async for _ in agent.invoke(recipient=recepient, message="Hello"):
             pass

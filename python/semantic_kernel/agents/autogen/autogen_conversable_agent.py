@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable, Callable, Iterable
+from collections.abc import AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any
 
 from autogen import ConversableAgent
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -19,7 +18,6 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 if TYPE_CHECKING:
     from autogen.cache import AbstractCache
 
-    from semantic_kernel.agents.channels.agent_channel import AgentChannel
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -28,7 +26,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AutoGenConversableAgent(Agent):
     """A wrapper around an AutoGen 0.2 `ConversableAgent`.
 
-    This allows one to use it as a Semantic Kernel `Agent`.
+    This allows one to use it as a Semantic Kernel `Agent`. Note: this agent abstraction
+    does not currently allow for the use of AgentGroupChat within Semantic Kernel.
     """
 
     conversable_agent: ConversableAgent
@@ -52,18 +51,10 @@ class AutoGenConversableAgent(Agent):
 
         super().__init__(**args)
 
-    def get_channel_keys(self) -> Iterable[str]:
-        """Distinguish from other channels and incorporate the agent's identity."""
-        raise NotImplementedError("AutoGenConversableAgent does not currently support group chat.")
-
-    async def create_channel(self) -> "AgentChannel":
-        """Create an AutoGenChannel that uses the wrapped conversable_agent."""
-        raise NotImplementedError("AutoGenConversableAgent does not currently support group chat.")
-
     async def invoke(
         self,
         *,
-        recipient: "ConversableAgent | None" = None,
+        recipient: "AutoGenConversableAgent | None" = None,
         clear_history: bool = True,
         silent: bool = True,
         cache: "AbstractCache | None" = None,
@@ -71,8 +62,6 @@ class AutoGenConversableAgent(Agent):
         summary_method: str | Callable | None = ConversableAgent.DEFAULT_SUMMARY_METHOD,
         summary_args: dict | None = {},
         message: dict | str | Callable | None = None,
-        kernel: "Kernel | None" = None,
-        arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """A direct `invoke` method for the ConversableAgent.
@@ -87,21 +76,17 @@ class AutoGenConversableAgent(Agent):
             summary_args: The arguments to pass to the summary method
             message: The initial message to send. If message is not provided,
                 the agent will wait for the user to provide the first message.
-            kernel: The kernel to use for chat
-            arguments: The arguments to pass to the kernel
             kwargs: Additional keyword arguments
         """
-        if arguments is None:
-            arguments = KernelArguments(**kwargs)
-        else:
-            arguments.update(kwargs)
-
-        kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
-
         if recipient is not None:
+            if not isinstance(recipient, AutoGenConversableAgent):
+                raise AgentInvokeException(
+                    f"Invalid recipient type: {type(recipient)}. "
+                    "Recipient must be an instance of AutoGenConversableAgent."
+                )
+
             chat_result = await self.conversable_agent.a_initiate_chat(
-                recipient=recipient,
+                recipient=recipient.conversable_agent,
                 clear_history=clear_history,
                 silent=silent,
                 cache=cache,
@@ -109,15 +94,13 @@ class AutoGenConversableAgent(Agent):
                 summary_method=summary_method,
                 summary_args=summary_args,
                 message=message,  # type: ignore
-                kernel=kernel,
-                arguments=arguments,
                 **kwargs,
             )
 
             logger.info(f"Called AutoGenConversableAgent.a_initiate_chat with recipient: {recipient}")
 
             for message in chat_result.chat_history:
-                yield self._to_chat_message_content(message)  # type: ignore
+                yield AutoGenConversableAgent._to_chat_message_content(message)  # type: ignore
         else:
             reply = await self.conversable_agent.a_generate_reply(
                 messages=[{"role": "user", "content": message}],
@@ -142,18 +125,11 @@ class AutoGenConversableAgent(Agent):
         """Invoke the agent with a stream of messages."""
         raise NotImplementedError("The AutoGenConversableAgent does not support streaming.")
 
-    def _to_chat_message_content(self, message: dict[str, Any]) -> ChatMessageContent:
+    @staticmethod
+    def _to_chat_message_content(message: dict[str, Any]) -> ChatMessageContent:
         """Translate an AutoGen message to a Semantic Kernel ChatMessageContent."""
         items: list[TextContent | FunctionCallContent | FunctionResultContent] = []
-        role = AuthorRole.ASSISTANT
-        match message.get("role"):
-            case "user":
-                role = AuthorRole.USER
-            case "assistant":
-                role = AuthorRole.ASSISTANT
-            case "tool":
-                role = AuthorRole.TOOL
-
+        role = AuthorRole(message.get("role"))
         name: str = message.get("name", "")
 
         content = message.get("content")

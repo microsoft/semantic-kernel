@@ -43,8 +43,15 @@ async def main():
         system_message="You are a helpful AI assistant. "
         "You can help with simple calculations. "
         "Return 'TERMINATE' when the task is done.",
-        llm_config={"config_list": [{"model": "gpt-4", "api_key": os.environ["OPENAI_API_KEY"]}]},
+        # Note: the model "gpt-4o" leads to a "division by zero" error that doesn't occur with "gpt-4o-mini"
+        # or even "gpt-4".
+        llm_config={
+            "config_list": [{"model": os.environ["OPENAI_CHAT_MODEL_ID"], "api_key": os.environ["OPENAI_API_KEY"]}]
+        },
     )
+
+    # Create a Semantic Kernel AutoGenConversableAgent based on the AutoGen ConversableAgent.
+    assistant_agent = AutoGenConversableAgent(conversable_agent=assistant)
 
     user_proxy = ConversableAgent(
         name="User",
@@ -66,10 +73,11 @@ async def main():
         description="A simple calculator",  # A description of the tool.
     )
 
-    autogen_conversable_agent = AutoGenConversableAgent(conversable_agent=user_proxy)
+    # Create a Semantic Kernel AutoGenConversableAgent based on the AutoGen ConversableAgent.
+    user_proxy_agent = AutoGenConversableAgent(conversable_agent=user_proxy)
 
-    async for content in autogen_conversable_agent.invoke(
-        recipient=assistant,
+    async for content in user_proxy_agent.invoke(
+        recipient=assistant_agent,
         message="What is (44232 + 13312 / (232 - 32)) * 5?",
         max_turns=10,
     ):
