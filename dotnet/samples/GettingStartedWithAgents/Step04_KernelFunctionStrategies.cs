@@ -70,11 +70,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 Determine which participant takes the next turn in a conversation based on the the most recent participant.
                 State only the name of the participant to take the next turn.
                 No participant should take more than one turn in a row.
-                
+
                 Choose only from these participants:
                 - {{{ReviewerName}}}
                 - {{{CopyWriterName}}}
-                
+
                 Always follow these rules when selecting the next participant:
                 - After {{{CopyWriterName}}}, it is {{{ReviewerName}}}'s turn.
                 - After {{{ReviewerName}}}, it is {{{CopyWriterName}}}'s turn.
@@ -133,9 +133,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         chat.AddChatMessage(message);
         this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent responese in chat.InvokeAsync())
+        await foreach (ChatMessageContent response in chat.InvokeAsync())
         {
-            this.WriteAgentChatMessage(responese);
+            this.WriteAgentChatMessage(response);
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");

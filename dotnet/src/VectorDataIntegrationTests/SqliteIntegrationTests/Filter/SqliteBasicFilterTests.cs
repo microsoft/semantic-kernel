@@ -1,12 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
+using SqliteIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
+using VectorDataSpecificationTests.Support;
 using Xunit;
 using Xunit.Sdk;
 
 namespace SqliteIntegrationTests.Filter;
 
-public class SqliteBasicFilterTests(SqliteFilterFixture fixture) : BasicFilterTestsBase<ulong>(fixture), IClassFixture<SqliteFilterFixture>
+public class SqliteBasicFilterTests(SqliteBasicFilterTests.Fixture fixture)
+    : BasicFilterTests<ulong>(fixture), IClassFixture<SqliteBasicFilterTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -42,4 +46,18 @@ public class SqliteBasicFilterTests(SqliteFilterFixture fixture) : BasicFilterTe
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
+
+    public new class Fixture : BasicFilterTests<ulong>.Fixture
+    {
+        public override TestStore TestStore => SqliteTestStore.Instance;
+
+        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
+
+        // Override to remove the string array property, which isn't (currently) supported on SQLite
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()
+            };
+    }
 }

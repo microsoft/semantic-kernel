@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// Interface for constructing <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> MongoDB instances when using <see cref="IVectorStore"/> to retrieve these.
 /// </summary>
+[Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
 public interface IMongoDBVectorStoreRecordCollectionFactory
 {
     /// <summary>
