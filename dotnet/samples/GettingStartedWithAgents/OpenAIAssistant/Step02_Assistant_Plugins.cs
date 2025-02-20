@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using Plugins;
 
 namespace GettingStarted.OpenAIAssistants;
@@ -10,7 +11,7 @@ namespace GettingStarted.OpenAIAssistants;
 /// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
     public async Task UseAssistantWithPluginAsync()
@@ -22,7 +23,7 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAgentsTest
                 name: "Host");
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -34,8 +35,8 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAgentsTest
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 
@@ -46,7 +47,7 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAgentsTest
         OpenAIAssistantAgent agent = await CreateAssistantAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
 
         // Create a thread for the agent conversation.
-        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
+        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -55,27 +56,23 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAgentsTest
         }
         finally
         {
-            await agent.DeleteThreadAsync(threadId);
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 
     private async Task<OpenAIAssistantAgent> CreateAssistantAgentAsync(KernelPlugin plugin, string? instructions = null, string? name = null)
     {
-        // Create the agent
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                clientProvider: this.GetClientProvider(),
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    Instructions = instructions,
-                    Name = name,
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name,
+                instructions: instructions,
+                metadata: SampleMetadata);
 
-        // Add to the agent's Kernel
-        agent.Kernel.Plugins.Add(plugin);
+        // Create the agent
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin]);
 
         return agent;
     }

@@ -87,7 +87,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
         ChatHistoryChannel channel =
             new()
             {
-                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+                Logger = this.ActiveLoggerFactory.CreateLogger<ChatHistoryChannel>()
             };
 
         return Task.FromResult<AgentChannel>(channel);

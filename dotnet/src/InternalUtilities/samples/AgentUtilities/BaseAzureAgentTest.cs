@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Azure.AI.Projects;
+using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -13,15 +16,16 @@ using OpenAI.Files;
 using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 
 /// <summary>
-/// Base class for samples that demonstrate the usage of host agents
-/// based on API's such as Open AI Assistants or Azure AI Agents.
+/// Base class for samples that demonstrate the usage of agents.
 /// </summary>
-public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAgentsTest(output)
+public abstract class BaseAzureTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     /// <summary>
     /// Metadata key to indicate the assistant as created for a sample.
     /// </summary>
-    protected const string SampleMetadataKey = "sksample";
+    protected const string AssistantSampleMetadataKey = "sksample";
+
+    protected override bool ForceOpenAI => false;
 
     /// <summary>
     /// Metadata to indicate the object was created for a sample.
@@ -34,20 +38,30 @@ public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAg
     protected static readonly ReadOnlyDictionary<string, string> SampleMetadata =
         new(new Dictionary<string, string>
         {
-            { SampleMetadataKey, bool.TrueString }
+            { AssistantSampleMetadataKey, bool.TrueString }
         });
 
     /// <summary>
-    /// Gets the root client for the service.
+    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
     /// </summary>
-    protected abstract TClient Client { get; }
-}
+    protected AzureAIClientProvider GetAzureProvider()
+    {
+        return AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+    }
 
-/// <summary>
-/// Base class for samples that demonstrate the usage of agents.
-/// </summary>
-public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
-{
+    /// <summary>
+    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
+    /// </summary>
+    protected OpenAIClientProvider GetClientProvider()
+    {
+        return
+            this.UseOpenAIConfig ?
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+                !string.IsNullOrWhiteSpace(this.ApiKey) ?
+                    OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+                    OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
+    }
+
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
