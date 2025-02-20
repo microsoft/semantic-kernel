@@ -12,7 +12,10 @@ from openai.types.beta.threads.message import Message
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.run_create_params import AdditionalMessage, AdditionalMessageAttachment
 from openai.types.beta.threads.runs import (
+    MessageCreationStepDetails,
     RunStep,
+    RunStepDeltaEvent,
+    ToolCallDeltaObject,
     ToolCallsStepDetails,
 )
 
@@ -21,11 +24,16 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_call_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_code_interpreter_content,
+    generate_streaming_function_content,
+    generate_streaming_message_content,
     get_function_call_contents,
     get_message_contents,
 )
+from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
+    merge_function_results,
 )
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -324,6 +332,214 @@ class AssistantThreadActions:
                             )
                             yield True, content
                 processed_step_ids.add(completed_step.id)
+
+    @classmethod
+    async def invoke_stream(
+        cls: type[_T],
+        *,
+        agent: "OpenAIAssistantAgent",
+        thread_id: str,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: "list[ChatMessageContent] | None" = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        messages: list["ChatMessageContent"] | None = None,
+        metadata: dict[str, str] | None = None,
+        model: str | None = None,
+        parallel_tool_calls: bool | None = None,
+        reasoning_effort: Literal["low", "medium", "high"] | None = None,
+        response_format: "AssistantResponseFormatOptionParam | None" = None,
+        tools: "list[AssistantToolParam] | None" = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        truncation_strategy: "TruncationStrategy | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Invoke the assistant.
+
+        Args:
+            agent: The assistant agent.
+            thread_id: The thread ID.
+            arguments: The kernel arguments.
+            kernel: The kernel.
+            instructions_override: The instructions override.
+            additional_instructions: The additional instructions.
+            additional_messages: The additional messages.
+            max_completion_tokens: The maximum completion tokens.
+            max_prompt_tokens: The maximum prompt tokens.
+            messages: The messages that act as a receiver for completed messages.
+            metadata: The metadata.
+            model: The model.
+            parallel_tool_calls: The parallel tool calls.
+            reasoning_effort: The reasoning effort.
+            response_format: The response format.
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            truncation_strategy: The truncation strategy.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of tuple of the visibility of the message and the chat message content.
+        """
+        arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
+        kernel = kernel or agent.kernel
+
+        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+
+        base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
+
+        merged_instructions: str = ""
+        if instructions_override is not None:
+            merged_instructions = instructions_override
+        elif base_instructions and additional_instructions:
+            merged_instructions = f"{base_instructions}\n\n{additional_instructions}"
+        else:
+            merged_instructions = base_instructions or additional_instructions or ""
+
+        # form run options
+        run_options = cls._generate_options(
+            agent=agent,
+            model=model,
+            response_format=response_format,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            parallel_tool_calls_enabled=parallel_tool_calls,
+            truncation_message_count=truncation_strategy,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            additional_messages=additional_messages,
+            reasoning_effort=reasoning_effort,
+        )
+
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
+        stream = agent.client.beta.threads.runs.stream(
+            assistant_id=agent.id,
+            thread_id=thread_id,
+            instructions=merged_instructions or agent.instructions,
+            tools=tools,  # type: ignore
+            **run_options,
+        )
+
+        function_steps: dict[str, "FunctionCallContent"] = {}
+        active_messages: dict[str, RunStep] = {}
+
+        while True:
+            async with stream as response_stream:
+                async for event in response_stream:
+                    if event.event == "thread.run.created":
+                        run = event.data
+                        logger.info(f"Assistant run created with ID: {run.id}")
+                    elif event.event == "thread.run.in_progress":
+                        run = event.data
+                        logger.info(f"Assistant run in progress with ID: {run.id}")
+                    elif event.event == "thread.message.delta":
+                        content = generate_streaming_message_content(agent.name, event.data)
+                        yield content
+                    elif event.event == "thread.run.step.completed":
+                        step_completed = cast(RunStep, event.data)
+                        logger.info(f"Run step completed with ID: {event.data.id}")
+                        if isinstance(step_completed.step_details, MessageCreationStepDetails):
+                            message_id = step_completed.step_details.message_creation.message_id
+                            if message_id not in active_messages:
+                                active_messages[message_id] = event.data
+                    elif event.event == "thread.run.step.delta":
+                        run_step_event: RunStepDeltaEvent = event.data
+                        details = run_step_event.delta.step_details
+                        if not details:
+                            continue
+                        step_details = event.data.delta.step_details
+                        if isinstance(details, ToolCallDeltaObject) and details.tool_calls:
+                            for tool_call in details.tool_calls:
+                                tool_content = None
+                                if tool_call.type == "function":
+                                    tool_content = generate_streaming_function_content(agent.name, step_details)
+                                elif tool_call.type == "code_interpreter":
+                                    tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
+                                if tool_content:
+                                    yield tool_content
+                    elif event.event == "thread.run.requires_action":
+                        run = event.data
+                        function_action_result = await cls._handle_streaming_requires_action(
+                            agent.name, kernel, run, function_steps
+                        )
+                        if function_action_result is None:
+                            raise AgentInvokeException(
+                                f"Function call required but no function steps found for agent `{agent.name}` "
+                                f"thread: {thread_id}."
+                            )
+                        if function_action_result.function_result_content:
+                            # Yield the function result content to the caller
+                            yield function_action_result.function_result_content
+                            if messages is not None:
+                                # Add the function result content to the messages list, if it exists
+                                messages.append(function_action_result.function_result_content)
+                        if function_action_result.function_call_content:
+                            if messages is not None:
+                                messages.append(function_action_result.function_call_content)
+                            stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
+                                run_id=run.id,
+                                thread_id=thread_id,
+                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
+                            )
+                            break
+                    elif event.event == "thread.run.completed":
+                        run = event.data
+                        logger.info(f"Run completed with ID: {run.id}")
+                        if len(active_messages) > 0:
+                            for id in active_messages:
+                                step: RunStep = active_messages[id]
+                                message = await cls._retrieve_message(
+                                    agent=agent,
+                                    thread_id=thread_id,
+                                    message_id=id,  # type: ignore
+                                )
+
+                                if message and message.content:
+                                    content = generate_message_content(agent.name, message, step)
+                                    if messages is not None:
+                                        messages.append(content)
+                        return
+                    elif event.event == "thread.run.failed":
+                        run = event.data  # type: ignore
+                        error_message = ""
+                        if run.last_error and run.last_error.message:
+                            error_message = run.last_error.message
+                        raise AgentInvokeException(
+                            f"Run failed with status: `{run.status}` for agent `{agent.name}` and thread `{thread_id}` "
+                            f"with error: {error_message}"
+                        )
+                else:
+                    # If the inner loop completes without encountering a 'break', exit the outer loop
+                    break
+
+    @classmethod
+    async def _handle_streaming_requires_action(
+        cls: type[_T],
+        agent_name: str,
+        kernel: "Kernel",
+        run: Run,
+        function_steps: dict[str, "FunctionCallContent"],
+        **kwargs: Any,
+    ) -> FunctionActionResult | None:
+        """Handle the requires action event for a streaming run."""
+        fccs = get_function_call_contents(run, function_steps)
+        if fccs:
+            function_call_content = generate_function_call_content(agent_name=agent_name, fccs=fccs)
+            from semantic_kernel.contents.chat_history import ChatHistory
+
+            chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
+            _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
+            function_result_content = merge_function_results(chat_history.messages)[0]
+            tool_outputs = cls._format_tool_outputs(fccs, chat_history)
+            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+        return None
 
     # endregion
 

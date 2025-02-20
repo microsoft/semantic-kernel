@@ -351,4 +351,91 @@ class OpenAIAssistantAgent(Agent):
             if is_visible:
                 yield message
 
+    @trace_agent_invocation
+    async def invoke_stream(
+        self,
+        thread_id: str,
+        *,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: "list[ChatMessageContent] | None" = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        messages: "list[ChatMessageContent] | None" = None,
+        metadata: dict[str, str] | None = None,
+        model: str | None = None,
+        parallel_tool_calls: bool | None = None,
+        reasoning_effort: Literal["low", "medium", "high"] | None = None,
+        response_format: "AssistantResponseFormatOptionParam | None" = None,
+        tools: "list[AssistantToolParam] | None" = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        truncation_strategy: "TruncationStrategy | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Invoke the agent.
+
+        Args:
+            thread_id: The ID of the thread.
+            arguments: The kernel arguments.
+            kernel: The kernel.
+            instructions_override: The instructions override.
+            additional_instructions: Additional instructions.
+            additional_messages: Additional messages.
+            max_completion_tokens: The maximum completion tokens.
+            max_prompt_tokens: The maximum prompt tokens.
+            messages: The messages that act as a receiver for completed messages.
+            metadata: The metadata.
+            model: The model.
+            parallel_tool_calls: Parallel tool calls.
+            reasoning_effort: The reasoning effort.
+            response_format: The response format.
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            truncation_strategy: The truncation strategy.
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            The chat message content.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
+        run_level_params = {
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "instructions_override": instructions_override,
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "metadata": metadata,
+            "model": model,
+            "parallel_tool_calls": parallel_tool_calls,
+            "reasoning_effort": reasoning_effort,
+            "response_format": response_format,
+            "temperature": temperature,
+            "tools": tools,
+            "top_p": top_p,
+            "truncation_strategy": truncation_strategy,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
+        async for message in AssistantThreadActions.invoke_stream(
+            agent=self,
+            thread_id=thread_id,
+            kernel=kernel,
+            arguments=arguments,
+            messages=messages,
+            **run_level_params,
+        ):
+            yield message
+
     # endregion

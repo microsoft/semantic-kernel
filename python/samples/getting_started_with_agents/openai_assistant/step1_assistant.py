@@ -3,8 +3,8 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel import Kernel
-from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
-from semantic_kernel.contents import AuthorRole, ChatMessageContent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 
 #####################################################################
@@ -14,10 +14,6 @@ from semantic_kernel.functions import kernel_function
 # code interpreter. Assistant Threads are used to manage the        #
 # conversation state, similar to a Semantic Kernel Chat History.    #
 #####################################################################
-
-
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
 
 
 # Define a sample plugin for the sample
@@ -47,27 +43,32 @@ kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
 
 async def main():
-    HOST_NAME = "Host"
-    HOST_INSTRUCTIONS = "Answer questions about the menu."
-
     # Create the OpenAI Assistant Agent
-    service_id = "agent"
-    if use_azure_openai:
-        agent = await AzureAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
-    else:
-        agent = await OpenAIAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
+    client = OpenAIAssistantAgent.create_openai_client()
 
-    thread_id = await agent.create_thread()
+    # Create the assistant definition
+    definition = await client.beta.assistants.create(
+        model="gpt-4o",
+        instructions="Answer questions about the menu.",
+        name="Host",
+        tools=[{"type": "code_interpreter"}],
+    )
+
+    # Create the OpenAIAssistantAgent instance
+    agent = OpenAIAssistantAgent(
+        client=client,
+        definition=definition,
+    )
+
+    # Define a thread and invoke the agent with the user input
+    thread = await agent.client.beta.threads.create()
 
     user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "Thank you"]
     try:
         for user_input in user_inputs:
             await agent.add_chat_message(
-                thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=user_input)
+                thread_id=thread.id,
+                message=user_input,
             )
             print(f"# User: '{user_input}'")
             async for content in agent.invoke(thread_id=thread_id):
@@ -75,8 +76,8 @@ async def main():
                     print(f"# Agent: {content.content}")
 
     finally:
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+        await agent.client.beta.threads.delete(thread.id)
+        await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
 
 if __name__ == "__main__":
