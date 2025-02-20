@@ -54,10 +54,12 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// </summary>
     /// <param name="model">The agent model definition.</param>
     /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
+    /// <param name="templateConfig">The prompt template configuration.</param>
     /// <param name="templateFactory">An optional template factory.</param>
     public AzureAIAgent(
         Azure.AI.Projects.Agent model,
         AgentsClient client,
+        PromptTemplateConfig? templateConfig = null,
         IPromptTemplateFactory? templateFactory = null)
     {
         this.Client = client;
@@ -65,12 +67,12 @@ public sealed partial class AzureAIAgent : KernelAgent
         this.Description = this.Definition.Description;
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
-        this.Instructions = this.Definition.Instructions;
+        this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
 
-        if (templateFactory != null)
+        if (templateConfig is not null)
         {
-            PromptTemplateConfig templateConfig = new(this.Instructions);
-            this.Template = templateFactory.Create(templateConfig);
+            this.Template = templateFactory?.Create(templateConfig)
+                ?? throw new KernelException($"Invalid prompt template factory {templateFactory} for format {templateConfig.TemplateFormat}");
         }
     }
 
