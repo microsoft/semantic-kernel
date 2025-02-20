@@ -11,6 +11,19 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentDefinition
 {
     /// <summary>
+    /// Gets or sets the version of the schema.
+    /// </summary>
+    public string? Version
+    {
+        get => this._version;
+        set
+        {
+            Verify.NotNull(value);
+            this._version = value;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the id of the deployed agent.
     /// </summary>
     public string? Id
@@ -154,6 +167,7 @@ public sealed class AgentDefinition
     }
 
     #region
+    private string? _version;
     private string? _type;
     private string? _id;
     private string? _name;

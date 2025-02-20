@@ -20,39 +20,53 @@ Using the schema defined by this ADR developers will be able to declaratively de
 Here is some pseudo code to illustrate what we need to be able to do:
 
 ```csharp
-Kernel kernel = ...
-string agentYaml = EmbeddedResource.Read("MyAgent.yaml");
-Agent agent = kernel.CreateAgentFromYaml(agentYaml);
+Kernel kernel = Kernel
+    .CreateBuilder()
+    .AddAzureAIClientProvider(...)
+    .Build();
+var text =
+    """
+    type: azureai_agent
+    name: AzureAIAgent
+    description: AzureAIAgent Description
+    instructions: AzureAIAgent Instructions
+    model:
+      id: gpt-4o-mini
+    tools:
+        - name: tool1
+          type: code_interpreter
+    """;
 
-agent.InvokeAsync(input);
+AzureAIAgentFactory factory = new();
+var agent = await KernelAgentYaml.FromAgentYamlAsync(kernel, text, factory);
 ```
 
 The above code represents the simplest case would work as follows:
 
-1. The Agent runtime is responsible for creating a `Kernel` instance which comes fully configured with all services, functions, etc.
-2. The `CreateAgentFromYaml` will create one of the built-in Agent instances (currently just `ChatCompletionAgent`).
+1. The `Kernel` instance has the appropriate services e.g. an instance of `AzureAIClientProvider` when creating AzureAI agents.
+2. The `KernelAgentYaml.FromAgentYamlAsync` will create one of the built-in Agent instances i.e., one of `ChatCompletionAgent`, `OpenAIAssistantsAgent`, `AzureAIAgent`.
 3. The new Agent instance is initialized with it's own `Kernel` instance configured the services and tools it requires and a default initial state.
-4. The `Agent` abstraction contains a method to allow the Agent instance to be invoked with user input.
+
+Note: Consider creating just plain `Agent` instances and extending the `Agent` abstraction to contain a method which allows the Agent instance to be invoked with user input.
 
 ```csharp
 Kernel kernel = ...
-string agentYaml = EmbeddedResource.Read("MyAgent.yaml");
+string text = EmbeddedResource.Read("MyAgent.yaml");
 AgentFactory agentFactory = new AggregatorAgentFactory(
     new ChatCompletionAgentFactory(),
     new OpenAIAssistantAgentFactory(),
-    new XXXAgentFactory());
-Agent agent = kernel.CreateAgentFromYaml(agentYaml, agentFactory, agentState);
-
-agent.InvokeAsync(input);
+    new AzureAIAgentFactory());
+var agent = KernelAgentYaml.FromAgentYamlAsync(kernel, text, factory);;
 ```
 
-The above example shows how different Agent types are supported and also how the initial Agent state can be specified.
+The above example shows how different Agent types are supported.
 
 **Note:**
 
-1. Providing Agent state is not supported in the Agent Framework at present.
-2. We need to decide if the Agent Framework should define an abstraction to allow any Agent to be invoked.
-3. We will support JSON also as an out-of-the-box option.
+1. Markdown with YAML front-matter (i.e. Prompty format) will be the primary serialization format used.
+2. Providing Agent state is not supported in the Agent Framework at present.
+3. We need to decide if the Agent Framework should define an abstraction to allow any Agent to be invoked.
+4. We will support JSON also as an out-of-the-box option.
 
 Currently Semantic Kernel supports three Agent types and these have the following properties:
 
@@ -94,7 +108,7 @@ When executing an Agent that was defined declaratively some of the properties wi
 
 - `Kernel`: The runtime will be responsible for create the `Kernel` instance to be used by the Agent. This `Kernel` instance must be configured with the models and tools that the Agent requires.
 - `Logger` or `LoggerFactory`: The runtime will be responsible for providing a correctly configured `Logger` or `LoggerFactory`.
-- **Functions**: The runtime must be able to resolve any functions required by the Agent. E.g. the VSCode extension will provide a very basic runtime to allow developers to test Agents and it should eb able to resolve `KernelFunctions` defined in the current project. See later in the ADR for an example of this.
+- **Functions**: The runtime must be able to resolve any functions required by the Agent. E.g. the VSCode extension will provide a very basic runtime to allow developers to test Agents and it should be able to resolve `KernelFunctions` defined in the current project. See later in the ADR for an example of this.
 
 For Agent properties that define behaviors e.g. `HistoryReducer` the Semantic Kernel **SHOULD**:
 
@@ -217,16 +231,16 @@ ChatCompletionAgent agent =
     };
 ```
 
-Declarative using M365 or Semantic Kernel schema:
+Declarative Semantic Kernel schema:
 
 ```yml
+type: chat_completion_agent
 name: Parrot
 instructions: Repeat the user message in the voice of a pirate and then end with a parrot sound.
 ```
 
 **Note**:
 
-- Both M365 and Semantic Kernel schema would be identical
 - `ChatCompletionAgent` could be the default agent type hence no explicit `type` property is required.
 
 #### `ChatCompletionAgent` using Prompt Template
@@ -249,23 +263,17 @@ ChatCompletionAgent agent =
     };
 ```
 
-Declarative using M365 Agent schema:
-
-```yml
-name: GenerateStory
-instructions: ${file['./GenerateStory.yaml']}
-```
-
 Agent YAML points to another file, the Declarative Agent implementation in Semantic Kernel already uses this technique to load a separate instructions file.
 
 Prompt template which is used to define the instructions.
 ```yml
+---
 name: GenerateStory
-template: |
-  Tell a story about {{$topic}} that is {{$length}} sentences long.
-template_format: semantic-kernel
-description: A function that generates a story about a topic.
-input_variables:
+description: A function that generates a story about a topic.  
+template:
+  format: semantic-kernel
+  parser: semantic-kernel
+inputs:
   - name: topic
     description: The topic of the story.
     is_required: true
@@ -274,6 +282,8 @@ input_variables:
     description: The number of sentences in the story.
     is_required: true
     default: 3
+---
+Tell a story about {{$topic}} that is {{$length}} sentences long.
 ```
 
 **Note**: Semantic Kernel could load this file directly.
@@ -297,36 +307,24 @@ KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 agent.Kernel.Plugins.Add(plugin);
 ```
 
-Declarative using M365 Agent schema:
-
-```yml
-name: RestaurantHost
-instructions: Answer questions about the menu.
-description: This agent answers questions about the menu.
-actions:
-    - id: MenuPlugin
-```
-
-**Note**:
-
-- There is no way to specify `Temperature`
-- There is no way to specify the function choice behavior (e.g. could not specify required)
-- All functions in the Plugin would be used.
-
 Declarative using Semantic Kernel schema:
 
 ```yml
+---
 name: RestaurantHost
-instructions: Answer questions about the menu.
+name: RestaurantHost
 description: This agent answers questions about the menu.
-execution_settings:
-  default:
+model:
+  id: gpt-4o-mini
+  options:
     temperature: 0.4
     function_choice_behavior:
       type: auto
       functions:
         - MenuPlugin.GetSpecials
         - MenuPlugin.GetItemPrice
+---
+Answer questions about the menu.
 ```
 
 #### `OpenAIAssistantAgent` with Function Calling
@@ -349,33 +347,20 @@ KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 agent.Kernel.Plugins.Add(plugin);
 ```
 
-Declarative using M365 Agent schema:
-
-```yml
-name: RestaurantHost
-type: openai_assistant
-instructions: Answer questions about the menu.
-description: This agent answers questions about the menu.
-metadata:
-    sksample: true
-actions:
-    - id: MenuPlugin
-```
-
-**Note**: `type` and `metadata` properties need to be added somehow
-
 Declarative using Semantic Kernel schema:
 
 Using the syntax below the assistant does not have the functions included in it's definition.
 The functions must be added to the `Kernel` instance associated with the Agent and will be passed when the Agent is invoked.
 
 ```yml
+---
 name: RestaurantHost
 type: openai_assistant
-instructions: Answer questions about the menu.
 description: This agent answers questions about the menu.
-execution_settings:
-  default:
+model:
+  id: gpt-4o-mini
+  options:
+    temperature: 0.4
     function_choice_behavior:
       type: auto
       functions:
@@ -383,13 +368,16 @@ execution_settings:
         - MenuPlugin.GetItemPrice
     metadata:
       sksample: true
+---
+Answer questions about the menu.
 ``
 
-or the
+or
+
 ```yml
+---
 name: RestaurantHost
 type: openai_assistant
-instructions: Answer questions about the menu.
 description: This agent answers questions about the menu.
 execution_settings:
   default:
@@ -402,8 +390,9 @@ tools:
     name: MenuPlugin-GetItemPrice
     description: Provides the price of the requested menu item.
     parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
+---
+Answer questions about the menu.
 ```
-
 
 **Note**: The `Kernel` instance used to create the Agent must have an instance of `OpenAIClientProvider` registered as a service.
 
@@ -426,36 +415,17 @@ OpenAIAssistantAgent agent =
         kernel: new Kernel());
 ```
 
-Declarative using M365 Agent schema:
-
-```yml
-name: RestaurantHost
-type: openai_assistant
-instructions: Answer questions about the menu.
-description: This agent answers questions about the menu.
-metadata:
-    sksample: true
-capabilities:
-    - name: CodeInterpreter
-    - name: FileSearch
-actions:
-    - id: MenuPlugin
-```
-
-**Note**: `FileSearch` capability needs to be added
-
 Declarative using Semantic Kernel:
 
 ```yml
+---
 name: Coder
 type: openai_assistant
-instructions: You are an Agent that can write and execute code to answer questions.
-execution_settings:
-  default:
-    enable_code_interpreter: true
-    enable_file_search: true
-    metadata:
-      sksample: true
+tools:
+    - type: code_interpreter
+    - type: file_search
+---
+You are an Agent that can write and execute code to answer questions.
 ```
 
 ### Declarative Format Use Cases
@@ -471,137 +441,14 @@ version: 0.0.1
 
 #### Creating an Agent with access to function tools and a set of instructions to guide it's behavior
 
-```yaml
-name: RestaurantHost
-type: azureai_agent
-description: This agent answers questions about the menu.
-instructions: Answer questions about the menu.
-execution_settings:
-  default:
-    temperature: 0.4
-    function_choice_behavior:
-      type: auto
-      functions:
-        - MenuPlugin.GetSpecials
-        - MenuPlugin.GetItemPrice
-```
-
-or
-
-```yml
-name: RestaurantHost
-type: azureai_agent
-description: This agent answers questions about the menu.
-instructions: Answer questions about the menu.
-execution_settings:
-  default:
-    temperature: 0.4
-tools:
-  - type: function
-    name: MenuPlugin-GetSpecials
-    description: Provides a list of specials from the menu.
-  - type: function
-    name: MenuPlugin-GetItemPrice
-    description: Provides the price of the requested menu item.
-    parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
-```
-
 #### Allow templating of Agent instructions (and other properties)
-
-```yaml
-name: GenerateStory
-description: An agent that generates a story about a topic.
-template: |
-  Tell a story about {{$topic}} that is {{$length}} sentences long.
-template_format: semantic-kernel
-input_variables:
-  - name: topic
-    description: The topic of the story.
-    is_required: true
-  - name: length
-    description: The number of sentences in the story.
-    is_required: true
-execution_settings:
-  default:
-    temperature: 0.6
-```
 
 #### Configuring the model and providing multiple model configurations
 
-```yaml
-name: RestaurantHost
-type: azureai_agent
-description: This agent answers questions about the menu.
-instructions: Answer questions about the menu.
-execution_settings:
-  default:
-    temperature: 0.4
-  gpt-4o:
-    temperature: 0.5
-  gpt-4o-mini:
-    temperature: 0.5
-tools:
-  - type: function
-    name: MenuPlugin-GetSpecials
-    description: Provides a list of specials from the menu.
-  - type: function
-    name: MenuPlugin-GetItemPrice
-    description: Provides the price of the requested menu item.
-    parameters: '{"type":"object","properties":{"menuItem":{"type":"string","description":"The name of the menu item."}},"required":["menuItem"]}'
-```
-
 #### Configuring data sources (context/knowledge) for the Agent to use
-
-```yaml
-name: Document FAQ Agent
-type: azureai_agent
-instructions: Use provide documents to answer questions. Politely decline to answer if the provided documents don't include an answer to the question.
-description: This agent uses documents to answer questions.
-execution_settings:
-  default:
-    metadata:
-      sksample: true
-tools:
-  - type: file_search
-```
-
-**TODO: How do we configure the documents to include?**
 
 #### Configuring additional tools for the Agent to use e.g. code interpreter, OpenAPI endpoints
 
-```yaml
-name: Coder Agent
-type: azureai_agent
-description: This agent uses code to answer questions.
-instructions: Use code to answer questions.
-execution_settings:
-  default:
-    metadata:
-      sksample: true
-tools:
-  - type: code_interpreter
-```
-
-```yaml
-name: Country FAQ Agent
-type: azureai_agent
-instructions: Answer questions about countries. For all other questions politely decline to answer.
-description: This agent answers question about different countries.
-execution_settings:
-  default:
-    metadata:
-      sksample: true
-tools:
-  - type: openapi
-    name: RestCountriesAPI
-    description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
-    schema: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
-```
-
 #### Enabling additional modalities for the Agent e.g. speech
 
-```yaml
-```
-
 #### Error conditions e.g. models or function tools not being available
-
