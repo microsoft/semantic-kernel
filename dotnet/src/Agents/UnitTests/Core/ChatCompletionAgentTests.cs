@@ -87,6 +87,27 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
+    /// Verify throws <see cref="KernelException"/> when invalid <see cref="IPromptTemplateFactory"/> is provided.
+    /// </summary>
+    [Fact]
+    public void VerifyThrowsForInvalidTemplateFactory()
+    {
+        // Arrange
+        PromptTemplateConfig promptConfig =
+            new()
+            {
+                Name = "TestName",
+                Description = "TestDescription",
+                Template = "TestInstructions",
+                TemplateFormat = "handlebars",
+            };
+        KernelPromptTemplateFactory templateFactory = new();
+
+        // Act and Assert
+        Assert.Throws<KernelException>(() => new ChatCompletionAgent(promptConfig, templateFactory));
+    }
+
+    /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
     [Fact]

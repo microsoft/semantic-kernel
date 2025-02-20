@@ -53,9 +53,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Name = this.Definition.Name;
         this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
 
-        if (templateConfig != null)
+        if (templateConfig is not null)
         {
-            this.Template = templateFactory?.Create(templateConfig);
+            this.Template = templateFactory?.Create(templateConfig)
+                ?? throw new KernelException($"Invalid prompt template factory {templateFactory} for format {templateConfig.TemplateFormat}");
         }
 
         if (plugins != null)
@@ -101,7 +102,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFactory">An prompt template factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantFromTemplateAsync).")]
@@ -111,7 +112,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Kernel kernel,
         KernelArguments defaultArguments,
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null,
+        IPromptTemplateFactory templateFactory,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -120,9 +121,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Verify.NotNull(clientProvider, nameof(clientProvider));
         Verify.NotNull(capabilities, nameof(capabilities));
         Verify.NotNull(templateConfig, nameof(templateConfig));
+        Verify.NotNull(templateFactory, nameof(templateFactory));
 
         // Ensure template is valid (avoid failure after posting assistant creation)
-        IPromptTemplate? template = templateFactory?.Create(templateConfig);
+        IPromptTemplate template = templateFactory.Create(templateConfig);
 
         // Create the client
         AssistantClient client = clientProvider.Client.GetAssistantClient();
