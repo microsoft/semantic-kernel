@@ -48,7 +48,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <summary>
-    /// Gets the role used for the agent instructions.  Defaults to "system".
+    /// Gets the role used for agent instructions.  Defaults to "system".
     /// </summary>
     /// <remarks>
     /// Certain versions of "O*" series (deep reasoning) models require the instructions

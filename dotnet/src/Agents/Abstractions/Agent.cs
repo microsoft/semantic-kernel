@@ -67,7 +67,7 @@ public abstract class Agent
     protected internal abstract IEnumerable<string> GetChannelKeys();
 
     /// <summary>
-    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
+    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
@@ -78,7 +78,7 @@ public abstract class Agent
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
+    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
     /// </summary>
     /// <param name="channelState">The channel state, as serialized</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
