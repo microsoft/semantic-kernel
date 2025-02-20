@@ -36,7 +36,7 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
-    public IPromptTemplate? Template { get; protected set; }
+    protected IPromptTemplate? Template { get; set; }
 
     /// <inheritdoc/>
     protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
