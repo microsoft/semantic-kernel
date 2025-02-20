@@ -8,12 +8,11 @@ namespace ProcessFramework.Aspire.ProcessOrchestrator;
 
 public class TranslatorAgentHttpClient(HttpClient httpClient)
 {
-    private static readonly Uri s_agentUri = new("/api/translatoragent");
-
     public async Task<string> TranslateAsync(string textToTranslate)
     {
         var payload = new TranslationRequest { TextToTranslate = textToTranslate };
-        var response = await httpClient.PostAsync(s_agentUri, new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+#pragma warning disable CA2234 // We cannot pass uri here since we are using a customer http client with a base address
+        var response = await httpClient.PostAsync("/api/translatoragent", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         var responseContent = await response.Content.ReadAsStringAsync();
         return responseContent;
