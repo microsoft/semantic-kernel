@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -56,7 +54,8 @@ public class BedrockAgentChannelTests
         // Arrange
         BedrockAgentChannel channel = new();
         List<ChatMessageContent> history = [
-            new ChatMessageContent(){
+            new ChatMessageContent()
+            {
                 Role = AuthorRole.User,
             },
         ];

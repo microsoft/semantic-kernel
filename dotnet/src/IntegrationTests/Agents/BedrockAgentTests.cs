@@ -219,6 +219,7 @@ Dolphin  2")]
         this._client.Dispose();
     }
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class WeatherPlugin
     {
         [KernelFunction, Description("Provides realtime weather information.")]
@@ -233,4 +234,5 @@ Dolphin  2")]
             return $"The forecast for {location} is 75 degrees tomorrow.";
         }
     }
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 }
