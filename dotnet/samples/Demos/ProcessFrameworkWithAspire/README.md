@@ -26,7 +26,7 @@ Key features include:
 
 ### Running with .NET Aspire
 
-To run this sample with .NET Aspire, simply clone the repository and run the following command:
+To run this sample with .NET Aspire, clone the repository and execute the following commands:
 
 ```bash
 cd scr/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost
