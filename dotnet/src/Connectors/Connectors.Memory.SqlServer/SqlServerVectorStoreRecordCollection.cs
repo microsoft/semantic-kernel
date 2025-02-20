@@ -205,6 +205,12 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
                 $"The provided vector type {vector.GetType().FullName} is not supported by the SQL Server connector. " +
                 $"Supported types are: {string.Join(", ", SqlServerVectorStore.s_supportedVectorTypes.Select(l => l.FullName))}");
         }
+#pragma warning disable CS0618 // Type or member is obsolete
+        else if (options is not null && options.Filter is not null)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
+        }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._propertyReader.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
@@ -227,6 +233,7 @@ internal sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVec
             this.CollectionName,
             vectorProperty,
             this._propertyReader.Properties,
+            this._propertyReader.StoragePropertyNamesMap,
             searchOptions,
             vector);
 

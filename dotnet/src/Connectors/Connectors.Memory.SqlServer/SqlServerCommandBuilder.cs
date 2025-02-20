@@ -307,6 +307,7 @@ internal static class SqlServerCommandBuilder
         SqlConnection connection, string schema, string tableName,
         VectorStoreRecordVectorProperty vectorProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
+        IReadOnlyDictionary<string, string> storagePropertyNamesMap,
         VectorSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
     {
@@ -333,6 +334,20 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
+        if (options.NewFilter is not null)
+        {
+            int startParamIndex = command.Parameters.Count;
+
+            List<object> parameters = new SqlServerFilterTranslator(sb, schema).Translate(
+                storagePropertyNamesMap,
+                options.NewFilter,
+                startParamIndex);
+
+            foreach (object parameter in parameters)
+            {
+                command.AddParameter(vectorProperty, $"@_{startParamIndex++}", parameter);
+            }
+        }
         sb.AppendLine("ORDER BY [score] DESC");
         // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.
         // 0 is a legal value for OFFSET.
