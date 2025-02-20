@@ -129,12 +129,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
                 for more information.
                 Other kwargs are passed to the create_collection method.
         """
-        collection = await self._get_database().create_collection(self.collection_name, **kwargs)
-        await collection.create_index({
-            field.name: "text"
-            for field in self.data_model_definition.fields.values()
-            if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
-        })
+        await self._get_database().create_collection(self.collection_name, **kwargs)
         await self._get_database().command(command=self._get_vector_index(**kwargs))
 
     def _get_vector_index(self, **kwargs: Any) -> dict[str, Any]:
@@ -216,37 +211,6 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             raise VectorSearchExecutionException("Failed to search the collection.") from exc
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(raw_results, options),
-            total_count=None,  # no way to get a count before looping through the result cursor
-        )
-
-    async def _inner_text_search(
-        self,
-        options: VectorSearchOptions,
-        search_text: str,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        search_query = {"$text": {"$search": search_text}}
-        if options.filter.filters:
-            search_query = {
-                "$and": [
-                    search_query,
-                    self._build_filter_dict(options.filter),
-                ]
-            }
-        projection_query: dict[str, int | dict] = {
-            field: 1
-            for field in self.data_model_definition.get_field_names(
-                include_vector_fields=options.include_vectors,
-                include_key_field=False,  # _id is always included
-            )
-        }
-        projection_query[MONGODB_SCORE_FIELD] = {"$meta": "textScore"}
-        return KernelSearchResults(
-            results=self._get_vector_search_results_from_cursor(
-                filter=search_query,
-                projection=projection_query,
-                options=options,
-            ),
             total_count=None,  # no way to get a count before looping through the result cursor
         )
 

@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -59,7 +57,6 @@ TModel = TypeVar("TModel")
 class MongoDBAtlasCollection(
     VectorSearchBase[str, TModel],
     VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
     Generic[TModel],
 ):
     """MongoDB Atlas collection implementation."""
@@ -254,48 +251,7 @@ class MongoDBAtlasCollection(
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         if vector is not None:
             return await self._inner_vectorized_search(options, vector, **kwargs)
-        if search_text is not None:
-            return await self._inner_text_search(options, search_text, **kwargs)
-        raise VectorStoreOperationException("Vector or text is required for search.")
-
-    async def _inner_text_search(
-        self,
-        options: VectorSearchOptions,
-        search_text: str,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        collection = self._get_collection()
-        search_query: dict[str, Any] = {
-            "limit": options.top + options.skip,
-            "query": search_text,
-            "path": [
-                field.name
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
-            ],
-        }
-        if options.filter.filters:
-            search_query["filter"] = self._build_filter_dict(options.filter)
-
-        projection_query: dict[str, int | dict] = {
-            field: 1
-            for field in self.data_model_definition.get_field_names(
-                include_vector_fields=options.include_vectors,
-                include_key_field=False,  # _id is always included
-            )
-        }
-        projection_query[MONGODB_SCORE_FIELD] = {"$meta": "searchScore"}
-        try:
-            raw_results = await collection.aggregate([
-                {"$search": {"text": search_query}},
-                {"$project": projection_query},
-            ])
-        except Exception as exc:
-            raise VectorSearchExecutionException("Failed to search the collection.") from exc
-        return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(raw_results, options),
-            total_count=None,  # no way to get a count before looping through the result cursor
-        )
+        raise VectorStoreOperationException("Vector is required for search.")
 
     async def _inner_vectorized_search(
         self,
