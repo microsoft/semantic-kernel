@@ -2,6 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "CAPs - Demo Sample",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build (CopilotAgentPluginsDemoSample)",
+      "program": "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample/bin/Debug/net8.0/CopilotAgentPluginsDemoSample.exe",
+      "args": [
+        "demo"
+      ],
+      "cwd": "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
       // Use IntelliSense to find out which attributes exist for C# debugging
       // Use hover for the description of the existing attributes
       // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
