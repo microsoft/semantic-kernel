@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
-public sealed class OpenAIAssistantAgent : KernelAgent
+public sealed partial class OpenAIAssistantAgent : KernelAgent
 {
     /// <summary>
     /// The metadata key that identifies code-interpreter content.
