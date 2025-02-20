@@ -11,7 +11,7 @@ public class SummaryAgentHttpClient(HttpClient httpClient)
     public async Task<string> SummarizeAsync(string textToSummarize)
     {
         var payload = new SummarizeRequest { TextToSummarize = textToSummarize };
-        var response = await httpClient.PostAsync("/api/summaryagent", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
+        var response = await httpClient.PostAsync("/api/summaryagent", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         var responseContent = await response.Content.ReadAsStringAsync();
         return responseContent;
