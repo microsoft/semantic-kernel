@@ -17,15 +17,14 @@ public abstract class BaseAssistantTest : BaseAgentsTest<OpenAIClient>
 {
     protected BaseAssistantTest(ITestOutputHelper output) : base(output)
     {
-        var clientProvider =
+        this.Client =
             this.UseOpenAIConfig ?
-                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+                OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
                 !string.IsNullOrWhiteSpace(this.ApiKey) ?
-                    OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-                    OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
+                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
 
-        this.Client = clientProvider.Client;
-        this.AssistantClient = clientProvider.AssistantClient;
+        this.AssistantClient = this.Client.GetAssistantClient();
     }
 
     /// <inheritdoc/>
