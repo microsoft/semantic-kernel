@@ -6,7 +6,7 @@ In the demo, agents are defined as **external services**. Each process step issu
 
 ## Architecture
 
-The business logic of this sample is pretty simple: we want to define a process that will translate some text in English and will then summarize it.
+The business logic of this sample is straightforward: it defines a process that translates text from English and subsequently summarizes it.
 
 ![Architecture Diagram](./docs/architecture.png)
 
