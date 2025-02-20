@@ -39,7 +39,7 @@ public sealed class AzureAIAgentFactory : IKernelAgentFactory
                 metadata: agentDefinition.GetMetadata(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            kernelAgent = new AzureAIAgent(agent, clientProvider)
+            kernelAgent = new AzureAIAgent(agent, client)
             {
                 Kernel = kernel,
             };

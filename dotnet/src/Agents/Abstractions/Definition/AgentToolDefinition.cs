@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// The options for defining a tool.
 /// </summary>
-public class ToolDefinition
+public class AgentToolDefinition
 {
     /// <summary>
     /// Tool definition type for code interpreter.

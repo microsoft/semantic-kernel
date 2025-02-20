@@ -3,6 +3,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Factory;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -24,13 +26,18 @@ public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
         KernelAgent? kernelAgent = null;
         if (agentDefinition.Type?.Equals(OpenAIAssistantAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            kernelAgent = await OpenAIAssistantAgent.CreateAsync(
-                clientProvider: kernel.GetOpenAIClientProvider(agentDefinition),
-                definition: agentDefinition.GetOpenAIAssistantDefinition(),
-                kernel: kernel,
-                defaultArguments: agentDefinition.GetDefaultKernelArguments(),
-                cancellationToken: cancellationToken
-                ).ConfigureAwait(false);
+            var clientProvider = kernel.GetOpenAIClientProvider(agentDefinition);
+            AssistantClient client = clientProvider.Client.GetAssistantClient();
+
+            var definition = agentDefinition.GetOpenAIAssistantDefinition();
+            AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
+            Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+
+            kernelAgent = new OpenAIAssistantAgent(model, clientProvider.AssistantClient)
+            {
+                Kernel = kernel,
+                Arguments = agentDefinition.GetDefaultKernelArguments() ?? [],
+            };
         }
 
         return Task.FromResult<KernelAgent?>(kernelAgent).Result;

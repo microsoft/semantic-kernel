@@ -18,7 +18,7 @@ internal static class AgentDefinitionExtensions
     /// <exception cref="InvalidOperationException"></exception>
     public static IEnumerable<Azure.AI.Projects.ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition)
     {
-        return agentDefinition.Tools.Select<ToolDefinition, Azure.AI.Projects.ToolDefinition>(tool =>
+        return agentDefinition.Tools.Select<AgentToolDefinition, Azure.AI.Projects.ToolDefinition>(tool =>
         {
             return tool.Type switch
             {

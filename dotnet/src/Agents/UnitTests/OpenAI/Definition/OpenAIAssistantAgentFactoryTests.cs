@@ -61,10 +61,10 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
                 Id = "gpt-4o-mini"
             },
             Tools = [
-                new ToolDefinition()
+                new AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = ToolDefinition.CodeInterpreter,
+                    Type = AgentToolDefinition.CodeInterpreter,
                 },
             ]
         };

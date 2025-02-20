@@ -67,10 +67,10 @@ public class AzureAIAgentFactoryTests : IDisposable
                 Id = "gpt-4o-mini"
             },
             Tools = [
-                new Microsoft.SemanticKernel.Agents.ToolDefinition()
+                new Microsoft.SemanticKernel.Agents.AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = Microsoft.SemanticKernel.Agents.ToolDefinition.CodeInterpreter,
+                    Type = Microsoft.SemanticKernel.Agents.AgentToolDefinition.CodeInterpreter,
                 },
             ]
         };

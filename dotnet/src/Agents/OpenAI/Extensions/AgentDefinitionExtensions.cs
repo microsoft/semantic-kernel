@@ -50,7 +50,7 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        var toolDefinition = agentDefinition.GetFirstToolDefinition(ToolDefinition.CodeInterpreter);
+        var toolDefinition = agentDefinition.GetFirstToolDefinition(AgentToolDefinition.CodeInterpreter);
         if (toolDefinition?.Configuration?.TryGetValue(FileIds, out var fileIds) ?? false)
         {
             // TODO: Verify that the fileIds are strings

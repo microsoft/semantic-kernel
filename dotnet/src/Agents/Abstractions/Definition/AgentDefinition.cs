@@ -156,7 +156,7 @@ public sealed class AgentDefinition
     /// <summary>
     /// Gets or sets the collection of tools used by the agent.
     /// </summary>
-    public IList<ToolDefinition> Tools
+    public IList<AgentToolDefinition> Tools
     {
         get => this._tools ??= [];
         set
@@ -178,6 +178,6 @@ public sealed class AgentDefinition
     private IList<InputVariable>? _inputs;
     private IList<OutputVariable>? _outputs;
     private TemplateOptions? _template;
-    private IList<ToolDefinition>? _tools;
+    private IList<AgentToolDefinition>? _tools;
     #endregion
 }

@@ -38,7 +38,7 @@ public static class AgentDefinitionExtensions
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
     /// <param name="toolType">Tool type</param>
-    public static ToolDefinition? GetFirstToolDefinition(this AgentDefinition agentDefinition, string toolType)
+    public static AgentToolDefinition? GetFirstToolDefinition(this AgentDefinition agentDefinition, string toolType)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(toolType);
@@ -53,7 +53,7 @@ public static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        return agentDefinition.Tools?.Where(tool => tool.Type == ToolDefinition.CodeInterpreter).Any() ?? false;
+        return agentDefinition.Tools?.Where(tool => tool.Type == AgentToolDefinition.CodeInterpreter).Any() ?? false;
     }
 
     /// <summary>
@@ -64,6 +64,6 @@ public static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        return agentDefinition.Tools?.Where(tool => tool.Type == ToolDefinition.FileSearch).Any() ?? false;
+        return agentDefinition.Tools?.Where(tool => tool.Type == AgentToolDefinition.FileSearch).Any() ?? false;
     }
 }
