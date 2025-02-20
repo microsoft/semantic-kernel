@@ -65,6 +65,8 @@ public abstract class KernelAgent : Agent
             this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
         }
 
+        arguments = this.MergeArguments(arguments);
+
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
@@ -77,7 +79,7 @@ public abstract class KernelAgent : Agent
     /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    protected KernelArguments MergeArguments(KernelArguments? arguments)
+    private KernelArguments MergeArguments(KernelArguments? arguments)
     {
         // Avoid merge when override arguments are not set.
         if (arguments == null)

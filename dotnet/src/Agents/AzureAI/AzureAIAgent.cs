@@ -151,7 +151,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
 
             await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
@@ -214,7 +213,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
 
             return AgentThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
         }

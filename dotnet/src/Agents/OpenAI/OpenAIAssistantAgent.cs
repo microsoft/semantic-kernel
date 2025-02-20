@@ -379,7 +379,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
 
             await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
@@ -440,7 +439,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
 
             return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
         }

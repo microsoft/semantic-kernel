@@ -65,7 +65,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var agentName = this.GetDisplayName();
+        string? agentName = this.GetDisplayName();
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
@@ -80,7 +80,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var agentName = this.GetDisplayName();
+        string? agentName = this.GetDisplayName();
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
@@ -140,7 +140,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
@@ -187,7 +186,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
