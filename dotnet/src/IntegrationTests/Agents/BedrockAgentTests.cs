@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -11,7 +14,7 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class BedrockAgentTests
+public sealed class BedrockAgentTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -19,6 +22,8 @@ public sealed class BedrockAgentTests
         .AddEnvironmentVariables()
         .AddUserSecrets<BedrockAgentTests>()
         .Build();
+
+    private readonly AmazonBedrockAgentClient _client = new();
 
     /// <summary>
     /// Integration test for creating a <see cref="BedrockAgent"/>.
@@ -28,14 +33,16 @@ public sealed class BedrockAgentTests
     [InlineData("Why is the sky blue in one sentence?")]
     public async Task InvokeTestAsync(string input)
     {
-        var agent = await BedrockAgent.CreateAsync(this.GetCreateAgentRequest());
+        var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
+        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+
         try
         {
-            await this.ExecuteAgentAsync(agent, input);
+            await this.ExecuteAgentAsync(bedrockAgent, input);
         }
         finally
         {
-            await agent.DeleteAsync(default);
+            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -83,5 +90,10 @@ public sealed class BedrockAgentTests
             AgentResourceRoleArn = bedrockAgentSettings.AgentResourceRoleArn,
             FoundationModel = bedrockAgentSettings.FoundationModel,
         };
+    }
+
+    public void Dispose()
+    {
+        this._client.Dispose();
     }
 }

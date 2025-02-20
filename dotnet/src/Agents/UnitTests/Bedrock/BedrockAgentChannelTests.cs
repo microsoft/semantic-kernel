@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -47,7 +48,7 @@ public class BedrockAgentChannelTests
     }
 
     /// <summary>
-    /// Verify exception raised when receiving null messages in a <see cref="BedrockAgentChannel"/>.
+    /// Verify the <see cref="BedrockAgentChannel"/> skips messages with empty content.
     /// </summary>
     [Fact]
     public async Task VerifyReceiveWithEmptyContentAsync()
@@ -60,8 +61,11 @@ public class BedrockAgentChannelTests
             },
         ];
 
-        // Act && Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => channel.ReceiveAsync(history));
+        // Act
+        await channel.ReceiveAsync(history);
+
+        // Assert
+        Assert.Empty(await channel.GetHistoryAsync().ToArrayAsync());
     }
 
     /// <summary>
@@ -143,7 +147,7 @@ public class BedrockAgentChannelTests
     }
 
     /// <summary>
-    /// Verify the channel throws when invoking with an empty history.
+    /// Verify the channel returns an empty stream when invoking with an empty history.
     /// </summary>
     [Fact]
     public async Task VerifyInvokeWithEmptyHistoryAsync()
@@ -155,16 +159,14 @@ public class BedrockAgentChannelTests
         BedrockAgentChannel channel = new();
 
         // Act
-        async Task InvokeAgent()
+        List<ChatMessageContent> history = [];
+        await foreach ((bool _, ChatMessageContent Message) in channel.InvokeAsync(agent))
         {
-            await foreach (var _ in channel.InvokeAsync(agent))
-            {
-                continue;
-            }
+            history.Add(Message);
         }
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => InvokeAgent());
+        Assert.Empty(history);
     }
 
     /// <summary>
@@ -204,7 +206,7 @@ public class BedrockAgentChannelTests
     }
 
     /// <summary>
-    /// Verify the channel throws when invoking with an empty history in streaming mode.
+    /// Verify the channel returns an empty stream when invoking with an empty history.
     /// </summary>
     [Fact]
     public async Task VerifyInvokeStreamingWithEmptyHistoryAsync()
@@ -216,16 +218,14 @@ public class BedrockAgentChannelTests
         BedrockAgentChannel channel = new();
 
         // Act
-        async Task InvokeAgent()
+        List<StreamingChatMessageContent> history = [];
+        await foreach (var message in channel.InvokeStreamingAsync(agent, []))
         {
-            await foreach (var _ in channel.InvokeStreamingAsync(agent, []))
-            {
-                continue;
-            }
+            history.Add(message);
         }
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => InvokeAgent());
+        Assert.Empty(history);
     }
 
     private List<ChatMessageContent> CreateNormalHistory()

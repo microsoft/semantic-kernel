@@ -2,8 +2,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;

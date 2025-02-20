@@ -45,8 +45,8 @@ public class BedrockAgent : KernelAgent
         AmazonBedrockAgentRuntimeClient? runtimeClient = null)
     {
         this.AgentModel = agentModel;
-        this.Client ??= new AmazonBedrockAgentClient();
-        this.RuntimeClient ??= new AmazonBedrockAgentRuntimeClient();
+        this.Client = client ?? new AmazonBedrockAgentClient();
+        this.RuntimeClient = runtimeClient ?? new AmazonBedrockAgentRuntimeClient();
 
         this.Id = agentModel.AgentId;
         this.Name = agentModel.AgentName;

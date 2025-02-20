@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -7,6 +7,7 @@ using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Moq;
 using Xunit;
 
@@ -20,6 +21,13 @@ public class BedrockAgentTests
     private readonly Amazon.BedrockAgent.Model.Agent _agentModel = new()
     {
         AgentId = "1234567890",
+        AgentName = "testName",
+        Description = "test description",
+        Instruction = "Instruction must have at least 40 characters",
+    };
+
+    private readonly CreateAgentRequest _createAgentRequest = new()
+    {
         AgentName = "testName",
         Description = "test description",
         Instruction = "Instruction must have at least 40 characters",
@@ -50,37 +58,10 @@ public class BedrockAgentTests
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = this._agentModel.AgentName,
-            Description = this._agentModel.Description,
-            Instruction = this._agentModel.Instruction,
-        };
+        var agentModel = await mockClient.Object.CreateAndPrepareAgentAsync(this._createAgentRequest);
 
         // Act
-        var bedrockAgent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object);
-
-        // Assert
-        this.VerifyAgent(bedrockAgent);
-    }
-
-    /// <summary>
-    /// Verify the retrieval of <see cref="BedrockAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyBedrockAgentRetrieveAsync()
-    {
-        // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-
-        // Act
-        var bedrockAgent = await BedrockAgent.RetrieveAsync(
-            this._agentModel.AgentId,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object);
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         // Assert
         this.VerifyAgent(bedrockAgent);
@@ -94,32 +75,78 @@ public class BedrockAgentTests
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        // Mock the creation of an agent action group.
         mockClient.Setup(x => x.CreateAgentActionGroupAsync(
             It.IsAny<CreateAgentActionGroupRequest>(),
             default)
         ).ReturnsAsync(new CreateAgentActionGroupResponse());
-
-        CreateAgentRequest createAgentRequest = new()
+        // Override the sequence of calls to GetAgentAsync to return the agent status
+        // because creating an agent action group will require the agent to be prepared again.
+        mockClient.SetupSequence(x => x.GetAgentAsync(
+            It.IsAny<GetAgentRequest>(),
+            default)
+        ).ReturnsAsync(new GetAgentResponse
         {
-            AgentName = this._agentModel.AgentName,
-            Description = this._agentModel.Description,
-            Instruction = this._agentModel.Instruction,
-        };
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.NOT_PREPARED,
+            }
+        }).ReturnsAsync(new GetAgentResponse
+        {
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.PREPARING,
+            }
+        }).ReturnsAsync(new GetAgentResponse
+        {
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.PREPARED,
+            }
+        }).ReturnsAsync(new GetAgentResponse
+        {
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.PREPARING,
+            }
+        }).ReturnsAsync(new GetAgentResponse
+        {
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.PREPARED,
+            }
+        });
+        var agentModel = await mockClient.Object.CreateAndPrepareAgentAsync(this._createAgentRequest);
 
         // Act
-        var bedrockAgent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            enableCodeInterpreter: true,
-            enableKernelFunctions: true,
-            enableUserInput: true,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object);
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object);
+        await bedrockAgent.CreateCodeInterpreterActionGroupAsync();
 
         // Assert
         this.VerifyAgent(bedrockAgent);
         mockClient.Verify(x => x.CreateAgentActionGroupAsync(
             It.IsAny<CreateAgentActionGroupRequest>(),
-            default), Times.Exactly(3));
+            default), Times.Exactly(1));
     }
 
     /// <summary>
@@ -130,22 +157,15 @@ public class BedrockAgentTests
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = this._agentModel.AgentName,
-            Description = this._agentModel.Description,
-            Instruction = this._agentModel.Instruction,
-        };
+        var agentModel = await mockClient.Object.CreateAndPrepareAgentAsync(this._createAgentRequest);
 
         // Act
         Kernel kernel = new();
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
-        var bedrockAgent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object,
-            kernel: kernel);
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object)
+        {
+            Kernel = kernel,
+        };
 
         // Assert
         this.VerifyAgent(bedrockAgent);
@@ -160,21 +180,14 @@ public class BedrockAgentTests
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = this._agentModel.AgentName,
-            Description = this._agentModel.Description,
-            Instruction = this._agentModel.Instruction,
-        };
+        var agentModel = await mockClient.Object.CreateAndPrepareAgentAsync(this._createAgentRequest);
 
         // Act
         KernelArguments arguments = new() { { "key", "value" } };
-        var bedrockAgent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object,
-            defaultArguments: arguments);
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object)
+        {
+            Arguments = arguments,
+        };
 
         // Assert
         this.VerifyAgent(bedrockAgent);
@@ -189,19 +202,10 @@ public class BedrockAgentTests
     {
         // Arrange
         var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-
-        CreateAgentRequest createAgentRequest = new()
-        {
-            AgentName = this._agentModel.AgentName,
-            Description = this._agentModel.Description,
-            Instruction = this._agentModel.Instruction,
-        };
+        var agentModel = await mockClient.Object.CreateAndPrepareAgentAsync(this._createAgentRequest);
 
         // Act
-        var bedrockAgent = await BedrockAgent.CreateAsync(
-            createAgentRequest,
-            client: mockClient.Object,
-            runtimeClient: mockRuntimeClient.Object);
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         // Assert
         Assert.Single(bedrockAgent.GetChannelKeys());
@@ -214,13 +218,14 @@ public class BedrockAgentTests
         Mock<AmazonBedrockAgentRuntimeClient> mockRuntimeClient = new();
 #pragma warning restore Moq1410 // Moq: Set MockBehavior to Strict
 
-        // After a new agent is created, its status will first be NOT_PREPARED.
-        // Internally, we will prepare the agent and its status should be updated to PREPARED.
         mockClient.Setup(x => x.CreateAgentAsync(
             It.IsAny<CreateAgentRequest>(),
             default)
         ).ReturnsAsync(new CreateAgentResponse { Agent = this._agentModel });
 
+        // After a new agent is created, its status will first be CREATING then NOT_PREPARED.
+        // Internally, we will prepare the agent for use. During preparation, the agent status
+        // will be PREPARING, then finally PREPARED.
         mockClient.SetupSequence(x => x.GetAgentAsync(
             It.IsAny<GetAgentRequest>(),
             default)
@@ -233,6 +238,16 @@ public class BedrockAgentTests
                 Description = this._agentModel.Description,
                 Instruction = this._agentModel.Instruction,
                 AgentStatus = AgentStatus.NOT_PREPARED,
+            }
+        }).ReturnsAsync(new GetAgentResponse
+        {
+            Agent = new Amazon.BedrockAgent.Model.Agent()
+            {
+                AgentId = this._agentModel.AgentId,
+                AgentName = this._agentModel.AgentName,
+                Description = this._agentModel.Description,
+                Instruction = this._agentModel.Instruction,
+                AgentStatus = AgentStatus.PREPARING,
             }
         }).ReturnsAsync(new GetAgentResponse
         {
