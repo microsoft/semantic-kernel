@@ -275,7 +275,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             isStreaming: true,
             cancellationToken).ConfigureAwait(false);
 
-        IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
+        IAsyncEnumerable<object>? asyncReference = null;
 
         if (result.AIService is IChatCompletionService chatCompletion)
         {
@@ -285,32 +285,62 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
+        else if (result.AIService is IChatClient chatClient)
+        {
+            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings.ToChatOptions(kernel), cancellationToken);
+        }
         else
         {
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)} and {typeof(IChatClient)}");
         }
 
-        await foreach (var content in asyncReference.ConfigureAwait(false))
+        await foreach (object content in asyncReference.ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            yield return typeof(TResult) switch
+            if (content is StreamingKernelContent kernelContent)
             {
-                _ when typeof(TResult) == typeof(string)
-                    => (TResult)(object)content.ToString(),
+                if (typeof(TResult) == typeof(string))
+                {
+                    yield return (TResult)(object)kernelContent.ToString();
+                }
 
-                _ when content is TResult contentAsT
-                    => contentAsT,
+                if (content is TResult contentAsT)
+                {
+                    yield return contentAsT;
+                }
 
-                _ when content.InnerContent is TResult innerContentAsT
-                    => innerContentAsT,
+                if (typeof(TResult) == typeof(byte[]))
+                {
+                    if (content is StreamingKernelContent byteKernelContent)
+                    {
+                        yield return (TResult)(object)byteKernelContent.ToByteArray();
+                    }
+                }
 
-                _ when typeof(TResult) == typeof(byte[])
-                    => (TResult)(object)content.ToByteArray(),
+                if (content is StreamingKernelContent kernelContent2 && kernelContent2.InnerContent is TResult innerContentAsT)
+                {
+                    yield return innerContentAsT;
+                }
+            }
+            if (typeof(TResult) == typeof(byte[]))
+            {
+                if (content is StreamingKernelContent byteKernelContent)
+                {
+                    yield return (TResult)(object)byteKernelContent.ToByteArray();
+                }
+                else if (content is ChatResponseUpdate chatUpdate)
+                {
+                    DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent && dataContent.Data.HasValue);
+                    if (dataContent is not null)
+                    {
+                        yield return (TResult)(object)dataContent.Data!.Value.ToArray();
+                    }
+                }
+            }
 
-                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
-            };
+            throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property");
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
@@ -507,7 +537,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out IChatClient? chatClient, out PromptExecutionSettings options);
             if (chatClient is not null)
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 aiService = new AIServiceChatClient(chatClient);
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
         }
 
