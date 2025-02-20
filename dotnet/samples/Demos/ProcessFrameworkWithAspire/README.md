@@ -22,7 +22,7 @@ Key features include:
 .NET Aspire orchestration assists with the following concerns:
 
 - App composition: specify the .NET projects, containers, executables, and cloud resources that make up the application.
-- Service discovery and connection string management: The app host injects the right connection strings, network configurations, and service discovery information to simplify the developer experience.
+- Service Discovery and Connection String Management: automatically injects the right connection strings, network configurations, and service discovery information to simplify the developer experience.
 
 ### Running with .NET Aspire
 
