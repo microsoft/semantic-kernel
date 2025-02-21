@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenAI.Assistants;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
 {
     /// <summary>

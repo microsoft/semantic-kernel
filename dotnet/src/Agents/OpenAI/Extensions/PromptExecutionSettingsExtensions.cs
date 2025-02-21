@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for interacting with <see cref="PromptExecutionSettings"/>
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class PromptExecutionSettingsExtensions
 {
     /// <summary>

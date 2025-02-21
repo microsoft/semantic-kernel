@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ClientModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.Identity;
 using OpenAI;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Provides extension methods for <see cref="Kernel"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class KernelExtensions
 {
     private const string Endpoint = "endpoint";

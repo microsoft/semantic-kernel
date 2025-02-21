@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Provides extension methods for <see cref="AgentDefinition"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class AgentDefinitionExtensions
 {
     /// <summary>
