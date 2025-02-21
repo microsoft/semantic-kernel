@@ -18,7 +18,7 @@ internal static class KernelExtensions
     /// Return the <see cref="AzureAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AzureAIClientProvider"/>.</param>
-    /// <param name="agentDefinition">Agent definition whih will be used t provide configuration for the <see cref="AzureAIClientProvider"/>.</param>
+    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="AzureAIClientProvider"/>.</param>
     public static AzureAIClientProvider GetAzureAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
