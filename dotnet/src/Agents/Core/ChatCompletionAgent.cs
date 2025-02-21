@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -63,7 +64,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var agentName = this.GetDisplayName();
+        string agentName = this.GetDisplayName();
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
@@ -80,7 +81,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var agentName = this.GetDisplayName();
+        string agentName = this.GetDisplayName();
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
@@ -149,7 +150,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        var serviceType = chatCompletionService.GetType();
+        Type serviceType = chatCompletionService.GetType();
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
@@ -196,7 +197,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        var serviceType = chatCompletionService.GetType();
+        Type serviceType = chatCompletionService.GetType();
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
