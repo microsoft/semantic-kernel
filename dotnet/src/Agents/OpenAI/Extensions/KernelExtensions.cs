@@ -17,7 +17,7 @@ internal static class KernelExtensions
     /// Return the <see cref="OpenAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="OpenAIClientProvider"/>.</param>
-    /// <param name="agentDefinition">Agent definition whih will be used t provide configuration for the <see cref="OpenAIClientProvider"/>.</param>
+    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="OpenAIClientProvider"/>.</param>
     public static OpenAIClientProvider GetOpenAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
