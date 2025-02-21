@@ -54,25 +54,38 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// </summary>
     /// <param name="model">The agent model definition.</param>
     /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
-    /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional template factory.</param>
+    /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public AzureAIAgent(
         Azure.AI.Projects.Agent model,
         AgentsClient client,
-        PromptTemplateConfig? templateConfig = null,
-        IPromptTemplateFactory? templateFactory = null)
+        IEnumerable<KernelPlugin>? plugins = null,
+        IPromptTemplateFactory? templateFactory = null,
+        string? templateFormat = null)
     {
         this.Client = client;
         this.Definition = model;
         this.Description = this.Definition.Description;
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
-        this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
+        this.Instructions = this.Definition.Instructions;
 
-        if (templateConfig is not null)
+        if (templateFactory != null)
         {
-            this.Template = templateFactory?.Create(templateConfig)
-                ?? throw new KernelException($"Invalid prompt template factory {templateFactory} for format {templateConfig.TemplateFormat}");
+            Verify.NotNullOrWhiteSpace(templateFormat);
+
+            PromptTemplateConfig templateConfig = new(this.Instructions)
+            {
+                TemplateFormat = templateFormat
+            };
+
+            this.Template = templateFactory.Create(templateConfig);
+        }
+
+        if (plugins != null)
+        {
+            this.Kernel.Plugins.AddRange(plugins);
         }
     }
 
