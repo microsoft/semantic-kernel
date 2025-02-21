@@ -36,7 +36,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="client">The OpenAI provider for accessing the Assistant API service.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
-    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" paramater is supplied.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public OpenAIAssistantAgent(
         Assistant definition,
         AssistantClient client,

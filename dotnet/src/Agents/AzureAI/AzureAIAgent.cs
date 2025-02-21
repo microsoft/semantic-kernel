@@ -56,7 +56,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
-    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" paramater is supplied.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public AzureAIAgent(
         Azure.AI.Projects.Agent model,
         AgentsClient client,
