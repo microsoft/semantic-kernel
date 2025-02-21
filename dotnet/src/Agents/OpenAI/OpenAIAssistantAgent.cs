@@ -62,7 +62,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 TemplateFormat = templateFormat
             };
 
-            this.Template = templateFactory?.Create(templateConfig);
+            this.Template = templateFactory.Create(templateConfig);
         }
 
         if (plugins != null)
