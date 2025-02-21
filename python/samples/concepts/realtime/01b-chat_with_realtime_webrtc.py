@@ -25,7 +25,7 @@ logger.setLevel(logging.INFO)
 # - pydub
 # e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
 
-# The characterics of your speaker and microphone are a big factor in a smooth conversation
+# The characteristics of your speaker and microphone are a big factor in a smooth conversation
 # so you may need to try out different devices for each.
 # you can also play around with the turn_detection settings to get the best results.
 # It has device id's set in the AudioRecorderStream and AudioPlayerAsync classes,
