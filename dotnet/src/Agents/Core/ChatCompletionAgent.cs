@@ -33,19 +33,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// a <see cref="PromptTemplateConfig"/>.
     /// </summary>
     /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
-    /// <remarks>
-    /// When a template factory argument isn't provided, the default <see cref="KernelPromptTemplateFactory"/> is used.
-    /// </remarks>
+    /// <param name="templateFactory">The prompt template factory used to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     public ChatCompletionAgent(
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null)
+        IPromptTemplateFactory templateFactory)
     {
         this.Name = templateConfig.Name;
         this.Description = templateConfig.Description;
         this.Instructions = templateConfig.Template;
         this.Arguments = new(templateConfig.ExecutionSettings.Values);
-        this.Template = templateFactory?.Create(templateConfig);
+        this.Template = templateFactory.Create(templateConfig);
     }
 
     /// <summary>
@@ -105,12 +102,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
-        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
-        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
             kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
                 kernel,
-                nullPrompt,
+                arguments?.ExecutionSettings,
                 arguments ?? []);
 
         return (chatCompletionService, executionSettings);
