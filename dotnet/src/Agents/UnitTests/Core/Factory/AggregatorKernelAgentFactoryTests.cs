@@ -57,9 +57,13 @@ public class AggregatorKernelAgentFactoryTests
     }
 
     #region private
-    private sealed class MyKernelAgentFactory1 : IKernelAgentFactory
+    private sealed class MyKernelAgentFactory1 : KernelAgentFactory
     {
-        public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+        public MyKernelAgentFactory1() : base(["my-type-1"])
+        {
+        }
+
+        public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-1"
                 ? null
@@ -73,9 +77,13 @@ public class AggregatorKernelAgentFactoryTests
         }
     }
 
-    private sealed class MyKernelAgentFactory2 : IKernelAgentFactory
+    private sealed class MyKernelAgentFactory2 : KernelAgentFactory
     {
-        public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+        public MyKernelAgentFactory2() : base(["my-type-2"])
+        {
+        }
+
+        public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-2"
                 ? null

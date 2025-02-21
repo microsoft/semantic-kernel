@@ -27,6 +27,19 @@ public sealed class ModelConfiguration
     }
 
     /// <summary>
+    /// Gets or sets the Service ID of the model configuration.
+    /// </summary>
+    public string? ServiceId
+    {
+        get => this._serviceId;
+        set
+        {
+            Verify.NotNull(value);
+            this._serviceId = value;
+        }
+    }
+
+    /// <summary>
     /// Extra properties that may be included in the serialized model configuration.
     /// </summary>
     /// <remarks>
@@ -56,6 +69,7 @@ public sealed class ModelConfiguration
 
     #region private
     private string? _type;
+    private string? _serviceId;
     private IDictionary<string, object>? _extensionData;
     #endregion
 }

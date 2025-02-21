@@ -2,6 +2,8 @@
 using System;
 using System.ClientModel;
 using System.Linq;
+using Azure.Identity;
+using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -36,15 +38,20 @@ internal static class KernelExtensions
             {
                 return OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(apiKey!.ToString()!));
             }
-            /*
             else if (!hasApiKey && hasEndpoint)
             {
                 return OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(endpoint!.ToString()!));
             }
-            */
         }
 
-        // Return the service registered on the kernel
+        // Use the client registered on the kernel
+        var client = kernel.GetAllServices<OpenAIClient>().FirstOrDefault();
+        if (client is not null)
+        {
+            return OpenAIClientProvider.FromClient(client);
+        }
+
+        // Use the provider registered on the kernel
         var clientProvider = kernel.GetAllServices<OpenAIClientProvider>().FirstOrDefault();
         return (OpenAIClientProvider?)clientProvider ?? throw new InvalidOperationException("OpenAI client provider not found.");
     }

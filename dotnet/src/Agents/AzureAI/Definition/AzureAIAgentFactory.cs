@@ -7,17 +7,25 @@ using Azure.AI.Projects;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
+/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
 /// </summary>
-public sealed class AzureAIAgentFactory : IKernelAgentFactory
+public sealed class AzureAIAgentFactory : KernelAgentFactory
 {
     /// <summary>
     /// Gets the type of the Azure AI agent.
     /// </summary>
     public static string AzureAIAgentType => "azureai_agent";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIAgentFactory"/> class.
+    /// </summary>
+    public AzureAIAgentFactory()
+        : base([AzureAIAgentType])
+    {
+    }
+
     /// <inheritdoc/>
-    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);

@@ -1,23 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Provides a <see cref="IKernelAgentFactory"/> which aggregates multiple kernel agent factories.
+/// Provides a <see cref="KernelAgentFactory"/> which aggregates multiple kernel agent factories.
 /// </summary>
-public sealed class AggregatorKernelAgentFactory : IKernelAgentFactory
+public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
 {
-    private readonly IKernelAgentFactory?[] _kernelAgentFactories;
+    private readonly KernelAgentFactory?[] _kernelAgentFactories;
 
     /// <summary>Initializes the instance.</summary>
     /// <param name="kernelAgentFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
-    public AggregatorKernelAgentFactory(params IKernelAgentFactory[] kernelAgentFactories)
+    public AggregatorKernelAgentFactory(params KernelAgentFactory[] kernelAgentFactories) : base(kernelAgentFactories.SelectMany(f => f.Types).ToArray())
     {
         Verify.NotNullOrEmpty(kernelAgentFactories);
-        foreach (IKernelAgentFactory kernelAgentFactory in kernelAgentFactories)
+
+        foreach (KernelAgentFactory kernelAgentFactory in kernelAgentFactories)
         {
             Verify.NotNull(kernelAgentFactory, nameof(kernelAgentFactories));
         }
@@ -26,7 +28,7 @@ public sealed class AggregatorKernelAgentFactory : IKernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
@@ -42,6 +44,6 @@ public sealed class AggregatorKernelAgentFactory : IKernelAgentFactory
             }
         }
 
-        return Task.FromResult<KernelAgent?>(null).Result;
+        return null;
     }
 }

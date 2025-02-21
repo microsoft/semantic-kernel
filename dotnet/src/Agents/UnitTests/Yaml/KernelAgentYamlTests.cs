@@ -20,7 +20,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Yaml;
 
 /// <summary>
-/// Unit tests for <see cref="KernelAgentYaml"/>.
+/// Unit tests for <see cref="KernelAgentFactoryYamlExtensions"/>.
 /// </summary>
 public class KernelAgentYamlTests : IDisposable
 {
@@ -83,7 +83,7 @@ public class KernelAgentYamlTests : IDisposable
         ChatCompletionAgentFactory factory = new();
 
         // Act
-        var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
+        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
 
         // Assert
         Assert.NotNull(agent);
@@ -117,7 +117,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
 
         // Act
-        var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
+        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
 
         // Assert
         Assert.NotNull(agent);
@@ -151,7 +151,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
+        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
 
         // Assert
         Assert.NotNull(agent);

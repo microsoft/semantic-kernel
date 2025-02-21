@@ -6,17 +6,25 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
+/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
 /// </summary>
-public sealed class ChatCompletionAgentFactory : IKernelAgentFactory
+public sealed class ChatCompletionAgentFactory : KernelAgentFactory
 {
     /// <summary>
     /// Gets the type of the chat completion agent.
     /// </summary>
     public static string ChatCompletionAgentType => "chat_completion_agent";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgentFactory"/> class.
+    /// </summary>
+    public ChatCompletionAgentFactory()
+        : base([ChatCompletionAgentType])
+    {
+    }
+
     /// <inheritdoc/>
-    public Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 

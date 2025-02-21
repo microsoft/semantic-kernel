@@ -7,17 +7,25 @@ using OpenAI.Assistants;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Provides a <see cref="IKernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
+/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
+public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
 {
     /// <summary>
     /// Gets the type of the OpenAI assistant agent.
     /// </summary>
     public static string OpenAIAssistantAgentType => "openai_assistant";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentFactory"/> class.
+    /// </summary>
+    public OpenAIAssistantAgentFactory()
+        : base([OpenAIAssistantAgentType])
+    {
+    }
+
     /// <inheritdoc/>
-    public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);

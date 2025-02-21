@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentDefinition
 {
     /// <summary>
-    /// Gets or sets the version of the schema.
+    /// Gets or sets the version of the schema being used.
     /// </summary>
     public string? Version
     {
