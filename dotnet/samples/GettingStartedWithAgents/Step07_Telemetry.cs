@@ -7,7 +7,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -17,7 +19,7 @@ namespace GettingStarted;
 /// <summary>
 /// A repeat of <see cref="Step03_Chat"/> with telemetry enabled.
 /// </summary>
-public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for the example's main activity.
@@ -25,7 +27,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
     private static readonly ActivitySource s_activitySource = new("AgentsTelemetry.Example");
 
     /// <summary>
-    /// Demonstrates logging in <see cref="ChatCompletionAgent"/> and <see cref="AgentGroupChat"/>.
+    /// Demonstrates logging in <see cref="ChatCompletionAgent"/>, <see cref="OpenAIAssistantAgent"/> and <see cref="AgentGroupChat"/>.
     /// Logging is enabled through the <see cref="Agent.LoggerFactory"/> and <see cref="AgentChat.LoggerFactory"/> properties.
     /// This example uses <see cref="XunitLogger"/> to output logs to the test console, but any compatible logging provider can be used.
     /// </summary>
@@ -44,7 +46,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     /// <summary>
-    /// Demonstrates tracing in <see cref="ChatCompletionAgent"/>.
+    /// Demonstrates tracing in <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/>.
     /// Tracing is enabled through the <see cref="TracerProvider"/>.
     /// For output this example uses Console as well as Application Insights.
     /// </summary>
@@ -99,11 +101,12 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
                 LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
             };
 
-        ChatCompletionAgent agentWriter =
-            new()
-            {
-                Name = "CopyWriter",
-                Instructions =
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name: "CopyWriter",
+                instructions:
                     """
                     You are a copywriter with ten years of experience and are known for brevity and a dry humor.
                     The goal is to refine and decide on the single best copy as an expert in the field.
@@ -112,10 +115,13 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAgentsTest(output)
                     Don't waste time with chit chat.
                     Consider suggestions when refining an idea.
                     """,
-                Description = "A copywriter with ten years of experience and are known for brevity and a dry humor.",
-                Kernel = this.CreateKernelWithChatCompletion(),
-                LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
-            };
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient)
+        {
+            LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory)
+        };
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
