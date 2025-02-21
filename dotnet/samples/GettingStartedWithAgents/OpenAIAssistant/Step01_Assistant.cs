@@ -20,7 +20,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
 
         // Instructions, Name and Description properties defined via the config.
         Assistant definition = await this.AssistantClient.CreateAssistantFromTemplateAsync(this.Model, templateConfig, metadata: SampleMetadata);
-        OpenAIAssistantAgent agent = new(definition, this.AssistantClient)
+        OpenAIAssistantAgent agent = new(definition, this.AssistantClient, templateFactory: new KernelPromptTemplateFactory(), templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
             Arguments =
             {

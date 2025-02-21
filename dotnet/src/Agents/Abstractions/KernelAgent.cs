@@ -50,14 +50,14 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // Use the provided template as the instructions
-        if (this.Template is not null)
+        if (this.Template is null)
         {
-            return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+           // Use the instructions as-is
+           return this.Instructions;
         }
 
-        // Use the instructions as-is
-        return this.Instructions;
+        // Use the provided template as the instructions
+        return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

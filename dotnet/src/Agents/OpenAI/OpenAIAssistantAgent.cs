@@ -35,14 +35,14 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="definition">The assistant definition.</param>
     /// <param name="client">The OpenAI provider for accessing the Assistant API service.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
-    /// <param name="templateConfig">The prompt template configuration.</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" paramater is supplied.</param>
     public OpenAIAssistantAgent(
         Assistant definition,
         AssistantClient client,
         IEnumerable<KernelPlugin>? plugins = null,
-        PromptTemplateConfig? templateConfig = null,
-        IPromptTemplateFactory? templateFactory = null)
+        IPromptTemplateFactory? templateFactory = null,
+        string? templateFormat = null)
     {
         this.Client = client;
 
@@ -51,12 +51,18 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.Description = this.Definition.Description;
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
-        this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
+        this.Instructions = this.Definition.Instructions;
 
-        if (templateConfig is not null)
+        if (templateFactory != null)
         {
-            this.Template = templateFactory?.Create(templateConfig)
-                ?? throw new KernelException($"Invalid prompt template factory {templateFactory} for format {templateConfig.TemplateFormat}");
+            Verify.NotNullOrWhiteSpace(templateFormat);
+
+            PromptTemplateConfig templateConfig = new(this.Instructions)
+            {
+                TemplateFormat = templateFormat
+            };
+
+            this.Template = templateFactory?.Create(templateConfig);
         }
 
         if (plugins != null)
