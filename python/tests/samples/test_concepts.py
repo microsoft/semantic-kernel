@@ -34,8 +34,7 @@ from samples.concepts.images.image_generation import main as image_generation
 from samples.concepts.local_models.lm_studio_chat_completion import main as lm_studio_chat_completion
 from samples.concepts.local_models.lm_studio_text_embedding import main as lm_studio_text_embedding
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
-from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
-from samples.concepts.memory.memory import main as memory
+from samples.concepts.memory.simple_memory import main as simple_memory
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -230,14 +229,8 @@ concepts = [
         ),
     ),
     param(
-        azure_cognitive_search_memory,
+        simple_memory,
         [],
-        id="azure_cognitive_search_memory",
-        marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
-    ),
-    param(
-        memory,
-        ["What are my investments?", "exit"],
         id="memory",
         marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
     ),
