@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>
+      $(NoWarn);CS8618,IDE0009,CA1051,CA1050,CA1707,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0080,SKEXP0101,SKEXP0110,OPENAI001
+    </NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Experimental\Process.Core\Process.Core.csproj" />
+    <ProjectReference
+      Include="..\..\..\..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
+    <ProjectReference
+      Include="..\ProcessFramework.Aspire.ServiceDefaults\ProcessFramework.Aspire.ServiceDefaults.csproj" />
+    <ProjectReference
+      Include="..\ProcessFramework.Aspire.Shared\ProcessFramework.Aspire.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
