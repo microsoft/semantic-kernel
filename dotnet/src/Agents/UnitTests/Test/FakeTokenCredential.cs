@@ -7,7 +7,7 @@ using Azure.Core;
 
 namespace SemanticKernel.Agents.UnitTests;
 
-internal class FakeTokenCredential : TokenCredential
+internal sealed class FakeTokenCredential : TokenCredential
 {
     /// <inheritdoc/>
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
