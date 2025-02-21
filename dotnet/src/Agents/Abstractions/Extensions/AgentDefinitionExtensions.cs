@@ -23,7 +23,7 @@ public static class AgentDefinitionExtensions
             // Add default arguments for the agent
             foreach (var input in agentDefinition.Inputs)
             {
-                if (!input.IsRequired && input.Default is not null)
+                if (input.Default is not null)
                 {
                     arguments.Add(input.Name, input.Default);
                 }

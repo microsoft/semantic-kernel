@@ -2,7 +2,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Factory;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

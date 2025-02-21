@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Agents.Factory;
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Represents a factory for creating <see cref="KernelAgent"/> instances.

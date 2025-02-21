@@ -3,7 +3,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
-using Microsoft.SemanticKernel.Agents.Factory;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 

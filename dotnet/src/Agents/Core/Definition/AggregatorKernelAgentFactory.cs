@@ -2,9 +2,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Factory;
 
-namespace Microsoft.SemanticKernel.Agents.Definition;
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Provides a <see cref="IKernelAgentFactory"/> which aggregates multiple kernel agent factories.
@@ -18,7 +17,7 @@ public sealed class AggregatorKernelAgentFactory : IKernelAgentFactory
     public AggregatorKernelAgentFactory(params IKernelAgentFactory[] kernelAgentFactories)
     {
         Verify.NotNullOrEmpty(kernelAgentFactories);
-        foreach (IPromptTemplateFactory kernelAgentFactory in kernelAgentFactories)
+        foreach (IKernelAgentFactory kernelAgentFactory in kernelAgentFactories)
         {
             Verify.NotNull(kernelAgentFactory, nameof(kernelAgentFactories));
         }
