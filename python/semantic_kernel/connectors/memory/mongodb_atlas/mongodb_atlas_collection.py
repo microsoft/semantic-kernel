@@ -6,6 +6,8 @@ from collections.abc import Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -74,6 +76,10 @@ class MongoDBAtlasCollection(
         data_model_definition: VectorStoreRecordDefinition | None = None,
         index_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
+        connection_string: str | None = None,
+        database_name: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasCollection class.
@@ -85,22 +91,22 @@ class MongoDBAtlasCollection(
             mongo_client: The MongoDB client for interacting with MongoDB Atlas,
                 used for creating and deleting collections.
             index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
-            **kwargs: Additional keyword arguments, including:
-                The same keyword arguments used for MongoDBAtlasStore:
-                    database_name: The name of the database, will be filled from the env when this is not set.
-                    connection_string: str | None = None,
-                    env_file_path: str | None = None,
-                    env_file_encoding: str | None = None
-
+            connection_string: The connection string for MongoDB Atlas, optional.
+            Can be read from environment variables.
+            database_name: The name of the database, will be filled from the env when this is not set.
+            connection_string: str | None = None,
+            env_file_path: str | None = None,
+            env_file_encoding: str | None = None
+            **kwargs: Additional keyword arguments
         """
-        managed_client = not mongo_client
+        managed_client = kwargs.get("managed_client", not mongo_client)
         if mongo_client:
             super().__init__(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
-                database_name=kwargs.get("database_name", DEFAULT_DB_NAME),
+                database_name=database_name or DEFAULT_DB_NAME,
                 index_name=index_name or DEFAULT_SEARCH_INDEX_NAME,
                 managed_client=managed_client,
             )
@@ -110,19 +116,19 @@ class MongoDBAtlasCollection(
 
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings.create(
-                env_file_path=kwargs.get("env_file_path"),
-                env_file_encoding=kwargs.get("env_file_encoding"),
-                connection_string=kwargs.get("connection_string"),
-                database_name=kwargs.get("database_name"),
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+                connection_string=connection_string,
+                database_name=database_name,
                 index_name=index_name,
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
-        if not mongo_client:
-            mongo_client = AsyncMongoClient(
-                mongodb_atlas_settings.connection_string.get_secret_value(),
-                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
-            )
+
+        mongo_client = AsyncMongoClient(
+            mongodb_atlas_settings.connection_string.get_secret_value(),
+            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+        )
 
         super().__init__(
             data_model_type=data_model_type,

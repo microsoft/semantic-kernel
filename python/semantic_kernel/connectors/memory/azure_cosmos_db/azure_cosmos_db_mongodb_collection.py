@@ -6,6 +6,8 @@ from collections.abc import AsyncIterable
 from importlib import metadata
 from typing import Any, TypeVar
 
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -53,6 +55,10 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         mongo_client: AsyncMongoClient | None = None,
+        connection_string: str | None = None,
+        database_name: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the AzureCosmosDBforMongoDBCollection class.
@@ -63,12 +69,13 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
             collection_name: The name of the collection, optional.
             mongo_client: The MongoDB client for interacting with Azure CosmosDB for MongoDB,
                 used for creating and deleting collections.
-            **kwargs: Additional keyword arguments, including:
-                The same keyword arguments used for AzureCosmosDBforMongoDBStore:
-                    database_name: The name of the database, will be filled from the env when this is not set.
-                    connection_string: str | None = None,
-                    env_file_path: str | None = None,
-                    env_file_encoding: str | None = None
+            connection_string: The connection string for MongoDB Atlas, optional.
+            Can be read from environment variables.
+            database_name: The name of the database, will be filled from the env when this is not set.
+            connection_string: str | None = None,
+            env_file_path: str | None = None,
+            env_file_encoding: str | None = None
+            **kwargs: Additional keyword arguments
 
         """
         managed_client = not mongo_client
@@ -78,7 +85,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
                 data_model_definition=data_model_definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
-                database_name=kwargs.get("database_name", DEFAULT_DB_NAME),
+                database_name=database_name or DEFAULT_DB_NAME,
                 managed_client=managed_client,
             )
             return
@@ -89,20 +96,20 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
 
         try:
             settings = AzureCosmosDBforMongoDBSettings.create(
-                env_file_path=kwargs.get("env_file_path"),
-                env_file_encoding=kwargs.get("env_file_encoding"),
-                connection_string=kwargs.get("connection_string"),
-                database_name=kwargs.get("database_name"),
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+                connection_string=connection_string,
+                database_name=database_name,
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create Azure CosmosDB for MongoDB settings.") from exc
         if not settings.connection_string:
             raise VectorStoreInitializationException("The Azure CosmosDB for MongoDB connection string is required.")
-        if not mongo_client:
-            mongo_client = AsyncMongoClient(
-                settings.connection_string.get_secret_value(),
-                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
-            )
+
+        mongo_client = AsyncMongoClient(
+            settings.connection_string.get_secret_value(),
+            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+        )
 
         super().__init__(
             data_model_type=data_model_type,
@@ -119,6 +126,9 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
 
         This first creates a collection, with the kwargs.
         Then creates a search index based on the data model definition.
+
+        By the naming convection of MongoDB indexes are created by using the field name
+        with a underscore.
 
         Args:
             **kwargs: Additional keyword arguments.

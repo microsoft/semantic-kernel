@@ -4,12 +4,13 @@ import argparse
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import uuid4
 
 import numpy as np
 
-from samples.concepts.resources.utils import Colors
+from samples.concepts.memory.utils import print_record
+from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import (
     AzureTextEmbedding,
@@ -27,13 +28,13 @@ from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     IndexKind,
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorSearchResult,
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -42,42 +43,49 @@ from semantic_kernel.data import (
     VectorTextSearchMixin,
     vectorstoremodel,
 )
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER
+
+# This is a rather complex sample, showing how to use the vector store
+# with a number of different collections.
+# It also shows how to use the vector store with a number of different data models.
+# It also uses all the types of search available in the vector store.
+# For a simpler example, see "simple_memory.py"
 
 
-def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
-    @vectorstoremodel
-    @dataclass
-    class DataModelArray:
-        vector: Annotated[
-            np.ndarray | None,
-            VectorStoreRecordVectorField(
-                embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-                index_kind=index_kind,
-                dimensions=1536,
-                distance_function=distance_function,
-                property_type="float",
-                serialize_function=np.ndarray.tolist,
-                deserialize_function=np.array,
-            ),
-        ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str,
-            VectorStoreRecordDataField(
-                has_embedding=True,
-                embedding_property_name="vector",
-                property_type="str",
-                is_full_text_searchable=True,
-            ),
-        ] = "content1"
-        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
-        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distance_function: DistanceFunction) -> type:
+    if type == "array":
 
-    return DataModelArray
+        @vectorstoremodel
+        @dataclass
+        class DataModelArray:
+            vector: Annotated[
+                np.ndarray | None,
+                VectorStoreRecordVectorField(
+                    embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                    index_kind=index_kind,
+                    dimensions=1536,
+                    distance_function=distance_function,
+                    property_type="float",
+                    serialize_function=np.ndarray.tolist,
+                    deserialize_function=np.array,
+                ),
+            ] = None
+            id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+            content: Annotated[
+                str,
+                VectorStoreRecordDataField(
+                    has_embedding=True,
+                    embedding_property_name="vector",
+                    property_type="str",
+                    is_full_text_searchable=True,
+                ),
+            ] = "content1"
+            title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = (
+                "title"
+            )
+            tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
 
+        return DataModelArray
 
-def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
     @vectorstoremodel
     @dataclass
     class DataModelList:
@@ -111,7 +119,7 @@ collection_name = "test"
 distance_function = DistanceFunction.COSINE_SIMILARITY
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.IVF_FLAT, distance_function)
+DataModel = get_data_model("array", IndexKind.IVF_FLAT, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -177,29 +185,15 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
 }
 
 
-def print_record(result: VectorSearchResult | None = None, record: DataModel | None = None):
-    if result:
-        record = result.record
-    print(Colors.CGREEN + f"  Found id: {record.id}" + Colors.CEND)
-    if result and result.score is not None:
-        print(Colors.CGREEN + f"    Score: {result.score}" + Colors.CEND)
-    print(Colors.CWHITE + f"    Content: {record.content}")
-    print(f"    Tag: {record.tag}" + Colors.CEND)
-    if record.vector is not None:
-        print(Colors.CWHITE + f"    Vector (first five): {record.vector[:5]}" + Colors.CEND)
-
-
-async def main(collection: str, use_azure_openai: bool, embedding_model: str):
+async def main(collection: str, use_azure_openai: bool):
     print("-" * 30)
     kernel = Kernel()
-    service_id = "embedding"
-    if use_azure_openai:
-        embedder = AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model)
-    else:
-        embedder = OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model)
+    embedder = (
+        AzureTextEmbedding(service_id="embedding") if use_azure_openai else OpenAITextEmbedding(service_id="embedding")
+    )
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
-        print(Colors.CGREY + f"Creating {collection} collection!" + Colors.CEND)
+        print_with_color(f"Creating {collection} collection!", Colors.CGREY)
         await record_collection.delete_collection()
         await record_collection.create_collection_if_not_exists()
 
@@ -222,14 +216,14 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             tag="code",
         )
 
-        print(Colors.CBLUE + "Adding records!" + Colors.CEND)
+        print_with_color("Adding records!", Colors.CBLUE)
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
             [record1, record2, record3], data_model_type=DataModel
         )
 
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
-        print(Colors.CBLUE + "Getting records!" + Colors.CEND)
+        print_with_color("Getting records!", Colors.CBLUE)
         results = await record_collection.get_batch([record1.id, record2.id, record3.id])
         if results:
             [print_record(record=result) for result in results]
@@ -241,10 +235,10 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             filter=VectorSearchFilter.equal_to("tag", "general"),
         )
         print("-" * 30)
-        print(Colors.CBLUE + "Searching for 'python', with filter 'tag=general'" + Colors.CEND)
+        print_with_color("Searching for 'python', with filter 'tag == general'", Colors.CBLUE)
         if isinstance(record_collection, VectorTextSearchMixin):
             print("-" * 30)
-            print(Colors.CBLUE + "Using text search" + Colors.CEND)
+            print_with_color("Using text search", Colors.CBLUE)
             try:
                 search_results = await record_collection.text_search("python", options)
                 if search_results.total_count == 0:
@@ -255,10 +249,11 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
                 print("Text search could not execute.")
         if isinstance(record_collection, VectorizedSearchMixin):
             print("-" * 30)
-            print(
-                Colors.CBLUE + f"Using vectorized search, for {distance_function.value}, "
+            print_with_color(
+                f"Using vectorized search, for {distance_function.value}, "
                 f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better"  # noqa: E501
-                f"" + Colors.CEND
+                f"",
+                Colors.CBLUE,
             )
             try:
                 search_results = await record_collection.vectorized_search(
@@ -273,10 +268,10 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
                 print("Vectorized search could not execute.")
         if isinstance(record_collection, VectorizableTextSearchMixin):
             print("-" * 30)
-            print(
-                Colors.CBLUE + f"Using vectorized search, for {distance_function.value}, "
-                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better"  # noqa: E501
-                 + Colors.CEND
+            print_with_color(
+                f"Using vectorized search, for {distance_function.value}, "
+                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
+                Colors.CBLUE,
             )
             try:
                 search_results = await record_collection.vectorizable_text_search("python", options)
@@ -287,9 +282,9 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             except Exception:
                 print("Vectorizable text search could not execute.")
         print("-" * 30)
-        print(Colors.CBLUE + "Deleting collection!" + Colors.CEND)
+        print_with_color("Deleting collection!", Colors.CBLUE)
         await record_collection.delete_collection()
-        print(Colors.CGREY + "Done!" + Colors.CEND)
+        print_with_color("Done!", Colors.CGREY)
 
 
 if __name__ == "__main__":
@@ -299,9 +294,5 @@ if __name__ == "__main__":
     parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
-    # Model
-    parser.add_argument(
-        "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
-    )
     args = parser.parse_args()
-    asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai, embedding_model=args.model))
+    asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))

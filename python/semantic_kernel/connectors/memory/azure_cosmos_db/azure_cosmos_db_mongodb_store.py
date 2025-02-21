@@ -16,10 +16,12 @@ from pymongo.driver_info import DriverInfo
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_collection import (
     AzureCosmosDBforMongoDBCollection,
 )
+from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_store import MongoDBAtlasStore
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.data import VectorStoreRecordCollection
@@ -51,18 +53,18 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         env_file_encoding (str): The encoding of the environment settings file.
 
         """
+        managed_client: bool = not mongo_client
+        if mongo_client:
+            super().__init__(
+                mongo_client=mongo_client,
+                managed_client=managed_client,
+                database_name=database_name or DEFAULT_DB_NAME,
+            )
+            return
         from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_settings import (
             AzureCosmosDBforMongoDBSettings,
         )
 
-        if mongo_client and database_name:
-            super().__init__(
-                mongo_client=mongo_client,
-                managed_client=False,
-                database_name=database_name,
-            )
-            return
-        managed_client: bool = False
         try:
             settings = AzureCosmosDBforMongoDBSettings.create(
                 env_file_path=env_file_path,
@@ -74,12 +76,11 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
         if not settings.connection_string:
             raise VectorStoreInitializationException("The connection string is missing.")
-        if not mongo_client:
-            mongo_client = AsyncMongoClient(
-                settings.connection_string.get_secret_value(),
-                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
-            )
-            managed_client = True
+
+        mongo_client = AsyncMongoClient(
+            settings.connection_string.get_secret_value(),
+            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+        )
 
         super().__init__(
             mongo_client=mongo_client,

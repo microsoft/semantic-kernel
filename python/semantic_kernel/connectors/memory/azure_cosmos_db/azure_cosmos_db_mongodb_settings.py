@@ -35,4 +35,4 @@ class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "AZURE_COSMOS_DB_MONGODB_"
 
     connection_string: SecretStr | None = None
-    database_name: str | None = DEFAULT_DB_NAME
+    database_name: str = DEFAULT_DB_NAME
