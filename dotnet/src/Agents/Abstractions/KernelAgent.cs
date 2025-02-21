@@ -52,8 +52,8 @@ public abstract class KernelAgent : Agent
     {
         if (this.Template is null)
         {
-           // Use the instructions as-is
-           return this.Instructions;
+            // Use the instructions as-is
+            return this.Instructions;
         }
 
         // Use the provided template as the instructions
