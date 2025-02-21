@@ -69,7 +69,7 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
             ]
         };
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, agentDefinition.GetOpenAIAssistantDefinition());
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponse);
 
         // Act
         var agent = await factory.CreateAsync(this._kernel, agentDefinition);
@@ -82,8 +82,39 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         Assert.Equal(this._kernel, agent.Kernel);
     }
 
+    /// <summary>
+    /// OpenAI Assistant response.
+    /// </summary>
+    public const string OpenAIAssistantResponse =
+        """
+        {
+          "id": "asst_z2BnUzSnnZ4QimeUCsVSdAug",
+          "object": "assistant",
+          "created_at": 1740137107,
+          "name": "OpenAIAssistantAgent",
+          "description": "OpenAIAssistantAgent Description",
+          "model": "gpt-4o",
+          "instructions": "OpenAIAssistantAgent Instructions",
+          "tools": [
+            {
+              "type": "code_interpreter"
+            }
+          ],
+          "top_p": 1.0,
+          "temperature": 1.0,
+          "reasoning_effort": null,
+          "tool_resources": {
+            "code_interpreter": {
+              "file_ids": []
+            }
+          },
+          "metadata": {},
+          "response_format": "auto"
+        }
+        """;
+
     #region private
-    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
-        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
+    private void SetupResponse(HttpStatusCode statusCode, string response) =>
+        this._messageHandlerStub.SetupResponses(statusCode, [response]);
     #endregion
 }

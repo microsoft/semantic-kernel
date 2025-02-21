@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -15,31 +16,41 @@ internal static class AgentDefinitionExtensions
     public const string FileIds = "file_ids";
 
     /// <summary>
-    /// Return the <see cref="OpenAIAssistantDefinition"/> which corresponds with the provided <see cref="AgentDefinition"/>.
+    /// Create the <see cref="AssistantCreationOptions"/> which corresponds with the provided <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
-    public static OpenAIAssistantDefinition GetOpenAIAssistantDefinition(this AgentDefinition agentDefinition)
+    public static AssistantCreationOptions CreateAssistantCreationOptions(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);
         Verify.NotNull(agentDefinition.Model.Id);
 
-        return new OpenAIAssistantDefinition(agentDefinition.Model.Id)
+        var assistantCreationOptions = new AssistantCreationOptions()
         {
-            Id = agentDefinition.Id ?? string.Empty,
             Name = agentDefinition.Name,
             Description = agentDefinition.Description,
             Instructions = agentDefinition.Instructions,
-            EnableCodeInterpreter = agentDefinition.IsEnableCodeInterpreter(),
-            CodeInterpreterFileIds = agentDefinition.GetCodeInterpreterFileIds(),
-            EnableFileSearch = agentDefinition.IsEnableFileSearch(),
-            VectorStoreId = agentDefinition.GetVectorStoreId(),
-            EnableJsonResponse = agentDefinition?.Model?.Options?.IsEnableJsonResponse() ?? false,
             Temperature = agentDefinition?.Model?.Options?.GetTemperature(),
-            TopP = agentDefinition?.Model?.Options?.GetTopP(),
-            ExecutionOptions = agentDefinition?.GetExecutionOptions(),
-            Metadata = agentDefinition?.GetMetadata(),
+            NucleusSamplingFactor = agentDefinition?.Model?.Options?.GetTopP(),
+            ResponseFormat = agentDefinition?.Model?.Options?.IsEnableJsonResponse() ?? false ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto
         };
+
+        // TODO: Implement
+        // ToolResources
+        // Metadata
+        // ExecutionOptions
+
+        if (agentDefinition?.IsEnableCodeInterpreter() ?? false)
+        {
+            assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
+        }
+
+        if (agentDefinition?.IsEnableFileSearch() ?? false)
+        {
+            assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+        }
+
+        return assistantCreationOptions;
     }
 
     /// <summary>
@@ -65,18 +76,6 @@ internal static class AgentDefinitionExtensions
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
     public static string? GetVectorStoreId(this AgentDefinition agentDefinition)
-    {
-        Verify.NotNull(agentDefinition);
-
-        // TODO: Implement
-        return null;
-    }
-
-    /// <summary>
-    /// Retrieve the execution options from the agent definition.
-    /// </summary>
-    /// <param name="agentDefinition">Agent definition</param>
-    public static OpenAIAssistantExecutionOptions? GetExecutionOptions(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 

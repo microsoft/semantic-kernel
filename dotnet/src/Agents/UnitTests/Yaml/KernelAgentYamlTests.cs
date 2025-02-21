@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using SemanticKernel.Agents.UnitTests.AzureAI.Definition;
 using SemanticKernel.Agents.UnitTests.OpenAI;
+using SemanticKernel.Agents.UnitTests.OpenAI.Definition;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Yaml;
@@ -113,7 +114,7 @@ public class KernelAgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, KernelAgentYaml.ToAgentDefinition(text).GetOpenAIAssistantDefinition());
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
 
         // Act
         var agent = await KernelAgentYaml.FromAgentYamlAsync(this._kernel, text, factory);
@@ -162,9 +163,6 @@ public class KernelAgentYamlTests : IDisposable
     }
 
     #region private
-    private void SetupResponse(HttpStatusCode statusCode, OpenAIAssistantDefinition definition) =>
-        this._messageHandlerStub.SetupResponses(statusCode, OpenAIAssistantResponseContent.AssistantDefinition(definition));
-
     private void SetupResponse(HttpStatusCode statusCode, string response) =>
 #pragma warning disable CA2000 // Dispose objects before losing scope
         this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)

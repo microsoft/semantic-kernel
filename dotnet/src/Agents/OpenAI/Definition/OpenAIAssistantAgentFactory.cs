@@ -3,7 +3,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Factory;
-using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -22,6 +21,8 @@ public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
     public async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
+        Verify.NotNull(agentDefinition.Model);
+        Verify.NotNull(agentDefinition.Model.Id);
 
         KernelAgent? kernelAgent = null;
         if (agentDefinition.Type?.Equals(OpenAIAssistantAgentType, System.StringComparison.Ordinal) ?? false)
@@ -29,9 +30,8 @@ public sealed class OpenAIAssistantAgentFactory : IKernelAgentFactory
             var clientProvider = kernel.GetOpenAIClientProvider(agentDefinition);
             AssistantClient client = clientProvider.Client.GetAssistantClient();
 
-            var definition = agentDefinition.GetOpenAIAssistantDefinition();
-            AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
-            Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+            var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
+            Assistant model = await client.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
             kernelAgent = new OpenAIAssistantAgent(model, clientProvider.AssistantClient)
             {
