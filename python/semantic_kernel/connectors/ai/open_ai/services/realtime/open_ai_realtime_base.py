@@ -38,7 +38,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.realtime_events.realtime_event import (
+from semantic_kernel.contents.realtime_events import (
     RealtimeAudioEvent,
     RealtimeEvent,
     RealtimeEvents,

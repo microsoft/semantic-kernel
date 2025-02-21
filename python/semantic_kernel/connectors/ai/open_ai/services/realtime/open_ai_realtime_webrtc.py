@@ -31,7 +31,7 @@ from pydantic import PrivateAttr
 from semantic_kernel.connectors.ai.open_ai.services.realtime.const import ListenEvents
 from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_base import OpenAIRealtimeBase
 from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.realtime_events.realtime_event import RealtimeAudioEvent, RealtimeEvents
+from semantic_kernel.contents.realtime_events import RealtimeAudioEvent, RealtimeEvents
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
