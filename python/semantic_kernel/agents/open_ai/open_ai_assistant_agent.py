@@ -7,6 +7,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from openai.types.beta.assistant import Assistant
+from openai.types.beta.assistant_create_params import (
+    ToolResources,
+    ToolResourcesCodeInterpreter,
+    ToolResourcesFileSearch,
+)
+from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
+from openai.types.beta.file_search_tool_param import FileSearchToolParam
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.agents.agent import Agent
@@ -19,7 +26,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import Open
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
-from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
@@ -122,13 +129,21 @@ class OpenAIAssistantAgent(Agent):
             args.update(kwargs)
         super().__init__(**args)
 
+    def _get_plugin_name(self, plugin: KernelPlugin | object | dict[str, Any]) -> str:
+        if isinstance(plugin, dict):
+            return plugin.get("name", plugin.__class__.__name__)
+        if isinstance(plugin, KernelPlugin):
+            return plugin.name
+        return plugin.__class__.__name__
+
     @model_validator(mode="after")
-    def configure_kernel(self) -> None:
-        """Configure the kernel."""
+    def configure_agent(self):
+        """Handle the plugins."""
         if self.plugins:
-            # Note, plugins provided via the constructor take precedence over those already in the kernel
             for plugin in self.plugins:
-                self.kernel.add_plugins(plugin)
+                name = self._get_plugin_name(plugin)
+                self.kernel.add_plugin(plugin, plugin_name=name)
+        return self
 
     @classmethod
     def create_openai_client(
@@ -238,14 +253,11 @@ class OpenAIAssistantAgent(Agent):
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        if not azure_openai_settings.base_url:
-            if not azure_openai_settings.endpoint:
-                raise AgentInitializationException("Please provide an endpoint or a base_url")
-            azure_openai_settings.base_url = HttpsUrl(  # type: ignore
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.chat_deployment_name}"
-            )
+        if not azure_openai_settings.endpoint:
+            raise AgentInitializationException("Please provide an Azure OpenAI endpoint")
+
         return AsyncAzureOpenAI(
-            base_url=str(azure_openai_settings.base_url),
+            azure_endpoint=str(azure_openai_settings.endpoint),
             api_version=azure_openai_settings.api_version,
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             azure_ad_token=ad_token,
@@ -253,6 +265,40 @@ class OpenAIAssistantAgent(Agent):
             default_headers=merged_headers,
             **kwargs,
         )
+
+    # endregion
+
+    # region Tool Handling
+
+    @classmethod
+    def configure_code_interpreter_tool(
+        cls: type[_T], file_ids: str | list[str] | None = None, **kwargs: Any
+    ) -> tuple[list[CodeInterpreterToolParam], ToolResources]:
+        """Generate tool + tool_resources for the code_interpreter."""
+        if isinstance(file_ids, str):
+            file_ids = [file_ids]
+        tool: CodeInterpreterToolParam = {"type": "code_interpreter"}
+        resources: ToolResources = {}
+        if file_ids:
+            resources["code_interpreter"] = ToolResourcesCodeInterpreter(file_ids=file_ids)
+        return [tool], resources
+
+    @classmethod
+    def configure_file_search_tool(
+        cls: type[_T], vector_store_ids: str | list[str], **kwargs: Any
+    ) -> tuple[list[FileSearchToolParam], ToolResources]:
+        """Generate tool + tool_resources for the file_search."""
+        if isinstance(vector_store_ids, str):
+            vector_store_ids = [vector_store_ids]
+
+        tool: FileSearchToolParam = {
+            "type": "file_search",
+        }
+        resources: ToolResources = {"file_search": ToolResourcesFileSearch(vector_store_ids=vector_store_ids, **kwargs)}
+        return [tool], resources
+    
+    @classmethod
+    def form_json_schema_response_format(cls: type[_T], )
 
     # endregion
 

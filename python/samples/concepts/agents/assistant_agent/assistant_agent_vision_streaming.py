@@ -3,6 +3,7 @@
 import asyncio
 import os
 
+from semantic_kernel import Kernel
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
@@ -10,17 +11,24 @@ from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferen
 The following sample demonstrates how to create an OpenAI         
 assistant using either Azure OpenAI or OpenAI and leverage the
 multi-modal content types to have the assistant describe images
-and answer questions about them, and provide non-streaming responses.
+and answer questions about them and provide streaming responses.
 """
+
+# Create the instance of the Kernel
+kernel = Kernel()
+
+# Toggle streaming or non-streaming mode
+streaming = False
 
 
 async def main():
-    # Create the OpenAI Assistant Agent client
+    # Create the OpenAI Assistant Agent
     # Note Azure OpenAI doesn't support vision files yet
     client = OpenAIAssistantAgent.create_openai_client()
 
-    # Load a sample image of a cat used for the assistant to describe
-    file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg")
+    file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), "resources", "cat.jpg"
+    )
 
     with open(file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
@@ -28,8 +36,8 @@ async def main():
     # Create the assistant definition
     definition = await client.beta.assistants.create(
         model="gpt-4o",
-        instructions="Answer questions about the provided images.",
-        name="Vision",
+        instructions="Answer questions about the menu.",
+        name="Host",
     )
 
     # Create the OpenAIAssistantAgent instance
@@ -72,9 +80,14 @@ async def main():
 
             print(f"# User: '{message.items[0].text}'")  # type: ignore
 
-            async for content in agent.invoke(thread_id=thread.id):
+            first_chunk = True
+            async for content in agent.invoke_stream(thread_id=thread.id):
                 if content.role != AuthorRole.TOOL:
-                    print(f"# Agent: {content.content}")
+                    if first_chunk:
+                        print("# Agent: ", end="", flush=True)
+                        first_chunk = False
+                    print(content.content, end="", flush=True)
+            print()
 
     finally:
         await client.files.delete(file.id)

@@ -56,7 +56,7 @@ class AzureAIAgent(Agent):
     definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
-    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
+    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel  # type: ignore
 
     def __init__(
         self,

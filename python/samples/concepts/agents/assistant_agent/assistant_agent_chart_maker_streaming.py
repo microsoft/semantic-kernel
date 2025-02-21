@@ -3,7 +3,7 @@ import asyncio
 
 from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_images
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -19,13 +19,11 @@ async def main():
     # client = OpenAIAssistantAgent.create_openai_client()
     client = OpenAIAssistantAgent.create_azure_openai_client()
 
-    code_interpreter_tools, _ = OpenAIAssistantAgent.configure_code_interpreter_tool()
-
     definition = await client.beta.assistants.create(
         model="gpt-4o",
         instructions="Create charts as requested without explanation.",
         name="ChartMaker",
-        tools=code_interpreter_tools,
+        tools=[{"type": "code_interpreter"}],
     )
 
     agent = OpenAIAssistantAgent(
@@ -52,23 +50,41 @@ async def main():
 
     try:
         for input in user_inputs:
-            file_ids = []
             await agent.add_chat_message(thread_id=thread.id, message=input)
-            async for message in agent.invoke(thread_id=thread.id):
-                if message.content:
-                    print(f"# {message.role}: {message.content}")
 
-                if len(message.items) > 0:
-                    for item in message.items:
-                        if isinstance(item, FileReferenceContent):
-                            file_ids.extend([
-                                item.file_id
-                                for item in message.items
-                                if isinstance(item, FileReferenceContent) and item.file_id is not None
-                            ])
+            print(f"# User: '{input}'")
+
+            file_ids: list[str] = []
+            is_code = False
+            last_role = None
+            async for response in agent.invoke_stream(thread_id=thread.id):
+                current_is_code = response.metadata.get("code", False)
+
+                if current_is_code:
+                    if not is_code:
+                        print("\n\n```python")
+                        is_code = True
+                    print(response.content, end="", flush=True)
+                else:
+                    if is_code:
+                        print("\n```")
+                        is_code = False
+                        last_role = None
+                    if hasattr(response, "role") and response.role is not None and last_role != response.role:
+                        print(f"\n# {response.role}: ", end="", flush=True)
+                        last_role = response.role
+                    print(response.content, end="", flush=True)
+                file_ids.extend([
+                    item.file_id
+                    for item in response.items
+                    if isinstance(item, StreamingFileReferenceContent) and item.file_id is not None
+                ])
+            if is_code:
+                print("```\n")
 
             # Use a sample utility method to download the files to the current working directory
             await download_response_images(agent, file_ids)
+            file_ids.clear()
 
     finally:
         await client.beta.threads.delete(thread.id)

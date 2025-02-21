@@ -21,6 +21,7 @@ from openai.types.beta.threads.runs import (
 
 from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_code_interpreter_content,
+    generate_final_streaming_message_content,
     generate_function_call_content,
     generate_function_result_content,
     generate_message_content,
@@ -225,9 +226,12 @@ class AssistantThreadActions:
                 error_message = ""
                 if run.last_error and run.last_error.message:
                     error_message = run.last_error.message
+                incomplete_details = ""
+                if run.incomplete_details:
+                    incomplete_details = str(run.incomplete_details.reason)
                 raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{agent.name}` and thread `{thread_id}` "
-                    f"with error: {error_message}"
+                    f"with error: {error_message} or incomplete details: {incomplete_details}"
                 )
 
             # Check if function calling required
@@ -502,7 +506,7 @@ class AssistantThreadActions:
                                 )
 
                                 if message and message.content:
-                                    content = generate_message_content(agent.name, message, step)
+                                    content = generate_final_streaming_message_content(agent.name, message, step)
                                     if messages is not None:
                                         messages.append(content)
                         return

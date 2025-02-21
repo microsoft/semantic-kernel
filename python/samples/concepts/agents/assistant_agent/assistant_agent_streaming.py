@@ -2,27 +2,19 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel import Kernel
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI. OpenAI Assistants  #
-# allow for function calling, the use of file search and a          #
-# code interpreter. Assistant Threads are used to manage the        #
-# conversation state, similar to a Semantic Kernel Chat History.    #
-# This sample also demonstrates the Assistants Streaming            #
-# capability and how to manage an Assistants chat history.          #
-#####################################################################
-
-HOST_NAME = "Host"
-HOST_INSTRUCTIONS = "Answer questions about the menu."
-
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = True
+"""
+The following sample demonstrates how to create an OpenAI
+assistant using either Azure OpenAI or OpenAI. OpenAI Assistants
+allow for function calling, the use of file search and a
+code interpreter. Assistant Threads are used to manage the
+conversation state, similar to a Semantic Kernel Chat History.
+This sample also demonstrates the Assistants Streaming
+capability and how to manage an Assistants chat history.
+"""
 
 
 # Define a sample plugin for the sample
@@ -44,66 +36,45 @@ class MenuPlugin:
         return "$9.99"
 
 
-# A helper method to invoke the agent with the user input
-async def invoke_agent(
-    agent: OpenAIAssistantAgent, thread_id: str, input: str, history: list[ChatMessageContent]
-) -> None:
-    """Invoke the agent with the user input."""
-    message = ChatMessageContent(role=AuthorRole.USER, content=input)
-    await agent.add_chat_message(thread_id=thread_id, message=message)
-
-    # Add the user message to the history
-    history.append(message)
-
-    print(f"# {AuthorRole.USER}: '{input}'")
-
-    first_chunk = True
-    async for content in agent.invoke_stream(thread_id=thread_id, messages=history):
-        if content.role != AuthorRole.TOOL:
-            if first_chunk:
-                print(f"# {content.role}: ", end="", flush=True)
-                first_chunk = False
-            print(content.content, end="", flush=True)
-    print()
-
-
 async def main():
-    # Create the instance of the Kernel
-    kernel = Kernel()
+    # Create the OpenAI Assistant Agent for use with Azure OpenAI
+    client = OpenAIAssistantAgent.create_openai_client()
+    # For use with OpenAI use the following:
+    # client = OpenAIAssistantAgent.create_azure_openai_client()
 
-    # Add the sample plugin to the kernel
-    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
+    definition = await client.beta.assistants.create(
+        model="gpt-4o",
+        name="Host",
+        instructions="Answer questions about the menu.",
+    )
 
-    # Create the OpenAI Assistant Agent
-    service_id = "agent"
-    if use_azure_openai:
-        agent = await AzureAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
-    else:
-        agent = await OpenAIAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
+    agent = OpenAIAssistantAgent(
+        client=client,
+        definition=definition,
+        plugins=[MenuPlugin()],
+    )
 
-    thread_id = await agent.create_thread()
+    thread = await client.beta.threads.create()
 
-    history: list[ChatMessageContent] = []
+    user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "How much is that?", "Thank you"]
 
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="Hello", history=history)
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?", history=history)
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?", history=history)
-        await invoke_agent(agent, thread_id=thread_id, input="Thank you", history=history)
-    finally:
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
-    # You may then view the conversation history
-    print("========= Conversation History =========")
-    for content in history:
-        if content.role != AuthorRole.TOOL:
-            print(f"# {content.role}: {content.content}")
-    print("========= End of Conversation History =========")
+            print(f"# {AuthorRole.USER}: '{user_input}'")
+
+            first_chunk = True
+            async for content in agent.invoke_stream(thread_id=thread.id):
+                if content.role != AuthorRole.TOOL:
+                    if first_chunk:
+                        print(f"# {content.role}: ", end="", flush=True)
+                        first_chunk = False
+                    print(content.content, end="", flush=True)
+            print()
+    finally:
+        await client.beta.threads.delete(thread.id)
+        await client.beta.assistants.delete(assistant_id=agent.id)
 
 
 if __name__ == "__main__":

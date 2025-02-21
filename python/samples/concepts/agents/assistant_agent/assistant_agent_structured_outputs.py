@@ -39,6 +39,7 @@ async def main():
         instructions="Find answers to the user's questions in the provided file.",
         tools=[{"type": "code_interpreter"}],
         tool_resources={"code_interpreter": {"file_ids": [file.id]}},
+        response_format=
     )
 
     # Create the OpenAIAssistantAgent instance
