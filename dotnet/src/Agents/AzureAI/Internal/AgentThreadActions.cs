@@ -148,7 +148,7 @@ internal static class AgentThreadActions
     {
         logger.LogAzureAIAgentCreatingRun(nameof(InvokeAsync), threadId);
 
-        List<Azure.AI.Projects.ToolDefinition> tools = new(agent.Definition.Tools);
+        List<ToolDefinition> tools = new(agent.Definition.Tools);
 
         // Add unique functions from the Kernel which are not already present in the agent's tools
         var functionToolNames = new HashSet<string>(tools.OfType<FunctionToolDefinition>().Select(t => t.Name));
@@ -380,7 +380,7 @@ internal static class AgentThreadActions
     {
         logger.LogAzureAIAgentCreatingRun(nameof(InvokeAsync), threadId);
 
-        Azure.AI.Projects.ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
