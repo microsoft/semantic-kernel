@@ -54,11 +54,15 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// </summary>
     /// <param name="model">The agent model definition.</param>
     /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
-    /// <param name="templateFactory">An optional template factory.</param>
+    /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public AzureAIAgent(
         Azure.AI.Projects.Agent model,
         AgentsClient client,
-        IPromptTemplateFactory? templateFactory = null)
+        IEnumerable<KernelPlugin>? plugins = null,
+        IPromptTemplateFactory? templateFactory = null,
+        string? templateFormat = null)
     {
         this.Client = client;
         this.Definition = model;
@@ -69,8 +73,19 @@ public sealed partial class AzureAIAgent : KernelAgent
 
         if (templateFactory != null)
         {
-            PromptTemplateConfig templateConfig = new(this.Instructions);
+            Verify.NotNullOrWhiteSpace(templateFormat);
+
+            PromptTemplateConfig templateConfig = new(this.Instructions)
+            {
+                TemplateFormat = templateFormat
+            };
+
             this.Template = templateFactory.Create(templateConfig);
+        }
+
+        if (plugins != null)
+        {
+            this.Kernel.Plugins.AddRange(plugins);
         }
     }
 

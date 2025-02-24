@@ -35,14 +35,14 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="definition">The assistant definition.</param>
     /// <param name="client">The OpenAI provider for accessing the Assistant API service.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
-    /// <param name="templateConfig">The prompt template configuration.</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public OpenAIAssistantAgent(
         Assistant definition,
         AssistantClient client,
         IEnumerable<KernelPlugin>? plugins = null,
-        PromptTemplateConfig? templateConfig = null,
-        IPromptTemplateFactory? templateFactory = null)
+        IPromptTemplateFactory? templateFactory = null,
+        string? templateFormat = null)
     {
         this.Client = client;
 
@@ -51,11 +51,18 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.Description = this.Definition.Description;
         this.Id = this.Definition.Id;
         this.Name = this.Definition.Name;
-        this.Instructions = templateConfig?.Template ?? this.Definition.Instructions;
+        this.Instructions = this.Definition.Instructions;
 
-        if (templateConfig != null)
+        if (templateFactory != null)
         {
-            this.Template = templateFactory?.Create(templateConfig);
+            Verify.NotNullOrWhiteSpace(templateFormat);
+
+            PromptTemplateConfig templateConfig = new(this.Instructions)
+            {
+                TemplateFormat = templateFormat
+            };
+
+            this.Template = templateFactory.Create(templateConfig);
         }
 
         if (plugins != null)
@@ -101,7 +108,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="defaultArguments">Required arguments that provide default template parameters, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="templateConfig">The prompt template configuration.</param>
-    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFactory">An prompt template factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantFromTemplateAsync).")]
@@ -111,7 +118,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Kernel kernel,
         KernelArguments defaultArguments,
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null,
+        IPromptTemplateFactory templateFactory,
         CancellationToken cancellationToken = default)
     {
         // Validate input
@@ -120,9 +127,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Verify.NotNull(clientProvider, nameof(clientProvider));
         Verify.NotNull(capabilities, nameof(capabilities));
         Verify.NotNull(templateConfig, nameof(templateConfig));
+        Verify.NotNull(templateFactory, nameof(templateFactory));
 
         // Ensure template is valid (avoid failure after posting assistant creation)
-        IPromptTemplate? template = templateFactory?.Create(templateConfig);
+        IPromptTemplate template = templateFactory.Create(templateConfig);
 
         // Create the client
         AssistantClient client = clientProvider.Client.GetAssistantClient();
@@ -271,7 +279,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             cancellationToken);
 
     /// <summary>
-    /// Creates a new assistant thread.
+    /// Deletes an assistant thread.
     /// </summary>
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -320,7 +328,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if the assistant definition was deleted.</returns>
     /// <remarks>
-    /// An assistant-based agent is not useable after deletion.
+    /// An assistant-based agent is not usable after deletion.
     /// </remarks>
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to remove or otherwise modify the Assistant definition.")]
     public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
