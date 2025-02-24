@@ -35,11 +35,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
   </ItemGroup>
 
   <ItemGroup>
