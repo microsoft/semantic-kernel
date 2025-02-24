@@ -36,7 +36,7 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
         {
             if (kernelAgentFactory is not null && kernelAgentFactory.IsSupported(agentDefinition))
             {
-                var kernelAgent = await kernelAgentFactory.CreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
+                var kernelAgent = await kernelAgentFactory.TryCreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
                 if (kernelAgent is not null)
                 {
                     return Task.FromResult(kernelAgent).Result;
