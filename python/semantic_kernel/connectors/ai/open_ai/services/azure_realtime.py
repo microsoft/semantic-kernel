@@ -10,9 +10,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.realtime.open_ai_realtime_websocket import (
-    OpenAIRealtimeWebsocketBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtimeWebsocketBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
