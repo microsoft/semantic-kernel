@@ -3,6 +3,7 @@
 using System.Text;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 
@@ -26,35 +27,6 @@ public class AzureOpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) 
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
-        var reply = await ExecuteChatPromptWithReasoningAsync(kernel);
-
-        Console.WriteLine(reply);
-    }
-
-    /// <summary>
-    /// Sample showing how to use Azure Open AI Chat Completion with Azure Default Credential.
-    /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
-    /// </summary>
-    [Fact]
-    public async Task DefaultAzureCredentialSampleAsync()
-    {
-        Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
-
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                credentials: new DefaultAzureCredential(),
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
-
-        var reply = await ExecuteChatPromptWithReasoningAsync(kernel);
-
-        Console.WriteLine(reply);
-    }
-
-    private async Task<string> ExecuteChatPromptWithReasoningAsync(Kernel kernel)
-    {
         // Create execution settings with high reasoning effort.
         var executionSettings = new AzureOpenAIPromptExecutionSettings //OpenAIPromptExecutionSettings
         {
@@ -77,6 +49,47 @@ public class AzureOpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) 
         // Invoke the prompt with high reasoning effort.
         var reply = await kernel.InvokePromptAsync(chatPrompt.ToString(), kernelArgs);
 
-        return reply.ToString();
+        Console.WriteLine(reply);
+    }
+
+    /// <summary>
+    /// Sample showing how to use Azure Open AI Chat Completion with Azure Default Credential.
+    /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
+    /// </summary>
+    [Fact]
+    public async Task DefaultAzureCredentialSampleAsync()
+    {
+        Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential with Reasoning ========");
+
+        IChatCompletionService chatCompletionService = new AzureOpenAIChatCompletionService(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            credentials: new DefaultAzureCredential(),
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+
+        // Create execution settings with high reasoning effort.
+        var executionSettings = new AzureOpenAIPromptExecutionSettings //OpenAIPromptExecutionSettings
+        {
+            // Flags Azure SDK to use the new token property.
+            SetNewMaxCompletionTokensEnabled = true,
+            MaxTokens = 2000,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            // Note: reasoning effort is only available for reasoning models (at this moment o3-mini & o1 models)
+            ReasoningEffort = ChatReasoningEffortLevel.High
+        };
+
+        // Create a ChatHistory and add messages.
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage(
+            "You are an expert software engineer, specialized in the Semantic Kernel SDK and .NET framework.");
+        chatHistory.AddUserMessage(
+            "Hi, Please craft me an example code in .NET using Semantic Kernel that implements a chat loop.");
+
+        // Instead of a prompt string, call GetChatMessageContentAsync with the chat history.
+        var reply = await chatCompletionService.GetChatMessageContentAsync(
+            chatHistory: chatHistory,
+            executionSettings: executionSettings);
+
+        Console.WriteLine(reply);
     }
 }
