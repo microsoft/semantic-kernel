@@ -17,8 +17,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
-
-// ReSharper disable StringLiteralTypo
+using MEAI = Microsoft.Extensions.AI;
 
 namespace SemanticKernel.UnitTests.Functions;
 
@@ -150,18 +149,18 @@ public class KernelFunctionFromPromptTests
     public async Task ItUsesChatServiceIdWhenProvidedInMethodAsync()
     {
         // Arrange
-        var mockTextGeneration1 = new Mock<ITextGenerationService>();
-        var mockTextGeneration2 = new Mock<IChatCompletionService>();
+        var mockTextGeneration = new Mock<ITextGenerationService>();
+        var mockChatCompletion = new Mock<IChatCompletionService>();
         var fakeTextContent = new TextContent("llmResult");
         var fakeChatContent = new ChatMessageContent(AuthorRole.User, "content");
 
-        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
-        mockTextGeneration2.Setup(c => c.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeChatContent]);
+        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockChatCompletion.Setup(c => c.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeChatContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-        builder.Services.AddKeyedSingleton("service3", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration.Object);
+        builder.Services.AddKeyedSingleton("service2", mockChatCompletion.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration.Object);
         Kernel kernel = builder.Build();
 
         var func = kernel.CreateFunctionFromPrompt("my prompt", [new PromptExecutionSettings { ServiceId = "service2" }]);
@@ -170,8 +169,41 @@ public class KernelFunctionFromPromptTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
-        mockTextGeneration2.Verify(a => a.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockChatCompletion.Verify(a => a.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ItUsesChatClientIdWhenProvidedInMethodAsync()
+    {
+        // Arrange
+        var mockTextGeneration = new Mock<ITextGenerationService>();
+        var mockChatCompletion = new Mock<IChatCompletionService>();
+        var mockChatClient = new Mock<MEAI.IChatClient>();
+        var fakeTextContent = new TextContent("llmResult");
+        var fakeChatContent = new ChatMessageContent(AuthorRole.User, "content");
+        var fakeChatResponse = new MEAI.ChatResponse(new MEAI.ChatMessage());
+
+        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockChatCompletion.Setup(c => c.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeChatContent]);
+        mockChatClient.Setup(c => c.GetResponseAsync(It.IsAny<IList<MEAI.ChatMessage>>(), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(fakeChatResponse);
+        mockChatClient.Setup(c => c.GetService(typeof(MEAI.ChatClientMetadata), It.IsAny<object?>())).Returns(new MEAI.ChatClientMetadata());
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration.Object);
+        builder.Services.AddKeyedSingleton("service2", mockChatClient.Object);
+        builder.Services.AddKeyedSingleton("service3", mockChatCompletion.Object);
+        Kernel kernel = builder.Build();
+
+        var func = kernel.CreateFunctionFromPrompt("my prompt", [new PromptExecutionSettings { ServiceId = "service2" }]);
+
+        // Act
+        await kernel.InvokeAsync(func);
+
+        // Assert
+        mockTextGeneration.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockChatCompletion.Verify(a => a.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockChatClient.Verify(a => a.GetResponseAsync(It.IsAny<IList<MEAI.ChatMessage>>(), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]

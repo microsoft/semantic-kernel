@@ -304,11 +304,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(TResult) == typeof(string))
                 {
                     yield return (TResult)(object)kernelContent.ToString();
+                    continue;
                 }
 
                 if (content is TResult contentAsT)
                 {
                     yield return contentAsT;
+                    continue;
                 }
 
                 if (typeof(TResult) == typeof(byte[]))
@@ -316,26 +318,31 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     if (content is StreamingKernelContent byteKernelContent)
                     {
                         yield return (TResult)(object)byteKernelContent.ToByteArray();
+                        continue;
                     }
                 }
 
-                if (content is StreamingKernelContent kernelContent2 && kernelContent2.InnerContent is TResult innerContentAsT)
+                if (kernelContent.InnerContent is TResult innerContentAsT)
                 {
                     yield return innerContentAsT;
+                    continue;
                 }
             }
-            if (typeof(TResult) == typeof(byte[]))
+            else if (typeof(TResult) == typeof(byte[]))
             {
                 if (content is StreamingKernelContent byteKernelContent)
                 {
                     yield return (TResult)(object)byteKernelContent.ToByteArray();
+                    continue;
                 }
-                else if (content is ChatResponseUpdate chatUpdate)
+
+                if (content is ChatResponseUpdate chatUpdate)
                 {
                     DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent && dataContent.Data.HasValue);
                     if (dataContent is not null)
                     {
                         yield return (TResult)(object)dataContent.Data!.Value.ToArray();
+                        continue;
                     }
                 }
             }
@@ -534,13 +541,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (aiService is null && serviceSelector is IChatClientSelector chatClientServiceSelector)
         {
-            chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out IChatClient? chatClient, out PromptExecutionSettings options);
-            if (chatClient is not null)
-            {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                aiService = new AIServiceChatClient(chatClient);
+            (aiService, executionSettings) = chatClientServiceSelector.SelectChatClientAsAIService<IChatClient>(kernel, this, arguments);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            }
         }
 
         Verify.NotNull(aiService);

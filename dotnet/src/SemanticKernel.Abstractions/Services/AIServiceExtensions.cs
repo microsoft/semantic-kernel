@@ -64,7 +64,7 @@ public static class AIServiceExtensions
     /// </summary>
     /// <typeparam name="T">
     /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
-    /// with which the service was registered in the <see cref="IServiceCollection"/> orvia
+    /// with which the service was registered in the <see cref="IServiceCollection"/> or via
     /// the <see cref="IKernelBuilder"/>.
     /// </typeparam>
     /// <param name="selector">The <see cref="IAIServiceSelector"/> to use to select a service from the <see cref="Kernel"/>.</param>
@@ -89,6 +89,12 @@ public static class AIServiceExtensions
             out T? service, out PromptExecutionSettings? settings))
         {
             return (service, settings);
+        }
+
+        // We will not throw if the service implements IChatClientSelector.
+        if (selector is IChatClientSelector chatClientSelector)
+        {
+            return (null, null);
         }
 
         var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");

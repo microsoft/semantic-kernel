@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Allow <see cref="IChatClient"/> to be used as an <see cref="IAIService"/> in a <see cref="IAIServiceSelector"/>
 /// </summary>
-internal class AIServiceChatClient : IAIService, IChatClient
+internal class ChatClientAIService : IAIService, IChatClient
 {
     private readonly IChatClient _chatClient;
 
@@ -22,10 +22,10 @@ internal class AIServiceChatClient : IAIService, IChatClient
     internal Dictionary<string, object?> _internalAttributes { get; } = [];
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIServiceChatClient"/> class.
+    /// Initializes a new instance of the <see cref="ChatClientAIService"/> class.
     /// </summary>
     /// <param name="chatClient">Target <see cref="IChatClient"/>.</param>
-    public AIServiceChatClient(IChatClient chatClient)
+    public ChatClientAIService(IChatClient chatClient)
     {
         Verify.NotNull(chatClient);
         this._chatClient = chatClient;
