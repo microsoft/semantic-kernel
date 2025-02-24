@@ -54,7 +54,7 @@ class DataModel:
     vector: Annotated[
         list[float] | None,
         VectorStoreRecordVectorField(
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings()},
             index_kind=INDEX_KIND,
             dimensions=1536,
             distance_function=DISTANCE_FUNCTION,

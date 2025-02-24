@@ -231,7 +231,7 @@ concepts = [
     param(
         simple_memory,
         [],
-        id="memory",
+        id="simple_memory",
         marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
     ),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
