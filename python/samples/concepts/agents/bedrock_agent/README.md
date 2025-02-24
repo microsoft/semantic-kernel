@@ -41,5 +41,5 @@ You need to make sure you have permission to access the foundation model. You ca
 5. Under the `Permissions defined in this policy` section, click on the service. You should see **Bedrock** if you already have access to the Bedrock agent service.
 6. Click on the service, and then click `Edit`.
 7. On the right, you will be able to add an action. Find the service and search for `InvokeModelWithResponseStream`.
-8. Check the box next to the action and then sroll all the way down and click `Next`.
+8. Check the box next to the action and then scroll all the way down and click `Next`.
 9. Follow the prompts to save the changes.

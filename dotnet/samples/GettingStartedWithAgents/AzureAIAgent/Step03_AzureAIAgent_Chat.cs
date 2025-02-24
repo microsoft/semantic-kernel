@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -14,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
-public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -40,20 +39,18 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAgentsTest
     public async Task UseGroupChatWithTwoAgentsAsync()
     {
         // Define the agents
-        AzureAIClientProvider clientProvider = this.GetAzureProvider();
-        AgentsClient client = clientProvider.Client.GetAgentsClient();
-        Agent reviewerModel = await client.CreateAgentAsync(
+        Agent reviewerModel = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             ReviewerName,
             null,
             ReviewerInstructions);
-        AzureAIAgent agentReviewer = new(reviewerModel, clientProvider);
-        Agent writerModel = await client.CreateAgentAsync(
+        AzureAIAgent agentReviewer = new(reviewerModel, this.AgentsClient);
+        Agent writerModel = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             CopyWriterName,
             null,
             CopyWriterInstructions);
-        AzureAIAgent agentWriter = new(writerModel, clientProvider);
+        AzureAIAgent agentWriter = new(writerModel, this.AgentsClient);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
