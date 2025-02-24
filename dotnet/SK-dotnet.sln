@@ -429,21 +429,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.IntegrationTests.Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OllamaFunctionCalling", "samples\Demos\OllamaFunctionCalling\OllamaFunctionCalling.csproj", "{481A680F-476A-4627-83DE-2F56C484525E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenAIRealtime", "samples\Demos\OpenAIRealtime\OpenAIRealtime.csproj", "{6154129E-7A35-44A5-998E-B7001B5EDE14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAIRealtime", "samples\Demos\OpenAIRealtime\OpenAIRealtime.csproj", "{6154129E-7A35-44A5-998E-B7001B5EDE14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CreateChatGpt", "CreateChatGpt", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sk-chatgpt-azure-function", "samples\Demos\CreateChatGptPlugin\MathPlugin\azure-function\sk-chatgpt-azure-function.csproj", "{2EB6E4C2-606D-B638-2E08-49EA2061C428}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sk-chatgpt-azure-function", "samples\Demos\CreateChatGptPlugin\MathPlugin\azure-function\sk-chatgpt-azure-function.csproj", "{2EB6E4C2-606D-B638-2E08-49EA2061C428}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "kernel-functions-generator", "samples\Demos\CreateChatGptPlugin\MathPlugin\kernel-functions-generator\kernel-functions-generator.csproj", "{78785CB1-66CF-4895-D7E5-A440DD84BE86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kernel-functions-generator", "samples\Demos\CreateChatGptPlugin\MathPlugin\kernel-functions-generator\kernel-functions-generator.csproj", "{78785CB1-66CF-4895-D7E5-A440DD84BE86}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.AzureAI", "src\Agents\AzureAI\Agents.AzureAI.csproj", "{EA35F1B5-9148-4189-BE34-5E00AED56D65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.AzureAI", "src\Agents\AzureAI\Agents.AzureAI.csproj", "{EA35F1B5-9148-4189-BE34-5E00AED56D65}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.AI", "src\Plugins\Plugins.AI\Plugins.AI.csproj", "{0C64EC81-8116-4388-87AD-BA14D4B59974}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\Plugins.AI\Plugins.AI.csproj", "{0C64EC81-8116-4388-87AD-BA14D4B59974}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.AI.UnitTests", "src\Plugins\Plugins.AI.UnitTests\Plugins.AI.UnitTests.csproj", "{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI.UnitTests", "src\Plugins\Plugins.AI.UnitTests\Plugins.AI.UnitTests.csproj", "{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProcessFrameworkWithAspire", "ProcessFrameworkWithAspire", "{3F260A77-B6C9-97FD-1304-4B34DA936CF4}"
 	ProjectSection(SolutionItems) = preProject
