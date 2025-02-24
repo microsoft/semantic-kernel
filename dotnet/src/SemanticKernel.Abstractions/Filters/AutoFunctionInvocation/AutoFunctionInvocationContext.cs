@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -78,6 +79,12 @@ public class AutoFunctionInvocationContext
     /// The chat message content associated with automatic function invocation.
     /// </summary>
     public ChatMessageContent ChatMessageContent { get; }
+
+    /// <summary>
+    /// The execution settings associated with the operation.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public PromptExecutionSettings? ExecutionSettings { get; init; }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
