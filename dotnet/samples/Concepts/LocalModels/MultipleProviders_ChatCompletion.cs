@@ -30,8 +30,10 @@ namespace LocalModels;
 /// </summary>
 public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
-    [Theory]
-    [InlineData("Ollama", "http://localhost:11434/v1", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [Theory(Skip = "Manual configuration needed")]
+    [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
+    [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_ExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
         Console.WriteLine($"Example using local {messageAPIPlatform}");
@@ -59,9 +61,10 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         Console.WriteLine(response);
     }
 
-    [Theory]
-    [InlineData("LMStudio", "http://localhost:1234/v1", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
-    [InlineData("Ollama", "http://localhost:11434/v1", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [Theory(Skip = "Manual configuration needed")]
+    [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
+    [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_StreamingExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
         Console.WriteLine($"Example using local {messageAPIPlatform}");
