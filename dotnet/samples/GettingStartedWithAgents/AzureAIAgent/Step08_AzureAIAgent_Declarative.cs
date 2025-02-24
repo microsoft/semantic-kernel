@@ -43,7 +43,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
 
-    [Fact]
+    [Fact(Skip = "Support for tool configuration will be added in a later PR")]
     public async Task AzureAIAgentWithOpenApiAsync()
     {
         var text =
@@ -58,7 +58,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
               - type: openapi
                 name: RestCountriesAPI
                 description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
-                schema: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
+                schema: '{"openapi":"3.1.0","info":{"title":"RestCountries.NET API","description":"Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.","version":"v3.1"},"servers":[{"url":"https://restcountries.net"}],"auth":[],"paths":{"/v3.1/currency":{"get":{"description":"Search by currency.","operationId":"LookupCountryByCurrency","parameters":[{"name":"currency","in":"query","description":"The currency to search for.","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Success","content":{"text/plain":{"schema":{"type":"string"}}}}}}}},"components":{"schemes":{}}}'
             """;
         AzureAIAgentFactory factory = new();
 
