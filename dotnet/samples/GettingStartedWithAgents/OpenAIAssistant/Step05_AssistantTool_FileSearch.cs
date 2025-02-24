@@ -9,7 +9,7 @@ using Resources;
 namespace GettingStarted.OpenAIAssistants;
 
 /// <summary>
-/// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate using <see cref="OpenAIAssistantAgent"/> with file search.
 /// </summary>
 public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAssistantTest(output)
 {

@@ -46,7 +46,7 @@ public class ChatCompletionAgentTests
     [Fact]
     public void VerifyChatCompletionAgentTemplate()
     {
-        PromptTemplateConfig config =
+        PromptTemplateConfig promptConfig =
             new()
             {
                 Name = "TestName",
@@ -73,16 +73,38 @@ public class ChatCompletionAgentTests
                     },
                 }
             };
+        KernelPromptTemplateFactory templateFactory = new();
 
         // Arrange
-        ChatCompletionAgent agent = new(config);
+        ChatCompletionAgent agent = new(promptConfig, templateFactory);
 
         // Assert
         Assert.NotNull(agent.Id);
-        Assert.Equal(config.Template, agent.Instructions);
-        Assert.Equal(config.Description, agent.Description);
-        Assert.Equal(config.Name, agent.Name);
-        Assert.Equal(config.ExecutionSettings, agent.Arguments.ExecutionSettings);
+        Assert.Equal(promptConfig.Template, agent.Instructions);
+        Assert.Equal(promptConfig.Description, agent.Description);
+        Assert.Equal(promptConfig.Name, agent.Name);
+        Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments.ExecutionSettings);
+    }
+
+    /// <summary>
+    /// Verify throws <see cref="KernelException"/> when invalid <see cref="IPromptTemplateFactory"/> is provided.
+    /// </summary>
+    [Fact]
+    public void VerifyThrowsForInvalidTemplateFactory()
+    {
+        // Arrange
+        PromptTemplateConfig promptConfig =
+            new()
+            {
+                Name = "TestName",
+                Description = "TestDescription",
+                Template = "TestInstructions",
+                TemplateFormat = "handlebars",
+            };
+        KernelPromptTemplateFactory templateFactory = new();
+
+        // Act and Assert
+        Assert.Throws<KernelException>(() => new ChatCompletionAgent(promptConfig, templateFactory));
     }
 
     /// <summary>

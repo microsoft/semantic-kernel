@@ -39,36 +39,31 @@ async def main():
     kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
 
     # create the record collection
-    record_collection = AzureAISearchCollection[pd.DataFrame](
+    async with AzureAISearchCollection[pd.DataFrame](
         data_model_type=pd.DataFrame,
         data_model_definition=model_fields,
-    )
-    # create some records
-    records = [
-        {"id": str(uuid4()), "content": "my dict text", "vector": None},
-        {"id": str(uuid4()), "content": "my second text", "vector": None},
-    ]
+    ) as record_collection:
+        # create some records
+        records = [
+            {"id": str(uuid4()), "content": "my dict text", "vector": None},
+            {"id": str(uuid4()), "content": "my second text", "vector": None},
+        ]
 
-    # create the dataframe and add the embeddings
-    df = pd.DataFrame(records)
-    df = await VectorStoreRecordUtils(kernel).add_vector_to_records(df, None, data_model_definition=model_fields)
-    print("Records with embeddings:")
-    print(df.shape)
-    print(df.head(5))
+        # create the dataframe and add the embeddings
+        df = pd.DataFrame(records)
+        df = await VectorStoreRecordUtils(kernel).add_vector_to_records(df, None, data_model_definition=model_fields)
+        print("Records with embeddings:")
+        print(df.shape)
+        print(df.head(5))
 
-    # upsert the records (for a container, upsert and upsert_batch are equivalent)
-    await record_collection.upsert_batch(df)
+        # upsert the records (for a container, upsert and upsert_batch are equivalent)
+        await record_collection.upsert_batch(df)
 
-    # retrieve a record
-    result = await record_collection.get(records[0]["id"])
-    print("Retrieved records:")
-    print(result.shape)
-    print(result.head(5))
-
-    # explicit cleanup, usually not needed, but a script like this
-    # closes so fast that the async close triggered by delete may not finish on time
-    del record_collection
-    await asyncio.sleep(1)
+        # retrieve a record
+        result = await record_collection.get(records[0]["id"])
+        print("Retrieved records:")
+        print(result.shape)
+        print(result.head(5))
 
 
 if __name__ == "__main__":
