@@ -4,34 +4,40 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 
-namespace Microsoft.SemanticKernel.Connectors;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-internal partial class SqlFilterTranslator
+internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = new();
     private int _parameterIndex;
 
-    internal List<object> ParameterValues => this._parameterValues;
-
-    internal void Initialize(int startParamIndex)
+    internal SqlServerFilterTranslator(
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        LambdaExpression lambdaExpression,
+        StringBuilder sql,
+        int startParamIndex)
+        : base(storagePropertyNames, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }
 
-    private void GenerateLiteral(bool value)
+    internal List<object> ParameterValues => this._parameterValues;
+
+    protected override void GenerateLiteral(bool value)
         => this._sql.Append(value ? "1" : "0");
 
-    private void GenerateLiteral(DateTime dateTime)
+    protected override void GenerateLiteral(DateTime dateTime)
         => this._sql.AppendFormat("'{0:yyyy-MM-dd HH:mm:ss}'", dateTime);
 
-    private void GenerateLiteral(DateTimeOffset dateTimeOffset)
+    protected override void GenerateLiteral(DateTimeOffset dateTimeOffset)
         => this._sql.AppendFormat("'{0:yyy-MM-dd HH:mm:ss zzz}'", dateTimeOffset);
 
-    private void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    private void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
@@ -59,7 +65,7 @@ internal partial class SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    private void TranslateLambdaVariables(string _, object? capturedValue)
+    protected override void TranslateLambdaVariables(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

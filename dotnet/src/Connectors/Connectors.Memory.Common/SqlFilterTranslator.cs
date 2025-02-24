@@ -12,12 +12,12 @@ using System.Text;
 
 namespace Microsoft.SemanticKernel.Connectors;
 
-internal partial class SqlFilterTranslator
+internal abstract class SqlFilterTranslator
 {
     private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
     private readonly LambdaExpression _lambdaExpression;
     private readonly ParameterExpression _recordParameter;
-    private readonly StringBuilder _sql;
+    protected readonly StringBuilder _sql;
 
     internal SqlFilterTranslator(
         IReadOnlyDictionary<string, string> storagePropertyNames,
@@ -43,7 +43,7 @@ internal partial class SqlFilterTranslator
         this.Translate(this._lambdaExpression.Body);
     }
 
-    private void Translate(Expression? node)
+    protected void Translate(Expression? node)
     {
         switch (node)
         {
@@ -130,7 +130,7 @@ internal partial class SqlFilterTranslator
     private void TranslateConstant(ConstantExpression constant)
         => this.GenerateLiteral(constant.Value);
 
-    private void GenerateLiteral(object? value)
+    protected void GenerateLiteral(object? value)
     {
         // TODO: Nullable
         switch (value)
@@ -178,6 +178,14 @@ internal partial class SqlFilterTranslator
         }
     }
 
+    protected abstract void GenerateLiteral(bool value);
+
+    protected virtual void GenerateLiteral(DateTime dateTime)
+        => throw new NotImplementedException();
+
+    protected virtual void GenerateLiteral(DateTimeOffset dateTimeOffset)
+        => throw new NotImplementedException();
+
     private void TranslateMember(MemberExpression memberExpression)
     {
         switch (memberExpression)
@@ -195,6 +203,8 @@ internal partial class SqlFilterTranslator
                 throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
         }
     }
+
+    protected abstract void TranslateLambdaVariables(string name, object? capturedValue);
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -266,6 +276,10 @@ internal partial class SqlFilterTranslator
                 throw new NotSupportedException("Unsupported Contains expression");
         }
     }
+
+    protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
+
+    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value);
 
     private void TranslateUnary(UnaryExpression unary)
     {

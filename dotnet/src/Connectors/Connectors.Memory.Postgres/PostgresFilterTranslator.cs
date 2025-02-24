@@ -1,33 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Microsoft.SemanticKernel.Connectors;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-internal partial class SqlFilterTranslator
+internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = new();
     private int _parameterIndex;
 
-    internal List<object> ParameterValues => this._parameterValues;
-
-    internal void Initialize(int startParamIndex)
+    internal PostgresFilterTranslator(
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        LambdaExpression lambdaExpression,
+        int startParamIndex) : base(storagePropertyNames, lambdaExpression, sql: null)
     {
         this._parameterIndex = startParamIndex;
     }
 
-    private void GenerateLiteral(bool value)
+    internal List<object> ParameterValues => this._parameterValues;
+
+    protected override void GenerateLiteral(bool value)
         => this._sql.Append(value ? "TRUE" : "FALSE");
 
-    private void GenerateLiteral(DateTime dateTime)
-        => throw new NotImplementedException();
-
-    private void GenerateLiteral(DateTimeOffset dateTimeOffset)
-        => throw new NotImplementedException();
-
-    private void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
     {
         this.Translate(source);
         this._sql.Append(" @> ARRAY[");
@@ -35,7 +31,7 @@ internal partial class SqlFilterTranslator
         this._sql.Append(']');
     }
 
-    private void TranslateContainsOverCapturedArray(Expression source, Expression item, object? _)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
         this.Translate(item);
         this._sql.Append(" = ANY (");
@@ -43,7 +39,7 @@ internal partial class SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    private void TranslateLambdaVariables(string _, object? capturedValue)
+    protected override void TranslateLambdaVariables(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

@@ -5,28 +5,27 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Microsoft.SemanticKernel.Connectors;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
-internal partial class SqlFilterTranslator
+internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
     private readonly Dictionary<string, object> _parameters = new();
 
+    internal SqliteFilterTranslator(IReadOnlyDictionary<string, string> storagePropertyNames,
+        LambdaExpression lambdaExpression) : base(storagePropertyNames, lambdaExpression, sql: null)
+    {
+    }
+
     internal Dictionary<string, object> Parameters => this._parameters;
 
-    private void GenerateLiteral(bool value)
+    protected override void GenerateLiteral(bool value)
         => this._sql.Append(value ? "TRUE" : "FALSE");
 
-    private void GenerateLiteral(DateTime dateTime)
-        => throw new NotImplementedException();
-
-    private void GenerateLiteral(DateTimeOffset dateTimeOffset)
-        => throw new NotImplementedException();
-
     // TODO: support Contains over array fields (#10343)
-    private void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    private void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
@@ -54,11 +53,11 @@ internal partial class SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    private void TranslateLambdaVariables(string name, object? value)
+    protected override void TranslateLambdaVariables(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
-        if (value is null)
+        if (capturedValue is null)
         {
             this._sql.Append("NULL");
         }
@@ -76,7 +75,7 @@ internal partial class SqlFilterTranslator
                 } while (this._parameters.ContainsKey(name));
             }
 
-            this._parameters.Add(name, value);
+            this._parameters.Add(name, capturedValue);
             this._sql.Append('@').Append(name);
         }
     }

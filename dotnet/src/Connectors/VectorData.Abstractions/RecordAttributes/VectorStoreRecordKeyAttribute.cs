@@ -26,8 +26,8 @@ public sealed class VectorStoreRecordKeyAttribute : Attribute
     /// The default is <see langword="false" />.
     /// </value>
     /// <remarks>
-    /// If set to <see langword="false" />, you must set the key property on any record that you pass to <see cref="IVectorStoreRecordCollection{TKey, TRecord}.UpsertAsync(TRecord, UpsertRecordOptions?, System.Threading.CancellationToken)"/>.
-    /// If set to <see langword="true" />, the key property may be left null on any record that you pass to <see cref="IVectorStoreRecordCollection{TKey, TRecord}.UpsertAsync(TRecord, UpsertRecordOptions?, System.Threading.CancellationToken)"/>
+    /// If set to <see langword="false" />, you must set the key property on any record that you pass to <see cref="IVectorStoreRecordCollection{TKey, TRecord}.UpsertAsync(TRecord, System.Threading.CancellationToken)"/>.
+    /// If set to <see langword="true" />, the key property may be left null on any record that you pass to <see cref="IVectorStoreRecordCollection{TKey, TRecord}.UpsertAsync(TRecord, System.Threading.CancellationToken)"/>
     /// and a generated key will be returned.
     /// </remarks>
     public bool AutoGenerate { get; set; }

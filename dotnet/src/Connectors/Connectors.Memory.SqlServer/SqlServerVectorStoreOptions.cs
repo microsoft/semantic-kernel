@@ -12,12 +12,5 @@ public sealed class SqlServerVectorStoreOptions
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; init; } = "dbo";
-
-    /// <summary>
-    /// Number of dimensions that stored embeddings will use.
-    /// </summary>
-    // TODO: adsitnik: this design most likely won't need this setting,
-    // as it up to the TRecrod to define the dimensions.
-    public int EmbeddingDimensionsCount { get; init; } = 1536;
+    public string Schema { get; init; } = SqlServerConstants.Schema;
 }

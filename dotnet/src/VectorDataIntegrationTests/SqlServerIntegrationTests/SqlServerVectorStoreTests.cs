@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
 using Xunit;
@@ -8,26 +10,29 @@ namespace SqlServerIntegrationTests;
 
 public class SqlServerVectorStoreTests
 {
+    // this test may be once executed by multiple users against a shared db instance
+    private static string GetUniqueCollectionName() => Guid.NewGuid().ToString();
+
     [Fact]
     public async Task CollectionCRUD()
     {
-        const string CollectionName = "collection";
+        string collectionName = GetUniqueCollectionName();
         SqlServerTestStore testStore = new();
 
         await testStore.ReferenceCountingStartAsync();
 
-        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(CollectionName);
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
         {
             Assert.False(await collection.CollectionExistsAsync());
 
-            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
+            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
 
             await collection.CreateCollectionAsync();
 
             Assert.True(await collection.CollectionExistsAsync());
-            Assert.True(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
+            Assert.True(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
 
             await collection.CreateCollectionIfNotExistsAsync();
 
@@ -36,7 +41,7 @@ public class SqlServerVectorStoreTests
             await collection.DeleteCollectionAsync();
 
             Assert.False(await collection.CollectionExistsAsync());
-            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(CollectionName));
+            Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
         }
         finally
         {
@@ -49,11 +54,12 @@ public class SqlServerVectorStoreTests
     [Fact]
     public async Task RecordCRUD()
     {
+        string collectionName = GetUniqueCollectionName();
         SqlServerTestStore testStore = new();
 
         await testStore.ReferenceCountingStartAsync();
 
-        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>("other");
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
         {
@@ -96,13 +102,63 @@ public class SqlServerVectorStoreTests
     }
 
     [Fact]
-    public async Task BatchCRUD()
+    public async Task WrongModels()
     {
+        string collectionName = GetUniqueCollectionName();
         SqlServerTestStore testStore = new();
 
         await testStore.ReferenceCountingStartAsync();
 
-        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>("other");
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
+
+        try
+        {
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            TestModel inserted = new()
+            {
+                Id = "MyId",
+                Text = "NotAnInt",
+                Number = 100,
+                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
+            };
+            Assert.Equal(inserted.Id, await collection.UpsertAsync(inserted));
+
+            // Let's use a model with different storage names to trigger an SQL exception
+            // which should be mapped to VectorStoreOperationException.
+            var differentNamesCollection = testStore.DefaultVectorStore.GetCollection<string, DifferentStorageNames>(collectionName);
+            VectorStoreOperationException operationEx = await Assert.ThrowsAsync<VectorStoreOperationException>(() => differentNamesCollection.GetAsync(inserted.Id));
+            Assert.IsType<SqlException>(operationEx.InnerException);
+
+            // Let's use a model with the same storage names, but different types
+            // to trigger a mapping exception (casting a string to an int).
+            var sameNameDifferentModelCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButDifferentType>(collectionName);
+            VectorStoreRecordMappingException mappingEx = await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => sameNameDifferentModelCollection.GetAsync(inserted.Id));
+            Assert.IsType<ArgumentException>(mappingEx.InnerException);
+
+            // Let's use a model with the same storage names, but different types
+            // to trigger a mapping exception (deserializing a string to Memory<float>).
+            var invalidJsonCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButInvalidVector>(collectionName);
+            mappingEx = await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => invalidJsonCollection.GetAsync(inserted.Id));
+            Assert.IsType<JsonException>(mappingEx.InnerException);
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+
+            await testStore.ReferenceCountingStopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task BatchCRUD()
+    {
+        string collectionName = GetUniqueCollectionName();
+        SqlServerTestStore testStore = new();
+
+        await testStore.ReferenceCountingStartAsync();
+
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
         {
@@ -163,7 +219,7 @@ public class SqlServerVectorStoreTests
         Assert.NotNull(received);
         Assert.Equal(inserted.Number, received.Number);
         Assert.Equal(inserted.Id, received.Id);
-        Assert.Equal(inserted.Floats, received.Floats);
+        Assert.Equal(inserted.Floats.ToArray(), received.Floats.ToArray());
         Assert.Null(received.Text); // testing DBNull code path
     }
 
@@ -182,6 +238,39 @@ public class SqlServerVectorStoreTests
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
+    public sealed class SameStorageNameButDifferentType
+    {
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "text")]
+        public int Number { get; set; }
+    }
+
+    public sealed class SameStorageNameButInvalidVector
+    {
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "text")]
+        public ReadOnlyMemory<float> Floats { get; set; }
+    }
+
+    public sealed class DifferentStorageNames
+    {
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "text2")]
+        public string? Text { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "column2")]
+        public int Number { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding2")]
+        public ReadOnlyMemory<float> Floats { get; set; }
+    }
+
     [Fact]
     public Task CanUseFancyModels_Int() => this.CanUseFancyModels<int>();
 
@@ -193,11 +282,12 @@ public class SqlServerVectorStoreTests
 
     private async Task CanUseFancyModels<TKey>() where TKey : notnull
     {
+        string collectionName = GetUniqueCollectionName();
         SqlServerTestStore testStore = new();
 
         await testStore.ReferenceCountingStartAsync();
 
-        var collection = testStore.DefaultVectorStore.GetCollection<TKey, FancyTestModel<TKey>>("other");
+        var collection = testStore.DefaultVectorStore.GetCollection<TKey, FancyTestModel<TKey>>(collectionName);
 
         try
         {
@@ -212,8 +302,6 @@ public class SqlServerVectorStoreTests
                 Number64 = long.MaxValue,
                 Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray(),
                 Bytes = [1, 2, 3],
-                ArrayOfStrings = ["a", "b", "c"],
-                ListOfStrings = ["d", "e", "f"]
             };
             TKey key = await collection.UpsertAsync(inserted);
             Assert.NotEqual(default, key); // key should be assigned by the DB (auto-increment)
@@ -233,9 +321,9 @@ public class SqlServerVectorStoreTests
             received = await collection.GetAsync(updated.Id);
             AssertEquality(updated, received, key);
 
-            await collection.DeleteAsync(inserted.Id);
+            await collection.DeleteAsync(key);
 
-            Assert.Null(await collection.GetAsync(inserted.Id));
+            Assert.Null(await collection.GetAsync(key));
         }
         finally
         {
@@ -252,10 +340,8 @@ public class SqlServerVectorStoreTests
             Assert.Equal(expected.Number16, received.Number16);
             Assert.Equal(expected.Number32, received.Number32);
             Assert.Equal(expected.Number64, received.Number64);
-            Assert.Equal(expected.Floats, received.Floats);
+            Assert.Equal(expected.Floats.ToArray(), received.Floats.ToArray());
             Assert.Equal(expected.Bytes, received.Bytes);
-            Assert.Equal(expected.ArrayOfStrings, received.ArrayOfStrings);
-            Assert.Equal(expected.ListOfStrings, received.ListOfStrings);
         }
     }
 
@@ -279,13 +365,7 @@ public class SqlServerVectorStoreTests
         [VectorStoreRecordData(StoragePropertyName = "bytes")]
 #pragma warning disable CA1819 // Properties should not return arrays
         public byte[]? Bytes { get; set; }
-
-        [VectorStoreRecordData(StoragePropertyName = "array_of_strings")]
-        public string[]? ArrayOfStrings { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
-
-        [VectorStoreRecordData(StoragePropertyName = "list_of_strings")]
-        public List<string>? ListOfStrings { get; set; }
 
         [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }

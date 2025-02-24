@@ -109,7 +109,10 @@ public class SqlServerCommandBuilderTests
         {
             Schema = "schema"
         };
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long), autoGenerate: true);
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
+        {
+            AutoGenerate = true
+        };
         VectorStoreRecordDataProperty[] dataProperties =
         [
             new VectorStoreRecordDataProperty("simpleName", typeof(string)),
@@ -139,10 +142,10 @@ public class SqlServerCommandBuilderTests
         """;
         if (ifNotExists)
         {
-            expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL\n" + expectedCommand;
+            expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL" + Environment.NewLine + expectedCommand;
         }
 
-        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText);
     }
 
     [Fact]
@@ -152,7 +155,10 @@ public class SqlServerCommandBuilderTests
         {
             Schema = "schema"
         };
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long), autoGenerate: true);
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
+        {
+            AutoGenerate = true
+        };
         VectorStoreRecordProperty[] properties =
         [
             keyProperty,
@@ -188,7 +194,7 @@ public class SqlServerCommandBuilderTests
         OUTPUT inserted.[id];
         """";
 
-        Assert.Equal(HandleNewLines(expectedCommand), command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
         Assert.Equal(DBNull.Value, command.Parameters[0].Value);
         Assert.Equal("@simpleString_1", command.Parameters[1].ParameterName);
@@ -321,12 +327,12 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection,
             "schema", "tableName", keyProperty, properties, 123L);
 
-        Assert.Equal(HandleNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] = @id_0
-        """""), command.CommandText);
+        """"", command.CommandText);
         Assert.Equal(123L, command.Parameters[0].Value);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
     }
@@ -350,23 +356,18 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
             "schema", "tableName", keyProperty, properties, keys);
 
-        Assert.Equal(HandleNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] IN (@id_0,@id_1,@id_2)
-        """""), command.CommandText);
+        """"", command.CommandText);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);
             Assert.Equal($"@id_{i}", command.Parameters[i].ParameterName);
         }
     }
-
-    private static string HandleNewLines(string expectedCommand)
-        => OperatingSystem.IsWindows()
-            ? expectedCommand.Replace("\n", "\r\n")
-            : expectedCommand;
 
     // We create a connection using a fake connection string just to be able to create the SqlCommand.
     private static SqlConnection CreateConnection()

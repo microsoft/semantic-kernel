@@ -317,7 +317,7 @@ internal static class SqlServerCommandBuilder
         {
             DistanceFunction.CosineDistance => "cosine",
             DistanceFunction.EuclideanDistance => "euclidean",
-            DistanceFunction.DotProductSimilarity => "dot",
+            DistanceFunction.NegativeDotProductSimilarity => "dot",
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 
@@ -338,8 +338,7 @@ internal static class SqlServerCommandBuilder
         {
             int startParamIndex = command.Parameters.Count;
 
-            SqlFilterTranslator translator = new(storagePropertyNamesMap, options.NewFilter, sb);
-            translator.Initialize(startParamIndex: startParamIndex);
+            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, options.NewFilter, sb, startParamIndex: startParamIndex);
             translator.Translate(appendWhere: true);
             List<object> parameters = translator.ParameterValues;
 
@@ -505,9 +504,6 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(decimal) => ("DECIMAL", null),
             Type t when t == typeof(double) => ("FLOAT", null),
             Type t when t == typeof(float) => ("REAL", null),
-            // Collections don't have good native support, we store them as JSON
-            Type t when t == typeof(string[]) => (NVARCHAR, null),
-            Type t when t == typeof(List<string>) => (NVARCHAR, null),
             _ => throw new NotSupportedException($"Type {type} is not supported.")
         };
     }

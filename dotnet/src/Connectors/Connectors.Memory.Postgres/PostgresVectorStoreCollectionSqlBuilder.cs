@@ -427,8 +427,7 @@ FROM ({commandText}) AS subquery
 
     internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordPropertyReader propertyReader, LambdaExpression newFilter)
     {
-        SqlFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, newFilter);
-        translator.Initialize(startParamIndex: 2);
+        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, newFilter, startParamIndex: 2);
         translator.Translate(appendWhere: true);
         return (translator.Clause.ToString(), translator.ParameterValues);
     }

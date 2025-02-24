@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using SqlServerIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
@@ -38,10 +39,10 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
     }
 
     public override Task Contains_over_field_string_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_array());
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_array());
 
     public override Task Contains_over_field_string_List()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_List());
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
 
     [Fact(Skip = "Not supported")]
     [Obsolete("Legacy filters are not supported")]
@@ -62,5 +63,19 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
     public new class Fixture : BasicFilterTests<int>.Fixture
     {
         public override TestStore TestStore => SqlServerTestStore.Instance;
+
+        protected override string CollectionName
+#if NET // make sure different TFMs use different collection names (as they may run in parralel and cause trouble)
+            => "FilterTests-core";
+#else
+            => "FilterTests-framework";
+#endif
+
+        // Override to remove the string collection properties, which aren't (currently) supported on SqlServer
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()
+            };
     }
 }
