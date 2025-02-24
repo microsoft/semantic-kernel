@@ -2,12 +2,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
+/// Represents a selector which will return a tuple containing instances of <see cref="IChatClient"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
 /// </summary>
 public interface IChatClientSelector
 {

@@ -21,7 +21,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 // For Azure OpenAI configuration
 #pragma warning disable IDE0005 // Using directive is unnecessary.
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace HomeAutomation;
