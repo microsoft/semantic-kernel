@@ -2,12 +2,14 @@
 
 using System;
 using System.ClientModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// Provides extension methods for <see cref="ModelConfiguration"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ModelConfigurationExtensions
 {
     /// <summary>

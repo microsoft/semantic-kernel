@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 
 namespace GettingStarted.AzureAgents;
 
@@ -40,6 +41,59 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
 
         await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithOpenApiAsync()
+    {
+        var text =
+            """
+            type: azureai_agent
+            name: AzureAIAgent
+            description: AzureAIAgent Description
+            instructions: AzureAIAgent Instructions
+            model:
+              id: gpt-4o-mini
+            tools:
+              - type: openapi
+                name: RestCountriesAPI
+                description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
+                schema: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithLocalFunctionsAsync()
+    {
+        var text =
+            """
+            type: azureai_agent
+            name: RestaurantHost
+            instructions: Answer questions about the menu.
+            description: This agent answers questions about the menu.
+            model:
+              id: gpt-4o-mini
+              options:
+                temperature: 0.4
+                function_choice_behavior:
+                  type: auto
+                  functions:
+                    - MenuPlugin.GetSpecials
+                    - MenuPlugin.GetItemPrice
+            """;
+        AzureAIAgentFactory factory = new();
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        this._kernel.Plugins.Add(plugin);
+
+        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent, "What is the special soup and how much does it cost?");
     }
 
     #region private
