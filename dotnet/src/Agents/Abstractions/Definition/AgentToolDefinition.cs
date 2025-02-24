@@ -69,18 +69,6 @@ public class AgentToolDefinition
         }
     }
 
-    /// <summary>
-    /// Gets the required configuration.
-    /// </summary>
-    /// <param name="key">Name of the configuration value.</param>
-    public object GetRequiredConfiguration(string key)
-    {
-        Verify.NotNull(key);
-        Verify.True(this.Configuration!.ContainsKey(key), $"The configuration key '{key}' is required.");
-
-        return this.Configuration[key];
-    }
-
     #region private
     private string? _type;
     private string? _name;

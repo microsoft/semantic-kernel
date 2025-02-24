@@ -61,17 +61,33 @@ internal static class AgentDefinitionExtensions
     #region private
     private static AzureAISearchToolDefinition CreateAzureAISearchToolDefinition(AgentToolDefinition tool)
     {
+        Verify.NotNull(tool);
+
         return new AzureAISearchToolDefinition();
     }
 
     private static AzureFunctionToolDefinition CreateAzureFunctionToolDefinition(AgentToolDefinition tool)
     {
-        return new AzureFunctionToolDefinition();
+        Verify.NotNull(tool);
+        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Description);
+
+        string name = tool.Name;
+        string description = tool.Description;
+        AzureFunctionBinding inputBinding = tool.GetInputBinding();
+        AzureFunctionBinding outputBinding = tool.GetOutputBinding();
+        BinaryData parameters = tool.GetParameters();
+
+        return new AzureFunctionToolDefinition(name, description, inputBinding, outputBinding, parameters);
     }
 
     private static BingGroundingToolDefinition CreateBingGroundingToolDefinition(AgentToolDefinition tool)
     {
-        return new BingGroundingToolDefinition();
+        Verify.NotNull(tool);
+
+        ToolConnectionList bingGrounding = tool.GetToolConnectionList();
+
+        return new BingGroundingToolDefinition(bingGrounding);
     }
 
     private static CodeInterpreterToolDefinition CreateCodeInterpreterToolDefinition(AgentToolDefinition tool)
@@ -81,27 +97,57 @@ internal static class AgentDefinitionExtensions
 
     private static FileSearchToolDefinition CreateFileSearchToolDefinition(AgentToolDefinition tool)
     {
-        return new FileSearchToolDefinition();
+        Verify.NotNull(tool);
+
+        return new FileSearchToolDefinition()
+        {
+            FileSearch = tool.GetFileSearchToolDefinitionDetails()
+        };
     }
 
     private static FunctionToolDefinition CreateFunctionToolDefinition(AgentToolDefinition tool)
     {
-        return new FunctionToolDefinition();
+        Verify.NotNull(tool);
+        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Description);
+
+        string name = tool.Name;
+        string description = tool.Description;
+        BinaryData parameters = tool.GetParameters();
+
+        return new FunctionToolDefinition(name, description, parameters);
     }
 
     private static MicrosoftFabricToolDefinition CreateMicrosoftFabricToolDefinition(AgentToolDefinition tool)
     {
-        return new MicrosoftFabricToolDefinition();
+        Verify.NotNull(tool);
+
+        ToolConnectionList fabricAiskill = tool.GetToolConnectionList();
+
+        return new MicrosoftFabricToolDefinition(fabricAiskill);
     }
 
     private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
     {
-        return new OpenApiToolDefinition();
+        Verify.NotNull(tool);
+        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Description);
+
+        string name = tool.Name;
+        string description = tool.Description;
+        BinaryData spec = tool.GetSpecification();
+        OpenApiAuthDetails auth = tool.GetOpenApiAuthDetails();
+
+        return new OpenApiToolDefinition(name, description, spec, auth);
     }
 
     private static SharepointToolDefinition CreateSharepointToolDefinition(AgentToolDefinition tool)
     {
-        return new SharepointToolDefinition();
+        Verify.NotNull(tool);
+
+        ToolConnectionList sharepointGrounding = tool.GetToolConnectionList();
+
+        return new SharepointToolDefinition(sharepointGrounding);
     }
     #endregion
 }

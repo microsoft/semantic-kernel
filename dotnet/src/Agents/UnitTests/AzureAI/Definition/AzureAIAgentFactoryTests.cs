@@ -89,9 +89,9 @@ public class AzureAIAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Azure AI Agent response.
+    /// Azure AI Agent responses.
     /// </summary>
-    public const string AzureAIAgentResponse =
+    internal const string AzureAIAgentResponse =
         """
         {
           "id": "asst_thdyqg4yVC9ffeILVdEWLONT",
@@ -109,7 +109,6 @@ public class AzureAIAgentFactoryTests : IDisposable
           "response_format": "auto"
         }
         """;
-
     #region private
     private void SetupResponse(HttpStatusCode statusCode, string response) =>
 #pragma warning disable CA2000 // Dispose objects before losing scope
