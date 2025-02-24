@@ -14,10 +14,8 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<AIProjectClient>
 {
     protected BaseAzureAgentTest(ITestOutputHelper output) : base(output)
     {
-        var clientProvider = AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-
-        this.Client = clientProvider.Client;
-        this.AgentsClient = clientProvider.AgentsClient;
+        this.Client = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        this.AgentsClient = this.Client.GetAgentsClient();
     }
 
     /// <inheritdoc/>
