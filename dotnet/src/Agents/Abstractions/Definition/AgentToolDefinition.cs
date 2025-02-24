@@ -40,6 +40,19 @@ public class AgentToolDefinition
     }
 
     /// <summary>
+    /// The description of the tool.
+    /// </summary>
+    public string? Description
+    {
+        get => this._description;
+        set
+        {
+            Verify.NotNull(value);
+            this._description = value;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the configuration for the tool.
     /// </summary>
     /// <remarks>
@@ -56,9 +69,22 @@ public class AgentToolDefinition
         }
     }
 
+    /// <summary>
+    /// Gets the required configuration.
+    /// </summary>
+    /// <param name="key">Name of the configuration value.</param>
+    public object GetRequiredConfiguration(string key)
+    {
+        Verify.NotNull(key);
+        Verify.True(this.Configuration!.ContainsKey(key), $"The configuration key '{key}' is required.");
+
+        return this.Configuration[key];
+    }
+
     #region private
     private string? _type;
     private string? _name;
+    private string? _description;
     private IDictionary<string, object>? _configuration;
     #endregion
 }

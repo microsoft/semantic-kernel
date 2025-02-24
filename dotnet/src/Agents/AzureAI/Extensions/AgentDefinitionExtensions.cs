@@ -11,6 +11,16 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 internal static class AgentDefinitionExtensions
 {
+    private const string AzureAISearchType = "azure_aisearch";
+    private const string AzureFunctionType = "azure_function";
+    private const string BingGroundingType = "bing_grounding";
+    private const string CodeInterpreterType = "code_interpreter";
+    private const string FileSearchType = "file_search";
+    private const string FunctionToolType = "function_tool";
+    private const string MicrosoftFabricType = "microsoft_fabric";
+    private const string OpenApiType = "openapi";
+    private const string SharepointType = "sharepoint";
+
     /// <summary>
     /// Return the Azure AI tool definitions which corresponds with the provided <see cref="AgentDefinition"/>.
     /// </summary>
@@ -22,8 +32,15 @@ internal static class AgentDefinitionExtensions
         {
             return tool.Type switch
             {
-                "code_interpreter" => new CodeInterpreterToolDefinition(),
-                "file_search" => new FileSearchToolDefinition(),
+                AzureAISearchType => CreateAzureAISearchToolDefinition(tool),
+                AzureFunctionType => CreateAzureFunctionToolDefinition(tool),
+                BingGroundingType => CreateBingGroundingToolDefinition(tool),
+                CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
+                FileSearchType => CreateFileSearchToolDefinition(tool),
+                FunctionToolType => CreateFunctionToolDefinition(tool),
+                MicrosoftFabricType => CreateMicrosoftFabricToolDefinition(tool),
+                OpenApiType => CreateOpenApiToolDefinition(tool),
+                SharepointType => CreateSharepointToolDefinition(tool),
                 _ => throw new InvalidOperationException($"Unable to created Azure AI tool definition because of known tool type: {tool.Type}"),
             };
         });
@@ -40,4 +57,51 @@ internal static class AgentDefinitionExtensions
         // TODO: Implement
         return null;
     }
+
+    #region private
+    private static AzureAISearchToolDefinition CreateAzureAISearchToolDefinition(AgentToolDefinition tool)
+    {
+        return new AzureAISearchToolDefinition();
+    }
+
+    private static AzureFunctionToolDefinition CreateAzureFunctionToolDefinition(AgentToolDefinition tool)
+    {
+        return new AzureFunctionToolDefinition();
+    }
+
+    private static BingGroundingToolDefinition CreateBingGroundingToolDefinition(AgentToolDefinition tool)
+    {
+        return new BingGroundingToolDefinition();
+    }
+
+    private static CodeInterpreterToolDefinition CreateCodeInterpreterToolDefinition(AgentToolDefinition tool)
+    {
+        return new CodeInterpreterToolDefinition();
+    }
+
+    private static FileSearchToolDefinition CreateFileSearchToolDefinition(AgentToolDefinition tool)
+    {
+        return new FileSearchToolDefinition();
+    }
+
+    private static FunctionToolDefinition CreateFunctionToolDefinition(AgentToolDefinition tool)
+    {
+        return new FunctionToolDefinition();
+    }
+
+    private static MicrosoftFabricToolDefinition CreateMicrosoftFabricToolDefinition(AgentToolDefinition tool)
+    {
+        return new MicrosoftFabricToolDefinition();
+    }
+
+    private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
+    {
+        return new OpenApiToolDefinition();
+    }
+
+    private static SharepointToolDefinition CreateSharepointToolDefinition(AgentToolDefinition tool)
+    {
+        return new SharepointToolDefinition();
+    }
+    #endregion
 }
