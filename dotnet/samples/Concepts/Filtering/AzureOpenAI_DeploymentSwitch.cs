@@ -30,22 +30,22 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
         kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
 
         // Define the endpoints for the two Azure OpenAI services
-        var endpoint1 = "https://contoso-openai-eastus.openai.azure.com/";
-        var endpoint2 = "https://contoso-openai-swedencentral.openai.azure.com/";
+        var endpoint1 = "https://lightspeed-team-shared-openai-eastus.openai.azure.com/";
+        var endpoint2 = "https://lightspeed-team-shared-openai-swedencentral.openai.azure.com/";
 
         // Add Azure OpenAI chat completion services
         kernelBuilder.AddAzureOpenAIChatCompletion(
             serviceId: "eastus",
             deploymentName: "gpt-4o-mini",
             endpoint: endpoint1,
-            credentials: new DefaultAzureCredential(),
+            credentials: new AzureCliCredential(),
             httpClient: httpClient,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
         kernelBuilder.AddAzureOpenAIChatCompletion(
             serviceId: "swedencentral",
             deploymentName: "gpt-4o",
             endpoint: endpoint2,
-            credentials: new DefaultAzureCredential(),
+            credentials: new AzureCliCredential(),
             httpClient: httpClient,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
@@ -63,8 +63,6 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
-        kernel.Data.Add("service_id", "swedencentral");
-
         var reply = await kernel.InvokePromptAsync("What time is it and what is my eye color and what time is it?", new(settings));
 
         Console.WriteLine(reply);
@@ -76,9 +74,10 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
         {
             var kernel = context.Kernel;
             var chatHistory = context.ChatHistory;
+            var executionSettings = context.ExecutionSettings;
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
 
-            if (kernel.Data.TryGetValue("service_id", out object? serviceId) && serviceId is not null && "swedencentral".Equals(serviceId.ToString(), StringComparison.Ordinal))
+            if (executionSettings is not null && "swedencentral".Equals(executionSettings.ServiceId, StringComparison.Ordinal))
             {
                 bool includesGetEyeColor = functionCalls.Any(fc => fc.FunctionName.Equals("GetEyeColor", StringComparison.Ordinal));
 
@@ -101,9 +100,6 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
                         ServiceId = "eastus",
                         FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                     };
-
-                    kernel.Data.Remove("service_id");
-                    kernel.Data.Add("service_id", "eastus");
 
                     var chatContent = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, context.Kernel);
 
