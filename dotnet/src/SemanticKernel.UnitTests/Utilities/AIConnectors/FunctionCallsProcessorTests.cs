@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning restore IDE0005 // Using directive is unnecessary
 using Moq;
@@ -23,7 +22,7 @@ public class FunctionCallsProcessorTests
 {
     private readonly FunctionCallsProcessor _sut = new();
     private readonly FunctionChoiceBehaviorOptions _functionChoiceBehaviorOptions = new();
-    private readonly OpenAIPromptExecutionSettings _openAIPromptExecutionSettings = new();
+    private readonly PromptExecutionSettings _promptExecutionSettings = new();
 
     [Fact]
     public void ItShouldReturnNoConfigurationIfNoBehaviorProvided()
@@ -97,7 +96,7 @@ public class FunctionCallsProcessorTests
 
             await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: [],
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -127,7 +126,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -156,7 +155,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -190,7 +189,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -219,7 +218,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => false, // Return false to simulate that the function is not advertised
@@ -248,7 +247,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -290,7 +289,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -357,7 +356,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -447,7 +446,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -496,7 +495,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -549,7 +548,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -602,7 +601,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -649,7 +648,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -694,7 +693,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -749,7 +748,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -785,7 +784,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -876,7 +875,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
-                executionSettings: this._openAIPromptExecutionSettings,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: new ChatHistory(),
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -887,7 +886,7 @@ public class FunctionCallsProcessorTests
 
         // Assert
         Assert.NotNull(actualContext);
-        Assert.Same(this._openAIPromptExecutionSettings, actualContext!.ExecutionSettings);
+        Assert.Same(this._promptExecutionSettings, actualContext!.ExecutionSettings);
     }
 
     private sealed class AutoFunctionInvocationFilter(
