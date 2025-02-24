@@ -27,28 +27,28 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);
         Verify.NotNull(agentDefinition.Model.Id);
 
         KernelAgent? kernelAgent = null;
-        if (agentDefinition.Type?.Equals(OpenAIAssistantAgentType, System.StringComparison.Ordinal) ?? false)
+        if (this.IsSupported(agentDefinition))
         {
-            var clientProvider = kernel.GetOpenAIClientProvider(agentDefinition);
-            AssistantClient client = clientProvider.Client.GetAssistantClient();
+            var client = kernel.GetOpenAIClient(agentDefinition);
+            AssistantClient assistantClient = client.GetAssistantClient();
 
             var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
-            Assistant model = await client.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+            Assistant model = await assistantClient.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
-            kernelAgent = new OpenAIAssistantAgent(model, clientProvider.AssistantClient)
+            kernelAgent = new OpenAIAssistantAgent(model, assistantClient)
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments() ?? [],
             };
         }
 
-        return Task.FromResult<KernelAgent?>(kernelAgent).Result;
+        return kernelAgent;
     }
 }

@@ -11,16 +11,6 @@ namespace Microsoft.SemanticKernel.Agents;
 public class AgentToolDefinition
 {
     /// <summary>
-    /// Tool definition type for code interpreter.
-    /// </summary>
-    public const string CodeInterpreter = "code_interpreter";
-
-    /// <summary>
-    /// Tool definition type for file search.
-    /// </summary>
-    public const string FileSearch = "file_search";
-
-    /// <summary>
     /// The type of the tool.
     /// </summary>
     /// <remarks>

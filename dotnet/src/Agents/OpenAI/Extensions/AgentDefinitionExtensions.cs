@@ -13,9 +13,19 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class AgentDefinitionExtensions
 {
     /// <summary>
+    /// Tool definition type for code interpreter.
+    /// </summary>
+    internal const string CodeInterpreter = "code_interpreter";
+
+    /// <summary>
+    /// Tool definition type for file search.
+    /// </summary>
+    internal const string FileSearch = "file_search";
+
+    /// <summary>
     /// Property name for the file ids configuration.
     /// </summary>
-    public const string FileIds = "file_ids";
+    internal const string FileIds = "file_ids";
 
     /// <summary>
     /// Create the <see cref="AssistantCreationOptions"/> which corresponds with the provided <see cref="AgentDefinition"/>.
@@ -42,12 +52,12 @@ internal static class AgentDefinitionExtensions
         // Metadata
         // ExecutionOptions
 
-        if (agentDefinition?.IsEnableCodeInterpreter() ?? false)
+        if (agentDefinition?.HasToolType(CodeInterpreter) ?? false)
         {
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
         }
 
-        if (agentDefinition?.IsEnableFileSearch() ?? false)
+        if (agentDefinition?.HasToolType(FileSearch) ?? false)
         {
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
         }
@@ -63,7 +73,7 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        var toolDefinition = agentDefinition.GetFirstToolDefinition(AgentToolDefinition.CodeInterpreter);
+        var toolDefinition = agentDefinition.GetFirstToolDefinition(CodeInterpreter);
         if (toolDefinition?.Configuration?.TryGetValue(FileIds, out var fileIds) ?? false)
         {
             // TODO: Verify that the fileIds are strings

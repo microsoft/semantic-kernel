@@ -46,24 +46,14 @@ public static class AgentDefinitionExtensions
     }
 
     /// <summary>
-    /// Determines if the agent definition has a code interpreter tool.
+    /// Determines if the agent definition has a tool of the specified type.
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
-    public static bool IsEnableCodeInterpreter(this AgentDefinition agentDefinition)
+    /// <param name="toolType">Tool type</param>
+    public static bool HasToolType(this AgentDefinition agentDefinition, string toolType)
     {
         Verify.NotNull(agentDefinition);
 
-        return agentDefinition.Tools?.Where(tool => tool.Type == AgentToolDefinition.CodeInterpreter).Any() ?? false;
-    }
-
-    /// <summary>
-    /// Determines if the agent definition has a file search tool.
-    /// </summary>
-    /// <param name="agentDefinition">Agent definition</param>
-    public static bool IsEnableFileSearch(this AgentDefinition agentDefinition)
-    {
-        Verify.NotNull(agentDefinition);
-
-        return agentDefinition.Tools?.Where(tool => tool.Type == AgentToolDefinition.FileSearch).Any() ?? false;
+        return agentDefinition.Tools?.Where(tool => tool?.Type?.Equals(toolType, System.StringComparison.Ordinal) ?? false).Any() ?? false;
     }
 }

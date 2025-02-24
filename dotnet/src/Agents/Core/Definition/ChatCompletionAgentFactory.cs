@@ -24,14 +24,14 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
         // TODO Implement template handling
 
         ChatCompletionAgent? kernelAgent = null;
-        if (agentDefinition.Type?.Equals(ChatCompletionAgentType, System.StringComparison.Ordinal) ?? false)
+        if (this.IsSupported(agentDefinition))
         {
             kernelAgent = new ChatCompletionAgent()
             {

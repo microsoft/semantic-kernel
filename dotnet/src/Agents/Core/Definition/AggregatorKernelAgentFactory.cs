@@ -28,13 +28,13 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
         foreach (var kernelAgentFactory in this._kernelAgentFactories)
         {
-            if (kernelAgentFactory is not null)
+            if (kernelAgentFactory is not null && kernelAgentFactory.IsSupported(agentDefinition))
             {
                 var kernelAgent = await kernelAgentFactory.CreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
                 if (kernelAgent is not null)

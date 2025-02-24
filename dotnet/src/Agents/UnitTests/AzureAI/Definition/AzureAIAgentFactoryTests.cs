@@ -37,7 +37,7 @@ public class AzureAIAgentFactoryTests : IDisposable
             new FakeTokenCredential(),
             new AIProjectClientOptions()
             { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AzureAIClientProvider>(AzureAIClientProvider.FromClient(client));
+        builder.Services.AddSingleton<AIProjectClient>(client);
         this._kernel = builder.Build();
     }
 
@@ -70,7 +70,7 @@ public class AzureAIAgentFactoryTests : IDisposable
                 new Microsoft.SemanticKernel.Agents.AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = Microsoft.SemanticKernel.Agents.AgentToolDefinition.CodeInterpreter,
+                    Type = "code_interpreter",
                 },
             ]
         };

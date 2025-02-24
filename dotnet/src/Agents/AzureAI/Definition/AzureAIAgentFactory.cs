@@ -25,18 +25,17 @@ public sealed class AzureAIAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);
         Verify.NotNull(agentDefinition.Model.Id);
 
-        KernelAgent? kernelAgent = null;
         if (agentDefinition.Type?.Equals(AzureAIAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            var clientProvider = kernel.GetAzureAIClientProvider(agentDefinition);
+            var projectClient = kernel.GetAIProjectClient(agentDefinition);
 
-            AgentsClient client = clientProvider.Client.GetAgentsClient();
+            AgentsClient client = projectClient.GetAgentsClient();
             Azure.AI.Projects.Agent agent = await client.CreateAgentAsync(
                 model: agentDefinition.Model.Id,
                 name: agentDefinition.Name,
@@ -46,12 +45,12 @@ public sealed class AzureAIAgentFactory : KernelAgentFactory
                 metadata: agentDefinition.GetMetadata(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            kernelAgent = new AzureAIAgent(agent, client)
+            return new AzureAIAgent(agent, client)
             {
                 Kernel = kernel,
             };
         }
 
-        return Task.FromResult<KernelAgent?>(kernelAgent).Result;
+        return null;
     }
 }

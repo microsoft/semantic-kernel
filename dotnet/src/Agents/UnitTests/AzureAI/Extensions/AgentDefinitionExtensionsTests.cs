@@ -24,12 +24,12 @@ public class AgentDefinitionExtensionsTests
                 new AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = AgentToolDefinition.CodeInterpreter,
+                    Type = "code_interpreter",
                 },
                 new AgentToolDefinition()
                 {
                     Name = "tool2",
-                    Type = AgentToolDefinition.FileSearch,
+                    Type = "file_search",
                 },
             ]
         };

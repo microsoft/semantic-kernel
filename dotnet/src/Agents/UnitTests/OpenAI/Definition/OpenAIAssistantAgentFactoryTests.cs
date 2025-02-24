@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Definition;
@@ -30,8 +31,11 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
+        OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(endpoint: null, httpClient: this._httpClient);
+        OpenAIClient openAIClient = new(new ApiKeyCredential("fakekey"), clientOptions);
+
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<OpenAIClientProvider>(OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient));
+        builder.Services.AddSingleton<OpenAIClient>(openAIClient);
         this._kernel = builder.Build();
     }
 
@@ -64,7 +68,7 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
                 new AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = AgentToolDefinition.CodeInterpreter,
+                    Type = "code_interpreter",
                 },
             ]
         };

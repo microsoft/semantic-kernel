@@ -64,7 +64,7 @@ public sealed class AzureAIClientProvider
         return new(client, [client.GetType().FullName!, client.GetHashCode().ToString()]);
     }
 
-    private static AIProjectClientOptions CreateAzureClientOptions(HttpClient? httpClient)
+    internal static AIProjectClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
         AIProjectClientOptions options =
             new()

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using OpenAI;
 
@@ -14,15 +15,17 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 [ExcludeFromCodeCoverage]
 internal static class KernelExtensions
 {
-    private const string Endpoint = "endpoint";
     private const string ApiKey = "api_key";
 
+    private const string OpenAI = "openai";
+    private const string AzureOpenAI = "azure_openai";
+
     /// <summary>
-    /// Return the <see cref="OpenAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
+    /// Return the <see cref="OpenAIClient"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="OpenAIClientProvider"/>.</param>
-    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="OpenAIClientProvider"/>.</param>
-    public static OpenAIClientProvider GetOpenAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="OpenAIClient"/>.</param>
+    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="OpenAIClient"/>.</param>
+    public static OpenAIClient GetOpenAIClient(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 
@@ -30,31 +33,39 @@ internal static class KernelExtensions
         var configuration = agentDefinition?.Model?.Configuration;
         if (configuration is not null)
         {
-            var hasEndpoint = configuration.TryGetValue(Endpoint, out var endpoint) && endpoint is not null;
-            var hasApiKey = configuration.TryGetValue(ApiKey, out var apiKey) && apiKey is not null;
-            if (hasApiKey && hasEndpoint)
+            if (configuration.Type is null)
             {
-                return OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(apiKey!.ToString()!), new Uri(endpoint!.ToString()!));
+                throw new InvalidOperationException("OpenAI client type was not specified.");
             }
-            else if (hasApiKey && !hasEndpoint)
+
+            var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+            if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                return OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(apiKey!.ToString()!));
+                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
+                return new OpenAIClient(configuration.GetApiKeyCredential(), clientOptions);
             }
-            else if (!hasApiKey && hasEndpoint)
+            else if (configuration.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                return OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(endpoint!.ToString()!));
+                AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
+                var endpoint = configuration.GetEndpointUri();
+                if (configuration.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
+                {
+                    return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);
+                }
+
+                return new AzureOpenAIClient(endpoint, new AzureCliCredential(), clientOptions);
             }
+
+            throw new InvalidOperationException($"Invalid OpenAI client type '{configuration.Type}' was specified.");
         }
 
         // Use the client registered on the kernel
         var client = kernel.GetAllServices<OpenAIClient>().FirstOrDefault();
         if (client is not null)
         {
-            return OpenAIClientProvider.FromClient(client);
+            return client;
         }
 
-        // Use the provider registered on the kernel
-        var clientProvider = kernel.GetAllServices<OpenAIClientProvider>().FirstOrDefault();
-        return (OpenAIClientProvider?)clientProvider ?? throw new InvalidOperationException("OpenAI client provider not found.");
+        throw new InvalidOperationException("OpenAI client not found.");
     }
 }

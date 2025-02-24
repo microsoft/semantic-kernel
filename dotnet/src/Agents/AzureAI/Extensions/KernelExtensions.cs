@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using Azure.AI.Projects;
 using Azure.Identity;
 
@@ -15,11 +16,11 @@ internal static class KernelExtensions
     private const string ConnectionString = "connection_string";
 
     /// <summary>
-    /// Return the <see cref="AzureAIClientProvider"/> to be used with the specified <see cref="AgentDefinition"/>.
+    /// Return the <see cref="AIProjectClient"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
     /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AzureAIClientProvider"/>.</param>
     /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="AzureAIClientProvider"/>.</param>
-    public static AzureAIClientProvider GetAzureAIClientProvider(this Kernel kernel, AgentDefinition agentDefinition)
+    public static AIProjectClient GetAIProjectClient(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 
@@ -30,7 +31,9 @@ internal static class KernelExtensions
             var hasConnectionString = configuration.TryGetValue(ConnectionString, out var connectionString) && connectionString is not null;
             if (hasConnectionString)
             {
-                return AzureAIClientProvider.FromConnectionString(connectionString!.ToString()!, new AzureCliCredential());
+                var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+                AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
+                return new(connectionString!.ToString()!, new AzureCliCredential(), clientOptions);
             }
         }
 
@@ -38,11 +41,9 @@ internal static class KernelExtensions
         var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
         if (client is not null)
         {
-            return AzureAIClientProvider.FromClient(client);
+            return client;
         }
 
-        // Return the service registered on the kernel
-        var clientProvider = kernel.GetAllServices<AzureAIClientProvider>().FirstOrDefault();
-        return (AzureAIClientProvider?)clientProvider ?? throw new InvalidOperationException("AzureAI client provider not found.");
+        throw new InvalidOperationException("AzureAI project client not found.");
     }
 }

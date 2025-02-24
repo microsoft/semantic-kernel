@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI;
 using SemanticKernel.Agents.UnitTests.AzureAI.Definition;
 using SemanticKernel.Agents.UnitTests.OpenAI;
 using SemanticKernel.Agents.UnitTests.OpenAI.Definition;
@@ -38,16 +39,18 @@ public class KernelAgentYamlTests : IDisposable
 
         var builder = Kernel.CreateBuilder();
 
-        // Add OpenAI client provider
-        builder.Services.AddSingleton<OpenAIClientProvider>(OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient));
+        // Add OpenAI client
+        OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(endpoint: null, httpClient: this._httpClient);
+        OpenAIClient openAIClient = new(new ApiKeyCredential("fakekey"), clientOptions);
+        builder.Services.AddSingleton<OpenAIClient>(openAIClient);
 
-        // Add Azure AI client provider
+        // Add Azure AI agents client
         var client = new AIProjectClient(
             "endpoint;subscription_id;resource_group_name;project_name",
             new FakeTokenCredential(),
             new AIProjectClientOptions()
             { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AzureAIClientProvider>(AzureAIClientProvider.FromClient(client));
+        builder.Services.AddSingleton<AIProjectClient>(client);
 
         this._kernel = builder.Build();
     }

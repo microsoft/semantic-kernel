@@ -32,7 +32,7 @@ public class AgentDefinitionExtensionsTests
                 new AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = AgentToolDefinition.CodeInterpreter,
+                    Type = "code_interpreter",
                 },
             ]
         };
@@ -66,7 +66,7 @@ public class AgentDefinitionExtensionsTests
                 new AgentToolDefinition()
                 {
                     Name = "tool1",
-                    Type = AgentToolDefinition.CodeInterpreter,
+                    Type = "code_interpreter",
                     Configuration = configuration,
                 },
             ]

@@ -59,7 +59,7 @@ public class AgentDefinitionExtensionsTests
     }
 
     /// <summary>
-    /// Verify IsEnableCodeInterpreter
+    /// Verify HasToolType
     /// </summary>
     [Fact]
     public void VerifyIsEnableCodeInterpreter()
@@ -74,7 +74,7 @@ public class AgentDefinitionExtensionsTests
         };
 
         // Act & Assert
-        Assert.True(agentDefinition.IsEnableCodeInterpreter());
+        Assert.True(agentDefinition.HasToolType("code_interpreter"));
     }
 
     /// <summary>
@@ -93,6 +93,6 @@ public class AgentDefinitionExtensionsTests
         };
 
         // Act & Assert
-        Assert.True(agentDefinition.IsEnableFileSearch());
+        Assert.True(agentDefinition.HasToolType("file_search"));
     }
 }
