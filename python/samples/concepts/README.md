@@ -85,12 +85,13 @@
 
 - [Setup Logging](./logging/setup_logging.py)
 
-### Memory - Using [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) AI concepts
+### Memory - Using [`Memory`](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-python) AI concepts
 
-- [Azure Cognitive Search Memory](./memory/azure_cognitive_search_memory.py)
+- [Simple Memory](./memory/simple_memory.py)
 - [Memory Data Models](./memory/data_models.py)
-- [New Memory](./memory/new_memory.py)
-- [Pandas Memory](./memory/pandas_memory.py)
+- [Memory with Pandas Dataframes](./memory/memory_with_pandas.py)
+- [Complex memory](./memory/complex_memory.py)
+- [Full sample with Azure AI Search including function calling](./memory/azure_ai_search_hotel_samples/README.md)
 
 ### Model-as-a-Service - Using models deployed as [`serverless APIs on Azure AI Studio`](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio) to benchmark model performance against open-source datasets
 

@@ -4,11 +4,13 @@ import argparse
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import uuid4
 
 import numpy as np
 
+from samples.concepts.memory.utils import print_record
+from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import (
     AzureTextEmbedding,
@@ -16,20 +18,23 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCollection
+from semantic_kernel.connectors.memory.azure_cosmos_db import (
+    AzureCosmosDBforMongoDBCollection,
+    AzureCosmosDBNoSQLCollection,
+)
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     IndexKind,
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorSearchResult,
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -39,40 +44,48 @@ from semantic_kernel.data import (
     vectorstoremodel,
 )
 
-
-def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
-    @vectorstoremodel
-    @dataclass
-    class DataModelArray:
-        vector: Annotated[
-            np.ndarray | None,
-            VectorStoreRecordVectorField(
-                embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-                index_kind=index_kind,
-                dimensions=1536,
-                distance_function=distance_function,
-                property_type="float",
-                serialize_function=np.ndarray.tolist,
-                deserialize_function=np.array,
-            ),
-        ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str,
-            VectorStoreRecordDataField(
-                has_embedding=True,
-                embedding_property_name="vector",
-                property_type="str",
-                is_full_text_searchable=True,
-            ),
-        ] = "content1"
-        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
-        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
-
-    return DataModelArray
+# This is a rather complex sample, showing how to use the vector store
+# with a number of different collections.
+# It also shows how to use the vector store with a number of different data models.
+# It also uses all the types of search available in the vector store.
+# For a simpler example, see "simple_memory.py"
 
 
-def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
+def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distance_function: DistanceFunction) -> type:
+    if type == "array":
+
+        @vectorstoremodel
+        @dataclass
+        class DataModelArray:
+            vector: Annotated[
+                np.ndarray | None,
+                VectorStoreRecordVectorField(
+                    embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
+                    index_kind=index_kind,
+                    dimensions=1536,
+                    distance_function=distance_function,
+                    property_type="float",
+                    serialize_function=np.ndarray.tolist,
+                    deserialize_function=np.array,
+                ),
+            ] = None
+            id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+            content: Annotated[
+                str,
+                VectorStoreRecordDataField(
+                    has_embedding=True,
+                    embedding_property_name="vector",
+                    property_type="str",
+                    is_full_text_searchable=True,
+                ),
+            ] = "content1"
+            title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = (
+                "title"
+            )
+            tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+
+        return DataModelArray
+
     @vectorstoremodel
     @dataclass
     class DataModelList:
@@ -103,9 +116,10 @@ def get_data_model_list(index_kind: IndexKind, distance_function: DistanceFuncti
 
 
 collection_name = "test"
+distance_function = DistanceFunction.COSINE_SIMILARITY
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILARITY)
+DataModel = get_data_model("array", IndexKind.IVF_FLAT, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -124,6 +138,8 @@ DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE_SIMILAR
 #   https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Cpython&pivots=api-nosql
 #   Please see the link above to learn how to set up the Azure Cosmos NoSQL emulator on your machine.
 #   For this sample to work with Azure Cosmos NoSQL, please adjust the index_kind of the data model to QUANTIZED_FLAT.
+# - azure_cosmos_mongodb: Azure Cosmos MongoDB
+#   https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/introduction
 # This is represented as a mapping from the collection name to a
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
@@ -162,29 +178,22 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
         create_database=True,
     ),
+    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection(
+        data_model_type=DataModel,
+        collection_name=collection_name,
+    ),
 }
 
 
-def print_record(result: VectorSearchResult | None = None, record: DataModel | None = None):
-    if result:
-        record = result.record
-    print(f"  Found id: {record.id}")
-    print(f"    Content: {record.content}")
-    if record.vector is not None:
-        print(f"    Vector (first five): {record.vector[:5]}")
-
-
-async def main(collection: str, use_azure_openai: bool, embedding_model: str):
+async def main(collection: str, use_azure_openai: bool):
     print("-" * 30)
     kernel = Kernel()
-    service_id = "embedding"
-    if use_azure_openai:
-        embedder = AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model)
-    else:
-        embedder = OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model)
+    embedder = (
+        AzureTextEmbedding(service_id="embedding") if use_azure_openai else OpenAITextEmbedding(service_id="embedding")
+    )
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
-        print(f"Creating {collection} collection!")
+        print_with_color(f"Creating {collection} collection!", Colors.CGREY)
         await record_collection.delete_collection()
         await record_collection.create_collection_if_not_exists()
 
@@ -200,16 +209,22 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             title="Semantic Kernel Languages",
             tag="general",
         )
+        record3 = DataModel(
+            content="```python\nfrom semantic_kernel import Kernel\nkernel = Kernel()\n```",
+            id="d5c9913a-e015-4944-b960-5d4a84bca002",
+            title="Code sample",
+            tag="code",
+        )
 
-        print("Adding records!")
+        print_with_color("Adding records!", Colors.CBLUE)
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
-            [record1, record2], data_model_type=DataModel
+            [record1, record2, record3], data_model_type=DataModel
         )
 
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
-        print("Getting records!")
-        results = await record_collection.get_batch([record1.id, record2.id])
+        print_with_color("Getting records!", Colors.CBLUE)
+        results = await record_collection.get_batch([record1.id, record2.id, record3.id])
         if results:
             [print_record(record=result) for result in results]
         else:
@@ -219,9 +234,11 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             include_vectors=True,
             filter=VectorSearchFilter.equal_to("tag", "general"),
         )
+        print("-" * 30)
+        print_with_color("Searching for 'python', with filter 'tag == general'", Colors.CBLUE)
         if isinstance(record_collection, VectorTextSearchMixin):
             print("-" * 30)
-            print("Using text search")
+            print_with_color("Using text search", Colors.CBLUE)
             try:
                 search_results = await record_collection.text_search("python", options)
                 if search_results.total_count == 0:
@@ -232,14 +249,16 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
                 print("Text search could not execute.")
         if isinstance(record_collection, VectorizedSearchMixin):
             print("-" * 30)
-            print(
-                "Using vectorized search, depending on the distance function, "
-                "the better score might be higher or lower."
+            print_with_color(
+                f"Using vectorized search, for {distance_function.value}, "
+                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better"  # noqa: E501
+                f"",
+                Colors.CBLUE,
             )
             try:
                 search_results = await record_collection.vectorized_search(
                     vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                    options=VectorSearchOptions(vector_field_name="vector", include_vectors=True),
+                    options=options,
                 )
                 if search_results.total_count == 0:
                     print("\nNothing found...\n")
@@ -249,7 +268,11 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
                 print("Vectorized search could not execute.")
         if isinstance(record_collection, VectorizableTextSearchMixin):
             print("-" * 30)
-            print("Using vectorizable text search")
+            print_with_color(
+                f"Using vectorized search, for {distance_function.value}, "
+                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
+                Colors.CBLUE,
+            )
             try:
                 search_results = await record_collection.vectorizable_text_search("python", options)
                 if search_results.total_count == 0:
@@ -259,9 +282,9 @@ async def main(collection: str, use_azure_openai: bool, embedding_model: str):
             except Exception:
                 print("Vectorizable text search could not execute.")
         print("-" * 30)
-        print("Deleting collection!")
+        print_with_color("Deleting collection!", Colors.CBLUE)
         await record_collection.delete_collection()
-        print("Done!")
+        print_with_color("Done!", Colors.CGREY)
 
 
 if __name__ == "__main__":
@@ -271,10 +294,5 @@ if __name__ == "__main__":
     parser.add_argument("--collection", default="in_memory", choices=collections.keys(), help="What collection to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
-    # Model
-    parser.add_argument(
-        "--model", default="text-embedding-3-small", help="The model or deployment to use for embeddings."
-    )
     args = parser.parse_args()
-
-    asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai, embedding_model=args.model))
+    asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))
