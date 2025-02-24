@@ -1,0 +1,28 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+
+/// <summary>
+/// The Amazon Titan Text response object when deserialized from Invoke Model call.
+/// </summary>
+internal sealed class CohereEmbedResponse
+{
+    /// <summary>
+    /// The number of tokens in the prompt.
+    /// </summary>
+    [JsonPropertyName("inputTextTokenCount")]
+    public int InputTextTokenCount { get; set; }
+
+    [JsonPropertyName("texts")]
+    public IList<string>? Texts { get; set; }
+
+    /// <summary>
+    /// The float array of the embedding.
+    /// </summary>
+    [JsonPropertyName("embedding")]
+    public IList<IList<float>?>? Embeddings { get; set; }
+}

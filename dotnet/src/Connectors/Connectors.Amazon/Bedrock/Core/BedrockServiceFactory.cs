@@ -125,7 +125,7 @@ internal sealed class BedrockServiceFactory
         }
     }
 
-    internal IBedrockTextEmbeddingService CreateTextEmbeddingService(string modelId)
+    internal IBedrockCommonTextEmbeddingService CreateTextEmbeddingService(string modelId)
     {
         (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 
@@ -137,6 +137,12 @@ internal sealed class BedrockServiceFactory
                     return new AmazonEmbedService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
+            case "COHERE":
+                if (modelName.StartsWith("embed-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new CohereEmbedService();
+                }
+                throw new NotSupportedException($"Unsupported Cohere model: {modelId}");
             default:
                 throw new NotSupportedException($"Unsupported model provider: {modelProvider}");
         }

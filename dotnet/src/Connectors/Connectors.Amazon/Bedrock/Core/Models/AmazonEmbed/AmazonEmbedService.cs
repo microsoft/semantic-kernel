@@ -7,15 +7,13 @@ using Amazon.BedrockRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal class AmazonEmbedService : IBedrockTextEmbeddingService
+internal class AmazonEmbedService : IBedrockCommonSplitTextEmbeddingService
 {
-    public object GetInvokeModelRequestBody(string modelId, string text, int dimensions = 1024, bool normalize = true)
+    public object GetInvokeModelRequestBody(string modelId, string text)
     {
         return new TitanEmbedRequest()
         {
-            InputText = text,
-            Dimensions = dimensions,
-            Normalize = normalize
+            InputText = text
         };
     }
 

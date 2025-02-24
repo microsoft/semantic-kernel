@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 internal sealed class BedrockTextEmbeddingGenerationClient
 {
     private readonly string _modelId;
-    private readonly IBedrockTextEmbeddingService _ioVectorService;
+    private readonly IBedrockCommonTextEmbeddingService _ioVectorService;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
     private readonly ILogger _logger;
 
@@ -40,13 +40,25 @@ internal sealed class BedrockTextEmbeddingGenerationClient
     {
         Verify.NotNullOrEmpty(texts);
 
-        var embeddings = new List<ReadOnlyMemory<float>>();
+        return this._ioVectorService switch
+        {
+            IBedrockCommonSplitTextEmbeddingService => await this.GenerateSingleEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
+            IBedrockCommonBatchTextEmbeddingService => await this.GenerateBatchEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
+            _ => throw new NotSupportedException("Unsupported service type")
+        };
+    }
 
+    private async Task<IList<ReadOnlyMemory<float>>> GenerateSingleEmbeddingsAsync(
+        IList<string> texts,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var embeddings = new List<ReadOnlyMemory<float>>();
         foreach (var item in texts)
         {
             try
             {
-                var embedding = await this.GetEmbeddingForTextAsync(item, cancellationToken).ConfigureAwait(false);
+                var embedding = await this.GetEmbeddingForSingleTextAsync(item, cancellationToken).ConfigureAwait(false);
                 embeddings.Add(embedding);
             }
             catch (Exception ex)
@@ -59,10 +71,11 @@ internal sealed class BedrockTextEmbeddingGenerationClient
         return embeddings;
     }
 
-    private async Task<ReadOnlyMemory<float>> GetEmbeddingForTextAsync(
+    private async Task<ReadOnlyMemory<float>> GetEmbeddingForSingleTextAsync(
         string text,
         CancellationToken cancellationToken = default)
     {
+        var splitVectorService = this._ioVectorService as IBedrockCommonSplitTextEmbeddingService;
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
@@ -74,7 +87,7 @@ internal sealed class BedrockTextEmbeddingGenerationClient
 
         try
         {
-            var requestBody = this._ioVectorService.GetInvokeModelRequestBody(this._modelId, text);
+            var requestBody = splitVectorService!.GetInvokeModelRequestBody(this._modelId, text);
             using var requestBodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody));
             invokeRequest.Body = requestBodyStream;
 
@@ -92,6 +105,43 @@ internal sealed class BedrockTextEmbeddingGenerationClient
             throw new ArgumentException("Response is null");
         }
 
-        return this._ioVectorService.GetInvokeResponseBody(response);
+        return splitVectorService.GetInvokeResponseBody(response);
+    }
+
+    private async Task<IList<ReadOnlyMemory<float>>> GenerateBatchEmbeddingsAsync(
+        IList<string> texts,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var batchVectorService = this._ioVectorService as IBedrockCommonBatchTextEmbeddingService;
+        var invokeRequest = new InvokeModelRequest
+        {
+            ModelId = this._modelId,
+            Accept = "application/json",
+            ContentType = "application/json",
+        };
+
+        InvokeModelResponse? response = null;
+
+        try
+        {
+            var requestBody = batchVectorService!.GetInvokeModelRequestBody(this._modelId, texts);
+            using var requestBodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody));
+            invokeRequest.Body = requestBodyStream;
+
+            response = await this._bedrockRuntime.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, "Can't invoke with '{ModelId}'. Reason: {Error}", this._modelId, ex.Message);
+            throw;
+        }
+
+        if (response?.Body == null)
+        {
+            throw new ArgumentException("Response is null");
+        }
+
+        return batchVectorService.GetInvokeResponseBody(response);
     }
 }
