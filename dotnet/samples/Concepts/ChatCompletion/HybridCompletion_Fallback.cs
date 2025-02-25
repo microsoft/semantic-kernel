@@ -67,23 +67,16 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
     [Fact]
     public async Task FallbackToAvailableModelStreamingAsync()
     {
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        // Create an unavailable chat client that fails with 503 Service Unavailable HTTP status code
+        IChatClient unavailableChatClient = CreateUnavailableOpenAIChatClient();
 
-        // Create and register an unavailable chat client that fails with 503 Service Unavailable HTTP status code
-        kernelBuilder.Services.AddSingleton<IChatClient>(CreateUnavailableOpenAIChatClient());
+        // Create a cloud available chat client
+        IChatClient availableChatClient = CreateAzureOpenAIChatClient();
 
-        // Create and register a cloud available chat client
-        kernelBuilder.Services.AddSingleton<IChatClient>(CreateAzureOpenAIChatClient());
+        // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
+        IChatCompletionService fallbackCompletionService = new FallbackChatClient([unavailableChatClient, availableChatClient]).AsChatCompletionService();
 
-        // Create and register fallback chat client that will fallback to the available chat client when unavailable chat client fails
-        kernelBuilder.Services.AddSingleton<IChatCompletionService>((sp) =>
-        {
-            IEnumerable<IChatClient> chatClients = sp.GetServices<IChatClient>();
-
-            return new FallbackChatClient(chatClients.ToList()).AsChatCompletionService();
-        });
-
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = new();
         kernel.ImportPluginFromFunctions("Weather", [KernelFunctionFactory.CreateFromMethod(() => "It's sunny", "GetWeather")]);
 
         AzureOpenAIPromptExecutionSettings settings = new()
@@ -91,7 +84,7 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
-        IAsyncEnumerable<StreamingKernelContent> result = kernel.InvokePromptStreamingAsync("Do I need an umbrella?", new(settings));
+        IAsyncEnumerable<StreamingChatMessageContent> result = fallbackCompletionService.GetStreamingChatMessageContentsAsync("Do I need an umbrella?", settings, kernel);
 
         await foreach (var update in result)
         {
