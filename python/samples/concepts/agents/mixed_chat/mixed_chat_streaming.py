@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -32,6 +32,7 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 
 async def main():
+    # First create a ChatCompletionAgent
     agent_reviewer = ChatCompletionAgent(
         service_id="artdirector",
         kernel=_create_kernel_with_chat_completion("artdirector"),
@@ -44,11 +45,10 @@ async def main():
             """,
     )
 
-    # Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIAssistantAgent.setup_resources()
+    # Next, we will create the AzureAssistantAgent
 
-    # If desired, create using OpenAI resources
-    # client, model = OpenAIAssistantAgent.setup_resources()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
@@ -64,12 +64,13 @@ async def main():
         """,
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent_writer = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent_writer = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
 
+    # Create the AgentGroupChat object, which will manage the chat between the agents
     chat = AgentGroupChat(
         agents=[agent_writer, agent_reviewer],
         termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),

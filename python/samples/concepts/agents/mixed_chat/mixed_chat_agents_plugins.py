@@ -4,7 +4,7 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -88,11 +88,8 @@ async def main():
         arguments=KernelArguments(settings=settings),
     )
 
-    # Create the OpenAI Assistant Agent
-    # client, model = OpenAIAssistantAgent.setup_resources()
-
-    # To create an OpenAIAssistantAgent for Azure OpenAI, use the following:
-    client, model = OpenAIAssistantAgent.setup_resources()
+    # Create the Assistant Agent using Azure OpenAI resources
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
@@ -101,8 +98,8 @@ async def main():
         instructions=COPYWRITER_INSTRUCTIONS,
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent_writer = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent_writer = AzureAssistantAgent(
         client=client,
         definition=definition,
     )

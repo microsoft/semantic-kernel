@@ -4,7 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -28,11 +28,22 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 
 async def main():
-    # Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIAssistantAgent.setup_resources()
+    # First create the ChatCompletionAgent
+    chat_agent = ChatCompletionAgent(
+        service_id="chat",
+        kernel=_create_kernel_with_chat_completion("chat"),
+        name="chat_agent",
+        instructions="""
+            The user may either provide information or query on information previously provided. 
+            If the query does not correspond with information provided, inform the user that their query 
+            cannot be answered.
+            """,
+    )
 
-    # If desired, create using OpenAI resources
-    # client, model = OpenAIAssistantAgent.setup_resources()
+    # Next, we will create the AzureAssistantAgent
+
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
@@ -45,23 +56,16 @@ async def main():
             """,
     )
 
-    # Create the OpenAIAssistantAgent instance
-    assistant_agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    assistant_agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
 
-    chat_agent = ChatCompletionAgent(
-        service_id="chat",
-        kernel=_create_kernel_with_chat_completion("chat"),
-        name="chat_agent",
-        instructions="""
-            The user may either provide information or query on information previously provided. 
-            If the query does not correspond with information provided, inform the user that their query 
-            cannot be answered.
-            """,
-    )
-
+    # Create the AgentGroupChat object, which will manage the chat between the agents
+    # We don't always need to specify the agents in the chat up front
+    # As shown below, calling `chat.invoke(agent=<agent>)` will automatically add the
+    # agent to the chat
     chat = AgentGroupChat()
 
     try:

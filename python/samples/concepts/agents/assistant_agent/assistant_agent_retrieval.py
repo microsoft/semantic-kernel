@@ -38,7 +38,7 @@ async def main():
     # Define a thread and invoke the agent with the user input
     thread = await agent.client.beta.threads.create()
 
-    user_inputs = ["Why is the sky blue in JSON?"]
+    user_inputs = ["Why is the sky blue?"]
 
     try:
         for input in user_inputs:

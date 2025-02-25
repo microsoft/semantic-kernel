@@ -3,7 +3,7 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -25,12 +25,10 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIAssistantAgent.setup_resources()
+    client, model = AzureAssistantAgent.setup_resources()
 
-    # If desired, create using OpenAI resources
-    # client, model = OpenAIAssistantAgent.setup_resources()
-
-    code_interpreter_tool, code_interpreter_resources = OpenAIAssistantAgent.configure_code_interpreter_tool()
+    # Get the code interpreter tool and resources
+    code_interpreter_tool, code_interpreter_resources = AzureAssistantAgent.configure_code_interpreter_tool()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
@@ -41,8 +39,8 @@ async def main():
         tool_resources=code_interpreter_resources,
     )
 
-    # Create the OpenAIAssistantAgent instance
-    analyst_agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    analyst_agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
@@ -55,8 +53,10 @@ async def main():
         name="Summarizer",
     )
 
-    # Note: By default, `AgentGroupChat` does not terminate automatically.
-    # However, setting the maximum iterations to 5 forces the chat to end after 5 iterations.
+    # Create the AgentGroupChat object, which will manage the chat between the agents
+    # We don't always need to specify the agents in the chat up front
+    # As shown below, calling `chat.invoke(agent=<agent>)` will automatically add the
+    # agent to the chat
     chat = AgentGroupChat()
 
     try:
@@ -92,7 +92,7 @@ async def main():
                 if len(content.items) > 0:
                     for item in content.items:
                         if (
-                            isinstance(agent, OpenAIAssistantAgent)
+                            isinstance(agent, AzureAssistantAgent)
                             and isinstance(item, AnnotationContent)
                             and item.file_id
                         ):
