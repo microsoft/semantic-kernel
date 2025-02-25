@@ -43,30 +43,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
 
-    [Fact(Skip = "Support for tool configuration will be added in a later PR")]
-    public async Task AzureAIAgentWithOpenApiAsync()
-    {
-        var text =
-            """
-            type: azureai_agent
-            name: AzureAIAgent
-            description: AzureAIAgent Description
-            instructions: AzureAIAgent Instructions
-            model:
-              id: gpt-4o-mini
-            tools:
-              - type: openapi
-                name: RestCountriesAPI
-                description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
-                schema: '{"openapi":"3.1.0","info":{"title":"RestCountries.NET API","description":"Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.","version":"v3.1"},"servers":[{"url":"https://restcountries.net"}],"auth":[],"paths":{"/v3.1/currency":{"get":{"description":"Search by currency.","operationId":"LookupCountryByCurrency","parameters":[{"name":"currency","in":"query","description":"The currency to search for.","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Success","content":{"text/plain":{"schema":{"type":"string"}}}}}}}},"components":{"schemes":{}}}'
-            """;
-        AzureAIAgentFactory factory = new();
-
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
-
-        await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
-    }
-
     [Fact]
     public async Task AzureAIAgentWithLocalFunctionsAsync()
     {
@@ -92,6 +68,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent, "What is the special soup and how much does it cost?");
     }
@@ -102,7 +79,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(AzureAIAgent? agent, string input)
+    private async Task InvokeAgentAsync(AzureAIAgent agent, string input)
     {
         // Create a thread for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);

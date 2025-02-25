@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// The options for defining a tool.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class AgentToolDefinition
 {
     /// <summary>
@@ -46,7 +48,7 @@ public class AgentToolDefinition
     /// Used to store tool specific configuration e.g., files associated with the tool, etc.
     /// </remarks>
     [JsonExtensionData]
-    public IDictionary<string, object>? Configuration
+    public IDictionary<string, object?>? Configuration
     {
         get => this._configuration;
         set
@@ -59,6 +61,6 @@ public class AgentToolDefinition
     #region private
     private string? _type;
     private string? _name;
-    private IDictionary<string, object>? _configuration;
+    private IDictionary<string, object?>? _configuration;
     #endregion
 }

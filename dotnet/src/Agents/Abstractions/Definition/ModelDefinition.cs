@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the model to be used by an agent.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class ModelDefinition
 {
     /// <summary>

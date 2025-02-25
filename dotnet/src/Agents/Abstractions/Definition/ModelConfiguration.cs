@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Defines the configuration for a model.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class ModelConfiguration
 {
     /// <summary>
