@@ -31,7 +31,6 @@ from openai import AsyncOpenAI
 from openai._models import construct_type_unchecked
 from openai.resources.beta.realtime.realtime import AsyncRealtimeConnection
 from openai.types.beta.realtime import (
-    ConversationItem,
     ConversationItemCreateEvent,
     ConversationItemDeleteEvent,
     ConversationItemTruncateEvent,
@@ -95,6 +94,8 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+# region constants
+
 
 @experimental_class
 class SendEvents(str, Enum):
@@ -143,6 +144,9 @@ class ListenEvents(str, Enum):
     RESPONSE_FUNCTION_CALL_ARGUMENTS_DELTA = "response.function_call_arguments.delta"
     RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE = "response.function_call_arguments.done"
     RATE_LIMITS_UPDATED = "rate_limits.updated"
+
+
+# region utils
 
 
 def update_settings_from_function_call_configuration(
@@ -219,18 +223,8 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
         case SendEvents.CONVERSATION_ITEM_CREATE:
             if "item" not in kwargs:
                 raise ContentException("Item is required for ConversationItemCreateEvent")
-            event_kwargs = {}
-            event_id = kwargs.pop("event_id", None)
-            if event_id:
-                event_kwargs["event_id"] = event_id
-            previous_item_id = kwargs.pop("previous_item_id", None)
-            if previous_item_id:
-                event_kwargs["previous_item_id"] = previous_item_id
-            return ConversationItemCreateEvent(
-                type=event_type,
-                item=ConversationItem.model_validate(kwargs),
-                **event_kwargs,
-            )
+            kwargs["type"] = event_type
+            return ConversationItemCreateEvent(**kwargs)
         case SendEvents.CONVERSATION_ITEM_TRUNCATE:
             if "content_index" not in kwargs:
                 kwargs["content_index"] = 0
@@ -260,8 +254,9 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
                 type=event_type,
                 **kwargs,
             )
-        case _:
-            raise ContentException(f"Unknown event type: {event_type}")
+
+
+# region Base
 
 
 @experimental_class
@@ -269,7 +264,6 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     """OpenAI Realtime service."""
 
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
-    protocol: ClassVar[Literal["websocket", "webrtc"]] = "websocket"
     kernel: Kernel | None = None
 
     _current_settings: PromptExecutionSettings | None = PrivateAttr(default=None)
@@ -417,8 +411,9 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
             yield RealtimeEvent(service_type=event.type, service_event=event)
             return
         # Step 2: check if there is a function that can be found.
-        plugin_name, function_name = self._call_id_to_function_map.pop(event.call_id, "-").split("-", 1)
-        if not plugin_name or not function_name:
+        try:
+            plugin_name, function_name = self._call_id_to_function_map.pop(event.call_id, "-").split("-", 1)
+        except ValueError:
             logger.error("Function call needs to have a plugin name and function name")
             yield RealtimeEvent(service_type=event.type, service_event=event)
             return
@@ -468,43 +463,43 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        **dict(
-                            type="message",
-                            content=[
+                        item={
+                            "type": "message",
+                            "content": [
                                 {
                                     "type": "input_text",
                                     "text": event.text.text,
                                 }
                             ],
-                            role="user",
-                        ),
+                            "role": "user",
+                        },
                     )
                 )
             case RealtimeFunctionCallEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        **dict(
-                            type="function_call",
-                            name=event.function_call.name or event.function_call.function_name,
-                            arguments=""
+                        item={
+                            "type": "function_call",
+                            "name": event.function_call.name or event.function_call.function_name,
+                            "arguments": ""
                             if not event.function_call.arguments
                             else event.function_call.arguments
                             if isinstance(event.function_call.arguments, str)
                             else json.dumps(event.function_call.arguments),
-                            call_id=event.function_call.metadata.get("call_id"),
-                        ),
+                            "call_id": event.function_call.metadata.get("call_id"),
+                        },
                     )
                 )
             case RealtimeFunctionResultEvent():
                 await self._send(
                     _create_openai_realtime_client_event(
                         event_type=SendEvents.CONVERSATION_ITEM_CREATE,
-                        **dict(
-                            type="function_call_output",
-                            output=event.function_result.result,
-                            call_id=event.function_result.metadata.get("call_id"),
-                        ),
+                        item={
+                            "type": "function_call_output",
+                            "output": event.function_result.result,
+                            "call_id": event.function_result.metadata.get("call_id"),
+                        },
                     )
                 )
             case _:
@@ -561,32 +556,32 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            **dict(
-                                                type="message",
-                                                content=[
+                                            item={
+                                                "type": "message",
+                                                "content": [
                                                     {
                                                         "type": "input_text",
                                                         "text": item.text,
                                                     }
                                                 ],
-                                                role="user",
-                                            ),
+                                                "role": "user",
+                                            },
                                         )
                                     )
                                 case FunctionCallContent():
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            **dict(
-                                                type="function_call",
-                                                name=item.name or item.function_name,
-                                                arguments=""
+                                            item={
+                                                "type": "function_call",
+                                                "name": item.name or item.function_name,
+                                                "arguments": ""
                                                 if not item.arguments
                                                 else item.arguments
                                                 if isinstance(item.arguments, str)
                                                 else json.dumps(item.arguments),
-                                                call_id=item.metadata.get("call_id"),
-                                            ),
+                                                "call_id": item.metadata.get("call_id"),
+                                            },
                                         )
                                     )
 
@@ -594,11 +589,11 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                                     await self._send(
                                         _create_openai_realtime_client_event(
                                             event_type=event.service_type,
-                                            **dict(
-                                                type="function_call_output",
-                                                output=item.result,
-                                                call_id=item.metadata.get("call_id"),
-                                            ),
+                                            item={
+                                                "type": "function_call_output",
+                                                "output": item.result,
+                                                "call_id": item.metadata.get("call_id"),
+                                            },
                                         )
                                     )
                     case SendEvents.CONVERSATION_ITEM_TRUNCATE:
@@ -652,6 +647,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         return update_settings_from_function_call_configuration
 
 
+# region WebRTC
 @experimental_class
 class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     """OpenAI WebRTC Realtime service."""
@@ -895,6 +891,9 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
             client=client,
             **kwargs,
         )
+
+
+# region Websocket
 
 
 @experimental_class
