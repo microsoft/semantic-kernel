@@ -65,7 +65,7 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
         protected override string CollectionName
-#if NET // make sure different TFMs use different collection names (as they may run in parralel and cause trouble)
+#if NET // make sure different TFMs use different collection names (as they may run in parallel and cause trouble)
             => "FilterTests-core";
 #else
             => "FilterTests-framework";

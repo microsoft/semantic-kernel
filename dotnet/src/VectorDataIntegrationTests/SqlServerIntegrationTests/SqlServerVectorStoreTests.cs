@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.SqlServer;
 using SqlServerIntegrationTests.Support;
 using Xunit;
 
@@ -89,6 +90,21 @@ public class SqlServerVectorStoreTests
             received = await collection.GetAsync(updated.Id);
             AssertEquality(updated, received);
 
+            VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            {
+                VectorPropertyName = nameof(TestModel.Floats),
+                IncludeVectors = true
+            })).Results.SingleAsync();
+            AssertEquality(updated, vectorSearchResult.Record);
+
+            vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            {
+                VectorPropertyName = nameof(TestModel.Floats),
+                IncludeVectors = false
+            })).Results.SingleAsync();
+            // Make sure the vectors are not included in the result.
+            Assert.Equal(0, vectorSearchResult.Record.Floats.Length);
+
             await collection.DeleteAsync(inserted.Id);
 
             Assert.Null(await collection.GetAsync(inserted.Id));
@@ -139,14 +155,66 @@ public class SqlServerVectorStoreTests
             // Let's use a model with the same storage names, but different types
             // to trigger a mapping exception (deserializing a string to Memory<float>).
             var invalidJsonCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButInvalidVector>(collectionName);
-            mappingEx = await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => invalidJsonCollection.GetAsync(inserted.Id));
-            Assert.IsType<JsonException>(mappingEx.InnerException);
+            await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => invalidJsonCollection.GetAsync(inserted.Id));
         }
         finally
         {
             await collection.DeleteCollectionAsync();
 
             await testStore.ReferenceCountingStopAsync();
+        }
+    }
+
+    [Fact]
+    public async Task CustomMapper()
+    {
+        string collectionName = GetUniqueCollectionName();
+        TestModelMapper mapper = new();
+        SqlServerVectorStoreRecordCollectionOptions<TestModel> options = new()
+        {
+            Mapper = mapper
+        };
+        using SqlConnection connection = new(SqlServerTestEnvironment.ConnectionString);
+        SqlServerVectorStoreRecordCollection<string, TestModel> collection = new(connection, collectionName, options);
+
+        try
+        {
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            TestModel inserted = new()
+            {
+                Id = "MyId",
+                Number = 100,
+                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
+            };
+            string key = await collection.UpsertAsync(inserted);
+            Assert.Equal(inserted.Id, key);
+            Assert.True(mapper.MapFromDataToStorageModel_WasCalled);
+            Assert.False(mapper.MapFromStorageToDataModel_WasCalled);
+
+            TestModel? received = await collection.GetAsync(inserted.Id);
+            AssertEquality(inserted, received);
+            Assert.True(mapper.MapFromStorageToDataModel_WasCalled);
+
+            TestModel updated = new()
+            {
+                Id = inserted.Id,
+                Number = inserted.Number + 200, // change one property
+                Floats = inserted.Floats
+            };
+            key = await collection.UpsertAsync(updated);
+            Assert.Equal(inserted.Id, key);
+
+            received = await collection.GetAsync(updated.Id);
+            AssertEquality(updated, received);
+
+            await collection.DeleteAsync(inserted.Id);
+
+            Assert.Null(await collection.GetAsync(inserted.Id));
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
         }
     }
 
@@ -369,5 +437,38 @@ public class SqlServerVectorStoreTests
 
         [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
+    }
+
+    private sealed class TestModelMapper : IVectorStoreRecordMapper<TestModel, IDictionary<string, object?>>
+    {
+        internal bool MapFromDataToStorageModel_WasCalled { get; set; }
+        internal bool MapFromStorageToDataModel_WasCalled { get; set; }
+
+        public IDictionary<string, object?> MapFromDataToStorageModel(TestModel dataModel)
+        {
+            MapFromDataToStorageModel_WasCalled = true;
+
+            return new Dictionary<string, object?>()
+            {
+                { "key", dataModel.Id },
+                { "text", dataModel.Text },
+                { "column", dataModel.Number },
+                // Please note that we are not dealing with JSON directly here.
+                { "embedding", dataModel.Floats }
+            };
+        }
+
+        public TestModel MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+        {
+            MapFromStorageToDataModel_WasCalled = true;
+
+            return new()
+            {
+                Id = (string)storageModel["key"]!,
+                Text = (string?)storageModel["text"],
+                Number = (int)storageModel["column"]!,
+                Floats = (ReadOnlyMemory<float>)storageModel["embedding"]!
+            };
+        }
     }
 }

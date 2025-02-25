@@ -24,10 +24,6 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
     /// <param name="options">Optional configuration options.</param>
     public SqlServerVectorStore(SqlConnection connection, SqlServerVectorStoreOptions? options = null)
     {
-        // TODO adsitnik: design:
-        // Do we need a ctor that takes the connection string and creates a connection?
-        // What is the story with pooling for the SqlConnection type?
-        // Does it maintain a private instance pool? Or a static one?
         this._connection = connection;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
@@ -47,8 +43,11 @@ public sealed class SqlServerVectorStore : IVectorStore, IDisposable
         return new SqlServerVectorStoreRecordCollection<TKey, TRecord>(
             this._connection,
             name,
-            vectorStoreRecordDefinition,
-            this._options);
+            new()
+            {
+                Schema = this._options.Schema,
+                RecordDefinition = vectorStoreRecordDefinition
+            });
     }
 
     /// <inheritdoc/>

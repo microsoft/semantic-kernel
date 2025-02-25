@@ -16,7 +16,7 @@ internal static class SqlServerCommandBuilder
 {
     internal static SqlCommand CreateTable(
         SqlConnection connection,
-        SqlServerVectorStoreOptions options,
+        string schema,
         string tableName,
         bool ifNotExists,
         VectorStoreRecordKeyProperty keyProperty,
@@ -27,11 +27,11 @@ internal static class SqlServerCommandBuilder
         if (ifNotExists)
         {
             sb.Append("IF OBJECT_ID(N'");
-            sb.AppendTableName(options.Schema, tableName);
+            sb.AppendTableName(schema, tableName);
             sb.AppendLine("', N'U') IS NULL");
         }
         sb.Append("CREATE TABLE ");
-        sb.AppendTableName(options.Schema, tableName);
+        sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
         var keyMapping = Map(keyProperty.PropertyType);
@@ -44,7 +44,6 @@ internal static class SqlServerCommandBuilder
         }
         for (int i = 0; i < vectorProperties.Count; i++)
         {
-            // TODO adsitnik design: should we require Dimensions to be always provided in explicit way or use some default?
             sb.AppendFormat("[{0}] VECTOR({1}),", GetColumnName(vectorProperties[i]), vectorProperties[i].Dimensions);
             sb.AppendLine();
         }
@@ -94,23 +93,23 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand MergeIntoSingle(
         SqlConnection connection,
-        SqlServerVectorStoreOptions options,
+        string schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
-        Dictionary<string, object?> record)
+        IDictionary<string, object?> record)
     {
         SqlCommand command = connection.CreateCommand();
         StringBuilder sb = new(200);
         sb.Append("MERGE INTO ");
-        sb.AppendTableName(options.Schema, tableName);
+        sb.AppendTableName(schema, tableName);
         sb.AppendLine(" AS t");
         sb.Append("USING (VALUES (");
         int paramIndex = 0;
         foreach (VectorStoreRecordProperty property in properties)
         {
             sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-            command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
+            command.AddParameter(property, paramName, record[GetColumnName(property)]);
         }
         sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
         sb.Append(") AS s (");
@@ -149,11 +148,11 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand MergeIntoMany(
         SqlConnection connection,
-        SqlServerVectorStoreOptions options,
+        string schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
-        IEnumerable<Dictionary<string, object?>> records)
+        IEnumerable<IDictionary<string, object?>> records)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -163,7 +162,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine();
         // The MERGE statement performs the upsert operation and outputs the keys of the inserted rows into the table variable.
         sb.Append("MERGE INTO ");
-        sb.AppendTableName(options.Schema, tableName);
+        sb.AppendTableName(schema, tableName);
         sb.AppendLine(" AS t"); // t stands for target
         sb.AppendLine("USING (VALUES");
         int rowIndex = 0, paramIndex = 0;
@@ -173,7 +172,7 @@ internal static class SqlServerCommandBuilder
             foreach (VectorStoreRecordProperty property in properties)
             {
                 sb.AppendParameterName(property, ref paramIndex, out string paramName).Append(',');
-                command.AddParameter(property, paramName, record[property.DataModelPropertyName]);
+                command.AddParameter(property, paramName, record[GetColumnName(property)]);
             }
             sb[sb.Length - 1] = ')'; // replace the last comma with a closing parenthesis
             sb.AppendLine(",");
@@ -182,7 +181,6 @@ internal static class SqlServerCommandBuilder
 
         if (rowIndex == 0)
         {
-            // TODO adsitnik clarify: should we throw or simply do nothing?
             throw new ArgumentException("The value cannot be empty.", nameof(records));
         }
 
@@ -313,11 +311,15 @@ internal static class SqlServerCommandBuilder
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
-        string distanceMetric = distanceFunction switch
+        (string distanceMetric, string sorting) = distanceFunction switch
         {
-            DistanceFunction.CosineDistance => "cosine",
-            DistanceFunction.EuclideanDistance => "euclidean",
-            DistanceFunction.NegativeDotProductSimilarity => "dot",
+            // A value of 0 indicates that the vectors are identical in direction (cosine similarity of 1),
+            // while a value of 1 indicates that the vectors are orthogonal (cosine similarity of 0).
+            DistanceFunction.CosineDistance => ("cosine", "ASC"),
+            // A value of 0 indicates that the vectors are identical, while larger values indicate greater dissimilarity.
+            DistanceFunction.EuclideanDistance => ("euclidean", "ASC"),
+            // A value closer to 0 indicates higher similarity, while more negative values indicate greater dissimilarity.
+            DistanceFunction.NegativeDotProductSimilarity => ("dot", "DESC"),
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 
@@ -326,9 +328,9 @@ internal static class SqlServerCommandBuilder
 
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(properties);
+        sb.AppendColumnNames(properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
-        sb.AppendFormat("1 - VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
+        sb.AppendFormat("VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
             distanceMetric, GetColumnName(vectorProperty), vector.Length);
         sb.AppendLine();
         sb.Append("FROM ");
@@ -348,7 +350,8 @@ internal static class SqlServerCommandBuilder
             }
             sb.AppendLine();
         }
-        sb.AppendLine("ORDER BY [score] DESC");
+        sb.AppendFormat("ORDER BY [score] {0}", sorting);
+        sb.AppendLine();
         // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.
         // 0 is a legal value for OFFSET.
         sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, options.Top);
@@ -412,11 +415,17 @@ internal static class SqlServerCommandBuilder
 
     private static StringBuilder AppendColumnNames(this StringBuilder sb,
         IEnumerable<VectorStoreRecordProperty> properties,
-        string? prefix = null)
+        string? prefix = null,
+        bool includeVectors = true)
     {
         bool any = false;
         foreach (VectorStoreRecordProperty property in properties)
         {
+            if (!includeVectors && property is VectorStoreRecordVectorProperty)
+            {
+                continue;
+            }
+
             if (prefix is not null)
             {
                 sb.Append(prefix);
@@ -451,7 +460,6 @@ internal static class SqlServerCommandBuilder
 
         if (keyIndex == 0)
         {
-            // TODO adsitnik clarify: should we throw or simply do nothing?
             throw new ArgumentException("The value cannot be empty.", nameof(keys));
         }
 
@@ -474,10 +482,14 @@ internal static class SqlServerCommandBuilder
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:
+            case ReadOnlyMemory<float> vector when vector.Length == 0:
                 command.Parameters.AddWithValue(name, DBNull.Value);
                 break;
             case byte[] buffer:
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = buffer;
+                break;
+            case ReadOnlyMemory<float> vector:
+                command.Parameters.AddWithValue(name, JsonSerializer.Serialize(vector));
                 break;
             default:
                 command.Parameters.AddWithValue(name, value);

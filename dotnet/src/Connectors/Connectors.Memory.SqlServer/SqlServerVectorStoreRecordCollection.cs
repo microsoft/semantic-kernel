@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -20,29 +18,29 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
     where TKey : notnull
 {
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();
 
     private readonly SqlConnection _sqlConnection;
-    private readonly SqlServerVectorStoreOptions _options;
+    private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordPropertyReader _propertyReader;
+    private readonly IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="connection">Database connection.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="vectorStoreRecordDefinition">Optional record definition.</param>
-    /// <param name="vectorStoreOptions">Optional configuration options.</param>
+    /// <param name="options">Optional configuration options.</param>
     public SqlServerVectorStoreRecordCollection(
         SqlConnection connection,
         string name,
-        VectorStoreRecordDefinition? vectorStoreRecordDefinition = null,
-        SqlServerVectorStoreOptions? vectorStoreOptions = null)
+        SqlServerVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         Verify.NotNull(connection);
         Verify.NotNull(name);
 
         VectorStoreRecordPropertyReader propertyReader = new(typeof(TRecord),
-            vectorStoreRecordDefinition,
+            options?.RecordDefinition,
             new()
             {
                 RequiresAtLeastOneVector = false,
@@ -50,26 +48,39 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
                 SupportsMultipleVectors = true,
             });
 
-        propertyReader.VerifyHasParameterlessConstructor();
-        propertyReader.VerifyKeyProperties(SqlServerConstants.SupportedKeyTypes);
+        if (options is null || options.Mapper is null)
+        {
+            propertyReader.VerifyHasParameterlessConstructor();
+        }
+
+        HashSet<Type> supportedKeyTypes = propertyReader.KeyProperty.AutoGenerate
+            ? SqlServerConstants.SupportedAutoGenerateKeyTypes
+            : SqlServerConstants.SupportedKeyTypes;
+
+        if (VectorStoreRecordPropertyVerification.IsGenericDataModel(typeof(TRecord)))
+        {
+            VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.Mapper is not null, supportedKeyTypes);
+        }
+        else
+        {
+            propertyReader.VerifyKeyProperties(supportedKeyTypes);
+        }
         propertyReader.VerifyDataProperties(SqlServerConstants.SupportedDataTypes, supportEnumerable: false);
         propertyReader.VerifyVectorProperties(SqlServerConstants.SupportedVectorTypes);
-
-        if (propertyReader.KeyProperty.AutoGenerate
-            && !(typeof(TKey) == typeof(int) || typeof(TKey) == typeof(long) || typeof(TKey) == typeof(Guid)))
-        {
-            // SQL Server does not support auto-generated keys for types other than int, long, and Guid.
-            throw new ArgumentException("Key property cannot be auto-generated.");
-        }
 
         this._sqlConnection = connection;
         this.CollectionName = name;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
-        this._options = vectorStoreOptions is not null
-            ? new() { Schema = vectorStoreOptions.Schema }
-            : SqlServerVectorStoreOptions.Defaults;
+        this._options = options is null ? s_defaultOptions
+            : new()
+            {
+                Schema = options.Schema,
+                Mapper = options.Mapper,
+                RecordDefinition = options.RecordDefinition,
+            };
         this._propertyReader = propertyReader;
+        this._mapper = options?.Mapper ?? new RecordMapper<TRecord>(propertyReader);
     }
 
     /// <inheritdoc/>
@@ -109,7 +120,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             this._sqlConnection,
-            this._options,
+            this._options.Schema,
             this.CollectionName,
             ifNotExists,
             this._propertyReader.KeyProperty,
@@ -187,7 +198,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
                 return reader;
             }, cancellationToken, "Get", this.CollectionName).ConfigureAwait(false);
 
-        return reader.HasRows ? Map(reader, this._propertyReader) : default;
+        return reader.HasRows
+            ? this._mapper.MapFromStorageToDataModel(
+                new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
+                new() { IncludeVectors = true })
+            : default;
     }
 
     /// <inheritdoc/>
@@ -210,7 +225,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false))
         {
-            yield return Map(reader, this._propertyReader);
+            yield return this._mapper.MapFromStorageToDataModel(
+                new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
+                new() { IncludeVectors = true });
         }
     }
 
@@ -221,11 +238,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             this._sqlConnection,
-            this._options,
+            this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
-            Map(record, this._propertyReader));
+            this._mapper.MapFromDataToStorageModel(record));
 
         return await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             async static (cmd, ct) =>
@@ -244,11 +261,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(
             this._sqlConnection,
-            this._options,
+            this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
-            records.Select(record => Map(record, this._propertyReader)));
+            records.Select(record => this._mapper.MapFromDataToStorageModel(record)));
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
@@ -294,15 +311,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
         return await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             (cmd, ct) =>
             {
-                var results = this.ReadVectorSearchResultsAsync(cmd, ct);
+                var results = this.ReadVectorSearchResultsAsync(cmd, searchOptions.IncludeVectors, ct);
                 return Task.FromResult(new VectorSearchResults<TRecord>(results));
             }, cancellationToken, "VectorizedSearch", this.CollectionName).ConfigureAwait(false);
     }
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(
         SqlCommand command,
+        bool includeVectors,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
+        var vectorPropertyStoragePropertyNames = includeVectors ? this._propertyReader.VectorPropertyStoragePropertyNames : [];
         using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         int scoreIndex = -1;
@@ -314,91 +334,8 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVecto
             }
 
             yield return new VectorSearchResult<TRecord>(
-                Map(reader, this._propertyReader),
+                this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorPropertyStoragePropertyNames), options),
                 reader.GetDouble(scoreIndex));
-        }
-    }
-
-    private static Dictionary<string, object?> Map(TRecord record, VectorStoreRecordPropertyReader propertyReader)
-    {
-        Dictionary<string, object?> map = new(StringComparer.Ordinal);
-        map[propertyReader.KeyProperty.DataModelPropertyName] = propertyReader.KeyPropertyInfo.GetValue(record);
-
-        var dataProperties = propertyReader.DataProperties;
-        for (int i = 0; i < dataProperties.Count; i++)
-        {
-            object value = propertyReader.DataPropertiesInfo[i].GetValue(record);
-            map[dataProperties[i].DataModelPropertyName] = value;
-        }
-        var vectorProperties = propertyReader.VectorProperties;
-        for (int i = 0; i < vectorProperties.Count; i++)
-        {
-            // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
-            ReadOnlyMemory<float> floats = (ReadOnlyMemory<float>)propertyReader.VectorPropertiesInfo[i].GetValue(record);
-            // We know that SqlServer supports JSON serialization, so we can serialize the vector as JSON now,
-            // so the SqlServerCommandBuilder does not need to worry about that.
-            map[vectorProperties[i].DataModelPropertyName] = JsonSerializer.Serialize(floats);
-        }
-
-        return map;
-    }
-
-    private static TRecord Map(SqlDataReader reader, VectorStoreRecordPropertyReader propertyReader)
-    {
-        TRecord record = Activator.CreateInstance<TRecord>()!;
-        SetValue(reader, record, propertyReader.KeyPropertyInfo, propertyReader.KeyProperty);
-        var data = propertyReader.DataProperties;
-        var dataInfo = propertyReader.DataPropertiesInfo;
-        for (int i = 0; i < data.Count; i++)
-        {
-            SetValue(reader, record, dataInfo[i], data[i]);
-        }
-
-        var vector = propertyReader.VectorProperties;
-        var vectorInfo = propertyReader.VectorPropertiesInfo;
-        for (int i = 0; i < vector.Count; i++)
-        {
-            object value = reader[SqlServerCommandBuilder.GetColumnName(vector[i])];
-            if (value is not DBNull)
-            {
-                ReadOnlyMemory<float>? embedding = null;
-
-                try
-                {
-                    // This may fail if the user has stored a non-float array in the database
-                    // (or serialized it in a different way).
-                    embedding = JsonSerializer.Deserialize<ReadOnlyMemory<float>>((string)value);
-                }
-                catch (Exception ex)
-                {
-                    throw new VectorStoreRecordMappingException($"Failed to deserialize vector property '{vector[i].DataModelPropertyName}', it contained value '{value}'.", ex);
-                }
-
-                vectorInfo[i].SetValue(record, embedding);
-            }
-        }
-        return record;
-
-        static void SetValue(SqlDataReader reader, object record, PropertyInfo propertyInfo, VectorStoreRecordProperty property)
-        {
-            // If we got here, there should be no column name mismatch (the query would fail).
-            object value = reader[SqlServerCommandBuilder.GetColumnName(property)];
-
-            if (value is DBNull)
-            {
-                // There is no need to call the reflection to set the null,
-                // as it's the default value of every .NET reference type field.
-                return;
-            }
-
-            try
-            {
-                propertyInfo.SetValue(record, value);
-            }
-            catch (Exception ex)
-            {
-                throw new VectorStoreRecordMappingException($"Failed to set value '{value}' on property '{propertyInfo.Name}' of type '{propertyInfo.PropertyType.FullName}'.", ex);
-            }
         }
     }
 }

@@ -19,6 +19,13 @@ internal static class SqlServerConstants
         typeof(byte[]) // VARBINARY
     ];
 
+    internal static readonly HashSet<Type> SupportedAutoGenerateKeyTypes =
+    [
+        typeof(int), // IDENTITY
+        typeof(long), // IDENTITY
+        typeof(Guid) // NEWID
+    ];
+
     internal static readonly HashSet<Type> SupportedDataTypes =
     [
         typeof(int), // INT

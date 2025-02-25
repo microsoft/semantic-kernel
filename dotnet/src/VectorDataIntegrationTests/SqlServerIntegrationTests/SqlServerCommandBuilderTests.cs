@@ -105,10 +105,6 @@ public class SqlServerCommandBuilderTests
     [InlineData(false)]
     public void CreateTable(bool ifNotExists)
     {
-        SqlServerVectorStoreOptions options = new()
-        {
-            Schema = "schema"
-        };
         VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
         {
             AutoGenerate = true
@@ -127,7 +123,7 @@ public class SqlServerCommandBuilderTests
         ];
         using SqlConnection connection = CreateConnection();
 
-        using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, options, "table",
+        using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, "schema", "table",
             ifNotExists, keyProperty, dataProperties, vectorProperties);
 
         string expectedCommand =
@@ -145,16 +141,12 @@ public class SqlServerCommandBuilderTests
             expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL" + Environment.NewLine + expectedCommand;
         }
 
-        Assert.Equal(expectedCommand, command.CommandText);
+        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
     }
 
     [Fact]
     public void MergeIntoSingle()
     {
-        SqlServerVectorStoreOptions options = new()
-        {
-            Schema = "schema"
-        };
         VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
         {
             AutoGenerate = true
@@ -171,7 +163,7 @@ public class SqlServerCommandBuilderTests
         ];
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, options, "table",
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, "schema", "table",
             keyProperty, properties,
             new Dictionary<string, object?>
             {
@@ -194,7 +186,7 @@ public class SqlServerCommandBuilderTests
         OUTPUT inserted.[id];
         """";
 
-        Assert.Equal(expectedCommand, command.CommandText);
+        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
         Assert.Equal(DBNull.Value, command.Parameters[0].Value);
         Assert.Equal("@simpleString_1", command.Parameters[1].ParameterName);
@@ -208,10 +200,6 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void MergeIntoMany()
     {
-        SqlServerVectorStoreOptions options = new()
-        {
-            Schema = "schema"
-        };
         VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
         VectorStoreRecordProperty[] properties =
         [
@@ -242,7 +230,7 @@ public class SqlServerCommandBuilderTests
         ];
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(connection, options, "table",
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(connection, "schema", "table",
             keyProperty, properties, records);
 
         string expectedCommand =
@@ -262,7 +250,7 @@ public class SqlServerCommandBuilderTests
         SELECT KeyColumn FROM @InsertedKeys;
         """";
 
-        Assert.Equal(expectedCommand, command.CommandText);
+        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
 
         for (int i = 0; i < records.Length; i++)
         {
@@ -327,7 +315,7 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection,
             "schema", "tableName", keyProperty, properties, 123L);
 
-        Assert.Equal(
+        AssertEqualIgnoreNewLines(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
@@ -356,7 +344,7 @@ public class SqlServerCommandBuilderTests
         using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
             "schema", "tableName", keyProperty, properties, keys);
 
-        Assert.Equal(
+        AssertEqualIgnoreNewLines(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
@@ -368,6 +356,12 @@ public class SqlServerCommandBuilderTests
             Assert.Equal($"@id_{i}", command.Parameters[i].ParameterName);
         }
     }
+
+    // This repo is configured with eol=lf, so the expected string should always use \n
+    // as long given IDE does not use \r\n.
+    // The actual string may use \r\n, so we just normalize both.
+    private static void AssertEqualIgnoreNewLines(string expected, string actual)
+        => Assert.Equal(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
     // We create a connection using a fake connection string just to be able to create the SqlCommand.
     private static SqlConnection CreateConnection()

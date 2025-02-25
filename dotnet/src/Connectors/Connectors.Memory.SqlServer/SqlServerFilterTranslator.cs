@@ -76,7 +76,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         else
         {
             this._parameterValues.Add(capturedValue);
-            // SQL Server paramters can't start with a digit (but underscore is OK).
+            // SQL Server parameters can't start with a digit (but underscore is OK).
             this._sql.Append("@_").Append(this._parameterIndex++);
         }
     }
