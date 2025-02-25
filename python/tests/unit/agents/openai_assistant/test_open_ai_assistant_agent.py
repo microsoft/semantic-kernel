@@ -311,8 +311,8 @@ async def test_open_ai_assistant_agent_create_channel(mock_thread):
     assert ch.thread_id == "test_thread_id"
 
 
-def test_create_openai_client(azure_openai_unit_test_env):
-    client, model = OpenAIAssistantAgent.setup_resources(api_key="test_api_key", default_headers={"user_agent": "test"})
+def test_create_openai_client(openai_unit_test_env):
+    client, model = OpenAIAssistantAgent.setup_resources(env_file_path="./", default_headers={"user_agent": "test"})
     assert client is not None
     assert client.api_key == "test_api_key"
     assert model is not None
