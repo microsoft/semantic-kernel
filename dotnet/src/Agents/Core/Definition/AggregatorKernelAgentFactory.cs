@@ -14,7 +14,10 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
     private readonly KernelAgentFactory?[] _kernelAgentFactories;
 
     /// <summary>Initializes the instance.</summary>
-    /// <param name="kernelAgentFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
+    /// <param name="kernelAgentFactories">Ordered <see cref="KernelAgentFactory"/> instances to aggregate.</param>
+    /// <remarks>
+    /// Where multiple <see cref="KernelAgentFactory"/> instances are provided, the first factory that supports the <see cref="AgentDefinition"/> will be used.
+    /// </remarks>
     public AggregatorKernelAgentFactory(params KernelAgentFactory[] kernelAgentFactories) : base(kernelAgentFactories.SelectMany(f => f.Types).ToArray())
     {
         Verify.NotNullOrEmpty(kernelAgentFactories);

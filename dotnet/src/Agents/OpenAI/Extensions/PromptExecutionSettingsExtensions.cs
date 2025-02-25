@@ -65,24 +65,4 @@ public static class PromptExecutionSettingsExtensions
         }
         return null;
     }
-
-    /// <summary>
-    /// Get the ResponseFormat property.
-    /// </summary>
-    /// <param name="executionSettings">Prompt execution settings.</param>
-    public static bool IsEnableJsonResponse(this PromptExecutionSettings executionSettings)
-    {
-        Verify.NotNull(executionSettings);
-
-        if (executionSettings is OpenAIPromptExecutionSettings openaiSettings)
-        {
-            return openaiSettings.ResponseFormat is not null;
-        }
-
-        if (executionSettings?.ExtensionData?.TryGetValue(ResponseFormat, out var responseFormat) ?? false)
-        {
-            return responseFormat is not null;
-        }
-        return false;
-    }
 }

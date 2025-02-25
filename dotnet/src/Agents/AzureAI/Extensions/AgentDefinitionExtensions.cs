@@ -24,7 +24,7 @@ internal static class AgentDefinitionExtensions
             {
                 "code_interpreter" => new CodeInterpreterToolDefinition(),
                 "file_search" => new FileSearchToolDefinition(),
-                _ => throw new InvalidOperationException($"Unable to created Azure AI tool definition because of known tool type: {tool.Type}"),
+                _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unknown tool type: {tool.Type}"),
             };
         });
     }

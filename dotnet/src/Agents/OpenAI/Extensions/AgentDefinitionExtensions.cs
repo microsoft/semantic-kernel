@@ -44,10 +44,10 @@ internal static class AgentDefinitionExtensions
             Instructions = agentDefinition.Instructions,
             Temperature = agentDefinition.Model.Options?.GetTemperature(),
             NucleusSamplingFactor = agentDefinition.Model.Options?.GetTopP(),
-            ResponseFormat = agentDefinition.Model.Options?.IsEnableJsonResponse() ?? false ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto
         };
 
         // TODO: Implement
+        // ResponseFormat
         // ToolResources
         // Metadata
         // ExecutionOptions

@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class ModelDefinition
 {
     /// <summary>
-    /// Gets or sets the default API type.
+    /// The default API type.
     /// </summary>
-    public static readonly string DefaultApi = "chat";
+    private const string DefaultApi = "chat";
 
     /// <summary>
     /// Gets or sets the ID of the model.

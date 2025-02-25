@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// The options for defining a tool.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class AgentToolDefinition
+public sealed class AgentToolDefinition
 {
     /// <summary>
     /// The type of the tool.

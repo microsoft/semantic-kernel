@@ -12,7 +12,7 @@ public static class AgentDefinitionExtensions
     /// <summary>
     /// Creates default <see cref="KernelArguments"/> from the <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="agentDefinition"></param>
+    /// <param name="agentDefinition">Agen definition to retrieve default arguments from.</param>
     public static KernelArguments GetDefaultKernelArguments(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
@@ -36,7 +36,7 @@ public static class AgentDefinitionExtensions
     /// <summary>
     /// Get the first tool definition of the specified type.
     /// </summary>
-    /// <param name="agentDefinition">Agent definition</param>
+    /// <param name="agentDefinition">Agent definition to retrieve the first tool from.</param>
     /// <param name="toolType">Tool type</param>
     public static AgentToolDefinition? GetFirstToolDefinition(this AgentDefinition agentDefinition, string toolType)
     {
@@ -54,6 +54,6 @@ public static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        return agentDefinition.Tools?.Where(tool => tool?.Type?.Equals(toolType, System.StringComparison.Ordinal) ?? false).Any() ?? false;
+        return agentDefinition.Tools?.Any(tool => tool?.Type?.Equals(toolType, System.StringComparison.Ordinal) ?? false) ?? false;
     }
 }
