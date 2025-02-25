@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the configuration for a model.
@@ -14,7 +14,8 @@ public sealed class ModelConfiguration
     /// The type of the model configuration.
     /// </summary>
     /// <remarks>
-    /// Used to identify where the model is deployed e.g., azure_openai, openai, ...
+    /// Used to identify the type of deployment e.g., azure_openai, openai, ...
+    /// This type will also be used for configuration hosting.
     /// </remarks>
     public string? Type
     {

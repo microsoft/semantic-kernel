@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Agents.Definition;
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the model to be used by an agent.

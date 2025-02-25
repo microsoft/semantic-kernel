@@ -42,9 +42,9 @@ internal static class AgentDefinitionExtensions
             Name = agentDefinition.Name,
             Description = agentDefinition.Description,
             Instructions = agentDefinition.Instructions,
-            Temperature = agentDefinition?.Model?.Options?.GetTemperature(),
-            NucleusSamplingFactor = agentDefinition?.Model?.Options?.GetTopP(),
-            ResponseFormat = agentDefinition?.Model?.Options?.IsEnableJsonResponse() ?? false ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto
+            Temperature = agentDefinition.Model.Options?.GetTemperature(),
+            NucleusSamplingFactor = agentDefinition.Model.Options?.GetTopP(),
+            ResponseFormat = agentDefinition.Model.Options?.IsEnableJsonResponse() ?? false ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto
         };
 
         // TODO: Implement
@@ -52,14 +52,23 @@ internal static class AgentDefinitionExtensions
         // Metadata
         // ExecutionOptions
 
-        if (agentDefinition?.HasToolType(CodeInterpreter) ?? false)
+        // Add tools
+        if (agentDefinition.Tools is not null)
         {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
-        }
-
-        if (agentDefinition?.HasToolType(FileSearch) ?? false)
-        {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+            foreach (var tool in agentDefinition.Tools)
+            {
+                switch (tool.Type)
+                {
+                    case CodeInterpreter:
+                        assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
+                        break;
+                    case FileSearch:
+                        assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+                        break;
+                    default:
+                        throw new System.NotSupportedException($"Tool type '{tool.Type}' is not supported.");
+                }
+            }
         }
 
         return assistantCreationOptions;
