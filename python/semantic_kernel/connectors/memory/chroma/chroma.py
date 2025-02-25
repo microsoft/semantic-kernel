@@ -5,19 +5,7 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.exceptions.vector_store_exceptions import (
-    VectorStoreInitializationException,
-    VectorStoreModelValidationError,
-)
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -28,9 +16,22 @@ import chromadb
 from chromadb.api import ClientAPI
 from chromadb.config import Settings
 
+from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.exceptions.vector_store_exceptions import (
+    VectorStoreInitializationException,
+    VectorStoreModelValidationError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ DISTANCE_FUNCTION_MAP = {
 }
 
 
+@experimental_class
 class ChromaCollection(
     VectorSearchBase[str, TModel],
     VectorizedSearchMixin[TModel],
@@ -65,11 +67,11 @@ class ChromaCollection(
     ):
         """Initialize the Chroma vector store collection."""
         managed_client = not client
-        settings = client_settings or Settings()
-        if persist_directory is not None:
-            settings.is_persistent = True
-            settings.persist_directory = persist_directory
         if client is None:
+            settings = client_settings or Settings()
+            if persist_directory is not None:
+                settings.is_persistent = True
+                settings.persist_directory = persist_directory
             client = chromadb.Client(settings)
         super().__init__(
             collection_name=collection_name,
@@ -308,17 +310,18 @@ class ChromaCollection(
         return filter_expression
 
 
+@experimental_class
 class ChromaStore(VectorStore):
     """Chroma vector store."""
 
-    client: chromadb.Client
+    client: ClientAPI
 
     def __init__(
         self,
         persist_directory: str | None = None,
         client_settings: "Settings | None" = None,
-        client: "chromadb.Client | None" = None,
-        **kwargs: "Any",
+        client: ClientAPI | None = None,
+        **kwargs: Any,
     ):
         """Initialize the Chroma vector store."""
         managed_client = not client
