@@ -34,8 +34,8 @@ internal static class AgentDefinitionExtensions
     public static AssistantCreationOptions CreateAssistantCreationOptions(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
-        Verify.NotNull(agentDefinition.Model);
-        Verify.NotNull(agentDefinition.Model.Id);
+        Verify.NotNull(agentDefinition.Model, nameof(agentDefinition.Model));
+        Verify.NotNull(agentDefinition.Model.Id, nameof(agentDefinition.Model.Id));
 
         var assistantCreationOptions = new AssistantCreationOptions()
         {
