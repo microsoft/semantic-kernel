@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Agents.Definition;
 
 namespace Microsoft.SemanticKernel.Agents;
 
