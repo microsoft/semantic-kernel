@@ -13,7 +13,6 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import Ve
 from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
@@ -39,7 +38,7 @@ TModel = TypeVar("TModel")
 
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE_SIMILARITY: "cosine",
-    DistanceFunction.EUCLIDEAN_DISTANCE: "l2",
+    DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE: "l2",
     DistanceFunction.DOT_PROD: "ip",
 }
 
@@ -47,7 +46,6 @@ DISTANCE_FUNCTION_MAP = {
 class ChromaCollection(
     VectorSearchBase[str, TModel],
     VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
     Generic[TModel],
 ):
     """Chroma vector store collection."""
@@ -124,7 +122,6 @@ class ChromaCollection(
         except ValueError:
             logger.info(f"Collection {self.collection_name} could not be deleted.")
 
-    @override
     async def _validate_data_model(self):
         super()._validate_data_model()
         if len(self.data_model_definition.vector_fields) > 1:
@@ -144,7 +141,7 @@ class ChromaCollection(
         id_field_name = self.data_model_definition.key_field_name
         document_field_name = next(
             field.name
-            for field in self.data_model_definition.fields
+            for field in self.data_model_definition.fields.values()
             if isinstance(field, VectorStoreRecordDataField) and field.embedding_property_name == vector_field_name
         )
         store_models = []
@@ -166,19 +163,15 @@ class ChromaCollection(
         id_field_name = self.data_model_definition.key_field_name
         document_field_name = next(
             field.name
-            for field in self.data_model_definition.fields
+            for field in self.data_model_definition.fields.values()
             if isinstance(field, VectorStoreRecordDataField) and field.embedding_property_name == vector_field_name
         )
-        deserialized_records = []
+        # replace back the name of the vector, content and id fields
         for record in records:
-            deserialized_record = {
-                id_field_name: record["id"],
-                vector_field_name: record["embedding"],
-                document_field_name: record["document"],
-            }
-            deserialized_record.update(record["metadata"])
-            deserialized_records.append(deserialized_record)
-        return deserialized_records
+            record[id_field_name] = record.pop("id")
+            record[vector_field_name] = record.pop("embedding")
+            record[document_field_name] = record.pop("document")
+        return records
 
     @override
     async def _inner_upsert(
@@ -286,9 +279,6 @@ class ChromaCollection(
             args["where"] = where
         if vector is not None:
             args["query_embeddings"] = vector
-        if search_text is not None:
-            args["query_text"] = search_text
-            args["where_document"] = {"$contains": "search_string"}
         results = self._get_collection().query(**args)
         records = self._unpack_results(results, options.include_vectors, include_distances=True)
         return KernelSearchResults(
@@ -306,14 +296,16 @@ class ChromaCollection(
     def _parse_filter(self, options: VectorSearchOptions) -> dict[str, Any] | None:
         if options.filter is None:
             return None
-        filter_string = {"$and": []}
+        filter_expression = {"$and": []}
         for filter in options.filter.filters:
             match filter:
                 case EqualTo():
-                    filter_string["$and"][filter.field_name] = {"$eq": filter.value}
+                    filter_expression["$and"].append({filter.field_name: {"$eq": filter.value}})
                 case AnyTagsEqualTo():
-                    filter_string["$and"][filter.field_name] = {"$in": filter.value}
-        return filter_string
+                    filter_expression["$and"].append({filter.field_name: {"$in": filter.value}})
+        if len(filter_expression["$and"]) == 1:
+            return filter_expression["$and"][0]
+        return filter_expression
 
 
 class ChromaStore(VectorStore):

@@ -117,10 +117,10 @@ def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distan
 
 
 collection_name = "test"
-distance_function = DistanceFunction.COSINE_SIMILARITY
+distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
 # Depending on the vector database, the index kind and distance function may need to be adjusted,
 # since not all combinations are supported by all databases.
-DataModel = get_data_model("array", IndexKind.IVF_FLAT, distance_function)
+DataModel = get_data_model("array", IndexKind.HNSW, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -241,14 +241,11 @@ async def main(collection: str, use_azure_openai: bool):
         if isinstance(record_collection, VectorTextSearchMixin):
             print("-" * 30)
             print_with_color("Using text search", Colors.CBLUE)
-            try:
-                search_results = await record_collection.text_search("python", options)
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Text search could not execute.")
+            search_results = await record_collection.text_search("python", options)
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizedSearchMixin):
             print("-" * 30)
             print_with_color(
@@ -257,17 +254,14 @@ async def main(collection: str, use_azure_openai: bool):
                 f"",
                 Colors.CBLUE,
             )
-            try:
-                search_results = await record_collection.vectorized_search(
-                    vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                    options=options,
-                )
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Vectorized search could not execute.")
+            search_results = await record_collection.vectorized_search(
+                vector=(await embedder.generate_raw_embeddings(["python"]))[0],
+                options=options,
+            )
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizableTextSearchMixin):
             print("-" * 30)
             print_with_color(
@@ -275,14 +269,11 @@ async def main(collection: str, use_azure_openai: bool):
                 f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
                 Colors.CBLUE,
             )
-            try:
-                search_results = await record_collection.vectorizable_text_search("python", options)
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Vectorizable text search could not execute.")
+            search_results = await record_collection.vectorizable_text_search("python", options)
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         print("-" * 30)
         print_with_color("Deleting collection!", Colors.CBLUE)
         await record_collection.delete_collection()
