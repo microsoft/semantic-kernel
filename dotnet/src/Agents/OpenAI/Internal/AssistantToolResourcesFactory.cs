@@ -16,7 +16,7 @@ internal static class AssistantToolResourcesFactory
     /// Produces a <see cref="ToolResources"/> definition based on the provided parameters.
     /// </summary>
     /// <param name="vectorStoreId">An optional vector-store-id for the 'file_search' tool</param>
-    /// <param name="codeInterpreterFileIds">An optionallist of file-identifiers for the 'code_interpreter' tool.</param>
+    /// <param name="codeInterpreterFileIds">An optional list of file-identifiers for the 'code_interpreter' tool.</param>
     public static ToolResources? GenerateToolResources(string? vectorStoreId, IReadOnlyList<string>? codeInterpreterFileIds)
     {
         bool hasVectorStore = !string.IsNullOrWhiteSpace(vectorStoreId);

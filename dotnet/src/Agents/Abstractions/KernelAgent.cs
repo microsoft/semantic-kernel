@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -17,14 +18,11 @@ public abstract class KernelAgent : Agent
     /// <remarks>
     /// Also includes <see cref="PromptExecutionSettings"/>.
     /// </remarks>
-    public KernelArguments? Arguments { get; init; }
+    public KernelArguments Arguments { get; init; } = [];
 
     /// <summary>
     /// Gets the instructions for the agent (optional).
     /// </summary>
-    /// <remarks>
-    /// Instructions can be formatted in "semantic-kernel" template format (<see cref="KernelPromptTemplateFactory"/>).
-    /// </remarks>
     public string? Instructions { get; init; }
 
     /// <summary>
@@ -38,7 +36,10 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
-    public IPromptTemplate? Template { get; protected set; }
+    protected IPromptTemplate? Template { get; set; }
+
+    /// <inheritdoc/>
+    protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
 
     /// <summary>
     /// Formats the system instructions for the agent.
@@ -49,18 +50,13 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // If <see cref="Template"/> is not set, default instructions may be treated as "semantic-kernel" template.
-        if (this.Template == null)
+        if (this.Template is null)
         {
-            if (string.IsNullOrWhiteSpace(this.Instructions))
-            {
-                return null;
-            }
-
-            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory);
-            this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
+            // Use the instructions as-is
+            return this.Instructions;
         }
 
+        // Use the provided template as the instructions
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
@@ -73,14 +69,8 @@ public abstract class KernelAgent : Agent
     /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    protected KernelArguments? MergeArguments(KernelArguments? arguments)
+    protected KernelArguments MergeArguments(KernelArguments? arguments)
     {
-        // Avoid merge when default arguments are not set.
-        if (this.Arguments == null)
-        {
-            return arguments;
-        }
-
         // Avoid merge when override arguments are not set.
         if (arguments == null)
         {

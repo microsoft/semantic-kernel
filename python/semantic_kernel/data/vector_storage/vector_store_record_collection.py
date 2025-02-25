@@ -3,9 +3,16 @@
 import asyncio
 import contextlib
 import logging
+import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
 
 from pydantic import BaseModel, model_validator
 
@@ -64,7 +71,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
         self._validate_data_model()
 
-    async def __aenter__(self) -> "VectorStoreRecordCollection":
+    async def __aenter__(self) -> Self:
         """Enter the context manager."""
         return self
 

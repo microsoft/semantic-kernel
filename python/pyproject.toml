@@ -50,6 +50,9 @@ dependencies = [
 
 ### Optional dependencies
 [project.optional-dependencies]
+autogen = [
+    "autogen-agentchat >= 0.2, <0.4"
+]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
     "azure-ai-projects >= 1.0.0b5",
@@ -62,7 +65,7 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform == 1.79.0",
+    "google-cloud-aiplatform == 1.80.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -72,7 +75,7 @@ hugging_face = [
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.12",
-    "motor >= 3.3.2,< 3.7.0"
+    "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
@@ -118,7 +121,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 aws = [
-    "boto3~=1.36.4",
+    "boto3>=1.36.4,<1.38.0",
 ]
 dapr = [
     "dapr>=1.14.0",

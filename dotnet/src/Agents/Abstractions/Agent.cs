@@ -38,14 +38,19 @@ public abstract class Agent
     public string? Name { get; init; }
 
     /// <summary>
-    /// Gets an <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
+    /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
     /// </summary>
-    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+    public ILoggerFactory? LoggerFactory { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="ILogger"/> associated with this <see cref="Agent"/>.
+    /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
-    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+    protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
+    /// Get the active logger factory, if defined; otherwise, provide the default.
+    /// </summary>
+    protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
@@ -62,7 +67,7 @@ public abstract class Agent
     protected internal abstract IEnumerable<string> GetChannelKeys();
 
     /// <summary>
-    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
+    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
@@ -73,7 +78,7 @@ public abstract class Agent
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
+    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
     /// </summary>
     /// <param name="channelState">The channel state, as serialized</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

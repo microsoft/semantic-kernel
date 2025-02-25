@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides a specialized <see cref="KernelAgent"/> based on an Azure AI agent.
 /// </summary>
-public sealed class AzureAIAgent : KernelAgent
+public sealed partial class AzureAIAgent : KernelAgent
 {
     /// <summary>
     /// Provides tool definitions used when associating a file attachment to an input message:
@@ -40,10 +39,6 @@ public sealed class AzureAIAgent : KernelAgent
     /// </summary>
     public const string CodeInterpreterMetadataKey = "code";
 
-    private readonly AzureAIClientProvider _provider;
-    private readonly AgentsClient _client;
-    private readonly string[] _channelKeys;
-
     /// <summary>
     /// Gets the assistant definition.
     /// </summary>
@@ -53,6 +48,51 @@ public sealed class AzureAIAgent : KernelAgent
     /// Gets the polling behavior for run processing.
     /// </summary>
     public RunPollingOptions PollingOptions { get; } = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
+    /// </summary>
+    /// <param name="model">The agent model definition.</param>
+    /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
+    /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
+    /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
+    /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
+    public AzureAIAgent(
+        Azure.AI.Projects.Agent model,
+        AgentsClient client,
+        IEnumerable<KernelPlugin>? plugins = null,
+        IPromptTemplateFactory? templateFactory = null,
+        string? templateFormat = null)
+    {
+        this.Client = client;
+        this.Definition = model;
+        this.Description = this.Definition.Description;
+        this.Id = this.Definition.Id;
+        this.Name = this.Definition.Name;
+        this.Instructions = this.Definition.Instructions;
+
+        if (templateFactory != null)
+        {
+            Verify.NotNullOrWhiteSpace(templateFormat);
+
+            PromptTemplateConfig templateConfig = new(this.Instructions)
+            {
+                TemplateFormat = templateFormat
+            };
+
+            this.Template = templateFactory.Create(templateConfig);
+        }
+
+        if (plugins != null)
+        {
+            this.Kernel.Plugins.AddRange(plugins);
+        }
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public AgentsClient Client { get; }
 
     /// <summary>
     /// Adds a message to the specified thread.
@@ -65,7 +105,7 @@ public sealed class AzureAIAgent : KernelAgent
     /// </remarks>
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
-        return AgentThreadActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
+        return AgentThreadActions.CreateMessageAsync(this.Client, threadId, message, cancellationToken);
     }
 
     /// <summary>
@@ -76,7 +116,7 @@ public sealed class AzureAIAgent : KernelAgent
     /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        return AgentThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
+        return AgentThreadActions.GetMessagesAsync(this.Client, threadId, cancellationToken);
     }
 
     /// <summary>
@@ -120,8 +160,22 @@ public sealed class AzureAIAgent : KernelAgent
     {
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => this.InternalInvokeAsync(threadId, options, arguments, kernel, cancellationToken),
+            () => InternalInvokeAsync(),
             cancellationToken);
+
+        async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
+        {
+            kernel ??= this.Kernel;
+            arguments = this.MergeArguments(arguments);
+
+            await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
+            {
+                if (isVisible)
+                {
+                    yield return message;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -169,8 +223,16 @@ public sealed class AzureAIAgent : KernelAgent
     {
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => this.InternalInvokeStreamingAsync(threadId, options, arguments, kernel, messages, cancellationToken),
+            () => InternalInvokeStreamingAsync(),
             cancellationToken);
+
+        IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
+        {
+            kernel ??= this.Kernel;
+            arguments = this.MergeArguments(arguments);
+
+            return AgentThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
+        }
     }
 
     /// <inheritdoc/>
@@ -178,11 +240,8 @@ public sealed class AzureAIAgent : KernelAgent
     {
         // Distinguish from other channel types.
         yield return typeof(AzureAIChannel).FullName!;
-
-        foreach (string key in this._channelKeys)
-        {
-            yield return key;
-        }
+        // Distinguish based on client instance.
+        yield return this.Client.GetHashCode().ToString();
     }
 
     /// <inheritdoc/>
@@ -190,14 +249,14 @@ public sealed class AzureAIAgent : KernelAgent
     {
         this.Logger.LogAzureAIAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel));
 
-        string threadId = await AgentThreadActions.CreateThreadAsync(this._client, cancellationToken).ConfigureAwait(false);
+        string threadId = await AgentThreadActions.CreateThreadAsync(this.Client, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), threadId);
 
         AzureAIChannel channel =
-            new(this._client, threadId)
+            new(this.Client, threadId)
             {
-                Logger = this.LoggerFactory.CreateLogger<AzureAIChannel>()
+                Logger = this.ActiveLoggerFactory.CreateLogger<AzureAIChannel>()
             };
 
         this.Logger.LogAzureAIAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel), threadId);
@@ -217,76 +276,10 @@ public sealed class AzureAIAgent : KernelAgent
 
         this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        AgentThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        AgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        return new AzureAIChannel(this._client, thread.Id);
+        return new AzureAIChannel(this.Client, thread.Id);
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
-    /// </summary>
-    /// <param name="model">The agent model definition.</param>
-    /// <param name="clientProvider">An <see cref="AzureAIClientProvider"/> instance.</param>
-    /// <param name="templateFactory">An optional template factory.</param>
-    public AzureAIAgent(
-        Azure.AI.Projects.Agent model,
-        AzureAIClientProvider clientProvider,
-        IPromptTemplateFactory? templateFactory = null)
-    {
-        this._provider = clientProvider;
-        this._client = clientProvider.Client.GetAgentsClient();
-        this._channelKeys = [.. clientProvider.ConfigurationKeys];
-
-        this.Definition = model;
-        this.Description = this.Definition.Description;
-        this.Id = this.Definition.Id;
-        this.Name = this.Definition.Name;
-        this.Instructions = this.Definition.Instructions;
-        this.Kernel = new();
-
-        if (templateFactory != null)
-        {
-            PromptTemplateConfig templateConfig = new(this.Instructions);
-            this.Template = templateFactory.Create(templateConfig);
-        }
-    }
-
-    #region private
-
-    private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
-        string threadId,
-        AzureAIInvocationOptions? options,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
-
-        await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
-        {
-            if (isVisible)
-            {
-                yield return message;
-            }
-        }
-    }
-
-    private IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
-        string threadId,
-        AzureAIInvocationOptions? options,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
-        ChatHistory? messages = null,
-        CancellationToken cancellationToken = default)
-    {
-        kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
-
-        return AgentThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
-    }
-
-    #endregion
 }

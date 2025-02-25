@@ -337,8 +337,8 @@ def generate_streaming_code_interpreter_content(
 
     metadata: dict[str, bool] = {}
     for index, tool in enumerate(step_details.tool_calls):
-        if isinstance(tool.type, RunStepDeltaCodeInterpreterToolCall):
-            code_interpreter_tool_call: RunStepDeltaCodeInterpreterDetailItemObject = tool
+        if isinstance(tool, RunStepDeltaCodeInterpreterDetailItemObject):
+            code_interpreter_tool_call = tool
             if code_interpreter_tool_call.input:
                 items.append(
                     StreamingTextContent(
@@ -349,7 +349,11 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if code_interpreter_tool_call.outputs:
                 for output in code_interpreter_tool_call.outputs:
-                    if isinstance(output, RunStepDeltaCodeInterpreterImageOutput) and output.image.file_id:
+                    if (
+                        isinstance(output, RunStepDeltaCodeInterpreterImageOutput)
+                        and output.image is not None
+                        and output.image.file_id
+                    ):
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
@@ -382,16 +386,16 @@ def generate_annotation_content(
 ) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    if isinstance(annotation, MessageTextFilePathAnnotation):
+    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
         file_id = annotation.file_path.file_id
-    elif isinstance(annotation, MessageTextFileCitationAnnotation):
+    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
         file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )
 
 
@@ -409,6 +413,6 @@ def generate_streaming_annotation_content(
     return StreamingAnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )
