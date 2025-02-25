@@ -162,6 +162,25 @@ public static class CopilotAgentPluginKernelExtensions
 #pragma warning restore CA2000
             static IDictionary<string, string> CopilotAgentPluginHeadersFactory(RestApiOperation operation, IDictionary<string, object?> arguments, RestApiOperationRunOptions? options)
             {
+                var graphAllowedHosts = new[]
+                {
+                    "graph.microsoft.com",
+                    "graph.microsoft.us",
+                    "dod-graph.microsoft.us",
+                    "graph.microsoft.de",
+                    "microsoftgraph.chinacloudapi.cn",
+                    "canary.graph.microsoft.com",
+                    "graph.microsoft-ppe.com"
+                };
+                // Existing headers for the operation
+                var existingOperationHeadersParameters = operation.Parameters.Where(static p => p.Location == RestApiParameterLocation.Header);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                var isGraphHost = graphAllowedHosts.Contains(options.ApiHostUrl.Host);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                if (!isGraphHost)
+                {
+                    return (IDictionary<string, string>)existingOperationHeadersParameters;
+                }
                 string frameworkDescription = RuntimeInformation.FrameworkDescription;
                 string osDescription = RuntimeInformation.OSDescription;
                 string copilotAgentPluginVersion = "0.5.0"; // TODO: version this correctly
@@ -172,8 +191,7 @@ public static class CopilotAgentPluginKernelExtensions
                     ["client-request-id"] = Guid.NewGuid().ToString()
                 };
 
-                // add existing headers for the operation
-                var existingOperationHeadersParameters = operation.Parameters.Where(static p => p.Location == RestApiParameterLocation.Header);
+                // add the existing headers
                 foreach (var header in existingOperationHeadersParameters)
                 {
                     if (arguments.TryGetValue(header.Name, out var argumentValue) && argumentValue is not null)
