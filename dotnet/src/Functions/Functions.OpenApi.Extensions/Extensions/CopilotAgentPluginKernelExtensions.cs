@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -159,13 +160,39 @@ public static class CopilotAgentPluginKernelExtensions
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
+            static IDictionary<string, string> CopilotAgentPluginHeadersFactory(RestApiOperation operation, IDictionary<string, object?> arguments, RestApiOperationRunOptions? options)
+            {
+                string frameworkDescription = RuntimeInformation.FrameworkDescription;
+                string osDescription = RuntimeInformation.OSDescription;
+                string copilotAgentPluginVersion = "0.5.0"; // TODO: version this correctly
+                var defaultHeaders = new Dictionary<string, string>
+                {
+                    // TODO: version and format updates
+                    ["SdkVersion"] = $"copilot-agent-plugins-beta/{copilotAgentPluginVersion}, ({frameworkDescription}; {osDescription})",
+                    ["client-request-id"] = Guid.NewGuid().ToString()
+                };
+
+                // add existing headers for the operation
+                var existingOperationHeadersParameters = operation.Parameters.Where(static p => p.Location == RestApiParameterLocation.Header);
+                foreach (var header in existingOperationHeadersParameters)
+                {
+                    if (arguments.TryGetValue(header.Name, out var argumentValue) && argumentValue is not null)
+                    {
+#pragma warning disable CS8601 // Possible null reference assignment.
+                        defaultHeaders[header.Name] = argumentValue.ToString();
+#pragma warning restore CS8601 // Possible null reference assignment.
+                    }
+                }
+                return defaultHeaders;
+            }
 
             var runner = new RestApiOperationRunner(
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true,
+                headersFactory: CopilotAgentPluginHeadersFactory);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
