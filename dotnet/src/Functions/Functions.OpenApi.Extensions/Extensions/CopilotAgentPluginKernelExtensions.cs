@@ -172,8 +172,6 @@ public static class CopilotAgentPluginKernelExtensions
                     "canary.graph.microsoft.com",
                     "graph.microsoft-ppe.com"
                 };
-                // Existing headers for the operation
-                var existingOperationHeadersParameters = operation.Parameters.Where(static p => p.Location == RestApiParameterLocation.Header);
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var isGraphHost = graphAllowedHosts.Contains(options.ApiHostUrl.Host);
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -191,17 +189,9 @@ public static class CopilotAgentPluginKernelExtensions
                     ["client-request-id"] = Guid.NewGuid().ToString()
                 };
 
-                // add the existing headers
-                foreach (var header in existingOperationHeadersParameters)
-                {
-                    if (arguments.TryGetValue(header.Name, out var argumentValue) && argumentValue is not null)
-                    {
-#pragma warning disable CS8601 // Possible null reference assignment.
-                        defaultHeaders[header.Name] = argumentValue.ToString();
-#pragma warning restore CS8601 // Possible null reference assignment.
-                    }
-                }
-                return defaultHeaders;
+                var currentHeaders = operation.BuildHeaders(arguments);
+                var finalHeaders = defaultHeaders.Concat(currentHeaders).ToDictionary(k => k.Key, v => v.Value);
+                return finalHeaders;
             }
 
             var runner = new RestApiOperationRunner(
