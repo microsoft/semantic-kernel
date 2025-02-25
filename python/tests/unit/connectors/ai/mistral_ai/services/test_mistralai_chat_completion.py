@@ -1,23 +1,35 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from mistralai import Mistral
+from mistralai import CompletionEvent, FunctionCall, Mistral
+from mistralai.models import (
+    AssistantMessage,
+    ChatCompletionChoice,
+    ChatCompletionResponse,
+    CompletionChunk,
+    CompletionResponseStreamChoice,
+    DeltaMessage,
+    ToolCall,
+    UsageInfo,
+)
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
+from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.contents import FunctionCallContent, StreamingTextContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import (
     ChatMessageContent,
-    FunctionCallContent,
-    TextContent,
 )
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -27,6 +39,7 @@ from semantic_kernel.exceptions import (
     ServiceResponseException,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -372,3 +385,365 @@ async def test_with_different_execution_settings_stream(
         continue
     assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["temperature"] == 0.2
     assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["seed"] == 2
+
+
+async def test_mistral_ai_chat_completion_initialization_valid():
+    """Test MistralAIChatCompletion initialization should succeed with valid params."""
+    mistralai_settings = MagicMock()
+    mistralai_settings.chat_model_id = "chat_model_id"
+
+    with (
+        patch(
+            "semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings.MistralAISettings.create",
+            return_value=mistralai_settings,
+        ) as mock_settings_create,
+        patch(
+            "semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base.MistralAIBase.__init__"
+        ) as mistral_base,
+    ):
+        # We gave an api_key to ensure it doesn't raise an exception, but the rest can be None.
+        ai_completion = MistralAIChatCompletion(
+            ai_model_id="some-model-id",
+            api_key="some-key",
+        )
+        assert ai_completion is not None
+
+        mock_settings_create.assert_called_once()
+        mistral_base.assert_called_once()
+
+
+async def test_mistral_ai_chat_completion_initialization_missing_model_id():
+    """Test MistralAIChatCompletion initialization should raise ServiceInitializationError when model id is missing."""
+    with patch("mistralai.Mistral", return_value=MagicMock()):
+        with pytest.raises(ServiceInitializationError) as exc_info:
+            MistralAIChatCompletion(
+                ai_model_id=None,
+                api_key="some-key",
+            )
+        assert "The MistralAI chat model ID is required." in str(exc_info.value)
+
+
+async def test_mistral_ai_chat_completion_initialization_validation_error():
+    """Test MistralAIChatCompletion initialization when MistralAISettings creation fails and raises ValidationError."""
+    # About ValidationError, we can patch the MistralAISettings create method to raise it.
+    from pydantic import ValidationError
+
+    with patch.object(
+        MistralAISettings,
+        "create",
+        side_effect=ValidationError("Validation error", []),
+    ):
+        with pytest.raises(ServiceInitializationError) as exc_info:
+            MistralAIChatCompletion(
+                ai_model_id="test",
+                api_key="test",
+            )
+        assert "Failed to create MistralAI settings." in str(exc_info.value)
+
+
+async def test_mistral_ai_chat_completion_inner_get_chat_message_contents_success():
+    """Test _inner_get_chat_message_contents with a successful ChatCompletionResponse."""
+
+    # Mock the response from the Mistral chat complete_async.
+    mock_response = ChatCompletionResponse(
+        id="some_id",
+        object="object",
+        created=12345,
+        usage=UsageInfo(prompt_tokens=10, completion_tokens=20, total_tokens=30),
+        model="test-model",
+        choices=[
+            ChatCompletionChoice(
+                index=0,
+                message=AssistantMessage(role="assistant", content="Hello!"),
+                finish_reason="stop",
+            )
+        ],
+    )
+
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client.chat = MagicMock()
+    async_mock_client.chat.complete_async = AsyncMock(return_value=mock_response)
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    # We create a ChatHistory.
+    chat_history = ChatHistory()
+    settings = MistralAIChatPromptExecutionSettings()
+
+    results = await chat_completion._inner_get_chat_message_contents(chat_history, settings)
+
+    # We should have exactly one ChatMessageContent.
+    assert len(results) == 1
+    assert results[0].role.value == "assistant"
+    assert results[0].finish_reason is not None
+    assert results[0].finish_reason.value == "stop"
+    assert "Hello!" in results[0].content
+    async_mock_client.chat.complete_async.assert_awaited_once()
+
+
+async def test_mistral_ai_chat_completion_inner_get_chat_message_contents_failure():
+    """Test _inner_get_chat_message_contents should raise ServiceResponseException if Mistral call fails."""
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client.chat = MagicMock()
+    async_mock_client.chat.complete_async = AsyncMock(side_effect=Exception("API error"))
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    chat_history = ChatHistory()
+    settings = MistralAIChatPromptExecutionSettings()
+
+    with pytest.raises(ServiceResponseException) as exc:
+        await chat_completion._inner_get_chat_message_contents(chat_history, settings)
+    assert "service failed to complete the prompt" in str(exc.value)
+
+
+async def test_mistral_ai_chat_completion_inner_get_streaming_chat_message_contents_success():
+    """Test _inner_get_streaming_chat_message_contents when streaming successfully."""
+
+    # We'll yield multiple chunks to simulate streaming.
+    mock_chunk1 = CompletionEvent(
+        data=CompletionChunk(
+            id="chunk1",
+            created=1,
+            model="test-model",
+            choices=[
+                CompletionResponseStreamChoice(
+                    index=0,
+                    delta=DeltaMessage(role="assistant", content="Hello "),
+                    finish_reason=None,
+                )
+            ],
+        )
+    )
+    mock_chunk2 = CompletionEvent(
+        data=CompletionChunk(
+            id="chunk1",
+            created=1,
+            model="test-model",
+            choices=[
+                CompletionResponseStreamChoice(
+                    index=0,
+                    delta=DeltaMessage(content="World!"),
+                    finish_reason="stop",
+                )
+            ],
+        )
+    )
+
+    async def mock_stream_async(**kwargs):
+        yield mock_chunk1
+        yield mock_chunk2
+
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client.chat = MagicMock()
+    async_mock_client.chat.stream_async = AsyncMock(return_value=mock_stream_async())
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    chat_history = ChatHistory()
+    settings = MistralAIChatPromptExecutionSettings()
+
+    collected_chunks = []
+    async for chunk_list in chat_completion._inner_get_streaming_chat_message_contents(chat_history, settings):
+        collected_chunks.append(chunk_list)
+
+    # We expect two sets of chunk_list yields.
+    assert len(collected_chunks) == 2
+    assert len(collected_chunks[0]) == 1
+    assert len(collected_chunks[1]) == 1
+
+    # First chunk contains "Hello ", second chunk "World!".
+    assert collected_chunks[0][0].items[0].text == "Hello "
+    assert collected_chunks[1][0].items[0].text == "World!"
+
+
+async def test_mistral_ai_chat_completion_inner_get_streaming_chat_message_contents_failure():
+    """Test _inner_get_streaming_chat_message_contents raising a ServiceResponseException on failure."""
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client.chat = MagicMock()
+    async_mock_client.chat.stream_async = AsyncMock(side_effect=Exception("Streaming error"))
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    chat_history = ChatHistory()
+    settings = MistralAIChatPromptExecutionSettings()
+
+    with pytest.raises(ServiceResponseException) as exc:
+        async for _ in chat_completion._inner_get_streaming_chat_message_contents(chat_history, settings):
+            pass
+    assert "service failed to complete the prompt" in str(exc.value)
+
+
+async def test_mistral_ai_chat_completion_create_chat_message_content_with_tool_calls():
+    """Test _create_chat_message_content to ensure it picks up tool calls if present."""
+
+    # We mock a choice that has message with content and some tool calls.
+    mock_tool = ToolCall(
+        id="tool_1",
+        function=FunctionCall(name="function_name", arguments="function_args"),
+    )
+    mock_message = AssistantMessage(
+        role="assistant",
+        content="Hello with tool!",
+        tool_calls=[mock_tool],
+    )
+
+    mock_choice = ChatCompletionChoice(
+        index=0,
+        message=mock_message,
+        finish_reason="stop",
+    )
+    mock_response = ChatCompletionResponse(
+        id="resp_id",
+        object="object",
+        created=999,
+        usage=UsageInfo(prompt_tokens=10, completion_tokens=20, total_tokens=30),
+        model="some-model",
+        choices=[mock_choice],
+    )
+
+    async_mock_client = MagicMock(spec=Mistral)
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    # We'll directly call the underlying method.
+    meta = {"metadata": "test"}
+    result = chat_completion._create_chat_message_content(mock_response, mock_choice, meta)
+
+    # We expect to see one text item and one function call item.
+    assert len(result.items) == 2
+    assert any(isinstance(i, TextContent) for i in result.items)
+    assert any(isinstance(i, FunctionCallContent) for i in result.items)
+
+    func_call = [i for i in result.items if isinstance(i, FunctionCallContent)][0]
+    assert func_call.id == "tool_1"
+    assert func_call.name == "function_name"
+    assert func_call.arguments == "function_args"
+
+
+async def test_mistral_ai_chat_completion_create_streaming_chat_message_content_with_tool_calls():
+    """Test _create_streaming_chat_message_content to ensure it picks up tool calls if present."""
+
+    mock_tool = ToolCall(
+        id="tool_2",
+        function=FunctionCall(name="function_name_2", arguments="function_args_2"),
+    )
+
+    mock_chunk = CompletionChunk(
+        id="chunk2",
+        created=222,
+        model="model-2",
+        choices=[],
+    )
+
+    mock_choice = CompletionResponseStreamChoice(
+        index=1,
+        delta=DeltaMessage(role="assistant", content="Hello from stream!", tool_calls=[mock_tool]),
+        finish_reason=None,
+    )
+    chunk_metadata = {"chunk": "meta"}
+
+    async_mock_client = MagicMock(spec=Mistral)
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    result = chat_completion._create_streaming_chat_message_content(
+        chunk=mock_chunk,
+        choice=mock_choice,
+        chunk_metadata=chunk_metadata,
+        function_invoke_attempt=0,
+    )
+
+    # We expect to see one StreamingTextContent item and one FunctionCallContent.
+    assert len(result.items) == 2
+    stc = [i for i in result.items if isinstance(i, StreamingTextContent)][0]
+    assert stc.text == "Hello from stream!"
+
+    fcc = [i for i in result.items if isinstance(i, FunctionCallContent)][0]
+    assert fcc.id == "tool_2"
+    assert fcc.name == "function_name_2"
+    assert fcc.arguments == "function_args_2"
+
+
+async def test_mistral_ai_chat_completion_update_settings_from_function_call_configuration_mistral():
+    """Test update_settings_from_function_call_configuration_mistral sets tools etc."""
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+    )
+
+    # Create a mock settings object.
+    settings = MistralAIChatPromptExecutionSettings()
+    # Create a function choice config with some available functions.
+    config = FunctionCallChoiceConfiguration()
+    mock_func = MagicMock(
+        spec=KernelFunction,
+    )
+    mock_func.name = "my_func"
+    mock_func.description = "some desc"
+    mock_func.fully_qualified_name = "mod.my_func"
+    mock_func.parameters = []
+    config.available_functions = [mock_func]
+
+    # Call the update_settings_from_function_call_configuration_mistral with type=ANY.
+    chat_completion.update_settings_from_function_call_configuration_mistral(
+        function_choice_configuration=config,
+        settings=settings,
+        type=FunctionChoiceType.AUTO,
+    )
+
+    assert settings.tool_choice == FunctionChoiceType.AUTO.value
+    assert settings.tools is not None
+    assert len(settings.tools) == 1
+    assert settings.tools[0]["function"]["name"] == "mod.my_func"
+
+
+async def test_mistral_ai_chat_completion_reset_function_choice_settings():
+    """Test that _reset_function_choice_settings resets specific attributes."""
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+    )
+    settings = MistralAIChatPromptExecutionSettings(tool_choice="any", tools=[{"name": "func1"}])
+
+    chat_completion._reset_function_choice_settings(settings)
+    assert settings.tool_choice is None
+    assert settings.tools is None
+
+
+async def test_mistral_ai_chat_completion_service_url():
+    """Test that service_url attempts to use _endpoint from the async_client."""
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client._endpoint = "mistral"
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    url = chat_completion.service_url()
+    assert url == "mistral"
