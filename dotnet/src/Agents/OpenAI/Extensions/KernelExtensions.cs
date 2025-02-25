@@ -48,7 +48,7 @@ internal static class KernelExtensions
             {
                 AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
                 var endpoint = configuration.GetEndpointUri();
-                if (configuration.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
+                if (configuration.ExtensionData.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
                 {
                     return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);
                 }

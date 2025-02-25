@@ -22,11 +22,6 @@ public static class PromptExecutionSettingsExtensions
     private const string TopP = "top_p";
 
     /// <summary>
-    /// Property name for model response format.
-    /// </summary>
-    private const string ResponseFormat = "response_format";
-
-    /// <summary>
     /// Get the temperature property.
     /// </summary>
     /// <param name="executionSettings">Prompt execution settings.</param>

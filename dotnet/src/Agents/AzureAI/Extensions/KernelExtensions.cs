@@ -28,7 +28,7 @@ internal static class KernelExtensions
         var configuration = agentDefinition?.Model?.Configuration;
         if (configuration is not null)
         {
-            var hasConnectionString = configuration.TryGetValue(ConnectionString, out var connectionString) && connectionString is not null;
+            var hasConnectionString = configuration.ExtensionData.TryGetValue(ConnectionString, out var connectionString) && connectionString is not null;
             if (hasConnectionString)
             {
                 var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();

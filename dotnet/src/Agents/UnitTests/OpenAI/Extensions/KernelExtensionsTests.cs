@@ -25,7 +25,7 @@ public class KernelExtensionsTests
                 Id = "gpt-4o-mini",
                 Configuration = new()
                 {
-                    ExtensionData = new Dictionary<string, object>()
+                    ExtensionData = new Dictionary<string, object?>()
                     {
                         ["endpoint"] = "https://contosoo.openai.azure.com",
                         ["api_key"] = "api_key",

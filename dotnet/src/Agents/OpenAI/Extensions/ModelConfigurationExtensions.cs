@@ -20,7 +20,7 @@ internal static class ModelConfigurationExtensions
     {
         Verify.NotNull(configuration);
 
-        if (!configuration.TryGetValue("endpoint", out var endpoint) || endpoint is null)
+        if (!configuration.ExtensionData.TryGetValue("endpoint", out var endpoint) || endpoint is null)
         {
             throw new InvalidOperationException("Endpoint was not specified.");
         }
@@ -35,7 +35,7 @@ internal static class ModelConfigurationExtensions
     {
         Verify.NotNull(configuration);
 
-        if (!configuration.TryGetValue("api_key", out var apiKey) || apiKey is null)
+        if (!configuration.ExtensionData.TryGetValue("api_key", out var apiKey) || apiKey is null)
         {
             throw new InvalidOperationException("API key was not specified.");
         }
