@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from typing import TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
