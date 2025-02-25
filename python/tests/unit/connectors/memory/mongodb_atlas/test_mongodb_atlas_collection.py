@@ -52,8 +52,8 @@ async def test_mongodb_atlas_collection_upsert(mongodb_atlas_unit_test_env, data
     )
     with patch.object(collection, "_get_collection", new=mock_get_collection) as mock_get:
         result_mock = AsyncMock(spec=UpdateResult)
-        result_mock.upserted_id = ["test_id"]
-        mock_get.return_value.update_many.return_value = result_mock
+        result_mock.upserted_ids = {0: "test_id"}
+        mock_get.return_value.bulk_write.return_value = result_mock
         result = await collection._inner_upsert([{"_id": "test_id", "data": "test_data"}])
         assert result == ["test_id"]
 
