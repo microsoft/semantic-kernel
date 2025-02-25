@@ -83,7 +83,7 @@ internal static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition);
 
         var toolDefinition = agentDefinition.GetFirstToolDefinition(CodeInterpreter);
-        if (toolDefinition?.Configuration?.TryGetValue(FileIds, out var fileIds) ?? false)
+        if ((toolDefinition?.Configuration?.TryGetValue(FileIds, out var value) ?? false) && value is List<string> fileIds)
         {
             // TODO: Verify that the fileIds are strings
             return (IReadOnlyList<string>)fileIds;

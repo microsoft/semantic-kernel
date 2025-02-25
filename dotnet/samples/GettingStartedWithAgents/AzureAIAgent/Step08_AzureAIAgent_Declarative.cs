@@ -39,6 +39,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }

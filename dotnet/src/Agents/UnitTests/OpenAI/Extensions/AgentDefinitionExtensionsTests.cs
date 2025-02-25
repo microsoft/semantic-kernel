@@ -56,7 +56,7 @@ public class AgentDefinitionExtensionsTests
     {
         // Arrange
         var fileIds = new List<string>(["file1", "file2"]);
-        var configuration = new Dictionary<string, object>
+        var configuration = new Dictionary<string, object?>
         {
             { "file_ids", fileIds }
         };
