@@ -5,14 +5,12 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-import chromadb
+from chromadb import Client, Collection, QueryResult
 from chromadb.api import ClientAPI
 from chromadb.config import Settings
 
@@ -32,6 +30,7 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreModelValidationError,
 )
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class ChromaCollection(
             if persist_directory is not None:
                 settings.is_persistent = True
                 settings.persist_directory = persist_directory
-            client = chromadb.Client(settings)
+            client = Client(settings)
         super().__init__(
             collection_name=collection_name,
             data_model_type=data_model_type,
@@ -82,7 +81,7 @@ class ChromaCollection(
             **kwargs,
         )
 
-    def _get_collection(self) -> chromadb.Collection:
+    def _get_collection(self) -> Collection:
         try:
             return self.client.get_collection(name=self.collection_name)
         except Exception as e:
@@ -200,7 +199,7 @@ class ChromaCollection(
         return self._unpack_results(results, include_vectors)
 
     def _unpack_results(
-        self, results: chromadb.QueryResult, include_vectors: bool, include_distances: bool = False
+        self, results: QueryResult, include_vectors: bool, include_distances: bool = False
     ) -> Sequence[dict[str, Any]]:
         try:
             if isinstance(results["ids"][0], str):
@@ -330,7 +329,7 @@ class ChromaStore(VectorStore):
             settings.is_persistent = True
             settings.persist_directory = persist_directory
         if client is None:
-            client = chromadb.Client(settings)
+            client = Client(settings)
         super().__init__(client=client, managed_client=managed_client, **kwargs)
 
     @override
