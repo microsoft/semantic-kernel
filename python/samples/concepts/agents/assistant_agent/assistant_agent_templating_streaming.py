@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -29,27 +29,25 @@ inputs = [
 async def invoke_agent_with_template(
     template_str: str, template_format: TEMPLATE_FORMAT_TYPES, default_style: str = "haiku"
 ):
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
+
     # Configure the prompt template
-    prompt_config = PromptTemplateConfig(template=template_str, template_format=template_format)
+    prompt_template_config = PromptTemplateConfig(template=template_str, template_format=template_format)
 
-    # Create the OpenAI Assistant Agent for use with Azure OpenAI
-    client = OpenAIAssistantAgent.create_openai_client()
-    # For use with OpenAI use the following:
-    # client = OpenAIAssistantAgent.create_azure_openai_client()
-
+    # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         name="MyPoetAgent",
-        instructions=(
-            "You are a friendly poet, skilled at writing a one verse poem on any requested topic. "
-            "Always include the poem style in the final output."
-        ),
     )
 
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client, the assistant definition,
+    # the prompt template config, and the constructor-level Kernel Arguments
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
-        prompt_template_config=prompt_config,
+        prompt_template_config=prompt_template_config,  # type: ignore
+        arguments=KernelArguments(style=default_style),
     )
 
     # Define a thread and invoke the agent with the user input
@@ -67,6 +65,8 @@ async def invoke_agent_with_template(
             # If style is specified, override the 'style' argument
             argument_overrides = None
             if style:
+                # Arguments passed in at invocation time take precedence over
+                # the default arguments that were added via the constructor.
                 argument_overrides = KernelArguments(style=style)
 
             # Stream agent responses

@@ -1,49 +1,69 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-import os
 
-from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from pydantic import BaseModel
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI and leverage the    #
-# assistant's ability to have the code interpreter work with        #
-# uploaded files.                                                   #
-#####################################################################
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
+
+"""
+The following sample demonstrates how to create an OpenAI
+assistant using either Azure OpenAI or OpenAI and leverage the
+assistant's ability to returned structured outputs, based on a user-defined
+Pydantic model. This could also be a non-Pydantic model. Use the convenience
+method on the OpenAIAssistantAgent class to configure the response format, 
+as shown below low.
+
+Note, you may specify your own JSON Schema. You'll need to make sure it is correct
+if not using the convenience method, per the following format:
+
+json_schema = {
+    "type": "json_schema",
+    "json_schema": {
+        "schema": {
+            "properties": {
+                "response": {"title": "Response", "type": "string"},
+                "items": {"items": {"type": "string"}, "title": "Items", "type": "array"},
+            },
+            "required": ["response", "items"],
+            "title": "ResponseModel",
+            "type": "object",
+            "additionalProperties": False,
+        },
+        "name": "ResponseModel",
+        "strict": True,
+    },
+}
+
+# Create the assistant definition
+definition = await client.beta.assistants.create(
+    model=model,
+    name="Assistant",
+    instructions="You are a helpful assistant answering questions about the world in one sentence.",
+    response_format=json_schema,
+)
+"""
+
+
+# Define a Pydantic model that represents the structured output from the OpenAI service
+class ResponseModel(BaseModel):
+    response: str
+    items: list[str]
 
 
 async def main():
-    # Create the OpenAI Assistant Agent
-    # client = OpenAIAssistantAgent.create_openai_client()
-
-    # To create an OpenAIAssistantAgent for Azure OpenAI, use the following:
-    client = OpenAIAssistantAgent.create_azure_openai_client()
-
-    csv_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
-        "resources",
-        "agent_assistant_file_manipulation",
-        "sales.csv",
-    )
-
-    # Load the employees PDF file as a FileObject
-    with open(csv_file_path, "rb") as file:
-        file = await client.files.create(file=file, purpose="assistants")
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
-        name="FileManipulation",
-        instructions="Find answers to the user's questions in the provided file.",
-        tools=[{"type": "code_interpreter"}],
-        tool_resources={"code_interpreter": {"file_ids": [file.id]}},
-        response_format=
+        model=model,
+        name="Assistant",
+        instructions="You are a helpful assistant answering questions about the world in one sentence.",
+        response_format=AzureAssistantAgent.configure_response_format(ResponseModel),
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
@@ -51,31 +71,17 @@ async def main():
     # Define a thread and invoke the agent with the user input
     thread = await agent.client.beta.threads.create()
 
-    try:
-        user_inputs = [
-            "Which segment had the most sales?",
-            "List the top 5 countries that generated the most profit.",
-            "Create a tab delimited file report of profit by each country per month.",
-        ]
+    user_inputs = ["Why is the sky blue?"]
 
+    try:
         for input in user_inputs:
             await agent.add_chat_message(thread_id=thread.id, message=input)
-
             print(f"# User: '{input}'")
             async for content in agent.invoke(thread_id=thread.id):
-                if content.metadata.get("code", False):
-                    print(f"# {content.role}:\n\n```python")
-                    print(content.content)
-                    print("```")
-                else:
-                    print(f"# {content.role}: {content.content}")
-
-                if content.items:
-                    for item in content.items:
-                        if isinstance(item, AnnotationContent):
-                            await download_response_files(agent, [item])
+                # The response returned is a Pydantic Model, so we can validate it using the model_validate_json method
+                response_model = ResponseModel.model_validate_json(content.content)
+                print(f"# {content.role}: {response_model}")
     finally:
-        await client.files.delete(file.id)
         await client.beta.threads.delete(thread.id)
         await client.beta.assistants.delete(agent.id)
 

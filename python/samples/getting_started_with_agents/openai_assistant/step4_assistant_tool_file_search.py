@@ -3,28 +3,18 @@
 import asyncio
 import os
 
-from semantic_kernel import Kernel
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.contents import AuthorRole
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI
-assistant using either Azure OpenAI or OpenAI and leverage the
+Assistant using either Azure OpenAI or OpenAI and leverage the
 assistant's file search functionality.
 """
 
-# Create the instance of the Kernel
-kernel = Kernel()
-
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
-
 
 async def main():
-    # Create the OpenAI Assistant Agent for use with Azure OpenAI
-    # For use with OpenAI use the following:
-    # client = OpenAIAssistantAgent.create_openai_client()
-    client = OpenAIAssistantAgent.create_azure_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Configure the file path for the employees PDF
     pdf_file_path = os.path.join(
@@ -37,15 +27,15 @@ async def main():
 
     # Create a vector store specifying the file ID to be used for file search
     vector_store = await client.beta.vector_stores.create(
-        name="step2_assistant_vision",
+        name="step4_assistant_file_search",
         file_ids=[file.id],
     )
 
-    file_search_tool, file_search_tool_resources = OpenAIAssistantAgent.configure_file_search_tool(vector_store.id)
+    file_search_tool, file_search_tool_resources = AzureAssistantAgent.configure_file_search_tool(vector_store.id)
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         instructions="Find answers to the user's questions in the provided file.",
         name="FileSearch",
         tools=file_search_tool,
@@ -53,7 +43,7 @@ async def main():
     )
 
     # Create the OpenAIAssistantAgent instance
-    agent = OpenAIAssistantAgent(
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
@@ -77,8 +67,7 @@ async def main():
             print(f"# User: '{user_input}'")
 
             async for content in agent.invoke(thread_id=thread.id):
-                if content.role != AuthorRole.TOOL:
-                    print(f"# Agent: {content.content}")
+                print(f"# Agent: {content.content}")
     finally:
         await client.files.delete(file.id)
         await client.beta.vector_stores.delete(vector_store.id)

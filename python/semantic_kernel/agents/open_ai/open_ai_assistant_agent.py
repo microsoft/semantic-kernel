@@ -1,32 +1,35 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable, Awaitable, Callable
+from collections.abc import AsyncIterable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai import AsyncOpenAI
+from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
     ToolResources,
     ToolResourcesCodeInterpreter,
     ToolResourcesFileSearch,
 )
-from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
+from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
-from pydantic import Field, ValidationError, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+from semantic_kernel.agents.open_ai.assistant_content_generation import generate_message_content
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
@@ -34,8 +37,8 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semanti
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
-    from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
     from openai.types.beta.assistant_tool_param import AssistantToolParam
+    from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
     from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
@@ -56,6 +59,7 @@ class OpenAIAssistantAgent(Agent):
     """
 
     # region Agent Initialization
+
     client: AsyncOpenAI
     definition: Assistant
     plugins: list[Any] = Field(default_factory=list)
@@ -66,11 +70,11 @@ class OpenAIAssistantAgent(Agent):
     def __init__(
         self,
         *,
-        arguments: "KernelArguments | None" = None,
+        arguments: KernelArguments | None = None,
         client: AsyncOpenAI,
         definition: Assistant,
         kernel: "Kernel | None" = None,
-        plugins: Any | None = None,
+        plugins: list[KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
@@ -78,12 +82,14 @@ class OpenAIAssistantAgent(Agent):
         """Initialize an OpenAIAssistant service.
 
         Args:
+            arguments: The arguments to pass to the function.
             client: The OpenAI client.
             definition: The assistant definition.
             kernel: The Kernel instance.
-            arguments: The arguments to pass to the function.
+            plugins: The plugins to add to the kernel. If both the plugins and the kernel are supplied,
+                the plugins take precedence and are added to the kernel by default.
+            polling_options: The polling options.
             prompt_template_config: The prompt template configuration.
-            run_polling_options: The run polling options.
             kwargs: Additional keyword arguments.
         """
         args: dict[str, Any] = {
@@ -129,16 +135,18 @@ class OpenAIAssistantAgent(Agent):
             args.update(kwargs)
         super().__init__(**args)
 
-    def _get_plugin_name(self, plugin: KernelPlugin | object | dict[str, Any]) -> str:
-        if isinstance(plugin, dict):
-            return plugin.get("name", plugin.__class__.__name__)
+    def _get_plugin_name(self, plugin: KernelPlugin | object) -> str:
+        """Helper method to get the plugin name."""
         if isinstance(plugin, KernelPlugin):
             return plugin.name
         return plugin.__class__.__name__
 
     @model_validator(mode="after")
     def configure_agent(self):
-        """Handle the plugins."""
+        """Handle the plugins if provided via the constructor.
+
+        Any plugins already defined with the same name on the Kernel are overwritten.
+        """
         if self.plugins:
             for plugin in self.plugins:
                 name = self._get_plugin_name(plugin)
@@ -146,7 +154,7 @@ class OpenAIAssistantAgent(Agent):
         return self
 
     @classmethod
-    def create_openai_client(
+    def setup_resources(
         cls: type[_T],
         *,
         api_key: str | None = None,
@@ -155,19 +163,21 @@ class OpenAIAssistantAgent(Agent):
         env_file_encoding: str | None = None,
         default_headers: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncOpenAI:
-        """An internal method to create the OpenAI client from the provided arguments.
+    ) -> tuple[AsyncOpenAI, str]:
+        """A method to create the OpenAI client and the model from the provided arguments.
+
+        Any arguments provided will override the values in the environment variables/environment file.
 
         Args:
-            api_key: The API key.
-            org_id: The organization ID.
-            env_file_path: The environment file path.
-            env_file_encoding: The environment file encoding.
-            default_headers: The default headers.
-            kwargs: Additional keyword arguments.
+            api_key: The API key
+            org_id: The organization ID
+            env_file_path: The environment file path
+            env_file_encoding: The environment file encoding, defaults to utf-8
+            default_headers: The default headers to add to the client
+            kwargs: Additional keyword arguments
 
         Returns:
-            An OpenAI client instance.
+            An OpenAI client instance and the configured model name
         """
         try:
             openai_settings = OpenAISettings.create(
@@ -182,6 +192,9 @@ class OpenAIAssistantAgent(Agent):
         if not openai_settings.api_key:
             raise AgentInitializationException("The OpenAI API key is required.")
 
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationException("The OpenAI model ID is required.")
+
         merged_headers = dict(copy(default_headers)) if default_headers else {}
         if default_headers:
             merged_headers.update(default_headers)
@@ -189,82 +202,14 @@ class OpenAIAssistantAgent(Agent):
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        return AsyncOpenAI(
+        client = AsyncOpenAI(
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
             organization=openai_settings.org_id,
             default_headers=merged_headers,
             **kwargs,
         )
 
-    @classmethod
-    def create_azure_openai_client(
-        cls: type[_T],
-        *,
-        ad_token: str | None = None,
-        ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
-        api_key: str | None = None,
-        api_version: str | None = None,
-        base_url: str | None = None,
-        default_headers: dict[str, str] | None = None,
-        deployment_name: str | None = None,
-        endpoint: str | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-        token_scope: str | None = None,
-        **kwargs: Any,
-    ) -> AsyncAzureOpenAI:
-        """An internal method to create the OpenAI client from the provided arguments.
-
-        Args:
-            ad_token: The Azure AD token.
-            ad_token_provider: The Azure AD token provider.
-            api_key: The API key
-            api_version: The API version.
-            base_url: The base URL in the form https://<resource>.azure.openai.com/openai/deployments/<deployment_name>
-            default_headers: The default headers.
-            deployment_name: The deployment name.
-            endpoint: The endpoint in the form https://<resource>.azure.openai.com
-            env_file_path: The environment file path.
-            env_file_encoding: The environment file encoding.
-            token_scope: The token scope.
-            kwargs: Additional keyword arguments.
-
-        Returns:
-            An OpenAI client instance.
-        """
-        try:
-            azure_openai_settings = AzureOpenAISettings.create(
-                api_key=api_key,
-                base_url=base_url,
-                endpoint=endpoint,
-                chat_deployment_name=deployment_name,
-                api_version=api_version,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-                token_endpoint=token_scope,
-            )
-        except ValidationError as exc:
-            raise AgentInitializationException(f"Failed to create Azure OpenAI settings: {exc}") from exc
-
-        merged_headers = dict(copy(default_headers)) if default_headers else {}
-        if default_headers:
-            merged_headers.update(default_headers)
-        if APP_INFO:
-            merged_headers.update(APP_INFO)
-            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
-
-        if not azure_openai_settings.endpoint:
-            raise AgentInitializationException("Please provide an Azure OpenAI endpoint")
-
-        return AsyncAzureOpenAI(
-            azure_endpoint=str(azure_openai_settings.endpoint),
-            api_version=azure_openai_settings.api_version,
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
-            azure_ad_token=ad_token,
-            azure_ad_token_provider=ad_token_provider,
-            default_headers=merged_headers,
-            **kwargs,
-        )
+        return client, openai_settings.chat_model_id
 
     # endregion
 
@@ -273,11 +218,11 @@ class OpenAIAssistantAgent(Agent):
     @classmethod
     def configure_code_interpreter_tool(
         cls: type[_T], file_ids: str | list[str] | None = None, **kwargs: Any
-    ) -> tuple[list[CodeInterpreterToolParam], ToolResources]:
+    ) -> tuple[list["CodeInterpreterToolParam"], ToolResources]:
         """Generate tool + tool_resources for the code_interpreter."""
         if isinstance(file_ids, str):
             file_ids = [file_ids]
-        tool: CodeInterpreterToolParam = {"type": "code_interpreter"}
+        tool: "CodeInterpreterToolParam" = {"type": "code_interpreter"}
         resources: ToolResources = {}
         if file_ids:
             resources["code_interpreter"] = ToolResourcesCodeInterpreter(file_ids=file_ids)
@@ -294,11 +239,103 @@ class OpenAIAssistantAgent(Agent):
         tool: FileSearchToolParam = {
             "type": "file_search",
         }
-        resources: ToolResources = {"file_search": ToolResourcesFileSearch(vector_store_ids=vector_store_ids, **kwargs)}
+        resources: ToolResources = {"file_search": ToolResourcesFileSearch(vector_store_ids=vector_store_ids, **kwargs)}  # type: ignore
         return [tool], resources
-    
+
     @classmethod
-    def form_json_schema_response_format(cls: type[_T], )
+    def configure_response_format(
+        cls: type[_T],
+        response_format: dict[Literal["type"], Literal["text", "json_object"]]
+        | dict[str, Any]
+        | type[BaseModel]
+        | type
+        | AssistantResponseFormatOptionParam
+        | None = None,
+    ) -> AssistantResponseFormatOptionParam | None:
+        """Form the response format.
+
+        "auto" is the default value. Not configuring the response format will result in the model
+        outputting text.
+
+        Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
+        Outputs which ensures the model will match your supplied JSON schema. Learn more
+        in the [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+
+        Setting to `{ "type": "json_object" }` enables JSON mode, which ensures the
+        message the model generates is valid JSON, as long as the prompt contains "JSON."
+
+        Args:
+            response_format: The response format.
+
+        Returns:
+            AssistantResponseFormatOptionParam: The response format.
+        """
+        if response_format is None or response_format == "auto":
+            return None
+
+        configured_response_format = None
+        if isinstance(response_format, dict):
+            resp_type = response_format.get("type")
+            if resp_type == "json_object":
+                configured_response_format = {"type": "json_object"}
+            elif resp_type == "json_schema":
+                json_schema = response_format.get("json_schema")  # type: ignore
+                if not isinstance(json_schema, dict):
+                    raise AgentInitializationException(
+                        "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+                    )
+                # We're assuming the response_format has already been provided in the correct format
+                configured_response_format = response_format  # type: ignore
+            else:
+                raise AgentInitializationException(
+                    f"Encountered unexpected response_format type: {resp_type}. Allowed types are `json_object` "
+                    " and `json_schema`."
+                )
+        elif isinstance(response_format, type):
+            # If it's a type, differentiate based on whether it's a BaseModel subclass
+            if issubclass(response_format, BaseModel):
+                configured_response_format = type_to_response_format_param(response_format)  # type: ignore
+            else:
+                generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
+                assert generated_schema is not None  # nosec
+                configured_response_format = generate_structured_output_response_format_schema(
+                    name=response_format.__name__, schema=generated_schema
+                )
+        else:
+            # If it's not a dict or a type, throw an exception
+            raise AgentInitializationException(
+                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
+            )
+
+        return configured_response_format  # type: ignore
+
+    # endregion
+
+    # region Agent Channel Methods
+
+    def get_channel_keys(self) -> Iterable[str]:
+        """Get the channel keys.
+
+        Returns:
+            Iterable[str]: The channel keys.
+        """
+        # Distinguish from other channel types.
+        yield f"{OpenAIAssistantAgent.__name__}"
+
+        # Distinguish between different agent IDs
+        yield self.id
+
+        # Distinguish between agent names
+        yield self.name
+
+        # Distinguish between different API base URLs
+        yield str(self.client.base_url)
+
+    async def create_channel(self) -> AgentChannel:
+        """Create a channel."""
+        thread = await self.client.beta.threads.create()
+
+        return OpenAIAssistantChannel(client=self.client, thread_id=thread.id)
 
     # endregion
 
@@ -321,6 +358,32 @@ class OpenAIAssistantAgent(Agent):
             client=self.client, thread_id=thread_id, message=message, **kwargs
         )
 
+    async def get_thread_messages(self, thread_id: str) -> AsyncIterable["ChatMessageContent"]:
+        """Get the messages for the specified thread.
+
+        Args:
+            thread_id: The thread id.
+
+        Yields:
+            ChatMessageContent: The chat message.
+        """
+        agent_names: dict[str, Any] = {}
+
+        thread_messages = await self.client.beta.threads.messages.list(thread_id=thread_id, limit=100, order="desc")
+        for message in thread_messages.data:
+            assistant_name = None
+            if message.assistant_id and message.assistant_id not in agent_names:
+                agent = await self.client.beta.assistants.retrieve(message.assistant_id)
+                if agent.name:
+                    agent_names[message.assistant_id] = agent.name
+            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
+            assistant_name = assistant_name or message.assistant_id
+
+            content: "ChatMessageContent" = generate_message_content(str(assistant_name), message)
+
+            if len(content.items) > 0:
+                yield content
+
     # endregion
 
     # region Invocation Methods
@@ -333,9 +396,9 @@ class OpenAIAssistantAgent(Agent):
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         # Run-level parameters:
-        instructions_override: str | None = None,
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
@@ -405,7 +468,7 @@ class OpenAIAssistantAgent(Agent):
             thread_id=thread_id,
             kernel=kernel,
             arguments=arguments,
-            **run_level_params,
+            **run_level_params,  # type: ignore
         ):
             if is_visible:
                 yield message
@@ -418,9 +481,9 @@ class OpenAIAssistantAgent(Agent):
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         # Run-level parameters:
-        instructions_override: str | None = None,
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         messages: "list[ChatMessageContent] | None" = None,
@@ -493,7 +556,7 @@ class OpenAIAssistantAgent(Agent):
             kernel=kernel,
             arguments=arguments,
             messages=messages,
-            **run_level_params,
+            **run_level_params,  # type: ignore
         ):
             yield message
 

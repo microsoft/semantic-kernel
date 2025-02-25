@@ -2,7 +2,7 @@
 import asyncio
 
 from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_images
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 
 """
@@ -14,19 +14,23 @@ in a streaming fashion.
 
 
 async def main():
-    # Create the OpenAI Assistant Agent for use with Azure OpenAI
-    # For use with OpenAI use the following:
-    # client = OpenAIAssistantAgent.create_openai_client()
-    client = OpenAIAssistantAgent.create_azure_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
+    # Get the code interpreter tool and resources
+    code_interpreter_tool, code_interpreter_resource = AzureAssistantAgent.configure_code_interpreter_tool()
+
+    # Define the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         instructions="Create charts as requested without explanation.",
         name="ChartMaker",
-        tools=[{"type": "code_interpreter"}],
+        tools=code_interpreter_tool,
+        tool_resources=code_interpreter_resource,
     )
 
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )

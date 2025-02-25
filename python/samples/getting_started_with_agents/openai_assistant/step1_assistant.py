@@ -2,16 +2,15 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI         
-assistant using either Azure OpenAI or OpenAI. OpenAI Assistants  
-allow for function calling, the use of file search and a          
-code interpreter. Assistant Threads are used to manage the        
-conversation state, similar to a Semantic Kernel Chat History.    
+assistant using either Azure OpenAI or OpenAI. The sample
+shows how to use a Semantic Kernel plugin as part of the
+OpenAI Assistant.  
 """
 
 
@@ -35,31 +34,35 @@ class MenuPlugin:
 
 
 async def main():
-    # Create the OpenAI Assistant Agent
-    # client = OpenAIAssistantAgent.create_openai_client()
-
-    # To create an OpenAIAssistantAgent for Azure OpenAI, use the following:
-    client = OpenAIAssistantAgent.create_azure_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         instructions="Answer questions about the menu.",
         name="Host",
-        tools=[{"type": "code_interpreter"}],
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent = OpenAIAssistantAgent(
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
-        plugins=[MenuPlugin()],
+        plugins=[MenuPlugin()],  # The plugins can be passed in as a list to the constructor
     )
+
+    # Note: plugins can also be configured on the Kernel and passed in as a parameter to the OpenAIAssistantAgent
 
     # Define a thread and invoke the agent with the user input
     thread = await agent.client.beta.threads.create()
 
-    user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "Thank you"]
+    user_inputs = [
+        "Hello",
+        "What is the special soup?",
+        "What is the special drink?",
+        "How much is it?",
+        "Thank you",
+    ]
+
     try:
         for user_input in user_inputs:
             await agent.add_chat_message(
@@ -85,8 +88,9 @@ async def main():
     # User: 'What is the special drink?'
     # Agent: The special drink today is Chai Tea. Would you like more information on anything else?
     # User: 'Thank you'
-    # Agent: You're welcome! If you have any more questions or need further assistance, feel free to ask. Enjoy your day!
-    """
+    # Agent: You're welcome! If you have any more questions or need further assistance, feel free to ask. 
+        Enjoy your day!
+     """
 
 
 if __name__ == "__main__":

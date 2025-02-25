@@ -3,23 +3,20 @@ import asyncio
 import os
 
 from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI and leverage the    #
-# assistant's ability to have the code interpreter work with        #
-# uploaded files.                                                   #
-#####################################################################
+"""
+The following sample demonstrates how to create an OpenAI
+assistant using either Azure OpenAI or OpenAI and leverage the
+assistant's ability to have the code interpreter work with
+uploaded files. This sample uses non-streaming responses.
+"""
 
 
 async def main():
-    # Create the OpenAI Assistant Agent
-    # client = OpenAIAssistantAgent.create_openai_client()
-
-    # To create an OpenAIAssistantAgent for Azure OpenAI, use the following:
-    client = OpenAIAssistantAgent.create_azure_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
@@ -32,17 +29,20 @@ async def main():
     with open(csv_file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
 
+    # Get the code interpreter tool and resources
+    code_interpreter_tool, code_interpreter_tool_resource = AzureAssistantAgent.configure_code_interpreter_tool(file.id)
+
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         name="FileManipulation",
         instructions="Find answers to the user's questions in the provided file.",
-        tools=[{"type": "code_interpreter"}],
-        tool_resources={"code_interpreter": {"file_ids": [file.id]}},
+        tools=code_interpreter_tool,
+        tool_resources=code_interpreter_tool_resource,
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )

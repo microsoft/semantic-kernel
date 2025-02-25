@@ -4,6 +4,8 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -54,15 +56,12 @@ class OpenAIAssistantChannel(AgentChannel):
         Yields:
             tuple[bool, ChatMessageContent]: The conversation messages.
         """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
 
-        if not isinstance(agent, OpenAIAssistantBase):
-            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantBase)}.")
+        if not isinstance(agent, OpenAIAssistantAgent):
+            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
 
-        if agent._is_deleted:
-            raise AgentChatException("Agent is deleted.")
-
-        async for is_visible, message in agent._invoke_internal(thread_id=self.thread_id, **kwargs):
+        async for is_visible, message in AssistantThreadActions.invoke(agent=agent, thread_id=self.thread_id, **kwargs):
             yield is_visible, message
 
     @override
@@ -79,15 +78,14 @@ class OpenAIAssistantChannel(AgentChannel):
         Yields:
             tuple[bool, StreamingChatMessageContent]: The conversation messages.
         """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
 
-        if not isinstance(agent, OpenAIAssistantBase):
-            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantBase)}.")
+        if not isinstance(agent, OpenAIAssistantAgent):
+            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
 
-        if agent._is_deleted:
-            raise AgentChatException("Agent is deleted.")
-
-        async for message in agent._invoke_internal_stream(thread_id=self.thread_id, messages=messages, **kwargs):
+        async for message in AssistantThreadActions.invoke_stream(
+            agent=agent, thread_id=self.thread_id, messages=messages, **kwargs
+        ):
             yield message
 
     @override

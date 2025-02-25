@@ -3,8 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel import Kernel
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
@@ -14,17 +13,10 @@ multi-modal content types to have the assistant describe images
 and answer questions about them and provide streaming responses.
 """
 
-# Create the instance of the Kernel
-kernel = Kernel()
-
-# Toggle streaming or non-streaming mode
-streaming = False
-
 
 async def main():
-    # Create the OpenAI Assistant Agent
-    # Note Azure OpenAI doesn't support vision files yet
-    client = OpenAIAssistantAgent.create_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
     file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), "resources", "cat.jpg"
@@ -35,13 +27,13 @@ async def main():
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         instructions="Answer questions about the menu.",
         name="Host",
     )
 
-    # Create the OpenAIAssistantAgent instance
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
     )
@@ -49,6 +41,7 @@ async def main():
     # Define a thread and invoke the agent with the user input
     thread = await agent.client.beta.threads.create()
 
+    # Define a series of message with either ImageContent or FileReferenceContent
     user_messages = {
         ChatMessageContent(
             role=AuthorRole.USER,
@@ -74,6 +67,7 @@ async def main():
             ],
         ),
     }
+
     try:
         for message in user_messages:
             await agent.add_chat_message(thread_id=thread.id, message=message)
@@ -87,7 +81,7 @@ async def main():
                         print("# Agent: ", end="", flush=True)
                         first_chunk = False
                     print(content.content, end="", flush=True)
-            print()
+            print("\n")
 
     finally:
         await client.files.delete(file.id)

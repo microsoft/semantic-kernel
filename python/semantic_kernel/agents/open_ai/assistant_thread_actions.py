@@ -8,8 +8,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 from openai import AsyncOpenAI
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.file_search_tool import FileSearchTool
-from openai.types.beta.threads.message import Message
-from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.run_create_params import AdditionalMessage, AdditionalMessageAttachment
 from openai.types.beta.threads.runs import (
     MessageCreationStepDetails,
@@ -38,6 +36,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 )
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentExecutionException,
@@ -51,6 +50,7 @@ if TYPE_CHECKING:
     from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
     from openai.types.beta.assistant_tool_param import AssistantToolParam
     from openai.types.beta.threads.message import Message
+    from openai.types.beta.threads.run import Run
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
     from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
@@ -133,9 +133,9 @@ class AssistantThreadActions:
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         # Run-level parameters:
-        instructions_override: str | None = None,
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
@@ -300,8 +300,8 @@ class AssistantThreadActions:
                             is_visible = True
                         elif tool_call.type == "function":
                             logger.debug(
-                                f"Entering step type tool_calls for run [{run.id}], [function] for agent `{agent.name}` "
-                                f"and thread `{thread_id}`"
+                                f"Entering step type tool_calls for run [{run.id}], [function] for agent "
+                                f"`{agent.name}` and thread `{thread_id}`"
                             )
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
@@ -346,9 +346,9 @@ class AssistantThreadActions:
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         # Run-level parameters:
-        instructions_override: str | None = None,
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         messages: list["ChatMessageContent"] | None = None,
@@ -528,7 +528,7 @@ class AssistantThreadActions:
         cls: type[_T],
         agent_name: str,
         kernel: "Kernel",
-        run: Run,
+        run: "Run",
         function_steps: dict[str, "FunctionCallContent"],
         **kwargs: Any,
     ) -> FunctionActionResult | None:
@@ -602,15 +602,13 @@ class AssistantThreadActions:
         ]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "OpenAIAssistantAgent", run: Run, thread_id: str) -> Run:
+    async def _poll_run_status(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
 
-        count = 0
-
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent, run, thread_id, count),
+                cls._poll_loop(agent, run, thread_id),
                 timeout=agent.polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
@@ -623,8 +621,9 @@ class AssistantThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "OpenAIAssistantAgent", run: Run, thread_id: str, count: int) -> Run:
+    async def _poll_loop(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
         """Internal polling loop."""
+        count = 0
         while True:
             await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
             count += 1
@@ -658,7 +657,7 @@ class AssistantThreadActions:
         """
         return {
             "model": model if model is not None else agent.definition.model,
-            "response_format": response_format if response_format is not None else agent.definition.response_format,
+            "response_format": response_format if response_format is not None else None,
             "temperature": temperature if temperature is not None else agent.definition.temperature,
             "top_p": top_p if top_p is not None else agent.definition.top_p,
             "metadata": metadata if metadata is not None else agent.definition.metadata,
@@ -713,8 +712,8 @@ class AssistantThreadActions:
             message_with_all: AdditionalMessage = {
                 "content": message.content,
                 "role": "assistant" if message.role == AuthorRole.ASSISTANT else "user",
-                "attachments": cls._get_attachments(message),
-                "metadata": cls._get_metadata(message),
+                "attachments": cls._get_attachments(message) if message.items else None,
+                "metadata": cls._get_metadata(message) if message.metadata else None,
             }
             additional_messages.append(message_with_all)
         return additional_messages
@@ -728,7 +727,8 @@ class AssistantThreadActions:
                 data_source=file_content.data_source if file_content.data_source else None,
             )
             for file_content in message.items
-            if isinstance(file_content, FileReferenceContent)
+            if isinstance(file_content, (FileReferenceContent, StreamingFileReferenceContent))
+            and file_content.file_id is not None
         ]
 
     @classmethod

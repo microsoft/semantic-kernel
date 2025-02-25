@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -37,18 +37,18 @@ class MenuPlugin:
 
 
 async def main():
-    # Create the OpenAI Assistant Agent for use with Azure OpenAI
-    client = OpenAIAssistantAgent.create_openai_client()
-    # For use with OpenAI use the following:
-    # client = OpenAIAssistantAgent.create_azure_openai_client()
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
+    # Define the assistant definition
     definition = await client.beta.assistants.create(
-        model="gpt-4o",
+        model=model,
         name="Host",
         instructions="Answer questions about the menu.",
     )
 
-    agent = OpenAIAssistantAgent(
+    # Create the AzureAssistantAgent instance using the client and the assistant definition and the defined plugin
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
         plugins=[MenuPlugin()],
@@ -66,11 +66,10 @@ async def main():
 
             first_chunk = True
             async for content in agent.invoke_stream(thread_id=thread.id):
-                if content.role != AuthorRole.TOOL:
-                    if first_chunk:
-                        print(f"# {content.role}: ", end="", flush=True)
-                        first_chunk = False
-                    print(content.content, end="", flush=True)
+                if first_chunk:
+                    print(f"# {content.role}: ", end="", flush=True)
+                    first_chunk = False
+                print(content.content, end="", flush=True)
             print()
     finally:
         await client.beta.threads.delete(thread.id)

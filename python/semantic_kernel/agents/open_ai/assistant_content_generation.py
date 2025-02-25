@@ -263,32 +263,6 @@ def generate_final_streaming_message_content(
                 )
             )
 
-    # for item_content in message.content or []:
-    #     if item_content.type == "text":
-    #         assert isinstance(item_content, TextDeltaBlock)  # nosec
-    #         if item_content.text and item_content.text.value:  # Ensure text is not None
-    #             text_value = item_content.text.value
-    #             items.append(
-    #                 StreamingTextContent(
-    #                     text=text_value,
-    #                     choice_index=item_content.index,
-    #                 )
-    #             )
-    #             # Process annotations if any
-    #             if item_content.text.annotations:
-    #                 for annotation in item_content.text.annotations or []:
-    #                     if isinstance(annotation, (FileCitationDeltaAnnotation, FilePathDeltaAnnotation)):
-    #                         items.append(generate_streaming_annotation_content(annotation))
-    #     elif item_content.type == "image_file":
-    #         assert isinstance(item_content, ImageFileDeltaBlock)  # nosec
-    #         if item_content.image_file and item_content.image_file.file_id:
-    #             file_id = item_content.image_file.file_id
-    #             items.append(
-    #                 StreamingFileReferenceContent(
-    #                     file_id=file_id,
-    #                 )
-    #             )
-
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
