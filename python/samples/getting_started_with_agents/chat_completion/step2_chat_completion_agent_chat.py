@@ -30,14 +30,29 @@ class ApprovalTerminationStrategy(TerminationStrategy):
         return "approved" in history[-1].content.lower()
 
 
+REVIEWER_NAME = "ArtDirector"
+REVIEWER_INSTRUCTIONS = """
+You are an art director who has opinions about copywriting born of a love for David Ogilvy.
+The goal is to determine if the given copy is acceptable to print.
+If so, state that it is approved.
+If not, provide insight on how to refine suggested copy without example.
+"""
+
+COPYWRITER_NAME = "CopyWriter"
+COPYWRITER_INSTRUCTIONS = """
+You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+The goal is to refine and decide on the single best copy as an expert in the field.
+Only provide a single proposal per response.
+You're laser focused on the goal at hand.
+Don't waste time with chit chat.
+Consider suggestions when refining an idea.
+"""
+
+TASK = "a slogan for a new line of electric cars."
+
+
 async def main():
-    REVIEWER_NAME = "ArtDirector"
-    REVIEWER_INSTRUCTIONS = """
-    You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-    The goal is to determine if the given copy is acceptable to print.
-    If so, state that it is approved.
-    If not, provide insight on how to refine suggested copy without example.
-    """
+    # 1. Create the reviewer agent based on the chat completion service
     agent_reviewer = ChatCompletionAgent(
         service_id="artdirector",
         kernel=_create_kernel_with_chat_completion("artdirector"),
@@ -45,15 +60,7 @@ async def main():
         instructions=REVIEWER_INSTRUCTIONS,
     )
 
-    COPYWRITER_NAME = "CopyWriter"
-    COPYWRITER_INSTRUCTIONS = """
-    You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-    The goal is to refine and decide on the single best copy as an expert in the field.
-    Only provide a single proposal per response.
-    You're laser focused on the goal at hand.
-    Don't waste time with chit chat.
-    Consider suggestions when refining an idea.
-    """
+    # 2. Create the copywriter agent based on the chat completion service
     agent_writer = ChatCompletionAgent(
         service_id="copywriter",
         kernel=_create_kernel_with_chat_completion("copywriter"),
@@ -61,6 +68,7 @@ async def main():
         instructions=COPYWRITER_INSTRUCTIONS,
     )
 
+    # 3. Place the agents in a group chat with a custom termination strategy
     group_chat = AgentGroupChat(
         agents=[
             agent_writer,
@@ -72,15 +80,20 @@ async def main():
         ),
     )
 
-    input = "a slogan for a new line of electric cars."
+    # 4. Add the task as a message to the group chat
+    await group_chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=TASK))
+    print(f"# User: {TASK}")
 
-    await group_chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
-    print(f"# User: '{input}'")
-
+    # 5. Invoke the chat
     async for content in group_chat.invoke():
-        print(f"# Agent - {content.name or '*'}: '{content.content}'")
+        print(f"# {content.name}: {content.content}")
 
-    print(f"# IS COMPLETE: {group_chat.is_complete}")
+    # Sample output:
+    # User: a slogan for a new line of electric cars.
+    # CopyWriter: "Drive the Future: Shockingly Efficient."
+    # ArtDirector: This slogan has potential but could benefit from refinement to create a stronger ...
+    # CopyWriter: "Electrify Your Drive."
+    # ArtDirector: Approved. This slogan is concise, memorable, and effectively communicates the ...
 
 
 if __name__ == "__main__":

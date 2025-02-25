@@ -44,9 +44,12 @@ Don't waste time with chit chat.
 Consider suggestions when refining an idea.
 """
 
+TASK = "a slogan for a new line of electric cars."
+
 
 async def main():
     ai_agent_settings = AzureAIAgentSettings.create()
+    assert ai_agent_settings.project_connection_string, "Please provide a valid Azure AI connection string."  # nosec
 
     async with (
         DefaultAzureCredential() as creds,
@@ -55,54 +58,57 @@ async def main():
             conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
         ) as client,
     ):
-        # Create the reviewer agent definition
+        # 1. Create the reviewer agent on the Azure AI agent service
         reviewer_agent_definition = await client.agents.create_agent(
             model=ai_agent_settings.model_deployment_name,
             name=REVIEWER_NAME,
             instructions=REVIEWER_INSTRUCTIONS,
         )
-        # Create the reviewer Azure AI Agent
+
+        # 2. Create a Semantic Kernel agent for the reviewer Azure AI agent
         agent_reviewer = AzureAIAgent(
             client=client,
             definition=reviewer_agent_definition,
         )
 
-        # Create the copy writer agent definition
+        # 3. Create the copy writer agent on the Azure AI agent service
         copy_writer_agent_definition = await client.agents.create_agent(
             model=ai_agent_settings.model_deployment_name,
             name=COPYWRITER_NAME,
             instructions=COPYWRITER_INSTRUCTIONS,
         )
-        # Create the copy writer Azure AI Agent
+
+        # 4. Create a Semantic Kernel agent for the copy writer Azure AI agent
         agent_writer = AzureAIAgent(
             client=client,
             definition=copy_writer_agent_definition,
         )
 
+        # 5. Place the agents in a group chat with a custom termination strategy
         chat = AgentGroupChat(
             agents=[agent_writer, agent_reviewer],
             termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
         )
 
-        input = "a slogan for a new line of electric cars."
-
         try:
-            await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
-            print(f"# {AuthorRole.USER}: '{input}'")
-
+            # 6. Add the task as a message to the group chat
+            await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=TASK))
+            print(f"# {AuthorRole.USER}: '{TASK}'")
+            # 7. Invoke the chat
             async for content in chat.invoke():
                 print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-
-            print(f"# IS COMPLETE: {chat.is_complete}")
-
-            print("*" * 60)
-            print("Chat History (In Descending Order):\n")
-            async for message in chat.get_chat_messages(agent=agent_reviewer):
-                print(f"# {message.role} - {message.name or '*'}: '{message.content}'")
         finally:
+            # 8. Cleanup: Delete the agents
             await chat.reset()
             await client.agents.delete_agent(agent_reviewer.id)
             await client.agents.delete_agent(agent_writer.id)
+
+        # Sample Output:
+        # AuthorRole.USER: 'a slogan for a new line of electric cars.'
+        # AuthorRole.ASSISTANT - CopyWriter: '"Charge Ahead: Drive the Future."'
+        # AuthorRole.ASSISTANT - ArtDirector: 'This slogan has a nice ring to it and captures the ...'
+        # AuthorRole.ASSISTANT - CopyWriter: '"Plug In. Drive Green."'
+        # ...
 
 
 if __name__ == "__main__":

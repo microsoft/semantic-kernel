@@ -29,10 +29,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
-from semantic_kernel.utils.telemetry.user_agent import (
-    APP_INFO,
-    SEMANTIC_KERNEL_USER_AGENT,
-)
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -56,7 +53,7 @@ class AzureAIAgent(Agent):
     definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
-    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
+    channel_type: ClassVar[type[AgentChannel] | None] = AzureAIChannel
 
     def __init__(
         self,
