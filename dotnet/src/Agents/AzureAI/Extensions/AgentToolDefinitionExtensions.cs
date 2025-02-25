@@ -14,30 +14,21 @@ internal static class AgentToolDefinitionExtensions
 {
     internal static AzureFunctionBinding GetInputBinding(this AgentToolDefinition agentToolDefinition)
     {
-        Verify.NotNull(agentToolDefinition.Configuration);
-
-        string storageServiceEndpoint = agentToolDefinition.GetRequiredConfiguration<string>("input_storage_service_endpoint");
-        string queueName = agentToolDefinition.GetRequiredConfiguration<string>("input_queue_name");
-
-        return new AzureFunctionBinding(new AzureFunctionStorageQueue(storageServiceEndpoint, queueName));
+        return agentToolDefinition.GetAzureFunctionBinding("input_binding");
     }
 
     internal static AzureFunctionBinding GetOutputBinding(this AgentToolDefinition agentToolDefinition)
     {
-        Verify.NotNull(agentToolDefinition.Configuration);
-
-        string storageServiceEndpoint = agentToolDefinition.GetRequiredConfiguration<string>("output_storage_service_endpoint");
-        string queueName = agentToolDefinition.GetRequiredConfiguration<string>("output_queue_name");
-
-        return new AzureFunctionBinding(new AzureFunctionStorageQueue(storageServiceEndpoint, queueName));
+        return agentToolDefinition.GetAzureFunctionBinding("output_binding");
     }
 
     internal static BinaryData GetParameters(this AgentToolDefinition agentToolDefinition)
     {
         Verify.NotNull(agentToolDefinition.Configuration);
 
-        var parameters = agentToolDefinition.GetConfiguration<string>("parameters");
+        var parameters = agentToolDefinition.GetConfiguration<List<object>>("parameters");
 
+        // TODO Needswork
         return parameters is not null ? new BinaryData(parameters) : s_noParams;
     }
 
@@ -75,7 +66,7 @@ internal static class AgentToolDefinitionExtensions
     {
         Verify.NotNull(agentToolDefinition.Configuration);
 
-        var specification = agentToolDefinition.GetRequiredConfiguration<string>("specification");
+        var specification = agentToolDefinition.GetRequiredConfiguration<Dictionary<object, object>>("specification");
 
         return new BinaryData(specification);
     }
@@ -85,7 +76,7 @@ internal static class AgentToolDefinitionExtensions
         Verify.NotNull(agentToolDefinition.Configuration);
 
         var connectionId = agentToolDefinition.GetConfiguration<string>("connection_id");
-        if (string.IsNullOrEmpty(connectionId))
+        if (!string.IsNullOrEmpty(connectionId))
         {
             return new OpenApiConnectionAuthDetails(new OpenApiConnectionSecurityScheme(connectionId));
         }
@@ -97,6 +88,23 @@ internal static class AgentToolDefinitionExtensions
         }
 
         return new OpenApiAnonymousAuthDetails();
+    }
+
+    private static AzureFunctionBinding GetAzureFunctionBinding(this AgentToolDefinition agentToolDefinition, string bindingType)
+    {
+        Verify.NotNull(agentToolDefinition.Configuration);
+
+        var binding = agentToolDefinition.GetRequiredConfiguration<Dictionary<object, object>>(bindingType);
+        if (!binding.TryGetValue("storage_service_endpoint", out var endpointValue) || endpointValue is not string storageServiceEndpoint)
+        {
+            throw new ArgumentException($"The configuration key '{bindingType}.storage_service_endpoint' is required.");
+        }
+        if (!binding.TryGetValue("queue_name", out var nameValue) || nameValue is not string queueName)
+        {
+            throw new ArgumentException($"The configuration key '{bindingType}.queue_name' is required.");
+        }
+
+        return new AzureFunctionBinding(new AzureFunctionStorageQueue(storageServiceEndpoint, queueName));
     }
 
     private static FileSearchRankingOptions? GetFileSearchRankingOptions(this AgentToolDefinition agentToolDefinition)
@@ -116,9 +124,9 @@ internal static class AgentToolDefinitionExtensions
     {
         Verify.NotNull(agentToolDefinition.Configuration);
 
-        var toolConnections = agentToolDefinition.GetRequiredConfiguration<IList<string>>("tool_connections");
+        var toolConnections = agentToolDefinition.GetRequiredConfiguration<List<object>>("tool_connections");
 
-        return toolConnections.Select(connectionId => new ToolConnection(connectionId)).ToList();
+        return toolConnections.Select(connectionId => new ToolConnection(connectionId.ToString())).ToList();
     }
 
     private static T GetRequiredConfiguration<T>(this AgentToolDefinition agentToolDefinition, string key)
@@ -140,7 +148,7 @@ internal static class AgentToolDefinitionExtensions
             }
             catch (InvalidCastException)
             {
-                throw new InvalidCastException($"The configuration key '{key}' must be of type '{typeof(T)}'.");
+                throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T)}' but is '{value.GetType()}'.");
             }
         }
 
@@ -159,12 +167,18 @@ internal static class AgentToolDefinitionExtensions
                 return default;
             }
 
-            return (T?)Convert.ChangeType(value, typeof(T));
+            try
+            {
+                return (T?)Convert.ChangeType(value, typeof(T));
+            }
+            catch (InvalidCastException)
+            {
+                throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.");
+            }
         }
 
         return default;
     }
 
-    private static BinaryData s_noParams = BinaryData.FromObjectAsJson(new { type = "object", properties = new { } });
-
+    private static readonly BinaryData s_noParams = BinaryData.FromObjectAsJson(new { type = "object", properties = new { } });
 }

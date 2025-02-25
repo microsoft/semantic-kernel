@@ -22,6 +22,46 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
+    public async Task AzureAIAgentWithConfigurationAsync()
+    {
+        var text =
+            $"""
+            type: azureai_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            model:
+              id: gpt-4o-mini
+              configuration:
+                connection_string: {TestConfiguration.AzureAI.ConnectionString}
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent!, "Cats and Dogs");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithKernelAsync()
+    {
+        var text =
+            """
+            type: azureai_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            model:
+              id: gpt-4o-mini
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent!, "Cats and Dogs");
+    }
+
+    [Fact]
     public async Task AzureAIAgentWithCodeInterpreterAsync()
     {
         var text =
@@ -38,9 +78,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
 
-        await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
 
     [Fact]
@@ -58,17 +98,49 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
               - type: openapi
                 name: RestCountriesAPI
                 description: Web API version 3.1 for managing country items, based on previous implementations from restcountries.eu and restcountries.com.
-                schema: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
+                specification: '{"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}'
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
 
-        await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
 
     [Fact]
-    public async Task AzureAIAgentWithLocalFunctionsAsync()
+    public async Task AzureAIAgentWithFunctionsAsync()
+    {
+        var text =
+            """
+            type: azureai_agent
+            name: RestaurantHost
+            instructions: Answer questions about the menu.
+            description: This agent answers questions about the menu.
+            model:
+              id: gpt-4o-mini
+              options:
+                temperature: 0.4
+            tools:
+              - type: function
+                name: MenuPlugin.GetSpecials
+                description: Retrieves the specials for the day.
+              - type: function
+                name: MenuPlugin.GetItemPrice
+                description: Retrieves the price of an item on the menu.
+                parameters: 
+            """;
+        AzureAIAgentFactory factory = new();
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        this._kernel.Plugins.Add(plugin);
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithFunctionsViaOptionsAsync()
     {
         var text =
             """
@@ -91,9 +163,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
 
-        await InvokeAgentAsync(agent, "What is the special soup and how much does it cost?");
+        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }
 
     #region private
@@ -102,10 +174,10 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(AzureAIAgent? agent, string input)
+    private async Task InvokeAgentAsync(AzureAIAgent agent, string input)
     {
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -114,8 +186,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
-            await this.AgentsClient.DeleteAgentAsync(agent!.Id);
+            await agent.Client.DeleteThreadAsync(thread.Id);
+            await agent.Client.DeleteAgentAsync(agent!.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

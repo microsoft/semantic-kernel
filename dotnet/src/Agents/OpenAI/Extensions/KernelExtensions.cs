@@ -35,7 +35,7 @@ internal static class KernelExtensions
         {
             if (configuration.Type is null)
             {
-                throw new InvalidOperationException("OpenAI client type was not specified.");
+                throw new InvalidOperationException("OpenAI client type must be specified.");
             }
 
             var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
@@ -46,8 +46,11 @@ internal static class KernelExtensions
             }
             else if (configuration.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
                 var endpoint = configuration.GetEndpointUri();
+                Verify.NotNull(endpoint, "Endpoint must be specified when using Azure OpenAI.");
+
+                AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
+
                 if (configuration.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
                 {
                     return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);

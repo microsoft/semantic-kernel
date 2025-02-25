@@ -11,15 +11,15 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 internal static class AgentDefinitionExtensions
 {
-    private const string AzureAISearchType = "azure_aisearch";
+    private const string AzureAISearchType = "azure_ai_search";
     private const string AzureFunctionType = "azure_function";
     private const string BingGroundingType = "bing_grounding";
     private const string CodeInterpreterType = "code_interpreter";
     private const string FileSearchType = "file_search";
-    private const string FunctionToolType = "function_tool";
-    private const string MicrosoftFabricType = "microsoft_fabric";
+    private const string FunctionType = "function";
+    private const string MicrosoftFabricType = "fabric_aiskill";
     private const string OpenApiType = "openapi";
-    private const string SharepointType = "sharepoint";
+    private const string SharepointGroundingType = "sharepoint_grounding";
 
     /// <summary>
     /// Return the Azure AI tool definitions which corresponds with the provided <see cref="AgentDefinition"/>.
@@ -37,10 +37,10 @@ internal static class AgentDefinitionExtensions
                 BingGroundingType => CreateBingGroundingToolDefinition(tool),
                 CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
                 FileSearchType => CreateFileSearchToolDefinition(tool),
-                FunctionToolType => CreateFunctionToolDefinition(tool),
+                FunctionType => CreateFunctionToolDefinition(tool),
                 MicrosoftFabricType => CreateMicrosoftFabricToolDefinition(tool),
                 OpenApiType => CreateOpenApiToolDefinition(tool),
-                SharepointType => CreateSharepointToolDefinition(tool),
+                SharepointGroundingType => CreateSharepointGroundingToolDefinition(tool),
                 _ => throw new InvalidOperationException($"Unable to created Azure AI tool definition because of known tool type: {tool.Type}"),
             };
         });
@@ -141,7 +141,7 @@ internal static class AgentDefinitionExtensions
         return new OpenApiToolDefinition(name, description, spec, auth);
     }
 
-    private static SharepointToolDefinition CreateSharepointToolDefinition(AgentToolDefinition tool)
+    private static SharepointToolDefinition CreateSharepointGroundingToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
 
