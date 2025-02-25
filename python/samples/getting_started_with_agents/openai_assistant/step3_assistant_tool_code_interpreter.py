@@ -15,7 +15,7 @@ async def main():
     # Create the client using Azure OpenAI resources and configuration
     client, model = AzureAssistantAgent.setup_resources()
 
-    # Configure the code interpreter tool and resouces for the Assistant
+    # Configure the code interpreter tool and resources for the Assistant
     code_interpreter_tool, code_interpreter_tool_resources = AzureAssistantAgent.configure_code_interpreter_tool()
 
     # Create the assistant definition

@@ -3,7 +3,6 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
-from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 
 """
@@ -71,8 +70,7 @@ async def main():
             )
             print(f"# User: '{user_input}'")
             async for content in agent.invoke(thread_id=thread.id):
-                if content.role != AuthorRole.TOOL:
-                    print(f"# Agent: {content.content}")
+                print(f"# Agent: {content.content}")
 
     finally:
         await agent.client.beta.threads.delete(thread.id)
