@@ -22,6 +22,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
     AzureCosmosDBforMongoDBCollection,
     AzureCosmosDBNoSQLCollection,
 )
+from semantic_kernel.connectors.memory.chroma.chroma import ChromaCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -182,6 +183,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
+    "chroma": lambda: ChromaCollection(data_model_type=DataModel, collection_name=collection_name),
 }
 
 
@@ -295,4 +297,5 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
+    args.collection = "chroma"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))
