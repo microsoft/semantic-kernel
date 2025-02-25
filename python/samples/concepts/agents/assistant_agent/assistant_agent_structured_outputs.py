@@ -11,7 +11,7 @@ assistant using either Azure OpenAI or OpenAI and leverage the
 assistant's ability to returned structured outputs, based on a user-defined
 Pydantic model. This could also be a non-Pydantic model. Use the convenience
 method on the OpenAIAssistantAgent class to configure the response format, 
-as shown below low.
+as shown below.
 
 Note, you may specify your own JSON Schema. You'll need to make sure it is correct
 if not using the convenience method, per the following format:
