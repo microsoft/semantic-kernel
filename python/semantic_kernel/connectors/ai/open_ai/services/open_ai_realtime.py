@@ -43,7 +43,6 @@ from openai.types.beta.realtime import (
     ResponseCancelEvent,
     ResponseCreateEvent,
     ResponseFunctionCallArgumentsDoneEvent,
-    Session,
     SessionUpdateEvent,
 )
 from openai.types.beta.realtime.response_create_event import Response
@@ -193,12 +192,16 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
     """Create an OpenAI Realtime client event from a event type and kwargs."""
     match event_type:
         case SendEvents.SESSION_UPDATE:
+            if "session" not in kwargs:
+                raise ContentException("Session is required for SessionUpdateEvent")
             return SessionUpdateEvent(
                 type=event_type,
-                session=Session.model_validate(kwargs.pop("session")),
+                session=kwargs.pop("session"),
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_APPEND:
+            if "audio" not in kwargs:
+                raise ContentException("Audio is required for InputAudioBufferAppendEvent")
             return InputAudioBufferAppendEvent(
                 type=event_type,
                 **kwargs,
@@ -214,33 +217,43 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_CREATE:
-            if "event_id" in kwargs:
-                event_id = kwargs.pop("event_id")
-            if "previous_item_id" in kwargs:
-                previous_item_id = kwargs.pop("previous_item_id")
-            event_kwargs = {"event_id": event_id} if "event_id" in kwargs else {}
-            event_kwargs.update({"previous_item_id": previous_item_id} if "previous_item_id" in kwargs else {})
+            if "item" not in kwargs:
+                raise ContentException("Item is required for ConversationItemCreateEvent")
+            event_kwargs = {}
+            event_id = kwargs.pop("event_id", None)
+            if event_id:
+                event_kwargs["event_id"] = event_id
+            previous_item_id = kwargs.pop("previous_item_id", None)
+            if previous_item_id:
+                event_kwargs["previous_item_id"] = previous_item_id
             return ConversationItemCreateEvent(
                 type=event_type,
                 item=ConversationItem.model_validate(kwargs),
                 **event_kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_TRUNCATE:
+            if "content_index" not in kwargs:
+                kwargs["content_index"] = 0
             return ConversationItemTruncateEvent(
                 type=event_type,
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_DELETE:
+            if "item_id" not in kwargs:
+                raise ContentException("Item ID is required for ConversationItemDeleteEvent")
             return ConversationItemDeleteEvent(
                 type=event_type,
                 **kwargs,
             )
         case SendEvents.RESPONSE_CREATE:
-            event_kwargs = {"event_id": kwargs.pop("event_id")} if "event_id" in kwargs else {}
+            if "response" in kwargs:
+                response: Response | None = Response.model_validate(kwargs.pop("response"))
+            else:
+                response = None
             return ResponseCreateEvent(
                 type=event_type,
-                response=Response.model_validate(kwargs),
-                **event_kwargs,
+                response=response,
+                **kwargs,
             )
         case SendEvents.RESPONSE_CANCEL:
             return ResponseCancelEvent(
