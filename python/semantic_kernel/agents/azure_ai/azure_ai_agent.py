@@ -186,7 +186,7 @@ class AzureAIAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "model": model,
@@ -246,7 +246,7 @@ class AzureAIAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "model": model,

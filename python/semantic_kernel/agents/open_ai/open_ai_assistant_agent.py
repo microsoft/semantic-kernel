@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncIterable, Iterable
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
@@ -45,8 +45,6 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-_T = TypeVar("_T", bound="OpenAIAssistantAgent")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -95,7 +93,7 @@ class OpenAIAssistantAgent(Agent):
         args: dict[str, Any] = {
             "client": client,
             "definition": definition,
-            "name": definition.name or f"azure_agent_{generate_random_ascii_name(length=8)}",
+            "name": definition.name or f"assistant_agent_{generate_random_ascii_name(length=8)}",
             "description": definition.description,
         }
 
@@ -153,9 +151,8 @@ class OpenAIAssistantAgent(Agent):
                 self.kernel.add_plugin(plugin, plugin_name=name)
         return self
 
-    @classmethod
+    @staticmethod
     def setup_resources(
-        cls: type[_T],
         *,
         api_key: str | None = None,
         org_id: str | None = None,
@@ -215,9 +212,9 @@ class OpenAIAssistantAgent(Agent):
 
     # region Tool Handling
 
-    @classmethod
+    @staticmethod
     def configure_code_interpreter_tool(
-        cls: type[_T], file_ids: str | list[str] | None = None, **kwargs: Any
+        file_ids: str | list[str] | None = None, **kwargs: Any
     ) -> tuple[list["CodeInterpreterToolParam"], ToolResources]:
         """Generate tool + tool_resources for the code_interpreter."""
         if isinstance(file_ids, str):
@@ -228,9 +225,9 @@ class OpenAIAssistantAgent(Agent):
             resources["code_interpreter"] = ToolResourcesCodeInterpreter(file_ids=file_ids)
         return [tool], resources
 
-    @classmethod
+    @staticmethod
     def configure_file_search_tool(
-        cls: type[_T], vector_store_ids: str | list[str], **kwargs: Any
+        vector_store_ids: str | list[str], **kwargs: Any
     ) -> tuple[list[FileSearchToolParam], ToolResources]:
         """Generate tool + tool_resources for the file_search."""
         if isinstance(vector_store_ids, str):
@@ -242,9 +239,8 @@ class OpenAIAssistantAgent(Agent):
         resources: ToolResources = {"file_search": ToolResourcesFileSearch(vector_store_ids=vector_store_ids, **kwargs)}  # type: ignore
         return [tool], resources
 
-    @classmethod
+    @staticmethod
     def configure_response_format(
-        cls: type[_T],
         response_format: dict[Literal["type"], Literal["text", "json_object"]]
         | dict[str, Any]
         | type[BaseModel]
@@ -443,7 +439,7 @@ class OpenAIAssistantAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "additional_instructions": additional_instructions,
@@ -530,7 +526,7 @@ class OpenAIAssistantAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "additional_instructions": additional_instructions,
