@@ -119,6 +119,7 @@ internal sealed class FunctionCallsProcessor
     /// Processes AI function calls by iterating over the function calls, invoking them and adding the results to the chat history.
     /// </summary>
     /// <param name="chatMessageContent">The chat message content representing AI model response and containing function calls.</param>
+    /// <param name="executionSettings">The prompt execution settings.</param>
     /// <param name="chatHistory">The chat history to add function invocation results to.</param>
     /// <param name="requestIndex">AI model function(s) call request sequence index.</param>
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
@@ -129,6 +130,7 @@ internal sealed class FunctionCallsProcessor
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
         ChatMessageContent chatMessageContent,
+        PromptExecutionSettings? executionSettings,
         ChatHistory chatHistory,
         int requestIndex,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
@@ -177,7 +179,8 @@ internal sealed class FunctionCallsProcessor
                     FunctionCount = functionCalls.Length,
                     CancellationToken = cancellationToken,
                     IsStreaming = isStreaming,
-                    ToolCallId = functionCall.Id
+                    ToolCallId = functionCall.Id,
+                    ExecutionSettings = executionSettings
                 };
 
             s_inflightAutoInvokes.Value++;
