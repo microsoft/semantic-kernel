@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import AsyncIterable
+from collections.abc import AsyncIterable
 from unittest.mock import MagicMock, patch
 
 import pytest
