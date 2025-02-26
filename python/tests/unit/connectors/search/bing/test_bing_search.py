@@ -21,6 +21,31 @@ def bing_search(bing_unit_test_env):
     return BingSearch()
 
 
+@pytest.fixture
+def async_client_mock():
+    """Set up the fixture to mock AsyncClient."""
+    async_client_mock = AsyncMock()
+    with patch(
+        "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
+    ):
+        yield async_client_mock
+
+
+@pytest.fixture
+def mock_bing_search_response():
+    """Set up the fixture to mock BingSearchResponse."""
+    mock_web_page = BingWebPage(name="Page Name", snippet="Page Snippet", url="test")
+    mock_response = BingSearchResponse(
+        query_context={},
+        webPages=MagicMock(spec=BingWebPages, value=[mock_web_page], total_estimated_matches=3),
+    )
+
+    with (
+        patch.object(BingSearchResponse, "model_validate_json", return_value=mock_response),
+    ):
+        yield mock_response
+
+
 async def test_bing_search_init_success(bing_search):
     """Test that BingSearch initializes successfully with valid env."""
     assert bing_search is not None
@@ -34,7 +59,7 @@ async def test_bing_search_init_validation_error():
     assert "Failed to create Bing settings." in str(exc_info.value)
 
 
-async def test_search_success(bing_unit_test_env):
+async def test_search_success(bing_unit_test_env, async_client_mock):
     """Test that search method returns KernelSearchResults successfully on valid response."""
     # Arrange
     mock_web_pages = BingWebPage(snippet="Test snippet")
@@ -43,7 +68,6 @@ async def test_search_success(bing_unit_test_env):
         query_context={"alteredQuery": "altered something"},
     )
 
-    async_client_mock = AsyncMock()
     mock_result = MagicMock()
     mock_result.text = """
 {"webPages": {
@@ -55,7 +79,6 @@ async def test_search_success(bing_unit_test_env):
 
     # Act
     with (
-        patch("semantic_kernel.connectors.search.bing.bing_search.AsyncClient", return_value=async_client_mock),
         patch.object(BingSearchResponse, "model_validate_json", return_value=mock_response),
     ):
         search_instance = BingSearch()
@@ -73,10 +96,9 @@ async def test_search_success(bing_unit_test_env):
     assert kernel_results.metadata == {"altered_query": "altered something"}
 
 
-async def test_search_http_status_error(bing_unit_test_env):
+async def test_search_http_status_error(bing_unit_test_env, async_client_mock):
     """Test that search method raises ServiceInvalidRequestError on HTTPStatusError."""
     # Arrange
-    async_client_mock = AsyncMock()
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
         "Error", request=MagicMock(), response=MagicMock()
@@ -84,48 +106,38 @@ async def test_search_http_status_error(bing_unit_test_env):
     async_client_mock.get.return_value = mock_response
 
     # Act
-    with patch(
-        "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-    ):
-        search_instance = BingSearch()
-        # Assert
-        with pytest.raises(ServiceInvalidRequestError) as exc_info:
-            await search_instance.search("Test query")
-        assert "Failed to get search results." in str(exc_info.value)
+    search_instance = BingSearch()
+
+    # Assert
+    with pytest.raises(ServiceInvalidRequestError) as exc_info:
+        await search_instance.search("Test query")
+    assert "Failed to get search results." in str(exc_info.value)
 
 
-async def test_search_request_error(bing_unit_test_env):
+async def test_search_request_error(bing_unit_test_env, async_client_mock):
     """Test that search method raises ServiceInvalidRequestError on RequestError."""
     # Arrange
-    async_client_mock = AsyncMock()
     async_client_mock.get.side_effect = httpx.RequestError("Client error")
 
     # Act
-    with patch(
-        "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-    ):
-        search_instance = BingSearch()
-        # Assert
-        with pytest.raises(ServiceInvalidRequestError) as exc_info:
-            await search_instance.search("Test query")
-        assert "A client error occurred while getting search results." in str(exc_info.value)
+    search_instance = BingSearch()
+
+    # Assert
+    with pytest.raises(ServiceInvalidRequestError) as exc_info:
+        await search_instance.search("Test query")
+    assert "A client error occurred while getting search results." in str(exc_info.value)
 
 
-async def test_search_generic_exception(bing_unit_test_env):
+async def test_search_generic_exception(bing_unit_test_env, async_client_mock):
     """Test that search method raises ServiceInvalidRequestError on unexpected exception."""
     # Arrange
-    async_client_mock = AsyncMock()
     async_client_mock.get.side_effect = Exception("Something unexpected")
 
-    # Act
-    with patch(
-        "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-    ):
-        search_instance = BingSearch()
-        # Assert
-        with pytest.raises(ServiceInvalidRequestError) as exc_info:
-            await search_instance.search("Test query")
-        assert "An unexpected error occurred while getting search results." in str(exc_info.value)
+    search_instance = BingSearch()
+    # Assert
+    with pytest.raises(ServiceInvalidRequestError) as exc_info:
+        await search_instance.search("Test query")
+    assert "An unexpected error occurred while getting search results." in str(exc_info.value)
 
 
 async def test_validate_options_raises_error_for_large_top(bing_search):
@@ -135,11 +147,11 @@ async def test_validate_options_raises_error_for_large_top(bing_search):
 
     # Act / Assert
     with pytest.raises(ServiceInvalidRequestError) as exc_info:
-        await bing_search._inner_search("test", options)
+        await bing_search.search("test", options)
     assert "count value must be less than 50." in str(exc_info.value)
 
 
-async def test_get_text_search_results_success(bing_unit_test_env):
+async def test_get_text_search_results_success(bing_unit_test_env, async_client_mock):
     """Test that get_text_search_results returns KernelSearchResults[TextSearchResult]."""
     # Arrange
     mock_web_pages = BingWebPage(name="Result Name", snippet="Snippet", url="test")
@@ -148,7 +160,6 @@ async def test_get_text_search_results_success(bing_unit_test_env):
         webPages=MagicMock(spec=BingWebPages, value=[mock_web_pages], total_estimated_matches=5),
     )
 
-    async_client_mock = AsyncMock()
     mock_result = MagicMock()
     mock_result.text = """"
 {"webPages": {
@@ -161,9 +172,6 @@ async def test_get_text_search_results_success(bing_unit_test_env):
 
     # Act
     with (
-        patch(
-            "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-        ),
         patch.object(BingSearchResponse, "model_validate_json", return_value=mock_response),
     ):
         search_instance = BingSearch()
@@ -185,16 +193,9 @@ async def test_get_text_search_results_success(bing_unit_test_env):
     assert kernel_results.total_count == 5
 
 
-async def test_get_search_results_success(bing_unit_test_env):
+async def test_get_search_results_success(bing_unit_test_env, async_client_mock, mock_bing_search_response):
     """Test that get_search_results returns KernelSearchResults[BingWebPage]."""
     # Arrange
-    mock_web_page = BingWebPage(name="Page Name", snippet="Page Snippet", url="test")
-    mock_response = BingSearchResponse(
-        query_context={},
-        webPages=MagicMock(spec=BingWebPages, value=[mock_web_page], total_estimated_matches=3),
-    )
-
-    async_client_mock = AsyncMock()
     mock_result = MagicMock()
     mock_result.text = """
 {"webPages": {
@@ -205,15 +206,9 @@ async def test_get_search_results_success(bing_unit_test_env):
     async_client_mock.get.return_value = mock_result
 
     # Act
-    with (
-        patch(
-            "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-        ),
-        patch.object(BingSearchResponse, "model_validate_json", return_value=mock_response),
-    ):
-        search_instance = BingSearch()
-        options = TextSearchOptions(include_total_count=True)
-        kernel_results = await search_instance.get_search_results("Another query", options)
+    search_instance = BingSearch()
+    options = TextSearchOptions(include_total_count=True)
+    kernel_results = await search_instance.get_search_results("Another query", options)
 
     # Assert
     results_list = []
@@ -228,32 +223,37 @@ async def test_get_search_results_success(bing_unit_test_env):
     assert kernel_results.total_count == 3
 
 
-async def test_build_request_parameters_no_filter(bing_search):
-    """Test that _build_request_parameters properly sets params when no filter is provided."""
+async def test_search_no_filter(bing_search, async_client_mock, mock_bing_search_response):
+    """Test that search properly sets params when no filter is provided."""
     # Arrange
     options = TextSearchOptions()
 
     # Act
-    params = bing_search._build_request_parameters("test query", options)
+    await bing_search.search("test query", options)
 
     # Assert
+    params = async_client_mock.get.call_args.kwargs["params"]
+
     assert params["count"] == options.top
     assert params["offset"] == options.skip
+
     # TODO: shouldn't this output be "test query" instead of "test query+"?
     assert params["q"] == "test query+"
 
 
-async def test_build_request_parameters_equal_to_filter(bing_search):
-    """Test that _build_request_parameters properly sets params with an EqualTo filter."""
+async def test_search_equal_to_filter(bing_search, async_client_mock, mock_bing_search_response):
+    """Test that search properly sets params with an EqualTo filter."""
 
     # Arrange
     my_filter = TextSearchFilter.equal_to(field_name="freshness", value="Day")
     options = TextSearchOptions(filter=my_filter)
 
     # Act
-    params = bing_search._build_request_parameters("test query", options)
+    await bing_search.search("test query", options)
 
     # Assert
+    params = async_client_mock.get.call_args.kwargs["params"]
+
     assert params["count"] == options.top
     assert params["offset"] == options.skip
     # 'freshness' is recognized in QUERY_PARAMETERS, so 'freshness' should be set
@@ -263,8 +263,8 @@ async def test_build_request_parameters_equal_to_filter(bing_search):
     assert params["q"] == "test query+".strip()
 
 
-async def test_build_request_parameters_not_recognized_filter(bing_search):
-    """Test that _build_request_parameters properly appends non-recognized filters to the q parameter."""
+async def test_search_not_recognized_filter(bing_search, async_client_mock, mock_bing_search_response):
+    """Test that search properly appends non-recognized filters to the q parameter."""
 
     # Arrange
     # 'customProperty' is presumably not in QUERY_PARAMETERS
@@ -272,9 +272,10 @@ async def test_build_request_parameters_not_recognized_filter(bing_search):
     options = TextSearchOptions(filter=my_filter)
 
     # Act
-    params = bing_search._build_request_parameters("test query", options)
+    await bing_search.search("test query", options)
 
     # Assert
+    params = async_client_mock.get.call_args.kwargs["params"]
     assert params["count"] == options.top
     assert params["offset"] == options.skip
     assert "customProperty" not in params
