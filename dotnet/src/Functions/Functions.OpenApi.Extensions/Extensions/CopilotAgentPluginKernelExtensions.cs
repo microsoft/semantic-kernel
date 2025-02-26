@@ -178,7 +178,7 @@ public static class CopilotAgentPluginKernelExtensions
                 }
                 string frameworkDescription = RuntimeInformation.FrameworkDescription;
                 string osDescription = RuntimeInformation.OSDescription;
-                string copilotAgentPluginVersion = "0.5.0"; // TODO: version this correctly
+                string copilotAgentPluginVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(CopilotAgentPluginKernelExtensions));
                 var defaultHeaders = new Dictionary<string, string>
                 {
                     // TODO: version and format updates
