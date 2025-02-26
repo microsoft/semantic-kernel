@@ -172,10 +172,7 @@ public static class CopilotAgentPluginKernelExtensions
                     "canary.graph.microsoft.com",
                     "graph.microsoft-ppe.com"
                 };
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                var isGraphHost = graphAllowedHosts.Contains(options.ApiHostUrl.Host);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-                if (!isGraphHost)
+                if (string.IsNullOrEmpty(options?.ApiHostUrl?.Host) || !graphAllowedHosts.Contains(options.ApiHostUrl.Host))
                 {
                     return null;
                 }
