@@ -172,7 +172,7 @@ public static class CopilotAgentPluginKernelExtensions
                     "canary.graph.microsoft.com",
                     "graph.microsoft-ppe.com"
                 };
-                if (string.IsNullOrEmpty(options?.ApiHostUrl?.Host) || !graphAllowedHosts.Contains(options.ApiHostUrl.Host))
+                if (options?.ApiHostUrl?.Host is not { } hostString || !graphAllowedHosts.Contains(hostString))
                 {
                     return null;
                 }
