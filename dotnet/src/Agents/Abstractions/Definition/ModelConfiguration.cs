@@ -19,28 +19,12 @@ public sealed class ModelConfiguration
     /// Used to identify the type of deployment e.g., azure_openai, openai, ...
     /// This type will also be used for configuration hosting.
     /// </remarks>
-    public string? Type
-    {
-        get => this._type;
-        set
-        {
-            Verify.NotNull(value);
-            this._type = value;
-        }
-    }
+    public string? Type { get; set; }
 
     /// <summary>
     /// Gets or sets the Service ID of the model configuration.
     /// </summary>
-    public string? ServiceId
-    {
-        get => this._serviceId;
-        set
-        {
-            Verify.NotNull(value);
-            this._serviceId = value;
-        }
-    }
+    public string? ServiceId { get; set; }
 
     /// <summary>
     /// Extra properties that may be included in the serialized model configuration.
@@ -60,8 +44,6 @@ public sealed class ModelConfiguration
     }
 
     #region private
-    private string? _type;
-    private string? _serviceId;
     private IDictionary<string, object?>? _extensionData;
     #endregion
 }

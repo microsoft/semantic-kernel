@@ -18,28 +18,12 @@ public sealed class AgentToolDefinition
     /// <remarks>
     /// Used to identify which type of tool is being used e.g., code interpreter, openapi, ...
     /// </remarks>
-    public string? Type
-    {
-        get => this._type;
-        set
-        {
-            Verify.NotNull(value);
-            this._type = value;
-        }
-    }
+    public string? Type { get; set; }
 
     /// <summary>
     /// The name of the tool.
     /// </summary>
-    public string? Name
-    {
-        get => this._name;
-        set
-        {
-            Verify.NotNull(value);
-            this._name = value;
-        }
-    }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for the tool.
@@ -48,19 +32,5 @@ public sealed class AgentToolDefinition
     /// Used to store tool specific configuration e.g., files associated with the tool, etc.
     /// </remarks>
     [JsonExtensionData]
-    public IDictionary<string, object?>? Configuration
-    {
-        get => this._configuration;
-        set
-        {
-            Verify.NotNull(value);
-            this._configuration = value;
-        }
-    }
-
-    #region private
-    private string? _type;
-    private string? _name;
-    private IDictionary<string, object?>? _configuration;
-    #endregion
+    public IDictionary<string, object?>? Configuration { get; set; }
 }

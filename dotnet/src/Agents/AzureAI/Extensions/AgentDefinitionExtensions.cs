@@ -18,7 +18,7 @@ internal static class AgentDefinitionExtensions
     /// <exception cref="InvalidOperationException"></exception>
     public static IEnumerable<ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition)
     {
-        return agentDefinition.Tools.Select<AgentToolDefinition, ToolDefinition>(tool =>
+        return agentDefinition.Tools?.Select<AgentToolDefinition, ToolDefinition>(tool =>
         {
             return tool.Type switch
             {
@@ -26,7 +26,7 @@ internal static class AgentDefinitionExtensions
                 "file_search" => new FileSearchToolDefinition(),
                 _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unsupported tool type: {tool.Type}"),
             };
-        });
+        }) ?? [];
     }
 
     /// <summary>
