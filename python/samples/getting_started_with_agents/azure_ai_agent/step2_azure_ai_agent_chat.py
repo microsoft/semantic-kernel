@@ -7,15 +7,13 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.agents import AgentGroupChat
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI, a chat completion  #
-# agent and have them participate in a group chat to work towards   #
-# the user's requirement.                                           #
-#####################################################################
+"""
+The following sample demonstrates how to create an OpenAI assistant using either
+Azure OpenAI or OpenAI, a chat completion agent and have them participate in a
+group chat to work towards the user's requirement.
+"""
 
 
 class ApprovalTerminationStrategy(TerminationStrategy):
@@ -49,14 +47,10 @@ TASK = "a slogan for a new line of electric cars."
 
 async def main():
     ai_agent_settings = AzureAIAgentSettings.create()
-    assert ai_agent_settings.project_connection_string, "Please provide a valid Azure AI connection string."  # nosec
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create the reviewer agent on the Azure AI agent service
         reviewer_agent_definition = await client.agents.create_agent(
@@ -92,7 +86,7 @@ async def main():
 
         try:
             # 6. Add the task as a message to the group chat
-            await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=TASK))
+            await chat.add_chat_message(message=TASK)
             print(f"# {AuthorRole.USER}: '{TASK}'")
             # 7. Invoke the chat
             async for content in chat.invoke():
@@ -103,12 +97,14 @@ async def main():
             await client.agents.delete_agent(agent_reviewer.id)
             await client.agents.delete_agent(agent_writer.id)
 
-        # Sample Output:
+        """
+        Sample Output:
         # AuthorRole.USER: 'a slogan for a new line of electric cars.'
         # AuthorRole.ASSISTANT - CopyWriter: '"Charge Ahead: Drive the Future."'
         # AuthorRole.ASSISTANT - ArtDirector: 'This slogan has a nice ring to it and captures the ...'
         # AuthorRole.ASSISTANT - CopyWriter: '"Plug In. Drive Green."'
-        # ...
+        ...
+        """
 
 
 if __name__ == "__main__":

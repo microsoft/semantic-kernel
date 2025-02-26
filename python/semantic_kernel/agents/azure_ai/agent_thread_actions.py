@@ -46,6 +46,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
     merge_function_results,
 )
+from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -56,7 +57,7 @@ if TYPE_CHECKING:
     from azure.ai.projects.aio import AIProjectClient
 
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
-    from semantic_kernel.contents import ChatHistory, ChatMessageContent
+    from semantic_kernel.contents import ChatHistory
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AgentThreadActions")
@@ -590,7 +591,7 @@ class AgentThreadActions:
         cls: type[_T],
         client: "AIProjectClient",
         thread_id: str,
-        message: "ChatMessageContent",
+        message: "str | ChatMessageContent",
         **kwargs: Any,
     ) -> "ThreadMessage | None":
         """Create a message in the thread.
@@ -604,6 +605,9 @@ class AgentThreadActions:
         Returns:
             The created message.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
         if any(isinstance(item, FunctionCallContent) for item in message.items):
             return None
 

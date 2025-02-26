@@ -6,28 +6,22 @@ from azure.ai.projects.models import CodeInterpreterTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# Azure AI agent that uses the code interpreter tool to answer    #
-# a coding question.                                              #
-###################################################################
+"""
+The following sample demonstrates how to create a simple, Azure AI agent that
+uses the code interpreter tool to answer a coding question.
+"""
 
 TASK = "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101."
 
 
 async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings.create()
-    assert ai_agent_settings.project_connection_string, "Please provide a valid Azure AI connection string."  # nosec
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create an agent with a code interpreter on the Azure AI agent service
         code_interpreter = CodeInterpreterTool()
@@ -48,9 +42,7 @@ async def main() -> None:
 
         try:
             # 4. Add the task as a chat message
-            await agent.add_chat_message(
-                thread_id=thread.id, message=ChatMessageContent(role=AuthorRole.USER, content=TASK)
-            )
+            await agent.add_chat_message(thread_id=thread.id, message=TASK)
             print(f"# User: '{TASK}'")
             # 5. Invoke the agent for the specified thread for response
             async for content in agent.invoke(thread_id=thread.id):
@@ -61,33 +53,35 @@ async def main() -> None:
             await client.agents.delete_thread(thread.id)
             await client.agents.delete_agent(agent.id)
 
-        # Sample Output:
+        """
+        Sample Output:
         # User: 'Use code to determine the values in the Fibonacci sequence that that are less then the value of 101.'
         # Agent: # Function to generate Fibonacci sequence values less than a given limit
-        # def fibonacci_less_than(limit):
-        #     fib_sequence = []
-        #     a, b = 0, 1
-        #     while a < limit:
-        #         fib_sequence.append(a)
-        #         a, b = b, a + b
-        #     a, b = 0, 1
-        #     while a < limit:
-        #         fib_sequence.append(a)
-        #     a, b = 0, 1
-        #     while a < limit:
-        #     a, b = 0, 1
-        #     a, b = 0, 1
-        #     while a < limit:
-        #         fib_sequence.append(a)
-        #         a, b = b, a + b
-        #     return fib_sequence
-        #
-        # Generate Fibonacci sequence values less than 101
-        # fibonacci_values = fibonacci_less_than(101)
-        # fibonacci_values
+        def fibonacci_less_than(limit):
+            fib_sequence = []
+            a, b = 0, 1
+            while a < limit:
+                fib_sequence.append(a)
+                a, b = b, a + b
+            a, b = 0, 1
+            while a < limit:
+                fib_sequence.append(a)
+            a, b = 0, 1
+            while a < limit:
+            a, b = 0, 1
+            a, b = 0, 1
+            while a < limit:
+                fib_sequence.append(a)
+                a, b = b, a + b
+            return fib_sequence
+        
+        Generate Fibonacci sequence values less than 101
+        fibonacci_values = fibonacci_less_than(101)
+        fibonacci_values
         # Agent: The values in the Fibonacci sequence that are less than 101 are:
-        #
-        # \[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89\]
+        
+        [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+        """
 
 
 if __name__ == "__main__":

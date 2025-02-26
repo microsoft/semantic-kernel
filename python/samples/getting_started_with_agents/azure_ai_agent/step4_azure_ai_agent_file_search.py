@@ -7,14 +7,12 @@ from azure.ai.projects.models import FileSearchTool, OpenAIFile, VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# Azure AI agent that uses a file search tool to answer user      #
-# questions.                                                      #
-###################################################################
+"""
+The following sample demonstrates how to create a simple, Azure AI agent that
+uses a file search tool to answer user questions.
+"""
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
@@ -26,14 +24,10 @@ USER_INPUTS = [
 
 async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings.create()
-    assert ai_agent_settings.project_connection_string, "Please provide a valid Azure AI connection string."  # nosec
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Read and upload the file to the Azure AI agent service
         pdf_file_path = os.path.join(
@@ -66,9 +60,7 @@ async def main() -> None:
         try:
             for user_input in USER_INPUTS:
                 # 6. Add the user input as a chat message
-                await agent.add_chat_message(
-                    thread_id=thread.id, message=ChatMessageContent(role=AuthorRole.USER, content=user_input)
-                )
+                await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: '{user_input}'")
                 # 7. Invoke the agent for the specified thread for response
                 async for content in agent.invoke(thread_id=thread.id):
@@ -79,10 +71,12 @@ async def main() -> None:
             await client.agents.delete_thread(thread.id)
             await client.agents.delete_agent(agent.id)
 
-        # Sample Output:
+        """
+        Sample Output:
         # User: 'Who is the youngest employee?'
         # Agent: The youngest employee is Teodor Britton, who is an accountant and was born on January 9, 1997...
         # User: 'Who works in sales?'
+        """
 
 
 if __name__ == "__main__":

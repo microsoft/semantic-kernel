@@ -19,9 +19,11 @@ from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
+from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.kernel import Kernel
@@ -122,7 +124,10 @@ class AzureAIAgent(Agent):
 
     @classmethod
     def create_client(
-        cls: type[_T], credential: "DefaultAzureCredential", conn_str: str, **kwargs: Any
+        cls: type[_T],
+        credential: "DefaultAzureCredential",
+        conn_str: str | None = None,
+        **kwargs: Any,
     ) -> AIProjectClient:
         """Create the Azure AI Project client using the connection string.
 
@@ -134,6 +139,12 @@ class AzureAIAgent(Agent):
         Returns:
             AIProjectClient: The Azure AI Project client
         """
+        if conn_str is None:
+            ai_agent_settings = AzureAIAgentSettings.create()
+            if not ai_agent_settings.project_connection_string:
+                raise AgentInitializationException("Please provide a valid Azure AI connection string.")
+            conn_str = ai_agent_settings.project_connection_string.get_secret_value()
+
         return AIProjectClient.from_connection_string(
             credential=credential,
             conn_str=conn_str,
@@ -141,7 +152,7 @@ class AzureAIAgent(Agent):
             **kwargs,
         )
 
-    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "ThreadMessage | None":
+    async def add_chat_message(self, thread_id: str, message: "str | ChatMessageContent") -> "ThreadMessage | None":
         """Add a chat message to the thread.
 
         Args:

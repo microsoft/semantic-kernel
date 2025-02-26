@@ -12,11 +12,10 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.functions import KernelArguments, kernel_function
 
-###################################################################
-# The following sample demonstrates how to create a chat          #
-# completion agent that answers questions about a sample menu     #
-# using a Semantic Kernel Plugin.                                 #
-###################################################################
+"""
+The following sample demonstrates how to create a chat completion agent that
+answers questions about a sample menu using a Semantic Kernel Plugin.
+"""
 
 
 # Define a sample plugin for the sample
@@ -86,7 +85,8 @@ async def main():
                 print(f"{content.content}", end="", flush=True)
         print("")
 
-    # Sample output:
+    """
+    Sample output:
     # User: Hello
     # Host: Hello! How can I assist you today?
     # User: What is the special soup?
@@ -95,6 +95,7 @@ async def main():
     # Host: The special soup, Clam Chowder, costs $9.99.
     # User: Thank you
     # Host: You're welcome! If you have any more questions, feel free to ask. Enjoy your day!
+    """
 
 
 if __name__ == "__main__":

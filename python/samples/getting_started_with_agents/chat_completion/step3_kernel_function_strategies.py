@@ -6,18 +6,15 @@ from semantic_kernel import Kernel
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies import KernelFunctionSelectionStrategy, KernelFunctionTerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.functions import KernelFunctionFromPrompt
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# agent group chat that utilizes An Art Director Chat Completion  #
-# Agent along with a Copy Writer Chat Completion Agent to         #
-# complete a task. The sample also shows how to specify a Kernel  #
-# Function termination and selection strategy to determine when   #
-# to end the chat or how to select the next agent to take a turn  #
-# in the conversation.                                            #
-###################################################################
+"""
+The following sample demonstrates how to create a simple, agent group chat that utilizes
+An Art Director Chat Completion Agent along with a Copy Writer Chat Completion Agent to
+complete a task. The sample also shows how to specify a Kernel Function termination and
+selection strategy to determine when to end the chat or how to select the next agent to
+take a turn in the conversation.
+"""
 
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
@@ -118,19 +115,21 @@ async def main():
     )
 
     # 6. Add the task as a message to the group chat
-    await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=TASK))
+    await chat.add_chat_message(message=TASK)
     print(f"# User: {TASK}")
 
     # 7. Invoke the chat
     async for content in chat.invoke():
         print(f"# {content.name}: {content.content}")
 
-    # Sample Output:
+    """
+    Sample Output:
     # User: a slogan for a new line of electric cars.
     # CopyWriter: "Electrify your drive. Spare the gas, not the thrill."
     # ArtDirector: This slogan captures the essence of electric cars but could use refinement to ...
     # CopyWriter: "Go electric. Enjoy the thrill. Skip the gas."
     # ArtDirector: Approved. This slogan is clear, concise, and effectively communicates the ...
+    """
 
 
 if __name__ == "__main__":

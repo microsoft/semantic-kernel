@@ -8,16 +8,14 @@ from semantic_kernel import Kernel
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
-###################################################################
-# The following sample demonstrates how to configure an Agent     #
-# Group Chat, and invoke an agent with only a single turn.        #
-# A custom termination strategy is provided where the model is    #
-# to rate the user input on creativity and expressiveness         #
-# and end the chat when a score of 70 or higher is provided.      #
-###################################################################
+"""
+The following sample demonstrates how to configure an Agent Group Chat, and invoke an
+agent with only a single turn.A custom termination strategy is provided where the model
+is to rate the user input on creativity and expressiveness and end the chat when a score
+of 70 or higher is provided.
+"""
 
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
@@ -83,20 +81,22 @@ async def main():
 
     for user_input in USER_INPUTS:
         # 5. Add the user input to the chat history
-        await group_chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=user_input))
+        await group_chat.add_chat_message(message=user_input)
         print(f"# User: {user_input}")
 
         # 6. Invoke the chat with the agent for a response
         async for content in group_chat.invoke_single_turn(agent):
             print(f"# {content.name}: {content.content}")
 
-    # Sample output:
+    """
+    Sample output:
     # User: The sunset is very colorful.
     # Tutor: {"score":45,"notes":"The sentence 'The sunset is very colorful' is simple and direct. While it ..."}
     # User: The sunset is setting over the mountains.
     # Tutor: {"score":50,"notes":"This sentence provides a basic scene of a sunset over mountains, which ..."}
     # User: The sunset is setting over the mountains and fills the sky with a deep red flame, setting the clouds ablaze.
     # Tutor: {"score":75,"notes":"This sentence demonstrates improved creativity and expressiveness by ..."}
+    """
 
 
 if __name__ == "__main__":
