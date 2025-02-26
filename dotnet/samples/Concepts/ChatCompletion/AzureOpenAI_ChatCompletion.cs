@@ -11,10 +11,17 @@ namespace ChatCompletion;
 // The following example shows how to use Semantic Kernel with Azure OpenAI API
 public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Sample showing how to use <see cref="Kernel"/> with chat completion and chat prompt syntax.
+    /// </summary>
     [Fact]
     public async Task ChatPromptAsync()
     {
-        Assert.NotNull(TestConfiguration.Ollama.ModelId);
+        Console.WriteLine("======== Azure Open AI - Chat Completion ========");
+
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
 
         StringBuilder chatPrompt = new("""
                                        <message role="system">You are a librarian, expert about books</message>
@@ -39,10 +46,17 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
         Console.WriteLine(reply);
     }
 
+    /// <summary>
+    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/>.
+    /// </summary>
     [Fact]
     public async Task ServicePromptAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion ========");
+
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -61,6 +75,9 @@ public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(out
     public async Task DefaultAzureCredentialSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
+
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,

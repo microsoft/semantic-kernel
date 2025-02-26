@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
-using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -12,12 +11,17 @@ namespace ChatCompletion;
 // The following example shows how to use Semantic Kernel with Azure OpenAI API
 public class AzureOpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Sample showing how to use <see cref="Kernel"/> with chat completion and chat prompt syntax.
+    /// </summary>
     [Fact]
     public async Task ChatPromptWithReasoningAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion with Reasoning ========");
 
-        Assert.NotNull(TestConfiguration.AzureOpenAI.ModelId);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -33,16 +37,15 @@ public class AzureOpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) 
             // Flags Azure SDK to use the new token property.
             SetNewMaxCompletionTokensEnabled = true,
             MaxTokens = 2000,
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             // Note: reasoning effort is only available for reasoning models (at this moment o3-mini & o1 models)
-            ReasoningEffort = ChatReasoningEffortLevel.High
+            ReasoningEffort = ChatReasoningEffortLevel.Low
         };
 
         // Create KernelArguments using the execution settings.
         var kernelArgs = new KernelArguments(executionSettings);
 
         StringBuilder chatPrompt = new("""
-                                   <message role="system">You are an expert software engineer, specialized in the Semantic Kernel SDK and NET framework</message>
+                                   <message role="developer">You are an expert software engineer, specialized in the Semantic Kernel SDK and NET framework</message>
                                    <message role="user">Hi, Please craft me an example code in .NET using Semantic Kernel that implements a chat loop .</message>
                                    """);
 
@@ -53,34 +56,36 @@ public class AzureOpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) 
     }
 
     /// <summary>
-    /// Sample showing how to use Azure Open AI Chat Completion with Azure Default Credential.
-    /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
+    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/>.
     /// </summary>
     [Fact]
-    public async Task DefaultAzureCredentialSampleAsync()
+    public async Task ServicePromptWithReasoningAsync()
     {
         Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential with Reasoning ========");
+
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ChatDeploymentName);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.Endpoint);
+        Assert.NotNull(TestConfiguration.AzureOpenAI.ApiKey);
 
         IChatCompletionService chatCompletionService = new AzureOpenAIChatCompletionService(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-            credentials: new DefaultAzureCredential(),
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         // Create execution settings with high reasoning effort.
-        var executionSettings = new AzureOpenAIPromptExecutionSettings //OpenAIPromptExecutionSettings
+        var executionSettings = new AzureOpenAIPromptExecutionSettings
         {
             // Flags Azure SDK to use the new token property.
             SetNewMaxCompletionTokensEnabled = true,
             MaxTokens = 2000,
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             // Note: reasoning effort is only available for reasoning models (at this moment o3-mini & o1 models)
-            ReasoningEffort = ChatReasoningEffortLevel.High
+            ReasoningEffort = ChatReasoningEffortLevel.Low
         };
 
         // Create a ChatHistory and add messages.
         var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage(
+        chatHistory.AddDeveloperMessage(
             "You are an expert software engineer, specialized in the Semantic Kernel SDK and .NET framework.");
         chatHistory.AddUserMessage(
             "Hi, Please craft me an example code in .NET using Semantic Kernel that implements a chat loop.");
