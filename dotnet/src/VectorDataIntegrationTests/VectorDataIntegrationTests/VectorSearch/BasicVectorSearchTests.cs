@@ -42,6 +42,8 @@ public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
     public virtual Task ManhattanDistance()
         => this.SimpleSearch(DistanceFunction.ManhattanDistance, 0, 2, 3, [0, 1, 2]);
 
+    protected virtual string? IndexKind => null;
+
     protected async Task SimpleSearch(string distanceFunction, double expectedExactMatchScore,
         double expectedOppositeScore, double expectedOrthogonalScore, int[] resultOrder)
     {
@@ -79,9 +81,11 @@ public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
         // so we need a dedicated collection per test.
         string uniqueCollectionName = Guid.NewGuid().ToString();
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
-            uniqueCollectionName, GetRecordDefinition(distanceFunction));
+            uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
         await collection.CreateCollectionAsync();
+
+        await collection.CreateCollectionIfNotExistsAsync(); // just to make sure it's idempotent
 
         try
         {
@@ -91,13 +95,13 @@ public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
             var results = await searchResult.Results.ToListAsync();
             VerifySearchResults(resultOrder, scoreDictionary, records, results, includeVectors: false);
 
-            searchResult = await collection.VectorizedSearchAsync(baseVector, new() { IncludeVectors = true});
+            searchResult = await collection.VectorizedSearchAsync(baseVector, new() { IncludeVectors = true });
             results = await searchResult.Results.ToListAsync();
             VerifySearchResults(resultOrder, scoreDictionary, records, results, includeVectors: true);
         }
         finally
         {
-            collection.DeleteCollectionAsync();
+            await collection.DeleteCollectionAsync();
         }
 
         static void VerifySearchResults(int[] resultOrder, double[] scoreDictionary, List<SearchRecord> records,
@@ -107,6 +111,8 @@ public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
             for (int i = 0; i < results.Count; i++)
             {
                 Assert.Equal(records[resultOrder[i]].Key, results[i].Record.Key);
+                Assert.Equal(records[resultOrder[i]].Int, results[i].Record.Int);
+                Assert.Equal(records[resultOrder[i]].String, results[i].Record.String);
                 Assert.Equal(Math.Round(scoreDictionary[resultOrder[i]], 2), Math.Round(results[i].Score!.Value, 2));
 
                 if (includeVectors)
@@ -131,6 +137,7 @@ public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
                 {
                     Dimensions = 4,
                     DistanceFunction = distanceFunction,
+                    IndexKind = this.IndexKind
                 },
                 new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsFilterable = true },

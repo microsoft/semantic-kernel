@@ -14,8 +14,10 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// An implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
-public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
-    where TKey : notnull
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
+public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
+#pragma warning restore CA1711
+    : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
 {
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
     private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();

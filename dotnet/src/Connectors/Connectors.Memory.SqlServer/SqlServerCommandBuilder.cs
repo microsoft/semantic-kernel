@@ -30,6 +30,7 @@ internal static class SqlServerCommandBuilder
             sb.AppendTableName(schema, tableName);
             sb.AppendLine("', N'U') IS NULL");
         }
+        sb.AppendLine("BEGIN");
         sb.Append("CREATE TABLE ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
@@ -49,7 +50,21 @@ internal static class SqlServerCommandBuilder
         }
         sb.AppendFormat("PRIMARY KEY NONCLUSTERED ([{0}])", keyColumnName);
         sb.AppendLine();
-        sb.Append(')'); // end the table definition
+        sb.AppendLine(");"); // end the table definition
+
+        foreach (var vectorProperty in vectorProperties)
+        {
+            switch (vectorProperty.IndexKind)
+            {
+                case null:
+                case "":
+                case IndexKind.Flat:
+                    break;
+                default:
+                    throw new NotSupportedException($"Index kind {vectorProperty.IndexKind} is not supported.");
+            }
+        }
+        sb.Append("END;");
 
         return connection.CreateCommand(sb);
     }
@@ -311,17 +326,7 @@ internal static class SqlServerCommandBuilder
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
-        (string distanceMetric, string sorting) = distanceFunction switch
-        {
-            // A value of 0 indicates that the vectors are identical in direction (cosine similarity of 1),
-            // while a value of 1 indicates that the vectors are orthogonal (cosine similarity of 0).
-            DistanceFunction.CosineDistance => ("cosine", "ASC"),
-            // A value of 0 indicates that the vectors are identical, while larger values indicate greater dissimilarity.
-            DistanceFunction.EuclideanDistance => ("euclidean", "ASC"),
-            // A value closer to 0 indicates higher similarity, while more negative values indicate greater dissimilarity.
-            DistanceFunction.NegativeDotProductSimilarity => ("dot", "DESC"),
-            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
-        };
+        (string distanceMetric, string sorting) = MapDistanceFunction(distanceFunction);
 
         SqlCommand command = connection.CreateCommand();
         command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(vector));
@@ -519,4 +524,16 @@ internal static class SqlServerCommandBuilder
             _ => throw new NotSupportedException($"Type {type} is not supported.")
         };
     }
+
+    private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch
+    {
+        // A value of 0 indicates that the vectors are identical in direction (cosine similarity of 1),
+        // while a value of 1 indicates that the vectors are orthogonal (cosine similarity of 0).
+        DistanceFunction.CosineDistance => ("COSINE", "ASC"),
+        // A value of 0 indicates that the vectors are identical, while larger values indicate greater dissimilarity.
+        DistanceFunction.EuclideanDistance => ("EUCLIDEAN", "ASC"),
+        // A value closer to 0 indicates higher similarity, while more negative values indicate greater dissimilarity.
+        DistanceFunction.NegativeDotProductSimilarity => ("DOT", "DESC"),
+        _ => throw new NotSupportedException($"Distance function {name} is not supported.")
+    };
 }

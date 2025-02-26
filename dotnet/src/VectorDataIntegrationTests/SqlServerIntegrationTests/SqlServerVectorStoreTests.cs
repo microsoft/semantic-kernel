@@ -5,23 +5,21 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using SqlServerIntegrationTests.Support;
+using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
 namespace SqlServerIntegrationTests;
 
-public class SqlServerVectorStoreTests
+public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture<SqlServerFixture>
 {
     // this test may be once executed by multiple users against a shared db instance
     private static string GetUniqueCollectionName() => Guid.NewGuid().ToString();
 
-    [Fact]
+    [ConditionalFact]
     public async Task CollectionCRUD()
     {
         string collectionName = GetUniqueCollectionName();
-        SqlServerTestStore testStore = new();
-
-        await testStore.ReferenceCountingStartAsync();
-
+        var testStore = fixture.TestStore;
         var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
@@ -47,19 +45,14 @@ public class SqlServerVectorStoreTests
         finally
         {
             await collection.DeleteCollectionAsync();
-
-            await testStore.ReferenceCountingStopAsync();
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task RecordCRUD()
     {
         string collectionName = GetUniqueCollectionName();
-        SqlServerTestStore testStore = new();
-
-        await testStore.ReferenceCountingStartAsync();
-
+        var testStore = fixture.TestStore;
         var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
@@ -112,19 +105,14 @@ public class SqlServerVectorStoreTests
         finally
         {
             await collection.DeleteCollectionAsync();
-
-            await testStore.ReferenceCountingStopAsync();
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task WrongModels()
     {
         string collectionName = GetUniqueCollectionName();
-        SqlServerTestStore testStore = new();
-
-        await testStore.ReferenceCountingStartAsync();
-
+        var testStore = fixture.TestStore;
         var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
@@ -160,12 +148,10 @@ public class SqlServerVectorStoreTests
         finally
         {
             await collection.DeleteCollectionAsync();
-
-            await testStore.ReferenceCountingStopAsync();
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task CustomMapper()
     {
         string collectionName = GetUniqueCollectionName();
@@ -218,14 +204,11 @@ public class SqlServerVectorStoreTests
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task BatchCRUD()
     {
         string collectionName = GetUniqueCollectionName();
-        SqlServerTestStore testStore = new();
-
-        await testStore.ReferenceCountingStartAsync();
-
+        var testStore = fixture.TestStore;
         var collection = testStore.DefaultVectorStore.GetCollection<string, TestModel>(collectionName);
 
         try
@@ -277,8 +260,6 @@ public class SqlServerVectorStoreTests
         finally
         {
             await collection.DeleteCollectionAsync();
-
-            await testStore.ReferenceCountingStopAsync();
         }
     }
 
@@ -339,22 +320,19 @@ public class SqlServerVectorStoreTests
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
-    [Fact]
+    [ConditionalFact]
     public Task CanUseFancyModels_Int() => this.CanUseFancyModels<int>();
 
-    [Fact]
+    [ConditionalFact]
     public Task CanUseFancyModels_Long() => this.CanUseFancyModels<long>();
 
-    [Fact]
+    [ConditionalFact]
     public Task CanUseFancyModels_Guid() => this.CanUseFancyModels<Guid>();
 
     private async Task CanUseFancyModels<TKey>() where TKey : notnull
     {
         string collectionName = GetUniqueCollectionName();
-        SqlServerTestStore testStore = new();
-
-        await testStore.ReferenceCountingStartAsync();
-
+        var testStore = fixture.TestStore;
         var collection = testStore.DefaultVectorStore.GetCollection<TKey, FancyTestModel<TKey>>(collectionName);
 
         try
@@ -396,8 +374,6 @@ public class SqlServerVectorStoreTests
         finally
         {
             await collection.DeleteCollectionAsync();
-
-            await testStore.ReferenceCountingStopAsync();
         }
 
         void AssertEquality(FancyTestModel<TKey> expected, FancyTestModel<TKey>? received, TKey expectedKey)

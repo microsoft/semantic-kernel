@@ -128,13 +128,15 @@ public class SqlServerCommandBuilderTests
 
         string expectedCommand =
         """
+        BEGIN
         CREATE TABLE [schema].[table] (
         [id] BIGINT IDENTITY(1,1),
         [simpleName] NVARCHAR(255) COLLATE Latin1_General_100_BIN2,
         [with space] INT,
         [embedding] VECTOR(10),
         PRIMARY KEY NONCLUSTERED ([id])
-        )
+        );
+        END;
         """;
         if (ifNotExists)
         {

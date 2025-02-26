@@ -74,7 +74,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         var createIndexCommands =
             PostgresVectorStoreRecordPropertyMapping.GetVectorIndexInfo(properties)
                 .Select(index =>
-                    this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function)
+                    this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function, ifNotExists)
                 );
 
         // Execute the commands in a transaction.

@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -63,13 +62,13 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     // This is the only method used by the default mapper.
     public object? this[string key]
     {
-        get => this.Unwrap(key, _sqlDataReader[key]);
+        get => this.Unwrap(key, this._sqlDataReader[key]);
         set => throw new InvalidOperationException();
     }
 
-    public ICollection<string> Keys => GetDictionary().Keys;
+    public ICollection<string> Keys => this.GetDictionary().Keys;
 
-    public ICollection<object?> Values => GetDictionary().Values;
+    public ICollection<object?> Values => this.GetDictionary().Values;
 
     public int Count => this._sqlDataReader.FieldCount;
 
@@ -82,7 +81,7 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     public void Clear() => throw new InvalidOperationException();
 
     public bool Contains(KeyValuePair<string, object?> item)
-        => TryGetValue(item.Key, out var value) && Equals(value, item.Value);
+        => this.TryGetValue(item.Key, out var value) && Equals(value, item.Value);
 
     public bool ContainsKey(string key)
     {
@@ -97,13 +96,13 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     }
 
     public void CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
-        => ((ICollection<KeyValuePair<string, object?>>)GetDictionary()).CopyTo(array, arrayIndex);
+        => ((ICollection<KeyValuePair<string, object?>>)this.GetDictionary()).CopyTo(array, arrayIndex);
 
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
-        => GetDictionary().GetEnumerator();
+        => this.GetDictionary().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => GetDictionary().GetEnumerator();
+        => this.GetDictionary().GetEnumerator();
 
     public bool Remove(string key) => throw new InvalidOperationException();
 
