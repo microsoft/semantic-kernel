@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -422,7 +421,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         public IDictionary<string, object?> MapFromDataToStorageModel(TestModel dataModel)
         {
-            MapFromDataToStorageModel_WasCalled = true;
+            this.MapFromDataToStorageModel_WasCalled = true;
 
             return new Dictionary<string, object?>()
             {
@@ -436,7 +435,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         public TestModel MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
         {
-            MapFromStorageToDataModel_WasCalled = true;
+            this.MapFromStorageToDataModel_WasCalled = true;
 
             return new()
             {

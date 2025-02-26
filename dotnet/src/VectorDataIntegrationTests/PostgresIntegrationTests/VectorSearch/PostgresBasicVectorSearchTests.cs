@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using PostgresIntegrationTests.Support;
-using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.VectorSearch;
 using Xunit;
 

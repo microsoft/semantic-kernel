@@ -7,7 +7,7 @@ using VectorDataSpecificationTests.Support;
 
 namespace SqlServerIntegrationTests.Support;
 
-public sealed class SqlServerTestStore : TestStore
+public sealed class SqlServerTestStore : TestStore, IDisposable
 {
     public static readonly SqlServerTestStore Instance = new();
 
@@ -18,16 +18,19 @@ public sealed class SqlServerTestStore : TestStore
 
     private SqlServerVectorStore? _connectedStore;
 
-    protected override async Task StartAsync()
+    protected override Task StartAsync()
     {
         if (string.IsNullOrWhiteSpace(SqlServerTestEnvironment.ConnectionString))
         {
             throw new InvalidOperationException("Connection string is not configured, set the SqlServer:ConnectionString environment variable");
         }
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
         SqlConnection connection = new(SqlServerTestEnvironment.ConnectionString);
-        await connection.OpenAsync();
-
+#pragma warning restore CA2000 // Dispose objects before losing scope
         this._connectedStore = new(connection);
+        return connection.OpenAsync();
     }
+
+    public void Dispose() => this._connectedStore?.Dispose();
 }
