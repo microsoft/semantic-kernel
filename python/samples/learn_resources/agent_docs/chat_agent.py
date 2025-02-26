@@ -6,10 +6,10 @@ import sys
 from datetime import datetime
 
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 # Adjust the sys.path so we can use the GitHubPlugin and GitHubSettings classes
@@ -19,11 +19,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from plugins.GithubPlugin.github import GitHubPlugin, GitHubSettings  # noqa: E402
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# ChatCompletionAgent to use a GitHub plugin to interact          #
-# with the GitHub API.                                            #
-###################################################################
+"""
+The following sample demonstrates how to create a simple,
+ChatCompletionAgent to use a GitHub plugin to interact
+with the GitHub API.
+
+This is the full code sample for the Semantic Kernel Learn Site: How-To: Chat Completion Agent
+
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/examples/example-chat-agent?pivots=programming-language-python
+"""
 
 
 async def main():

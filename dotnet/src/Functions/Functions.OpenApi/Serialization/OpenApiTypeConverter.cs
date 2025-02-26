@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Json.Schema;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -13,19 +14,20 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal static class OpenApiTypeConverter
 {
     /// <summary>
-    /// Converts the given parameter argument to a JsonNode based on the specified type.
+    /// Converts the given parameter argument to a JsonNode based on the specified type or schema.
     /// </summary>
     /// <param name="name">The parameter name.</param>
     /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
+    /// <param name="schema">The parameter schema.</param>
     /// <returns>A JsonNode representing the converted value.</returns>
-    public static JsonNode Convert(string name, string type, object argument)
+    public static JsonNode Convert(string name, string type, object argument, KernelJsonSchema? schema = null)
     {
         Verify.NotNull(argument);
 
         try
         {
-            JsonNode? converter = type switch
+            JsonNode? node = type switch
             {
                 "string" => JsonValue.Create(argument),
                 "array" => argument switch
@@ -52,10 +54,12 @@ internal static class OpenApiTypeConverter
                     byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => JsonValue.Create(argument),
                     _ => null
                 },
-                _ => throw new NotSupportedException($"Unexpected type '{type}' of parameter '{name}' with argument '{argument}'."),
+                _ => schema is null
+                    ? JsonSerializer.SerializeToNode(argument)
+                    : ValidateSchemaAndConvert(name, schema, argument)
             };
 
-            return converter ?? throw new ArgumentOutOfRangeException(name, argument, $"Argument type '{argument.GetType()}' is not convertible to parameter type '{type}'.");
+            return node ?? throw new ArgumentOutOfRangeException(name, argument, $"Argument type '{argument.GetType()}' is not convertible to parameter type '{type}'.");
         }
         catch (ArgumentException ex)
         {
@@ -65,5 +69,26 @@ internal static class OpenApiTypeConverter
         {
             throw new ArgumentOutOfRangeException(name, argument, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Validates the argument against the parameter schema and converts it to a JsonNode if valid.
+    /// </summary>
+    /// <param name="parameterName">The parameter name.</param>
+    /// <param name="parameterSchema">The parameter schema.</param>
+    /// <param name="argument">The argument to be validated and converted.</param>
+    /// <returns>A JsonNode representing the converted value.</returns>
+    private static JsonNode? ValidateSchemaAndConvert(string parameterName, KernelJsonSchema parameterSchema, object argument)
+    {
+        var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(parameterSchema));
+
+        var node = JsonSerializer.SerializeToNode(argument);
+
+        if (jsonSchema.Evaluate(node).IsValid)
+        {
+            return node;
+        }
+
+        throw new ArgumentOutOfRangeException(parameterName, argument, $"Argument type '{argument.GetType()}' does not match the schema.");
     }
 }

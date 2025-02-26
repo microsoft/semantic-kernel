@@ -85,7 +85,7 @@ class Agent(KernelBaseModel):
             )
         return await self.prompt_template.render(kernel, arguments)
 
-    def merge_arguments(self, override_args: KernelArguments | None) -> KernelArguments:
+    def _merge_arguments(self, override_args: KernelArguments | None) -> KernelArguments:
         """Merge the arguments with the override arguments.
 
         Args:

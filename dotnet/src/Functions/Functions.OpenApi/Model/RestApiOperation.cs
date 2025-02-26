@@ -170,7 +170,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             //Serializing the parameter and adding it to the headers.
             headers.Add(parameter.Name, serializer.Invoke(parameter, node));
@@ -206,7 +206,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             // Serializing the parameter and adding it to the query string if there's an argument for it.
             segments.Add(serializer.Invoke(parameter, node));
@@ -274,7 +274,7 @@ public sealed class RestApiOperation
                 throw new KernelException($"The path parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
 
             // Serializing the parameter and adding it to the path.
             pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));

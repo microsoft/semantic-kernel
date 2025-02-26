@@ -2,13 +2,15 @@
 
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using System.ComponentModel;
 using System.Net;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace ChatCompletion;
 
@@ -30,23 +32,33 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
     [Fact]
     public async Task FallbackToAvailableModelAsync()
     {
-        // Create an unavailable chat client that fails with 503 Service Unavailable HTTP status code
-        IChatClient unavailableChatClient = CreateUnavailableOpenAIChatClient();
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
-        // Create a cloud available chat client
-        IChatClient availableChatClient = CreateAzureOpenAIChatClient();
+        // Create and register an unavailable chat client that fails with 503 Service Unavailable HTTP status code
+        kernelBuilder.Services.AddSingleton<IChatClient>(CreateUnavailableOpenAIChatClient());
 
-        // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
-        IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
+        // Create and register a cloud available chat client
+        kernelBuilder.Services.AddSingleton<IChatClient>(CreateAzureOpenAIChatClient());
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
+        // Create and register fallback chat client that will fallback to the available chat client when unavailable chat client fails
+        kernelBuilder.Services.AddSingleton<IChatCompletionService>((sp) =>
+        {
+            IEnumerable<IChatClient> chatClients = sp.GetServices<IChatClient>();
 
-        var result = await fallbackChatClient.GetResponseAsync("Do I need an umbrella?", chatOptions);
+            return new FallbackChatClient(chatClients.ToList()).AsChatCompletionService();
+        });
+
+        Kernel kernel = kernelBuilder.Build();
+        kernel.ImportPluginFromFunctions("Weather", [KernelFunctionFactory.CreateFromMethod(() => "It's sunny", "GetWeather")]);
+
+        AzureOpenAIPromptExecutionSettings settings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        FunctionResult result = await kernel.InvokePromptAsync("Do I need an umbrella?", new(settings));
 
         Output.WriteLine(result);
-
-        [Description("Gets the weather")]
-        string GetWeather() => "It's sunny";
     }
 
     /// <summary>
@@ -62,19 +74,22 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
         IChatClient availableChatClient = CreateAzureOpenAIChatClient();
 
         // Create a fallback chat client that will fallback to the available chat client when unavailable chat client fails
-        IChatClient fallbackChatClient = new FallbackChatClient([unavailableChatClient, availableChatClient]);
+        IChatCompletionService fallbackCompletionService = new FallbackChatClient([unavailableChatClient, availableChatClient]).AsChatCompletionService();
 
-        ChatOptions chatOptions = new() { Tools = [AIFunctionFactory.Create(GetWeather)] };
+        Kernel kernel = new();
+        kernel.ImportPluginFromFunctions("Weather", [KernelFunctionFactory.CreateFromMethod(() => "It's sunny", "GetWeather")]);
 
-        var result = fallbackChatClient.GetStreamingResponseAsync("Do I need an umbrella?", chatOptions);
+        AzureOpenAIPromptExecutionSettings settings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        IAsyncEnumerable<StreamingChatMessageContent> result = fallbackCompletionService.GetStreamingChatMessageContentsAsync("Do I need an umbrella?", settings, kernel);
 
         await foreach (var update in result)
         {
             Output.WriteLine(update);
         }
-
-        [Description("Gets the weather")]
-        string GetWeather() => "It's sunny";
     }
 
     private static IChatClient CreateUnavailableOpenAIChatClient()

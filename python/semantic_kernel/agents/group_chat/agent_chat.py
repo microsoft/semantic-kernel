@@ -97,8 +97,11 @@ class AgentChat(KernelBaseModel):
 
         return hash_value
 
-    async def add_chat_message(self, message: ChatMessageContent) -> None:
+    async def add_chat_message(self, message: str | ChatMessageContent) -> None:
         """Add a chat message."""
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
         await self.add_chat_messages([message])
 
     async def add_chat_messages(self, messages: list[ChatMessageContent]) -> None:
