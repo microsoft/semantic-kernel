@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Helper methods for creating <see cref="AgentDefinition"/> from YAML.
 /// </summary>
+[Experimental("SKEXP0110")]
 public static class AgentDefinitionYaml
 {
     /// <summary>
