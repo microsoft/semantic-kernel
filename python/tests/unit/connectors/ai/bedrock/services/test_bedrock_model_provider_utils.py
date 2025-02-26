@@ -9,10 +9,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     BedrockModelProvider,
 )
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
-    _format_assistant_message,
-    _format_system_message,
-    _format_tool_message,
-    _format_user_message,
+    MESSAGE_CONVERTERS,
     finish_reason_from_bedrock_to_semantic_kernel,
     format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
@@ -216,7 +213,7 @@ def test_remove_none_recursively_max_depth() -> None:
 def test_format_system_message() -> None:
     """Test that system message is formatted correctly."""
     content = ChatMessageContent(role=AuthorRole.SYSTEM, content="System message")
-    formatted = _format_system_message(content)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.SYSTEM](content)
     assert formatted == {"text": "System message"}
 
 
@@ -225,7 +222,7 @@ def test_format_user_message_text_only() -> None:
     text_item = TextContent(text="Hello!")
     user_message = ChatMessageContent(role=AuthorRole.USER, items=[text_item])
 
-    formatted = _format_user_message(user_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.USER](user_message)
     assert formatted["role"] == "user"
     assert len(formatted["content"]) == 1
     assert formatted["content"][0] == {"text": "Hello!"}
@@ -236,7 +233,7 @@ def test_format_user_message_image_only() -> None:
     img_item = ImageContent(data=b"abc", mime_type="image/png")
     user_message = ChatMessageContent(role=AuthorRole.USER, items=[img_item])
 
-    formatted = _format_user_message(user_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.USER](user_message)
     assert formatted["role"] == "user"
     assert len(formatted["content"]) == 1
     image_section = formatted["content"][0].get("image")
@@ -251,7 +248,7 @@ def test_format_user_message_unsupported_content() -> None:
     user_message = ChatMessageContent(role=AuthorRole.USER, items=[func_call_item])
 
     with pytest.raises(ServiceInvalidRequestError) as exc:
-        _format_user_message(user_message)
+        MESSAGE_CONVERTERS[AuthorRole.USER](user_message)
 
     assert "Only text and image content are supported in a user message." in str(exc.value)
 
@@ -261,7 +258,7 @@ def test_format_assistant_message_text_content() -> None:
     text_item = TextContent(text="Assistant response")
     assistant_message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[text_item])
 
-    formatted = _format_assistant_message(assistant_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.ASSISTANT](assistant_message)
     assert formatted["role"] == "assistant"
     assert formatted["content"] == [{"text": "Assistant response"}]
 
@@ -273,7 +270,7 @@ def test_format_assistant_message_function_call_content() -> None:
     )
     assistant_message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[func_item])
 
-    formatted = _format_assistant_message(assistant_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.ASSISTANT](assistant_message)
     assert len(formatted["content"]) == 1
     tool_use = formatted["content"][0].get("toolUse")
     assert tool_use
@@ -288,7 +285,7 @@ def test_format_assistant_message_image_content_raises() -> None:
     assistant_message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[img_item])
 
     with pytest.raises(ServiceInvalidRequestError) as exc:
-        _format_assistant_message(assistant_message)
+        MESSAGE_CONVERTERS[AuthorRole.ASSISTANT](assistant_message)
 
     assert "Image content is not supported in an assistant message." in str(exc.value)
 
@@ -299,7 +296,7 @@ def test_format_assistant_message_unsupported_type() -> None:
     assistant_message = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[func_res_item])
 
     with pytest.raises(ServiceInvalidRequestError) as exc:
-        _format_assistant_message(assistant_message)
+        MESSAGE_CONVERTERS[AuthorRole.ASSISTANT](assistant_message)
     assert "Unsupported content type in an assistant message:" in str(exc.value)
 
 
@@ -308,7 +305,7 @@ def test_format_tool_message_text() -> None:
     text_item = TextContent(text="Some text")
     tool_message = ChatMessageContent(role=AuthorRole.TOOL, items=[text_item])
 
-    formatted = _format_tool_message(tool_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.TOOL](tool_message)
     assert formatted["role"] == "user"  # note that for a tool message, role set to 'user'
     assert formatted["content"] == [{"text": "Some text"}]
 
@@ -318,7 +315,7 @@ def test_format_tool_message_function_result() -> None:
     func_result_item = FunctionResultContent(id="res_id", function_name="test_function", result="some result")
     tool_message = ChatMessageContent(role=AuthorRole.TOOL, items=[func_result_item])
 
-    formatted = _format_tool_message(tool_message)
+    formatted = MESSAGE_CONVERTERS[AuthorRole.TOOL](tool_message)
     assert formatted["role"] == "user"
     content = formatted["content"][0]
     assert content.get("toolResult")
@@ -332,7 +329,7 @@ def test_format_tool_message_image_raises() -> None:
     tool_message = ChatMessageContent(role=AuthorRole.TOOL, items=[img_item])
 
     with pytest.raises(ServiceInvalidRequestError) as exc:
-        _format_tool_message(tool_message)
+        MESSAGE_CONVERTERS[AuthorRole.TOOL](tool_message)
     assert "Image content is not supported in a tool message." in str(exc.value)
 
 
