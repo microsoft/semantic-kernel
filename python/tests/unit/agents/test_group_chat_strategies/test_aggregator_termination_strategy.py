@@ -2,33 +2,13 @@
 
 from unittest.mock import AsyncMock, MagicMock
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies.termination.aggregator_termination_strategy import (
     AggregateTerminationCondition,
     AggregatorTerminationStrategy,
 )
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-
-
-class MockAgent(Agent):
-    """A mock agent for testing purposes."""
-
-    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
-        args = {
-            "name": name,
-            "description": description,
-        }
-        if id is not None:
-            args["id"] = id
-        super().__init__(**args)
-
-    def get_channel_keys(self) -> list[str]:
-        return ["key1", "key2"]
-
-    async def create_channel(self) -> AgentChannel:
-        return AsyncMock(spec=AgentChannel)
+from tests.unit.agents.test_agent import MockAgent
 
 
 async def test_aggregate_termination_condition_all_true():

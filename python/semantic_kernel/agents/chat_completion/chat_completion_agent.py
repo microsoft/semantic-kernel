@@ -158,7 +158,8 @@ class ChatCompletionAgent(Agent):
         Returns:
             An async iterable of ChatMessageContent.
         """
-        return await self._inner_invoke(history, arguments, kernel, **kwargs)
+        async for response in self._inner_invoke(history, arguments, kernel, **kwargs):
+            yield response
 
     @trace_agent_invocation
     @override

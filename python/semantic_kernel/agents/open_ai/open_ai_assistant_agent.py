@@ -477,7 +477,7 @@ class OpenAIAssistantAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
-            if is_visible and message.metadata.get("code"):
+            if is_visible and message.metadata.get("code") is not True:
                 messages.append(message)
 
         if not messages:

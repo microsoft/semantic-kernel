@@ -28,6 +28,7 @@ from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActi
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
@@ -46,7 +47,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from azure.identity.aio import DefaultAzureCredential
 
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 AgentsApiResponseFormatOption = (
     str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
@@ -151,7 +151,7 @@ class AzureAIAgent(Agent):
             **kwargs,
         )
 
-    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "ThreadMessage | None":
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "ThreadMessage | None":
         """Add a chat message to the thread.
 
         Args:
@@ -194,7 +194,7 @@ class AzureAIAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "model": model,
@@ -221,7 +221,7 @@ class AzureAIAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
-            if is_visible and message.metadata.get("code"):
+            if is_visible and message.metadata.get("code") is not True:
                 messages.append(message)
 
         if not messages:
@@ -293,7 +293,7 @@ class AzureAIAgent(Agent):
     async def invoke_stream(
         self,
         thread_id: str,
-        messages: list["ChatMessageContent"] | None = None,
+        messages: list[ChatMessageContent] | None = None,
         kernel: Kernel | None = None,
         arguments: KernelArguments | None = None,
         # Run-level parameters:

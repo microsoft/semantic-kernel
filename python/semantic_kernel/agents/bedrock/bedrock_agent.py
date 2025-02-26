@@ -380,6 +380,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 if trace_metadata:
                     chat_message_content.metadata.update({"trace": trace_metadata})
 
+                if not chat_message_content:
+                    raise AgentInvokeException("No response from the agent.")
+
                 return chat_message_content
 
         raise AgentInvokeException(
