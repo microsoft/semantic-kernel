@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.ChatCompletion;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
