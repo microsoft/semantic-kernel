@@ -4,8 +4,6 @@ import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -15,6 +13,7 @@ from openai import AsyncOpenAI
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
+from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
