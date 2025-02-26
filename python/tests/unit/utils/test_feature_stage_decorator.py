@@ -71,24 +71,32 @@ def test_function_experimental_decorator_with_no_doc_string():
 
 
 def test_function_release_candidate_decorator():
-    "Note: This function is marked as 'release_candidate'" in my_function_release_candidate_no_doc_string.__doc__
-    assert hasattr(my_function_release_candidate, "is_release_candidate")
-    assert my_function_release_candidate.is_release_candidate is True
-
-
-def test_function_release_candidate_decorator_and_version():
-    assert my_function_release_candidate_with_version.__doc__ == (
-        "This is a sample function docstring.\n\nNote: This "
-        "function is marked as 'release_candidate' (Version: 1.0.0-rc2) and may change in the future."
+    assert (
+        "Features marked with this status are nearing completion and are considered"
+        in my_function_release_candidate_no_doc_string.__doc__
     )
     assert hasattr(my_function_release_candidate, "is_release_candidate")
     assert my_function_release_candidate.is_release_candidate is True
+    assert "Version:" in my_function_release_candidate_no_doc_string.__doc__
+
+
+def test_function_release_candidate_decorator_and_version():
+    assert (
+        "Features marked with this status are nearing completion and are considered"
+        in my_function_release_candidate_with_version.__doc__
+    )
+    assert hasattr(my_function_release_candidate, "is_release_candidate")
+    assert my_function_release_candidate.is_release_candidate is True
+    assert "Version:" in my_function_release_candidate_with_version.__doc__
 
 
 def test_function_release_candidate_decorator_with_no_doc_string():
-    "Note: This function is marked as 'release_candidate'" in my_function_release_candidate_no_doc_string.__doc__
+    assert (
+        "Features marked with this status are nearing completion" in my_function_release_candidate_no_doc_string.__doc__
+    )
     assert hasattr(my_function_release_candidate_no_doc_string, "is_release_candidate")
     assert my_function_release_candidate_no_doc_string.is_release_candidate is True
+    assert "Version:" in my_function_release_candidate_no_doc_string.__doc__
 
 
 def test_class_experimental_decorator():
@@ -101,20 +109,16 @@ def test_class_experimental_decorator():
 
 
 def test_class_release_candidate_decorator():
-    assert (
-        "A class that is nearly final, but still in release-candidate "
-        "stage.\n\nNote: This class is marked as 'release_candidate'"
-    ) in MyRCClass.__doc__
+    assert "Features marked with this status are nearing completion" in MyRCClass.__doc__
     assert hasattr(MyRCClass, "is_release_candidate")
     assert MyRCClass.is_release_candidate is True
+    assert "Version:" in MyRCClass.__doc__
 
 
 def test_class_release_candidate_decorator_with_version():
-    assert (
-        "A class that is nearly final, but still in release-candidate "
-        "stage.\n\nNote: This class is marked as 'release_candidate'"
-    ) in MyRCClassTwo.__doc__
+    assert "Features marked with this status are nearing completion" in MyRCClassTwo.__doc__
     expected_version = "1.0.0-rc2"
     assert expected_version in MyRCClassTwo.__doc__
     assert hasattr(MyRCClassTwo, "is_release_candidate")
     assert MyRCClassTwo.is_release_candidate is True
+    assert "Version:" in MyRCClassTwo.__doc__

@@ -166,10 +166,26 @@ def generate_message_content(
 
 @experimental
 def generate_streaming_message_content(
-    assistant_name: str, message_delta_event: "MessageDeltaEvent"
+    assistant_name: str,
+    message_delta_event: "MessageDeltaEvent",
+    completed_step: "RunStep | None" = None,
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
+
+    metadata = (
+        {
+            "created_at": completed_step.created_at,
+            "message_id": message_delta_event.id,  # message needs to be defined in context
+            "step_id": completed_step.id,
+            "run_id": completed_step.run_id,
+            "thread_id": completed_step.thread_id,
+            "assistant_id": completed_step.assistant_id,
+            "usage": completed_step.usage,
+        }
+        if completed_step is not None
+        else None
+    )
 
     # Determine the role
     role = AuthorRole(delta.role) if delta.role is not None else AuthorRole("assistant")
@@ -203,7 +219,51 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
+
+
+@experimental
+def generate_final_streaming_message_content(
+    assistant_name: str,
+    message: "Message",
+    completed_step: "RunStep | None" = None,
+) -> StreamingChatMessageContent:
+    """Generate streaming message content from a MessageDeltaEvent."""
+    metadata = (
+        {
+            "created_at": completed_step.created_at,
+            "message_id": message.id,  # message needs to be defined in context
+            "step_id": completed_step.id,
+            "run_id": completed_step.run_id,
+            "thread_id": completed_step.thread_id,
+            "assistant_id": completed_step.assistant_id,
+            "usage": completed_step.usage,
+        }
+        if completed_step is not None
+        else None
+    )
+
+    # Determine the role
+    role = AuthorRole(message.role) if message.role is not None else AuthorRole("assistant")
+
+    items: list[StreamingTextContent | StreamingAnnotationContent | StreamingFileReferenceContent] = []
+
+    # Process each content block in the delta
+    for item_content in message.content:
+        if item_content.type == "text":
+            assert isinstance(item_content, TextContentBlock)  # nosec
+            items.append(StreamingTextContent(text=item_content.text.value, choice_index=0))
+            for annotation in item_content.text.annotations:
+                items.append(generate_streaming_annotation_content(annotation))
+        elif item_content.type == "image_file":
+            assert isinstance(item_content, ImageFileContentBlock)  # nosec
+            items.append(
+                StreamingFileReferenceContent(
+                    file_id=item_content.image_file.file_id,
+                )
+            )
+
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
 @experimental
@@ -396,11 +456,15 @@ def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnn
 
 @experimental
 def generate_streaming_annotation_content(
-    annotation: FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
+    annotation: FileCitationAnnotation | FilePathAnnotation | FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
 ) -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
     match annotation:
+        case FilePathAnnotation():
+            file_id = annotation.file_path.file_id
+        case FileCitationAnnotation():
+            file_id = annotation.file_citation.file_id
         case FilePathDeltaAnnotation():
             file_id = annotation.file_path.file_id if annotation.file_path is not None else None
         case FileCitationDeltaAnnotation():
