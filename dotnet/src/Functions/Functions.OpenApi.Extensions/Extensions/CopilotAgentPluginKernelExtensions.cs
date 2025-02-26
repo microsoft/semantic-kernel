@@ -182,7 +182,7 @@ public static class CopilotAgentPluginKernelExtensions
                 var defaultHeaders = new Dictionary<string, string>
                 {
                     // TODO: version and format updates
-                    ["SdkVersion"] = $"copilot-agent-plugins-beta/{copilotAgentPluginVersion}, (runtimeEnvironment={frameworkDescription}; hostOS={osDescription})",
+                    ["SdkVersion"] = $"copilot-agent-plugins/{copilotAgentPluginVersion}, (runtimeEnvironment={frameworkDescription}; hostOS={osDescription})",
                     ["client-request-id"] = Guid.NewGuid().ToString()
                 };
 
