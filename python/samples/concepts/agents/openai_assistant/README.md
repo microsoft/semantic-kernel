@@ -22,7 +22,7 @@ The Assistants API is a robust solution from OpenAI that empowers developers to 
 - **Enhanced Function Calling:**  
   With improved support for third-party tool integration, the Assistants API enables assistants to extend their capabilities beyond native functions.
 
-For more detailed technical information, refer to the [Assistants API FAQ](https://help.openai.com/en/articles/8550641-assistants-api-v2-faq).
+For more detailed technical information, refer to the [Assistants API](https://platform.openai.com/docs/assistants/overview).
 
 ### Semantic Kernel OpenAI Assistant Agents
 
