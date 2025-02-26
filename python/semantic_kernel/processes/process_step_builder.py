@@ -15,7 +15,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunctionMetadata
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
     """A builder for a process step."""
 

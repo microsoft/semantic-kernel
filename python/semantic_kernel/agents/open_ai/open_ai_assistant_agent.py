@@ -12,7 +12,7 @@ from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistan
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class OpenAIAssistantAgent(OpenAIAssistantBase):
     """OpenAI Assistant Agent class.
 

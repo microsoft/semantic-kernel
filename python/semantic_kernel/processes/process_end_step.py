@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, ClassVar
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunctionMetadata
     from semantic_kernel.kernel import Kernel
 
 
-@experimental_class
+@experimental
 class EndStep(ProcessStepBuilder):
     """An end step in a process."""
 

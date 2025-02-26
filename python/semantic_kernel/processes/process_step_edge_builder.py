@@ -6,13 +6,13 @@ from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigur
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.process_end_step import EndStep
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 
 
-@experimental_class
+@experimental
 class ProcessStepEdgeBuilder:
     """A builder for a process step edge."""
 

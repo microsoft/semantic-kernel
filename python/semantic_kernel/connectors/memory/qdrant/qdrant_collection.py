@@ -29,7 +29,7 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, int)
 
 
-@experimental_class
+@experimental
 class QdrantCollection(
     VectorSearchBase[str | int, TModel],
     VectorizedSearchMixin[TModel],

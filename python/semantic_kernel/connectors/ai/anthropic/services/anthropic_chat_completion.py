@@ -49,7 +49,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidResponseError,
     ServiceResponseException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -68,7 +68,7 @@ ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class AnthropicChatCompletion(ChatCompletionClientBase):
     """Anthropic ChatCompletion class."""
 

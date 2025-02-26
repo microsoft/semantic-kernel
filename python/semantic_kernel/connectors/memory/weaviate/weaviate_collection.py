@@ -47,7 +47,7 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, int)
 
 
-@experimental_class
+@experimental
 class WeaviateCollection(
     VectorSearchBase[TKey, TModel],
     VectorizedSearchMixin[TModel],

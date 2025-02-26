@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 @dataclass
 class RestApiOAuthFlow:
     """Represents the OAuth flow used by the REST API."""

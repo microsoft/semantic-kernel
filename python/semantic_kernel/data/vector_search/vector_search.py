@@ -11,7 +11,7 @@ from semantic_kernel.data.vector_search.vector_search_options import VectorSearc
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreModelDeserializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.list_handler import desync_list
 
 TModel = TypeVar("TModel")
@@ -20,7 +20,7 @@ TKey = TypeVar("TKey")
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TModel]):
     """Method for searching vectors."""
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from opentelemetry.trace import get_tracer
 
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics import gen_ai_attributes
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 tracer = get_tracer(__name__)
 
 
-@experimental_function
+@experimental
 def trace_agent_invocation(invoke_func: Callable) -> Callable:
     """Decorator to trace agent invocation."""
     OPERATION_NAME = "invoke_agent"

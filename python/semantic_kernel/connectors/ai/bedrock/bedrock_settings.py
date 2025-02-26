@@ -3,10 +3,10 @@
 from typing import ClassVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class BedrockSettings(KernelBaseSettings):
     """Amazon Bedrock service settings.
 

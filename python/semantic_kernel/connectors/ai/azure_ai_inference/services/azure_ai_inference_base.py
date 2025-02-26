@@ -16,7 +16,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
     AsyncDefaultAzureCredentialWrapper,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
@@ -37,7 +37,7 @@ class AzureAIInferenceClientType(Enum):
         return class_mapping[client_type]
 
 
-@experimental_class
+@experimental
 class AzureAIInferenceBase(KernelBaseModel, ABC):
     """Azure AI Inference Chat Completion Service."""
 

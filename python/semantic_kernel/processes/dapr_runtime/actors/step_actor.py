@@ -39,12 +39,12 @@ from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 

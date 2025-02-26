@@ -5,10 +5,10 @@ from abc import ABC
 from typing import Any, ClassVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class FilterClauseBase(ABC, KernelBaseModel):
     """A base for all filter clauses."""
 

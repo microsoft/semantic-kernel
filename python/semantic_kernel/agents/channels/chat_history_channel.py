@@ -23,14 +23,14 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.exceptions import ServiceInvalidTypeError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
 
 
-@experimental_class
+@experimental
 @runtime_checkable
 class ChatHistoryAgentProtocol(Protocol):
     """Contract for an agent that utilizes a ChatHistoryChannel."""
@@ -46,7 +46,7 @@ class ChatHistoryAgentProtocol(Protocol):
         ...
 
 
-@experimental_class
+@experimental
 class ChatHistoryChannel(AgentChannel, ChatHistory):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
 

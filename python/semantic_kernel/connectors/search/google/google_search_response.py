@@ -6,10 +6,10 @@ from pydantic import Field
 
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class GoogleSearchInformation(KernelBaseModel):
     """Information about the search."""
 
@@ -19,7 +19,7 @@ class GoogleSearchInformation(KernelBaseModel):
     formatted_total_results: str = Field(alias="formattedTotalResults")
 
 
-@experimental_class
+@experimental
 class GoogleSearchResponse(KernelBaseModel):
     """The response from a Google search."""
 

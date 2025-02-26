@@ -14,14 +14,14 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class Agent(KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
 

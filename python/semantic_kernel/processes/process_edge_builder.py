@@ -6,13 +6,13 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.process_builder import ProcessBuilder
 
 
-@experimental_class
+@experimental
 class ProcessEdgeBuilder(KernelBaseModel):
     """A builder for a process edge."""
 

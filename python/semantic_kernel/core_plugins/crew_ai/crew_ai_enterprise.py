@@ -20,12 +20,12 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class CrewAIEnterprise(KernelBaseModel):
     """Class to interface with Crew.AI Crews from Semantic Kernel.
 

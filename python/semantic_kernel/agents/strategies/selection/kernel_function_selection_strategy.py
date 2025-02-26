@@ -21,7 +21,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class KernelFunctionSelectionStrategy(SelectionStrategy):
     """Determines agent selection based on the evaluation of a Kernel Function."""
 

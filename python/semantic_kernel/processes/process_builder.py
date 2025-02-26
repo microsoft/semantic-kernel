@@ -19,13 +19,13 @@ from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 from semantic_kernel.processes.process_types import TState, TStep
 from semantic_kernel.processes.step_utils import get_fully_qualified_name
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
 
-@experimental_class
+@experimental
 class ProcessBuilder(ProcessStepBuilder):
     """A builder for a process."""
 

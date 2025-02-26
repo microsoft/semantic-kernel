@@ -7,10 +7,10 @@ from pydantic import Field
 
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class VectorSearchOptions(SearchOptions):
     """Options for vector search, builds on TextSearchOptions."""
 

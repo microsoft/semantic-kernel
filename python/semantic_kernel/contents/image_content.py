@@ -10,14 +10,14 @@ from typing_extensions import deprecated
 
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ContentTypes
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="ImageContent")
 
 
-@experimental_class
+@experimental
 class ImageContent(BinaryContent):
     """Image Content class.
 

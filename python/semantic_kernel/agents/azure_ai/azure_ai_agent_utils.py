@@ -14,7 +14,7 @@ from azure.ai.projects.models import (
 
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.contents import ChatMessageContent
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 _T = TypeVar("_T", bound="AzureAIAgentUtils")
 
 
-@experimental_class
+@experimental
 class AzureAIAgentUtils:
     """AzureAI Agent Utility Methods."""
 

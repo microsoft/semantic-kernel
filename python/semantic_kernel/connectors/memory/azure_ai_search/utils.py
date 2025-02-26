@@ -31,7 +31,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
@@ -77,7 +77,7 @@ def get_search_index_client(
     )
 
 
-@experimental_function
+@experimental
 def data_model_definition_to_azure_ai_search_index(
     collection_name: str,
     definition: VectorStoreRecordDefinition,

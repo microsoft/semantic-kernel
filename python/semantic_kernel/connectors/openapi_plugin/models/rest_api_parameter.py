@@ -12,10 +12,10 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_style i
     RestApiParameterStyle,
 )
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class RestApiParameter:
     """RestApiParameter."""
 

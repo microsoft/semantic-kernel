@@ -8,14 +8,14 @@ from pydantic import Field
 
 from semantic_kernel.contents.const import FILE_REFERENCE_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="FileReferenceContent")
 
 
-@experimental_class
+@experimental
 class FileReferenceContent(KernelContent):
     """File reference content."""
 

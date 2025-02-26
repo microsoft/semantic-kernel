@@ -17,7 +17,7 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCol
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, int)
 
 
-@experimental_class
+@experimental
 class QdrantStore(VectorStore):
     """A QdrantStore is a memory store that uses Qdrant as the backend."""
 

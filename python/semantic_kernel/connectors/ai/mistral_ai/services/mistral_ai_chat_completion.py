@@ -42,7 +42,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     """Mistral Chat completion class."""
 

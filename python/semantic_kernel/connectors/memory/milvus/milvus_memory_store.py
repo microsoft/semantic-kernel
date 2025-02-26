@@ -10,7 +10,7 @@ from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connec
 from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ OUTPUT_FIELDS_WO_EMBEDDING = [
 ]
 
 
-@experimental_function
+@experimental
 def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
 
@@ -69,7 +69,7 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     return ret_dict
 
 
-@experimental_function
+@experimental
 def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
     """Convert Milvus search result dict into MemoryRecord.
 
@@ -96,7 +96,7 @@ def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
     )
 
 
-@experimental_function
+@experimental
 def create_fields(dimensions: int) -> list[FieldSchema]:
     """Create the fields for the Milvus collection."""
     return [
@@ -144,7 +144,7 @@ def create_fields(dimensions: int) -> list[FieldSchema]:
     ]
 
 
-@experimental_class
+@experimental
 class MilvusMemoryStore(MemoryStoreBase):
     """Memory store based on Milvus."""
 

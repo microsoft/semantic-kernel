@@ -4,10 +4,10 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_oauth_flows impor
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
     RestApiParameterLocation,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class RestApiSecurityScheme:
     """Represents the security scheme used by the REST API."""
 
