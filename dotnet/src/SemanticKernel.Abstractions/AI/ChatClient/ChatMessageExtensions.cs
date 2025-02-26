@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
