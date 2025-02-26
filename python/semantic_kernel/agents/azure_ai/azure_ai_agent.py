@@ -122,9 +122,8 @@ class AzureAIAgent(Agent):
 
         super().__init__(**args)
 
-    @classmethod
+    @staticmethod
     def create_client(
-        cls: type[_T],
         credential: "DefaultAzureCredential",
         conn_str: str | None = None,
         **kwargs: Any,
