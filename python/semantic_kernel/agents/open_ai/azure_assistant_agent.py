@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 
@@ -66,6 +67,20 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             )
         except ValidationError as exc:
             raise AgentInitializationException(f"Failed to create Azure OpenAI settings: {exc}") from exc
+
+        if (
+            azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and ad_token is None
+            and azure_openai_settings.token_endpoint
+        ):
+            ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
+
+        # If we still have no credentials, we can't proceed
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise AgentInitializationException(
+                "Please provide either an api_key, ad_token or ad_token_provider for authentication."
+            )
 
         merged_headers = dict(copy(default_headers)) if default_headers else {}
         if default_headers:
