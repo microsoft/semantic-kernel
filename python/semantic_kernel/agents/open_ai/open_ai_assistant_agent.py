@@ -1,9 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import AsyncIterable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
@@ -25,14 +31,18 @@ from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThr
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
@@ -42,7 +52,6 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -384,8 +393,9 @@ class OpenAIAssistantAgent(Agent):
 
     # region Invocation Methods
 
-    @trace_agent_invocation
-    async def invoke(
+    @trace_agent_get_response
+    @override
+    async def get_response(
         self,
         thread_id: str,
         *,
@@ -393,7 +403,7 @@ class OpenAIAssistantAgent(Agent):
         kernel: "Kernel | None" = None,
         # Run-level parameters:
         additional_instructions: str | None = None,
-        additional_messages: "list[ChatMessageContent] | None" = None,
+        additional_messages: list[ChatMessageContent] | None = None,
         instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
@@ -407,7 +417,98 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> ChatMessageContent:
+        """Get a response from the agent on a thread.
+
+        Args:
+            thread_id: The ID of the thread.
+            arguments: The kernel arguments.
+            kernel: The kernel.
+            instructions_override: The instructions override.
+            additional_instructions: Additional instructions.
+            additional_messages: Additional messages.
+            max_completion_tokens: The maximum completion tokens.
+            max_prompt_tokens: The maximum prompt tokens.
+            metadata: The metadata.
+            model: The model.
+            parallel_tool_calls: Parallel tool calls.
+            reasoning_effort: The reasoning effort.
+            response_format: The response format.
+            tools: The tools.
+            temperature: The temperature.
+            top_p: The top p.
+            truncation_strategy: The truncation strategy.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            ChatMessageContent: The response from the agent.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self._merge_arguments(arguments)
+
+        run_level_params = {
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "instructions_override": instructions_override,
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "metadata": metadata,
+            "model": model,
+            "parallel_tool_calls": parallel_tool_calls,
+            "reasoning_effort": reasoning_effort,
+            "response_format": response_format,
+            "temperature": temperature,
+            "tools": tools,
+            "top_p": top_p,
+            "truncation_strategy": truncation_strategy,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
+        messages: list[ChatMessageContent] = []
+        async for is_visible, message in AssistantThreadActions.invoke(
+            agent=self,
+            thread_id=thread_id,
+            kernel=kernel,
+            arguments=arguments,
+            **run_level_params,  # type: ignore
+        ):
+            if is_visible and message.metadata.get("code"):
+                messages.append(message)
+
+        if not messages:
+            raise AgentInvokeException("No response messages were returned from the agent.")
+        return messages[-1]
+
+    @trace_agent_invocation
+    @override
+    async def invoke(
+        self,
+        thread_id: str,
+        *,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        # Run-level parameters:
+        additional_instructions: str | None = None,
+        additional_messages: list[ChatMessageContent] | None = None,
+        instructions_override: str | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        metadata: dict[str, str] | None = None,
+        model: str | None = None,
+        parallel_tool_calls: bool | None = None,
+        reasoning_effort: Literal["low", "medium", "high"] | None = None,
+        response_format: "AssistantResponseFormatOptionParam | None" = None,
+        tools: "list[AssistantToolParam] | None" = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        truncation_strategy: "TruncationStrategy | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent.
 
         Args:
@@ -470,6 +571,7 @@ class OpenAIAssistantAgent(Agent):
                 yield message
 
     @trace_agent_invocation
+    @override
     async def invoke_stream(
         self,
         thread_id: str,
@@ -478,11 +580,11 @@ class OpenAIAssistantAgent(Agent):
         kernel: "Kernel | None" = None,
         # Run-level parameters:
         additional_instructions: str | None = None,
-        additional_messages: "list[ChatMessageContent] | None" = None,
+        additional_messages: list[ChatMessageContent] | None = None,
         instructions_override: str | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
-        messages: "list[ChatMessageContent] | None" = None,
+        messages: list[ChatMessageContent] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -493,7 +595,7 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent.
 
         Args:

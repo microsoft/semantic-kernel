@@ -187,7 +187,7 @@ class AzureAIAgent(Agent):
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> ChatMessageContent:
-        """Get the response from the agent on a thread."""
+        """Get a response from the agent on a thread."""
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -251,7 +251,7 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent on the specified thread."""
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -312,7 +312,7 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent on the specified thread with a stream of messages."""
         if arguments is None:
             arguments = KernelArguments(**kwargs)
