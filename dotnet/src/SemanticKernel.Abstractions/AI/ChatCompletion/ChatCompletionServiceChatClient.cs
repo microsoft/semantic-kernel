@@ -20,7 +20,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     private readonly IChatCompletionService _chatCompletionService;
 
     /// <summary>Initializes the <see cref="ChatCompletionServiceChatClient"/> for <paramref name="chatCompletionService"/>.</summary>
-    public ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
+    internal ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
     {
         Verify.NotNull(chatCompletionService);
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>Provides extension methods for <see cref="ChatResponseUpdate"/>.</summary>
-public static class ChatResponseUpdateExtensions
+internal static class ChatResponseUpdateExtensions
 {
     /// <summary>Converts a <see cref="ChatResponseUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>

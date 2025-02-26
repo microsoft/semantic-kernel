@@ -25,7 +25,7 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     /// Initializes a new instance of the <see cref="ChatClientAIService"/> class.
     /// </summary>
     /// <param name="chatClient">Target <see cref="IChatClient"/>.</param>
-    public ChatClientAIService(IChatClient chatClient)
+    internal ChatClientAIService(IChatClient chatClient)
     {
         Verify.NotNull(chatClient);
         this._chatClient = chatClient;
