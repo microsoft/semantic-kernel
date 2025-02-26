@@ -226,7 +226,7 @@ public class KernelFunctionFromPromptTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
+        Assert.Contains("Expected serviceIds: service3.", exception.Message);
     }
 
     [Fact]
@@ -249,6 +249,28 @@ public class KernelFunctionFromPromptTests
         Assert.Equal(2, fakeService.ChatHistory.Count);
         Assert.Equal("You are a helpful assistant.", fakeService.ChatHistory[0].Content);
         Assert.Equal("How many 20 cents can I get from 1 dollar?", fakeService.ChatHistory[1].Content);
+    }
+
+    [Fact]
+    public async Task ItParsesStandardizedPromptWhenServiceIsChatClientAsync()
+    {
+        using var fakeService = new FakeChatClient();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        await kernel.InvokeAsync(function);
+
+        Assert.NotNull(fakeService.ChatMessages);
+        Assert.Equal(2, fakeService.ChatMessages.Count);
+        Assert.Equal("You are a helpful assistant.", fakeService.ChatMessages[0].Text);
+        Assert.Equal("How many 20 cents can I get from 1 dollar?", fakeService.ChatMessages[1].Text);
     }
 
     [Fact]
@@ -1020,6 +1042,37 @@ public class KernelFunctionFromPromptTests
         {
             throw new NotImplementedException();
         }
+    }
+
+    private sealed class FakeChatClient : MEAI.IChatClient
+    {
+        public IList<MEAI.ChatMessage>? ChatMessages { get; private set; }
+
+        public void Dispose()
+        {
+        }
+
+        public Task<MEAI.ChatResponse> GetResponseAsync(IList<MEAI.ChatMessage> chatMessages, MEAI.ChatOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            this.ChatMessages = chatMessages;
+            return Task.FromResult(new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.Assistant, "Something")));
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            return new MEAI.ChatClientMetadata();
+        }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<MEAI.ChatResponseUpdate> GetStreamingResponseAsync(
+            IList<MEAI.ChatMessage> chatMessages,
+            MEAI.ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            this.ChatMessages = chatMessages;
+            yield return new MEAI.ChatResponseUpdate { Role = MEAI.ChatRole.Assistant, Text = "Something" };
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 
     private Mock<ITextGenerationService> GetMockTextGenerationService(IReadOnlyList<TextContent>? textContents = null)

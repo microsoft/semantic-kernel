@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Allow <see cref="IChatClient"/> to be used as an <see cref="IAIService"/> in a <see cref="IAIServiceSelector"/>
 /// </summary>
-internal class ChatClientAIService : IAIService, IChatClient
+internal sealed class ChatClientAIService : IAIService, IChatClient
 {
     private readonly IChatClient _chatClient;
 

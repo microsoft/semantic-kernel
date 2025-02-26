@@ -290,7 +290,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         else
         {
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)} and {typeof(IChatClient)}");
+            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)}, {typeof(ITextGenerationService)}, and {typeof(IChatClient)}");
         }
 
         await foreach (object content in asyncReference.ConfigureAwait(false))

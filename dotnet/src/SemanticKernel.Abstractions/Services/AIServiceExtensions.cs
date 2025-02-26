@@ -94,7 +94,7 @@ public static class AIServiceExtensions
         // We will not throw if the service implements IChatClientSelector.
         if (selector is IChatClientSelector chatClientSelector)
         {
-            return (null, null);
+            return (null!, null);
         }
 
         var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");

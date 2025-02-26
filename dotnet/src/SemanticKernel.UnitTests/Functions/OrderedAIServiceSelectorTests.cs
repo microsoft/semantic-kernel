@@ -18,7 +18,7 @@ namespace SemanticKernel.UnitTests.Functions;
 public class OrderedAIServiceSelectorTests
 {
     [Fact]
-    public void ItThrowsAKernelExceptionForNoServices()
+    public void ItReturnsNullForNoServices()
     {
         // Arrange
         var kernel = new Kernel();
@@ -27,7 +27,22 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
+        var (textGenerationService, promptExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
+        Assert.Null(textGenerationService);
+        Assert.Null(promptExecutionSettings);
+    }
+
+    [Fact]
+    public void ItThrowsKernelExceptionForNoChatClient()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
+        var serviceSelector = new OrderedAIServiceSelector();
+
+        // Act
+        // Assert
+        Assert.Throws<KernelException>(() => serviceSelector.SelectChatClient<IChatClient>(kernel, function, []));
     }
 
     [Fact]
@@ -131,8 +146,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("chat1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("chat2", chatClient2);
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
@@ -152,7 +169,7 @@ public class OrderedAIServiceSelectorTests
     }
 
     [Fact]
-    public void ItThrowsAKernelExceptionForNotFoundService()
+    public void ItReturnsNullForNotFoundService()
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -167,7 +184,9 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
+        var (textGenerationService, promptExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
+        Assert.Null(textGenerationService);
+        Assert.Null(promptExecutionSettings);
     }
 
     [Fact]
@@ -175,12 +194,14 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("service1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("service2", chatClient2);
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
-        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "chat3");
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
         var serviceSelector = new OrderedAIServiceSelector();
 
@@ -214,8 +235,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("chat1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("chat2", chatClient2);
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
@@ -253,8 +276,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("chat1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("chat2", chatClient2);
         Kernel kernel = builder.Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedAIServiceSelector();
@@ -295,8 +320,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("chat1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("chat2", chatClient2);
         Kernel kernel = builder.Build();
 
         var executionSettings = new PromptExecutionSettings();
@@ -341,8 +368,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("chat1", new ChatClient("model_id_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("chat2", new ChatClient("model_id_2"));
+        using var chatClient1 = new ChatClient("model_id_1");
+        using var chatClient2 = new ChatClient("model_id_2");
+        builder.Services.AddKeyedSingleton<IChatClient>("chat1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("chat2", chatClient2);
         Kernel kernel = builder.Build();
 
         var executionSettings = new PromptExecutionSettings();
@@ -403,9 +432,12 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>("modelid_1", new ChatClient("modelid_1"));
-        builder.Services.AddKeyedSingleton<IChatClient>("modelid_2", new ChatClient("modelid_2"));
-        builder.Services.AddKeyedSingleton<IChatClient>("modelid_3", new ChatClient("modelid_3"));
+        using var chatClient1 = new ChatClient("modelid_1");
+        using var chatClient2 = new ChatClient("modelid_2");
+        using var chatClient3 = new ChatClient("modelid_3");
+        builder.Services.AddKeyedSingleton<IChatClient>("modelid_1", chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>("modelid_2", chatClient2);
+        builder.Services.AddKeyedSingleton<IChatClient>("modelid_3", chatClient3);
         Kernel kernel = builder.Build();
 
         var executionSettings = new Dictionary<string, PromptExecutionSettings>();
@@ -457,8 +489,10 @@ public class OrderedAIServiceSelectorTests
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddKeyedSingleton<IChatClient>(null, new ChatClient("model1"));
-        builder.Services.AddKeyedSingleton<IChatClient>(null, new ChatClient("model2"));
+        using var chatClient1 = new ChatClient("model1");
+        using var chatClient2 = new ChatClient("model2");
+        builder.Services.AddKeyedSingleton<IChatClient>(null, chatClient1);
+        builder.Services.AddKeyedSingleton<IChatClient>(null, chatClient2);
         Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments();
