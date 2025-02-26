@@ -4,7 +4,7 @@
 
 ### Agents - Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel
 
-#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_openai_assistant.py)
+#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
 
 - [OpenAI Assistant Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
 - [OpenAI Assistant Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
