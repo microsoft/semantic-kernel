@@ -412,8 +412,23 @@ class TestVectorStore(VectorStoreTestBase):
                 RAW_RECORD_LIST,
                 id="chroma_list_data_model",
             ),
+            pytest.param(
+                "chroma",
+                "chroma_pandas_data_model",
+                {},
+                pd.DataFrame,
+                "data_model_definition_pandas",
+                None,
+                None,
+                None,
+                5,
+                RAW_RECORD_LIST,
+                id="chroma_pandas_data_model",
+            ),
+            # endregion
         ],
     )
+    # region test function
     async def test_vector_store(
         self,
         stores: dict[str, VectorStore],

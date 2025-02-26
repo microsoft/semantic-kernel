@@ -22,7 +22,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
     AzureCosmosDBforMongoDBCollection,
     AzureCosmosDBNoSQLCollection,
 )
-from semantic_kernel.connectors.memory.chroma.chroma import ChromaCollection
+from semantic_kernel.connectors.memory.chroma import ChromaCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -141,6 +141,10 @@ DataModel = get_data_model("array", IndexKind.HNSW, distance_function)
 #   For this sample to work with Azure Cosmos NoSQL, please adjust the index_kind of the data model to QUANTIZED_FLAT.
 # - azure_cosmos_mongodb: Azure Cosmos MongoDB
 #   https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/introduction
+# - chroma: Chroma
+#   The chroma collection is currently only available for in-memory versions
+#   Client-Server mode and Chroma Cloud are not yet supported.
+#   More info on Chroma here: https://docs.trychroma.com/docs/overview/introduction
 # This is represented as a mapping from the collection name to a
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
@@ -288,5 +292,4 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
-    args.collection = "chroma"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))
