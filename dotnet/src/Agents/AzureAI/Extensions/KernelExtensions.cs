@@ -33,7 +33,7 @@ internal static class KernelExtensions
             {
                 var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
                 AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
-                return new(connectionString!.ToString()!, new AzureCliCredential(), clientOptions);
+                return new(connectionString!.ToString()!, new DefaultAzureCredential(), clientOptions);
             }
         }
 

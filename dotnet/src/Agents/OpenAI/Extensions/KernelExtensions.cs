@@ -38,9 +38,10 @@ internal static class KernelExtensions
                 throw new InvalidOperationException("OpenAI client type must be specified.");
             }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope, not applicable because the HttpClient is created elsewhere
+#pragma warning disable CA2000 // Dispose objects before losing scope, not applicable because the HttpClient is created and may be used elsewhere
             var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
             if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
                 OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
@@ -58,7 +59,7 @@ internal static class KernelExtensions
                     return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);
                 }
 
-                return new AzureOpenAIClient(endpoint, new AzureCliCredential(), clientOptions);
+                return new AzureOpenAIClient(endpoint, new DefaultAzureCredential(), clientOptions);
             }
 
             throw new InvalidOperationException($"Invalid OpenAI client type '{configuration.Type}' was specified.");

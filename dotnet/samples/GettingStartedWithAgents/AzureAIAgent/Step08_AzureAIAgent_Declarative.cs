@@ -106,7 +106,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
         Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+        await InvokeAgentAsync(agent!, "What country has Dublin as it's capital city?");
     }
 
     [Fact]
@@ -182,9 +182,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         // Create a thread for the agent conversation.
         AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
 
-        // Respond to user input
         try
         {
+            // Invoke agent and display the response.
             await InvokeAsync(input);
         }
         finally
