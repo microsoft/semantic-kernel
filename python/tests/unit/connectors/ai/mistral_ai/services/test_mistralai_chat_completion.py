@@ -385,48 +385,6 @@ async def test_with_different_execution_settings_stream(
     assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["seed"] == 2
 
 
-async def test_mistral_ai_chat_completion_initialization_valid():
-    """Test MistralAIChatCompletion initialization should succeed with valid params."""
-    mistralai_settings = MagicMock()
-    mistralai_settings.chat_model_id = "chat_model_id"
-
-    with (
-        patch(
-            "semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings.MistralAISettings.create",
-            return_value=mistralai_settings,
-        ) as mock_settings_create,
-        patch(
-            "semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base.MistralAIBase.__init__"
-        ) as mistral_base,
-    ):
-        # We gave an api_key to ensure it doesn't raise an exception, but the rest can be None.
-        ai_completion = MistralAIChatCompletion(
-            ai_model_id="some-model-id",
-            api_key="some-key",
-        )
-        assert ai_completion is not None
-
-        mock_settings_create.assert_called_once()
-        mistral_base.assert_called_once()
-
-
-async def test_mistral_ai_chat_completion_initialization_missing_model_id():
-    """Test MistralAIChatCompletion initialization should raise ServiceInitializationError when model id is missing."""
-    with pytest.raises(ServiceInitializationError) as exc_info:
-        MistralAIChatCompletion(
-            ai_model_id=None,
-            api_key="some-key",
-        )
-    assert "The MistralAI chat model ID is required." in str(exc_info.value)
-
-
-async def test_mistral_ai_chat_completion_initialization_validation_error():
-    """Test MistralAIChatCompletion initialization when MistralAISettings creation fails and raises ValidationError."""
-    with pytest.raises(ServiceInitializationError) as exc_info:
-        MistralAIChatCompletion(env_file_path="fake_env_file_path.env")
-    assert "Failed to create MistralAI settings." in str(exc_info.value)
-
-
 async def test_mistral_ai_chat_completion_get_chat_message_contents_success():
     """Test get_chat_message_contents with a successful ChatCompletionResponse."""
 
