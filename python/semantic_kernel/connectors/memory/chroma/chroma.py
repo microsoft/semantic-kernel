@@ -104,7 +104,6 @@ class ChromaCollection(
 
         Args:
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
-
         """
         if self.data_model_definition.vector_fields and self.data_model_definition.vector_fields[0].distance_function:
             if self.data_model_definition.vector_fields[0].distance_function not in DISTANCE_FUNCTION_MAP:
