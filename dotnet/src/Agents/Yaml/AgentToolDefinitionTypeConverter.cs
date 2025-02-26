@@ -46,7 +46,7 @@ internal sealed class AgentToolDefinitionTypeConverter : IYamlTypeConverter
                     agentToolDefinition.Description = s_deserializer.Deserialize<string>(parser);
                     break;
                 default:
-                    (agentToolDefinition.Configuration ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
+                    (agentToolDefinition.Configuration ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
                     break;
             }
         }

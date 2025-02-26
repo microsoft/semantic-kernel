@@ -43,7 +43,7 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
                     modelConfiguration.ServiceId = s_deserializer.Deserialize<string>(parser);
                     break;
                 default:
-                    (modelConfiguration.ExtensionData ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
+                    (modelConfiguration.ExtensionData ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
                     break;
             }
         }
