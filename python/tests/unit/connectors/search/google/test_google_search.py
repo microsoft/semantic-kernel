@@ -239,7 +239,6 @@ async def test__build_query_equal_to_filter() -> None:
     assert "lr=lang_en" in query_str
 
 
-@pytest.mark.asyncio
 async def test__build_query_any_tags_equal_to_unsupported_filter() -> None:
     """Test _build_query logs debug message when AnyTagsEqualTo filter is present but doesn't break query."""
     from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
