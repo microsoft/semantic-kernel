@@ -1,37 +1,41 @@
-var builder = WebApplication.CreateBuilder(args);
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-// Add service defaults & Aspire client integrations.
-builder.AddServiceDefaults();
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-// Add services to the container.
-builder.Services.AddProblemDetails();
+namespace ChatWithAgent.ApiService;
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-app.UseExceptionHandler();
-
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
-app.MapGet("/weatherforecast", () =>
+/// <summary>
+/// Defines the Program class containing the application's entry point.
+/// </summary>
+public static class Program
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    /// <param name="args">The command-line arguments.</param>
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-app.MapDefaultEndpoints();
+        // Add service defaults & Aspire client integrations.
+        builder.AddServiceDefaults();
 
-app.Run();
+        builder.Services.AddControllers();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        // Add services to the container.
+        builder.Services.AddProblemDetails();
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline.
+        app.UseExceptionHandler();
+
+        app.MapDefaultEndpoints();
+
+        app.MapControllers();
+
+        app.Run();
+    }
 }
