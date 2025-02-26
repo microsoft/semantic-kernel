@@ -45,7 +45,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithLocalFunctionsAsync()
+    public async Task AzureAIAgentWithKernelFunctionsAsync()
     {
         var text =
             """
@@ -85,15 +85,15 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         // Create a thread for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
 
-        // Respond to user input
         try
         {
+            // Invoke agent and display the response.
             await InvokeAsync(input);
         }
         finally
         {
             await this.AgentsClient.DeleteThreadAsync(thread.Id);
-            await this.AgentsClient.DeleteAgentAsync(agent!.Id);
+            await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
