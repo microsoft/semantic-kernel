@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class ChatCompletionAgentFactory : KernelAgentFactory
 {
     /// <summary>
-    /// Gets the type of the chat completion agent.
+    /// The type of the chat completion agent.
     /// </summary>
-    public static string ChatCompletionAgentType => "chat_completion_agent";
+    public const string ChatCompletionAgentType = "chat_completion_agent";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgentFactory"/> class.

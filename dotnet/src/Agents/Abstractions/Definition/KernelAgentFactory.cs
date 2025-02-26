@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Represents a factory for creating <see cref="KernelAgent"/> instances.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public abstract class KernelAgentFactory
 {
     /// <summary>
@@ -30,8 +32,7 @@ public abstract class KernelAgentFactory
     /// <summary>
     /// Return true if this instance of <see cref="KernelAgentFactory"/> supports creating agents from the provided <see cref="AgentDefinition"/>
     /// </summary>
-    /// <param name="agentDefinition"></param>
-    /// <returns></returns>
+    /// <param name="agentDefinition">Definition of the agent to check is supported.</param>
     public bool IsSupported(AgentDefinition agentDefinition)
     {
         return this.Types.Any(s => string.Equals(s, agentDefinition.Type, StringComparison.OrdinalIgnoreCase));

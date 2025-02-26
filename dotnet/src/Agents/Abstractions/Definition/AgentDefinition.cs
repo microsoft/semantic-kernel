@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Agents.Definition;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines an agent.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class AgentDefinition
 {
     /// <summary>
@@ -76,7 +77,7 @@ public sealed class AgentDefinition
     }
 
     /// <summary>
-    /// Gets or sets the system instructions for the agent to use.
+    /// Gets or sets the instructions for the agent to use.
     /// </summary>
     public string? Instructions
     {
@@ -91,7 +92,7 @@ public sealed class AgentDefinition
     /// <summary>
     /// Gets or sets the metadata associated with the agent.
     /// </summary>
-    public IDictionary<string, object>? Metadata
+    public IDictionary<string, object?>? Metadata
     {
         get => this._metadata;
         set
@@ -173,7 +174,7 @@ public sealed class AgentDefinition
     private string? _name;
     private string? _description;
     private string? _instructions;
-    private IDictionary<string, object>? _metadata;
+    private IDictionary<string, object?>? _metadata;
     private ModelDefinition? _model;
     private IList<InputVariable>? _inputs;
     private IList<OutputVariable>? _outputs;

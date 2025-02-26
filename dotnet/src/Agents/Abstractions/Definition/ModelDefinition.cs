@@ -1,16 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Agents.Definition;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the model to be used by an agent.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class ModelDefinition
 {
     /// <summary>
-    /// Gets or sets the default API type.
+    /// The default API type.
     /// </summary>
-    public static readonly string DefaultApi = "chat";
+    private const string DefaultApi = "chat";
 
     /// <summary>
     /// Gets or sets the ID of the model.

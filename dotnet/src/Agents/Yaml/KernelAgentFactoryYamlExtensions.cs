@@ -14,7 +14,7 @@ public static class KernelAgentFactoryYamlExtensions
     /// Create a <see cref="KernelAgent"/> from the given YAML text.
     /// </summary>
     /// <param name="kernelAgentFactory">Kernel agent factory which will be used to create the agent</param>
-    /// <param name="text">YAML in text format</param>
+    /// <param name="text">Text string containing the YAML representation of a kernel agent.</param>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="cancellationToken">Optional cancellation token</param>
     public static async Task<KernelAgent?> CreateAgentFromYamlAsync(this KernelAgentFactory kernelAgentFactory, string text, Kernel? kernel = null, CancellationToken cancellationToken = default)

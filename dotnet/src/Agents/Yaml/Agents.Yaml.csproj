@@ -14,7 +14,7 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Agents - Core</Title>
+    <Title>Semantic Kernel Agents - YAML</Title>
     <Description>Provides utilities to serialise Agent definitions from YAML.</Description>
   </PropertyGroup>
 

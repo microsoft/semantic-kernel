@@ -34,32 +34,41 @@ internal static class AgentDefinitionExtensions
     public static AssistantCreationOptions CreateAssistantCreationOptions(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
-        Verify.NotNull(agentDefinition.Model);
-        Verify.NotNull(agentDefinition.Model.Id);
+        Verify.NotNull(agentDefinition.Model, nameof(agentDefinition.Model));
+        Verify.NotNull(agentDefinition.Model.Id, nameof(agentDefinition.Model.Id));
 
         var assistantCreationOptions = new AssistantCreationOptions()
         {
             Name = agentDefinition.Name,
             Description = agentDefinition.Description,
             Instructions = agentDefinition.Instructions,
-            Temperature = agentDefinition?.Model?.Options?.GetTemperature(),
-            NucleusSamplingFactor = agentDefinition?.Model?.Options?.GetTopP(),
-            ResponseFormat = agentDefinition?.Model?.Options?.IsEnableJsonResponse() ?? false ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto
+            Temperature = agentDefinition.Model.Options?.GetTemperature(),
+            NucleusSamplingFactor = agentDefinition.Model.Options?.GetTopP(),
         };
 
         // TODO: Implement
+        // ResponseFormat
         // ToolResources
         // Metadata
         // ExecutionOptions
 
-        if (agentDefinition?.HasToolType(CodeInterpreter) ?? false)
+        // Add tools
+        if (agentDefinition.Tools is not null)
         {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
-        }
-
-        if (agentDefinition?.HasToolType(FileSearch) ?? false)
-        {
-            assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+            foreach (var tool in agentDefinition.Tools)
+            {
+                switch (tool.Type)
+                {
+                    case CodeInterpreter:
+                        assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
+                        break;
+                    case FileSearch:
+                        assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+                        break;
+                    default:
+                        throw new System.NotSupportedException($"Tool type '{tool.Type}' is not supported.");
+                }
+            }
         }
 
         return assistantCreationOptions;
@@ -74,7 +83,7 @@ internal static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition);
 
         var toolDefinition = agentDefinition.GetFirstToolDefinition(CodeInterpreter);
-        if (toolDefinition?.Configuration?.TryGetValue(FileIds, out var fileIds) ?? false)
+        if ((toolDefinition?.Configuration?.TryGetValue(FileIds, out var value) ?? false) && value is List<string> fileIds)
         {
             // TODO: Verify that the fileIds are strings
             return (IReadOnlyList<string>)fileIds;

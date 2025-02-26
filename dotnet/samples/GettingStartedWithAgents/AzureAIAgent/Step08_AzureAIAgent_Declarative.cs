@@ -79,6 +79,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -103,6 +104,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -164,6 +166,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }

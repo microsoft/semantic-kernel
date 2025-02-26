@@ -41,7 +41,7 @@ internal static class AgentDefinitionExtensions
                 MicrosoftFabricType => CreateMicrosoftFabricToolDefinition(tool),
                 OpenApiType => CreateOpenApiToolDefinition(tool),
                 SharepointGroundingType => CreateSharepointGroundingToolDefinition(tool),
-                _ => throw new InvalidOperationException($"Unable to created Azure AI tool definition because of known tool type: {tool.Type}"),
+                _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unsupported tool type: {tool.Type}"),
             };
         });
     }

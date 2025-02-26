@@ -22,11 +22,6 @@ public static class PromptExecutionSettingsExtensions
     private const string TopP = "top_p";
 
     /// <summary>
-    /// Property name for model response format.
-    /// </summary>
-    private const string ResponseFormat = "response_format";
-
-    /// <summary>
     /// Get the temperature property.
     /// </summary>
     /// <param name="executionSettings">Prompt execution settings.</param>
@@ -64,25 +59,5 @@ public static class PromptExecutionSettingsExtensions
             return (float?)topP;
         }
         return null;
-    }
-
-    /// <summary>
-    /// Get the ResponseFormat property.
-    /// </summary>
-    /// <param name="executionSettings">Prompt execution settings.</param>
-    public static bool IsEnableJsonResponse(this PromptExecutionSettings executionSettings)
-    {
-        Verify.NotNull(executionSettings);
-
-        if (executionSettings is OpenAIPromptExecutionSettings openaiSettings)
-        {
-            return openaiSettings.ResponseFormat is not null;
-        }
-
-        if (executionSettings?.ExtensionData?.TryGetValue(ResponseFormat, out var responseFormat) ?? false)
-        {
-            return responseFormat is not null;
-        }
-        return false;
     }
 }

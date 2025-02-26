@@ -3,6 +3,7 @@
 from semantic_kernel.data.const import (
     DEFAULT_DESCRIPTION,
     DEFAULT_FUNCTION_NAME,
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     IndexKind,
 )
@@ -41,6 +42,7 @@ from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCo
 __all__ = [
     "DEFAULT_DESCRIPTION",
     "DEFAULT_FUNCTION_NAME",
+    "DISTANCE_FUNCTION_DIRECTION_HELPER",
     "AnyTagsEqualTo",
     "DistanceFunction",
     "EqualTo",

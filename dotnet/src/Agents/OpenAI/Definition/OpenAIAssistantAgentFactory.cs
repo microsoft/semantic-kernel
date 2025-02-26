@@ -14,9 +14,9 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
 {
     /// <summary>
-    /// Gets the type of the OpenAI assistant agent.
+    /// The type of the OpenAI assistant agent.
     /// </summary>
-    public static string OpenAIAssistantAgentType => "openai_assistant";
+    public const string OpenAIAssistantAgentType = "openai_assistant";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentFactory"/> class.
