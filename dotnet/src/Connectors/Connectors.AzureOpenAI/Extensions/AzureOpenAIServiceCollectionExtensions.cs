@@ -219,7 +219,7 @@ public static class AzureOpenAIServiceCollectionExtensions
                 endpoint,
                 credential,
                 modelId,
-                HttpClientProvider.GetHttpClient(serviceProvider),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions,
                 apiVersion));
