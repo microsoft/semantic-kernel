@@ -200,6 +200,7 @@ internal partial class ClientCore
             // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
+                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
@@ -384,6 +385,7 @@ internal partial class ClientCore
             // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
+                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),

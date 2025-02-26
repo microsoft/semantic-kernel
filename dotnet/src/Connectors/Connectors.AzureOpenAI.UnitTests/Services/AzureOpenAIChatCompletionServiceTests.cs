@@ -307,6 +307,73 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData("stream", "true")]
+    [InlineData("stream_options", "{\"include_usage\":true}")]
+    [InlineData("model", "\"deployment\"")]
+
+    public async Task GetStreamingChatMessageContentsRequestHandlesInternalFieldsCorrectlyAsync(string expectedPropertyName, string expectedRawJsonText)
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new AzureOpenAIPromptExecutionSettings();
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(AzureOpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        // Act
+        await foreach (var update in service.GetStreamingChatMessageContentsAsync(new ChatHistory("System message"), settings))
+        {
+            var openAIUpdate = Assert.IsType<OpenAI.Chat.StreamingChatCompletionUpdate>(update.InnerContent);
+        }
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        Assert.True(content.TryGetProperty(expectedPropertyName, out var propertyValue));
+        Assert.Equal(expectedRawJsonText, propertyValue.GetRawText());
+    }
+
+    [Theory]
+    [InlineData("model", "\"deployment\"")]
+
+    public async Task GetChatMessageContentsRequestHandlesInternalFieldsCorrectlyAsync(string expectedPropertyName, string expectedRawJsonText)
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new AzureOpenAIPromptExecutionSettings();
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        // Act
+        var results = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings);
+        var result = Assert.Single(results);
+        Assert.IsType<OpenAI.Chat.ChatCompletion>(result.InnerContent);
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        Assert.True(content.TryGetProperty(expectedPropertyName, out var propertyValue));
+        Assert.Equal(expectedRawJsonText, propertyValue.GetRawText());
+    }
+
+    [Theory]
     [InlineData(null, null)]
     [InlineData("string", "low")]
     [InlineData("string", "medium")]

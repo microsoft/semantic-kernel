@@ -116,5 +116,9 @@
       "ModelId": "gpt-4",
       "ApiKey": ""
     }
+  },
+  "BedrockAgent": {
+    "AgentResourceRoleArn": "",
+    "FoundationModel": "anthropic.claude-3-haiku-20240307-v1:0"
   }
 }
