@@ -10,16 +10,20 @@ from semantic_kernel.agents.strategies import (
     KernelFunctionTerminationStrategy,
 )
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistoryTruncationReducer, ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.contents import ChatHistoryTruncationReducer
+from semantic_kernel.functions import KernelFunctionFromPrompt
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# agent group chat that utilizes a Reviewer Chat Completion       #
-# Agent along with a Writer Chat Completion Agent to              #
-# complete a user's task.                                         #
-###################################################################
+"""
+The following sample demonstrates how to create a simple,
+agent group chat that utilizes a Reviewer Chat Completion
+Agent along with a Writer Chat Completion Agent to
+complete a user's task.
+
+This is the full code sample for the Semantic Kernel Learn Site: How-To: Coordinate Agent Collaboration 
+    using Agent Group Chat
+
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/examples/example-agent-collaboration?pivots=programming-language-python
+"""
 
 # Define agent names
 REVIEWER_NAME = "Reviewer"
@@ -166,7 +170,7 @@ RESPONSE:
                 continue
 
         # Add the current user_input to the chat
-        await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=user_input))
+        await chat.add_chat_message(message=user_input)
 
         try:
             async for response in chat.invoke():
