@@ -761,7 +761,7 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
     assert hasattr(experimental_plugin_class, "is_experimental")
     assert experimental_plugin_class.is_experimental
-    assert "This class is experimental and may change in the future." in experimental_plugin_class.__doc__
+    assert "This class is marked as 'experimental' and may change in the future" in experimental_plugin_class.__doc__
 
 
 # endregion
