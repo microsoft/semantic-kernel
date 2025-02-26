@@ -5,10 +5,9 @@ from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent
-from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.contents import AuthorRole
+from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers

@@ -7,7 +7,7 @@ from azure.ai.projects.models import FileSearchTool, OpenAIFile, VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents import AuthorRole
 
 """
 The following sample demonstrates how to create a simple, Azure AI agent that

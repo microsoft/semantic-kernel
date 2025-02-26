@@ -7,9 +7,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents import ChatHistory, FunctionCallContent, FunctionResultContent
 from semantic_kernel.functions import KernelArguments, kernel_function
 
 """

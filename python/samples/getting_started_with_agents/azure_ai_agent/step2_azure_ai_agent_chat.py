@@ -6,8 +6,8 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AgentGroupChat
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.agents.strategies import TerminationStrategy
+from semantic_kernel.contents import AuthorRole
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
