@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     ListenEvents,
     OpenAIRealtimeExecutionSettings,
 )
-from semantic_kernel.contents.realtime_events import RealtimeAudioEvent, RealtimeTextEvent
+from semantic_kernel.contents import RealtimeAudioEvent, RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")

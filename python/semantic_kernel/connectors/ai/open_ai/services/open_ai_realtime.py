@@ -661,8 +661,11 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     @override
     async def receive(
         self,
+        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[RealtimeEvents, None]:
+        if audio_output_callback:
+            self.audio_output_callback = audio_output_callback
         while True:
             event = await self._receive_buffer.get()
             yield event
@@ -907,8 +910,11 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
     @override
     async def receive(
         self,
+        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[RealtimeEvents, None]:
+        if audio_output_callback:
+            self.audio_output_callback = audio_output_callback
         await self.connected.wait()
         if not self.connection:
             raise ValueError("Connection is not established.")
