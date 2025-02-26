@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -100,6 +102,59 @@ public sealed class FunctionResult
             if (content.InnerContent is T innerContent)
             {
                 return innerContent;
+            }
+        }
+
+        if (this.Value is MEAI.ChatMessage chatMessage)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T?)(object?)chatMessage.ToString();
+            }
+
+            if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
+            {
+                // Return the first matching content type of a message if any
+                var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
+                if (updateContent is not null)
+                {
+                    return (T)(object)updateContent;
+                }
+            }
+
+            if (chatMessage.RawRepresentation is T rawRepresentation)
+            {
+                return rawRepresentation;
+            }
+        }
+
+        if (this.Value is IList<MEAI.ChatMessage> chatMessageList && chatMessageList.Count != 0)
+        {
+            var firstMessage = chatMessageList[0];
+
+            if (typeof(T) == typeof(string))
+            {
+                return (T?)(object?)firstMessage.ToString();
+            }
+
+            if (typeof(T) == typeof(MEAI.ChatMessage))
+            {
+                return (T)(object)firstMessage;
+            }
+
+            if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
+            {
+                // Return the first matching content type of a message if any
+                var updateContent = firstMessage.Contents.FirstOrDefault(c => c is T);
+                if (updateContent is not null)
+                {
+                    return (T)(object)updateContent;
+                }
+            }
+
+            if (firstMessage.RawRepresentation is T rawRepresentation)
+            {
+                return rawRepresentation;
             }
         }
 

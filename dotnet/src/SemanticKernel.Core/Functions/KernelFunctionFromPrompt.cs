@@ -311,6 +311,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     continue;
                 }
 
+                if (kernelContent.InnerContent is TResult innerContentAsT)
+                {
+                    yield return innerContentAsT;
+                    continue;
+                }
+
                 if (typeof(TResult) == typeof(byte[]))
                 {
                     if (content is StreamingKernelContent byteKernelContent)
@@ -319,22 +325,36 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                         continue;
                     }
                 }
-
-                if (kernelContent.InnerContent is TResult innerContentAsT)
-                {
-                    yield return innerContentAsT;
-                    continue;
-                }
             }
-            else if (typeof(TResult) == typeof(byte[]))
+            else if (content is ChatResponseUpdate chatUpdate)
             {
-                if (content is StreamingKernelContent byteKernelContent)
+                if (typeof(TResult) == typeof(string))
                 {
-                    yield return (TResult)(object)byteKernelContent.ToByteArray();
+                    yield return (TResult)(object)chatUpdate.ToString();
                     continue;
                 }
 
-                if (content is ChatResponseUpdate chatUpdate)
+                if (chatUpdate is TResult contentAsT)
+                {
+                    yield return contentAsT;
+                    continue;
+                }
+
+                if (chatUpdate.RawRepresentation is TResult rawRepresentationAsT)
+                {
+                    yield return rawRepresentationAsT;
+                    continue;
+                }
+
+                // Return the first matching content type of an update if any
+                var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
+                if (updateContent is not null)
+                {
+                    yield return (TResult)(object)updateContent;
+                    continue;
+                }
+
+                if (typeof(TResult) == typeof(byte[]))
                 {
                     DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent && dataContent.Data.HasValue);
                     if (dataContent is not null)

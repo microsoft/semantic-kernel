@@ -397,6 +397,74 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
+    public async Task InvokeAsyncReturnsTheConnectorChatResultWhenInServiceIsOnlyChatClientAsync()
+    {
+        var customTestType = new CustomTestType();
+        var fakeChatMessage = new MEAI.ChatMessage(MEAI.ChatRole.User, "something") { RawRepresentation = customTestType };
+        var fakeChatResponse = new MEAI.ChatResponse(fakeChatMessage);
+        Mock<MEAI.IChatClient> mockChatClient = new();
+        mockChatClient.Setup(c => c.GetResponseAsync(It.IsAny<IList<MEAI.ChatMessage>>(), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(fakeChatResponse);
+        mockChatClient.Setup(c => c.GetService(typeof(MEAI.ChatClientMetadata), It.IsAny<object?>())).Returns(new MEAI.ChatClientMetadata());
+
+        using var chatClient = mockChatClient.Object;
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => chatClient);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        var result = await kernel.InvokeAsync(function);
+
+        Assert.Equal("something", result.GetValue<string>());
+        Assert.Equal("something", result.GetValue<MEAI.ChatMessage>()!.Text);
+        Assert.Equal(MEAI.ChatRole.User, result.GetValue<MEAI.ChatMessage>()!.Role);
+        Assert.Same(customTestType, result.GetValue<CustomTestType>()!);
+        Assert.Equal("something", result.GetValue<MEAI.AIContent>()!.ToString());
+        Assert.Equal("something", result.GetValue<MEAI.TextContent>()!.ToString());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncReturnsTheConnectorChatResultChoicesWhenInServiceIsOnlyChatClientAsync()
+    {
+        var customTestType = new CustomTestType();
+        var fakeChatResponse = new MEAI.ChatResponse([
+            new MEAI.ChatMessage(MEAI.ChatRole.User, "something 1") { RawRepresentation = customTestType },
+            new MEAI.ChatMessage(MEAI.ChatRole.Assistant, "something 2")
+        ]);
+
+        Mock<MEAI.IChatClient> mockChatClient = new();
+        mockChatClient.Setup(c => c.GetResponseAsync(It.IsAny<IList<MEAI.ChatMessage>>(), It.IsAny<MEAI.ChatOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(fakeChatResponse);
+        mockChatClient.Setup(c => c.GetService(typeof(MEAI.ChatClientMetadata), It.IsAny<object?>())).Returns(new MEAI.ChatClientMetadata());
+
+        using var chatClient = mockChatClient.Object;
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => chatClient);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        var result = await kernel.InvokeAsync(function);
+
+        Assert.Collection(result.GetValue<IList<MEAI.ChatMessage>>()!,
+            item1 =>
+            {
+                Assert.Equal("something 1", item1.Text); Assert.Equal(MEAI.ChatRole.User, item1.Role);
+            },
+            item2 =>
+            {
+                Assert.Equal("something 2", item2.Text); Assert.Equal(MEAI.ChatRole.Assistant, item2.Role);
+            });
+
+        // Other specific types will be checked against the first choice
+        Assert.Equal("something 1", result.GetValue<string>());
+        Assert.Equal("something 1", result.GetValue<MEAI.ChatMessage>()!.Text);
+        Assert.Equal(MEAI.ChatRole.User, result.GetValue<MEAI.ChatMessage>()!.Role);
+        Assert.Same(customTestType, result.GetValue<CustomTestType>()!);
+        Assert.Equal("something 1", result.GetValue<MEAI.TextContent>()!.ToString());
+        Assert.Equal("something 1", result.GetValue<MEAI.AIContent>()!.ToString());
+    }
+
+    [Fact]
     public async Task InvokeAsyncReturnsTheConnectorChatResultWhenInServiceIsChatAndTextCompletionAsync()
     {
         var fakeService = new FakeChatAsTextService();
@@ -1097,5 +1165,9 @@ public class KernelFunctionFromPromptTests
         return mockChatCompletionService;
     }
 
+    private sealed class CustomTestType
+    {
+        public string Name { get; set; } = "MyCustomType";
+    }
     #endregion
 }
