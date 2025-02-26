@@ -167,12 +167,17 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(keys);
 
-        using SqlCommand command = SqlServerCommandBuilder.DeleteMany(
+        using SqlCommand? command = SqlServerCommandBuilder.DeleteMany(
             this._sqlConnection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             keys);
+
+        if (command is null)
+        {
+            return; // keys is empty, there is nothing to delete
+        }
 
         await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
@@ -213,13 +218,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(keys);
 
-        using SqlCommand command = SqlServerCommandBuilder.SelectMany(
+        using SqlCommand? command = SqlServerCommandBuilder.SelectMany(
             this._sqlConnection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
             keys);
+
+        if (command is null)
+        {
+            yield break; // keys is empty
+        }
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
@@ -261,13 +271,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(records);
 
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(
+        using SqlCommand? command = SqlServerCommandBuilder.MergeIntoMany(
             this._sqlConnection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
             records.Select(record => this._mapper.MapFromDataToStorageModel(record)));
+
+        if (command is null)
+        {
+            yield break; // records is empty
+        }
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),

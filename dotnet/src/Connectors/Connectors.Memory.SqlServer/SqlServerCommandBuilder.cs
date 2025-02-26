@@ -161,7 +161,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand MergeIntoMany(
+    internal static SqlCommand? MergeIntoMany(
         SqlConnection connection,
         string schema,
         string tableName,
@@ -196,7 +196,7 @@ internal static class SqlServerCommandBuilder
 
         if (rowIndex == 0)
         {
-            throw new ArgumentException("The value cannot be empty.", nameof(records));
+            return null; // there is nothing to do!
         }
 
         sb.Length -= (1 + Environment.NewLine.Length); // remove the last comma and newline
@@ -252,7 +252,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand DeleteMany<TKey>(
+    internal static SqlCommand? DeleteMany<TKey>(
         SqlConnection connection, string schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
     {
@@ -262,8 +262,13 @@ internal static class SqlServerCommandBuilder
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendFormat(" WHERE [{0}] IN (", GetColumnName(keyProperty));
-        sb.AppendKeyParameterList(keys, command, keyProperty);
+        sb.AppendKeyParameterList(keys, command, keyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
+
+        if (emptyKeys)
+        {
+            return null; // there is nothing to do!
+        }
 
         command.CommandText = sb.ToString();
         return command;
@@ -293,7 +298,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand SelectMany<TKey>(
+    internal static SqlCommand? SelectMany<TKey>(
         SqlConnection connection, string schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
@@ -309,8 +314,13 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
         sb.AppendFormat("WHERE [{0}] IN (", GetColumnName(keyProperty));
-        sb.AppendKeyParameterList(keys, command, keyProperty);
+        sb.AppendKeyParameterList(keys, command, keyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
+
+        if (emptyKeys)
+        {
+            return null; // there is nothing to do!
+        }
 
         command.CommandText = sb.ToString();
         return command;
@@ -449,7 +459,7 @@ internal static class SqlServerCommandBuilder
     }
 
     private static StringBuilder AppendKeyParameterList<TKey>(this StringBuilder sb,
-        IEnumerable<TKey> keys, SqlCommand command, VectorStoreRecordKeyProperty keyProperty)
+        IEnumerable<TKey> keys, SqlCommand command, VectorStoreRecordKeyProperty keyProperty, out bool emptyKeys)
     {
         int keyIndex = 0;
         foreach (TKey key in keys)
@@ -463,11 +473,7 @@ internal static class SqlServerCommandBuilder
             command.AddParameter(keyProperty, keyParamName, key);
         }
 
-        if (keyIndex == 0)
-        {
-            throw new ArgumentException("The value cannot be empty.", nameof(keys));
-        }
-
+        emptyKeys = keyIndex == 0;
         sb.Length--; // remove the last comma
         return sb;
     }

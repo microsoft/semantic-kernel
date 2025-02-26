@@ -281,11 +281,6 @@ WHERE "{keyColumn}" = ${1};
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
 
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
-
         var keyProperty = properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Properties must contain a key property", nameof(properties));
         var keyColumn = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
 
@@ -327,10 +322,6 @@ WHERE "{keyColumn}" = ${1};
     public PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
 
         for (int i = 0; i < keys.Count; i++)
         {

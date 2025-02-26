@@ -233,7 +233,7 @@ public class SqlServerCommandBuilderTests
 
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(connection, "schema", "table",
-            keyProperty, properties, records);
+            keyProperty, properties, records)!;
 
         string expectedCommand =
         """"
@@ -289,7 +289,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.DeleteMany(connection,
-            "schema", "tableName", keyProperty, keys);
+            "schema", "tableName", keyProperty, keys)!;
 
         Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] IN (@id_0,@id_1)", command.CommandText);
         for (int i = 0; i < keys.Length; i++)
@@ -344,7 +344,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
-            "schema", "tableName", keyProperty, properties, keys);
+            "schema", "tableName", keyProperty, properties, keys)!;
 
         AssertEqualIgnoreNewLines(
         """""
