@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
 {
-    private readonly KernelAgentFactory?[] _kernelAgentFactories;
+    private readonly KernelAgentFactory[] _kernelAgentFactories;
 
     /// <summary>Initializes the instance.</summary>
     /// <param name="kernelAgentFactories">Ordered <see cref="KernelAgentFactory"/> instances to aggregate.</param>
@@ -37,7 +37,7 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
 
         foreach (var kernelAgentFactory in this._kernelAgentFactories)
         {
-            if (kernelAgentFactory is not null && kernelAgentFactory.IsSupported(agentDefinition))
+            if (kernelAgentFactory.IsSupported(agentDefinition))
             {
                 var kernelAgent = await kernelAgentFactory.TryCreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
                 if (kernelAgent is not null)

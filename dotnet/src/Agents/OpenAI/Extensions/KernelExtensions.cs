@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -38,7 +39,7 @@ internal static class KernelExtensions
                 throw new InvalidOperationException("OpenAI client type must be specified.");
             }
 
-            var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+            var httpClient = kernel.Services.GetService<HttpClient>();
             if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
                 OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
