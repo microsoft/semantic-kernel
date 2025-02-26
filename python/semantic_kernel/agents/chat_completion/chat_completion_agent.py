@@ -37,7 +37,7 @@ class ChatCompletionAgent(Agent):
     """
 
     service_id: str
-    channel_type: ClassVar[type[AgentChannel]] = ChatHistoryChannel
+    channel_type: ClassVar[type[AgentChannel] | None] = ChatHistoryChannel
 
     def __init__(
         self,

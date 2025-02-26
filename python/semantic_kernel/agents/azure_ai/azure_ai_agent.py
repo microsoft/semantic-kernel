@@ -19,9 +19,11 @@ from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
+from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.kernel import Kernel
@@ -29,10 +31,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
-from semantic_kernel.utils.telemetry.user_agent import (
-    APP_INFO,
-    SEMANTIC_KERNEL_USER_AGENT,
-)
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class AzureAIAgent(Agent):
     definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
-    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel  # type: ignore
+    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
 
     def __init__(
         self,
@@ -123,9 +122,11 @@ class AzureAIAgent(Agent):
 
         super().__init__(**args)
 
-    @classmethod
+    @staticmethod
     def create_client(
-        cls: type[_T], credential: "DefaultAzureCredential", conn_str: str, **kwargs: Any
+        credential: "DefaultAzureCredential",
+        conn_str: str | None = None,
+        **kwargs: Any,
     ) -> AIProjectClient:
         """Create the Azure AI Project client using the connection string.
 
@@ -137,6 +138,12 @@ class AzureAIAgent(Agent):
         Returns:
             AIProjectClient: The Azure AI Project client
         """
+        if conn_str is None:
+            ai_agent_settings = AzureAIAgentSettings.create()
+            if not ai_agent_settings.project_connection_string:
+                raise AgentInitializationException("Please provide a valid Azure AI connection string.")
+            conn_str = ai_agent_settings.project_connection_string.get_secret_value()
+
         return AIProjectClient.from_connection_string(
             credential=credential,
             conn_str=conn_str,
@@ -144,7 +151,7 @@ class AzureAIAgent(Agent):
             **kwargs,
         )
 
-    async def add_chat_message(self, thread_id: str, message: "ChatMessageContent") -> "ThreadMessage | None":
+    async def add_chat_message(self, thread_id: str, message: "str | ChatMessageContent") -> "ThreadMessage | None":
         """Add a chat message to the thread.
 
         Args:
