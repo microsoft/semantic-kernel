@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary
 using ChatWithAgent.Web;
 using ChatWithAgent.Web.Components;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 var builder = WebApplication.CreateBuilder(args);
 
