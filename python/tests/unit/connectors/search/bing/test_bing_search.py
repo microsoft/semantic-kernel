@@ -48,7 +48,9 @@ def mock_bing_search_response():
 
 async def test_bing_search_init_success(bing_search):
     """Test that BingSearch initializes successfully with valid env."""
-    assert bing_search is not None
+    # Should not raise any exception
+    assert bing_search.settings.api_key.get_secret_value() == "test_api_key"
+    assert bing_search.settings.custom_config == "test_org_id"
 
 
 async def test_bing_search_init_validation_error():
