@@ -3,10 +3,10 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-T = TypeVar("T", bound=type)
+T = TypeVar("T")
 
 """
-# Usage Example:
+Example usage:
 
 @experimental
 class MyExperimentalClass:
@@ -25,20 +25,22 @@ def my_experimental_function():
 
 @release_candidate
 class MyRCClass:
-    '''A class that is nearly final, but still in release-candidate stage.
-    
-    Uses the DEFAULT_RC_VERSION specified in the __init__.py file.
-    '''
+    '''A class that is nearly final, but still in release-candidate stage.'''
     pass
-    
+
 @release_candidate("1.23.1-rc1")
 class MyRCClass:
-    '''A class that is nearly final, but still in release-candidate stage.
-    
-    Uses the specified version as part of the decorator
-    '''
+    '''A class that is nearly final, but still in release-candidate stage.'''
     pass
 """
+
+
+def _update_docstring(obj: Callable | T, note: str) -> None:
+    """Append or set the docstring of the given object with the specified note."""
+    if obj.__doc__:
+        obj.__doc__ += f"\n\n{note}"
+    else:
+        obj.__doc__ = note
 
 
 def stage(status: str = "experimental", version: str | None = None) -> Callable[[Callable | T], Callable | T]:
@@ -58,14 +60,10 @@ def stage(status: str = "experimental", version: str | None = None) -> Callable[
 
     def decorator(obj: Callable | T) -> Callable | T:
         entity_type = "class" if isinstance(obj, type) else "function"
+        ver_text = f" (Version: {version})" if version else ""
+        note = f"Note: This {entity_type} is marked as '{status}'{ver_text} and may change in the future."
 
-        version_string = f" (Version: {version})" if version else ""
-        note = f"Note: This {entity_type} is marked as '{status}'{version_string} and may change in the future."
-
-        if obj.__doc__:
-            obj.__doc__ += f"\n\n{note}"
-        else:
-            obj.__doc__ = note
+        _update_docstring(obj, note)
 
         setattr(obj, "stage_status", status)
         if version:
@@ -110,19 +108,18 @@ def release_candidate(
     """
     from semantic_kernel import DEFAULT_RC_VERSION
 
-    def _apply(obj: Callable | T, ver: str | None) -> Callable | T:
+    def _apply(obj: Callable | T, ver: str) -> Callable | T:
         decorated = stage(status="release_candidate", version=ver)(obj)
         setattr(decorated, "is_release_candidate", True)
         return decorated
 
     if callable(func):
-        resolved_version = version or DEFAULT_RC_VERSION
-        return _apply(func, resolved_version)
+        ver = version or DEFAULT_RC_VERSION
+        return _apply(func, ver)
 
-    resolved_version = func if isinstance(func, str) else version
-    resolved_version = resolved_version or DEFAULT_RC_VERSION
+    ver_str: str | None = func if isinstance(func, str) else version
 
     def wrapper(obj: Callable | T) -> Callable | T:
-        return _apply(obj, resolved_version)
+        return _apply(obj, ver_str or DEFAULT_RC_VERSION)
 
     return wrapper
