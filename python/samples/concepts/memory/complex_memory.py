@@ -117,10 +117,12 @@ def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distan
 
 
 collection_name = "test"
-distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
-# Depending on the vector database, the index kind and distance function may need to be adjusted,
+# Depending on the vector database, the index kind and distance function may need to be adjusted
 # since not all combinations are supported by all databases.
-DataModel = get_data_model("array", IndexKind.HNSW, distance_function)
+# The values below might need to be changed for your collection to work.
+distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
+index_kind = IndexKind.HNSW
+DataModel = get_data_model("array", index_kind, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:

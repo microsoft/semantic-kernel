@@ -29,6 +29,7 @@ from semantic_kernel.data.vector_storage.vector_store_record_collection import V
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreModelValidationError,
+    VectorStoreOperationException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -123,7 +124,11 @@ class ChromaCollection(
         try:
             self.client.delete_collection(name=self.collection_name)
         except ValueError:
-            logger.info(f"Collection {self.collection_name} could not be deleted.")
+            logger.info(f"Collection {self.collection_name} could not be deleted because it doesn't exist.")
+        except Exception as e:
+            raise VectorStoreOperationException(
+                f"Failed to delete collection {self.collection_name} with error: {e}"
+            ) from e
 
     async def _validate_data_model(self):
         super()._validate_data_model()
