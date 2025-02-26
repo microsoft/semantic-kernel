@@ -190,7 +190,7 @@ class ChatCompletionAgent(Agent):
         arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
             kernel=kernel, arguments=arguments
@@ -254,7 +254,7 @@ class ChatCompletionAgent(Agent):
         arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
             kernel=kernel, arguments=arguments

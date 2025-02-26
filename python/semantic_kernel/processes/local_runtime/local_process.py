@@ -135,7 +135,7 @@ class LocalProcess(LocalStep):
                 process = LocalProcess(
                     process=step,
                     kernel=self.kernel,
-                    factorie=self.factories,
+                    factories=self.factories,
                     parent_process_id=self.id,
                 )
 
@@ -229,15 +229,16 @@ class LocalProcess(LocalStep):
         """Processes events emitted by the given step and enqueues them."""
         all_step_events = step.get_all_events()
         for step_event in all_step_events:
+            # must come first because emitting the step event modifies its namespace
+            for edge in step.get_edge_for_event(step_event.id):
+                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
+                message_channel.put(message)
+
             if step_event.visibility == KernelProcessEventVisibility.Public:
                 if isinstance(step_event, KernelProcessEvent):
                     await self.emit_event(step_event)  # type: ignore
                 elif isinstance(step_event, LocalEvent):
                     await self.emit_local_event(step_event)  # type: ignore
-
-            for edge in step.get_edge_for_event(step_event.id):
-                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
-                message_channel.put(message)
 
     def dispose(self):
         """Clean up resources."""
