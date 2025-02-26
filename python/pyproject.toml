@@ -121,7 +121,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 aws = [
-    "boto3~=1.36.4",
+    "boto3>=1.36.4,<1.38.0",
 ]
 dapr = [
     "dapr>=1.14.0",
@@ -143,8 +143,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.9",
-    "pyright>=1.1.392.post0",
+    "ruff ~= 0.9"
 ]
 environments = [
     "sys_platform == 'darwin'",
