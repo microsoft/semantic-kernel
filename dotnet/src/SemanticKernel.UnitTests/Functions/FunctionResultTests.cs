@@ -176,17 +176,25 @@ public class FunctionResultTests
         Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
     }
 
-    [Fact]
-    public void GetValueConvertsFromSKChatMessageContentListToMEAIChatResponse()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(10)]
+    public void GetValueConvertsFromSKChatMessageContentListToMEAIChatResponse(int listSize)
     {
         // Arrange
-        string expectedValue = Guid.NewGuid().ToString();
-        IReadOnlyList<ChatMessageContent> valueType = new List<ChatMessageContent>() { new ChatMessageContent(AuthorRole.User, expectedValue) };
-        FunctionResult target = new(s_nopFunction, valueType);
+        List<ChatMessageContent> valueType = [];
+        for (int i = 0; i < listSize; i++)
+        {
+            valueType.Add(new ChatMessageContent(AuthorRole.User, Guid.NewGuid().ToString()));
+        }
+        FunctionResult target = new(KernelFunctionFactory.CreateFromMethod(() => { }), valueType);
 
         // Act and Assert
-
-        Assert.Equal(valueType[0].Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
-        Assert.Equal(valueType.Count, target.GetValue<MEAI.ChatResponse>()!.Choices.Count);
+        var result = target.GetValue<MEAI.ChatResponse>()!;
+        for (int i = 0; i < listSize; i++)
+        {
+            Assert.Equal(valueType[i].Content, result.Choices[i].Text);
+        }
+        Assert.Equal(valueType.Count, result.Choices.Count);
     }
 }

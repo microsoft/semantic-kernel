@@ -122,15 +122,18 @@ public sealed class FunctionResult
             {
                 return (T?)(object)(new MEAI.ChatResponse(singleChoiceMessageContent.ToChatMessage()));
             }
+        }
 
-            // List of ChatMessageContent as ChatResponse
-            if (typeof(ChatResponse).IsAssignableFrom(typeof(T))
-                && content is IReadOnlyList<ChatMessageContent> multipleChoiceMessageList)
+        if (this.Value is IReadOnlyList<ChatMessageContent> messageContentList)
+        {
+            if (typeof(T) == typeof(ChatResponse))
             {
-                return (T?)(object)(new MEAI.ChatResponse(
-                    multipleChoiceMessageList
-                        .Select(m => m.ToChatMessage())
-                        .ToList()));
+                return (T)(object)(new ChatResponse(messageContentList.Select(m => m.ToChatMessage()).ToList()));
+            }
+            var firstMessage = messageContentList[0];
+            if (typeof(T) == typeof(ChatMessage))
+            {
+                return (T)(object)firstMessage.ToChatMessage();
             }
         }
 
@@ -162,7 +165,7 @@ public sealed class FunctionResult
             }
 
             // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
-            if (typeof(ChatMessageContent).IsAssignableFrom(typeof(T)))
+            if (typeof(KernelContent).IsAssignableFrom(typeof(T)))
             {
                 return (T)(object)chatMessage.ToChatMessageContent();
             }

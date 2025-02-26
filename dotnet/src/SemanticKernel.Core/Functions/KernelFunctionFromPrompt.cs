@@ -379,7 +379,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 }
 
                 // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
-                if (typeof(StreamingChatMessageContent).IsAssignableFrom(typeof(TResult)))
+                // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
+                if (typeof(StreamingKernelContent).IsAssignableFrom(typeof(TResult)))
                 {
                     yield return (TResult)(object)chatUpdate.ToStreamingChatMessageContent();
                     continue;
