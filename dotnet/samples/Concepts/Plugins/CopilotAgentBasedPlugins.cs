@@ -209,8 +209,9 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
     }
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
-        if ("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
+        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
+            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;
