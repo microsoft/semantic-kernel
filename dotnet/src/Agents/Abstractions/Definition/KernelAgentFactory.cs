@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Represents a factory for creating <see cref="KernelAgent"/> instances.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 public abstract class KernelAgentFactory
 {
     /// <summary>

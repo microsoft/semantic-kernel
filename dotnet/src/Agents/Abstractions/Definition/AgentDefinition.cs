@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Defines an agent.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 public sealed class AgentDefinition
 {
     /// <summary>

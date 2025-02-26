@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Defines the model to be used by an agent.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 public sealed class ModelDefinition
 {
     /// <summary>
