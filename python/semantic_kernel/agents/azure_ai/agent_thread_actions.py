@@ -354,7 +354,7 @@ class AgentThreadActions:
         """
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
-        arguments = agent.merge_arguments(arguments)
+        arguments = agent._merge_arguments(arguments)
 
         tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
 

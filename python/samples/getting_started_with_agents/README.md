@@ -26,14 +26,15 @@ Example|Description
 [step4_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step4_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
 [step5_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_logging.py)|How to enable logging for agents.
 
-## OpenAI Assistant
+## OpenAI Assistant Agent
 
 Example|Description
 ---|---
 [step1_assistant](../getting_started_with_agents/openai_assistant/step1_assistant.py)|How to create and use an OpenAI Assistant agent.
-[step2_assistant_vision](../getting_started_with_agents/openai_assistant/step2_assistant_vision.py)|How to provide an image as input to an Open AI Assistant agent.
-[step3_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step3_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an Open AI Assistant agent.
-[step4_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step4_assistant_tool_file_search.py)|How to use the file-search tool for an Open AI Assistant agent.
+[step2_assistant_plugins](../getting_started_with_agents/openai_assistant/step2_assistant_plugins.py)| How to create and use an OpenAI Assistant agent with plugins.
+[step3_assistant_vision](../getting_started_with_agents/openai_assistant/step3_assistant_vision.py)|How to provide an image as input to an Open AI Assistant agent.
+[step4_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step4_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an Open AI Assistant agent.
+[step5_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step5_assistant_tool_file_search.py)|How to use the file-search tool for an Open AI Assistant agent.
 
 ## Azure AI Agent
 Example|Description

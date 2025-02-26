@@ -29,4 +29,4 @@ class KernelProcessEvent(KernelBaseModel):
     data: Any | None = None
     visibility: KernelProcessEventVisibility = KernelProcessEventVisibility.Internal
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=False)

@@ -55,7 +55,7 @@ class AzureAIAgent(Agent):
     definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
 
-    channel_type: ClassVar[type[AgentChannel] | None] = AzureAIChannel
+    channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
 
     def __init__(
         self,
@@ -193,7 +193,7 @@ class AzureAIAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "model": model,
@@ -253,7 +253,7 @@ class AzureAIAgent(Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         run_level_params = {
             "model": model,
