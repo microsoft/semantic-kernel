@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
 {
     /// <summary>

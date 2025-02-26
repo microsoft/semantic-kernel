@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class ChatCompletionAgentFactory : KernelAgentFactory
 {
     /// <summary>

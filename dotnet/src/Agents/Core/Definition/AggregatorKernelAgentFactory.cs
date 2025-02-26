@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Provides a <see cref="KernelAgentFactory"/> which aggregates multiple kernel agent factories.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
 {
     private readonly KernelAgentFactory[] _kernelAgentFactories;

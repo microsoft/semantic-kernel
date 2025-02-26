@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Defines the configuration for a model.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 public sealed class ModelConfiguration
 {
     /// <summary>

@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class AzureAIAgentFactory : KernelAgentFactory
 {
     /// <summary>
