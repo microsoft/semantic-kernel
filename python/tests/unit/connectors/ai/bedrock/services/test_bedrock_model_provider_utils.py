@@ -167,7 +167,6 @@ def test_inference_profile_with_bedrock_model() -> None:
         BedrockModelProvider.to_model_provider(unknown_inference_profile)
 
 
-@pytest.mark.asyncio
 async def test_run_in_executor_calls_executor_properly() -> None:
     """Test that run_in_executor properly calls an executor and function."""
     mock_executor = MagicMock()
