@@ -27,7 +27,7 @@ Example|Description
 [step5_json_result](../getting_started_with_agents/chat_completion/step5_json_result.py)|How to have an agent produce JSON.
 [step6_logging](../getting_started_with_agents/chat_completion/step6_logging.py)|How to enable logging for agents.
 
-## OpenAI Assistant
+## OpenAI Assistant Agent
 
 Example|Description
 ---|---

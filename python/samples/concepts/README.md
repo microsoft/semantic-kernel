@@ -4,18 +4,18 @@
 
 ### Agents - Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel
 
-#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
+#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_openai_assistant.py)
 
-- [Assistant Agent Chart Maker Streaming](./agents/assistant_agent/assistant_agent_chart_maker_streaming.py)
-- [Assistant Agent Chart Maker](./agents/assistant_agent/assistant_agent_chart_maker.py)
-- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent/assistant_agent_file_manipulation_streaming.py)
-- [Assistant Agent File Manipulation](./agents/assistant_agent/assistant_agent_file_manipulation.py)
-- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent/assistant_agent_file_manipulation_streaming.py)
-- [Assistant Agent Retrieval](./agents/assistant_agent/assistant_agent_retrieval.py)
-- [Assistant Agent Streaming](./agents/assistant_agent/assistant_agent_streaming.py)
-- [Assistant Agent Structured Outputs](./agents/assistant_agent/assistant_agent_structured_outputs.py)
-- [Assistant Agent Templating Streaming](./agents/assistant_agent/assistant_agent_templating_streaming.py)
-- [Assistant Agent Vision Streaming](./agents/assistant_agent/assistant_agent_vision_streaming.py)
+- [OpenAI Assistant Agent Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
+- [OpenAI Assistant Agent Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
+- [OpenAI Assistant Agent File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
+- [OpenAI Assistant Agent File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
+- [OpenAI Assistant Agent File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
+- [OpenAI Assistant Agent Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
+- [OpenAI Assistant Agent Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
+- [OpenAI Assistant Agent Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
+- [OpenAI Assistant Agent Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
+- [OpenAI Assistant Agent Vision Streaming](./agents/openai_assistant/openai_assistant_vision_streaming.py)
 
 #### [Azure AI Agent](../../semantic_kernel/agents/azure_ai/azure_ai_agent.py)
 
