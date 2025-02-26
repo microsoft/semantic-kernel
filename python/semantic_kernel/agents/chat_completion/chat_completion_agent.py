@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -23,6 +21,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig

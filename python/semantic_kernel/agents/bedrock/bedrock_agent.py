@@ -335,7 +335,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
         kwargs.setdefault("sessionState", {})
