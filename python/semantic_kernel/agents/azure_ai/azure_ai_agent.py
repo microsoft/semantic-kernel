@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import AsyncIterable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
@@ -22,17 +28,18 @@ from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActi
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.naming import generate_random_ascii_name
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
-from semantic_kernel.utils.telemetry.user_agent import (
-    APP_INFO,
-    SEMANTIC_KERNEL_USER_AGENT,
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
 )
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -156,7 +163,73 @@ class AzureAIAgent(Agent):
         """
         return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
 
+    @trace_agent_get_response
+    @override
+    async def get_response(
+        self,
+        thread_id: str,
+        arguments: KernelArguments | None = None,
+        kernel: Kernel | None = None,
+        # Run-level parameters:
+        *,
+        model: str | None = None,
+        instructions_override: str | None = None,
+        additional_instructions: str | None = None,
+        additional_messages: list[ThreadMessageOptions] | None = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        max_prompt_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
+        truncation_strategy: TruncationObject | None = None,
+        response_format: AgentsApiResponseFormatOption | None = None,
+        parallel_tool_calls: bool | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> ChatMessageContent:
+        """Get the response from the agent on a thread."""
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self.merge_arguments(arguments)
+
+        run_level_params = {
+            "model": model,
+            "instructions_override": instructions_override,
+            "additional_instructions": additional_instructions,
+            "additional_messages": additional_messages,
+            "tools": tools,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_prompt_tokens": max_prompt_tokens,
+            "max_completion_tokens": max_completion_tokens,
+            "truncation_strategy": truncation_strategy,
+            "response_format": response_format,
+            "parallel_tool_calls": parallel_tool_calls,
+            "metadata": metadata,
+        }
+        run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
+
+        messages: list[ChatMessageContent] = []
+        async for is_visible, message in AgentThreadActions.invoke(
+            agent=self,
+            thread_id=thread_id,
+            kernel=kernel,
+            arguments=arguments,
+            **run_level_params,  # type: ignore
+        ):
+            if is_visible and message.metadata.get("code"):
+                messages.append(message)
+
+        if not messages:
+            raise AgentInvokeException("No response messages were returned from the agent.")
+        return messages[-1]
+
     @trace_agent_invocation
+    @override
     async def invoke(
         self,
         thread_id: str,
@@ -216,6 +289,7 @@ class AzureAIAgent(Agent):
                 yield message
 
     @trace_agent_invocation
+    @override
     async def invoke_stream(
         self,
         thread_id: str,
