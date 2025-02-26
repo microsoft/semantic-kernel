@@ -325,6 +325,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                         continue;
                     }
                 }
+
+                // Attempting to use the new MEAI Chat types will trigger automatic conversion of SK chat contents.
+                if (typeof(ChatResponseUpdate).IsAssignableFrom(typeof(TResult))
+                    && content is StreamingChatMessageContent streamingChatMessageContent)
+                {
+                    yield return (TResult)(object)streamingChatMessageContent.ToChatResponseUpdate();
+                    continue;
+                }
             }
             else if (content is ChatResponseUpdate chatUpdate)
             {
@@ -337,6 +345,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (chatUpdate is TResult contentAsT)
                 {
                     yield return contentAsT;
+                    continue;
+                }
+
+                if (chatUpdate.Contents is TResult contentListsAsT)
+                {
+                    yield return contentListsAsT;
                     continue;
                 }
 
@@ -363,9 +377,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                         continue;
                     }
                 }
+
+                // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
+                if (typeof(StreamingChatMessageContent).IsAssignableFrom(typeof(TResult)))
+                {
+                    yield return (TResult)(object)chatUpdate.ToStreamingChatMessageContent();
+                    continue;
+                }
             }
 
-            throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property");
+            throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are derivations of {typeof(StreamingKernelContent)}, {typeof(StreamingKernelContent)}, string, byte[], or a matching type for {typeof(StreamingKernelContent)}.{nameof(StreamingKernelContent.InnerContent)} property");
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.

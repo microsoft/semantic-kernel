@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace SemanticKernel.UnitTests.Functions;
 
@@ -133,5 +135,58 @@ public class FunctionResultTests
 
         Assert.Equal(valueType, target.GetValue<TextContent>());
         Assert.Equal(valueType, target.GetValue<KernelContent>());
+    }
+
+    [Fact]
+    public void GetValueConvertsFromMEAIChatMessageToSKChatMessageContent()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Text, target.GetValue<ChatMessageContent>()!.Content);
+    }
+
+    [Fact]
+    public void GetValueConvertsFromSKChatMessageContentToMEAIChatMessage()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new ChatMessageContent(AuthorRole.User, expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatMessage>()!.Text);
+    }
+
+    [Fact]
+    public void GetValueConvertsFromSKChatMessageContentToMEAIChatResponse()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new ChatMessageContent(AuthorRole.User, expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
+    }
+
+    [Fact]
+    public void GetValueConvertsFromSKChatMessageContentListToMEAIChatResponse()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        IReadOnlyList<ChatMessageContent> valueType = new List<ChatMessageContent>() { new ChatMessageContent(AuthorRole.User, expectedValue) };
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType[0].Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
+        Assert.Equal(valueType.Count, target.GetValue<MEAI.ChatResponse>()!.Choices.Count);
     }
 }

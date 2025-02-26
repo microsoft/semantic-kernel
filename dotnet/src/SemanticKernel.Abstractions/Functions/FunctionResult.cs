@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
@@ -103,6 +106,32 @@ public sealed class FunctionResult
             {
                 return innerContent;
             }
+
+            // Attempting to use the new MEAI Chat types will trigger automatic conversion of SK chat contents.
+
+            // ChatMessageContent as ChatMessage
+            if (typeof(ChatMessage).IsAssignableFrom(typeof(T))
+                && content is ChatMessageContent chatMessageContent)
+            {
+                return (T?)(object)chatMessageContent.ToChatMessage();
+            }
+
+            // ChatMessageContent as ChatResponse
+            if (typeof(ChatResponse).IsAssignableFrom(typeof(T))
+                && content is ChatMessageContent singleChoiceMessageContent)
+            {
+                return (T?)(object)(new MEAI.ChatResponse(singleChoiceMessageContent.ToChatMessage()));
+            }
+
+            // List of ChatMessageContent as ChatResponse
+            if (typeof(ChatResponse).IsAssignableFrom(typeof(T))
+                && content is IReadOnlyList<ChatMessageContent> multipleChoiceMessageList)
+            {
+                return (T?)(object)(new MEAI.ChatResponse(
+                    multipleChoiceMessageList
+                        .Select(m => m.ToChatMessage())
+                        .ToList()));
+            }
         }
 
         if (this.Value is MEAI.ChatMessage chatMessage)
@@ -122,9 +151,20 @@ public sealed class FunctionResult
                 }
             }
 
+            if (chatMessage.Contents is T contentsList)
+            {
+                return contentsList;
+            }
+
             if (chatMessage.RawRepresentation is T rawRepresentation)
             {
                 return rawRepresentation;
+            }
+
+            // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
+            if (typeof(ChatMessageContent).IsAssignableFrom(typeof(T)))
+            {
+                return (T)(object)chatMessage.ToChatMessageContent();
             }
         }
 

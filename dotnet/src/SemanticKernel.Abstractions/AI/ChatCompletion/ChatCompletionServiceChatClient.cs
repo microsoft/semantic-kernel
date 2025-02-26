@@ -64,7 +64,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             kernel: null,
             cancellationToken).ConfigureAwait(false))
         {
-            yield return ToStreamingChatCompletionUpdate(update);
+            yield return update.ToChatResponseUpdate();
         }
     }
 
@@ -191,47 +191,5 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         }
 
         return settings;
-    }
-
-    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
-    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static ChatResponseUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
-    {
-        ChatResponseUpdate update = new()
-        {
-            AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
-            AuthorName = content.AuthorName,
-            ChoiceIndex = content.ChoiceIndex,
-            ModelId = content.ModelId,
-            RawRepresentation = content,
-            Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
-        };
-
-        foreach (var item in content.Items)
-        {
-            AIContent? aiContent = null;
-            switch (item)
-            {
-                case Microsoft.SemanticKernel.StreamingTextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
-                    break;
-
-                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
-                        fcc.CallId ?? string.Empty,
-                        fcc.Name ?? string.Empty,
-                        fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
-                    break;
-            }
-
-            if (aiContent is not null)
-            {
-                aiContent.RawRepresentation = content;
-
-                update.Contents.Add(aiContent);
-            }
-        }
-
-        return update;
     }
 }
