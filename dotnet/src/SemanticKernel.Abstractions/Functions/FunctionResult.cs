@@ -110,17 +110,17 @@ public sealed class FunctionResult
             // Attempting to use the new MEAI Chat types will trigger automatic conversion of SK chat contents.
 
             // ChatMessageContent as ChatMessage
-            if (typeof(ChatMessage).IsAssignableFrom(typeof(T))
+            if (typeof(T) == typeof(ChatMessage)
                 && content is ChatMessageContent chatMessageContent)
             {
                 return (T?)(object)chatMessageContent.ToChatMessage();
             }
 
             // ChatMessageContent as ChatResponse
-            if (typeof(ChatResponse).IsAssignableFrom(typeof(T))
+            if (typeof(T) == typeof(ChatResponse)
                 && content is ChatMessageContent singleChoiceMessageContent)
             {
-                return (T?)(object)(new MEAI.ChatResponse(singleChoiceMessageContent.ToChatMessage()));
+                return (T?)(object)new MEAI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
             }
         }
 
@@ -128,7 +128,7 @@ public sealed class FunctionResult
         {
             if (typeof(T) == typeof(ChatResponse))
             {
-                return (T)(object)(new ChatResponse(messageContentList.Select(m => m.ToChatMessage()).ToList()));
+                return (T)(object)new ChatResponse(messageContentList.Select(m => m.ToChatMessage()).ToList());
             }
             var firstMessage = messageContentList[0];
             if (typeof(T) == typeof(ChatMessage))
@@ -137,11 +137,24 @@ public sealed class FunctionResult
             }
         }
 
-        if (this.Value is MEAI.ChatMessage chatMessage)
+        if (this.Value is MEAI.ChatResponse chatResponse)
         {
+            // If no choices are present, return default
+            if (chatResponse.Choices.Count == 0)
+            {
+                return default;
+            }
+
+            var chatMessage = chatResponse.Message;
             if (typeof(T) == typeof(string))
             {
                 return (T?)(object?)chatMessage.ToString();
+            }
+
+            // ChatMessage from a ChatResponse
+            if (typeof(T) == typeof(ChatMessage))
+            {
+                return (T?)(object)chatMessage;
             }
 
             if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
@@ -159,45 +172,31 @@ public sealed class FunctionResult
                 return contentsList;
             }
 
-            if (chatMessage.RawRepresentation is T rawRepresentation)
+            if (chatResponse.RawRepresentation is T rawResponseRepresentation)
             {
-                return rawRepresentation;
+                return rawResponseRepresentation;
             }
 
-            // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
-            if (typeof(KernelContent).IsAssignableFrom(typeof(T)))
+            if (chatMessage.RawRepresentation is T rawMessageRepresentation)
             {
-                return (T)(object)chatMessage.ToChatMessageContent();
-            }
-        }
-
-        if (this.Value is IList<MEAI.ChatMessage> chatMessageList && chatMessageList.Count != 0)
-        {
-            var firstMessage = chatMessageList[0];
-
-            if (typeof(T) == typeof(string))
-            {
-                return (T?)(object?)firstMessage.ToString();
-            }
-
-            if (typeof(T) == typeof(MEAI.ChatMessage))
-            {
-                return (T)(object)firstMessage;
+                return rawMessageRepresentation;
             }
 
             if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
             {
                 // Return the first matching content type of a message if any
-                var updateContent = firstMessage.Contents.FirstOrDefault(c => c is T);
+                var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
                 if (updateContent is not null)
                 {
                     return (T)(object)updateContent;
                 }
             }
 
-            if (firstMessage.RawRepresentation is T rawRepresentation)
+            // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
+            // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
+            if (typeof(KernelContent).IsAssignableFrom(typeof(T)))
             {
-                return rawRepresentation;
+                return (T)(object)chatMessage.ToChatMessageContent();
             }
         }
 

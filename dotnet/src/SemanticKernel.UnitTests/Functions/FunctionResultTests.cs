@@ -142,12 +142,12 @@ public class FunctionResultTests
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();
-        var valueType = new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue);
+        var valueType = new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue));
         FunctionResult target = new(s_nopFunction, valueType);
 
         // Act and Assert
 
-        Assert.Equal(valueType.Text, target.GetValue<ChatMessageContent>()!.Content);
+        Assert.Equal(valueType.Message.Text, target.GetValue<ChatMessageContent>()!.Content);
     }
 
     [Fact]
@@ -196,5 +196,34 @@ public class FunctionResultTests
             Assert.Equal(valueType[i].Content, result.Choices[i].Text);
         }
         Assert.Equal(valueType.Count, result.Choices.Count);
+    }
+
+    [Fact]
+    public void GetValueCanRetrieveMEAITypes()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue));
+        FunctionResult target = new(s_nopFunction, valueType);
+        // Act and Assert
+        Assert.Same(valueType, target.GetValue<MEAI.ChatResponse>());
+        Assert.Same(valueType.Message, target.GetValue<MEAI.ChatMessage>());
+        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.TextContent>());
+        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.AIContent>());
+    }
+
+    [Fact]
+    public void GetValueIsNullForEmptyChoicesMEAITypes()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatResponse([]);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+        Assert.Empty(target.GetValue<MEAI.ChatResponse>()!.Choices);
+        Assert.Null(target.GetValue<MEAI.ChatMessage>());
+        Assert.Null(target.GetValue<MEAI.TextContent>());
+        Assert.Null(target.GetValue<MEAI.AIContent>());
     }
 }

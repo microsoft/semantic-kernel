@@ -788,7 +788,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (chatContents.Choices is { Count: 0 })
         {
-            return new FunctionResult(this, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+            return new FunctionResult(this, chatContents, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
         }
 
         var modelId = chatClient.GetService<ChatClientMetadata>()?.ModelId;
@@ -799,16 +799,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // If collection has one element, return single result
         if (chatContents.Choices.Count == 1)
         {
-            return new FunctionResult(this, chatContents.Message)
+            return new FunctionResult(this, chatContents)
             {
                 Culture = kernel.Culture,
-                Metadata = chatContents.Message.AdditionalProperties,
+                Metadata = chatContents.AdditionalProperties,
                 RenderedPrompt = promptRenderingResult.RenderedPrompt
             };
         }
 
         // Otherwise, return multiple results
-        return new FunctionResult(this, chatContents.Choices)
+        return new FunctionResult(this, chatContents)
         {
             Culture = kernel.Culture,
             RenderedPrompt = promptRenderingResult.RenderedPrompt,

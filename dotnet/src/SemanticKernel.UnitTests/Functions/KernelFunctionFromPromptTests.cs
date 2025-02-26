@@ -445,7 +445,9 @@ public class KernelFunctionFromPromptTests
 
         var result = await kernel.InvokeAsync(function);
 
-        Assert.Collection(result.GetValue<IList<MEAI.ChatMessage>>()!,
+        var response = result.GetValue<MEAI.ChatResponse>();
+        Assert.NotNull(response);
+        Assert.Collection(response.Choices,
             item1 =>
             {
                 Assert.Equal("something 1", item1.Text); Assert.Equal(MEAI.ChatRole.User, item1.Role);
