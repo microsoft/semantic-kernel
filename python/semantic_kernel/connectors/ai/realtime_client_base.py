@@ -45,11 +45,21 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     def receive(
         self,
+        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[RealtimeEvents, None]:
         """Starts listening for messages from the service, generates events.
 
         Args:
+            audio_output_callback: The audio output callback, optional.
+                This should be a coroutine, that takes a ndarray with audio as input.
+                The goal of this function is to allow you to play the audio with the
+                least amount of latency possible.
+                It is called first in both websockets and webrtc.
+                Even when passed, the audio content will still be
+                added to the receiving queue.
+                This can also be set in the constructor.
+                When supplied here it will override any value in the class.
             kwargs: Additional arguments.
         """
         raise NotImplementedError
