@@ -113,7 +113,10 @@ class ChromaCollection(
                     "supported."
                 )
             kwargs["hnsw:space"] = DISTANCE_FUNCTION_MAP[self.data_model_definition.vector_fields[0].distance_function]
-        self.client.create_collection(name=self.collection_name, metadata=kwargs)
+        if kwargs:
+            self.client.create_collection(name=self.collection_name, metadata=kwargs)
+        else:
+            self.client.create_collection(name=self.collection_name)
 
     @override
     async def delete_collection(self, **kwargs: Any) -> None:
@@ -155,6 +158,8 @@ class ChromaCollection(
                     k: v for k, v in record.items() if k not in [id_field_name, vector_field_name, document_field_name]
                 },
             }
+            if store_model["metadata"] == {}:
+                store_model.pop("metadata")
             store_models.append(store_model)
         return store_models
 
@@ -180,12 +185,21 @@ class ChromaCollection(
         records: Sequence[Any],
         **kwargs: Any,
     ) -> Sequence[str]:
-        upsert_obj = {"ids": [], "embeddings": [], "documents": [], "metadatas": []}
+        upsert_obj = {"ids": []}
         for record in records:
             upsert_obj["ids"].append(record["id"])
-            upsert_obj["embeddings"].append(record["embedding"])
-            upsert_obj["documents"].append(record["document"])
-            upsert_obj["metadatas"].append(record["metadata"])
+            if "embedding" in record:
+                if "embeddings" not in upsert_obj:
+                    upsert_obj["embeddings"] = []
+                upsert_obj["embeddings"].append(record["embedding"])
+            if "document" in record:
+                if "documents" not in upsert_obj:
+                    upsert_obj["documents"] = []
+                upsert_obj["documents"].append(record["document"])
+            if "metadata" in record:
+                if "metadatas" not in upsert_obj:
+                    upsert_obj["metadatas"] = []
+                upsert_obj["metadatas"].append(record["metadata"])
         self._get_collection().add(**upsert_obj)
         return upsert_obj["ids"]
 
@@ -217,7 +231,8 @@ class ChromaCollection(
                 results["distances"][0],
             ):
                 record = {"id": id, "embedding": embedding, "document": document, "distance": distance}
-                record.update(metadata)
+                if metadata:
+                    record.update(metadata)
                 records.append(record)
             return records
         if include_vectors and not include_distances:
@@ -232,7 +247,8 @@ class ChromaCollection(
                     "embedding": embedding,
                     "document": document,
                 }
-                record.update(metadata)
+                if metadata:
+                    record.update(metadata)
                 records.append(record)
             return records
         if not include_vectors and include_distances:
@@ -240,7 +256,8 @@ class ChromaCollection(
                 results["ids"][0], results["documents"][0], results["metadatas"][0], results["distances"][0]
             ):
                 record = {"id": id, "document": document, "distance": distance}
-                record.update(metadata)
+                if metadata:
+                    record.update(metadata)
                 records.append(record)
             return records
         for id, document, metadata in zip(
@@ -252,7 +269,8 @@ class ChromaCollection(
                 "id": id,
                 "document": document,
             }
-            record.update(metadata)
+            if metadata:
+                record.update(metadata)
             records.append(record)
         return records
 
