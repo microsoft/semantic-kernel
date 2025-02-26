@@ -295,7 +295,7 @@ class ChromaCollection(
         return result["distance"]
 
     def _parse_filter(self, options: VectorSearchOptions) -> dict[str, Any] | None:
-        if options.filter is None:
+        if options.filter is None or not options.filter.filters:
             return None
         filter_expression = {"$and": []}
         for filter in options.filter.filters:
@@ -351,4 +351,4 @@ class ChromaStore(VectorStore):
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        return [collection.name for collection in self.client.list_collections()]
+        return self.client.list_collections()
