@@ -2,9 +2,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.SemanticKernel.Http;
 using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -38,7 +38,10 @@ internal static class KernelExtensions
                 throw new InvalidOperationException("OpenAI client type was not specified.");
             }
 
-            var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+#pragma warning disable CA2000 // Dispose objects before losing scope, not applicable because the HttpClient is created and may be used elsewhere
+            var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
             if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
                 OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
