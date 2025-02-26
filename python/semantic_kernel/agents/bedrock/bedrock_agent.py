@@ -316,7 +316,19 @@ class BedrockAgent(BedrockAgentBase, Agent):
         kernel: "Kernel | None" = None,
         **kwargs,
     ) -> ChatMessageContent:
-        """Get a response from the agent."""
+        """Get a response from the agent.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A chat message content with the response.
+        """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:

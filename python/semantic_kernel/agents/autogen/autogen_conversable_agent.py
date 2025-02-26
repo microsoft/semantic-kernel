@@ -65,7 +65,14 @@ class AutoGenConversableAgent(Agent):
     @trace_agent_get_response
     @override
     async def get_response(self, message: str) -> ChatMessageContent:
-        """Get a response from the agent."""
+        """Get a response from the agent.
+
+        Args:
+            message: The message to send.
+
+        Returns:
+            A ChatMessageContent object with the response.
+        """
         reply = await self.conversable_agent.a_generate_reply(
             messages=[{"role": "user", "content": message}],
         )
