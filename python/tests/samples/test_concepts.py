@@ -50,7 +50,7 @@ from samples.concepts.service_selector.custom_service_selector import main as cu
 from samples.getting_started_with_agents.chat_completion.step1_agent import main as step1_agent
 from samples.getting_started_with_agents.chat_completion.step2_plugins import main as step2_plugins
 from samples.getting_started_with_agents.chat_completion.step3_chat import main as step3_chat
-from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step7_assistant
+from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant
 from tests.utils import retry
 
 # These environment variable names are used to control which samples are run during integration testing.
@@ -290,9 +290,9 @@ concepts = [
         ),
     ),
     param(
-        step7_assistant,
+        step1_openai_assistant,
         [],
-        id="step7_assistant",
+        id="step1_openai_assistant",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

@@ -37,7 +37,7 @@ internal partial class AzureClientCore
         {
             return base.CreateChatCompletionOptions(executionSettings, chatHistory, toolCallingConfig, kernel);
         }
-        ChatCompletionOptions options = ModelReaderWriter.Read<ChatCompletionOptions>(BinaryData.FromString("{}")!)!;
+        ChatCompletionOptions options = ModelReaderWriter.Read<ChatCompletionOptions>(BinaryData.FromString("{\"stream_options\":{\"include_usage\":true}}")!)!;
         options.MaxOutputTokenCount = executionSettings.MaxTokens;
         options.Temperature = (float?)executionSettings.Temperature;
         options.TopP = (float?)executionSettings.TopP;
