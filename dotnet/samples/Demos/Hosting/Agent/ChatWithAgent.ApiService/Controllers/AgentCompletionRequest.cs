@@ -5,7 +5,7 @@ namespace ChatWithAgent.ApiService;
 /// <summary>
 /// The agent completion request model.
 /// </summary>
-public class AgentCompletionRequest
+public sealed class AgentCompletionRequest
 {
     /// <summary>
     /// Gets or sets the prompt.

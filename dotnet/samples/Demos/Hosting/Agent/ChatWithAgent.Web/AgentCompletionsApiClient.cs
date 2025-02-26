@@ -2,11 +2,13 @@
 
 namespace ChatWithAgent.Web;
 
-public class AgentCompletionsApiClient(HttpClient httpClient)
+internal sealed class AgentCompletionsApiClient(HttpClient httpClient)
 {
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken)
     {
         var result = await httpClient.PostAsJsonAsync<AgentCompletionRequest>("/agent/completions", new AgentCompletionRequest() { Prompt = prompt }, cancellationToken).ConfigureAwait(false);
+
+        result.EnsureSuccessStatusCode();
 
         return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -15,7 +17,7 @@ public class AgentCompletionsApiClient(HttpClient httpClient)
 /// <summary>
 /// The agent completion request model.
 /// </summary>
-public class AgentCompletionRequest
+internal sealed class AgentCompletionRequest
 {
     /// <summary>
     /// Gets or sets the prompt.

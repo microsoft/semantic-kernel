@@ -12,7 +12,7 @@ namespace ChatWithAgent.ApiService;
 /// </summary>
 [ApiController]
 [Route("agent/completions")]
-public class AgentCompletionsController : ControllerBase
+public sealed class AgentCompletionsController : ControllerBase
 {
     private readonly ILogger<AgentCompletionsController> _logger;
 
