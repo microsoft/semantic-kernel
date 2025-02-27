@@ -1,0 +1,65 @@
+﻿@page "/chat"
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@rendermode InteractiveServer
+
+@inject AgentCompletionsApiClient AgentCompletionsApi
+
+<PageTitle>Chat</PageTitle>
+
+<div class="chat-page">
+    <div class="chat-container">
+        <div class="chat-history">
+            @foreach (var message in messages)
+            {
+                <div class="message @(message.Sender == "User" ? "user" : "agent")">
+                    @if (message.Sender != "User")
+                    {
+                        <strong>@message.Sender: </strong>
+                    }
+                    @message.Text
+                </div>
+            }
+        </div>
+    </div>
+    <div class="chat-input">
+        <textarea @bind="userMessage" @oninput="HandleInput" @onkeydown="HandleKeyDown" placeholder="Enter your message"></textarea>
+        <button class="btn btn-primary" @onclick="SendMessage" disabled="@string.IsNullOrWhiteSpace(userMessage)">Send</button>
+    </div>
+</div>
+
+@code {
+    private List<Message> messages = new();
+    private string userMessage = string.Empty;
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(userMessage))
+        {
+            messages.Add(new Message { Sender = "User", Text = userMessage });
+            var response = await AgentCompletionsApi.CompleteAsync(userMessage, CancellationToken.None);
+            messages.Add(new Message { Sender = "Agent", Text = response });
+            userMessage = string.Empty;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(userMessage))
+        {
+            await SendMessage();
+        }
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        userMessage = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private class Message
+    {
+        public required string Sender { get; set; }
+
+        public required string Text { get; set; }
+    }
+}
