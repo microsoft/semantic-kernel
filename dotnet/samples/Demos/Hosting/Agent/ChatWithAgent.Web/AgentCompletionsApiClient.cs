@@ -14,7 +14,7 @@ internal sealed class AgentCompletionsApiClient(HttpClient httpClient)
     /// <param name="prompt">The prompt.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The completion result.</returns>
-    public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken)
+    internal async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken)
     {
         var result = await httpClient.PostAsJsonAsync<AgentCompletionRequest>("/agent/completions", new AgentCompletionRequest() { Prompt = prompt }, cancellationToken).ConfigureAwait(false);
 
