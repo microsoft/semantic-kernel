@@ -5,13 +5,15 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 
 """
 The following sample demonstrates how to create a chat completion agent that
-answers user questions using the Azure Chat Completion service. This sample
-demonstrates the basic steps to create an agent and simulate a conversation
-with the agent.
+answers user questions using the Azure Chat Completion service. The Chat Completion
+Service is first added to the kernel, and the kernel is passed in to the 
+ChatCompletionAgent constructor. This sample demonstrates the basic steps to 
+create an agent and simulate a conversation with the agent.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -28,13 +30,12 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the instance of the Kernel to register an AI service
-    service_id = "agent"
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id="agent"))
 
     # 2. Create the agent
     agent = ChatCompletionAgent(
-        service_id=service_id,
+        service=OpenAIChatCompletion(),
         kernel=kernel,
         name="Assistant",
         instructions="Answer the user's questions.",

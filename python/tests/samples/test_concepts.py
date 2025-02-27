@@ -47,13 +47,13 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent import (
+from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
     main as step1_chat_completion_agent,
 )
-from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_plugin import (
+from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_plugin_simple import (
     main as step2_chat_completion_agent_plugin,
 )
-from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_group_chat import (
+from samples.getting_started_with_agents.chat_completion.step5_chat_completion_agent_group_chat import (
     main as step3_chat_completion_agent_group_chat,
 )
 from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant

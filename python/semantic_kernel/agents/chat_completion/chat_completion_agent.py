@@ -18,7 +18,6 @@ from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChan
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -29,7 +28,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
@@ -41,55 +40,52 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class ChatCompletionAgent(Agent):
     """A Chat Completion Agent based on ChatCompletionClientBase."""
 
-    function_choice_behavior: FunctionChoiceBehavior | None = Field(default=lambda: FunctionChoiceBehavior.Auto())
+    function_choice_behavior: FunctionChoiceBehavior | None = Field(
+        default_factory=lambda: FunctionChoiceBehavior.Auto()
+    )
     channel_type: ClassVar[type[AgentChannel] | None] = ChatHistoryChannel
     service: ChatCompletionClientBase | None = Field(default=None, exclude=True)
-    service_id: str
 
     def __init__(
         self,
-        service_id: str | None = None,
+        *,
+        arguments: KernelArguments | None = None,
+        description: str | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+        id: str | None = None,
+        instructions: str | None = None,
         kernel: "Kernel | None" = None,
         name: str | None = None,
-        id: str | None = None,
-        description: str | None = None,
-        instructions: str | None = None,
-        arguments: KernelArguments | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
         service: ChatCompletionClientBase | None = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
     ) -> None:
         """Initialize a new instance of ChatCompletionAgent.
 
         Args:
-            service_id: The service id for the chat completion service. If not provided,
-                the default service name `default` will be used.
-            kernel: The kernel instance.
-            name: The name of the agent.
-            id: The unique identifier for the agent. If not provided,
-                a unique GUID will be generated.
-            description: The description of the agent.
-            instructions: The instructions for the agent.
             arguments: The kernel arguments for the agent. Invoke method arguments take precedence over
                 the arguments provided here.
-            prompt_template_config: The prompt template configuration for the agent.
-            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
-                that already exist in the kernel will be overwritten.
-            service: The chat completion service instance. If a kernel is provided with the same service_id,
-                the service will be overwritten.
+            description: The description of the agent.
             function_choice_behavior: The function choice behavior to determine how and which plugins are
                 advertised to the model.
+            kernel: The kernel instance. If both a kernel and a service are provided, the service will take precedence
+                if they share the same service_id or ai_model_id. Otherwise if separate, the first AI service
+                registered on the kernel will be used.
+            id: The unique identifier for the agent. If not provided,
+                a unique GUID will be generated.
+            instructions: The instructions for the agent.
+            name: The name of the agent.
+            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
+                that already exist in the kernel will be overwritten.
+            prompt_template_config: The prompt template configuration for the agent.
+            service: The chat completion service instance. If a kernel is provided with the same service_id or
+                `ai_model_id`, the service will take precedence.
         """
-        if not service_id:
-            service_id = DEFAULT_SERVICE_NAME
-
         args: dict[str, Any] = {
-            "service_id": service_id,
             "description": description,
         }
         if name is not None:
@@ -219,13 +215,11 @@ class ChatCompletionAgent(Agent):
             arguments.update(kwargs)
 
         # Add the chat history to the args in the event that it is needed for prompt template configuration
-        arguments["chat_history"] = history
+        if "chat_history" not in arguments:
+            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
-        # Remove the chat history from the arguments, potentially used for the prompt,
-        # to avoid passing it to the service
-        arguments.pop("chat_history", None)
 
         chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
             kernel=kernel, arguments=arguments
@@ -240,6 +234,10 @@ class ChatCompletionAgent(Agent):
             kernel=kernel,
             arguments=arguments,
         )
+
+        # Remove the chat history from the arguments, potentially used for the prompt,
+        # to avoid passing it to the service
+        arguments.pop("chat_history", None)
 
         message_count_before_completion = len(agent_chat_history)
 
@@ -290,7 +288,8 @@ class ChatCompletionAgent(Agent):
             arguments.update(kwargs)
 
         # Add the chat history to the args in the event that it is needed for prompt template configuration
-        arguments["chat_history"] = history
+        if "chat_history" not in arguments:
+            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -308,6 +307,10 @@ class ChatCompletionAgent(Agent):
             kernel=kernel,
             arguments=arguments,
         )
+
+        # Remove the chat history from the arguments, potentially used for the prompt,
+        # to avoid passing it to the service
+        arguments.pop("chat_history", None)
 
         message_count_before_completion = len(agent_chat_history)
 
@@ -351,7 +354,9 @@ class ChatCompletionAgent(Agent):
         chat_completion_service, settings = kernel.select_ai_service(arguments=arguments, type=ChatCompletionClientBase)
 
         if not chat_completion_service:
-            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+            raise KernelServiceNotFoundError(
+                "Chat completion service not found. Check your service or kernel configuration."
+            )
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
         assert settings is not None  # nosec
