@@ -8,15 +8,19 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
+using OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+using MEAI = Microsoft.Extensions.AI;
+using OAI = OpenAI.Chat;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
@@ -44,6 +48,40 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task ItCanUseOpenAiChatClientAndContentsAsync()
+    {
+        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(OpenAIConfiguration);
+        Assert.NotNull(OpenAIConfiguration.ChatModelId);
+        Assert.NotNull(OpenAIConfiguration.ApiKey);
+        Assert.NotNull(OpenAIConfiguration.ServiceId);
+
+        // Arrange
+        var openAIClient = new OpenAIClient(OpenAIConfiguration.ApiKey);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(openAIClient.AsChatClient(OpenAIConfiguration.ChatModelId));
+        var kernel = builder.Build();
+
+        var func = kernel.CreateFunctionFromPrompt(
+            "List the two planets after '{{$input}}', excluding moons, using bullet points.",
+            new OpenAIPromptExecutionSettings());
+
+        // Act
+        var result = await func.InvokeAsync(kernel, new() { [InputParameterName] = "Jupiter" });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        var chatResponse = Assert.IsType<ChatResponse>(result.GetValue<ChatResponse>());
+        Assert.Contains("Saturn", chatResponse.Message.Text, StringComparison.InvariantCultureIgnoreCase);
+        var chatMessage = Assert.IsType<MEAI.ChatMessage>(result.GetValue<MEAI.ChatMessage>());
+        Assert.Contains("Uranus", chatMessage.Text, StringComparison.InvariantCultureIgnoreCase);
+        var chatMessageContent = Assert.IsType<ChatMessageContent>(result.GetValue<ChatMessageContent>());
+        Assert.Contains("Uranus", chatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
     public async Task OpenAIStreamingTestAsync()
     {
         // Arrange
@@ -63,6 +101,43 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         // Assert
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItCanUseOpenAiStreamingChatClientAndContentsAsync()
+    {
+        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(OpenAIConfiguration);
+        Assert.NotNull(OpenAIConfiguration.ChatModelId);
+        Assert.NotNull(OpenAIConfiguration.ApiKey);
+        Assert.NotNull(OpenAIConfiguration.ServiceId);
+
+        // Arrange
+        var openAIClient = new OpenAIClient(OpenAIConfiguration.ApiKey);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(openAIClient.AsChatClient(OpenAIConfiguration.ChatModelId));
+        var kernel = builder.Build();
+
+        var plugins = TestHelpers.ImportSamplePlugins(kernel, "ChatPlugin");
+
+        StringBuilder fullResultSK = new();
+        StringBuilder fullResultMEAI = new();
+
+        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+
+        // Act
+        await foreach (var content in kernel.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
+        {
+            fullResultSK.Append(content);
+        }
+        await foreach (var content in kernel.InvokeStreamingAsync<ChatResponseUpdate>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
+        {
+            fullResultMEAI.Append(content);
+        }
+
+        // Assert
+        Assert.Contains("Pike Place", fullResultSK.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Pike Place", fullResultMEAI.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -208,7 +283,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         // Act
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
-        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<OAI.ChatTokenLogProbabilityDetails>;
 
         // Assert
         Assert.NotNull(logProbabilityInfo);
