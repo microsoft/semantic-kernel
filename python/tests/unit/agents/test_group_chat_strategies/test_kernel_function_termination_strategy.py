@@ -2,32 +2,12 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.strategies import KernelFunctionTerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-
-
-class MockAgent(Agent):
-    """A mock agent for testing purposes."""
-
-    def __init__(self, id: str = None, name: str = "TestAgent", description: str = "A test agent"):
-        args = {
-            "name": name,
-            "description": description,
-        }
-        if id is not None:
-            args["id"] = id
-        super().__init__(**args)
-
-    def get_channel_keys(self) -> list[str]:
-        return ["key1", "key2"]
-
-    async def create_channel(self) -> AgentChannel:
-        return AsyncMock(spec=AgentChannel)
+from tests.unit.agents.test_agent import MockAgent
 
 
 async def test_should_agent_terminate_with_result_true():

@@ -116,6 +116,13 @@ def simple_response():
 
 
 @pytest.fixture
+def bedrock_agent_non_streaming_empty_response():
+    return {
+        "completion": [],
+    }
+
+
+@pytest.fixture
 def bedrock_agent_non_streaming_simple_response(simple_response):
     return {
         "completion": [
