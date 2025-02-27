@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 import uuid
 from typing import ClassVar
 from unittest.mock import AsyncMock
 
 import pytest
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -38,6 +44,22 @@ class MockAgent(Agent):
 
     async def create_channel(self) -> AgentChannel:
         return AsyncMock(spec=AgentChannel)
+
+    @override
+    async def get_response(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @override
+    async def invoke(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @override
+    async def invoke_stream(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+class MockAgentWithoutChannelType(MockAgent):
+    channel_type = None
 
 
 async def test_agent_initialization():
@@ -108,40 +130,40 @@ async def test_agent_hash():
 
 
 def test_get_channel_keys_no_channel_type():
-    agent = Agent()
+    agent = MockAgentWithoutChannelType()
     with pytest.raises(NotImplementedError):
         list(agent.get_channel_keys())
 
 
 def test_merge_arguments_both_none():
-    agent = Agent()
-    merged = agent.merge_arguments(None)
+    agent = MockAgent()
+    merged = agent._merge_arguments(None)
     assert isinstance(merged, KernelArguments)
     assert len(merged) == 0, "If both arguments are None, should return an empty KernelArguments object"
 
 
 def test_merge_arguments_agent_none_override_not_none():
-    agent = Agent()
+    agent = MockAgent()
     override = KernelArguments(settings={"key": "override"}, param1="val1")
 
-    merged = agent.merge_arguments(override)
+    merged = agent._merge_arguments(override)
     assert merged is override, "If agent.arguments is None, just return override_args"
 
 
 def test_merge_arguments_override_none_agent_not_none():
-    agent = Agent()
+    agent = MockAgent()
     agent.arguments = KernelArguments(settings={"key": "base"}, param1="baseVal")
 
-    merged = agent.merge_arguments(None)
+    merged = agent._merge_arguments(None)
     assert merged is agent.arguments, "If override_args is None, should return the agent's arguments"
 
 
 def test_merge_arguments_both_not_none():
-    agent = Agent()
+    agent = MockAgent()
     agent.arguments = KernelArguments(settings={"key1": "val1", "common": "base"}, param1="baseVal")
     override = KernelArguments(settings={"key2": "override_val", "common": "override"}, param2="override_param")
 
-    merged = agent.merge_arguments(override)
+    merged = agent._merge_arguments(override)
 
     assert merged.execution_settings["key1"] == "val1", "Should retain original setting from agent"
     assert merged.execution_settings["key2"] == "override_val", "Should include new setting from override"

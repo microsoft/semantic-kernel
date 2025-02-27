@@ -20,7 +20,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAM
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_store import MongoDBAtlasStore
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
     """Azure Cosmos DB for MongoDB store implementation."""
 
