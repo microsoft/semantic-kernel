@@ -61,10 +61,8 @@ async def main():
         chat_history.add_user_message(user_input)
         print(f"# User: {user_input}")
         # 4. Invoke the agent for a response
-        async for content in agent.invoke(chat_history):
-            print(f"# {content.name}: ", end="")
-            print(f"{content.content}", end="", flush=True)
-        print("")
+        response = await agent.get_response(chat_history)
+        print(f"# {response.name}: {response.content} ")
 
     """
     Sample output:
