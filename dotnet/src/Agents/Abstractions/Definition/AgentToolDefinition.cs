@@ -27,6 +27,11 @@ public sealed class AgentToolDefinition
     public string? Name { get; set; }
 
     /// <summary>
+    /// The description of the tool.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Gets or sets the configuration for the tool.
     /// </summary>
     /// <remarks>

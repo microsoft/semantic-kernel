@@ -3,7 +3,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
 
@@ -35,7 +37,7 @@ internal static class KernelExtensions
         {
             if (configuration.Type is null)
             {
-                throw new InvalidOperationException("OpenAI client type was not specified.");
+                throw new InvalidOperationException("OpenAI client type must be specified.");
             }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope, not applicable because the HttpClient is created and may be used elsewhere
@@ -44,19 +46,22 @@ internal static class KernelExtensions
 
             if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
+                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.TryGetEndpoint(), httpClient);
                 return new OpenAIClient(configuration.GetApiKeyCredential(), clientOptions);
             }
             else if (configuration.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
+                var endpoint = configuration.TryGetEndpoint();
+                Verify.NotNull(endpoint, "Endpoint must be specified when using Azure OpenAI.");
+
                 AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
-                var endpoint = configuration.GetEndpointUri();
                 if (configuration.ExtensionData.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
                 {
                     return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);
                 }
 
-                return new AzureOpenAIClient(endpoint, new AzureCliCredential(), clientOptions);
+                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                return new AzureOpenAIClient(endpoint, tokenCredential, clientOptions);
             }
 
             throw new InvalidOperationException($"Invalid OpenAI client type '{configuration.Type}' was specified.");
@@ -64,11 +69,6 @@ internal static class KernelExtensions
 
         // Use the client registered on the kernel
         var client = kernel.GetAllServices<OpenAIClient>().FirstOrDefault();
-        if (client is not null)
-        {
-            return client;
-        }
-
-        throw new InvalidOperationException("OpenAI client not found.");
+        return (OpenAIClient?)client ?? throw new InvalidOperationException("OpenAI client not found.");
     }
 }

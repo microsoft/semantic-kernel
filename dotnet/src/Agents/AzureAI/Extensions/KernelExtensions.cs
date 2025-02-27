@@ -2,9 +2,11 @@
 
 using System;
 using System.Linq;
-using System.Net.Http;
 using Azure.AI.Projects;
+using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -28,22 +30,20 @@ internal static class KernelExtensions
         var configuration = agentDefinition?.Model?.Configuration;
         if (configuration is not null)
         {
-            var hasConnectionString = configuration.ExtensionData.TryGetValue(ConnectionString, out var connectionString) && connectionString is not null;
-            if (hasConnectionString)
+            if (configuration.ExtensionData.TryGetValue(ConnectionString, out var value) && value is string connectionString)
             {
-                var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+#pragma warning disable CA2000 // Dispose objects before losing scope, not relevant because the HttpClient is created and may be used elsewhere
+                var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
-                return new(connectionString!.ToString()!, new AzureCliCredential(), clientOptions);
+
+                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                return new(connectionString, tokenCredential, clientOptions);
             }
         }
 
         // Return the client registered on the kernel
         var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
-        if (client is not null)
-        {
-            return client;
-        }
-
-        throw new InvalidOperationException("AzureAI project client not found.");
+        return (AIProjectClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
     }
 }

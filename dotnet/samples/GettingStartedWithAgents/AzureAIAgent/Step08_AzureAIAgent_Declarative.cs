@@ -22,6 +22,46 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
+    public async Task AzureAIAgentWithConfigurationAsync()
+    {
+        var text =
+            $"""
+            type: azureai_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            model:
+              id: gpt-4o-mini
+              configuration:
+                connection_string: {TestConfiguration.AzureAI.ConnectionString}
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent!, "Cats and Dogs");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithKernelAsync()
+    {
+        var text =
+            """
+            type: azureai_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            model:
+              id: gpt-4o-mini
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+
+        await InvokeAgentAsync(agent!, "Cats and Dogs");
+    }
+
+    [Fact]
     public async Task AzureAIAgentWithCodeInterpreterAsync()
     {
         var text =
@@ -38,14 +78,14 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
         Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
 
     [Fact]
-    public async Task AzureAIAgentWithKernelFunctionsAsync()
+    public async Task AzureAIAgentWithFunctionsViaOptionsAsync()
     {
         var text =
             """
@@ -68,10 +108,10 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
         Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent, "What is the special soup and how much does it cost?");
+        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }
 
     #region private
@@ -83,7 +123,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     private async Task InvokeAgentAsync(AzureAIAgent agent, string input)
     {
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
 
         try
         {
@@ -92,8 +132,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await agent.Client.DeleteThreadAsync(thread.Id);
+            await agent.Client.DeleteAgentAsync(agent!.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

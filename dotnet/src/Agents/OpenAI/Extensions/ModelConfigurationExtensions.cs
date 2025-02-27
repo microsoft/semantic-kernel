@@ -16,15 +16,13 @@ internal static class ModelConfigurationExtensions
     /// Gets the endpoint property as a <see cref="Uri"/> from the specified <see cref="ModelConfiguration"/>.
     /// </summary>
     /// <param name="configuration">Model configuration</param>
-    internal static Uri GetEndpointUri(this ModelConfiguration configuration)
+    internal static Uri? TryGetEndpoint(this ModelConfiguration configuration)
     {
         Verify.NotNull(configuration);
 
-        if (!configuration.ExtensionData.TryGetValue("endpoint", out var endpoint) || endpoint is null)
-        {
-            throw new InvalidOperationException("Endpoint was not specified.");
-        }
-        return new Uri(endpoint.ToString()!);
+        return configuration.ExtensionData.TryGetValue("endpoint", out var value) && value is not null && value is string endpoint
+            ? new Uri(endpoint)
+            : null;
     }
 
     /// <summary>
@@ -35,11 +33,8 @@ internal static class ModelConfigurationExtensions
     {
         Verify.NotNull(configuration);
 
-        if (!configuration.ExtensionData.TryGetValue("api_key", out var apiKey) || apiKey is null)
-        {
-            throw new InvalidOperationException("API key was not specified.");
-        }
-
-        return new ApiKeyCredential(apiKey.ToString()!);
+        return !configuration.ExtensionData.TryGetValue("api_key", out var apiKey) || apiKey is null
+            ? throw new InvalidOperationException("API key was not specified.")
+            : new ApiKeyCredential(apiKey.ToString()!);
     }
 }
