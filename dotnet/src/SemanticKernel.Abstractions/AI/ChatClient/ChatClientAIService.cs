@@ -42,7 +42,9 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     public IReadOnlyDictionary<string, object?> Attributes => this._internalAttributes;
 
     /// <inheritdoc />
-    public void Dispose() => this._chatClient.Dispose();
+    public void Dispose()
+    {
+    }
 
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)

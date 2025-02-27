@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extension methods for <see cref="ChatResponseUpdate"/>.</summary>
 internal static class ChatResponseUpdateExtensions

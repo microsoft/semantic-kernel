@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -107,7 +108,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 nullPrompt,
                 arguments ?? []);
 
-        return (chatCompletionService, executionSettings);
+        if (chatCompletionService is null && kernel.ServiceSelector is IChatClientSelector chatClientSelector)
+        {
+            // This change is temporary until Agents support IChatClient natively in near future.
+            var (chatClient, executionSettingsChatClient) = chatClientSelector.SelectChatClient<MEAI.IChatClient>(kernel, nullPrompt, arguments ?? []);
+            chatCompletionService = chatClient!.AsChatCompletionService();
+        }
+
+        return (chatCompletionService!, executionSettings);
     }
 
     #region private

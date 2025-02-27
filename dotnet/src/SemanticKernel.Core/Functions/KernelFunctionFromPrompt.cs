@@ -253,8 +253,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             IChatCompletionService chatCompletion => await this.GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             ITextGenerationService textGeneration => await this.GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
-            // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             IChatClient chatClient => await this.GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
     }
@@ -780,39 +780,31 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
        PromptRenderingResult promptRenderingResult,
        CancellationToken cancellationToken)
     {
-        var chatContents = await chatClient.GetResponseAsync(
+        var chatResponse = await chatClient.GetResponseAsync(
             promptRenderingResult.RenderedPrompt,
             promptRenderingResult.ExecutionSettings,
             kernel,
             cancellationToken).ConfigureAwait(false);
 
-        if (chatContents.Choices is { Count: 0 })
+        if (chatResponse.Choices is { Count: 0 })
         {
-            return new FunctionResult(this, chatContents, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+            return new FunctionResult(this, chatResponse)
+            {
+                Culture = kernel.Culture,
+                RenderedPrompt = promptRenderingResult.RenderedPrompt
+            };
         }
 
         var modelId = chatClient.GetService<ChatClientMetadata>()?.ModelId;
 
         // Usage details are global and duplicated for each chat message content, use first one to get usage information
-        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.ModelId, chatContents.Usage, this._logger);
+        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.ModelId, chatResponse.Usage, this._logger);
 
-        // If collection has one element, return single result
-        if (chatContents.Choices.Count == 1)
-        {
-            return new FunctionResult(this, chatContents)
-            {
-                Culture = kernel.Culture,
-                Metadata = chatContents.AdditionalProperties,
-                RenderedPrompt = promptRenderingResult.RenderedPrompt
-            };
-        }
-
-        // Otherwise, return multiple results
-        return new FunctionResult(this, chatContents)
+        return new FunctionResult(this, chatResponse)
         {
             Culture = kernel.Culture,
             RenderedPrompt = promptRenderingResult.RenderedPrompt,
-            Metadata = chatContents.AdditionalProperties,
+            Metadata = chatResponse.AdditionalProperties,
         };
     }
 
