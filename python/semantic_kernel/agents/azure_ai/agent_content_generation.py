@@ -36,7 +36,7 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from azure.ai.projects.models import (
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 ###################################################################
 
 
-@experimental_function
+@experimental
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
 
@@ -95,7 +95,7 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     return contents
 
 
-@experimental_function
+@experimental
 def generate_message_content(
     assistant_name: str, message: "ThreadMessage", completed_step: "RunStep | None" = None
 ) -> ChatMessageContent:
@@ -129,7 +129,7 @@ def generate_message_content(
                 )
             )
             for annotation in item_content.text.annotations:
-                content.items.append(generate_annotation_content(annotation))
+                content.items.append(generate_annotation_content(annotation))  # type: ignore
         elif item_content.type == "image_file":
             content.items.append(
                 FileReferenceContent(
@@ -139,7 +139,7 @@ def generate_message_content(
     return content
 
 
-@experimental_function
+@experimental
 def generate_streaming_message_content(
     assistant_name: str, message_delta_event: "MessageDeltaChunk"
 ) -> StreamingChatMessageContent:
@@ -189,7 +189,7 @@ def generate_streaming_message_content(
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
 
 
-@experimental_function
+@experimental
 def get_function_call_contents(
     run: "ThreadRun", function_steps: dict[str, FunctionCallContent]
 ) -> list[FunctionCallContent]:
@@ -219,7 +219,7 @@ def get_function_call_contents(
     return function_call_contents
 
 
-@experimental_function
+@experimental
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -233,7 +233,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
-@experimental_function
+@experimental
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "RunStepFunctionToolCall"
 ) -> ChatMessageContent:
@@ -250,7 +250,7 @@ def generate_function_result_content(
     return function_call_content
 
 
-@experimental_function
+@experimental
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -269,7 +269,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_function_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> "StreamingChatMessageContent | None":
@@ -317,7 +317,7 @@ def generate_streaming_function_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> "StreamingChatMessageContent | None":
@@ -380,7 +380,7 @@ def generate_streaming_code_interpreter_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_annotation_content(
     annotation: MessageTextFilePathAnnotation | MessageTextFileCitationAnnotation,
 ) -> AnnotationContent:
@@ -399,7 +399,7 @@ def generate_annotation_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_annotation_content(
     annotation: MessageDeltaTextFilePathAnnotation | MessageDeltaTextFileCitationAnnotation,
 ) -> StreamingAnnotationContent:

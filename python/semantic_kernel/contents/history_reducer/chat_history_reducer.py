@@ -14,10 +14,10 @@ from pydantic import Field
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class ChatHistoryReducer(ChatHistory, ABC):
     """Defines a contract for reducing chat history."""
 

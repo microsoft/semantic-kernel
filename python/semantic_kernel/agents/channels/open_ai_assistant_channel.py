@@ -17,13 +17,13 @@ from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThr
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 
-@experimental_class
+@experimental
 class OpenAIAssistantChannel(AgentChannel):
     """OpenAI Assistant Channel."""
 

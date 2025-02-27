@@ -20,7 +20,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_c
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from azure.core.credentials import AzureKeyCredential, TokenCredential
@@ -34,7 +34,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class AzureAISearchStore(VectorStore):
     """Azure AI Search store implementation."""
 
