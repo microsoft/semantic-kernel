@@ -18,7 +18,7 @@ namespace SemanticKernel.UnitTests.Functions;
 public class OrderedAIServiceSelectorTests
 {
     [Fact]
-    public void ItReturnsNullForNoServices()
+    public void ItThrowsAKernelExceptionForNoServices()
     {
         // Arrange
         var kernel = new Kernel();
@@ -27,35 +27,8 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        var (textGenerationService, promptExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
-        Assert.Null(textGenerationService);
-        Assert.Null(promptExecutionSettings);
-    }
-
-    [Fact]
-    public void ItThrowsKernelExceptionForNoChatClient()
-    {
-        // Arrange
-        var kernel = new Kernel();
-        var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
-        var serviceSelector = new OrderedAIServiceSelector();
-
-        // Act
-        // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectChatClient<IChatClient>(kernel, function, []));
-    }
-
-    [Fact]
-    public void ItThrowsAKernelExceptionForNoChatClientServices()
-    {
-        // Arrange
-        var kernel = new Kernel();
-        var function = KernelFunctionFactory.CreateFromPrompt("Hello AI");
-        var serviceSelector = new OrderedAIServiceSelector();
-
-        // Act
-        // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectChatClient<IChatClient>(kernel, function, []));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<IChatCompletionService>(kernel, function, []));
     }
 
     [Fact]
@@ -90,7 +63,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var chatClient, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var chatClient, out var defaultExecutionSettings);
+        chatClient?.Dispose();
 
         // Assert
         Assert.NotNull(chatClient);
@@ -159,7 +133,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
@@ -169,12 +144,12 @@ public class OrderedAIServiceSelectorTests
     }
 
     [Fact]
-    public void ItReturnsNullForNotFoundService()
+    public void ItThrowsAKernelExceptionForNotFoundService()
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
+        builder.Services.AddKeyedSingleton<IChatCompletionService>("service2", new ChatCompletionService("model_id_2"));
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
@@ -184,30 +159,8 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        var (textGenerationService, promptExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
-        Assert.Null(textGenerationService);
-        Assert.Null(promptExecutionSettings);
-    }
-
-    [Fact]
-    public void ItThrowsAKernelExceptionForNotFoundChatClient()
-    {
-        // Arrange
-        IKernelBuilder builder = Kernel.CreateBuilder();
-        using var chatClient1 = new ChatClient("model_id_1");
-        using var chatClient2 = new ChatClient("model_id_2");
-        builder.Services.AddKeyedSingleton<IChatClient>("service1", chatClient1);
-        builder.Services.AddKeyedSingleton<IChatClient>("service2", chatClient2);
-        Kernel kernel = builder.Build();
-
-        var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
-        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
-        var function = kernel.CreateFunctionFromPrompt(promptConfig);
-        var serviceSelector = new OrderedAIServiceSelector();
-
-        // Act
-        // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectChatClient<IChatClient>(kernel, function, []));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<IChatCompletionService>(kernel, function, []));
     }
 
     [Fact]
@@ -248,7 +201,9 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
+
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
     }
 
@@ -285,7 +240,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
@@ -331,7 +287,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
@@ -379,7 +336,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
@@ -449,7 +407,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, []);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<IChatClient>(expectedModelId), aiService);
@@ -501,7 +460,8 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectChatClient<IChatClient>(kernel, function, arguments);
+        serviceSelector.TrySelect<IChatClient>(kernel, function, arguments, out var aiService, out var defaultExecutionSettings);
+        aiService?.Dispose();
 
         // Assert
         Assert.NotNull(aiService);
@@ -534,6 +494,27 @@ public class OrderedAIServiceSelectorTests
         }
 
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    private sealed class ChatCompletionService : IChatCompletionService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
+        private readonly Dictionary<string, object?> _attributes = [];
+
+        public ChatCompletionService(string modelId)
+        {
+            this._attributes.Add("ModelId", modelId);
+        }
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

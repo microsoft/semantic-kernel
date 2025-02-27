@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -102,18 +101,19 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
         KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
-            kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
-                kernel,
-                nullPrompt,
-                arguments ?? []);
 
-        if (chatCompletionService is null && kernel.ServiceSelector is IChatClientSelector chatClientSelector)
+        kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(kernel, nullPrompt, arguments ?? [], out IChatCompletionService? chatCompletionService, out PromptExecutionSettings? executionSettings);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        if (chatCompletionService is null
+            && kernel.ServiceSelector is IServiceSelector chatClientSelector
+            && chatClientSelector.TrySelect<MEAI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
+            && chatClient is not null)
         {
             // This change is temporary until Agents support IChatClient natively in near future.
-            var (chatClient, executionSettingsChatClient) = chatClientSelector.SelectChatClient<MEAI.IChatClient>(kernel, nullPrompt, arguments ?? []);
             chatCompletionService = chatClient!.AsChatCompletionService();
         }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return (chatCompletionService!, executionSettings);
     }

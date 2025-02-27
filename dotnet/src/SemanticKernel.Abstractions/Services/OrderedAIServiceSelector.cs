@@ -13,12 +13,12 @@ namespace Microsoft.SemanticKernel.Services;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
 /// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
-internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClientSelector
+internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IServiceSelector
 {
     public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
-    private bool TrySelect<T>(
+    public bool TrySelect<T>(
         Kernel kernel, KernelFunction function, KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
         out PromptExecutionSettings? serviceSettings) where T : class
@@ -121,9 +121,5 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
 
     /// <inheritdoc/>
     public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
-        => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
-
-    /// <inheritdoc/>
-    public bool TrySelectChatClient<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
         => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
 }

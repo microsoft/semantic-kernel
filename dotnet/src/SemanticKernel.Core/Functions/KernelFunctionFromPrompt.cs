@@ -7,12 +7,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -562,7 +564,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         var serviceSelector = kernel.ServiceSelector;
 
-        IAIService? aiService;
+        IAIService? aiService = null;
         string renderedPrompt = string.Empty;
 
         // Try to use IChatCompletionService.
@@ -572,19 +574,40 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             aiService = chatService;
         }
-        else
+        else if (serviceSelector.TrySelectAIService<ITextGenerationService>(
+            kernel, this, arguments,
+            out ITextGenerationService? textService, out executionSettings))
         {
-            // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
-            // throwing if it's not available.
-            (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+            aiService = textService;
+        }
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        else if (serviceSelector is IServiceSelector chatClientServiceSelector && chatClientServiceSelector.TrySelect<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
+        {
+            // Resolves a ChatClient as AIService so it don't need to implement IChatCompletionService.
+            aiService = new ChatClientAIService(chatClient);
         }
 
-        if (aiService is null && serviceSelector is IChatClientSelector chatClientServiceSelector)
+        if (aiService is null)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            (aiService, executionSettings) = chatClientServiceSelector.SelectChatClientAsAIService<IChatClient>(kernel, this, arguments);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(ITextGenerationService)).Append(", ").Append(typeof(IChatClient)).Append('.');
+            if (this.ExecutionSettings is not null)
+            {
+                string serviceIds = string.Join("|", this.ExecutionSettings.Keys);
+                if (!string.IsNullOrEmpty(serviceIds))
+                {
+                    message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
+                }
+
+                string modelIds = string.Join("|", this.ExecutionSettings.Values.Select(model => model.ModelId));
+                if (!string.IsNullOrEmpty(modelIds))
+                {
+                    message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
+                }
+            }
+
+            throw new KernelException(message.ToString());
         }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         Verify.NotNull(aiService);
 
