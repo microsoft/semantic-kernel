@@ -4,10 +4,10 @@ import pytest
 from pydantic import Field, SecretStr, ValidationError
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class AzureAIAgentSettings(KernelBaseSettings):
     """Slightly modified to ensure invalid data raises ValidationError."""
 

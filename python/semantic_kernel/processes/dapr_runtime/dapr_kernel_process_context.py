@@ -9,10 +9,10 @@ from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcess
 from semantic_kernel.processes.dapr_runtime.interfaces.process_interface import ProcessInterface
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class DaprKernelProcessContext:
     """A Dapr kernel process context."""
 
