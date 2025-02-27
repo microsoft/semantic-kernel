@@ -5,12 +5,12 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pydantic import Field, model_validator
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+from pydantic import Field, model_validator
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel

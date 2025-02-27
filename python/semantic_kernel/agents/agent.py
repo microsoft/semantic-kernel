@@ -4,7 +4,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Iterable
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from pydantic import Field, model_validator
 
@@ -35,40 +35,46 @@ class Agent(KernelBaseModel, ABC):
     must define its communication protocol, or AgentChannel.
 
     Attributes:
-        name: The name of the agent (optional).
-        description: The description of the agent (optional).
-        id: The unique identifier of the agent (optional). If no id is provided,
+        arguments: The arguments for the agent
+        channel_type: The type of the agent channel
+        description: The description of the agent
+        id: The unique identifier of the agent  If no id is provided,
             a new UUID will be generated.
         instructions: The instructions for the agent (optional)
+        kernel: The kernel instance for the agent
+        name: The name of the agent
+        prompt_template: The prompt template for the agent
     """
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    arguments: KernelArguments | None = None
+    channel_type: ClassVar[type[AgentChannel] | None] = None
     description: str | None = None
-    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}", pattern=AGENT_NAME_REGEX)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
-    channel_type: ClassVar[type[AgentChannel] | None] = None
-    arguments: KernelArguments | None = None
+    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}", pattern=AGENT_NAME_REGEX)
     prompt_template: PromptTemplateBase | None = None
-    plugins: list[KernelPlugin | object | None] = Field(default_factory=list)
 
-    def _get_plugin_name(self, plugin: KernelPlugin | object) -> str:
+    @staticmethod
+    def _get_plugin_name(plugin: KernelPlugin | object) -> str:
         """Helper method to get the plugin name."""
         if isinstance(plugin, KernelPlugin):
             return plugin.name
         return plugin.__class__.__name__
 
-    @model_validator(mode="after")
-    def configure_plugins(self):
-        """Handle the plugins if provided via the constructor.
-
-        Any plugins already defined with the same name on the Kernel are overwritten.
-        """
-        if self.plugins:
-            for plugin in self.plugins:
-                name = self._get_plugin_name(plugin)
-                self.kernel.add_plugin(plugin, plugin_name=name)
-        return self
+    @model_validator(mode="before")
+    @classmethod
+    def _configure_plugins(cls, data: Any) -> Any:
+        """Configure any plugins passed in."""
+        if isinstance(data, dict) and (plugins := data.pop("plugins", None)):
+            kernel = data.get("kernel", None)
+            if not kernel:
+                kernel = Kernel()
+            for plugin in plugins:
+                name = Agent._get_plugin_name(plugin)
+                kernel.add_plugin(plugin, plugin_name=name)
+            data["kernel"] = kernel
+        return data
 
     @abstractmethod
     async def get_response(self, *args, **kwargs) -> ChatMessageContent:

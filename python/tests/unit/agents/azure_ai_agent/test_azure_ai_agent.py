@@ -27,8 +27,8 @@ async def test_azure_ai_agent_init_with_plugins_via_constructor(
     assert agent.id == "agent123"
     assert agent.name == "agentName"
     assert agent.description == "desc"
-    assert agent.plugins is not None
-    assert len(agent.plugins) == 1
+    assert agent.kernel.plugins is not None
+    assert len(agent.kernel.plugins) == 1
 
 
 async def test_azure_ai_agent_add_chat_message(ai_project_client, ai_agent_definition):

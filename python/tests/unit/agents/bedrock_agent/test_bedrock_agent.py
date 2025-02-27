@@ -115,8 +115,8 @@ async def test_bedrock_agent_create_with_plugin_via_constructor(
             instruction="test_instructions",
         )
         assert agent.agent_model.agent_id == bedrock_agent_model_with_id_not_prepared_dict["agent"]["agentId"]
-        assert agent.plugins is not None
-        assert len(agent.plugins) == 1
+        assert agent.kernel.plugins is not None
+        assert len(agent.kernel.plugins) == 1
 
 
 @patch.object(boto3, "client", return_value=Mock())

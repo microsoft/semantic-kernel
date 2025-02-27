@@ -111,8 +111,8 @@ def test_initialization_with_plugins_via_constructor(custom_plugin_class):
     assert agent.id == "test_id"
     assert agent.description == "Test Description"
     assert agent.instructions == "Test Instructions"
-    assert agent.plugins is not None
-    assert len(agent.plugins) == 1
+    assert agent.kernel.plugins is not None
+    assert len(agent.kernel.plugins) == 1
 
 
 def test_initialization_with_service_via_constructor(openai_unit_test_env):
