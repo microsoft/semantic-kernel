@@ -448,9 +448,22 @@ class BedrockAgent(BedrockAgentBase, Agent):
                     if BedrockAgentEventType.CHUNK in event:
                         yield self._handle_chunk_event(event)
                     elif BedrockAgentEventType.FILES in event:
-                        yield ChatMessageContent(items=self._handle_files_event(event))
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            items=self._handle_files_event(event),  # type: ignore
+                            name=self.name,
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                        )
                     elif BedrockAgentEventType.TRACE in event:
-                        yield ChatMessageContent(metadata=self._handle_trace_event(event))
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            name=self.name,
+                            content="",
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                            metadata=self._handle_trace_event(event),
+                        )
 
                 return
 
