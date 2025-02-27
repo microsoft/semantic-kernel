@@ -135,7 +135,7 @@ public class KernelAgentYamlTests : IDisposable
         ChatCompletionAgentFactory factory = new();
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         // Assert
         Assert.NotNull(agent);
@@ -169,7 +169,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         // Assert
         Assert.NotNull(agent);
@@ -203,7 +203,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(this._kernel, text);
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         // Assert
         Assert.NotNull(agent);

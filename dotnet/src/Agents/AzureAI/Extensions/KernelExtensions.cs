@@ -4,7 +4,9 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using Azure.AI.Projects;
+using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -33,17 +35,14 @@ internal static class KernelExtensions
             {
                 var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
                 AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
-                return new(connectionString!.ToString()!, new AzureCliCredential(), clientOptions);
+
+                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                return new(connectionString!.ToString()!, tokenCredential, clientOptions);
             }
         }
 
         // Return the client registered on the kernel
         var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
-        if (client is not null)
-        {
-            return client;
-        }
-
-        throw new InvalidOperationException("AzureAI project client not found.");
+        return (AIProjectClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
     }
 }
