@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -25,12 +26,16 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+                modelId: "o1-mini")
             .AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: "o1-mini",
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 serviceId: "OpenAIChat");
-        builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this.Output)); // Use the custom AI service selector to select the GPT model
+        builder.Services
+            .AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this.Output)) // Use the custom AI service selector to select the GPT model
+            .AddChatClient(new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+                .AsChatClient("gpt-4o")); // Add a IChatClient to the kernel
+
         Kernel kernel = builder.Build();
 
         // This invocation is done with the model selected by the custom selector
@@ -45,25 +50,45 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
     /// a completion model whose name starts with "gpt". But this logic could
     /// be as elaborate as needed to apply your own selection criteria.
     /// </summary>
-    private sealed class GptAIServiceSelector(ITestOutputHelper output) : IAIServiceSelector
+    private sealed class GptAIServiceSelector(ITestOutputHelper output) : IAIServiceSelector, IServiceSelector
     {
         private readonly ITestOutputHelper _output = output;
 
-        public bool TrySelectAIService<T>(
+        public bool TrySelect<T>(
             Kernel kernel, KernelFunction function, KernelArguments arguments,
-            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class
         {
             foreach (var serviceToCheck in kernel.GetAllServices<T>())
             {
-                // Find the first service that has a model id that starts with "gpt"
-                var serviceModelId = serviceToCheck.GetModelId();
-                var endpoint = serviceToCheck.GetEndpoint();
-                if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
+                if (serviceToCheck is IAIService aiService)
                 {
-                    this._output.WriteLine($"Selected model: {serviceModelId} {endpoint}");
-                    service = serviceToCheck;
-                    serviceSettings = new OpenAIPromptExecutionSettings();
-                    return true;
+                    // Find the first service that has a model id that starts with "gpt"
+                    var serviceModelId = aiService.GetModelId();
+                    var endpoint = aiService.GetEndpoint();
+
+                    if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
+                    {
+                        this._output.WriteLine($"Selected model: {serviceModelId} {endpoint}");
+                        service = serviceToCheck;
+                        serviceSettings = new OpenAIPromptExecutionSettings();
+                        return true;
+                    }
+                }
+                else if (serviceToCheck is IChatClient chatClient)
+                {
+                    var metadata = chatClient.GetService<ChatClientMetadata>();
+
+                    // Find the first service that has a model id that starts with "gpt"
+                    var serviceModelId = metadata?.ModelId;
+                    var endpoint = metadata?.ProviderUri;
+
+                    if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
+                    {
+                        this._output.WriteLine($"Selected model: {serviceModelId} {endpoint}");
+                        service = serviceToCheck;
+                        serviceSettings = new OpenAIPromptExecutionSettings();
+                        return true;
+                    }
                 }
             }
 
@@ -71,5 +96,13 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
             serviceSettings = null;
             return false;
         }
+
+        public bool TrySelectAIService<T>(
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments arguments,
+            [NotNullWhen(true)] out T? service,
+            out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+            => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
     }
 }
