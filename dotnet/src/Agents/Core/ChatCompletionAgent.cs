@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -114,6 +115,27 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             chatCompletionService = chatClient!.AsChatCompletionService();
         }
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
+        if (chatCompletionService is null)
+        {
+            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(MEAI.IChatClient)).Append('.');
+            if (nullPrompt.ExecutionSettings is not null)
+            {
+                string serviceIds = string.Join("|", nullPrompt.ExecutionSettings.Keys);
+                if (!string.IsNullOrEmpty(serviceIds))
+                {
+                    message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
+                }
+
+                string modelIds = string.Join("|", nullPrompt.ExecutionSettings.Values.Select(model => model.ModelId));
+                if (!string.IsNullOrEmpty(modelIds))
+                {
+                    message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
+                }
+            }
+
+            throw new KernelException(message.ToString());
+        }
 
         return (chatCompletionService!, executionSettings);
     }

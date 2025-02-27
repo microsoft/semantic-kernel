@@ -18,6 +18,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IServiceSel
     public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0001")]
     public bool TrySelect<T>(
         Kernel kernel, KernelFunction function, KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
