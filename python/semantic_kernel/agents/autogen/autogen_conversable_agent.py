@@ -5,6 +5,8 @@ import sys
 from collections.abc import AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -34,6 +36,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental
 class AutoGenConversableAgent(Agent):
     """A Semantic Kernel wrapper around an AutoGen 0.2 `ConversableAgent`.
 
