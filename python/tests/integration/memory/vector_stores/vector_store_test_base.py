@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Callable
+
 import pytest
 
 from semantic_kernel.data import VectorStore
@@ -51,14 +53,14 @@ def get_chroma_store():
 
 class VectorStoreTestBase:
     @pytest.fixture
-    def stores(self) -> dict[str, VectorStore]:
+    def stores(self) -> dict[str, Callable[[], VectorStore]]:
         """Return a dictionary of vector stores to test."""
         return {
-            "redis": get_redis_store(),
-            "azure_ai_search": get_azure_ai_search_store(),
-            "qdrant": get_qdrant_store(),
-            "qdrant_in_memory": get_qdrant_store_in_memory(),
-            "weaviate_local": get_weaviate_store(),
-            "azure_cosmos_db_no_sql": get_azure_cosmos_db_no_sql_store(),
-            "chroma": get_chroma_store(),
+            "redis": get_redis_store,
+            "azure_ai_search": get_azure_ai_search_store,
+            "qdrant": get_qdrant_store,
+            "qdrant_in_memory": get_qdrant_store_in_memory,
+            "weaviate_local": get_weaviate_store,
+            "azure_cosmos_db_no_sql": get_azure_cosmos_db_no_sql_store,
+            "chroma": get_chroma_store,
         }
