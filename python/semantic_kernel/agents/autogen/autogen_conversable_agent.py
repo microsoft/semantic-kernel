@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from autogen import ConversableAgent
 
@@ -14,10 +20,15 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
 
 if TYPE_CHECKING:
     from autogen.cache import AbstractCache
 
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -51,6 +62,32 @@ class AutoGenConversableAgent(Agent):
 
         super().__init__(**args)
 
+    @trace_agent_get_response
+    @override
+    async def get_response(self, message: str) -> ChatMessageContent:
+        """Get a response from the agent.
+
+        Args:
+            message: The message to send.
+
+        Returns:
+            A ChatMessageContent object with the response.
+        """
+        reply = await self.conversable_agent.a_generate_reply(
+            messages=[{"role": "user", "content": message}],
+        )
+
+        logger.info("Called AutoGenConversableAgent.a_generate_reply.")
+
+        if isinstance(reply, str):
+            return ChatMessageContent(content=reply, role=AuthorRole.ASSISTANT)
+        if isinstance(reply, dict):
+            return ChatMessageContent(**reply)
+
+        raise AgentInvokeException(f"Unexpected reply type from `a_generate_reply`: {type(reply)}")
+
+    @trace_agent_invocation
+    @override
     async def invoke(
         self,
         *,
@@ -97,7 +134,7 @@ class AutoGenConversableAgent(Agent):
                 **kwargs,
             )
 
-            logger.info(f"Called AutoGenConversableAgent.a_initiate_chat with recipient: {recipient}")
+            logger.info(f"Called AutoGenConversableAgent.a_initiate_chat with recipient: {recipient}.")
 
             for message in chat_result.chat_history:
                 yield AutoGenConversableAgent._to_chat_message_content(message)  # type: ignore
@@ -106,7 +143,7 @@ class AutoGenConversableAgent(Agent):
                 messages=[{"role": "user", "content": message}],
             )
 
-            logger.info(f"Called AutoGenConversableAgent.a_generate_reply with recipient: {recipient}")
+            logger.info("Called AutoGenConversableAgent.a_generate_reply.")
 
             if isinstance(reply, str):
                 yield ChatMessageContent(content=reply, role=AuthorRole.ASSISTANT)
@@ -115,13 +152,14 @@ class AutoGenConversableAgent(Agent):
             else:
                 raise AgentInvokeException(f"Unexpected reply type from `a_generate_reply`: {type(reply)}")
 
+    @override
     async def invoke_stream(
         self,
         message: str,
         kernel: "Kernel | None" = None,
         arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent with a stream of messages."""
         raise NotImplementedError("The AutoGenConversableAgent does not support streaming.")
 

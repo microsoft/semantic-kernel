@@ -33,6 +33,7 @@ from azure.ai.projects.models._enums import MessageRole
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_code_interpreter_content,
     generate_function_call_content,
+    generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
     generate_streaming_code_interpreter_content,
@@ -44,9 +45,9 @@ from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUti
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
-    merge_function_results,
+    merge_streaming_function_results,
 )
-from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -57,7 +58,8 @@ if TYPE_CHECKING:
     from azure.ai.projects.aio import AIProjectClient
 
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
-    from semantic_kernel.contents import ChatHistory
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AgentThreadActions")
@@ -261,7 +263,9 @@ class AgentThreadActions:
                                     function_step = function_steps.get(tool_call.id)
                                     assert function_step is not None  # nosec
                                     content = generate_function_result_content(
-                                        agent_name=agent.name, function_step=function_step, tool_call=tool_call
+                                        agent_name=agent.name,
+                                        function_step=function_step,
+                                        tool_call=tool_call,  # type: ignore
                                     )
 
                             if content:
@@ -323,7 +327,7 @@ class AgentThreadActions:
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent stream and yield ChatMessageContent continuously.
 
         Args:
@@ -416,7 +420,7 @@ class AgentThreadActions:
         function_steps: dict[str, FunctionCallContent],
         active_messages: dict[str, RunStep],
         messages: "list[ChatMessageContent] | None" = None,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
         while True:
             async with stream as response_stream:
@@ -468,14 +472,14 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_result_content:
-                            yield action_result.function_result_content
+                        if action_result.function_result_streaming_content:
+                            yield action_result.function_result_streaming_content
                             if messages:
-                                messages.append(action_result.function_result_content)
+                                messages.append(action_result.function_result_streaming_content)
 
-                        if action_result.function_call_content:
+                        if action_result.function_call_streaming_content:
                             if messages:
-                                messages.append(action_result.function_call_content)
+                                messages.append(action_result.function_call_streaming_content)
                             async for sub_content in cls._stream_tool_outputs(
                                 agent=agent,
                                 thread_id=thread_id,
@@ -526,7 +530,7 @@ class AgentThreadActions:
         action_result: FunctionActionResult,
         active_messages: dict[str, RunStep],
         messages: "list[ChatMessageContent] | None" = None,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Wrap the tool outputs stream as an async generator.
 
         This allows downstream consumers to iterate over the yielded content.
@@ -857,14 +861,16 @@ class AgentThreadActions:
         """Handle the requires action event for a streaming run."""
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
-            function_call_content = generate_function_call_content(agent_name=agent_name, fccs=fccs)
+            function_call_streaming_content = generate_function_call_streaming_content(agent_name=agent_name, fccs=fccs)
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
-            function_result_content = merge_function_results(chat_history.messages)[0]
+            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
-            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+            return FunctionActionResult(
+                function_call_streaming_content, function_result_streaming_content, tool_outputs
+            )
         return None
 
     # endregion

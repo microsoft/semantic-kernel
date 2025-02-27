@@ -38,13 +38,8 @@ Ensure that your Azure AI Agent resources are configured with at least a Basic o
 To begin, create the project client as follows:
 
 ```python
-ai_agent_settings = AzureAIAgentSettings.create()
-
 async with DefaultAzureCredential() as credential:
-    client = await AzureAIAgent.create_client(
-        connection_string=ai_agent_settings.project_connection_string.get_secret_value(),
-        credential=credential,
-    )
+    client = await AzureAIAgent.create_client(credential=credential)
 
     async with client:
         # Your operational code here

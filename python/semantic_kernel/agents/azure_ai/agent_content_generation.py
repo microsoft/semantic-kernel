@@ -129,7 +129,7 @@ def generate_message_content(
                 )
             )
             for annotation in item_content.text.annotations:
-                content.items.append(generate_annotation_content(annotation))
+                content.items.append(generate_annotation_content(annotation))  # type: ignore
         elif item_content.type == "image_file":
             content.items.append(
                 FileReferenceContent(
@@ -231,6 +231,23 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
         ChatMessageContent: The chat message content containing the function call content as the items.
     """
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
+
+
+@experimental
+def generate_function_call_streaming_content(
+    agent_name: str,
+    fccs: list[FunctionCallContent],
+) -> StreamingChatMessageContent:
+    """Generate function call content.
+
+    Args:
+        agent_name: The agent name.
+        fccs: The function call contents.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content containing the function call content as the items.
+    """
+    return StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, name=agent_name, items=fccs)  # type: ignore
 
 
 @experimental

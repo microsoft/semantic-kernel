@@ -1,17 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from openai import AsyncOpenAI
-from openai.types.beta.assistant import Assistant
-from openai.types.beta.threads.file_citation_annotation import FileCitation, FileCitationAnnotation
-from openai.types.beta.threads.file_path_annotation import FilePath, FilePathAnnotation
-from openai.types.beta.threads.image_file import ImageFile
-from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
-from openai.types.beta.threads.text import Text
-from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
@@ -21,7 +12,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -45,71 +36,16 @@ class ResponseModelNonPydantic:
     items: list[str]
 
 
-@pytest.fixture
-def mock_thread_messages():
-    class MockMessage:
-        def __init__(self, id, role, content, assistant_id=None):
-            self.id = id
-            self.role = role
-            self.content = content
-            self.assistant_id = assistant_id
-
-    return [
-        MockMessage(
-            id="test_message_id_1",
-            role="user",
-            content=[
-                TextContentBlock(
-                    type="text",
-                    text=Text(
-                        value="Hello",
-                        annotations=[
-                            FilePathAnnotation(
-                                type="file_path",
-                                file_path=FilePath(file_id="test_file_id"),
-                                end_index=5,
-                                start_index=0,
-                                text="Hello",
-                            ),
-                            FileCitationAnnotation(
-                                type="file_citation",
-                                file_citation=FileCitation(file_id="test_file_id"),
-                                text="Hello",
-                                start_index=0,
-                                end_index=5,
-                            ),
-                        ],
-                    ),
-                )
-            ],
-        ),
-        MockMessage(
-            id="test_message_id_2",
-            role="assistant",
-            content=[
-                ImageFileContentBlock(type="image_file", image_file=ImageFile(file_id="test_file_id", detail="auto"))
-            ],
-            assistant_id="assistant_1",
-        ),
-    ]
-
-
-async def test_open_ai_assistant_agent_init():
+async def test_open_ai_assistant_agent_init(openai_client, assistant_definition):
     sample_prompt_template_config = PromptTemplateConfig(
         template="template",
     )
 
     kernel_plugin = KernelPlugin(name="expected_plugin_name", description="expected_plugin_description")
 
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
     agent = OpenAIAssistantAgent(
-        client=client,
-        definition=definition,
+        client=openai_client,
+        definition=assistant_definition,
         arguments=KernelArguments(test="test"),
         kernel=AsyncMock(spec=Kernel),
         plugins=[SamplePlugin(), kernel_plugin],
@@ -183,14 +119,8 @@ def test_configure_response_format_invalid_input_type():
         pytest.param("text"),
     ],
 )
-async def test_open_ai_assistant_agent_add_chat_message(message):
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = OpenAIAssistantAgent(client=client, definition=definition)
+async def test_open_ai_assistant_agent_add_chat_message(message, openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     with patch(
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.create_message",
     ):
@@ -204,20 +134,64 @@ async def test_open_ai_assistant_agent_add_chat_message(message):
         pytest.param(None, False),
     ],
 )
-async def test_open_ai_assistant_agent_invoke(arguments, include_args):
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    definition.tools = []
-    definition.model = "gpt-4o"
-    definition.response_format = {"type": "json_object"}
-    definition.temperature = 0.1
-    definition.top_p = 0.9
-    definition.metadata = {}
-    agent = OpenAIAssistantAgent(client=client, definition=definition)
+async def test_open_ai_assistant_agent_get_response(arguments, include_args, openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+
+    async def fake_invoke(*args, **kwargs):
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    kwargs = None
+    if include_args:
+        kwargs = arguments
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        response = await agent.get_response("thread_id", **(kwargs or {}))
+
+        assert response is not None
+        assert response.content == "content"
+
+
+@pytest.mark.parametrize(
+    "arguments, include_args",
+    [
+        pytest.param({"extra_args": "extra_args"}, True),
+        pytest.param(None, False),
+    ],
+)
+async def test_open_ai_assistant_agent_get_response_exception(
+    arguments, include_args, openai_client, assistant_definition
+):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+
+    async def fake_invoke(*args, **kwargs):
+        yield False, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    kwargs = None
+    if include_args:
+        kwargs = arguments
+
+    with (
+        patch(
+            "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+            side_effect=fake_invoke,
+        ),
+        pytest.raises(AgentInvokeException),
+    ):
+        await agent.get_response("thread_id", **(kwargs or {}))
+
+
+@pytest.mark.parametrize(
+    "arguments, include_args",
+    [
+        pytest.param({"extra_args": "extra_args"}, True),
+        pytest.param(None, False),
+    ],
+)
+async def test_open_ai_assistant_agent_invoke(arguments, include_args, openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -244,14 +218,8 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
         pytest.param(None, False),
     ],
 )
-async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = OpenAIAssistantAgent(client=client, definition=definition)
+async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args, openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -271,41 +239,16 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
     assert len(results) == 1
 
 
-def test_open_ai_assistant_agent_get_channel_keys():
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = OpenAIAssistantAgent(client=client, definition=definition)
+def test_open_ai_assistant_agent_get_channel_keys(openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     keys = list(agent.get_channel_keys())
     assert len(keys) >= 3
 
 
-@pytest.fixture
-def mock_thread():
-    class MockThread:
-        id = "test_thread_id"
-
-    return MockThread()
-
-
-async def test_open_ai_assistant_agent_create_channel(mock_thread):
+async def test_open_ai_assistant_agent_create_channel(openai_client, assistant_definition):
     from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = OpenAIAssistantAgent(client=client, definition=definition)
-    client.beta = MagicMock()
-    client.beta.assistants = MagicMock()
-    client.beta.assistants.create = AsyncMock(return_value=definition)
-    client.beta.threads = MagicMock()
-    client.beta.threads.create = AsyncMock(return_value=mock_thread)
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     ch = await agent.create_channel()
     assert isinstance(ch, OpenAIAssistantChannel)
     assert ch.thread_id == "test_thread_id"
@@ -334,29 +277,8 @@ async def test_open_ai_agent_missing_chat_deployment_name_throws(kernel, openai_
         )
 
 
-async def test_get_thread_messages(mock_thread_messages, openai_unit_test_env):
-    async def mock_list_messages(*args, **kwargs) -> Any:
-        return MagicMock(data=mock_thread_messages)
-
-    async def mock_retrieve_assistant(*args, **kwargs) -> Any:
-        asst = AsyncMock(spec=Assistant)
-        asst.name = "test-assistant"
-        return asst
-
-    mock_client = AsyncMock(spec=AsyncOpenAI)
-    mock_client.beta = MagicMock()
-    mock_client.beta.threads = MagicMock()
-    mock_client.beta.threads.messages = MagicMock()
-    mock_client.beta.threads.messages.list = AsyncMock(side_effect=mock_list_messages)
-    mock_client.beta.assistants = MagicMock()
-    mock_client.beta.assistants.retrieve = AsyncMock(side_effect=mock_retrieve_assistant)
-
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = OpenAIAssistantAgent(client=mock_client, definition=definition)
+async def test_get_thread_messages(mock_thread_messages, openai_client, assistant_definition, openai_unit_test_env):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
 
     messages = [message async for message in agent.get_thread_messages("test_thread_id")]
 

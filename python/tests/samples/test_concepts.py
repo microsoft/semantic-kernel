@@ -50,8 +50,11 @@ from samples.concepts.service_selector.custom_service_selector import main as cu
 from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent import (
     main as step1_chat_completion_agent,
 )
-from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_chat import (
-    main as step2_chat_completion_agent_chat,
+from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_plugin import (
+    main as step2_chat_completion_agent_plugin,
+)
+from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_group_chat import (
+    main as step3_chat_completion_agent_group_chat,
 )
 from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant
 from tests.utils import retry
@@ -277,9 +280,17 @@ concepts = [
         ),
     ),
     param(
-        step2_chat_completion_agent_chat,
+        step2_chat_completion_agent_plugin,
         [],
-        id="step2_chat_completion_agent_chat",
+        id="step2_chat_completion_agent_plugin",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        step3_chat_completion_agent_group_chat,
+        [],
+        id="step3_chat_completion_agent_group_chat",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

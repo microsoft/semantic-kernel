@@ -17,6 +17,7 @@ from openai.types.beta.threads.runs import (
     ToolCallsStepDetails,
 )
 
+from semantic_kernel.agents.azure_ai.agent_content_generation import generate_function_call_streaming_content
 from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_code_interpreter_content,
     generate_final_streaming_message_content,
@@ -32,7 +33,7 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
-    merge_function_results,
+    merge_streaming_function_results,
 )
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -54,8 +55,10 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
     from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-    from semantic_kernel.contents import ChatHistory, ChatMessageContent
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AssistantThreadActions")
@@ -362,7 +365,7 @@ class AssistantThreadActions:
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the assistant.
 
         Args:
@@ -478,15 +481,15 @@ class AssistantThreadActions:
                                 f"Function call required but no function steps found for agent `{agent.name}` "
                                 f"thread: {thread_id}."
                             )
-                        if function_action_result.function_result_content:
+                        if function_action_result.function_result_streaming_content:
                             # Yield the function result content to the caller
-                            yield function_action_result.function_result_content
+                            yield function_action_result.function_result_streaming_content
                             if messages is not None:
                                 # Add the function result content to the messages list, if it exists
-                                messages.append(function_action_result.function_result_content)
-                        if function_action_result.function_call_content:
+                                messages.append(function_action_result.function_result_streaming_content)
+                        if function_action_result.function_call_streaming_content:
                             if messages is not None:
-                                messages.append(function_action_result.function_call_content)
+                                messages.append(function_action_result.function_call_streaming_content)
                             stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
                                 run_id=run.id,
                                 thread_id=thread_id,
@@ -535,14 +538,16 @@ class AssistantThreadActions:
         """Handle the requires action event for a streaming run."""
         fccs = get_function_call_contents(run, function_steps)
         if fccs:
-            function_call_content = generate_function_call_content(agent_name=agent_name, fccs=fccs)
+            function_call_streaming_content = generate_function_call_streaming_content(agent_name=agent_name, fccs=fccs)
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
-            function_result_content = merge_function_results(chat_history.messages)[0]
+            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
-            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+            return FunctionActionResult(
+                function_call_streaming_content, function_result_streaming_content, tool_outputs
+            )
         return None
 
     # endregion
