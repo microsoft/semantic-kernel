@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class AzureAIAgentFactory : KernelAgentFactory
 {
     /// <summary>
