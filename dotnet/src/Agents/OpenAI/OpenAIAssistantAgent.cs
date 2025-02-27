@@ -397,12 +397,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
             cancellationToken);
-#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {

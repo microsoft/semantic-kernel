@@ -66,12 +66,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         string agentName = this.GetDisplayName();
 
-#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
-#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
     }
 
     /// <inheritdoc/>
@@ -83,12 +81,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         string agentName = this.GetDisplayName();
 
-#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
             () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
             cancellationToken);
-#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
     }
 
     /// <inheritdoc/>
