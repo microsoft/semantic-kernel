@@ -22,7 +22,7 @@ The getting started with agents examples include:
 Example|Description
 ---|---
 [step1_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step1_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
-[step2_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
+[step2_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
 [step3_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
 [step4_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step4_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
 [step5_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
