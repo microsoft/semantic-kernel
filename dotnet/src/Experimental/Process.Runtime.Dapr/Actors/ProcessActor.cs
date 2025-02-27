@@ -277,6 +277,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await mapActor.InitializeMapAsync(mapStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMapId, nameof(MapActor));
             }
+            else if (step is DaprProxyInfo proxyStep)
+            {
+                // Initialize the step as a proxy
+                ActorId scopedProxyId = this.ScopedActorId(new ActorId(proxyStep.State.Id!));
+                IProxy proxyActor = this.ProxyFactory.CreateActorProxy<IProxy>(scopedProxyId, nameof(ProxyActor));
+                await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
+            }
             else
             {
                 // The current step should already have an Id.

@@ -17,8 +17,10 @@ public static class KernelProcessProxyMessageFactory
     /// <returns><see cref="KernelProcessProxyMessage"/></returns>
     public static KernelProcessProxyMessage CreateProxyMessage(string processId, string triggerEventName, string publishTopic, object? data)
     {
-        KernelProcessProxyMessage newMessage = new(processId, triggerEventName)
+        KernelProcessProxyMessage newMessage = new()
         {
+            ProcessId = processId,
+            TriggerEventId = triggerEventName,
             ExternalTopicName = publishTopic,
             EventData = data,
         };

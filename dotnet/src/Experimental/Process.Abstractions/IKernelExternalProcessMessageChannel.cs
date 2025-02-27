@@ -28,5 +28,5 @@ public interface IExternalKernelProcessMessageChannel
     /// <param name="externalTopicEvent">name of the topic to be used externally as the event name</param>
     /// <param name="eventData">data to be transmitted externally</param>
     /// <returns></returns>
-    public abstract Task EmitExternalEventAsync(string externalTopicEvent, object? eventData);
+    public abstract Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData);
 }

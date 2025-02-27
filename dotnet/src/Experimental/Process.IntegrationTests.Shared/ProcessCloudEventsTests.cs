@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -68,8 +69,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
-        this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: MockProxyStep.TopicNames.EchoExternalTopic, expectedTopicData: testInput);
-        this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: MockProxyStep.TopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
+        this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: MockTopicNames.EchoExternalTopic, expectedTopicData: testInput);
+        this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: MockTopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
     }
 
     /// <summary>
@@ -92,8 +93,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         var echoStep = processBuilder.AddStepFromType<EchoStep>();
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
-        // TODO add tests verify error when using event that is not registered
-        var proxyTopics = new List<string>() { "RepeatExternalTopic", "EchoExternalTopic" };
+        // TODO: add tests verify error when using event that is not registered
+        var proxyTopics = new List<string>() { MockTopicNames.RepeatExternalTopic, MockTopicNames.EchoExternalTopic };
         var proxyStep = processBuilder.AddProxyStep<MockCloudEventClient>(proxyTopics);
 
         processBuilder
@@ -106,26 +107,42 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
 
         echoStep
             .OnFunctionResult()
-            .EmitExternalEvent(proxyStep, "EchoExternalTopic");
+            .EmitExternalEvent(proxyStep, MockTopicNames.EchoExternalTopic);
 
         repeatStep
             .OnEvent(ProcessTestsEvents.OutputReadyInternal)
-            .EmitExternalEvent(proxyStep, "RepeatExternalTopic");
+            .EmitExternalEvent(proxyStep, MockTopicNames.RepeatExternalTopic);
 
         return processBuilder;
     }
+
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     #region Assert Utils
     private void AssertProxyMessage(object? rawProxyMessage, string expectedPublishTopic, object? expectedTopicData = null)
     {
         Assert.NotNull(rawProxyMessage);
+        if (rawProxyMessage is JsonElement jsonElement)
+        {
+            // Deserialize the JsonElement to KernelProcessProxyMessage - needed for Dapr Runtime Test Setup
+            rawProxyMessage = JsonSerializer.Deserialize<KernelProcessProxyMessage>(jsonElement.GetRawText(), this._jsonSerializerOptions);
+        }
+
         Assert.IsType<KernelProcessProxyMessage>(rawProxyMessage);
 
         var proxyMessage = (KernelProcessProxyMessage)rawProxyMessage;
         Assert.NotNull(proxyMessage);
         Assert.Equal(expectedPublishTopic, proxyMessage.ExternalTopicName);
-        Assert.IsType<string>(proxyMessage.EventData);
-        Assert.Equal(expectedTopicData, proxyMessage.EventData);
+        if (proxyMessage.EventData is JsonElement jsonEventData)
+        {
+            Assert.Equal(JsonValueKind.String, jsonEventData.ValueKind);
+            Assert.Equal(expectedTopicData, jsonEventData.ToString());
+        }
+        else
+        {
+            Assert.IsType<string>(proxyMessage.EventData);
+            Assert.Equal(expectedTopicData, proxyMessage.EventData);
+        }
     }
     #endregion
 }
