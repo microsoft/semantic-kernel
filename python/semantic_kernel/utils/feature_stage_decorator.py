@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
-T = TypeVar("T")
+T = TypeVar("T", bound=type[Any] | Callable[..., Any])
 
 DEFAULT_RC_NOTE = (
     "Features marked with this status are nearing completion and are considered "
@@ -41,7 +41,7 @@ class MyRCClass:
 """
 
 
-def _update_docstring(obj: Callable | T, note: str) -> None:
+def _update_docstring(obj: T, note: str) -> None:
     """Append or set the docstring of the given object with the specified note."""
     if obj.__doc__:
         obj.__doc__ += f"\n\n{note}"
@@ -53,7 +53,7 @@ def stage(
     status: str = "experimental",
     version: str | None = None,
     note: str | None = None,
-) -> Callable[[Callable | T], Callable | T]:
+) -> Callable[[T], T]:
     """A general-purpose decorator for marking a function or a class.
 
     It updates the docstring and attaches 'stage_status' (and optionally
@@ -71,7 +71,7 @@ def stage(
         the target function/class.
     """
 
-    def decorator(obj: Callable | T) -> Callable | T:
+    def decorator(obj: T) -> T:
         entity_type = "class" if isinstance(obj, type) else "function"
         ver_text = f" (Version: {version})" if version else ""
         default_note = f"Note: This {entity_type} is marked as '{status}'{ver_text} and may change in the future."
@@ -87,7 +87,7 @@ def stage(
     return decorator
 
 
-def experimental(obj: Callable | T) -> Callable | T:
+def experimental(obj: T) -> T:
     """Decorator specifically for 'experimental' features.
 
     It uses the general 'stage' decorator but also attaches
@@ -99,11 +99,11 @@ def experimental(obj: Callable | T) -> Callable | T:
 
 
 def release_candidate(
-    func: Callable | T | None = None,
+    func: T | str | None = None,
     *,
     version: str | None = None,
     doc_string: str | None = None,
-) -> Callable[[Callable | T], Callable | T] | Callable | T:
+) -> T:
     """Decorator that designates a function/class as being in a 'release candidate' state.
 
     By default, applies a descriptive note indicating near-completion and possible minor refinements
@@ -133,24 +133,21 @@ def release_candidate(
     """
     from semantic_kernel import DEFAULT_RC_VERSION
 
-    def _apply(obj: Callable | T, ver: str, note: str | None) -> Callable | T:
-        if note is not None:
-            rc_note = note
-        else:
-            ver_text = f" (Version: {ver})" if ver else ""
-            rc_note = f"{DEFAULT_RC_NOTE}{ver_text}"
+    def _apply(obj: T, ver: str, note: str | None) -> T:
+        ver_text = f" (Version: {ver})" if ver else ""
+        rc_note = note if note is not None else f"{DEFAULT_RC_NOTE}{ver_text}"
 
         decorated = stage(status="release_candidate", version=ver, note=rc_note)(obj)
         setattr(decorated, "is_release_candidate", True)
         return decorated
 
-    if callable(func):
+    if func is not None and callable(func):
         ver = version or DEFAULT_RC_VERSION
-        return _apply(func, ver, doc_string)
+        return _apply(cast(T, func), ver, doc_string)
 
-    ver_str: str | None = func if isinstance(func, str) else version
+    ver_str = func if isinstance(func, str) else version
 
-    def wrapper(obj: Callable | T) -> Callable | T:
+    def wrapper(obj: T) -> T:
         return _apply(obj, ver_str or DEFAULT_RC_VERSION, doc_string)
 
-    return wrapper
+    return wrapper  # type: ignore
