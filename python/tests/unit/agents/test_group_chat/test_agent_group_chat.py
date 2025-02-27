@@ -19,7 +19,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 @pytest.fixture
 def agents():
     """Fixture that provides a list of mock agents."""
-    return [MagicMock(spec=Agent, id=f"agent-{i}") for i in range(3)]
+    return [MagicMock(spec=Agent, id=f"agent-{i}", plugins=[]) for i in range(3)]
 
 
 @pytest.fixture

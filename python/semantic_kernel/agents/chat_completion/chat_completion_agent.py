@@ -4,12 +4,13 @@ import logging
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -31,16 +32,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ChatCompletionAgent(Agent):
-    """A KernelAgent specialization based on ChatCompletionClientBase.
+    """A Chat Completion Agent based on ChatCompletionClientBase."""
 
-    Note: enable `function_choice_behavior` on the PromptExecutionSettings to enable function
-    choice behavior which allows the kernel to utilize plugins and functions registered in
-    the kernel.
-    """
-
-    service_id: str
+    function_choice_behavior: FunctionChoiceBehavior | None = Field(default=lambda: FunctionChoiceBehavior.Auto())
     channel_type: ClassVar[type[AgentChannel] | None] = ChatHistoryChannel
-    service: ChatCompletionClientBase | None = None
+    service: ChatCompletionClientBase | None = Field(default=None, exclude=True)
+    service_id: str
 
     def __init__(
         self,
@@ -54,6 +51,7 @@ class ChatCompletionAgent(Agent):
         prompt_template_config: PromptTemplateConfig | None = None,
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         service: ChatCompletionClientBase | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
     ) -> None:
         """Initialize a new instance of ChatCompletionAgent.
 
@@ -73,6 +71,8 @@ class ChatCompletionAgent(Agent):
                 that already exist in the kernel will be overwritten.
             service: The chat completion service instance. If a kernel is provided with the same service_id,
                 the service will be overwritten.
+            function_choice_behavior: The function choice behavior to determine how and which plugins are
+                advertised to the model.
         """
         if not service_id:
             service_id = DEFAULT_SERVICE_NAME
@@ -99,6 +99,9 @@ class ChatCompletionAgent(Agent):
 
         if plugins is not None:
             args["plugins"] = plugins
+
+        if function_choice_behavior is not None:
+            args["function_choice_behavior"] = function_choice_behavior
 
         if service is not None:
             args["service"] = service
@@ -153,6 +156,9 @@ class ChatCompletionAgent(Agent):
 
         # Add the chat history to the args in the event that it is needed for prompt template configuration
         arguments["chat_history"] = history
+        # Remove the chat history from the arguments, potentially used for the prompt,
+        # to avoid passing it to the service
+        arguments.pop("chat_history", None)
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -160,6 +166,10 @@ class ChatCompletionAgent(Agent):
         chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
             kernel=kernel, arguments=arguments
         )
+
+        # If the user hasn't provided a function choice behavior, use the agent's default.
+        if settings.function_choice_behavior is None:
+            settings.function_choice_behavior = self.function_choice_behavior
 
         assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
@@ -224,10 +234,17 @@ class ChatCompletionAgent(Agent):
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
+        # Remove the chat history from the arguments, potentially used for the prompt,
+        # to avoid passing it to the service
+        arguments.pop("chat_history", None)
 
         chat_completion_service, settings = await self._get_chat_completion_service_and_settings(
             kernel=kernel, arguments=arguments
         )
+
+        # If the user hasn't provided a function choice behavior, use the agent's default.
+        if settings.function_choice_behavior is None:
+            settings.function_choice_behavior = self.function_choice_behavior
 
         chat = await self._setup_agent_chat_history(
             history=history,

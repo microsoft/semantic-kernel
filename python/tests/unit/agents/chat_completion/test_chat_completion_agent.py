@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -79,7 +80,7 @@ async def test_initialization_no_service_id():
     assert agent.instructions == "Test Instructions"
 
 
-async def test_initialization_with_kernel(kernel: Kernel):
+def test_initialization_with_kernel(kernel: Kernel):
     agent = ChatCompletionAgent(
         kernel=kernel,
         name="TestAgent",
@@ -94,6 +95,40 @@ async def test_initialization_with_kernel(kernel: Kernel):
     assert agent.id == "test_id"
     assert agent.description == "Test Description"
     assert agent.instructions == "Test Instructions"
+
+
+def test_initialization_with_plugins_via_constructor(custom_plugin_class):
+    agent = ChatCompletionAgent(
+        name="TestAgent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+        plugins=[custom_plugin_class()],
+    )
+
+    assert agent.name == "TestAgent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+    assert agent.plugins is not None
+    assert len(agent.plugins) == 1
+
+
+def test_initialization_with_service_via_constructor(openai_unit_test_env):
+    agent = ChatCompletionAgent(
+        name="TestAgent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+        service=OpenAIChatCompletion(),
+    )
+
+    assert agent.name == "TestAgent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+    assert agent.service is not None
+    assert agent.kernel.services["test_chat_model_id"] == agent.service
 
 
 async def test_invoke():

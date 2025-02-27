@@ -5,7 +5,7 @@ import uuid
 from collections.abc import Iterable
 from typing import ClassVar
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -45,27 +45,13 @@ class Agent(KernelBaseModel):
     channel_type: ClassVar[type[AgentChannel] | None] = None
     arguments: KernelArguments | None = None
     prompt_template: PromptTemplateBase | None = None
-    plugins: dict[str, KernelPlugin] = Field(default_factory=dict)
+    plugins: list[KernelPlugin | object | None] = Field(default_factory=list)
 
     def _get_plugin_name(self, plugin: KernelPlugin | object) -> str:
         """Helper method to get the plugin name."""
         if isinstance(plugin, KernelPlugin):
             return plugin.name
         return plugin.__class__.__name__
-
-    @field_validator("plugins", mode="before")
-    @classmethod
-    def rewrite_plugins(
-        cls, plugins: KernelPlugin | list[KernelPlugin] | dict[str, KernelPlugin] | None = None
-    ) -> dict[str, KernelPlugin]:
-        """Rewrite plugins to a dictionary."""
-        if not plugins:
-            return {}
-        if isinstance(plugins, KernelPlugin):
-            return {plugins.name: plugins}
-        if isinstance(plugins, list):
-            return {p.name: p for p in plugins}
-        return plugins
 
     @model_validator(mode="after")
     def configure_plugins(self):
