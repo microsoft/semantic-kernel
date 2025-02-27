@@ -46,7 +46,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
     merge_function_results,
 )
-from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -57,7 +57,8 @@ if TYPE_CHECKING:
     from azure.ai.projects.aio import AIProjectClient
 
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
-    from semantic_kernel.contents import ChatHistory
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AgentThreadActions")
@@ -323,7 +324,7 @@ class AgentThreadActions:
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent stream and yield ChatMessageContent continuously.
 
         Args:

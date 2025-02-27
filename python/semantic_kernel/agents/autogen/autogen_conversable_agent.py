@@ -16,7 +16,6 @@ from semantic_kernel.agents.agent import Agent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -29,6 +28,7 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 if TYPE_CHECKING:
     from autogen.cache import AbstractCache
 
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -159,7 +159,7 @@ class AutoGenConversableAgent(Agent):
         kernel: "Kernel | None" = None,
         arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent with a stream of messages."""
         raise NotImplementedError("The AutoGenConversableAgent does not support streaming.")
 

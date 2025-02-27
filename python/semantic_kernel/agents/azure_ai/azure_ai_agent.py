@@ -48,6 +48,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from azure.identity.aio import DefaultAzureCredential
 
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 AgentsApiResponseFormatOption = (
     str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
@@ -321,7 +322,7 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent on the specified thread with a stream of messages."""
         if arguments is None:
             arguments = KernelArguments(**kwargs)

@@ -54,8 +54,10 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.run_create_params import AdditionalMessageAttachmentTool, TruncationStrategy
 
     from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-    from semantic_kernel.contents import ChatHistory, ChatMessageContent
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AssistantThreadActions")
@@ -362,7 +364,7 @@ class AssistantThreadActions:
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable["ChatMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the assistant.
 
         Args:
