@@ -33,7 +33,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
                 serviceId: "OpenAIChat");
         builder.Services
             .AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this.Output)) // Use the custom AI service selector to select the GPT model
-            .AddChatClient(new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .AddKeyedChatClient("OpenAIChatClient", new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
                 .AsChatClient("gpt-4o")); // Add a IChatClient to the kernel
 
         Kernel kernel = builder.Build();

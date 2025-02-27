@@ -581,7 +581,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             aiService = textService;
         }
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        else if (serviceSelector is IServiceSelector chatClientServiceSelector && chatClientServiceSelector.TrySelect<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
+        else if (serviceSelector is IServiceSelector chatClientServiceSelector
+            && chatClientServiceSelector.TrySelect<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
         {
             // Resolves a ChatClient as AIService so it don't need to implement IChatCompletionService.
             aiService = new ChatClientAIService(chatClient);

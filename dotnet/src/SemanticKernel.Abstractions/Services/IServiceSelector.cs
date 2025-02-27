@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents a selector which will return a combination of the containing instances of <see cref="IAIService"/> or <see cref="IChatClient"/>
 /// and it's pairing <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
 /// </summary>
+[Experimental("SKEXP0001")]
 public interface IServiceSelector
 {
     /// <summary>
