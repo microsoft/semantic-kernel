@@ -19,15 +19,7 @@ public sealed class ModelDefinition
     /// <summary>
     /// Gets or sets the ID of the model.
     /// </summary>
-    public string? Id
-    {
-        get => this._id;
-        set
-        {
-            Verify.NotNull(value);
-            this._id = value;
-        }
-    }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the type of API supported by the model.
@@ -45,33 +37,14 @@ public sealed class ModelDefinition
     /// <summary>
     /// Gets or sets the options used by the model.
     /// </summary>
-    public PromptExecutionSettings? Options
-    {
-        get => this._options;
-        set
-        {
-            Verify.NotNull(value);
-            this._options = value;
-        }
-    }
+    public PromptExecutionSettings? Options { get; set; }
 
     /// <summary>
     /// Gets or sets the options used by the model.
     /// </summary>
-    public ModelConfiguration? Configuration
-    {
-        get => this._configuration;
-        set
-        {
-            Verify.NotNull(value);
-            this._configuration = value;
-        }
-    }
+    public ModelConfiguration? Configuration { get; set; }
 
     #region
-    private string? _id;
     private string? _api;
-    private PromptExecutionSettings? _options;
-    private ModelConfiguration? _configuration;
     #endregion
 }
