@@ -20,7 +20,16 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     internal ProcessProxyBuilder(IReadOnlyList<string> externalTopics, string name)
         : base(name)
     {
+        if (externalTopics.Count == 0)
+        {
+            throw new ArgumentException("No topic names registered");
+        }
+
         this.ExternalTopicUsage = externalTopics.ToDictionary(topic => topic, topic => false);
+        if (this.ExternalTopicUsage.Count < externalTopics.Count)
+        {
+            throw new ArgumentException("Topic names registed must be different");
+        }
     }
 
     /// <summary>
@@ -61,6 +70,11 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     /// <inheritdoc/>
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
+        if (this.ExternalTopicUsage.All(topic => !topic.Value))
+        {
+            throw new InvalidOperationException("Proxy step does not have linked steps to it, link step edges to proxy or remove proxy step");
+        }
+
         KernelProcessProxyStateMetadata proxyMetadata = new()
         {
             Name = this.Name,
