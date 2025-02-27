@@ -18,7 +18,7 @@ public static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition);
 
         var arguments = new KernelArguments(agentDefinition?.Model?.Options);
-        if (agentDefinition is not null && agentDefinition.Inputs is not null)
+        if (agentDefinition?.Inputs is not null)
         {
             // Add default arguments for the agent
             foreach (var input in agentDefinition.Inputs)
