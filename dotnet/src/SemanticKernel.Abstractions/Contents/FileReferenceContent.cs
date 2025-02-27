@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Content type to support file references.
 /// </summary>
+[Experimental("SKEXP0110")]
 public class FileReferenceContent : KernelContent
 {
     /// <summary>

@@ -18,6 +18,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
+    [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName
     {
