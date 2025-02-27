@@ -51,9 +51,9 @@ internal sealed class LocalProxy : LocalStep
             functionParameters = this._inputs[message.FunctionName];
         }
 
-        if (this._proxy.ProxyMetadata != null && message.SourceEventId != null && this._proxy.ProxyMetadata.EventPublishTopicMap.TryGetValue(message.SourceEventId, out var publishTopic) && publishTopic != null)
+        if (this._proxy.ProxyMetadata != null && message.SourceEventId != null && this._proxy.ProxyMetadata.EventMetadata.TryGetValue(message.SourceEventId, out var metadata) && metadata != null)
         {
-            functionParameters![kvp.Key] = KernelProcessProxyMessageFactory.CreateProxyMessage(this._eventNamespace, message.SourceEventId, publishTopic, kvp.Value);
+            functionParameters![kvp.Key] = KernelProcessProxyMessageFactory.CreateProxyMessage(this._eventNamespace, message.SourceEventId, metadata.TopicName, kvp.Value);
         }
     }
 

@@ -29,8 +29,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     public string Version { get; init; } = "v1";
 
     internal Dictionary<string, bool> ExternalTopicUsage { get; }
-    internal Dictionary<string, string> EventTopicMap { get; } = [];
-    internal Dictionary<string, string> EventDataMap { get; } = [];
+    internal Dictionary<string, KernelProcessProxyEventMetadata> EventMetadata { get; } = [];
 
     internal ProcessFunctionTargetBuilder GetExternalFunctionTargetBuilder()
     {
@@ -44,16 +43,18 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
     {
-        if (!this.ExternalTopicUsage.ContainsKey(topicName))
+        if (!this.ExternalTopicUsage.TryGetValue(topicName, out bool usedTopic))
         {
             throw new InvalidOperationException($"Topic name {topicName} is not registered as proxy publish event, register first before using");
         }
 
-        // TODO-estenori: these 2 could potentially be merged into 1 dict later
-        // maybe sourceStep is not needed? need to check
-        this.EventTopicMap[eventData.EventName] = topicName;
-        this.EventDataMap[eventData.EventName] = eventData.EventId;
+        // todo-estenori: need to test how it works when multiple steps emit the same topic externally
+        if (usedTopic)
+        {
+            throw new InvalidOperationException($"Topic name {topicName} is is already linked to another step edge");
+        }
 
+        this.EventMetadata[eventData.EventName] = new() { EventId = eventData.EventId, TopicName = topicName };
         this.ExternalTopicUsage[topicName] = true;
     }
 
@@ -64,9 +65,8 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         {
             Name = this.Name,
             Id = this.Id,
-            EventPublishTopicMap = this.EventTopicMap,
-            EventDataMap = this.EventDataMap,
-            PublishTopics = this.ExternalTopicUsage.ToList().Select(topic => topic.Key).ToList()
+            EventMetadata = this.EventMetadata,
+            PublishTopics = this.ExternalTopicUsage.ToList().Select(topic => topic.Key).ToList(),
         };
 
         // Build the edges first

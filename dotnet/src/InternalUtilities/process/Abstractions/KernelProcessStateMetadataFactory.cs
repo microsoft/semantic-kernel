@@ -67,8 +67,7 @@ internal static class ProcessStateMetadataFactory
             Id = stepProxy.State.Id,
             VersionInfo = stepProxy.State.Version,
             PublishTopics = stepProxy.ProxyMetadata?.PublishTopics ?? [],
-            EventPublishTopicMap = stepProxy.ProxyMetadata?.EventPublishTopicMap ?? [],
-            EventDataMap = stepProxy.ProxyMetadata?.EventDataMap ?? [],
+            EventMetadata = stepProxy.ProxyMetadata?.EventMetadata ?? [],
         };
     }
 

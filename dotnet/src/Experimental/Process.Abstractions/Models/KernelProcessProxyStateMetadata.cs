@@ -18,16 +18,9 @@ public sealed record class KernelProcessProxyStateMetadata : KernelProcessStepSt
     public List<string> PublishTopics { get; set; } = [];
 
     /// <summary>
-    /// Map that stores which process events trigger external topic to be published
+    /// Map that stores which process events trigger external topic to be published and internal metadata information
     /// </summary>
     [DataMember]
-    [JsonPropertyName("eventTopicMap")]
-    public Dictionary<string, string> EventPublishTopicMap { get; set; } = [];
-
-    /// <summary>
-    /// Map that stores the SK process event name with the running full event id
-    /// </summary>
-    [DataMember]
-    [JsonPropertyName("eventDataMap")]
-    public Dictionary<string, string> EventDataMap { get; set; } = [];
+    [JsonPropertyName("eventMetadata")]
+    public Dictionary<string, KernelProcessProxyEventMetadata> EventMetadata { get; set; } = [];
 }

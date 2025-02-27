@@ -116,8 +116,6 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         return processBuilder;
     }
 
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
-
     #region Assert Utils
     private void AssertProxyMessage(object? rawProxyMessage, string expectedPublishTopic, object? expectedTopicData = null)
     {
@@ -125,7 +123,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         if (rawProxyMessage is JsonElement jsonElement)
         {
             // Deserialize the JsonElement to KernelProcessProxyMessage - needed for Dapr Runtime Test Setup
-            rawProxyMessage = JsonSerializer.Deserialize<KernelProcessProxyMessage>(jsonElement.GetRawText(), this._jsonSerializerOptions);
+            rawProxyMessage = JsonSerializer.Deserialize<KernelProcessProxyMessage>(jsonElement.GetRawText());
         }
 
         Assert.IsType<KernelProcessProxyMessage>(rawProxyMessage);
