@@ -10,8 +10,11 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Allows custom deserialization for <see cref="ModelConfiguration"/> from YAML.
+/// Type converter with custom deserialization for <see cref="ModelConfiguration"/> from YAML.
 /// </summary>
+///  <remarks>
+/// Required to correctly deserialize the <see cref="ModelConfiguration.ExtensionData"/> from YAML.
+/// </remarks>
 internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
 {
     /// <inheritdoc/>

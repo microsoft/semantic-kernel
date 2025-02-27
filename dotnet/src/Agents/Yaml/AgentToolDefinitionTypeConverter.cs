@@ -10,8 +10,11 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Allows custom deserialization for <see cref="AgentToolDefinition"/> from YAML.
+/// Type converter custom deserialization for <see cref="AgentToolDefinition"/> from YAML.
 /// </summary>
+/// <remarks>
+/// Required to correctly deserialize the <see cref="AgentToolDefinition.Configuration"/> from YAML.
+/// </remarks>
 internal sealed class AgentToolDefinitionTypeConverter : IYamlTypeConverter
 {
     /// <inheritdoc/>

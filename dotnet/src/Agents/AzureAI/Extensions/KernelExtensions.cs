@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
-using System.Net.Http;
 using Azure.AI.Projects;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -30,14 +30,15 @@ internal static class KernelExtensions
         var configuration = agentDefinition?.Model?.Configuration;
         if (configuration is not null)
         {
-            var hasConnectionString = configuration.ExtensionData.TryGetValue(ConnectionString, out var connectionString) && connectionString is not null;
-            if (hasConnectionString)
+            if (configuration.ExtensionData.TryGetValue(ConnectionString, out var value) && value is string connectionString)
             {
-                var httpClient = kernel.GetAllServices<HttpClient>().FirstOrDefault();
+#pragma warning disable CA2000 // Dispose objects before losing scope, not relevant because the HttpClient is created and may be used elsewhere
+                var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
 
                 var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
-                return new(connectionString!.ToString()!, tokenCredential, clientOptions);
+                return new(connectionString, tokenCredential, clientOptions);
             }
         }
 

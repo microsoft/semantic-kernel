@@ -16,7 +16,7 @@ internal static class ModelConfigurationExtensions
     /// Gets the endpoint property as a <see cref="Uri"/> from the specified <see cref="ModelConfiguration"/>.
     /// </summary>
     /// <param name="configuration">Model configuration</param>
-    internal static Uri? GetEndpointUri(this ModelConfiguration configuration)
+    internal static Uri? TryGetEndpoint(this ModelConfiguration configuration)
     {
         Verify.NotNull(configuration);
 

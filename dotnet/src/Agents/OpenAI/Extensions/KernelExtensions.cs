@@ -46,12 +46,12 @@ internal static class KernelExtensions
 
             if (configuration.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.GetEndpointUri(), httpClient);
+                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(configuration.TryGetEndpoint(), httpClient);
                 return new OpenAIClient(configuration.GetApiKeyCredential(), clientOptions);
             }
             else if (configuration.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                var endpoint = configuration.GetEndpointUri();
+                var endpoint = configuration.TryGetEndpoint();
                 Verify.NotNull(endpoint, "Endpoint must be specified when using Azure OpenAI.");
 
                 AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
