@@ -46,6 +46,7 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
+    <PackageVersion Include="Pinecone.Client" Version="3.0.0" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
