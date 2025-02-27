@@ -30,7 +30,6 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
 
-
     #region private
     /// <summary>
     /// Invoke the <see cref="ChatCompletionAgent"/> with the user input.
