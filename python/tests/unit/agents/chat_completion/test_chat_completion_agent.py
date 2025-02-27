@@ -15,6 +15,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -131,16 +132,45 @@ def test_initialization_with_service_via_constructor(openai_unit_test_env):
     assert agent.kernel.services["test_chat_model_id"] == agent.service
 
 
-async def test_invoke():
-    kernel = create_autospec(Kernel)
-    mock_ai_service_client = create_autospec(ChatCompletionClientBase)
-    mock_prompt_execution_settings = create_autospec(PromptExecutionSettings)
-    kernel.select_ai_service.return_value = (mock_ai_service_client, mock_prompt_execution_settings)
-    mock_ai_service_client.get_chat_message_contents = AsyncMock(
-        return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
-    )
+async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+    kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(
-        kernel=kernel, service_id="test_service", name="TestAgent", instructions="Test Instructions"
+        kernel=kernel,
+        service_id="test_service",
+        name="TestAgent",
+        instructions="Test Instructions",
+    )
+
+    history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
+
+    response = await agent.get_response(history)
+
+    assert response.content == "Processed Message"
+
+
+async def test_get_response_exception(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+    kernel, mock_ai_service_client = kernel_with_ai_service
+    mock_ai_service_client.get_chat_message_contents = AsyncMock(return_value=[])
+    agent = ChatCompletionAgent(
+        kernel=kernel,
+        service_id="test_service",
+        name="TestAgent",
+        instructions="Test Instructions",
+    )
+
+    history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
+
+    with pytest.raises(AgentInvokeException):
+        await agent.get_response(history)
+
+
+async def test_invoke(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+    kernel, _ = kernel_with_ai_service
+    agent = ChatCompletionAgent(
+        kernel=kernel,
+        service_id="test_service",
+        name="TestAgent",
+        instructions="Test Instructions",
     )
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
@@ -151,15 +181,13 @@ async def test_invoke():
     assert messages[0].content == "Processed Message"
 
 
-async def test_invoke_tool_call_added():
-    kernel = create_autospec(Kernel)
-    mock_ai_service_client = create_autospec(ChatCompletionClientBase)
-    mock_prompt_execution_settings = create_autospec(PromptExecutionSettings)
-    kernel.select_ai_service.return_value = (mock_ai_service_client, mock_prompt_execution_settings)
-    mock_ai_service_client.get_chat_message_contents = AsyncMock(
-        return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
+async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+    kernel, mock_ai_service_client = kernel_with_ai_service
+    agent = ChatCompletionAgent(
+        kernel=kernel,
+        service_id="test_service",
+        name="TestAgent",
     )
-    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -191,9 +219,7 @@ async def test_invoke_tool_call_added():
     assert history.messages[2].name == "TestAgent"
 
 
-async def test_invoke_no_service_throws():
-    kernel = create_autospec(Kernel)
-    kernel.select_ai_service.return_value = None, None
+async def test_invoke_no_service_throws(kernel: Kernel):
     agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
@@ -203,15 +229,8 @@ async def test_invoke_no_service_throws():
             pass
 
 
-async def test_invoke_stream():
-    kernel = create_autospec(Kernel)
-    mock_ai_service_client = create_autospec(ChatCompletionClientBase)
-    mock_prompt_execution_settings = create_autospec(PromptExecutionSettings)
-    kernel.select_ai_service.return_value = (mock_ai_service_client, mock_prompt_execution_settings)
-    mock_ai_service_client.get_chat_message_contents = AsyncMock(
-        return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
-    )
-
+async def test_invoke_stream(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+    kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
@@ -229,14 +248,11 @@ async def test_invoke_stream():
             assert message.content == "Initial Message"
 
 
-async def test_invoke_stream_tool_call_added(mock_streaming_chat_completion_response):
-    kernel = create_autospec(Kernel)
-    mock_ai_service_client = create_autospec(ChatCompletionClientBase)
-    mock_prompt_execution_settings = create_autospec(PromptExecutionSettings)
-    kernel.select_ai_service.return_value = (mock_ai_service_client, mock_prompt_execution_settings)
-    mock_ai_service_client.get_chat_message_contents = AsyncMock(
-        return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
-    )
+async def test_invoke_stream_tool_call_added(
+    kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase],
+    mock_streaming_chat_completion_response,
+):
+    kernel, mock_ai_service_client = kernel_with_ai_service
     agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
@@ -251,9 +267,7 @@ async def test_invoke_stream_tool_call_added(mock_streaming_chat_completion_resp
     assert len(history.messages) == 3
 
 
-async def test_invoke_stream_no_service_throws():
-    kernel = create_autospec(Kernel)
-    kernel.select_ai_service.return_value = None, None
+async def test_invoke_stream_no_service_throws(kernel: Kernel):
     agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
@@ -278,7 +292,7 @@ async def test_create_channel():
     assert isinstance(channel, ChatHistoryChannel)
 
 
-async def test_setup_agent_chat_history_with_formatted_instructions():
+async def test_prepare_agent_chat_history_with_formatted_instructions():
     agent = ChatCompletionAgent(
         name="TestAgent", id="test_id", description="Test Description", instructions="Test Instructions"
     )
@@ -289,7 +303,7 @@ async def test_setup_agent_chat_history_with_formatted_instructions():
         dummy_args = KernelArguments(param="value")
         user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
         history = ChatHistory(messages=[user_message])
-        result_history = await agent._setup_agent_chat_history(history, dummy_kernel, dummy_args)
+        result_history = await agent._prepare_agent_chat_history(history, dummy_kernel, dummy_args)
         mock_format_instructions.assert_awaited_once_with(dummy_kernel, dummy_args)
         assert len(result_history.messages) == 2
         system_message = result_history.messages[0]
@@ -299,7 +313,7 @@ async def test_setup_agent_chat_history_with_formatted_instructions():
         assert result_history.messages[1] == user_message
 
 
-async def test_setup_agent_chat_history_without_formatted_instructions():
+async def test_prepare_agent_chat_history_without_formatted_instructions():
     agent = ChatCompletionAgent(
         name="TestAgent", id="test_id", description="Test Description", instructions="Test Instructions"
     )
@@ -310,7 +324,7 @@ async def test_setup_agent_chat_history_without_formatted_instructions():
         dummy_args = KernelArguments(param="value")
         user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
         history = ChatHistory(messages=[user_message])
-        result_history = await agent._setup_agent_chat_history(history, dummy_kernel, dummy_args)
+        result_history = await agent._prepare_agent_chat_history(history, dummy_kernel, dummy_args)
         mock_format_instructions.assert_awaited_once_with(dummy_kernel, dummy_args)
         assert len(result_history.messages) == 1
         assert result_history.messages[0] == user_message

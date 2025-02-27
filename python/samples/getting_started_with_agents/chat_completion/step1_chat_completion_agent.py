@@ -1,98 +1,66 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory, FunctionCallContent, FunctionResultContent
-from semantic_kernel.functions import KernelArguments, kernel_function
+from semantic_kernel.contents import ChatHistory
 
 """
 The following sample demonstrates how to create a chat completion agent that
-answers questions about a sample menu using a Semantic Kernel Plugin.
+answers user questions using the Azure Chat Completion service. This sample
+demonstrates the basic steps to create an agent and simulate a conversation
+with the agent.
+
+The interaction with the agent is via the `get_response` method, which sends a
+user input to the agent and receives a response from the agent. The conversation
+history needs to be maintained by the caller in the chat history object.
 """
-
-
-# Define a sample plugin for the sample
-class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
-
-    @kernel_function(description="Provides a list of specials from the menu.")
-    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
-        return """
-        Special Soup: Clam Chowder
-        Special Salad: Cobb Salad
-        Special Drink: Chai Tea
-        """
-
-    @kernel_function(description="Provides the price of the requested menu item.")
-    def get_item_price(
-        self, menu_item: Annotated[str, "The name of the menu item."]
-    ) -> Annotated[str, "Returns the price of the menu item."]:
-        return "$9.99"
-
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello",
-    "What is the special soup?",
-    "What does that cost?",
-    "Thank you",
+    "Hello, I am John Doe.",
+    "What is your name?",
+    "What is my name?",
 ]
 
 
 async def main():
-    # 1. Create the instance of the Kernel to register the plugin and service
+    # 1. Create the instance of the Kernel to register an AI service
     service_id = "agent"
     kernel = Kernel()
-    kernel.add_plugin(MenuPlugin(), plugin_name="menu")
     kernel.add_service(AzureChatCompletion(service_id=service_id))
 
-    # 2. Configure the function choice behavior to auto invoke kernel functions
-    # so that the agent can automatically execute the menu plugin functions when needed
-    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
-
-    # 3. Create the agent
+    # 2. Create the agent
     agent = ChatCompletionAgent(
         service_id=service_id,
         kernel=kernel,
-        name="Host",
-        instructions="Answer questions about the menu.",
-        arguments=KernelArguments(settings=settings),
+        name="Assistant",
+        instructions="Answer the user's questions.",
     )
 
-    # 4. Create a chat history to hold the conversation
+    # 3. Create a chat history to hold the conversation
     chat_history = ChatHistory()
 
     for user_input in USER_INPUTS:
-        # 5. Add the user input to the chat history
+        # 4. Add the user input to the chat history
         chat_history.add_user_message(user_input)
         print(f"# User: {user_input}")
-        # 6. Invoke the agent for a response
-        async for content in agent.invoke(chat_history):
-            print(f"# {content.name}: ", end="")
-            if (
-                not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in content.items)
-                and content.content.strip()
-            ):
-                # We only want to print the content if it's not a function call or result
-                print(f"{content.content}", end="", flush=True)
-        print("")
+        # 5. Invoke the agent for a response
+        response = await agent.get_response(chat_history)
+        print(f"# {response.name}: {response}")
+        # 6. Add the agent response to the chat history
+        chat_history.add_message(response)
 
     """
     Sample output:
-    # User: Hello
-    # Host: Hello! How can I assist you today?
-    # User: What is the special soup?
-    # Host: The special soup is Clam Chowder.
-    # User: What does that cost?
-    # Host: The special soup, Clam Chowder, costs $9.99.
-    # User: Thank you
-    # Host: You're welcome! If you have any more questions, feel free to ask. Enjoy your day!
+    # User: Hello, I am John Doe.
+    # Assistant: Hello, John Doe! How can I assist you today?
+    # User: What is your name?
+    # Assistant: I don't have a personal name like a human does, but you can call me Assistant.?
+    # User: What is my name?
+    # Assistant: You mentioned that your name is John Doe. How can I assist you further, John?
     """
 
 

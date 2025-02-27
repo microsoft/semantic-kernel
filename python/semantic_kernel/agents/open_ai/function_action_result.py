@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -14,6 +14,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class FunctionActionResult:
     """Function Action Result."""
 
-    function_call_content: ChatMessageContent | None
-    function_result_content: ChatMessageContent | None
+    function_call_streaming_content: StreamingChatMessageContent | None
+    function_result_streaming_content: StreamingChatMessageContent | None
     tool_outputs: list[dict[str, str]] | None

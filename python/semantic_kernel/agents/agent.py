@@ -2,12 +2,15 @@
 
 import logging
 import uuid
-from collections.abc import Iterable
+from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable, Iterable
 from typing import ClassVar
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -15,13 +18,15 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Agent(KernelBaseModel):
+@experimental
+class Agent(KernelBaseModel, ABC):
     """Base abstraction for all Semantic Kernel agents.
 
     An agent instance may participate in one or more conversations.
@@ -64,6 +69,44 @@ class Agent(KernelBaseModel):
                 name = self._get_plugin_name(plugin)
                 self.kernel.add_plugin(plugin, plugin_name=name)
         return self
+
+    @abstractmethod
+    async def get_response(self, *args, **kwargs) -> ChatMessageContent:
+        """Get a response from the agent.
+
+        This method returns the final result of the agent's execution
+        as a single ChatMessageContent object. The caller is blocked until
+        the final result is available.
+
+        Note: For streaming responses, use the invoke_stream method, which returns
+        intermediate steps and the final result as a stream of StreamingChatMessageContent
+        objects. Streaming only the final result is not feasible because the timing of
+        the final result's availability is unknown, and blocking the caller until then
+        is undesirable in streaming scenarios.
+        """
+        pass
+
+    @abstractmethod
+    async def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the agent.
+
+        This invocation method will return the intermediate steps and the final results
+        of the agent's execution as a stream of ChatMessageContent objects to the caller.
+
+        Note: A ChatMessageContent object contains an entire message.
+        """
+        pass
+
+    @abstractmethod
+    async def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+        """Invoke the agent as a stream.
+
+        This invocation method will return the intermediate steps and final results of the
+        agent's execution as a stream of StreamingChatMessageContent objects to the caller.
+
+        Note: A StreamingChatMessageContent object contains a chunk of a message.
+        """
+        pass
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.

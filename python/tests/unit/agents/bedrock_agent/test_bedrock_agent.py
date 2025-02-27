@@ -9,7 +9,7 @@ from semantic_kernel.agents.bedrock.action_group_utils import parse_function_res
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
@@ -204,6 +204,73 @@ async def test_bedrock_agent_retrieve(
         mock_get_agent.assert_called_once()
         assert agent.agent_model.agent_id == bedrock_agent_model_with_id.agent_id
         assert agent.id == agent.agent_model.agent_id
+
+
+# Test case to verify the `get_response` method of BedrockAgent
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_get_response(
+    client,
+    bedrock_agent_unit_test_env,
+    bedrock_agent_model_with_id,
+    bedrock_agent_non_streaming_simple_response,
+    simple_response,
+):
+    with (
+        patch.object(BedrockAgent, "_get_agent") as mock_get_agent,
+        patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+    ):
+        mock_get_agent.return_value = bedrock_agent_model_with_id
+
+        agent = await BedrockAgent.retrieve(
+            bedrock_agent_model_with_id.agent_id,
+            bedrock_agent_model_with_id.agent_name,
+            env_file_path="fake_path",
+        )
+
+        mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
+        response = await agent.get_response("test_session_id", "test_input_text")
+        assert response.content == simple_response
+
+        mock_invoke_agent.assert_called_once_with(
+            "test_session_id",
+            "test_input_text",
+            None,
+            streamingConfigurations={"streamFinalResponse": False},
+            sessionState={},
+        )
+
+
+# Test case to verify the `get_response` method of BedrockAgent
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_get_response_exception(
+    client,
+    bedrock_agent_unit_test_env,
+    bedrock_agent_model_with_id,
+    bedrock_agent_non_streaming_empty_response,
+):
+    with (
+        patch.object(BedrockAgent, "_get_agent") as mock_get_agent,
+        patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+    ):
+        mock_get_agent.return_value = bedrock_agent_model_with_id
+
+        agent = await BedrockAgent.retrieve(
+            bedrock_agent_model_with_id.agent_id,
+            bedrock_agent_model_with_id.agent_name,
+            env_file_path="fake_path",
+        )
+
+        mock_invoke_agent.return_value = bedrock_agent_non_streaming_empty_response
+        with pytest.raises(AgentInvokeException):
+            await agent.get_response("test_session_id", "test_input_text")
+
+            mock_invoke_agent.assert_called_once_with(
+                "test_session_id",
+                "test_input_text",
+                None,
+                streamingConfigurations={"streamFinalResponse": False},
+                sessionState={},
+            )
 
 
 # Test case to verify the invocation of BedrockAgent

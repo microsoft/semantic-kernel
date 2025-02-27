@@ -102,8 +102,8 @@ def merge_function_results(
 
 def merge_streaming_function_results(
     messages: list["ChatMessageContent | StreamingChatMessageContent"],
-    ai_model_id: str,
-    function_invoke_attempt: int,
+    ai_model_id: str | None = None,
+    function_invoke_attempt: int | None = None,
 ) -> list["StreamingChatMessageContent"]:
     """Combine multiple streaming function result content types to one streaming chat message content type.
 

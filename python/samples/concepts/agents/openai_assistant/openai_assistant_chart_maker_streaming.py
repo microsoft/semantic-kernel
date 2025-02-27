@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_images
+from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 

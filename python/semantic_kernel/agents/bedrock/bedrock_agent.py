@@ -2,12 +2,18 @@
 
 
 import asyncio
+import sys
 import uuid
 from collections.abc import AsyncIterable
 from functools import reduce
 from typing import Any, ClassVar
 
 from pydantic import ValidationError
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.action_group_utils import (
@@ -36,7 +42,10 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.feature_stage_decorator import experimental
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
 
 
 @experimental
@@ -301,7 +310,93 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
         return self
 
+    @trace_agent_get_response
+    @override
+    async def get_response(
+        self,
+        session_id: str,
+        input_text: str,
+        *,
+        agent_alias: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs,
+    ) -> ChatMessageContent:
+        """Get a response from the agent.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A chat message content with the response.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self._merge_arguments(arguments)
+
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+        kwargs.setdefault("sessionState", {})
+
+        for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+
+            events: list[dict[str, Any]] = []
+            for event in response.get("completion", []):
+                events.append(event)
+
+            if any(BedrockAgentEventType.RETURN_CONTROL in event for event in events):
+                # Check if there is function call requests. If there are function calls,
+                # parse and invoke them and return the results back to the agent.
+                # Not yielding the function call results back to the user.
+                kwargs["sessionState"].update(
+                    await self._handle_return_control_event(
+                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event),
+                        kernel,
+                        arguments,
+                    )
+                )
+            else:
+                # For the rest of the events, the chunk will become the chat message content.
+                # If there are files or trace, they will be added to the chat message content.
+                file_items: list[BinaryContent] | None = None
+                trace_metadata: dict[str, Any] | None = None
+                chat_message_content: ChatMessageContent | None = None
+                for event in events:
+                    if BedrockAgentEventType.CHUNK in event:
+                        chat_message_content = self._handle_chunk_event(event)
+                    elif BedrockAgentEventType.FILES in event:
+                        file_items = self._handle_files_event(event)
+                    elif BedrockAgentEventType.TRACE in event:
+                        trace_metadata = self._handle_trace_event(event)
+
+                if not chat_message_content or not chat_message_content.content:
+                    raise AgentInvokeException("Chat message content is expected but not found in the response.")
+
+                if file_items:
+                    chat_message_content.items.extend(file_items)
+                if trace_metadata:
+                    chat_message_content.metadata.update({"trace": trace_metadata})
+
+                if not chat_message_content:
+                    raise AgentInvokeException("No response from the agent.")
+
+                return chat_message_content
+
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
+
     @trace_agent_invocation
+    @override
     async def invoke(
         self,
         session_id: str,
@@ -355,31 +450,35 @@ class BedrockAgent(BedrockAgentBase, Agent):
                     )
                 )
             else:
-                # For the rest of the events, the chunk will become the chat message content.
-                # If there are files or trace, they will be added to the chat message content.
-                file_items: list[BinaryContent] | None = None
-                trace_metadata: dict[str, Any] | None = None
-                chat_message_content: ChatMessageContent | None = None
                 for event in events:
                     if BedrockAgentEventType.CHUNK in event:
-                        chat_message_content = self._handle_chunk_event(event)
+                        yield self._handle_chunk_event(event)
                     elif BedrockAgentEventType.FILES in event:
-                        file_items = self._handle_files_event(event)
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            items=self._handle_files_event(event),  # type: ignore
+                            name=self.name,
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                        )
                     elif BedrockAgentEventType.TRACE in event:
-                        trace_metadata = self._handle_trace_event(event)
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            name=self.name,
+                            content="",
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                            metadata=self._handle_trace_event(event),
+                        )
 
-                if not chat_message_content or not chat_message_content.content:
-                    raise AgentInvokeException("Chat message content is expected but not found in the response.")
-
-                if file_items:
-                    chat_message_content.items.extend(file_items)
-                if trace_metadata:
-                    chat_message_content.metadata.update({"trace": trace_metadata})
-
-                yield chat_message_content
                 return
 
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
+
     @trace_agent_invocation
+    @override
     async def invoke_stream(
         self,
         session_id: str,

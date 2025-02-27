@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_files
+from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.annotation_content import AnnotationContent
 
