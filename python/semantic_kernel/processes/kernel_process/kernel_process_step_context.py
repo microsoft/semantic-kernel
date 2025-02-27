@@ -6,10 +6,10 @@ from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class KernelProcessStepContext(KernelBaseModel):
     """The context of a step in a kernel process."""
 

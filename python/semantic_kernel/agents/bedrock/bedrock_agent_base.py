@@ -17,12 +17,12 @@ from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAg
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class BedrockAgentBase(KernelBaseModel):
     """Bedrock Agent Base Class to provide common functionalities for Bedrock Agents."""
 
