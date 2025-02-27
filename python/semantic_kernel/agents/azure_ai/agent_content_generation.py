@@ -129,7 +129,7 @@ def generate_message_content(
                 )
             )
             for annotation in item_content.text.annotations:
-                content.items.append(generate_annotation_content(annotation))
+                content.items.append(generate_annotation_content(annotation))  # type: ignore
         elif item_content.type == "image_file":
             content.items.append(
                 FileReferenceContent(

@@ -261,7 +261,9 @@ class AgentThreadActions:
                                     function_step = function_steps.get(tool_call.id)
                                     assert function_step is not None  # nosec
                                     content = generate_function_result_content(
-                                        agent_name=agent.name, function_step=function_step, tool_call=tool_call
+                                        agent_name=agent.name,
+                                        function_step=function_step,
+                                        tool_call=tool_call,  # type: ignore
                                     )
 
                             if content:
