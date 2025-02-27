@@ -32,10 +32,10 @@ public sealed class KernelProxyStep : KernelProcessStep
     /// <param name="proxyEvent">event data passed to proxy step</param>
     /// <returns></returns>
     [KernelFunction(Functions.EmitExternalEvent)]
-    public async Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
+    public Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
     {
         Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));
-        await context.EmitExternalEventAsync(proxyEvent.ExternalTopicName!, proxyEvent).ConfigureAwait(false);
+        return context.EmitExternalEventAsync(proxyEvent.ExternalTopicName!, proxyEvent);
     }
 
     /// <summary>

@@ -60,7 +60,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     /// <inheritdoc/>
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
-        KernelProcessProxyStateMetadata? proxyMetadata = new()
+        KernelProcessProxyStateMetadata proxyMetadata = new()
         {
             Name = this.Name,
             Id = this.Id,

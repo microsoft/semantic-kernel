@@ -58,7 +58,7 @@ internal sealed class LocalProxy : LocalStep
     }
 
     /// <inheritdoc/>
-    protected async override ValueTask InitializeStepAsync()
+    protected override async ValueTask InitializeStepAsync()
     {
         // Ensure initialization happens only once if first time or again if "deinitialization" was called
         if (this.ExternalMessageChannel == null)
