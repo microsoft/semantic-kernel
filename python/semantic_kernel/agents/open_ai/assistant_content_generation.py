@@ -28,7 +28,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from openai.types.beta.threads.message import Message
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 ###################################################################
 
 
-@experimental_function
+@experimental
 async def create_chat_message(
     client: AsyncOpenAI,
     thread_id: str,
@@ -77,7 +77,7 @@ async def create_chat_message(
     )
 
 
-@experimental_function
+@experimental
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
 
@@ -121,7 +121,7 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     return contents
 
 
-@experimental_function
+@experimental
 def generate_message_content(
     assistant_name: str, message: "Message", completed_step: "RunStep | None" = None
 ) -> ChatMessageContent:
@@ -164,7 +164,7 @@ def generate_message_content(
     return content
 
 
-@experimental_function
+@experimental
 def generate_streaming_message_content(
     assistant_name: str,
     message_delta_event: "MessageDeltaEvent",
@@ -222,7 +222,7 @@ def generate_streaming_message_content(
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
-@experimental_function
+@experimental
 def generate_final_streaming_message_content(
     assistant_name: str,
     message: "Message",
@@ -266,7 +266,7 @@ def generate_final_streaming_message_content(
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
 
 
-@experimental_function
+@experimental
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -280,7 +280,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
-@experimental_function
+@experimental
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
 ) -> ChatMessageContent:
@@ -297,7 +297,7 @@ def generate_function_result_content(
     return function_call_content
 
 
-@experimental_function
+@experimental
 def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCallContent]) -> list[FunctionCallContent]:
     """Extract function call contents from the run.
 
@@ -324,7 +324,7 @@ def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCal
     return function_call_contents
 
 
-@experimental_function
+@experimental
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -343,7 +343,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_function_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent":
@@ -381,7 +381,7 @@ def generate_streaming_function_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent | None":
@@ -436,7 +436,7 @@ def generate_streaming_code_interpreter_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnnotation) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
@@ -454,7 +454,7 @@ def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnn
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_annotation_content(
     annotation: FileCitationAnnotation | FilePathAnnotation | FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
 ) -> StreamingAnnotationContent:

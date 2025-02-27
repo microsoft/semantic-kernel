@@ -43,7 +43,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
     AgentInvokeException,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -65,7 +65,7 @@ _T = TypeVar("_T", bound="AssistantThreadActions")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class AssistantThreadActions:
     """Assistant Thread Actions class."""
 
