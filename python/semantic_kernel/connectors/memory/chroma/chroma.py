@@ -31,7 +31,7 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ DISTANCE_FUNCTION_MAP = {
 }
 
 
-@experimental_class
+@experimental
 class ChromaCollection(
     VectorSearchBase[str, TModel],
     VectorizedSearchMixin[TModel],
@@ -331,7 +331,7 @@ class ChromaCollection(
         return filter_expression
 
 
-@experimental_class
+@experimental
 class ChromaStore(VectorStore):
     """Chroma vector store."""
 
