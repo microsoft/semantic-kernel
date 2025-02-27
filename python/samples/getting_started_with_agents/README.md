@@ -23,7 +23,7 @@ Example|Description
 ---|---
 [step1_chat_completion_agent](../getting_started_with_agents/chat_completion/step1_chat_completion_agent.py)|How to create and use an agent.
 [step2_chat_completion_agent_plugin](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_plugin.py)|How to create and use an agent with plugins.
-[step3_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step3_kernel_function_strategies.py)|How to create a conversation between agents.
+[step3_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
 [step4_kernel_function_strategies](../getting_started_with_agents/chat_completion/step4_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
 [step5_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
 [step6_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step6_chat_completion_agent_logging.py)|How to enable logging for agents.
