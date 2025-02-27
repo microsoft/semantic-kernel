@@ -31,6 +31,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -51,37 +52,40 @@ class BedrockAgent(BedrockAgentBase, Agent):
         self,
         name: str,
         *,
-        id: str | None = None,
         agent_resource_role_arn: str | None = None,
-        foundation_model: str | None = None,
-        kernel: Kernel | None = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
         arguments: KernelArguments | None = None,
-        instructions: str | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
-        env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        env_file_path: str | None = None,
+        id: str | None = None,
+        instructions: str | None = None,
+        foundation_model: str | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
     ) -> None:
         """Initialize the Bedrock Agent.
 
         Note that this only creates the agent object and does not create the agent in the service.
 
         Args:
-            name (str): The name of the agent.
-            id (str, optional): The unique identifier of the agent.
-            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
+            name: The name of the agent.
+            agent_resource_role_arn: The ARN of the agent resource role.
                 Overrides the one in the env file.
-            foundation_model (str, optional): The foundation model. Overrides the one in the env file.
-            kernel (Kernel, optional): The kernel to use.
-            function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
-                the kernel functions and filters.
-            arguments (KernelArguments, optional): The kernel arguments.
+            arguments: The kernel arguments.
                 Invoke method arguments take precedence over the arguments provided here.
-            instructions (str, optional): The instructions for the agent.
-            prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+            foundation_model: The foundation model. Overrides the one in the env file.
+            function_choice_behavior: The function choice behavior for accessing
+                the kernel functions and filters.
+            id: The unique identifier of the agent.
+            instructions: The instructions for the agent.
+            kernel: The kernel to use.
+            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
+                that already exist in the kernel will be overwritten.
+            prompt_template_config: The prompt template configuration.
                 Cannot be set if instructions is set.
-            env_file_path (str, optional): The path to the environment file.
-            env_file_encoding (str, optional): The encoding of the environment file.
         """
         try:
             bedrock_agent_settings = BedrockAgentSettings.create(
@@ -124,6 +128,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
             args["arguments"] = arguments
         if prompt_template:
             args["prompt_template"] = prompt_template
+        if plugins is not None:
+            args["plugins"] = plugins
 
         super().__init__(**args)
 

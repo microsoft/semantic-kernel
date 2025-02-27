@@ -5,23 +5,22 @@ import uuid
 from collections.abc import Iterable
 from typing import ClassVar
 
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
 class Agent(KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
 
@@ -46,6 +45,39 @@ class Agent(KernelBaseModel):
     channel_type: ClassVar[type[AgentChannel] | None] = None
     arguments: KernelArguments | None = None
     prompt_template: PromptTemplateBase | None = None
+    plugins: dict[str, KernelPlugin] = Field(default_factory=dict)
+
+    def _get_plugin_name(self, plugin: KernelPlugin | object) -> str:
+        """Helper method to get the plugin name."""
+        if isinstance(plugin, KernelPlugin):
+            return plugin.name
+        return plugin.__class__.__name__
+
+    @field_validator("plugins", mode="before")
+    @classmethod
+    def rewrite_plugins(
+        cls, plugins: KernelPlugin | list[KernelPlugin] | dict[str, KernelPlugin] | None = None
+    ) -> dict[str, KernelPlugin]:
+        """Rewrite plugins to a dictionary."""
+        if not plugins:
+            return {}
+        if isinstance(plugins, KernelPlugin):
+            return {plugins.name: plugins}
+        if isinstance(plugins, list):
+            return {p.name: p for p in plugins}
+        return plugins
+
+    @model_validator(mode="after")
+    def configure_plugins(self):
+        """Handle the plugins if provided via the constructor.
+
+        Any plugins already defined with the same name on the Kernel are overwritten.
+        """
+        if self.plugins:
+            for plugin in self.plugins:
+                name = self._get_plugin_name(plugin)
+                self.kernel.add_plugin(plugin, plugin_name=name)
+        return self
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.

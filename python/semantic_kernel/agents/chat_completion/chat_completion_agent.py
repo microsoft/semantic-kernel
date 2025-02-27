@@ -4,6 +4,8 @@ import logging
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from pydantic import model_validator
+
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
@@ -15,10 +17,11 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
 
 if TYPE_CHECKING:
@@ -27,7 +30,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
 class ChatCompletionAgent(Agent):
     """A KernelAgent specialization based on ChatCompletionClientBase.
 
@@ -38,6 +40,7 @@ class ChatCompletionAgent(Agent):
 
     service_id: str
     channel_type: ClassVar[type[AgentChannel] | None] = ChatHistoryChannel
+    service: ChatCompletionClientBase | None = None
 
     def __init__(
         self,
@@ -49,21 +52,27 @@ class ChatCompletionAgent(Agent):
         instructions: str | None = None,
         arguments: KernelArguments | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        service: ChatCompletionClientBase | None = None,
     ) -> None:
         """Initialize a new instance of ChatCompletionAgent.
 
         Args:
-            service_id: The service id for the chat completion service. (optional) If not provided,
+            service_id: The service id for the chat completion service. If not provided,
                 the default service name `default` will be used.
-            kernel: The kernel instance. (optional)
-            name: The name of the agent. (optional)
-            id: The unique identifier for the agent. (optional) If not provided,
+            kernel: The kernel instance.
+            name: The name of the agent.
+            id: The unique identifier for the agent. If not provided,
                 a unique GUID will be generated.
-            description: The description of the agent. (optional)
-            instructions: The instructions for the agent. (optional)
-            arguments: The kernel arguments for the agent. (optional) Invoke method arguments take precedence over
+            description: The description of the agent.
+            instructions: The instructions for the agent.
+            arguments: The kernel arguments for the agent. Invoke method arguments take precedence over
                 the arguments provided here.
-            prompt_template_config: The prompt template configuration for the agent. (optional)
+            prompt_template_config: The prompt template configuration for the agent.
+            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
+                that already exist in the kernel will be overwritten.
+            service: The chat completion service instance. If a kernel is provided with the same service_id,
+                the service will be overwritten.
         """
         if not service_id:
             service_id = DEFAULT_SERVICE_NAME
@@ -88,6 +97,12 @@ class ChatCompletionAgent(Agent):
                 "and ignoring `instructions`."
             )
 
+        if plugins is not None:
+            args["plugins"] = plugins
+
+        if service is not None:
+            args["service"] = service
+
         if instructions is not None:
             args["instructions"] = instructions
         if prompt_template_config is not None:
@@ -98,6 +113,19 @@ class ChatCompletionAgent(Agent):
                 # Use the template from the prompt_template_config if it is provided
                 args["instructions"] = prompt_template_config.template
         super().__init__(**args)
+
+    @model_validator(mode="after")
+    def configure_service(self) -> "ChatCompletionAgent":
+        """Configure the service used by the ChatCompletionAgent."""
+        if self.service is None:
+            return self
+        if not isinstance(self.service, ChatCompletionClientBase):
+            raise AgentInitializationException(
+                f"Service provided for ChatCompletionAgent is not an instance of ChatCompletionClientBase. "
+                f"Service: {type(self.service)}"
+            )
+        self.kernel.add_service(self.service, overwrite=True)
+        return self
 
     @trace_agent_invocation
     async def invoke(
@@ -111,9 +139,9 @@ class ChatCompletionAgent(Agent):
 
         Args:
             history: The chat history.
-            arguments: The kernel arguments. (optional)
-            kernel: The kernel instance. (optional)
-            kwargs: The keyword arguments. (optional)
+            arguments: The kernel arguments.
+            kernel: The kernel instance.
+            kwargs: The keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent.
@@ -179,9 +207,9 @@ class ChatCompletionAgent(Agent):
 
         Args:
             history: The chat history.
-            arguments: The kernel arguments. (optional)
-            kernel: The kernel instance. (optional)
-            kwargs: The keyword arguments. (optional)
+            arguments: The kernel arguments.
+            kernel: The kernel instance.
+            kwargs: The keyword arguments.
 
         Returns:
             An async generator of StreamingChatMessageContent.

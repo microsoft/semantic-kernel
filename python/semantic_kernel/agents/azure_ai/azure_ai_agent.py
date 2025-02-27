@@ -26,6 +26,7 @@ from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -60,26 +61,29 @@ class AzureAIAgent(Agent):
     def __init__(
         self,
         *,
+        arguments: "KernelArguments | None" = None,
         client: AIProjectClient,
         definition: AzureAIAgentModel,
         kernel: "Kernel | None" = None,
-        arguments: "KernelArguments | None" = None,
-        prompt_template_config: "PromptTemplateConfig | None" = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Agent.
 
         Args:
+            arguments: The KernelArguments instance
             client: The AzureAI Project client. See "Quickstart: Create a new agent" guide
                 https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=programming-language-python-azure
                 for details on how to create a new agent.
             definition: The AzureAI Agent model created via the AzureAI Project client.
             kernel: The Kernel instance used if invoking plugins
-            arguments: The KernelArguments instance
+            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
+                that already exist in the kernel will be overwritten.
+            polling_options: The polling options for the agent.
             prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
-            polling_options: The polling options for the agent.
             **kwargs: Additional keyword arguments
         """
         args: dict[str, Any] = {
@@ -106,6 +110,8 @@ class AzureAIAgent(Agent):
                 "and ignoring `instructions`."
             )
 
+        if plugins is not None:
+            args["plugins"] = plugins
         if definition.instructions is not None:
             args["instructions"] = definition.instructions
         if prompt_template_config is not None:
