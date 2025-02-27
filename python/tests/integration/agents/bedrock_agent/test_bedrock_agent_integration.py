@@ -48,7 +48,7 @@ class TestBedrockAgentIntegration:
     @pytest.mark.asyncio
     async def test_update(self):
         """Test updating the agent."""
-        await self.bedrock_agent.update_agent(agentName="updated_agent")
+        await self.bedrock_agent.update_agent(agentName=f"semantic-kernel-integration-test-agent-{uuid.uuid4()}")
         assert self.bedrock_agent.agent_model.agent_name == "updated_agent"
 
     @pytest.mark.asyncio
@@ -79,12 +79,14 @@ Lion    3
 Monkey  6
 Dolphin  2
 """
+        binary_item: BinaryContent | None = None
         async for message in self.bedrock_agent.invoke(BedrockAgent.create_session_id(), input_text):
             assert isinstance(message, ChatMessageContent)
             assert message.role == AuthorRole.ASSISTANT
-            if not any(item for item in message.items if isinstance(item, BinaryContent)):
-                # TODO (eavanvalkenburg): redo the assert instead of this.
-                pytest.xfail(reason="flaky test")
+            if not binary_item:
+                binary_item = next((item for item in message.items if isinstance(item, BinaryContent)), None)
+
+        assert binary_item
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("setup_and_teardown", [{"enable_code_interpreter": True}], indirect=True)

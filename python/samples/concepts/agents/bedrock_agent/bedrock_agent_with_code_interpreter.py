@@ -48,7 +48,8 @@ async def main():
         ):
             print(f"Response:\n{response}")
             assert isinstance(response, ChatMessageContent)  # nosec
-            binary_item = next(item for item in response.items if isinstance(item, BinaryContent))
+            if not binary_item:
+                binary_item = next((item for item in response.items if isinstance(item, BinaryContent)), None)
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()

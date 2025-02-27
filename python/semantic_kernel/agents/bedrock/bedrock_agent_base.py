@@ -146,6 +146,11 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
 
+            # The agent will take some time to enter the PREPARING status after the prepare operation is called.
+            # We need to wait for the agent to reach the PREPARING status before we can proceed, otherwise we
+            # will return immediately if the agent is already in PREPARED status.
+            await self._wait_for_agent_status(BedrockAgentStatus.PREPARING)
+            # The agent will enter the PREPARED status when the preparation is complete.
             await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
         except ClientError as e:
             logger.error(f"Failed to prepare agent {self.agent_model.agent_id}.")
@@ -198,7 +203,7 @@ class BedrockAgentBase(KernelBaseModel):
             )
             self.agent_model = BedrockAgentModel(**response["agent"])
 
-            await self._wait_for_agent_status(BedrockAgentStatus.PREPARED)
+            await self.prepare_agent()
         except ClientError as e:
             logger.error(f"Failed to update agent {self.agent_model.agent_id}.")
             raise e
