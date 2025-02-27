@@ -1,9 +1,10 @@
 {
+	"name": "Semantic Kernel",
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/dotnet:1": {
-			"version": "8"
+			"version": "9"
 		},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
 	},
