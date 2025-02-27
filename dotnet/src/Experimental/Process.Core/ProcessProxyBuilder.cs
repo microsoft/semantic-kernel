@@ -28,7 +28,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         this.ExternalTopicUsage = externalTopics.ToDictionary(topic => topic, topic => false);
         if (this.ExternalTopicUsage.Count < externalTopics.Count)
         {
-            throw new ArgumentException("Topic names registed must be different");
+            throw new ArgumentException("Topic names registered must be different");
         }
     }
 
