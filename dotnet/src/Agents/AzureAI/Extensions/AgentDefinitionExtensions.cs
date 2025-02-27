@@ -41,7 +41,7 @@ internal static class AgentDefinitionExtensions
     /// <exception cref="InvalidOperationException"></exception>
     public static IEnumerable<ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition)
     {
-        return agentDefinition.Tools.Select<AgentToolDefinition, ToolDefinition>(tool =>
+        return agentDefinition.Tools?.Select<AgentToolDefinition, ToolDefinition>(tool =>
         {
             return tool.Type switch
             {
@@ -56,7 +56,7 @@ internal static class AgentDefinitionExtensions
                 SharepointGroundingType => CreateSharepointGroundingToolDefinition(tool),
                 _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unsupported tool type: {tool.Type}, supported tool types are: {string.Join(",", s_validToolTypes)}"),
             };
-        });
+        }) ?? [];
     }
 
     /// <summary>
