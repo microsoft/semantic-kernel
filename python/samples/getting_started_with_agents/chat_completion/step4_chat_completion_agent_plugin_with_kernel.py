@@ -63,7 +63,6 @@ async def main():
 
     # 3. Create the agent
     agent = ChatCompletionAgent(
-        service_id=service_id,
         kernel=kernel,
         name="Host",
         instructions="Answer questions about the menu.",
