@@ -106,5 +106,6 @@ public sealed class InputVariable
     /// Gets or sets a sample value for the variable.
     /// </summary>
     [JsonPropertyName("sample")]
+    [Experimental("SKEXP0110")]
     public object? Sample { get; set; }
 }
