@@ -498,6 +498,7 @@ public class OrderedAIServiceSelectorTests
             throw new NotImplementedException();
         }
     }
+
     private sealed class ChatCompletionService : IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => this._attributes;

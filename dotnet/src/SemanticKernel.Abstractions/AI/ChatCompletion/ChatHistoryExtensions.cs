@@ -81,6 +81,7 @@ public static class ChatHistoryExtensions
 
         return chatHistory;
     }
+
     internal static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
         => chatHistory.Select(m => m.ToChatMessage()).ToList();
 }

@@ -328,7 +328,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     }
                 }
 
-                // Attempting to use the new MEAI Chat types will trigger automatic conversion of SK chat contents.
+                // Attempting to use the new Microsoft Extensions AI types will trigger automatic conversion of SK chat contents.
                 if (typeof(ChatResponseUpdate).IsAssignableFrom(typeof(TResult))
                     && content is StreamingChatMessageContent streamingChatMessageContent)
                 {
@@ -380,7 +380,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     }
                 }
 
-                // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
+                // Avoid breaking changes this transformation will be dropped once we migrate fully to Microsoft Extensions AI abstractions.
                 // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
                 if (typeof(StreamingKernelContent).IsAssignableFrom(typeof(TResult)))
                 {

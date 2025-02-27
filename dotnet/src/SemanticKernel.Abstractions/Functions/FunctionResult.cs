@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.AI;
-using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -105,7 +104,7 @@ public sealed class FunctionResult
                 return innerContent;
             }
 
-            // Attempting to use the new MEAI Chat types will trigger automatic conversion of SK chat contents.
+            // Attempting to use the new Microsoft.Extensions.AI Chat types will trigger automatic conversion of SK chat contents.
 
             // ChatMessageContent as ChatMessage
             if (typeof(T) == typeof(ChatMessage)
@@ -118,7 +117,7 @@ public sealed class FunctionResult
             if (typeof(T) == typeof(ChatResponse)
                 && content is ChatMessageContent singleChoiceMessageContent)
             {
-                return (T?)(object)new MEAI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
+                return (T?)(object)new Microsoft.Extensions.AI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
             }
         }
 
@@ -135,7 +134,7 @@ public sealed class FunctionResult
             }
         }
 
-        if (this.Value is MEAI.ChatResponse chatResponse)
+        if (this.Value is Microsoft.Extensions.AI.ChatResponse chatResponse)
         {
             // If no choices are present, return default
             if (chatResponse.Choices.Count == 0)
@@ -155,7 +154,7 @@ public sealed class FunctionResult
                 return (T?)(object)chatMessage;
             }
 
-            if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
+            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
@@ -180,7 +179,7 @@ public sealed class FunctionResult
                 return rawMessageRepresentation;
             }
 
-            if (typeof(MEAI.AIContent).IsAssignableFrom(typeof(T)))
+            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
@@ -190,7 +189,7 @@ public sealed class FunctionResult
                 }
             }
 
-            // Avoid breaking changes this transformation will be dropped once we migrate fully to MEAI abstractions.
+            // Avoid breaking changes this transformation will be dropped once we migrate fully to Microsoft.Extensions.AI abstractions.
             // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
             if (typeof(KernelContent).IsAssignableFrom(typeof(T)))
             {

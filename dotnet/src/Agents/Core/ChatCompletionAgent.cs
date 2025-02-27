@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -108,7 +107,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 #pragma warning disable CA2000 // Dispose objects before losing scope
         if (chatCompletionService is null
             && kernel.ServiceSelector is IServiceSelector chatClientSelector
-            && chatClientSelector.TrySelect<MEAI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
+            && chatClientSelector.TrySelect<Microsoft.Extensions.AI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
             && chatClient is not null)
         {
             // This change is temporary until Agents support IChatClient natively in near future.
@@ -118,7 +117,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         if (chatCompletionService is null)
         {
-            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(MEAI.IChatClient)).Append('.');
+            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(Microsoft.Extensions.AI.IChatClient)).Append('.');
             if (nullPrompt.ExecutionSettings is not null)
             {
                 string serviceIds = string.Join("|", nullPrompt.ExecutionSettings.Keys);

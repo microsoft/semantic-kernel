@@ -15,11 +15,10 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using MEAI = Microsoft.Extensions.AI;
-using OAI = OpenAI.Chat;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
@@ -74,9 +73,9 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
         var chatResponse = Assert.IsType<ChatResponse>(result.GetValue<ChatResponse>());
         Assert.Contains("Saturn", chatResponse.Message.Text, StringComparison.InvariantCultureIgnoreCase);
-        var chatMessage = Assert.IsType<MEAI.ChatMessage>(result.GetValue<MEAI.ChatMessage>());
+        var chatMessage = Assert.IsType<Microsoft.Extensions.AI.ChatMessage>(result.GetValue<Microsoft.Extensions.AI.ChatMessage>());
         Assert.Contains("Uranus", chatMessage.Text, StringComparison.InvariantCultureIgnoreCase);
-        var chatMessageContent = Assert.IsType<ChatMessageContent>(result.GetValue<ChatMessageContent>());
+        var chatMessageContent = Assert.IsType<Microsoft.SemanticKernel.ChatMessageContent>(result.GetValue<Microsoft.SemanticKernel.ChatMessageContent>());
         Assert.Contains("Uranus", chatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
@@ -282,7 +281,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         // Act
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
-        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<OAI.ChatTokenLogProbabilityDetails>;
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 
         // Assert
         Assert.NotNull(logProbabilityInfo);
