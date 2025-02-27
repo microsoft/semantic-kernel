@@ -4,10 +4,10 @@ from datetime import datetime
 
 from numpy import ndarray
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class MemoryRecord:
     """The in-built memory record."""
 
