@@ -102,31 +102,55 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
         [
             "@odata.type",
             "attachments",
+            "allowNewTimeProposals",
             "bccRecipients",
             "bodyPreview",
+            "calendar",
             "categories",
             "ccRecipients",
+            "changeKey",
             "conversationId",
+            "coordinates",
             "conversationIndex",
+            "createdDateTime",
+            "discriminator",
+            "lastModifiedDateTime",
+            "locations",
             "extensions",
             "flag",
             "from",
             "hasAttachments",
+            "iCalUId",
             "id",
             "inferenceClassification",
             "internetMessageHeaders",
+            "instances",
+            "isCancelled",
             "isDeliveryReceiptRequested",
             "isDraft",
+            "isOrganizer",
             "isRead",
             "isReadReceiptRequested",
             "multiValueExtendedProperties",
+            "onlineMeeting",
+            "onlineMeetingProvider",
+            "onlineMeetingUrl",
+            "organizer",
+            "originalStart",
             "parentFolderId",
+            "range",
             "receivedDateTime",
+            "recurrence",
             "replyTo",
             "sender",
             "sentDateTime",
+            "seriesMasterId",
             "singleValueExtendedProperties",
+            "transactionId",
+            "time",
             "uniqueBody",
+            "uniqueId",
+            "uniqueIdType",
             "webLink",
         ],
         StringComparer.OrdinalIgnoreCase
@@ -185,8 +209,9 @@ public class CopilotAgentBasedPlugins(ITestOutputHelper output) : BaseTest(outpu
     }
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
-        if ("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
+        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
+            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;
