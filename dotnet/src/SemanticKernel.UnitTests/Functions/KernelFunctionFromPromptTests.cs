@@ -1367,6 +1367,157 @@ public class KernelFunctionFromPromptTests
         Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
     }
 
+    [Fact]
+    public async Task ItConvertsFromSKStreamingChatMessageContentToStringAsync()
+    {
+        var innerContent = new { test = "a" };
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
+                {
+                    InnerContent = innerContent
+                },
+                new StreamingChatMessageContent(null, "I assist you today?")
+                {
+                    InnerContent = innerContent
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<string>(function))
+        {
+            Assert.Equal(fakeService.GetStreamingChatMessageContentsResult![updateIndex].Content, update);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromSKStreamingChatMessageContentToItselfAsync()
+    {
+        var innerContent = new { test = "a" };
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
+                {
+                    InnerContent = innerContent
+                },
+                new StreamingChatMessageContent(null, "I assist you today?")
+                {
+                    InnerContent = innerContent
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatMessageContent>(function))
+        {
+            Assert.Same(fakeService.GetStreamingChatMessageContentsResult![updateIndex], update);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromSKStreamingChatMessageContentToInnerContentAsync()
+    {
+        var innerContent = new Random();
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
+                {
+                    InnerContent = innerContent
+                },
+                new StreamingChatMessageContent(null, "I assist you today?")
+                {
+                    InnerContent = innerContent
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<Random>(function))
+        {
+            Assert.Same(fakeService.GetStreamingChatMessageContentsResult![updateIndex].InnerContent, update);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromSKStreamingChatMessageContentToBytesAsync()
+    {
+        var innerContent = new Random();
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
+                {
+                    InnerContent = innerContent
+                },
+                new StreamingChatMessageContent(null, "I assist you today?")
+                {
+                    InnerContent = innerContent
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<byte[]>(function))
+        {
+            Assert.Equal(fakeService.GetStreamingChatMessageContentsResult![updateIndex].Content,
+                        fakeService.GetStreamingChatMessageContentsResult![updateIndex].Encoding.GetString(update));
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
+    }
+
+
     /// <summary>
     /// This scenario covers scenarios on attempting to get a ChatResponseUpdate from a ITextGenerationService.
     /// </summary>
