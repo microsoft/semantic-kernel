@@ -1,24 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
-from typing import TYPE_CHECKING
+import tempfile
 
+from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
-if TYPE_CHECKING:
-    pass
+#################################################################################
+# This sample demonstrates how to build a conversational chatbot                #
+# using Semantic Kernel, it features auto function calling,                     #
+# but with file-based serialization of the chat history.                        #
+# This sample stores and reads the chat history at every turn.                  #
+# This is not the best way to do it, but clearly demonstrates the mechanics.    #
+#################################################################################
 
-
+# System message defining the behavior and persona of the chat bot.
 system_message = """
 You are a chat bot. Your name is Mosscap and
 you have one goal: figure out what people need.
@@ -32,63 +33,101 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
+# Create and configure the kernel.
 kernel = Kernel()
 
-# Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(AzureChatCompletion(service_id="chat"))
-
-plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
-# adding plugins to the kernel
+# Load some sample plugins (for demonstration of function calling).
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
 
-# Enabling or disabling function calling is done by setting the `function_choice_behavior` attribute for the
-# prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
-# function to use, if any.
-#
-# There are two ways to define the `function_choice_behavior` parameter:
-# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
-#   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
-# 2. Using the FunctionChoiceBehavior class. For example:
-#   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
-# Both of these configure the `auto` tool_choice and all of the available plugins/functions
-# registered on the kernel. If you want to limit the available plugins/functions, you must
-# configure the `filters` dictionary attribute for each type of function choice behavior.
-# For example:
-#
-# from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
-# function_choice_behavior = FunctionChoiceBehavior.Auto(
-#     filters={"included_functions": ["time-date", "time-time", "math-Add"]}
-# )
-#
-# The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
-#  `included_plugins`, or `excluded_plugins`.
-
-# Note: the number of responses for auto invoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
-execution_settings = AzureChatPromptExecutionSettings(
-    service_id="chat",
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(),
+# Define a chat function (a template for how to handle user input).
+chat_function = kernel.add_function(
+    prompt="{{$chat_history}}{{$user_input}}",
+    plugin_name="ChatBot",
+    function_name="Chat",
 )
 
-arguments = KernelArguments(settings=execution_settings)
+# You can select from the following chat completion services that support function calling:
+# - Services.OPENAI
+# - Services.AZURE_OPENAI
+# - Services.AZURE_AI_INFERENCE
+# - Services.ANTHROPIC
+# - Services.BEDROCK
+# - Services.GOOGLE_AI
+# - Services.MISTRAL_AI
+# - Services.OLLAMA
+# - Services.ONNX
+# - Services.VERTEX_AI
+# - Services.DEEPSEEK
+# Please make sure you have configured your environment correctly for the selected chat completion service.
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
+
+# Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
+# With `auto_invoke=True`, the model will automatically choose and call functions as needed.
+request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
+
+kernel.add_service(chat_completion_service)
+
+# Pass the request settings to the kernel arguments.
+arguments = KernelArguments(settings=request_settings)
+
+
+async def chat(file) -> bool:
+    """
+    Continuously prompt the user for input and show the assistant's response.
+    Type 'exit' to exit.
+    """
+    try:
+        # Try to load the chat history from a file.
+        history = ChatHistory.load_chat_history_from_file(file_path=file)
+        print(f"Chat history succesfully loaded {len(history.messages)} messages.")
+    except Exception:
+        # Create a chat history to store the system message, initial messages, and the conversation.
+        print("Chat history file not found. Starting a new conversation.")
+        history = ChatHistory()
+        history.add_system_message(system_message)
+        history.add_user_message("Hi there, who are you?")
+        history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+
+    try:
+        user_input = input("User:> ")
+    except (KeyboardInterrupt, EOFError):
+        print("\n\nExiting chat...")
+        return False
+
+    if user_input.lower().strip() == "exit":
+        print("\n\nExiting chat...")
+        return False
+
+    arguments["user_input"] = user_input
+    arguments["chat_history"] = history
+
+    # Handle non-streaming responses
+    result = await kernel.invoke(chat_function, arguments=arguments)
+
+    # Update the chat history with the user's input and the assistant's response
+    if result:
+        print(f"Mosscap:> {result}")
+        history.add_user_message(user_input)
+        history.add_message(result.value[0])  # Capture the full context of the response
+
+    # Save the chat history to a file.
+    print(f"Saving {len(history.messages)} messages to the file.")
+    history.store_chat_history_to_file(file_path=file)
+    return True
 
 
 async def main() -> None:
-    user_input = "What is the current hour plus 10?"
-    print(f"User:> {user_input}")
-
-    result = await kernel.invoke_prompt(prompt=user_input, arguments=arguments)
-
-    print(f"Mosscap:> {result}")
-
-    print("\nChat history:")
-    chat_history: ChatHistory = result.metadata["messages"]
-    print(chat_history.serialize())
+    chatting = True
+    with tempfile.NamedTemporaryFile(mode="w+", dir=".", suffix=".json", delete=True) as file:
+        print(
+            "Welcome to the chat bot!\n"
+            "  Type 'exit' to exit.\n"
+            "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
+            f"  Your chat history will be saved in: {file.name}"
+        )
+        while chatting:
+            chatting = await chat(file.name)
 
 
 if __name__ == "__main__":
