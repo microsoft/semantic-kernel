@@ -11,9 +11,6 @@ from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
-from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
-from semantic_kernel.utils.async_utils import run_in_executor
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -27,6 +24,7 @@ from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.bedrock_agent_settings import BedrockAgentSettings
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -40,6 +38,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -171,7 +170,7 @@ class BedrockAgent(BedrockAgentBase):
             )
         except ClientError as e:
             logger.error(f"Failed to create agent {name}.")
-            raise e
+            raise AgentInitializationException("Failed to create the Amazon Bedrock Agent.") from e
 
         bedrock_agent = cls(
             response["agent"],
@@ -186,7 +185,7 @@ class BedrockAgent(BedrockAgentBase):
         # When the operation finishes, it will enter the NOT_PREPARED status.
         # We need to wait for the agent to reach the NOT_PREPARED status before we can prepare it.
         await bedrock_agent._wait_for_agent_status(BedrockAgentStatus.NOT_PREPARED)
-        await bedrock_agent._prepare_agent_and_wait_until_prepared()
+        await bedrock_agent.prepare_agent_and_wait_until_prepared()
 
         return bedrock_agent
 

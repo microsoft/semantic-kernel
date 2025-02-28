@@ -93,7 +93,7 @@ class BedrockAgentBase(Agent):
 
     # region Agent Management
 
-    async def _prepare_agent_and_wait_until_prepared(self) -> None:
+    async def prepare_agent_and_wait_until_prepared(self) -> None:
         """Prepare the agent for use."""
         if not self.agent_model.agent_id:
             raise ValueError("Agent does not exist. Please create the agent before preparing it.")
@@ -151,7 +151,8 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            return BedrockAgentModel(**response["agent"])
+            # Update the agent model
+            self.agent_model = BedrockAgentModel(**response["agent"])
         except ClientError as e:
             logger.error(f"Failed to get agent {self.agent_model.agent_id}.")
             raise e
@@ -164,14 +165,15 @@ class BedrockAgentBase(Agent):
     ) -> None:
         """Wait for the agent to reach a specific status."""
         for _ in range(max_attempts):
-            agent = await self._get_agent()
-            if agent.agent_status == status:
+            await self._get_agent()
+            if self.agent_model.agent_status == status:
                 return
 
             await asyncio.sleep(interval)
 
         raise TimeoutError(
-            f"Agent did not reach status {status} within the specified time. Current status: {agent.agent_status}"
+            f"Agent did not reach status {status} within the specified time."
+            f" Current status: {self.agent_model.agent_status}"
         )
 
     # endregion Agent Management
@@ -196,7 +198,7 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            await self._prepare_agent_and_wait_until_prepared()
+            await self.prepare_agent_and_wait_until_prepared()
 
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
@@ -222,7 +224,7 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            await self._prepare_agent_and_wait_until_prepared()
+            await self.prepare_agent_and_wait_until_prepared()
 
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
@@ -254,7 +256,7 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            await self._prepare_agent_and_wait_until_prepared()
+            await self.prepare_agent_and_wait_until_prepared()
 
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
@@ -284,7 +286,7 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            await self._prepare_agent_and_wait_until_prepared()
+            await self.prepare_agent_and_wait_until_prepared()
 
             return response
         except ClientError as e:
@@ -312,7 +314,7 @@ class BedrockAgentBase(Agent):
                 ),
             )
 
-            await self._prepare_agent_and_wait_until_prepared()
+            await self.prepare_agent_and_wait_until_prepared()
 
             return response
         except ClientError as e:
