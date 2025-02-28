@@ -23,8 +23,7 @@ static IResourceBuilder<IResourceWithConnectionString> AddAzureOpenAIDeployments
     {
         // Deploy and provision Azure OpenAI service with AI models
         return appBuilder.AddAzureOpenAI("azureOpenAI")
-            .AddDeployment(new AzureOpenAIDeployment("chatModelDeployment", "gpt-4o-mini", "2024-07-18"))
-            .AddDeployment(new AzureOpenAIDeployment("embeddingsModelDeployment", "text-embedding-ada-002", "2"));
+            .AddDeployment(new AzureOpenAIDeployment("chatModelDeployment", "gpt-4o-mini", "2024-07-18"));
     }
 
     // Use an existing Azure OpenAI service via connection string
