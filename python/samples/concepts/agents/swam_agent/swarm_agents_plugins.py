@@ -105,18 +105,21 @@ async def filter_agent_call(
 
 # Create a kernel with a chat completion service and plugins
 # Add Filter to stop when other Agents are called
-def _create_kernel_with_chat_completion(service_id: str, plugins: list, handoffs: list[Agent] = []) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, plugins: list) -> Kernel:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id=service_id))
     kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, filter_agent_call)
     for plugin in plugins:
         kernel.add_plugin(plugin=plugin, plugin_name=type(plugin).__name__)
-    for handoff in handoffs:
-        _add_handoffs(kernel, handoff)
     return kernel
 
 
-def _add_handoffs(kernel: Kernel, agent_handoff: Agent):
+def _add_agent_handoffs(agent: Agent, agent_handoff: list[Agent]):
+    for handoff in agent_handoff:
+        _add_handoff(agent.kernel, handoff)
+
+
+def _add_handoff(kernel: Kernel, agent_handoff: Agent):
     @kernel_function(name=f"TransferTo{agent_handoff.name}", description=f"Handoff to {agent_handoff.name}")
     def handoff() -> Agent:
         return agent_handoff
@@ -154,16 +157,19 @@ writer_agent = ChatCompletionAgent(
 
 planner_agent = ChatCompletionAgent(
     name="PlannerAgent",
-    kernel=_create_kernel_with_chat_completion(
-        "Planner", plugins=[], handoffs=[news_agent, financial_agent, writer_agent]
-    ),
+    kernel=_create_kernel_with_chat_completion("Planner", plugins=[]),
     instructions=PLANNER_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
 
-_add_handoffs(writer_agent.kernel, planner_agent)
-_add_handoffs(financial_agent.kernel, planner_agent)
-_add_handoffs(news_agent.kernel, planner_agent)
+# Planner can handoff to all agents
+_add_agent_handoffs(planner_agent, [news_agent, financial_agent, writer_agent])
+# Financial Analyst can handoff to Planner
+_add_agent_handoffs(financial_agent, [planner_agent])
+# News Analyst can handoff to Planner
+_add_agent_handoffs(news_agent, [planner_agent])
+# Writer can handoff to Planner
+_add_agent_handoffs(writer_agent, [planner_agent])
 
 
 async def main():
