@@ -62,7 +62,6 @@ async def main():
 
     service_id = "summary"
     summary_agent = ChatCompletionAgent(
-        service_id=service_id,
         kernel=_create_kernel_with_chat_completion(service_id=service_id),
         instructions="Summarize the entire conversation for the user in natural language.",
         name="SummaryAgent",

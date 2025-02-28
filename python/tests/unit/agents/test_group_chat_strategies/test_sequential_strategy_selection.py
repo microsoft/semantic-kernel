@@ -82,10 +82,12 @@ async def test_sequential_selection_avoid_selecting_same_agent_twice():
     agent_0 = MagicMock(spec=Agent)
     agent_0.id = "agent-0"
     agent_0.name = "Agent0"
+    agent_0.plugins = []
 
     agent_1 = MagicMock(spec=Agent)
     agent_1.id = "agent-1"
     agent_1.name = "Agent1"
+    agent_1.plugins = []
 
     agents = [agent_0, agent_1]
 
