@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1517,7 +1516,6 @@ public class KernelFunctionFromPromptTests
         Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
     }
 
-
     /// <summary>
     /// This scenario covers scenarios on attempting to get a ChatResponseUpdate from a ITextGenerationService.
     /// </summary>
@@ -1641,7 +1639,6 @@ public class KernelFunctionFromPromptTests
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
 
         public IList<StreamingTextContent>? GetStreamingTextContentsResult { get; set; }
-
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
