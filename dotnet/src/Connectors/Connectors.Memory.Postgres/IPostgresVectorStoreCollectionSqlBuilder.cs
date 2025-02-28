@@ -48,8 +48,9 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="vectorColumnName">The name of the vector column.</param>
     /// <param name="indexKind">The kind of index to create.</param>
     /// <param name="distanceFunction">The distance function to use for the index.</param>
+    /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction);
+    PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction, bool ifNotExists);
 
     /// <summary>
     /// Builds a SQL command to drop a table in the Postgres vector store.

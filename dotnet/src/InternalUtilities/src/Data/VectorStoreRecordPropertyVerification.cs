@@ -191,6 +191,9 @@ internal static class VectorStoreRecordPropertyVerification
         return null;
     }
 
+    internal static bool IsGenericDataModel(Type recordType)
+        => recordType.IsGenericType && recordType.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>);
+
     /// <summary>
     /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that the key type is supported by the default mappers.
     /// If not supported, a custom mapper must be supplied, otherwise an exception is thrown.
@@ -202,7 +205,7 @@ internal static class VectorStoreRecordPropertyVerification
     public static void VerifyGenericDataModelKeyType(Type recordType, bool customMapperSupplied, IEnumerable<Type> allowedKeyTypes)
     {
         // If we are not dealing with a generic data model, no need to check anything else.
-        if (!recordType.IsGenericType || recordType.GetGenericTypeDefinition() != typeof(VectorStoreGenericDataModel<>))
+        if (!IsGenericDataModel(recordType))
         {
             return;
         }

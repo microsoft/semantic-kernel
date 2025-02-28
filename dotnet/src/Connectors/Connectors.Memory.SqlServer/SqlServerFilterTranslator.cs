@@ -4,24 +4,36 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-internal sealed class SqliteFilterTranslator : SqlFilterTranslator
+internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
-    private readonly Dictionary<string, object> _parameters = new();
+    private readonly List<object> _parameterValues = new();
+    private int _parameterIndex;
 
-    internal SqliteFilterTranslator(IReadOnlyDictionary<string, string> storagePropertyNames,
-        LambdaExpression lambdaExpression) : base(storagePropertyNames, lambdaExpression, sql: null)
+    internal SqlServerFilterTranslator(
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        LambdaExpression lambdaExpression,
+        StringBuilder sql,
+        int startParamIndex)
+        : base(storagePropertyNames, lambdaExpression, sql)
     {
+        this._parameterIndex = startParamIndex;
     }
 
-    internal Dictionary<string, object> Parameters => this._parameters;
+    internal List<object> ParameterValues => this._parameterValues;
 
     protected override void GenerateLiteral(bool value)
-        => this._sql.Append(value ? "TRUE" : "FALSE");
+        => this._sql.Append(value ? "1" : "0");
 
-    // TODO: support Contains over array fields (#10343)
+    protected override void GenerateLiteral(DateTime dateTime)
+        => this._sql.AppendFormat("'{0:yyyy-MM-dd HH:mm:ss}'", dateTime);
+
+    protected override void GenerateLiteral(DateTimeOffset dateTimeOffset)
+        => this._sql.AppendFormat("'{0:yyy-MM-dd HH:mm:ss zzz}'", dateTimeOffset);
+
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
@@ -63,20 +75,9 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         }
         else
         {
-            // Duplicate parameter name, create a new parameter with a different name
-            // TODO: Share the same parameter when it references the same captured value
-            if (this._parameters.ContainsKey(name))
-            {
-                var baseName = name;
-                var i = 0;
-                do
-                {
-                    name = baseName + (i++);
-                } while (this._parameters.ContainsKey(name));
-            }
-
-            this._parameters.Add(name, capturedValue);
-            this._sql.Append('@').Append(name);
+            this._parameterValues.Add(capturedValue);
+            // SQL Server parameters can't start with a digit (but underscore is OK).
+            this._sql.Append("@_").Append(this._parameterIndex++);
         }
     }
 }

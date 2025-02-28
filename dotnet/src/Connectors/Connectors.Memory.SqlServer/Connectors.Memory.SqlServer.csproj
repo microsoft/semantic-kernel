@@ -19,11 +19,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Connectors.Memory.Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SqlServerIntegrationTests" />
   </ItemGroup>
 
 </Project>
