@@ -13,11 +13,11 @@ from semantic_kernel.contents import (
 )
 
 """
-The following sample demonstrates how to implement a truncation chat 
-history reducer as part of the Semantic Kernel Agent Framework. It
-covers two types of reducers: summarization reduction and a
-truncation reduction. For this sample, the ChatCompletionAgent
-with an AgentGroupChat is used.
+The following sample demonstrates how to implement a chat history
+reducer as part of the Semantic Kernel Agent Framework. For this sample, 
+the ChatCompletionAgent with an AgentGroupChat is used. The Chat History
+Reducer is a Truncation Reducer. View the README for more information on 
+how to use the reducer and what each parameter does.
 """
 
 
