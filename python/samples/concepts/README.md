@@ -38,8 +38,12 @@
 #### [Chat Completion Agent](../../semantic_kernel/agents/chat_completion/chat_completion_agent.py)
 
 - [Chat Completion Function Termination](./agents/chat_completion_agent/chat_completion_function_termination.py)
-- [Chat Completion History Reducer](./agents/chat_completion_agent/chat_completion_history_reducer.py)
-- [Chat Completion Templating](./agents/chat_completion_agent/chat_completion_templating.py)
+- [Chat Completion Templating](./agents/chat_completion_agent/chat_completion_prompt_templating.py)
+- [Chat Completion Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_summary_history_reducer_agent_chat.py)
+- [Chat Completion Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_summary_history_reducer_single_agent.py)
+- [Chat Completion Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_agent_chat.py)
+- [Chat Completion Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_single_agent.py)
+
 
 #### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
 
