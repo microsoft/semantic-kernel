@@ -146,7 +146,7 @@ async def chat(history) -> bool:
     Type 'exit' to exit.
     """
     await history.read_messages()
-    print(f"Chat history succesfully loaded {len(history.messages)} messages.")
+    print(f"Chat history successfully loaded {len(history.messages)} messages.")
     if len(history.messages) == 0:
         # if it is a new conversation, add the system message and a couple of initial messages.
         history.add_system_message(system_message)

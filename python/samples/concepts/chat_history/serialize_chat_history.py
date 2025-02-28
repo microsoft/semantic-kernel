@@ -80,7 +80,7 @@ async def chat(file) -> bool:
     try:
         # Try to load the chat history from a file.
         history = ChatHistory.load_chat_history_from_file(file_path=file)
-        print(f"Chat history succesfully loaded {len(history.messages)} messages.")
+        print(f"Chat history successfully loaded {len(history.messages)} messages.")
     except Exception:
         # Create a chat history to store the system message, initial messages, and the conversation.
         print("Chat history file not found. Starting a new conversation.")
