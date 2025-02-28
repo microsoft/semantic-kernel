@@ -9,6 +9,7 @@ from semantic_kernel.agents.strategies.selection.swarm_selection_strategy import
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
+from semantic_kernel.contents import FunctionResultContent, TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -147,7 +148,7 @@ def _create_kernel_with_chat_completion(service_id: str, plugins: list) -> Kerne
 
 
 # Configure the function choice behavior to auto invoke kernel functions
-# Currently Parralel Tool Calls is not supported
+# Currently Parallel Tool Calls is not supported
 settings = AzureChatPromptExecutionSettings()
 settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 settings.parallel_tool_calls = False
@@ -193,7 +194,13 @@ async def main():
     print(f"# {AuthorRole.USER}: '{input}'")
 
     async for content in chat.invoke():
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        agent_answer = ""
+        for item in content.items:
+            if isinstance(item, FunctionResultContent):
+                agent_answer = item.name if isinstance(item.result, Agent) else str(item.result)
+            if isinstance(item, TextContent):
+                agent_answer = item.text
+        print(f"# {content.role} - {content.name or '*'}: '{agent_answer}'")
 
 
 if __name__ == "__main__":
