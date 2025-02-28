@@ -22,51 +22,51 @@ namespace SemanticKernel.Agents.UnitTests.Yaml;
 /// </summary>
 public class AzureAIKernelAgentYamlTests : IDisposable
 {
-    private readonly HttpMessageHandlerStub _messageHandlerStub;
-    private readonly HttpClient _httpClient;
-    private readonly Kernel _kernel;
+  private readonly HttpMessageHandlerStub _messageHandlerStub;
+  private readonly HttpClient _httpClient;
+  private readonly Kernel _kernel;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAIKernelAgentYamlTests"/> class.
-    /// </summary>
-    public AzureAIKernelAgentYamlTests()
-    {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+  /// <summary>
+  /// Initializes a new instance of the <see cref="AzureAIKernelAgentYamlTests"/> class.
+  /// </summary>
+  public AzureAIKernelAgentYamlTests()
+  {
+    this._messageHandlerStub = new HttpMessageHandlerStub();
+    this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
-        var builder = Kernel.CreateBuilder();
+    var builder = Kernel.CreateBuilder();
 
-        // Add Azure AI agents client
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
-            new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+    // Add Azure AI agents client
+    var client = new AIProjectClient(
+        "endpoint;subscription_id;resource_group_name;project_name",
+        new FakeTokenCredential(),
+        new AIProjectClientOptions()
+        { Transport = new HttpClientTransport(this._httpClient) });
+    builder.Services.AddSingleton<AIProjectClient>(client);
 
-        this._kernel = builder.Build();
-    }
+    this._kernel = builder.Build();
+  }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
-    }
+  /// <inheritdoc/>
+  public void Dispose()
+  {
+    GC.SuppressFinalize(this);
+    this._messageHandlerStub.Dispose();
+    this._httpClient.Dispose();
+  }
 
-    /// <summary>
-    /// Verify the request includes a tool of the specified when creating an Azure AI agent.
-    /// </summary>
-    [Theory]
-    [InlineData("code_interpreter")]
-    [InlineData("azure_ai_search")]
-    public async Task VerifyRequestIncludesToolAsync(string type)
-    {
-        // Arrange
-        var text =
-            $"""
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a tool of the specified when creating an Azure AI agent.
+  /// </summary>
+  [Theory]
+  [InlineData("code_interpreter")]
+  [InlineData("azure_ai_search")]
+  public async Task VerifyRequestIncludesToolAsync(string type)
+  {
+    // Arrange
+    var text =
+        $"""
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -75,31 +75,31 @@ public class AzureAIKernelAgentYamlTests : IDisposable
             tools:
                 - type: {type}
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal(type, requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal(type, requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes an Azure Function tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesAzureFunctionAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes an Azure Function tool when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesAzureFunctionAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -123,31 +123,31 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                         type: string
                         description: param2 description
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("azure_function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("azure_function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes a Function when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesFunctionAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a Function when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesFunctionAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -165,31 +165,31 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                         type: string
                         description: param2 description
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("function", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes a Bing Grounding tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesBingGroundingAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a Bing Grounding tool when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesBingGroundingAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -200,31 +200,31 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                   tool_connections:
                     - connection_string
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("bing_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("bing_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes a Microsoft Fabric tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesMicrosoftFabricAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a Microsoft Fabric tool when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesMicrosoftFabricAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -235,31 +235,31 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                   tool_connections:
                     - connection_string
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("fabric_aiskill", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("fabric_aiskill", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes a Open API tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesOpenAPIAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a Open API tool when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesOpenAPIAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -283,33 +283,33 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                   authentication:
                       audience: audience
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(3, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("openapi", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-        Assert.Equal("openapi", requestJson.GetProperty("tools")[1].GetProperty("type").GetString());
-        Assert.Equal("openapi", requestJson.GetProperty("tools")[2].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(3, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("openapi", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+    Assert.Equal("openapi", requestJson.GetProperty("tools")[1].GetProperty("type").GetString());
+    Assert.Equal("openapi", requestJson.GetProperty("tools")[2].GetProperty("type").GetString());
+  }
 
-    /// <summary>
-    /// Verify the request includes a Sharepoint tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesSharepointGroundingAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: azureai_agent
+  /// <summary>
+  /// Verify the request includes a Sharepoint tool when creating an Azure AI agent.
+  /// </summary>
+  [Fact]
+  public async Task VerifyRequestIncludesSharepointGroundingAsync()
+  {
+    // Arrange
+    var text =
+        """
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -320,27 +320,27 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                   tool_connections:
                     - connection_string
             """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+    AzureAIAgentFactory factory = new();
+    this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+    // Act
+    var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("sharepoint_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
+    // Assert
+    Assert.NotNull(agent);
+    var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+    Assert.NotNull(requestContent);
+    var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+    Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
+    Assert.Equal("sharepoint_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+  }
 
-    #region private
-    private void SetupResponse(HttpStatusCode statusCode, string response) =>
-        this._messageHandlerStub.ResponseToReturn =
-            new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(response)
-            };
-    #endregion
+  #region private
+  private void SetupResponse(HttpStatusCode statusCode, string response) =>
+      this._messageHandlerStub.ResponseToReturn =
+          new HttpResponseMessage(statusCode)
+          {
+            Content = new StringContent(response)
+          };
+  #endregion
 }
