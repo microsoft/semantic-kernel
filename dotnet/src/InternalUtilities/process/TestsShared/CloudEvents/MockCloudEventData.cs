@@ -2,8 +2,9 @@
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.IntegrationTests.CloudEvents;
+namespace SemanticKernel.Process.TestsShared.CloudEvents;
 
 /// <summary>
 /// Mock cloud event data used for testing purposes only
@@ -22,5 +23,5 @@ public class MockCloudEventData
     /// </summary>
     [DataMember]
     [JsonPropertyName("data")]
-    public object? Data { get; set; }
+    public KernelProcessProxyMessage? Data { get; set; }
 }

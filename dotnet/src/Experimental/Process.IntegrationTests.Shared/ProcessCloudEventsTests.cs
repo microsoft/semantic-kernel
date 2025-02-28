@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.TestSettings;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
@@ -93,7 +93,6 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         var echoStep = processBuilder.AddStepFromType<EchoStep>();
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
-        // TODO: add tests verify error when using event that is not registered
         var proxyTopics = new List<string>() { MockTopicNames.RepeatExternalTopic, MockTopicNames.EchoExternalTopic };
         var proxyStep = processBuilder.AddProxyStep<MockCloudEventClient>(proxyTopics);
 
@@ -117,22 +116,14 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
     }
 
     #region Assert Utils
-    private void AssertProxyMessage(object? rawProxyMessage, string expectedPublishTopic, object? expectedTopicData = null)
+    private void AssertProxyMessage(KernelProcessProxyMessage? proxyMessage, string expectedPublishTopic, object? expectedTopicData = null)
     {
-        Assert.NotNull(rawProxyMessage);
-        if (rawProxyMessage is JsonElement jsonElement)
-        {
-            // Deserialize the JsonElement to KernelProcessProxyMessage - needed for Dapr Runtime Test Setup
-            rawProxyMessage = JsonSerializer.Deserialize<KernelProcessProxyMessage>(jsonElement.GetRawText());
-        }
-
-        Assert.IsType<KernelProcessProxyMessage>(rawProxyMessage);
-
-        var proxyMessage = (KernelProcessProxyMessage)rawProxyMessage;
         Assert.NotNull(proxyMessage);
+        Assert.IsType<KernelProcessProxyMessage>(proxyMessage);
         Assert.Equal(expectedPublishTopic, proxyMessage.ExternalTopicName);
         if (proxyMessage.EventData is JsonElement jsonEventData)
         {
+            // needed for Dapr Testing setup since it serializes everything with json
             Assert.Equal(JsonValueKind.String, jsonEventData.ValueKind);
             Assert.Equal(expectedTopicData, jsonEventData.ToString());
         }

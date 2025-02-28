@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.IntegrationTests.CloudEvents;
+namespace SemanticKernel.Process.TestsShared.CloudEvents;
 /// <summary>
 /// Class used for testing purposes to mock emitting external cloud events
 /// </summary>

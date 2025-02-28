@@ -38,6 +38,9 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     public string Version { get; init; } = "v1";
 
     internal Dictionary<string, bool> ExternalTopicUsage { get; }
+
+    // For supporting multiple step edges getting linked to the same external topic, current implementation needs to be updated
+    // to instead have a list of potential edges in case event names in different steps have same name
     internal Dictionary<string, KernelProcessProxyEventMetadata> EventMetadata { get; } = [];
 
     internal ProcessFunctionTargetBuilder GetExternalFunctionTargetBuilder()
@@ -57,7 +60,6 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
             throw new InvalidOperationException($"Topic name {topicName} is not registered as proxy publish event, register first before using");
         }
 
-        // todo-estenori: need to test how it works when multiple steps emit the same topic externally
         if (usedTopic)
         {
             throw new InvalidOperationException($"Topic name {topicName} is is already linked to another step edge");

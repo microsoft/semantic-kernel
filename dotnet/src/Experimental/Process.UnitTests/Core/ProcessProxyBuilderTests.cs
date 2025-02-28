@@ -90,6 +90,25 @@ public class ProcessProxyBuilderTests
     /// when is registered topics are not linked properly
     /// </summary>
     [Fact]
+    public void ProcessProxyBuilderWillNotLinkDueMultipleLinkingToSameTopicThrows()
+    {
+        // Arrange
+        ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName);
+
+        ProcessBuilder process = new(this._testProcessName);
+        ProcessStepBuilder stepSource1 = process.AddStepFromType<SimpleTestStep>("step1");
+        ProcessStepBuilder stepSource2 = process.AddStepFromType<SimpleTestStep>("step2");
+        stepSource1.OnFunctionResult().EmitExternalEvent(proxy, this._topicName1);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => stepSource2.OnFunctionResult().EmitExternalEvent(proxy, this._topicName1));
+    }
+
+    /// <summary>
+    /// Verify <see cref="ProcessProxyBuilder.BuildStep"/> fails building
+    /// when is registered topics are not linked properly
+    /// </summary>
+    [Fact]
     public void ProcessProxyBuilderWillNotBuildDueMissingLinking()
     {
         // Arrange
