@@ -45,7 +45,6 @@ class FunctionCallContent(KernelContent):
 
     def __init__(
         self,
-        content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = FUNCTION_CALL_CONTENT_TAG,  # type: ignore
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
@@ -60,7 +59,6 @@ class FunctionCallContent(KernelContent):
         """Create function call content.
 
         Args:
-            content_type: The content type.
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call.
@@ -83,7 +81,6 @@ class FunctionCallContent(KernelContent):
             else:
                 function_name = name
         args = {
-            "content_type": content_type,
             "inner_content": inner_content,
             "ai_model_id": ai_model_id,
             "id": id,
@@ -124,6 +121,7 @@ class FunctionCallContent(KernelContent):
             index=self.index or other.index,
             name=self.name or other.name,
             arguments=self.combine_arguments(self.arguments, other.arguments),
+            metadata=self.metadata | other.metadata,
         )
 
     def combine_arguments(

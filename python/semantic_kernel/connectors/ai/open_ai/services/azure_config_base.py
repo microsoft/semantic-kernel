@@ -3,9 +3,11 @@
 import logging
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
+from typing import Any
 
 from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
+from pydantic_core import Url
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
@@ -27,7 +29,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         deployment_name: str,
         ai_model_type: OpenAIModelTypes,
         endpoint: HttpsUrl | None = None,
-        base_url: HttpsUrl | None = None,
+        base_url: Url | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         service_id: str | None = None,
         api_key: str | None = None,
@@ -37,6 +39,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
         instruction_role: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
@@ -47,7 +50,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             deployment_name (str): Name of the deployment.
             ai_model_type (OpenAIModelTypes): The type of OpenAI model to deploy.
             endpoint (HttpsUrl): The specific endpoint URL for the deployment. (Optional)
-            base_url (HttpsUrl): The base URL for Azure services. (Optional)
+            base_url (Url): The base URL for Azure services. (Optional)
             api_version (str): Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
             service_id (str): Service ID for the deployment. (Optional)
             api_key (str): API key for Azure services. (Optional)
@@ -59,6 +62,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
             instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
                 prompts could use `developer` or `system`. (Optional)
+            kwargs: Additional keyword arguments.
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -79,18 +83,29 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
                 )
 
-            if not base_url:
-                if not endpoint:
-                    raise ServiceInitializationError("Please provide an endpoint or a base_url")
-                base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
-            client = AsyncAzureOpenAI(
-                base_url=str(base_url),
-                api_version=api_version,
-                api_key=api_key,
-                azure_ad_token=ad_token,
-                azure_ad_token_provider=ad_token_provider,
-                default_headers=merged_headers,
-            )
+            if not endpoint and not base_url:
+                raise ServiceInitializationError("Please provide an endpoint or a base_url")
+
+            args: dict[str, Any] = {
+                "default_headers": merged_headers,
+            }
+            if api_version:
+                args["api_version"] = api_version
+            if ad_token:
+                args["azure_ad_token"] = ad_token
+            if ad_token_provider:
+                args["azure_ad_token_provider"] = ad_token_provider
+            if api_key:
+                args["api_key"] = api_key
+            if base_url:
+                args["base_url"] = str(base_url)
+            if endpoint and not base_url:
+                args["azure_endpoint"] = str(endpoint)
+            # TODO (eavanvalkenburg): Remove the check on model type when the package fixes: https://github.com/openai/openai-python/issues/2120
+            if deployment_name and ai_model_type != OpenAIModelTypes.REALTIME:
+                args["azure_deployment"] = deployment_name
+
+            client = AsyncAzureOpenAI(**args)
         args = {
             "ai_model_id": deployment_name,
             "client": client,
@@ -100,7 +115,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             args["service_id"] = service_id
         if instruction_role:
             args["instruction_role"] = instruction_role
-        super().__init__(**args)
+        super().__init__(**args, **kwargs)
 
     def to_dict(self) -> dict[str, str]:
         """Convert the configuration to a dictionary."""
