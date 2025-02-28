@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,16 +20,26 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 /// <summary>
 /// Unit tests for the service collection extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
-public sealed class AzureOpenAIServiceCollectionExtensionsTests
+public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 {
+    public AzureOpenAIServiceCollectionExtensionsTests()
+    {
+        this._httpClient = new HttpClient();
+    }
+    private readonly HttpClient _httpClient;
     #region Chat completion
 
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+    }
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
+    [InlineData(InitializationType.HttpClient)]
     public void ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
@@ -46,6 +57,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.ClientInline => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
             InitializationType.ApiVersion => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
             _ => builder.Services
         };
 
@@ -67,6 +79,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
+    [InlineData(InitializationType.HttpClient)]
     public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -84,6 +97,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.ClientInline => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
             InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
             _ => builder.Services
         };
 
@@ -194,6 +208,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         ClientInline,
         ClientInServiceProvider,
         ClientEndpoint,
-        ApiVersion
+        ApiVersion,
+        HttpClient
     }
 }
