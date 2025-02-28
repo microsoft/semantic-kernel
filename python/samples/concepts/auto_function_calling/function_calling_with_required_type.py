@@ -50,7 +50,7 @@ Start all your answers with the current time.
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = True
+stream = False
 
 kernel = Kernel()
 
@@ -84,6 +84,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     temperature=0.7,
     top_p=0.8,
     function_choice_behavior=FunctionChoiceBehavior.Required(
+        auto_invoke=False,
         filters={"included_functions": ["time-time", "time-date"]},
     ),
 )

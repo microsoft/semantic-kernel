@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
+using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -27,13 +29,19 @@ internal sealed class AzureAIChannel(AgentsClient client, string threadId)
         AzureAIAgent agent,
         CancellationToken cancellationToken)
     {
-        return AgentThreadActions.InvokeAsync(agent, client, threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description),
+            () => AgentThreadActions.InvokeAsync(agent, client, threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            cancellationToken);
     }
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AzureAIAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
-        return AgentThreadActions.InvokeStreamingAsync(agent, client, threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description),
+            () => AgentThreadActions.InvokeStreamingAsync(agent, client, threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            cancellationToken);
     }
 
     /// <inheritdoc/>

@@ -127,8 +127,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        if not self.service_settings.gemini_model_id:
+            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
         model = GenerativeModel(
-            self.service_settings.gemini_model_id,
+            model_name=self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
@@ -136,7 +138,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
             tools=settings.tools,
-            tool_config=settings.tool_config,
+            tool_config=settings.tool_config,  # type: ignore
         )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
@@ -154,8 +156,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        if not self.service_settings.gemini_model_id:
+            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
         model = GenerativeModel(
-            self.service_settings.gemini_model_id,
+            model_name=self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
@@ -163,7 +167,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
             tools=settings.tools,
-            tool_config=settings.tool_config,
+            tool_config=settings.tool_config,  # type: ignore
             stream=True,
         )
 

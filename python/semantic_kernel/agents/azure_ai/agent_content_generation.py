@@ -36,7 +36,7 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from azure.ai.projects.models import (
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 ###################################################################
 
 
-@experimental_function
+@experimental
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
 
@@ -95,7 +95,7 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     return contents
 
 
-@experimental_function
+@experimental
 def generate_message_content(
     assistant_name: str, message: "ThreadMessage", completed_step: "RunStep | None" = None
 ) -> ChatMessageContent:
@@ -129,7 +129,7 @@ def generate_message_content(
                 )
             )
             for annotation in item_content.text.annotations:
-                content.items.append(generate_annotation_content(annotation))
+                content.items.append(generate_annotation_content(annotation))  # type: ignore
         elif item_content.type == "image_file":
             content.items.append(
                 FileReferenceContent(
@@ -139,7 +139,7 @@ def generate_message_content(
     return content
 
 
-@experimental_function
+@experimental
 def generate_streaming_message_content(
     assistant_name: str, message_delta_event: "MessageDeltaChunk"
 ) -> StreamingChatMessageContent:
@@ -189,7 +189,7 @@ def generate_streaming_message_content(
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
 
 
-@experimental_function
+@experimental
 def get_function_call_contents(
     run: "ThreadRun", function_steps: dict[str, FunctionCallContent]
 ) -> list[FunctionCallContent]:
@@ -219,7 +219,7 @@ def get_function_call_contents(
     return function_call_contents
 
 
-@experimental_function
+@experimental
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -233,7 +233,24 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
-@experimental_function
+@experimental
+def generate_function_call_streaming_content(
+    agent_name: str,
+    fccs: list[FunctionCallContent],
+) -> StreamingChatMessageContent:
+    """Generate function call content.
+
+    Args:
+        agent_name: The agent name.
+        fccs: The function call contents.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content containing the function call content as the items.
+    """
+    return StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, name=agent_name, items=fccs)  # type: ignore
+
+
+@experimental
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "RunStepFunctionToolCall"
 ) -> ChatMessageContent:
@@ -250,7 +267,7 @@ def generate_function_result_content(
     return function_call_content
 
 
-@experimental_function
+@experimental
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -269,7 +286,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_function_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> "StreamingChatMessageContent | None":
@@ -317,7 +334,7 @@ def generate_streaming_function_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "RunStepDeltaToolCallObject"
 ) -> "StreamingChatMessageContent | None":
@@ -337,8 +354,8 @@ def generate_streaming_code_interpreter_content(
 
     metadata: dict[str, bool] = {}
     for index, tool in enumerate(step_details.tool_calls):
-        if isinstance(tool.type, RunStepDeltaCodeInterpreterToolCall):
-            code_interpreter_tool_call: RunStepDeltaCodeInterpreterDetailItemObject = tool
+        if isinstance(tool, RunStepDeltaCodeInterpreterDetailItemObject):
+            code_interpreter_tool_call = tool
             if code_interpreter_tool_call.input:
                 items.append(
                     StreamingTextContent(
@@ -349,7 +366,11 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if code_interpreter_tool_call.outputs:
                 for output in code_interpreter_tool_call.outputs:
-                    if isinstance(output, RunStepDeltaCodeInterpreterImageOutput) and output.image.file_id:
+                    if (
+                        isinstance(output, RunStepDeltaCodeInterpreterImageOutput)
+                        and output.image is not None
+                        and output.image.file_id
+                    ):
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
@@ -376,26 +397,26 @@ def generate_streaming_code_interpreter_content(
     )
 
 
-@experimental_function
+@experimental
 def generate_annotation_content(
     annotation: MessageTextFilePathAnnotation | MessageTextFileCitationAnnotation,
 ) -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    if isinstance(annotation, MessageTextFilePathAnnotation):
+    if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
         file_id = annotation.file_path.file_id
-    elif isinstance(annotation, MessageTextFileCitationAnnotation):
+    elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
         file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )
 
 
-@experimental_function
+@experimental
 def generate_streaming_annotation_content(
     annotation: MessageDeltaTextFilePathAnnotation | MessageDeltaTextFileCitationAnnotation,
 ) -> StreamingAnnotationContent:
@@ -409,6 +430,6 @@ def generate_streaming_annotation_content(
     return StreamingAnnotationContent(
         file_id=file_id,
         quote=annotation.text,
-        start_index=annotation.start_index,
-        end_index=annotation.end_index,
+        start_index=annotation.start_index if annotation.start_index is not None else None,
+        end_index=annotation.end_index if annotation.end_index is not None else None,
     )

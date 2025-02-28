@@ -32,7 +32,7 @@ help:
 	echo ""
 	echo -e "\033[1mVARIABLES:\033[0m"
 	echo "  PYTHON_VERSION       - Python version to use. Default is 3.10"
-	echo "                        By default, 3.10, 3.11, and 3.12 are installed as well."
+	echo "                        By default, 3.10, 3.11, 3.12 and 3.13 are installed as well."
 
 ##############################
 #  INSTALL
@@ -57,7 +57,13 @@ else ifeq ($(CONTINUE),1)
 else
 	echo "uv could not be found."
 	echo "Installing uv..."
-	curl -LsSf https://astral.sh/uv/install.sh | sh
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+	    echo "Detected virtual environment at $$VIRTUAL_ENV, installing uv there..."; \
+	    curl -LsSf https://astral.sh/uv/install.sh | INSTALL_DIR="$$VIRTUAL_ENV/bin" sh; \
+	else \
+	    echo "No virtual environment detected, installing uv globally..."; \
+	    curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
 	echo "uv installed."
 	echo "Re-executing shell so uv is immediately available on PATH..."
 	exec $$SHELL -c 'make install CONTINUE=1'
@@ -68,8 +74,8 @@ endif
 ##############################
 .ONESHELL:
 install-python:
-	echo "Installing python 3.10, 3.11, 3.12"
-	uv python install 3.10 3.11 3.12
+	echo "Installing python versions"
+	uv python install 3.10 3.11 3.12 3.13
 
 ##############################
 #  INSTALL-PRE-COMMIT
@@ -87,7 +93,7 @@ install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
 	echo "Installing Semantic Kernel and all dependencies"
-	uv sync --all-extras --dev
+	uv sync --all-extras --dev --prerelease=if-necessary-or-explicit
 
 ##############################
 #  CLEAN

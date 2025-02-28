@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -9,6 +11,8 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <remarks>
 /// These options are persisted as a single entry of the assistant's metadata with key: "__run_options".
 /// </remarks>
+[Experimental("SKEXP0110")]
+[Obsolete("Use RunCreationOptions to specify assistant invocation behavior.")]
 public sealed class OpenAIAssistantExecutionOptions
 {
     /// <summary>

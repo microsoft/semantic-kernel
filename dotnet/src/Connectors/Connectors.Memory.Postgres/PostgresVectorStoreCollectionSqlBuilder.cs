@@ -147,7 +147,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
 
         return new PostgresSqlCommandInfo(
             commandText: $@"
-                CREATE INDEX {indexName} ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+                CREATE INDEX ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
         );
     }
 
