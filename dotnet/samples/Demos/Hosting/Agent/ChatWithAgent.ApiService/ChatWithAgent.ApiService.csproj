@@ -6,6 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ChatWithAgent.ServiceDefaults\ChatWithAgent.ServiceDefaults.csproj" />
   </ItemGroup>
 

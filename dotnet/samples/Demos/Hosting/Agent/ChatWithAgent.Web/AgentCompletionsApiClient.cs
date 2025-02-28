@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Runtime.CompilerServices;
+using Microsoft.SemanticKernel;
+
 namespace ChatWithAgent.Web;
 
 /// <summary>
@@ -14,13 +17,29 @@ internal sealed class AgentCompletionsApiClient(HttpClient httpClient)
     /// <param name="prompt">The prompt.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The completion result.</returns>
-    internal async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken)
+    internal async IAsyncEnumerable<string> CompleteStreamingAsync(string prompt, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var result = await httpClient.PostAsJsonAsync<AgentCompletionRequest>("/agent/completions", new AgentCompletionRequest() { Prompt = prompt }, cancellationToken).ConfigureAwait(false);
+        var request = new AgentCompletionRequest()
+        {
+            Prompt = prompt,
+            IsStreaming = true,
+        };
+
+        var result = await httpClient.PostAsJsonAsync<AgentCompletionRequest>("/agent/completions", request, cancellationToken).ConfigureAwait(false);
 
         result.EnsureSuccessStatusCode();
 
-        return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var streamedContent = result.Content.ReadFromJsonAsAsyncEnumerable<StreamingChatMessageContent>(cancellationToken);
+
+        await foreach (StreamingChatMessageContent? update in streamedContent.ConfigureAwait(false))
+        {
+            if (string.IsNullOrEmpty(update?.Content))
+            {
+                continue;
+            }
+
+            yield return update.Content;
+        }
     }
 
     /// <summary>
