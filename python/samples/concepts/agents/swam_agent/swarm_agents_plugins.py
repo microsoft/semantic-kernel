@@ -14,6 +14,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
 
 PLANNER_INSTRUCTIONS = """You are a research planning coordinator.
@@ -38,11 +39,6 @@ NEWS_INSTRUCTIONS = """You are a news analyst.
 WRITER_INSTRUCTIONS = """You are a financial report writer.
     Compile research findings into clear, concise reports.
     Always handoff back to planner when writing is complete."""
-
-global planner_agent
-global financial_agent
-global news_agent
-global writer_agent
 
 
 class NewsPlugin:
@@ -88,35 +84,6 @@ class StockPlugin:
         return {"price": 180.25, "volume": 1000000, "pe_ratio": 65.4, "market_cap": "700B"}
 
 
-# Handoff to other Agents with Function Calling
-class HandoffPlanner:
-    @kernel_function(description="Planner to Sales Agent")
-    def transfer_to_planner(self):
-        """Handoff to Planner Agent"""
-        return planner_agent
-
-
-class HandoffNews:
-    @kernel_function(description="Handoff to News Agent")
-    def transfer_to_news(self):
-        """Handoff to News Agent"""
-        return news_agent
-
-
-class HandoffStock:
-    @kernel_function(description="Handoff to Stock Agent")
-    def transfer_to_stock(self):
-        """Handoff to Stock Agent"""
-        return financial_agent
-
-
-class HandoffWriter:
-    @kernel_function(description="Handoff to Writer Agent")
-    def transfer_to_writer(self):
-        """Handoff to Writer Agent"""
-        return writer_agent
-
-
 class ApprovalTerminationStrategy(TerminationStrategy):
     """A strategy for determining when an agent should terminate."""
 
@@ -138,13 +105,23 @@ async def filter_agent_call(
 
 # Create a kernel with a chat completion service and plugins
 # Add Filter to stop when other Agents are called
-def _create_kernel_with_chat_completion(service_id: str, plugins: list) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, plugins: list, handoffs: list[Agent] = []) -> Kernel:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id=service_id))
     kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, filter_agent_call)
     for plugin in plugins:
         kernel.add_plugin(plugin=plugin, plugin_name=type(plugin).__name__)
+    for handoff in handoffs:
+        _add_handoffs(kernel, handoff)
     return kernel
+
+
+def _add_handoffs(kernel: Kernel, agent_handoff: Agent):
+    @kernel_function(name=f"TransferTo{agent_handoff.name}", description=f"Handoff to {agent_handoff.name}")
+    def handoff() -> Agent:
+        return agent_handoff
+
+    kernel.add_function(plugin_name=f"Handoff{agent_handoff.name}", function=KernelFunctionFromMethod(method=handoff))
 
 
 # Configure the function choice behavior to auto invoke kernel functions
@@ -153,33 +130,40 @@ settings = AzureChatPromptExecutionSettings()
 settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 settings.parallel_tool_calls = False
 
-planner_agent = ChatCompletionAgent(
-    name="PlannerAgent",
-    kernel=_create_kernel_with_chat_completion("Planner", [HandoffNews(), HandoffStock(), HandoffWriter()]),
-    instructions=PLANNER_INSTRUCTIONS,
-    arguments=KernelArguments(settings=settings),
-)
 
 news_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("News", [HandoffPlanner(), NewsPlugin()]),
+    kernel=_create_kernel_with_chat_completion("News", [NewsPlugin()]),
     name="NewsAgent",
     instructions=NEWS_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
 
 financial_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("Financial", [HandoffPlanner(), StockPlugin()]),
+    kernel=_create_kernel_with_chat_completion("Stock", [StockPlugin()]),
     name="StockAgent",
     instructions=FINANCIAL_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
 
 writer_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("Writer", [HandoffPlanner()]),
+    kernel=_create_kernel_with_chat_completion("Writer", []),
     name="WriterAgent",
-    instructions=FINANCIAL_INSTRUCTIONS,
+    instructions=WRITER_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
+
+planner_agent = ChatCompletionAgent(
+    name="PlannerAgent",
+    kernel=_create_kernel_with_chat_completion(
+        "Planner", plugins=[], handoffs=[news_agent, financial_agent, writer_agent]
+    ),
+    instructions=PLANNER_INSTRUCTIONS,
+    arguments=KernelArguments(settings=settings),
+)
+
+_add_handoffs(writer_agent.kernel, planner_agent)
+_add_handoffs(financial_agent.kernel, planner_agent)
+_add_handoffs(news_agent.kernel, planner_agent)
 
 
 async def main():
