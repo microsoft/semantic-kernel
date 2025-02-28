@@ -11,6 +11,8 @@ from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -63,6 +65,7 @@ class BedrockAgent(BedrockAgentBase):
         *,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
         kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         arguments: KernelArguments | None = None,
         bedrock_runtime_client: Any | None = None,
         bedrock_client: Any | None = None,
@@ -77,6 +80,7 @@ class BedrockAgent(BedrockAgentBase):
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
                 the kernel functions and filters.
             kernel (Kernel, optional): The kernel to use.
+            plugins (list[KernelPlugin | object] | dict[str, KernelPlugin | object], optional): The plugins to use.
             arguments (KernelArguments, optional): The kernel arguments.
                 Invoke method arguments take precedence over the arguments provided here.
             bedrock_runtime_client: The Bedrock Runtime Client.
@@ -92,6 +96,8 @@ class BedrockAgent(BedrockAgentBase):
             args["function_choice_behavior"] = function_choice_behavior
         if kernel:
             args["kernel"] = kernel
+        if plugins:
+            args["plugins"] = plugins
         if arguments:
             args["arguments"] = arguments
         if bedrock_runtime_client:
@@ -114,6 +120,7 @@ class BedrockAgent(BedrockAgentBase):
         bedrock_runtime_client: Any | None = None,
         bedrock_client: Any | None = None,
         kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
         arguments: KernelArguments | None = None,
         env_file_path: str | None = None,
@@ -131,6 +138,7 @@ class BedrockAgent(BedrockAgentBase):
             bedrock_runtime_client (Any, optional): The Bedrock Runtime Client.
             bedrock_client (Any, optional): The Bedrock Client.
             kernel (Kernel, optional): The kernel to use.
+            plugins (list[KernelPlugin | object] | dict[str, KernelPlugin | object], optional): The plugins to use.
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
                 the kernel functions and filters. Only FunctionChoiceType.AUTO is supported.
             arguments (KernelArguments, optional): The kernel arguments.
@@ -176,6 +184,7 @@ class BedrockAgent(BedrockAgentBase):
             response["agent"],
             function_choice_behavior=function_choice_behavior,
             kernel=kernel,
+            plugins=plugins,
             arguments=arguments,
             bedrock_runtime_client=bedrock_runtime_client,
             bedrock_client=bedrock_client,

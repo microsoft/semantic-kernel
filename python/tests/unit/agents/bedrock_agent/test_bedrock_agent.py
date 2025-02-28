@@ -223,6 +223,24 @@ async def test_create_code_interpreter_action_group(
         mock_prepare_agent_and_wait_until_prepared.assert_called_once()
 
 
+# Test case to verify the creation of BedrockAgent with plugins
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_create_with_plugin_via_constructor(
+    client,
+    bedrock_agent_unit_test_env,
+    bedrock_agent_model_with_id,
+    custom_plugin_class,
+):
+    agent = BedrockAgent(
+        bedrock_agent_model_with_id,
+        plugins=[custom_plugin_class()],
+        bedrock_client=client,
+    )
+
+    assert agent.kernel.plugins is not None
+    assert len(agent.kernel.plugins) == 1
+
+
 # Test case to verify the creation of a user input action group
 @patch.object(boto3, "client", return_value=Mock())
 async def test_create_user_input_action_group(

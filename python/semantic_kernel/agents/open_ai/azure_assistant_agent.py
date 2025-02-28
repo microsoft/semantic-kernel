@@ -11,11 +11,11 @@ from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssista
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 
-@experimental
+@release_candidate
 class AzureAssistantAgent(OpenAIAssistantAgent):
     """An Azure Assistant Agent class that extends the OpenAI Assistant Agent class."""
 
