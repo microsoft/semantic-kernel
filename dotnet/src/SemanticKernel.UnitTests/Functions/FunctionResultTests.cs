@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace SemanticKernel.UnitTests.Functions;
 
@@ -133,5 +135,95 @@ public class FunctionResultTests
 
         Assert.Equal(valueType, target.GetValue<TextContent>());
         Assert.Equal(valueType, target.GetValue<KernelContent>());
+    }
+
+    [Fact]
+    public void GetValueConvertsFromMEAIChatMessageToSKChatMessageContent()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue));
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Message.Text, target.GetValue<ChatMessageContent>()!.Content);
+    }
+
+    [Fact]
+    public void GetValueConvertsFromSKChatMessageContentToMEAIChatMessage()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new ChatMessageContent(AuthorRole.User, expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatMessage>()!.Text);
+    }
+
+    [Fact]
+    public void GetValueConvertsFromSKChatMessageContentToMEAIChatResponse()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new ChatMessageContent(AuthorRole.User, expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(10)]
+    public void GetValueConvertsFromSKChatMessageContentListToMEAIChatResponse(int listSize)
+    {
+        // Arrange
+        List<ChatMessageContent> valueType = [];
+        for (int i = 0; i < listSize; i++)
+        {
+            valueType.Add(new ChatMessageContent(AuthorRole.User, Guid.NewGuid().ToString()));
+        }
+        FunctionResult target = new(KernelFunctionFactory.CreateFromMethod(() => { }), valueType);
+
+        // Act and Assert
+        var result = target.GetValue<MEAI.ChatResponse>()!;
+        for (int i = 0; i < listSize; i++)
+        {
+            Assert.Equal(valueType[i].Content, result.Choices[i].Text);
+        }
+        Assert.Equal(valueType.Count, result.Choices.Count);
+    }
+
+    [Fact]
+    public void GetValueCanRetrieveMEAITypes()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.User, expectedValue));
+        FunctionResult target = new(s_nopFunction, valueType);
+        // Act and Assert
+        Assert.Same(valueType, target.GetValue<MEAI.ChatResponse>());
+        Assert.Same(valueType.Message, target.GetValue<MEAI.ChatMessage>());
+        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.TextContent>());
+        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.AIContent>());
+    }
+
+    [Fact]
+    public void GetValueIsNullForEmptyChoicesMEAITypes()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new MEAI.ChatResponse([]);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+        Assert.Empty(target.GetValue<MEAI.ChatResponse>()!.Choices);
+        Assert.Null(target.GetValue<MEAI.ChatMessage>());
+        Assert.Null(target.GetValue<MEAI.TextContent>());
+        Assert.Null(target.GetValue<MEAI.AIContent>());
     }
 }
