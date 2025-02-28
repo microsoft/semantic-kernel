@@ -17,8 +17,6 @@
 | [bedrock_agent_with_code_interpreter_streaming.py](bedrock_agent_with_code_interpreter_streaming.py) | Example of using the Bedrock agent with a code interpreter and streaming. |
 | [bedrock_mixed_chat_agents.py](bedrock_mixed_chat_agents.py) | Example of using multiple chat agents in a single script. |
 | [bedrock_mixed_chat_agents_streaming.py](bedrock_mixed_chat_agents_streaming.py) | Example of using multiple chat agents in a single script with streaming. |
-| [bedrock_agent_update_agent.py](bedrock_agent_update_agent.py) | Example of updating an agent. |
-| [bedrock_agent_use_existing.py](bedrock_agent_use_existing.py) | Example of using an existing agent. |
 
 ## Before running the samples
 

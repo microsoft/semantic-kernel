@@ -4,8 +4,8 @@ from abc import ABC
 from functools import partial
 from typing import Any, ClassVar
 
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.async_utils import run_in_executor
 
 
 class BedrockBase(KernelBaseModel, ABC):

@@ -29,11 +29,8 @@ Dolphin  2
 
 
 async def main():
-    bedrock_agent = await BedrockAgent.create(
-        AGENT_NAME,
-        instructions=INSTRUCTION,
-        enable_code_interpreter=True,
-    )
+    bedrock_agent = await BedrockAgent.create_and_prepare_agent(AGENT_NAME, instructions=INSTRUCTION)
+    await bedrock_agent.create_code_interpreter_action_group()
 
     session_id = BedrockAgent.create_session_id()
 
@@ -48,7 +45,8 @@ async def main():
         ):
             print(f"Response:\n{response}")
             assert isinstance(response, ChatMessageContent)  # nosec
-            binary_item = next(item for item in response.items if isinstance(item, BinaryContent))
+            if not binary_item:
+                binary_item = next((item for item in response.items if isinstance(item, BinaryContent)), None)
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()

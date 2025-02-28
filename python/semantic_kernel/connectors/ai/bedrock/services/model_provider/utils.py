@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import json
 from collections.abc import Callable, Mapping
-from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
@@ -21,11 +19,6 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestE
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-
-
-async def run_in_executor(executor, func, *args, **kwargs):
-    """Run a function in an executor."""
-    return await asyncio.get_event_loop().run_in_executor(executor, partial(func, *args, **kwargs))
 
 
 def remove_none_recursively(data: dict, max_depth: int = 5) -> dict:

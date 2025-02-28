@@ -14,7 +14,7 @@ INSTRUCTION = "You are a friendly assistant. You help people find information."
 
 
 async def main():
-    bedrock_agent = await BedrockAgent.create(AGENT_NAME, instructions=INSTRUCTION)
+    bedrock_agent = await BedrockAgent.create_and_prepare_agent(AGENT_NAME, instructions=INSTRUCTION)
     session_id = BedrockAgent.create_session_id()
 
     try:
