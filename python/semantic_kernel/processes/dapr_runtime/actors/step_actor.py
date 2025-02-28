@@ -39,12 +39,12 @@ from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
@@ -332,7 +332,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
         invoke_result = None
-        event_name = None
+        event_name: str = ""
         event_value = None
 
         try:
@@ -340,6 +340,8 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 f"Invoking plugin `{function.plugin_name}` and function `{function.name}` with arguments: {arguments}"
             )
             invoke_result = await self.invoke_function(function, self.kernel, arguments)
+            if invoke_result is None:
+                raise KernelException(f"Function {target_function} returned None.")
             event_name = f"{target_function}.OnResult"
             event_value = invoke_result.value
 
@@ -409,7 +411,9 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             self.step_info.state = self.step_state
 
         step_info = DaprStepInfo(
-            inner_step_python_type=self.inner_step_type, state=self.step_info.state, edges=self.step_info.edges
+            inner_step_python_type=self.inner_step_type,
+            state=self.step_info.state,
+            edges=self.step_info.edges,
         )
 
         return step_info.model_dump()

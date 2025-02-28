@@ -1,82 +1,74 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-from typing import Annotated
 
-from semantic_kernel import Kernel
-from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantAgent
-from semantic_kernel.contents import AuthorRole, ChatMessageContent
-from semantic_kernel.functions import kernel_function
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI. OpenAI Assistants  #
-# allow for function calling, the use of file search and a          #
-# code interpreter. Assistant Threads are used to manage the        #
-# conversation state, similar to a Semantic Kernel Chat History.    #
-#####################################################################
+"""
+The following sample demonstrates how to create an OpenAI assistant using either
+Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
+questions about the world.
 
+The interaction with the agent is via the `get_response` method, which sends a
+user input to the agent and receives a response from the agent. The conversation
+history is maintained by the agent service, i.e. the responses are automatically
+associated with the thread. Therefore, client code does not need to maintain the
+conversation history.
+"""
 
-# Note: you may toggle this to switch between AzureOpenAI and OpenAI
-use_azure_openai = False
-
-
-# Define a sample plugin for the sample
-class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
-
-    @kernel_function(description="Provides a list of specials from the menu.")
-    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
-        return """
-        Special Soup: Clam Chowder
-        Special Salad: Cobb Salad
-        Special Drink: Chai Tea
-        """
-
-    @kernel_function(description="Provides the price of the requested menu item.")
-    def get_item_price(
-        self, menu_item: Annotated[str, "The name of the menu item."]
-    ) -> Annotated[str, "Returns the price of the menu item."]:
-        return "$9.99"
-
-
-# Create the instance of the Kernel
-kernel = Kernel()
-
-# Add the sample plugin to the kernel
-kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
+# Simulate a conversation with the agent
+USER_INPUTS = [
+    "Why is the sky blue?",
+    "What is the speed of light?",
+]
 
 
 async def main():
-    HOST_NAME = "Host"
-    HOST_INSTRUCTIONS = "Answer questions about the menu."
+    # 1. Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
 
-    # Create the OpenAI Assistant Agent
-    service_id = "agent"
-    if use_azure_openai:
-        agent = await AzureAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
-    else:
-        agent = await OpenAIAssistantAgent.create(
-            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-        )
+    # 2. Create the assistant on the Azure OpenAI service
+    definition = await client.beta.assistants.create(
+        model=model,
+        instructions="Answer questions about the world in one sentence.",
+        name="Assistant",
+    )
 
-    thread_id = await agent.create_thread()
+    # 3. Create a Semantic Kernel agent for the Azure OpenAI assistant
+    agent = AzureAssistantAgent(
+        client=client,
+        definition=definition,
+    )
 
-    user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "Thank you"]
+    # 4. Create a new thread on the Azure OpenAI assistant service
+    thread = await agent.client.beta.threads.create()
+
     try:
-        for user_input in user_inputs:
+        for user_input in USER_INPUTS:
+            # 5. Add the user input to the chat thread
             await agent.add_chat_message(
-                thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=user_input)
+                thread_id=thread.id,
+                message=user_input,
             )
             print(f"# User: '{user_input}'")
-            async for content in agent.invoke(thread_id=thread_id):
-                if content.role != AuthorRole.TOOL:
-                    print(f"# Agent: {content.content}")
+            # 6. Invoke the agent for the current thread and print the response
+            response = await agent.get_response(thread_id=thread.id)
+            print(f"# {response.name}: {response.content}")
 
     finally:
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+        # 7. Clean up the resources
+        await agent.client.beta.threads.delete(thread.id)
+        await agent.client.beta.assistants.delete(assistant_id=agent.id)
+
+    """
+    You should see output similar to the following:
+
+    # User: 'Why is the sky blue?'
+    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
+        light is scattered more than other colors because it travels in shorter, smaller waves.
+    # User: 'What is the speed of light?'
+    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
+        (about 186,282 miles per second).
+     """
 
 
 if __name__ == "__main__":

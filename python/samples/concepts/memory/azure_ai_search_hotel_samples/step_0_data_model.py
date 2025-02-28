@@ -21,6 +21,7 @@ from semantic_kernel.data import (
 # This model adds vectors for the 2 descriptions in English and French.
 # Both are based on the 1536 dimensions of the OpenAI models.
 # You can adjust this at creation time and then make the change below as well.
+# Refer to the README for more information.
 ###
 
 

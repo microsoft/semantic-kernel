@@ -5,10 +5,10 @@ import hashlib
 from collections.abc import Iterable
 
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class KeyEncoder:
     """A class for encoding keys."""
 

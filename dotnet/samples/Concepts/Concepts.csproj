@@ -15,9 +15,11 @@
 
   <ItemGroup>
     <PackageReference Include="Docker.DotNet" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Npgsql" />
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.abstractions" />
@@ -56,6 +58,7 @@
     <ProjectReference Include="..\..\src\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
@@ -143,9 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Agents\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

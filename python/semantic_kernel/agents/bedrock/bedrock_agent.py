@@ -2,12 +2,18 @@
 
 
 import asyncio
+import sys
 import uuid
 from collections.abc import AsyncIterable
 from functools import reduce
 from typing import Any, ClassVar
 
 from pydantic import ValidationError
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.action_group_utils import (
@@ -18,6 +24,7 @@ from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.bedrock_agent_settings import BedrockAgentSettings
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.binary_content import BinaryContent
@@ -30,57 +37,64 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
+from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
 
 
-@experimental_class
+@experimental
 class BedrockAgent(BedrockAgentBase, Agent):
     """Bedrock Agent.
 
     Manages the interaction with Amazon Bedrock Agent Service.
     """
 
-    channel_type: ClassVar[type[BedrockAgentChannel]] = BedrockAgentChannel
+    channel_type: ClassVar[type[AgentChannel]] = BedrockAgentChannel
 
     def __init__(
         self,
         name: str,
         *,
-        id: str | None = None,
         agent_resource_role_arn: str | None = None,
-        foundation_model: str | None = None,
-        kernel: Kernel | None = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
         arguments: KernelArguments | None = None,
-        instructions: str | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
-        env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        env_file_path: str | None = None,
+        id: str | None = None,
+        instructions: str | None = None,
+        foundation_model: str | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
     ) -> None:
         """Initialize the Bedrock Agent.
 
         Note that this only creates the agent object and does not create the agent in the service.
 
         Args:
-            name (str): The name of the agent.
-            id (str, optional): The unique identifier of the agent.
-            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
+            name: The name of the agent.
+            agent_resource_role_arn: The ARN of the agent resource role.
                 Overrides the one in the env file.
-            foundation_model (str, optional): The foundation model. Overrides the one in the env file.
-            kernel (Kernel, optional): The kernel to use.
-            function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
-                the kernel functions and filters.
-            arguments (KernelArguments, optional): The kernel arguments.
+            arguments: The kernel arguments.
                 Invoke method arguments take precedence over the arguments provided here.
-            instructions (str, optional): The instructions for the agent.
-            prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+            foundation_model: The foundation model. Overrides the one in the env file.
+            function_choice_behavior: The function choice behavior for accessing
+                the kernel functions and filters.
+            id: The unique identifier of the agent.
+            instructions: The instructions for the agent.
+            kernel: The kernel to use.
+            plugins: The plugins for the agent. If plugins are included along with a kernel, any plugins
+                that already exist in the kernel will be overwritten.
+            prompt_template_config: The prompt template configuration.
                 Cannot be set if instructions is set.
-            env_file_path (str, optional): The path to the environment file.
-            env_file_encoding (str, optional): The encoding of the environment file.
         """
         try:
             bedrock_agent_settings = BedrockAgentSettings.create(
@@ -93,9 +107,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
             raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
 
         bedrock_agent_model = BedrockAgentModel(
-            agent_id=id,
-            agent_name=name,
-            foundation_model=bedrock_agent_settings.foundation_model,
+            agentId=id,
+            agentName=name,
+            foundationModel=bedrock_agent_settings.foundation_model,
         )
 
         prompt_template: PromptTemplateBase | None = None
@@ -123,6 +137,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
             args["arguments"] = arguments
         if prompt_template:
             args["prompt_template"] = prompt_template
+        if plugins is not None:
+            args["plugins"] = plugins
 
         super().__init__(**args)
 
@@ -294,8 +310,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
         return self
 
-    @trace_agent_invocation
-    async def invoke(
+    @trace_agent_get_response
+    @override
+    async def get_response(
         self,
         session_id: str,
         input_text: str,
@@ -304,8 +321,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs,
-    ) -> AsyncIterable[ChatMessageContent]:
-        """Invoke an agent.
+    ) -> ChatMessageContent:
+        """Get a response from the agent.
 
         Args:
             session_id (str): The session identifier. This is used to maintain the session state in the service.
@@ -316,7 +333,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            An async iterable of chat message content.
+            A chat message content with the response.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -324,7 +341,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
         kwargs.setdefault("sessionState", {})
@@ -369,10 +386,99 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 if trace_metadata:
                     chat_message_content.metadata.update({"trace": trace_metadata})
 
-                yield chat_message_content
-                return
+                if not chat_message_content:
+                    raise AgentInvokeException("No response from the agent.")
+
+                return chat_message_content
+
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
 
     @trace_agent_invocation
+    @override
+    async def invoke(
+        self,
+        session_id: str,
+        input_text: str,
+        *,
+        agent_alias: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Invoke an agent.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of chat message content.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self._merge_arguments(arguments)
+
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+        kwargs.setdefault("sessionState", {})
+
+        for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+
+            events: list[dict[str, Any]] = []
+            for event in response.get("completion", []):
+                events.append(event)
+
+            if any(BedrockAgentEventType.RETURN_CONTROL in event for event in events):
+                # Check if there is function call requests. If there are function calls,
+                # parse and invoke them and return the results back to the agent.
+                # Not yielding the function call results back to the user.
+                kwargs["sessionState"].update(
+                    await self._handle_return_control_event(
+                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event),
+                        kernel,
+                        arguments,
+                    )
+                )
+            else:
+                for event in events:
+                    if BedrockAgentEventType.CHUNK in event:
+                        yield self._handle_chunk_event(event)
+                    elif BedrockAgentEventType.FILES in event:
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            items=self._handle_files_event(event),  # type: ignore
+                            name=self.name,
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                        )
+                    elif BedrockAgentEventType.TRACE in event:
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            name=self.name,
+                            content="",
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                            metadata=self._handle_trace_event(event),
+                        )
+
+                return
+
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
+
+    @trace_agent_invocation
+    @override
     async def invoke_stream(
         self,
         session_id: str,
@@ -402,7 +508,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
         kwargs.setdefault("sessionState", {})

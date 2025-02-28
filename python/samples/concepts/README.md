@@ -4,20 +4,51 @@
 
 ### Agents - Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel
 
-- [Assistant Agent Chart Maker](./agents/assistant_agent/assistant_agent_chart_maker.py)
-- [Assistant Agent File Manipulation](./agents/assistant_agent/assistant_agent_file_manipulation.py)
-- [Assistant Agent File Manipulation Streaming](./agents/assistant_agent/assistant_agent_file_manipulation_streaming.py)
-- [Assistant Agent Retrieval](./agents/assistant_agent/assistant_agent_retrieval.py)
-- [Assistant Agent Streaming](./agents/assistant_agent/assistant_agent_streaming.py)
+#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
+
+- [OpenAI Assistant Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
+- [OpenAI Assistant Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
+- [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
+- [OpenAI Assistant File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
+- [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
+- [OpenAI Assistant Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
+- [OpenAI Assistant Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
+- [OpenAI Assistant Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
+- [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
+- [OpenAI Assistant Vision Streaming](./agents/openai_assistant/openai_assistant_vision_streaming.py)
+
+#### [Azure AI Agent](../../semantic_kernel/agents/azure_ai/azure_ai_agent.py)
+
+- [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
+- [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
+
+#### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
+- [Bedrock Agent Simple Chat Streaming](./agents/bedrock_agent/bedrock_agent_simple_chat_streaming.py)
+- [Bedrock Agent Simple Chat](./agents/bedrock_agent/bedrock_agent_simple_chat.py)
+- [Bedrock Agent Update Agent](./agents/bedrock_agent/bedrock_agent_update_agent.py)
+- [Bedrock Agent Use Existing](./agents/bedrock_agent/bedrock_agent_use_existing.py)
+- [Bedrock Agent With Code Interpreter Streaming](./agents/bedrock_agent/bedrock_agent_with_code_interpreter_streaming.py)
+- [Bedrock Agent With Code Interpreter](./agents/bedrock_agent/bedrock_agent_with_code_interpreter.py)
+- [Bedrock Agent With Kernel Function Streaming](./agents/bedrock_agent/bedrock_agent_with_kernel_function_streaming.py)
+- [Bedrock Agent With Kernel Function](./agents/bedrock_agent/bedrock_agent_with_kernel_function.py)
+- [Bedrock Agent Mixed Chat Agents Streaming](./agents/bedrock_agent/bedrock_mixed_chat_agents_streaming.py)
+- [Bedrock Agent Mixed Chat Agents](./agents/bedrock_agent/bedrock_mixed_chat_agents.py)
+
+#### [Chat Completion Agent](../../semantic_kernel/agents/chat_completion/chat_completion_agent.py)
+
 - [Chat Completion Function Termination](./agents/chat_completion_agent/chat_completion_function_termination.py)
 - [Chat Completion History Reducer](./agents/chat_completion_agent/chat_completion_history_reducer.py)
-- [Mixed Chat Agents](./agents/mixed_chat/mixed_chat_agents.py)
+- [Chat Completion Templating](./agents/chat_completion_agent/chat_completion_templating.py)
+
+#### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
+
 - [Mixed Chat Agents Plugins](./agents/mixed_chat/mixed_chat_agents_plugins.py)
+- [Mixed Chat Agents](./agents/mixed_chat/mixed_chat_agents.py)
 - [Mixed Chat Files](./agents/mixed_chat/mixed_chat_files.py)
 - [Mixed Chat Images](./agents/mixed_chat/mixed_chat_images.py)
 - [Mixed Chat Reset](./agents/mixed_chat/mixed_chat_reset.py)
 - [Mixed Chat Streaming](./agents/mixed_chat/mixed_chat_streaming.py)
-- [Bedrock Agent](./agents/bedrock_agent/README.md)
 
 ### Audio - Using services that support audio-to-text and text-to-audio conversion
 
@@ -85,12 +116,13 @@
 
 - [Setup Logging](./logging/setup_logging.py)
 
-### Memory - Using [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) AI concepts
+### Memory - Using [`Memory`](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-python) AI concepts
 
-- [Azure Cognitive Search Memory](./memory/azure_cognitive_search_memory.py)
+- [Simple Memory](./memory/simple_memory.py)
 - [Memory Data Models](./memory/data_models.py)
-- [New Memory](./memory/new_memory.py)
-- [Pandas Memory](./memory/pandas_memory.py)
+- [Memory with Pandas Dataframes](./memory/memory_with_pandas.py)
+- [Complex memory](./memory/complex_memory.py)
+- [Full sample with Azure AI Search including function calling](./memory/azure_ai_search_hotel_samples/README.md)
 
 ### Model-as-a-Service - Using models deployed as [`serverless APIs on Azure AI Studio`](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio) to benchmark model performance against open-source datasets
 
@@ -101,12 +133,6 @@
 - [Azure Chat GPT with Data API](./on_your_data/azure_chat_gpt_with_data_api.py)
 - [Azure Chat GPT with Data API Function Calling](./on_your_data/azure_chat_gpt_with_data_api_function_calling.py)
 - [Azure Chat GPT with Data API Vector Search](./on_your_data/azure_chat_gpt_with_data_api_vector_search.py)
-
-### Planners - Showing the uses of [`Planners`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/planners)
-
-- [Sequential Planner](./planners/sequential_planner.py)
-- [OpenAI Function Calling Stepwise Planner](./planners/openai_function_calling_stepwise_planner.py)
-- [Azure OpenAI Function Calling Stepwise Planner](./planners/azure_openai_function_calling_stepwise_planner.py)
 
 ### Plugins - Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_plugin.py)
 

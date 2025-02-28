@@ -83,7 +83,7 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
-    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(default=CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None

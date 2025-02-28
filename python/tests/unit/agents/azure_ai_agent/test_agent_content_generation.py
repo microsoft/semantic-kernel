@@ -53,7 +53,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
 def test_get_message_contents_all_types():
-    chat_msg = ChatMessageContent(role=AuthorRole.USER)
+    chat_msg = ChatMessageContent(role=AuthorRole.USER, content="")
     chat_msg.items.append(TextContent(text="hello world"))
     chat_msg.items.append(ImageContent(uri="http://example.com/image.png"))
     chat_msg.items.append(FileReferenceContent(file_id="file123"))

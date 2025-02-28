@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ClientModel.Primitives;
 using System.Diagnostics;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -35,22 +37,29 @@ internal partial class AzureClientCore
         {
             return base.CreateChatCompletionOptions(executionSettings, chatHistory, toolCallingConfig, kernel);
         }
-
-        var options = new ChatCompletionOptions
-        {
-            MaxOutputTokenCount = executionSettings.MaxTokens,
-            Temperature = (float?)executionSettings.Temperature,
-            TopP = (float?)executionSettings.TopP,
-            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
-            PresencePenalty = (float?)executionSettings.PresencePenalty,
+        ChatCompletionOptions options = ModelReaderWriter.Read<ChatCompletionOptions>(BinaryData.FromString("{\"stream_options\":{\"include_usage\":true}}")!)!;
+        options.MaxOutputTokenCount = executionSettings.MaxTokens;
+        options.Temperature = (float?)executionSettings.Temperature;
+        options.TopP = (float?)executionSettings.TopP;
+        options.FrequencyPenalty = (float?)executionSettings.FrequencyPenalty;
+        options.PresencePenalty = (float?)executionSettings.PresencePenalty;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            Seed = executionSettings.Seed,
+
+        options.Seed = executionSettings.Seed;
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            EndUserId = executionSettings.User,
-            TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
-            StoredOutputEnabled = executionSettings.Store,
-        };
+        options.EndUserId = executionSettings.User;
+        options.TopLogProbabilityCount = executionSettings.TopLogprobs;
+        options.IncludeLogProbabilities = executionSettings.Logprobs;
+        options.StoredOutputEnabled = executionSettings.Store;
+        options.ReasoningEffortLevel = GetEffortLevel(executionSettings);
+        options.ResponseModalities = ChatResponseModalities.Default;
+
+        if (azureSettings.SetNewMaxCompletionTokensEnabled)
+        {
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            options.SetNewMaxCompletionTokensPropertyEnabled(true);
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        }
 
         var responseFormat = GetResponseFormat(executionSettings);
         if (responseFormat is not null)

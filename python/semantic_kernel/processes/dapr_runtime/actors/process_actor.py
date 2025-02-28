@@ -5,7 +5,7 @@ import contextlib
 import json
 import logging
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, MutableSequence
 from queue import Queue
 from typing import Any
 
@@ -38,12 +38,12 @@ from semantic_kernel.processes.kernel_process.kernel_process_state import Kernel
 from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
@@ -59,8 +59,8 @@ class ProcessActor(StepActor, ProcessInterface):
         super().__init__(ctx, actor_id, kernel, factories)
         self.kernel = kernel
         self.factories = factories
-        self.steps: list[StepInterface] = []
-        self.step_infos: list[DaprStepInfo] = []
+        self.steps: MutableSequence[StepInterface] = []
+        self.step_infos: MutableSequence[DaprStepInfo] = []
         self.initialize_task: bool | None = False
         self.external_event_queue: Queue = Queue()
         self.process_task: asyncio.Task | None = None
@@ -132,7 +132,7 @@ class ProcessActor(StepActor, ProcessInterface):
         if not self.process_task or self.process_task.done():
             self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
 
-    async def run_once(self, process_event: str) -> None:
+    async def run_once(self, process_event: KernelProcessEvent | str | None) -> None:
         """Starts the process with an initial event and waits for it to finish.
 
         Args:
@@ -147,7 +147,9 @@ class ProcessActor(StepActor, ProcessInterface):
             actor_interface=ExternalEventBufferInterface,
         )
         try:
-            await external_event_queue.enqueue(process_event)
+            await external_event_queue.enqueue(
+                process_event.model_dump_json() if isinstance(process_event, KernelProcessEvent) else process_event
+            )
 
             logger.info(f"Run once for process event: {process_event}")
 
@@ -171,7 +173,7 @@ class ProcessActor(StepActor, ProcessInterface):
         with contextlib.suppress(asyncio.CancelledError):
             await self.process_task
 
-    async def initialize_step(self):
+    async def initialize_step(self, input: str) -> None:
         """Initializes the step."""
         # The process does not need any further initialization
         pass
@@ -262,7 +264,7 @@ class ProcessActor(StepActor, ProcessInterface):
         self.output_edges = {kvp[0]: list(kvp[1]) for kvp in self.process.edges.items()}
 
         for step in self.step_infos:
-            step_actor = None
+            step_actor: StepInterface | None = None
 
             # The current step should already have a name.
             assert step.state and step.state.name is not None  # nosec
@@ -294,7 +296,7 @@ class ProcessActor(StepActor, ProcessInterface):
                 assert step.state and step.state.id is not None  # nosec
 
                 scoped_step_id = self._scoped_actor_id(ActorId(step.state.id))
-                step_actor: StepInterface = ActorProxy.create(  # type: ignore
+                step_actor = ActorProxy.create(  # type: ignore
                     actor_type=f"{StepActor.__name__}",
                     actor_id=scoped_step_id,
                     actor_interface=StepInterface,
