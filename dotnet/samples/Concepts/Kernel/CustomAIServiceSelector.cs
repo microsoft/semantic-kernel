@@ -37,7 +37,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
 
         // The kernel also allows you to use a IChatClient chat service as well
         builder.Services
-            .AddSingleton<IAIServiceSelector>(customSelector) 
+            .AddSingleton<IAIServiceSelector>(customSelector)
             .AddKeyedChatClient("OpenAIChatClient", new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
                 .AsChatClient("gpt-4o")); // Add a IChatClient to the kernel
 

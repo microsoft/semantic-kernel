@@ -15,10 +15,10 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.TestSettings;
-using Xunit;
 using OpenAI;
 using OpenAI.Chat;
+using SemanticKernel.IntegrationTests.TestSettings;
+using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
