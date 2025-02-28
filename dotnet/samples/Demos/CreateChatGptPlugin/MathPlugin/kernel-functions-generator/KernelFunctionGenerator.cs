@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Plugins.AzureFunctions.Generator;
 
+#pragma warning disable RS1042
+
 /// <summary>
 /// Generates kernel functions
 /// </summary>
