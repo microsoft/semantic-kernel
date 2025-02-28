@@ -315,7 +315,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection,
-            "schema", "tableName", keyProperty, properties, 123L);
+            "schema", "tableName", keyProperty, properties, 123L, includeVectors: true);
 
         AssertEqualIgnoreNewLines(
         """""
@@ -344,7 +344,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
-            "schema", "tableName", keyProperty, properties, keys)!;
+            "schema", "tableName", keyProperty, properties, keys, includeVectors: true)!;
 
         AssertEqualIgnoreNewLines(
         """""

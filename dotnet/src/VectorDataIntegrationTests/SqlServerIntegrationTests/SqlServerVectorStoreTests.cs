@@ -67,7 +67,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             string key = await collection.UpsertAsync(inserted);
             Assert.Equal(inserted.Id, key);
 
-            TestModel? received = await collection.GetAsync(inserted.Id);
+            TestModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
             AssertEquality(inserted, received);
 
             TestModel updated = new()
@@ -79,7 +79,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             key = await collection.UpsertAsync(updated);
             Assert.Equal(inserted.Id, key);
 
-            received = await collection.GetAsync(updated.Id);
+            received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
             VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
@@ -142,7 +142,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             // Let's use a model with the same storage names, but different types
             // to trigger a mapping exception (deserializing a string to Memory<float>).
             var invalidJsonCollection = testStore.DefaultVectorStore.GetCollection<string, SameStorageNameButInvalidVector>(collectionName);
-            await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => invalidJsonCollection.GetAsync(inserted.Id));
+            await Assert.ThrowsAsync<VectorStoreRecordMappingException>(() => invalidJsonCollection.GetAsync(inserted.Id, new() { IncludeVectors = true }));
         }
         finally
         {
@@ -177,7 +177,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             Assert.True(mapper.MapFromDataToStorageModel_WasCalled);
             Assert.False(mapper.MapFromStorageToDataModel_WasCalled);
 
-            TestModel? received = await collection.GetAsync(inserted.Id);
+            TestModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
             AssertEquality(inserted, received);
             Assert.True(mapper.MapFromStorageToDataModel_WasCalled);
 
@@ -190,7 +190,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             key = await collection.UpsertAsync(updated);
             Assert.Equal(inserted.Id, key);
 
-            received = await collection.GetAsync(updated.Id);
+            received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
             await collection.DeleteAsync(inserted.Id);
@@ -227,7 +227,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Assert.Equal(inserted[i].Id, keys[i]);
             }
 
-            TestModel[] received = await collection.GetBatchAsync(keys).ToArrayAsync();
+            TestModel[] received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 AssertEquality(inserted[i], received[i]);
@@ -246,7 +246,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Assert.Equal(updated[i].Id, keys[i]);
             }
 
-            received = await collection.GetBatchAsync(keys).ToArrayAsync();
+            received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 AssertEquality(updated[i], received[i]);
@@ -351,7 +351,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             TKey key = await collection.UpsertAsync(inserted);
             Assert.NotEqual(default, key); // key should be assigned by the DB (auto-increment)
 
-            FancyTestModel<TKey>? received = await collection.GetAsync(key);
+            FancyTestModel<TKey>? received = await collection.GetAsync(key, new() { IncludeVectors = true });
             AssertEquality(inserted, received, key);
 
             FancyTestModel<TKey> updated = new()
@@ -363,7 +363,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             key = await collection.UpsertAsync(updated);
             Assert.Equal(updated.Id, key);
 
-            received = await collection.GetAsync(updated.Id);
+            received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received, key);
 
             await collection.DeleteAsync(key);

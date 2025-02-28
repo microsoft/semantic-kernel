@@ -6,8 +6,8 @@ using Xunit;
 
 namespace SqlServerIntegrationTests.VectorSearch;
 
-public class SqlServerBasicVectorSearchTests(SqlServerFixture fixture)
-    : BasicVectorSearchTests<int>(fixture), IClassFixture<SqlServerFixture>
+public class SqlServerVectorSearchDistanceFunctionComplianceTests(SqlServerFixture fixture)
+    : VectorSearchDistanceFunctionComplianceTests<int>(fixture), IClassFixture<SqlServerFixture>
 {
     public override Task CosineSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.CosineSimilarity);
 

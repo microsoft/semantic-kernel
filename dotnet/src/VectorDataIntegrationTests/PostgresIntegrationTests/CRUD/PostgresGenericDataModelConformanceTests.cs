@@ -6,6 +6,7 @@ using Xunit;
 
 namespace PostgresIntegrationTests.CRUD;
 
-public class PostgresBasicConformanceTests(PostgresFixture fixture) : BasicConformanceTests(fixture), IClassFixture<PostgresFixture>
+public class PostgresGenericDataModelConformanceTests(PostgresFixture fixture)
+    : GenericDataModelConformanceTests<string>(fixture), IClassFixture<PostgresFixture>
 {
 }

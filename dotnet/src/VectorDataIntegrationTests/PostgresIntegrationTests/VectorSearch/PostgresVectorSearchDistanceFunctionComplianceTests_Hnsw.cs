@@ -4,7 +4,7 @@ using PostgresIntegrationTests.Support;
 
 namespace PostgresIntegrationTests.VectorSearch;
 
-public class PostgresBasicVectorSearchTests_Hnsw(PostgresFixture fixture) : PostgresBasicVectorSearchTests(fixture)
+public class PostgresVectorSearchDistanceFunctionComplianceTests_Hnsw(PostgresFixture fixture) : PostgresVectorSearchDistanceFunctionComplianceTests(fixture)
 {
     protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Hnsw;
 }

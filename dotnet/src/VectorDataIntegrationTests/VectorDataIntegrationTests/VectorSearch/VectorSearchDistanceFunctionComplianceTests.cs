@@ -7,7 +7,7 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.VectorSearch;
 
-public abstract class BasicVectorSearchTests<TKey>(VectorStoreFixture fixture)
+public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorStoreFixture fixture)
     where TKey : notnull
 {
     [ConditionalFact]

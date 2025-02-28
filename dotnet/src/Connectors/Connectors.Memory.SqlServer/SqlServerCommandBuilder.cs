@@ -278,14 +278,15 @@ internal static class SqlServerCommandBuilder
         SqlConnection sqlConnection, string schema, string collectionName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
-        object key)
+        object key,
+        bool includeVectors)
     {
         SqlCommand command = sqlConnection.CreateCommand();
 
         int paramIndex = 0;
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(properties);
+        sb.AppendColumnNames(properties, includeVectors: includeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, collectionName);
@@ -302,13 +303,14 @@ internal static class SqlServerCommandBuilder
         SqlConnection connection, string schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
-        IEnumerable<TKey> keys)
+        IEnumerable<TKey> keys,
+        bool includeVectors)
     {
         SqlCommand command = connection.CreateCommand();
 
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(properties);
+        sb.AppendColumnNames(properties, includeVectors: includeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);

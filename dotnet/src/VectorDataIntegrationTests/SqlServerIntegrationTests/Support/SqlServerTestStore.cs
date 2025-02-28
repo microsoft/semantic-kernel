@@ -18,7 +18,7 @@ public sealed class SqlServerTestStore : TestStore, IDisposable
 
     private SqlServerVectorStore? _connectedStore;
 
-    protected override Task StartAsync()
+    protected override async Task StartAsync()
     {
         if (string.IsNullOrWhiteSpace(SqlServerTestEnvironment.ConnectionString))
         {
@@ -28,8 +28,9 @@ public sealed class SqlServerTestStore : TestStore, IDisposable
 #pragma warning disable CA2000 // Dispose objects before losing scope
         SqlConnection connection = new(SqlServerTestEnvironment.ConnectionString);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+        await connection.OpenAsync();
+
         this._connectedStore = new(connection);
-        return connection.OpenAsync();
     }
 
     public void Dispose() => this._connectedStore?.Dispose();

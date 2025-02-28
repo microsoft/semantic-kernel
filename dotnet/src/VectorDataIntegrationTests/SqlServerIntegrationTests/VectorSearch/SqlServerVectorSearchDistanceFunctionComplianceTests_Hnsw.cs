@@ -5,8 +5,8 @@ using Xunit;
 
 namespace SqlServerIntegrationTests.VectorSearch;
 
-public class SqlServerBasicVectorSearchTests_Hnsw(SqlServerFixture fixture)
-    : SqlServerBasicVectorSearchTests(fixture)
+public class SqlServerVectorSearchDistanceFunctionComplianceTests_Hnsw(SqlServerFixture fixture)
+    : SqlServerVectorSearchDistanceFunctionComplianceTests(fixture)
 {
     // Creating such a collection is not supported.
     protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Hnsw;

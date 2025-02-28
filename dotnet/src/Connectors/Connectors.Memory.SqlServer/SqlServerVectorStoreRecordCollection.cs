@@ -50,11 +50,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 SupportsMultipleVectors = true,
             });
 
-        if (options is null || options.Mapper is null)
-        {
-            propertyReader.VerifyHasParameterlessConstructor();
-        }
-
         HashSet<Type> supportedKeyTypes = propertyReader.KeyProperty.AutoGenerate
             ? SqlServerConstants.SupportedAutoGenerateKeyTypes
             : SqlServerConstants.SupportedKeyTypes;
@@ -82,7 +77,21 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 RecordDefinition = options.RecordDefinition,
             };
         this._propertyReader = propertyReader;
-        this._mapper = options?.Mapper ?? new RecordMapper<TRecord>(propertyReader);
+
+        if (options is not null && options.Mapper is not null)
+        {
+            this._mapper = options.Mapper;
+        }
+        else if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
+        {
+            this._mapper = (new GenericRecordMapper<TKey>(propertyReader) as IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>>)!;
+        }
+        else
+        {
+            propertyReader.VerifyHasParameterlessConstructor();
+
+            this._mapper = new RecordMapper<TRecord>(propertyReader);
+        }
     }
 
     /// <inheritdoc/>
@@ -189,13 +198,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(key);
 
+        bool includeVectors = options?.IncludeVectors is true;
+
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             this._sqlConnection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
-            key);
+            key,
+            includeVectors);
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(this._sqlConnection, command,
             static async (cmd, ct) =>
@@ -208,7 +220,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         return reader.HasRows
             ? this._mapper.MapFromStorageToDataModel(
                 new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
-                new() { IncludeVectors = true })
+                new() { IncludeVectors = includeVectors })
             : default;
     }
 
@@ -218,13 +230,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(keys);
 
+        bool includeVectors = options?.IncludeVectors is true;
+
         using SqlCommand? command = SqlServerCommandBuilder.SelectMany(
             this._sqlConnection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.KeyProperty,
             this._propertyReader.Properties,
-            keys);
+            keys,
+            includeVectors);
 
         if (command is null)
         {
@@ -239,7 +254,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         {
             yield return this._mapper.MapFromStorageToDataModel(
                 new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
-                new() { IncludeVectors = true });
+                new() { IncludeVectors = includeVectors });
         }
     }
 
