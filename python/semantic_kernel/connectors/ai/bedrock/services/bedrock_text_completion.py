@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any
 import boto3
 from pydantic import ValidationError
 
+from semantic_kernel.utils.async_utils import run_in_executor
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -22,7 +24,6 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     parse_streaming_text_completion_response,
     parse_text_completion_response,
 )
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent

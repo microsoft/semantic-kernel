@@ -46,12 +46,6 @@ class TestBedrockAgentIntegration:
             raise e
 
     @pytest.mark.asyncio
-    async def test_update(self):
-        """Test updating the agent."""
-        await self.bedrock_agent.update_agent(agentName=f"semantic-kernel-integration-test-agent-{uuid.uuid4()}")
-        assert self.bedrock_agent.agent_model.agent_name == "updated_agent"
-
-    @pytest.mark.asyncio
     async def test_invoke(self):
         """Test invoke of the agent."""
         async for message in self.bedrock_agent.invoke(BedrockAgent.create_session_id(), "Hello"):
