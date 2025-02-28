@@ -38,12 +38,12 @@ async def main():
     # Create a kernel
     kernel = get_kernel()
 
-    bedrock_agent = await BedrockAgent.create(
+    bedrock_agent = await BedrockAgent.create_and_prepare_agent(
         AGENT_NAME,
-        instructions=INSTRUCTION,
+        INSTRUCTION,
         kernel=kernel,
-        enable_kernel_function=True,
     )
+    await bedrock_agent.create_kernel_function_action_group()
 
     session_id = BedrockAgent.create_session_id()
 

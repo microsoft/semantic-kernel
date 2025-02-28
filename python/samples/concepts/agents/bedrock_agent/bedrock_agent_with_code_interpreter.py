@@ -29,11 +29,8 @@ Dolphin  2
 
 
 async def main():
-    bedrock_agent = await BedrockAgent.create(
-        AGENT_NAME,
-        instructions=INSTRUCTION,
-        enable_code_interpreter=True,
-    )
+    bedrock_agent = await BedrockAgent.create_and_prepare_agent(AGENT_NAME, instructions=INSTRUCTION)
+    await bedrock_agent.create_code_interpreter_action_group()
 
     session_id = BedrockAgent.create_session_id()
 

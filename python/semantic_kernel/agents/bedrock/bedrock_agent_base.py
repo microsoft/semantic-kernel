@@ -9,13 +9,12 @@ import boto3
 from botocore.exceptions import ClientError
 from pydantic import Field, field_validator
 
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.action_group_utils import kernel_function_to_bedrock_function_schema
 from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import BedrockActionGroupModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -23,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @experimental
-class BedrockAgentBase(KernelBaseModel):
+class BedrockAgentBase(Agent):
     """Bedrock Agent Base Class to provide common functionalities for Bedrock Agents."""
 
     # There is a default alias created by Bedrock for the working draft version of the agent.
@@ -60,10 +59,12 @@ class BedrockAgentBase(KernelBaseModel):
             bedrock_runtime_client: The Bedrock Runtime Client.
             kwargs: Additional keyword arguments.
         """
+        agent_model = agent_model if isinstance(agent_model, BedrockAgentModel) else BedrockAgentModel(**agent_model)
+
         args = {
-            "agent_model": agent_model
-            if isinstance(agent_model, BedrockAgentModel)
-            else BedrockAgentModel(**agent_model),
+            "agent_model": agent_model,
+            "id": agent_model.agent_id,
+            "name": agent_model.agent_name,
             "bedrock_runtime_client": bedrock_runtime_client or boto3.client("bedrock-agent-runtime"),
             "bedrock_client": bedrock_client or boto3.client("bedrock-agent"),
             **kwargs,
@@ -169,7 +170,9 @@ class BedrockAgentBase(KernelBaseModel):
 
             await asyncio.sleep(interval)
 
-        raise TimeoutError(f"Agent did not reach status {status} within the specified time.")
+        raise TimeoutError(
+            f"Agent did not reach status {status} within the specified time. Current status: {agent.agent_status}"
+        )
 
     # endregion Agent Management
 
@@ -192,6 +195,8 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            await self._prepare_agent_and_wait_until_prepared()
 
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
@@ -217,17 +222,19 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
 
+            await self._prepare_agent_and_wait_until_prepared()
+
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
             logger.error(f"Failed to create user input action group for agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _create_kernel_function_action_group(self, kernel: Kernel, **kwargs) -> BedrockActionGroupModel | None:
+    async def create_kernel_function_action_group(self, **kwargs) -> BedrockActionGroupModel | None:
         """Create a kernel function action group."""
         if not self.agent_model.agent_id:
             raise ValueError("Agent does not exist. Please create the agent before creating an action group for it.")
 
-        function_call_choice_config = self.function_choice_behavior.get_config(kernel)
+        function_call_choice_config = self.function_choice_behavior.get_config(self.kernel)
         if not function_call_choice_config.available_functions:
             logger.warning("No available functions. Skipping kernel function action group creation.")
             return None
@@ -247,6 +254,8 @@ class BedrockAgentBase(KernelBaseModel):
                 ),
             )
 
+            await self._prepare_agent_and_wait_until_prepared()
+
             return BedrockActionGroupModel(**response["agentActionGroup"])
         except ClientError as e:
             logger.error(f"Failed to create kernel function action group for agent {self.agent_model.agent_id}.")
@@ -264,7 +273,7 @@ class BedrockAgentBase(KernelBaseModel):
             )
 
         try:
-            return await run_in_executor(
+            response = await run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.associate_agent_knowledge_base,
@@ -274,6 +283,10 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            await self._prepare_agent_and_wait_until_prepared()
+
+            return response
         except ClientError as e:
             logger.error(
                 f"Failed to associate agent {self.agent_model.agent_id} with knowledge base {knowledge_base_id}."
@@ -288,7 +301,7 @@ class BedrockAgentBase(KernelBaseModel):
             )
 
         try:
-            await run_in_executor(
+            response = await run_in_executor(
                 None,
                 partial(
                     self.bedrock_client.disassociate_agent_knowledge_base,
@@ -298,6 +311,10 @@ class BedrockAgentBase(KernelBaseModel):
                     **kwargs,
                 ),
             )
+
+            await self._prepare_agent_and_wait_until_prepared()
+
+            return response
         except ClientError as e:
             logger.error(
                 f"Failed to disassociate agent {self.agent_model.agent_id} with knowledge base {knowledge_base_id}."

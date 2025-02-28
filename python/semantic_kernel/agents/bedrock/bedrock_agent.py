@@ -19,7 +19,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -51,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 @experimental
-class BedrockAgent(BedrockAgentBase, Agent):
+class BedrockAgent(BedrockAgentBase):
     """Bedrock Agent.
 
     Manages the interaction with Amazon Bedrock Agent Service.
@@ -87,6 +86,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         """
         args: dict[str, Any] = {
             "agent_model": agent_model,
+            **kwargs,
         }
 
         if function_choice_behavior:
@@ -133,7 +133,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             bedrock_client (Any, optional): The Bedrock Client.
             kernel (Kernel, optional): The kernel to use.
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
-                the kernel functions and filters.
+                the kernel functions and filters. Only FunctionChoiceType.AUTO is supported.
             arguments (KernelArguments, optional): The kernel arguments.
             prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
             env_file_path (str, optional): The path to the environment file.
@@ -155,7 +155,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
         import boto3
         from botocore.exceptions import ClientError
 
-        bedrock_runtime_client = (bedrock_runtime_client or boto3.client("bedrock-agent-runtime"),)
+        bedrock_runtime_client = bedrock_runtime_client or boto3.client("bedrock-agent-runtime")
         bedrock_client = bedrock_client or boto3.client("bedrock-agent")
 
         try:
@@ -174,7 +174,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             raise e
 
         bedrock_agent = cls(
-            response,
+            response["agent"],
             function_choice_behavior=function_choice_behavior,
             kernel=kernel,
             arguments=arguments,
