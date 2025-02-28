@@ -12,7 +12,12 @@ from semantic_kernel.functions import KernelArguments, kernel_function
 
 """
 The following sample demonstrates how to create a chat completion agent that
-answers questions about a sample menu using a Semantic Kernel Plugin.
+answers questions about a sample menu using a Semantic Kernel Plugin. The Chat
+Completion Service is first added to the kernel, and the kernel is passed in to the
+ChatCompletionAgent constructor. Additionally, the plugin is supplied via the kernel.
+To enable auto-function calling, the prompt execution settings are retrieved from the kernel
+using the specified `service_id`. The function choice behavior is set to `Auto` to allow the
+agent to automatically execute the plugin's functions when needed.
 """
 
 
@@ -58,7 +63,6 @@ async def main():
 
     # 3. Create the agent
     agent = ChatCompletionAgent(
-        service_id=service_id,
         kernel=kernel,
         name="Host",
         instructions="Answer questions about the menu.",
