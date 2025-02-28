@@ -1,22 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from collections.abc import Callable, Coroutine, Mapping
 from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from numpy import ndarray
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    AzureRealtimeExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtimeWebsocketBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase):
     """Azure OpenAI Realtime service using WebSocket protocol."""
 
@@ -44,8 +54,8 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
-                least amount of latency possible.
-                It is called first in both websockets and webrtc.
+                least amount of latency possible, because it is called first before further processing.
+                It can also be set in the `receive` method.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
             service_id: The service ID for the Azure deployment. (Optional)
@@ -100,3 +110,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             client=async_client,
             **kwargs,
         )
+
+    @override
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+        return AzureRealtimeExecutionSettings

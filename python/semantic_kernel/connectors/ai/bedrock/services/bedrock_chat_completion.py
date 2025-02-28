@@ -31,10 +31,10 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -240,7 +240,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             prompt_tokens=response["usage"]["inputTokens"],
             completion_tokens=response["usage"]["outputTokens"],
         )
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         for content in response["output"]["message"]["content"]:
             if "text" in content:
                 items.append(TextContent(text=content["text"], inner_content=content))

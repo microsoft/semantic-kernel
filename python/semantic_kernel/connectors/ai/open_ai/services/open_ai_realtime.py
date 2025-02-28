@@ -52,9 +52,6 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     prepare_settings_for_function_calling,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
-    OpenAIRealtimeExecutionSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
@@ -79,7 +76,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ContentException
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
@@ -97,7 +94,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # region constants
 
 
-@experimental_class
+@experimental
 class SendEvents(str, Enum):
     """Events that can be sent."""
 
@@ -112,7 +109,7 @@ class SendEvents(str, Enum):
     RESPONSE_CANCEL = "response.cancel"
 
 
-@experimental_class
+@experimental
 class ListenEvents(str, Enum):
     """Events that can be listened to."""
 
@@ -160,8 +157,8 @@ def update_settings_from_function_call_configuration(
         and hasattr(settings, "tool_choice")
         and hasattr(settings, "tools")
     ):
-        settings.tool_choice = type
-        settings.tools = [
+        settings.tool_choice = type  # type: ignore
+        settings.tools = [  # type: ignore
             kernel_function_metadata_to_function_call_format(f)
             for f in function_choice_configuration.available_functions
         ]
@@ -259,7 +256,7 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
 # region Base
 
 
-@experimental_class
+@experimental
 class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
     """OpenAI Realtime service."""
 
@@ -513,17 +510,16 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
                         if not settings:
                             logger.error("Event data does not contain 'settings'")
                             return
-                        if not isinstance(settings, OpenAIRealtimeExecutionSettings):
-                            try:
-                                settings = self.get_prompt_execution_settings_from_settings(settings)
-                            except Exception as e:
-                                logger.error(
-                                    f"Failed to properly create settings from passed settings: {settings}, error: {e}"
-                                )
-                                return
-                        assert isinstance(settings, OpenAIRealtimeExecutionSettings)  # nosec
-                        if not settings.ai_model_id:
-                            settings.ai_model_id = self.ai_model_id
+                        try:
+                            settings = self.get_prompt_execution_settings_from_settings(settings)
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to properly create settings from passed settings: {settings}, error: {e}"
+                            )
+                            return
+                        assert isinstance(settings, self.get_prompt_execution_settings_class())  # nosec
+                        if not settings.ai_model_id:  # type: ignore
+                            settings.ai_model_id = self.ai_model_id  # type: ignore
                         await self._send(
                             _create_openai_realtime_client_event(
                                 event_type=event.service_type,
@@ -648,11 +644,10 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
 
 # region WebRTC
-@experimental_class
+@experimental
 class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
     """OpenAI WebRTC Realtime service."""
 
-    protocol: ClassVar[Literal["webrtc"]] = "webrtc"  # type: ignore
     peer_connection: RTCPeerConnection | None = None
     data_channel: RTCDataChannel | None = None
     audio_track: MediaStreamTrack | None = None
@@ -749,7 +744,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         self.data_channel = None
 
     async def _on_track(self, track: "MediaStreamTrack") -> None:
-        logger.info(f"Received {track.kind} track from remote")
+        logger.debug(f"Received {track.kind} track from remote")
         if track.kind != "audio":
             return
         while True:
@@ -822,7 +817,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
             raise
 
 
-@experimental_class
+@experimental
 class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebRTC protocol."""
 
@@ -843,12 +838,11 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
         """Initialize an OpenAIRealtime service.
 
         Args:
-            protocol: The protocol to use, must be either "websocket" or "webrtc".
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
-                least amount of latency possible.
-                It is called first in both websockets and webrtc.
+                least amount of latency possible, because it is called first before further processing.
+                It can also be set in the `receive` method.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
             audio_track: The audio track to use for the service, only used by WebRTC.
@@ -899,7 +893,7 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
 # region Websocket
 
 
-@experimental_class
+@experimental
 class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
     """OpenAI Realtime service."""
 
@@ -963,7 +957,7 @@ class OpenAIRealtimeWebsocketBase(OpenAIRealtimeBase):
             self.connected.clear()
 
 
-@experimental_class
+@experimental
 class OpenAIRealtimeWebsocket(OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
     """OpenAI Realtime service using WebSocket protocol."""
 
@@ -986,8 +980,8 @@ class OpenAIRealtimeWebsocket(OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
-                least amount of latency possible.
-                It is called first in both websockets and webrtc.
+                least amount of latency possible, because it is called first before further processing.
+                It can also be set in the `receive` method.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
             ai_model_id (str | None): OpenAI model name, see

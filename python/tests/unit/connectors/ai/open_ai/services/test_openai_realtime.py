@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from collections.abc import AsyncIterable
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from aiortc import AudioStreamTrack
+from openai.resources.beta.realtime.realtime import AsyncRealtimeConnection, AsyncRealtimeConnectionManager
 from openai.types.beta.realtime import (
     ConversationItem,
+    ConversationItemContent,
     ConversationItemCreatedEvent,
     ConversationItemCreateEvent,
     ConversationItemDeletedEvent,
@@ -15,14 +18,18 @@ from openai.types.beta.realtime import (
     ConversationItemTruncateEvent,
     ErrorEvent,
     InputAudioBufferAppendEvent,
+    InputAudioBufferClearedEvent,
     InputAudioBufferClearEvent,
     InputAudioBufferCommitEvent,
+    InputAudioBufferCommittedEvent,
     InputAudioBufferSpeechStartedEvent,
+    RealtimeResponse,
     RealtimeServerEvent,
     ResponseAudioDeltaEvent,
     ResponseAudioDoneEvent,
     ResponseAudioTranscriptDeltaEvent,
     ResponseCancelEvent,
+    ResponseCreatedEvent,
     ResponseCreateEvent,
     ResponseFunctionCallArgumentsDeltaEvent,
     ResponseFunctionCallArgumentsDoneEvent,
@@ -48,6 +55,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import (
     _create_openai_realtime_client_event,
     update_settings_from_function_call_configuration,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -66,28 +74,69 @@ from semantic_kernel.exceptions.content_exceptions import ContentException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
-
-@fixture
-async def websocket_stream():
-    await asyncio.sleep(0)
-    yield SessionCreatedEvent(type=ListenEvents.SESSION_CREATED, session=Session(session_id="session_id"), event_id="1")
-    yield SessionUpdatedEvent(type=ListenEvents.SESSION_UPDATED, session=Session(session_id="session_id"), event_id="2")
-    yield ConversationItemCreatedEvent(
+events = [
+    SessionCreatedEvent(type=ListenEvents.SESSION_CREATED, session=Session(id="session_id"), event_id="1"),
+    SessionUpdatedEvent(type=ListenEvents.SESSION_UPDATED, session=Session(id="session_id"), event_id="2"),
+    ConversationItemCreatedEvent(
         type=ListenEvents.CONVERSATION_ITEM_CREATED,
         item=ConversationItem(id="item_id"),
         event_id="3",
         previous_item_id="2",
-    )
-    yield ConversationItemDeletedEvent(type=ListenEvents.CONVERSATION_ITEM_DELETED, item_id="item_id", event_id="4")
-    yield ConversationItemTruncatedEvent(type=ListenEvents.CONVERSATION_ITEM_TRUNCATED, event_id="5")
-    yield InputAudioBufferClearEvent(type=ListenEvents.INPUT_AUDIO_BUFFER_CLEARED, event_id="7")
-    yield InputAudioBufferCommitEvent(type=ListenEvents.INPUT_AUDIO_BUFFER_COMMITTED, event_id="8")
-    yield ResponseCancelEvent(type=ListenEvents.RESPONSE_CANCELLED, event_id="9")
-    yield ResponseCreateEvent(type=ListenEvents.RESPONSE_CREATED, event_id="10")
-    yield ResponseFunctionCallArgumentsDoneEvent(type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE, event_id="11")
-    yield ResponseAudioTranscriptDeltaEvent(type=ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA, event_id="12")
-    yield ResponseAudioDoneEvent(type=ListenEvents.RESPONSE_AUDIO_DONE, event_id="13")
-    yield ResponseAudioDeltaEvent(type=ListenEvents.RESPONSE_AUDIO_DELTA, event_id="14")
+    ),
+    ConversationItemDeletedEvent(type=ListenEvents.CONVERSATION_ITEM_DELETED, item_id="item_id", event_id="4"),
+    ConversationItemTruncatedEvent(
+        type=ListenEvents.CONVERSATION_ITEM_TRUNCATED, event_id="5", audio_end_ms=0, content_index=0, item_id="item_id"
+    ),
+    InputAudioBufferClearedEvent(type=ListenEvents.INPUT_AUDIO_BUFFER_CLEARED, event_id="7"),
+    InputAudioBufferCommittedEvent(
+        type=ListenEvents.INPUT_AUDIO_BUFFER_COMMITTED,
+        event_id="8",
+        item_id="item_id",
+        previous_item_id="previous_item_id",
+    ),
+    ResponseCreatedEvent(type=ListenEvents.RESPONSE_CREATED, event_id="10", response=RealtimeResponse()),
+    ResponseFunctionCallArgumentsDoneEvent(
+        type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE,
+        event_id="11",
+        arguments="{}",
+        call_id="call_id",
+        item_id="item_id",
+        output_index=0,
+        response_id="response_id",
+    ),
+    ResponseAudioTranscriptDeltaEvent(
+        type=ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA,
+        event_id="12",
+        content_index=0,
+        delta="text",
+        item_id="item_id",
+        output_index=0,
+        response_id="response_id",
+    ),
+    ResponseAudioDoneEvent(
+        type=ListenEvents.RESPONSE_AUDIO_DONE,
+        event_id="13",
+        item_id="item_id",
+        output_index=0,
+        response_id="response_id",
+        content_index=0,
+    ),
+    ResponseAudioDeltaEvent(
+        type=ListenEvents.RESPONSE_AUDIO_DELTA,
+        event_id="14",
+        item_id="item_id",
+        output_index=0,
+        response_id="response_id",
+        content_index=0,
+        delta="audio data",
+    ),
+]
+
+
+async def websocket_stream(**kwargs) -> AsyncIterable[RealtimeServerEvent]:
+    for event in events:
+        yield event
+    await asyncio.sleep(0)
 
 
 @fixture
@@ -105,6 +154,13 @@ def audio_track():
 @fixture
 def OpenAIWebsocket(openai_unit_test_env):
     client = OpenAIRealtimeWebsocket()
+    client._call_id_to_function_map["call_id"] = "function_name"
+    return client
+
+
+@fixture
+def OpenAIWebRTC(openai_unit_test_env, audio_track):
+    client = OpenAIRealtimeWebRTC(audio_track=audio_track)
     client._call_id_to_function_map["call_id"] = "function_name"
     return client
 
@@ -478,3 +534,123 @@ async def test_send_audio(OpenAIWebsocket):
                 type="input_audio_buffer.append",
             )
         )
+
+
+@mark.parametrize("client", ["OpenAIWebRTC", "OpenAIWebsocket"])
+async def test_send_session_update(client, OpenAIWebRTC, OpenAIWebsocket):
+    openai_client = OpenAIWebRTC if client == "OpenAIWebRTC" else OpenAIWebsocket
+    settings = PromptExecutionSettings(ai_model_id="gpt-4o-realtime-preview")
+    session_event = RealtimeEvent(
+        service_type=SendEvents.SESSION_UPDATE,
+        service_event={"settings": settings},
+    )
+    with patch.object(openai_client, "_send") as mock_send:
+        await openai_client.send(event=session_event)
+        mock_send.assert_awaited()
+        assert len(mock_send.await_args_list) == 1
+        mock_send.assert_any_await(
+            SessionUpdateEvent(
+                session={"model": "gpt-4o-realtime-preview"},
+                type="session.update",
+            )
+        )
+
+
+@mark.parametrize("client", ["OpenAIWebRTC", "OpenAIWebsocket"])
+async def test_send_conversation_item_create(client, OpenAIWebRTC, OpenAIWebsocket):
+    openai_client = OpenAIWebRTC if client == "OpenAIWebRTC" else OpenAIWebsocket
+    event = RealtimeEvent(
+        service_type=SendEvents.CONVERSATION_ITEM_CREATE,
+        service_event={
+            "item": ChatMessageContent(
+                role="user",
+                items=[
+                    TextContent(text="Hello"),
+                    FunctionCallContent(
+                        function_name="function_name",
+                        plugin_name="plugin",
+                        arguments={"arg1": "value"},
+                        id="1",
+                        metadata={"call_id": "call_id"},
+                    ),
+                    FunctionResultContent(
+                        function_name="function_name",
+                        plugin_name="plugin",
+                        result="result",
+                        id="1",
+                        metadata={"call_id": "call_id"},
+                    ),
+                ],
+            )
+        },
+    )
+
+    with patch.object(openai_client, "_send") as mock_send:
+        await openai_client.send(event=event)
+        mock_send.assert_awaited()
+        assert len(mock_send.await_args_list) == 3
+        mock_send.assert_any_await(
+            ConversationItemCreateEvent(
+                item=ConversationItem(
+                    content=[ConversationItemContent(text="Hello", type="input_text")],
+                    role="user",
+                    type="message",
+                ),
+                type="conversation.item.create",
+            )
+        )
+        mock_send.assert_any_await(
+            ConversationItemCreateEvent(
+                item=ConversationItem(
+                    arguments='{"arg1": "value"}',
+                    call_id="call_id",
+                    name="plugin-function_name",
+                    type="function_call",
+                ),
+                type="conversation.item.create",
+            )
+        )
+        mock_send.assert_any_await(
+            ConversationItemCreateEvent(
+                item=ConversationItem(
+                    call_id="call_id",
+                    output="result",
+                    type="function_call_output",
+                ),
+                type="conversation.item.create",
+            )
+        )
+
+
+async def test_receive_websocket(OpenAIWebsocket):
+    connection_mock = AsyncMock(spec=AsyncRealtimeConnection)
+    connection_mock.recv = websocket_stream
+
+    manager = AsyncMock(spec=AsyncRealtimeConnectionManager)
+    manager.enter.return_value = connection_mock
+
+    with patch("openai.resources.beta.realtime.realtime.AsyncRealtime.connect") as mock_connect:
+        mock_connect.return_value = manager
+        async with OpenAIWebsocket():
+            async for msg in OpenAIWebsocket.receive():
+                assert isinstance(msg, RealtimeEvent)
+
+
+async def test_receive_webrtc(OpenAIWebRTC):
+    counter = len(events)
+    with patch.object(OpenAIRealtimeWebRTC, "create_session"):
+        recv_task = asyncio.create_task(_stream_to_webrtc(OpenAIWebRTC))
+        async with OpenAIWebRTC():
+            async for msg in OpenAIWebRTC.receive():
+                assert isinstance(msg, RealtimeEvent)
+                counter -= 1
+                if counter == 0:
+                    break
+        recv_task.cancel()
+
+
+async def _stream_to_webrtc(client: OpenAIRealtimeWebRTC):
+    async for msg in websocket_stream():
+        async for parsed_msg in client._parse_event(msg):
+            await client._receive_buffer.put(parsed_msg)
+            await asyncio.sleep(0)

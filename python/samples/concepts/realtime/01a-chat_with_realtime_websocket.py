@@ -5,9 +5,9 @@ import logging
 
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeExecutionSettings,
     AzureRealtimeWebsocket,
     ListenEvents,
-    OpenAIRealtimeExecutionSettings,
 )
 from semantic_kernel.contents import RealtimeAudioEvent, RealtimeTextEvent
 
@@ -43,7 +43,7 @@ async def main() -> None:
     audio_player = AudioPlayerWebsocket()
     audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
     # Create the settings for the session
-    settings = OpenAIRealtimeExecutionSettings(
+    settings = AzureRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.
@@ -78,7 +78,9 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: Begin speaking. The API will detect when you stop and automatically generate a response. "
+        "Instructions: The model will start speaking immediately,"
+        "this can be turned off by removing `create_response=True` above."
+        "The model will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())

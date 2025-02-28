@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -140,7 +140,7 @@ def merge_streaming_function_results(
     ]
 
 
-@experimental_function
+@experimental
 def prepare_settings_for_function_calling(
     settings: "PromptExecutionSettings",
     settings_class: type["PromptExecutionSettings"],

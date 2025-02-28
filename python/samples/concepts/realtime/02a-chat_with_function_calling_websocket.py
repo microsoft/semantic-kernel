@@ -9,9 +9,9 @@ from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderW
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeExecutionSettings,
     AzureRealtimeWebsocket,
     ListenEvents,
-    OpenAIRealtimeExecutionSettings,
     TurnDetection,
 )
 from semantic_kernel.contents import ChatHistory
@@ -60,44 +60,43 @@ async def main() -> None:
     kernel = Kernel()
     kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
 
+    # create the realtime client, in this the Azure Websocket client, there are also OpenAI Websocket and WebRTC clients
+    # See 02b-chat_with_function_calling_webrtc.py for an example of the WebRTC client
+    realtime_client = AzureRealtimeWebsocket()
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebsocket()
-    # create the realtime client and add the audio output function, this is optional
-    # you can define the protocol to use, either "websocket" or "webrtc"
-    # (at this time Azure only support websockets)
-    # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = AzureRealtimeWebsocket(
-        audio_output_callback=audio_player.client_callback,
-    )
     audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
-    instructions = """
+    # Another important setting is to tune the server_vad turn detection
+    # if this is turned off (by setting turn_detection=None), you will have to send
+    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
+    # to signal the end of the user's turn and start the response.
+    # manual VAD is not part of this sample
+    # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
+    settings = AzureRealtimeExecutionSettings(
+        instructions="""
     You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.
     Your full name, should you need to know it, is
     Splendid Speckled Mosscap. You communicate
     effectively, but you tend to answer with long
     flowery prose.
-    """
-    # the key thing to decide on is to enable the server_vad turn detection
-    # if turn is turned off (by setting turn_detection=None), you will have to send
-    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
-    # to signal the end of the user's turn and start the response.
-    # manual VAD is not part of this sample
-    # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
-    settings = OpenAIRealtimeExecutionSettings(
-        instructions=instructions,
+    """,
+        # see https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-voice for the full list of voices # noqa: E501
         voice="alloy",
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
-    # and we can add a chat history to conversation after starting it
+    # and we can add a chat history to conversation to seed the conversation
     chat_history = ChatHistory()
-    chat_history.add_user_message("Hi there, who are you?")
-    chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+    chat_history.add_user_message("Hi there, I'm based in Amsterdam.")
+    chat_history.add_assistant_message(
+        "I am Mosscap, a chat bot. I'm trying to figure out what people need, "
+        "I can tell you what the weather is or the time."
+    )
 
     # the context manager calls the create_session method on the client and starts listening to the audio stream
     async with (
@@ -110,7 +109,9 @@ async def main() -> None:
             create_response=True,
         ),
     ):
-        async for event in realtime_client.receive():
+        # the audio_output_callback can be added here or in the client constructor
+        # using this gives the smoothest experience
+        async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
             match event:
                 case RealtimeTextEvent():
                     if print_transcript:
@@ -128,7 +129,9 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: Begin speaking. The API will detect when you stop and automatically generate a response. "
+        "Instructions: The model will start speaking immediately,"
+        "this can be turned off by removing `create_response=True` above."
+        "The model will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())

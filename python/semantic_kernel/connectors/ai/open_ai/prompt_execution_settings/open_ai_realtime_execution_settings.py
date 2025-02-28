@@ -52,8 +52,8 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     voice: str | None = None
     input_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
     output_audio_format: Literal["pcm16", "g711_ulaw", "g711_alaw"] | None = None
-    input_audio_transcription: Annotated[InputAudioTranscription | Mapping[str, str] | None, Field()] = None
-    turn_detection: TurnDetection | None = None
+    input_audio_transcription: InputAudioTranscription | Mapping[str, str] | None = None
+    turn_detection: TurnDetection | Mapping[str, str] | None = None
     tools: Annotated[
         list[dict[str, Any]] | None,
         Field(
@@ -70,3 +70,9 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     ] = None
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     max_response_output_tokens: Annotated[int | Literal["inf"] | None, Field(gt=0)] = None
+
+
+class AzureRealtimeExecutionSettings(OpenAIRealtimeExecutionSettings):
+    """Request settings for Azure OpenAI realtime services."""
+
+    pass
