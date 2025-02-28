@@ -23,6 +23,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
+    AzureRealtimeExecutionSettings,
     InputAudioTranscription,
     OpenAIRealtimeExecutionSettings,
     TurnDetection,
@@ -67,6 +68,7 @@ __all__ = [
     "AzureDataSourceParameters",
     "AzureEmbeddingDependency",
     "AzureOpenAISettings",
+    "AzureRealtimeExecutionSettings",
     "AzureRealtimeWebsocket",
     "AzureTextCompletion",
     "AzureTextEmbedding",

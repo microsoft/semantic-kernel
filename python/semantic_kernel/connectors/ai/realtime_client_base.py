@@ -19,10 +19,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.realtime_events import RealtimeEvents
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 

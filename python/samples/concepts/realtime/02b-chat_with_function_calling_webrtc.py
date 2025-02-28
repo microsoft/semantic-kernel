@@ -74,33 +74,27 @@ async def main() -> None:
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebRTC()
-    audio_track = AudioRecorderWebRTC()
     # create the realtime client and optionally add the audio output function, this is optional
-    # you can define the protocol to use, either "websocket" or "webrtc"
-    # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = OpenAIRealtimeWebRTC(
-        audio_output_callback=audio_player.client_callback,
-        audio_track=audio_track,
-    )
+    # and can also be passed in the receive method
+    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC())
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
-    instructions = """
+    # Another important setting is to tune the server_vad turn detection
+    # if this is turned off (by setting turn_detection=None), you will have to send
+    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
+    # to signal the end of the user's turn and start the response.
+    # manual VAD is not part of this sample
+    # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
+    settings = OpenAIRealtimeExecutionSettings(
+        instructions="""
     You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.
     Your full name, should you need to know it, is
     Splendid Speckled Mosscap. You communicate
     effectively, but you tend to answer with long
     flowery prose.
-    """
-    # the key thing to decide on is to enable the server_vad turn detection
-    # if turn is turned off (by setting turn_detection=None), you will have to send
-    # the "input_audio_buffer.commit" and "response.create" event to the realtime api
-    # to signal the end of the user's turn and start the response.
-    # manual VAD is not part of this sample
-    # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
-    settings = OpenAIRealtimeExecutionSettings(
-        instructions=instructions,
+    """,
         voice="alloy",
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
@@ -120,7 +114,7 @@ async def main() -> None:
             create_response=True,
         ),
     ):
-        async for event in realtime_client.receive():
+        async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
             match event:
                 case RealtimeTextEvent():
                     if print_transcript:
@@ -137,7 +131,9 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: Begin speaking. The API will detect when you stop and automatically generate a response. "
+        "Instructions: The model will start speaking immediately,"
+        "this can be turned off by removing `create_response=True` above."
+        "The model will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())

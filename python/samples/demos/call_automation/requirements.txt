@@ -1,4 +1,0 @@
-Quart>=0.19.6
-azure-eventgrid==4.11.0
-azure-communication-callautomation==1.4.0b1
-semantic-kernel
