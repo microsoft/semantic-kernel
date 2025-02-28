@@ -21,7 +21,7 @@ from openai.types.beta.assistant_create_params import (
 )
 from openai.types.beta.assistant_response_format_option_param import AssistantResponseFormatOptionParam
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
@@ -37,7 +37,7 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -59,7 +59,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 
@@ -82,7 +82,7 @@ class OpenAIAssistantAgent(Agent):
         client: AsyncOpenAI,
         definition: Assistant,
         kernel: "Kernel | None" = None,
-        plugins: list[KernelPlugin | object] | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
         **kwargs: Any,
@@ -142,24 +142,6 @@ class OpenAIAssistantAgent(Agent):
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
-
-    def _get_plugin_name(self, plugin: KernelPlugin | object) -> str:
-        """Helper method to get the plugin name."""
-        if isinstance(plugin, KernelPlugin):
-            return plugin.name
-        return plugin.__class__.__name__
-
-    @model_validator(mode="after")
-    def configure_agent(self):
-        """Handle the plugins if provided via the constructor.
-
-        Any plugins already defined with the same name on the Kernel are overwritten.
-        """
-        if self.plugins:
-            for plugin in self.plugins:
-                name = self._get_plugin_name(plugin)
-                self.kernel.add_plugin(plugin, plugin_name=name)
-        return self
 
     @staticmethod
     def setup_resources(

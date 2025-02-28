@@ -59,7 +59,6 @@ TASK = "a slogan for a new line of electric cars."
 async def main():
     # 1. Create the reviewer agent based on the chat completion service
     agent_reviewer = ChatCompletionAgent(
-        service_id="artdirector",
         kernel=_create_kernel_with_chat_completion("artdirector"),
         name=REVIEWER_NAME,
         instructions=REVIEWER_INSTRUCTIONS,
@@ -67,7 +66,6 @@ async def main():
 
     # 2. Create the copywriter agent based on the chat completion service
     agent_writer = ChatCompletionAgent(
-        service_id="copywriter",
         kernel=_create_kernel_with_chat_completion("copywriter"),
         name=COPYWRITER_NAME,
         instructions=COPYWRITER_INSTRUCTIONS,

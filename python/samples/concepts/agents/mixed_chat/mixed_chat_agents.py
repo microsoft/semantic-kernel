@@ -52,7 +52,6 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 async def main():
     agent_reviewer = ChatCompletionAgent(
-        service_id="artdirector",
         kernel=_create_kernel_with_chat_completion("artdirector"),
         name=REVIEWER_NAME,
         instructions=REVIEWER_INSTRUCTIONS,

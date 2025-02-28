@@ -4,27 +4,26 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Iterable
-from typing import ClassVar
+from typing import Any, ClassVar
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
 class Agent(KernelBaseModel, ABC):
     """Base abstraction for all Semantic Kernel agents.
 
@@ -34,21 +33,46 @@ class Agent(KernelBaseModel, ABC):
     must define its communication protocol, or AgentChannel.
 
     Attributes:
-        name: The name of the agent (optional).
-        description: The description of the agent (optional).
-        id: The unique identifier of the agent (optional). If no id is provided,
+        arguments: The arguments for the agent
+        channel_type: The type of the agent channel
+        description: The description of the agent
+        id: The unique identifier of the agent  If no id is provided,
             a new UUID will be generated.
         instructions: The instructions for the agent (optional)
+        kernel: The kernel instance for the agent
+        name: The name of the agent
+        prompt_template: The prompt template for the agent
     """
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    arguments: KernelArguments | None = None
+    channel_type: ClassVar[type[AgentChannel] | None] = None
     description: str | None = None
-    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}", pattern=AGENT_NAME_REGEX)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
-    channel_type: ClassVar[type[AgentChannel] | None] = None
-    arguments: KernelArguments | None = None
+    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}", pattern=AGENT_NAME_REGEX)
     prompt_template: PromptTemplateBase | None = None
+
+    @staticmethod
+    def _get_plugin_name(plugin: KernelPlugin | object) -> str:
+        """Helper method to get the plugin name."""
+        if isinstance(plugin, KernelPlugin):
+            return plugin.name
+        return plugin.__class__.__name__
+
+    @model_validator(mode="before")
+    @classmethod
+    def _configure_plugins(cls, data: Any) -> Any:
+        """Configure any plugins passed in."""
+        if isinstance(data, dict) and (plugins := data.pop("plugins", None)):
+            kernel = data.get("kernel", None)
+            if not kernel:
+                kernel = Kernel()
+            for plugin in plugins:
+                name = Agent._get_plugin_name(plugin)
+                kernel.add_plugin(plugin, plugin_name=name)
+            data["kernel"] = kernel
+        return data
 
     @abstractmethod
     async def get_response(self, *args, **kwargs) -> ChatMessageContent:
@@ -67,7 +91,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    async def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
@@ -78,7 +102,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    async def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the

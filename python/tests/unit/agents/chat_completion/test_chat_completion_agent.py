@@ -9,6 +9,8 @@ from pydantic import ValidationError
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -39,14 +41,12 @@ def mock_streaming_chat_completion_response() -> Callable[..., AsyncGenerator[li
 
 async def test_initialization():
     agent = ChatCompletionAgent(
-        service_id="test_service",
         name="TestAgent",
         id="test_id",
         description="Test Description",
         instructions="Test Instructions",
     )
 
-    assert agent.service_id == "test_service"
     assert agent.name == "TestAgent"
     assert agent.id == "test_id"
     assert agent.description == "Test Description"
@@ -56,7 +56,6 @@ async def test_initialization():
 async def test_initialization_invalid_name_throws():
     with pytest.raises(ValidationError):
         _ = ChatCompletionAgent(
-            service_id="test_service",
             name="Test Agent",
             id="test_id",
             description="Test Description",
@@ -64,23 +63,7 @@ async def test_initialization_invalid_name_throws():
         )
 
 
-async def test_initialization_no_service_id():
-    agent = ChatCompletionAgent(
-        name="TestAgent",
-        id="test_id",
-        description="Test Description",
-        instructions="Test Instructions",
-    )
-
-    assert agent.service_id == "default"
-    assert agent.kernel is not None
-    assert agent.name == "TestAgent"
-    assert agent.id == "test_id"
-    assert agent.description == "Test Description"
-    assert agent.instructions == "Test Instructions"
-
-
-async def test_initialization_with_kernel(kernel: Kernel):
+def test_initialization_with_kernel(kernel: Kernel):
     agent = ChatCompletionAgent(
         kernel=kernel,
         name="TestAgent",
@@ -89,7 +72,6 @@ async def test_initialization_with_kernel(kernel: Kernel):
         instructions="Test Instructions",
     )
 
-    assert agent.service_id == "default"
     assert kernel == agent.kernel
     assert agent.name == "TestAgent"
     assert agent.id == "test_id"
@@ -97,11 +79,63 @@ async def test_initialization_with_kernel(kernel: Kernel):
     assert agent.instructions == "Test Instructions"
 
 
+def test_initialization_with_kernel_and_service(kernel: Kernel, azure_openai_unit_test_env, openai_unit_test_env):
+    kernel.add_service(AzureChatCompletion(service_id="test_azure"))
+    agent = ChatCompletionAgent(
+        service=OpenAIChatCompletion(),
+        kernel=kernel,
+        name="TestAgent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+    )
+
+    assert kernel == agent.kernel
+    assert len(kernel.services) == 2
+    assert agent.name == "TestAgent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+
+
+def test_initialization_with_plugins_via_constructor(custom_plugin_class):
+    agent = ChatCompletionAgent(
+        name="TestAgent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+        plugins=[custom_plugin_class()],
+    )
+
+    assert agent.name == "TestAgent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+    assert agent.kernel.plugins is not None
+    assert len(agent.kernel.plugins) == 1
+
+
+def test_initialization_with_service_via_constructor(openai_unit_test_env):
+    agent = ChatCompletionAgent(
+        name="TestAgent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+        service=OpenAIChatCompletion(),
+    )
+
+    assert agent.name == "TestAgent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+    assert agent.service is not None
+    assert agent.kernel.services["test_chat_model_id"] == agent.service
+
+
 async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(
         kernel=kernel,
-        service_id="test_service",
         name="TestAgent",
         instructions="Test Instructions",
     )
@@ -118,7 +152,6 @@ async def test_get_response_exception(kernel_with_ai_service: tuple[Kernel, Chat
     mock_ai_service_client.get_chat_message_contents = AsyncMock(return_value=[])
     agent = ChatCompletionAgent(
         kernel=kernel,
-        service_id="test_service",
         name="TestAgent",
         instructions="Test Instructions",
     )
@@ -133,7 +166,6 @@ async def test_invoke(kernel_with_ai_service: tuple[Kernel, ChatCompletionClient
     kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(
         kernel=kernel,
-        service_id="test_service",
         name="TestAgent",
         instructions="Test Instructions",
     )
@@ -150,7 +182,6 @@ async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, Chat
     kernel, mock_ai_service_client = kernel_with_ai_service
     agent = ChatCompletionAgent(
         kernel=kernel,
-        service_id="test_service",
         name="TestAgent",
     )
 
@@ -185,7 +216,7 @@ async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, Chat
 
 
 async def test_invoke_no_service_throws(kernel: Kernel):
-    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -196,7 +227,7 @@ async def test_invoke_no_service_throws(kernel: Kernel):
 
 async def test_invoke_stream(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, _ = kernel_with_ai_service
-    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -218,7 +249,7 @@ async def test_invoke_stream_tool_call_added(
     mock_streaming_chat_completion_response,
 ):
     kernel, mock_ai_service_client = kernel_with_ai_service
-    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -233,7 +264,7 @@ async def test_invoke_stream_tool_call_added(
 
 
 async def test_invoke_stream_no_service_throws(kernel: Kernel):
-    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="TestAgent")
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
