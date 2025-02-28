@@ -10,8 +10,6 @@ import boto3
 from numpy import array, ndarray
 from pydantic import ValidationError
 
-from semantic_kernel.utils.async_utils import run_in_executor
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -29,6 +27,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.utils.async_utils import run_in_executor
 
 if TYPE_CHECKING:
     pass

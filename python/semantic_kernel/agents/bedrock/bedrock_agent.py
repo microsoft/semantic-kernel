@@ -11,8 +11,6 @@ from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -39,6 +37,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.feature_stage_decorator import experimental

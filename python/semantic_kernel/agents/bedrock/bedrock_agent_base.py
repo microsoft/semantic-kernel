@@ -137,7 +137,7 @@ class BedrockAgentBase(Agent):
             logger.error(f"Failed to delete agent {self.agent_model.agent_id}.")
             raise e
 
-    async def _get_agent(self) -> BedrockAgentModel:
+    async def _get_agent(self) -> None:
         """Get an agent."""
         if not self.agent_model.agent_id:
             raise ValueError("Agent does not exist. Please create the agent before getting it.")

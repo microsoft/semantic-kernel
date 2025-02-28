@@ -43,6 +43,7 @@ async def main():
         INSTRUCTION,
         kernel=kernel,
     )
+    # Note: We still need to create the kernel function action group on the service side.
     await bedrock_agent.create_kernel_function_action_group()
 
     session_id = BedrockAgent.create_session_id()

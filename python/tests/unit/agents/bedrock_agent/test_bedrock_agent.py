@@ -20,7 +20,8 @@ from semantic_kernel.kernel import Kernel
 
 
 # Test case to verify BedrockAgent initialization
-async def test_bedrock_agent_initialization(bedrock_agent_model_with_id):
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_initialization(client, bedrock_agent_model_with_id):
     agent = BedrockAgent(bedrock_agent_model_with_id)
 
     assert agent.name == bedrock_agent_model_with_id.agent_name
@@ -30,7 +31,8 @@ async def test_bedrock_agent_initialization(bedrock_agent_model_with_id):
 
 
 # Test case to verify error handling during BedrockAgent initialization with non-auto function choice
-async def test_bedrock_agent_initialization_error_with_non_auto_function_choice(bedrock_agent_model_with_id):
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_initialization_error_with_non_auto_function_choice(client, bedrock_agent_model_with_id):
     with pytest.raises(ValueError, match="Only FunctionChoiceType.AUTO is supported."):
         BedrockAgent(
             bedrock_agent_model_with_id,

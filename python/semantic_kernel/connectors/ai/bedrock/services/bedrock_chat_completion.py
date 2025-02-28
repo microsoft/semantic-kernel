@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import boto3
 
-from semantic_kernel.utils.async_utils import run_in_executor
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -46,6 +44,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,

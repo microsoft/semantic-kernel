@@ -9,8 +9,6 @@ from typing import TYPE_CHECKING, Any
 import boto3
 from pydantic import ValidationError
 
-from semantic_kernel.utils.async_utils import run_in_executor
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -28,6 +26,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_text_completion,
     trace_text_completion,
