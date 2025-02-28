@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
@@ -11,14 +12,14 @@ namespace Microsoft.SemanticKernel;
 /// from the specified provider based on the model settings.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface IServiceSelector
+public interface IChatClientSelector
 {
     /// <summary>
-    /// Resolves a service and associated with a <see cref="PromptExecutionSettings"/> from the specified
+    /// Resolves an <see cref="IChatClient"/> and associated <see cref="PromptExecutionSettings"/> from the specified
     /// <see cref="Kernel"/> based on a <see cref="KernelFunction"/> and associated <see cref="KernelArguments"/>.
     /// </summary>
     /// <typeparam name="T">
-    /// Specifies the type of the registration required. This must be the same type
+    /// Specifies the type of the <see cref="IChatClient"/> required. This must be the same type
     /// with which the service was registered in the <see cref="IServiceCollection"/> or via
     /// the <see cref="IKernelBuilder"/>.
     /// </typeparam>
@@ -28,10 +29,10 @@ public interface IServiceSelector
     /// <param name="service">The selected service, or null if none was selected.</param>
     /// <param name="serviceSettings">The settings associated with the selected service. This may be null even if a service is selected.</param>
     /// <returns>true if a matching service was selected; otherwise, false.</returns>
-    bool TrySelect<T>(
+    bool TrySelectChatClient<T>(
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
         [NotNullWhen(true)] out T? service,
-        out PromptExecutionSettings? serviceSettings) where T : class;
+        out PromptExecutionSettings? serviceSettings) where T : class, IChatClient;
 }

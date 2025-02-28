@@ -19,7 +19,7 @@ internal static class StreamingChatMessageContentExtensions
             AuthorName = content.AuthorName,
             ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
-            RawRepresentation = content,
+            RawRepresentation = content.InnerContent,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
         };
 

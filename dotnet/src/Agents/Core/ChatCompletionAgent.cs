@@ -106,8 +106,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         if (chatCompletionService is null
-            && kernel.ServiceSelector is IServiceSelector chatClientSelector
-            && chatClientSelector.TrySelect<Microsoft.Extensions.AI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
+            && kernel.ServiceSelector is IChatClientSelector chatClientSelector
+            && chatClientSelector.TrySelectChatClient<Microsoft.Extensions.AI.IChatClient>(kernel, nullPrompt, arguments ?? [], out var chatClient, out executionSettings)
             && chatClient is not null)
         {
             // This change is temporary until Agents support IChatClient natively in near future.

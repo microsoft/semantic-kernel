@@ -123,10 +123,16 @@ public sealed class FunctionResult
 
         if (this.Value is IReadOnlyList<ChatMessageContent> messageContentList)
         {
+            if (messageContentList.Count == 0)
+            {
+                throw new InvalidCastException($"Cannot cast a response with no choices to {typeof(T)}");
+            }
+
             if (typeof(T) == typeof(ChatResponse))
             {
                 return (T)(object)new ChatResponse(messageContentList.Select(m => m.ToChatMessage()).ToList());
             }
+
             var firstMessage = messageContentList[0];
             if (typeof(T) == typeof(ChatMessage))
             {
@@ -139,7 +145,7 @@ public sealed class FunctionResult
             // If no choices are present, return default
             if (chatResponse.Choices.Count == 0)
             {
-                return default;
+                throw new InvalidCastException($"Cannot cast a response with no choices to {typeof(T)}");
             }
 
             var chatMessage = chatResponse.Message;

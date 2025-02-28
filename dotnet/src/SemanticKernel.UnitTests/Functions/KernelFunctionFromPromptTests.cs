@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1071,6 +1072,350 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Prompt with a variable", result);
     }
 
+    [Fact]
+    public async Task ItCanRetrieveDirectMEAIChatMessageUpdatesAsync()
+    {
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can "
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?"
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable")))
+        {
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex], update);
+            Assert.Equal(fakeService.GetStreamingResponseResult![updateIndex].Text, update.Text);
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItCanRetrieveDirectMEAITextContentAsync()
+    {
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can "
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?"
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<MEAI.TextContent>(KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable")))
+        {
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex].Contents[0], update);
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItCanRetrieveDirectMEAIStringAsync()
+    {
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can "
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?"
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<string>(KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable")))
+        {
+            Assert.Equal(fakeService.GetStreamingResponseResult![updateIndex].Text, update);
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItCanRetrieveDirectMEAIRawRepresentationAsync()
+    {
+        var rawRepresentation = OpenAI.Chat.OpenAIChatModelFactory.StreamingChatCompletionUpdate(contentUpdate: new OpenAI.Chat.ChatMessageContent("Hi!"));
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can ",
+                    RawRepresentation = rawRepresentation
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?",
+                    RawRepresentation = rawRepresentation
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<OpenAI.Chat.StreamingChatCompletionUpdate>(KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable")))
+        {
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex].RawRepresentation, update);
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItCanRetrieveDirectMEAIContentListAsync()
+    {
+        var rawRepresentation = OpenAI.Chat.OpenAIChatModelFactory.StreamingChatCompletionUpdate(contentUpdate: new OpenAI.Chat.ChatMessageContent("Hi!"));
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can ",
+                    RawRepresentation = rawRepresentation
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?",
+                    RawRepresentation = rawRepresentation
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<IList<MEAI.AIContent>>(KernelFunctionFromPrompt.Create("Prompt with {{$A}} variable")))
+        {
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex].Contents, update);
+
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromMEAIChatMessageUpdateToSKStreamingChatMessageContentAsync()
+    {
+        var rawRepresentation = new { test = "a" };
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can ",
+                    RawRepresentation = rawRepresentation
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?",
+                    RawRepresentation = rawRepresentation
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<StreamingChatMessageContent>(function))
+        {
+            Assert.Equal(fakeService.GetStreamingResponseResult![updateIndex].Text, update.Content);
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex].RawRepresentation, update.InnerContent);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromMEAIChatMessageUpdateToSKStreamingContentAsync()
+    {
+        var rawRepresentation = new { test = "a" };
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can ",
+                    RawRepresentation = rawRepresentation
+                },
+                new MEAI.ChatResponseUpdate
+                {
+                    Text = "I assist you today?",
+                    RawRepresentation = rawRepresentation
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
+        {
+            var streamingChatContent = Assert.IsType<StreamingChatMessageContent>(update);
+            Assert.Same(fakeService.GetStreamingResponseResult![updateIndex].RawRepresentation, update.InnerContent);
+
+            Assert.Equal(fakeService.GetStreamingResponseResult![updateIndex].Text, streamingChatContent.Content);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingResponseResult.Count);
+    }
+
+    [Fact]
+    public async Task ItConvertsFromSKStreamingChatMessageContentToMEAIChatResponseUpdate()
+    {
+        var innerContent = new { test = "a" };
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
+                {
+                    InnerContent = innerContent
+                },
+                new StreamingChatMessageContent(null, "I assist you today?")
+                {
+                    InnerContent = innerContent
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        var updateIndex = 0;
+        await foreach (var update in kernel.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(function))
+        {
+            Assert.Same(fakeService.GetStreamingChatMessageContentsResult![updateIndex].InnerContent, update.RawRepresentation);
+
+            Assert.Equal(fakeService.GetStreamingChatMessageContentsResult![updateIndex].Content, update.Text);
+            updateIndex++;
+        }
+
+        Assert.Equal(updateIndex, fakeService.GetStreamingChatMessageContentsResult.Count);
+    }
+
+    /// <summary>
+    /// This scenario covers scenarios on attempting to get a ChatResponseUpdate from a ITextGenerationService.
+    /// </summary>
+    [Fact]
+    public async Task ItThrowsConvertingFromNonChatSKStreamingContentToMEAIChatResponseUpdate()
+    {
+        var fakeService = new FakeTextGenerationService()
+        {
+            GetStreamingTextContentsResult = [new StreamingTextContent("Hi!")]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("How many 20 cents can I get from 1 dollar?");
+
+        // Act + Assert
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => kernel.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(function).GetAsyncEnumerator().MoveNextAsync().AsTask());
+    }
+
+    [Fact]
+    public async Task ItThrowsWhenConvertingFromMEAIChatMessageUpdateWithNoDataContentToBytesAsync()
+    {
+        using var fakeService = new FakeChatClient()
+        {
+            GetStreamingResponseResult = [
+                new MEAI.ChatResponseUpdate
+                {
+                    Role = MEAI.ChatRole.Assistant,
+                    Text = "Hi! How can ",
+                }]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<MEAI.IChatClient>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
+
+        // Act + Assert
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => kernel.InvokeStreamingAsync<byte[]>(function).GetAsyncEnumerator().MoveNextAsync().AsTask());
+    }
+
     public enum KernelInvocationType
     {
         InvokePrompt,
@@ -1114,9 +1459,63 @@ public class KernelFunctionFromPromptTests
         }
     }
 
+    private sealed class FakeChatCompletionService : IChatCompletionService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+
+        public IList<StreamingChatMessageContent>? GetStreamingChatMessageContentsResult { get; set; }
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+            ChatHistory chatHistory,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (var item in this.GetStreamingChatMessageContentsResult ?? [new StreamingChatMessageContent(AuthorRole.Assistant, "Something")])
+            {
+                yield return item;
+            }
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    }
+
+    private sealed class FakeTextGenerationService : ITextGenerationService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+
+        public IList<StreamingTextContent>? GetStreamingTextContentsResult { get; set; }
+
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (var item in this.GetStreamingTextContentsResult ?? [new StreamingTextContent("Something")])
+            {
+                yield return item;
+            }
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     private sealed class FakeChatClient : MEAI.IChatClient
     {
         public IList<MEAI.ChatMessage>? ChatMessages { get; private set; }
+        public IList<MEAI.ChatResponseUpdate>? GetStreamingResponseResult { get; set; }
 
         public void Dispose()
         {
@@ -1140,7 +1539,10 @@ public class KernelFunctionFromPromptTests
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             this.ChatMessages = chatMessages;
-            yield return new MEAI.ChatResponseUpdate { Role = MEAI.ChatRole.Assistant, Text = "Something" };
+            foreach (var item in this.GetStreamingResponseResult ?? [new MEAI.ChatResponseUpdate { Role = MEAI.ChatRole.Assistant, Text = "Something" }])
+            {
+                yield return item;
+            }
         }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }

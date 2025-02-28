@@ -63,7 +63,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var chatClient, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var chatClient, out var defaultExecutionSettings);
         chatClient?.Dispose();
 
         // Assert
@@ -133,7 +133,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert
@@ -201,7 +201,7 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         Assert.Equal(kernel.GetRequiredService<IChatClient>("chat2"), aiService);
@@ -240,7 +240,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert
@@ -287,7 +287,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert
@@ -336,7 +336,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert
@@ -407,7 +407,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, [], out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert
@@ -460,7 +460,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        serviceSelector.TrySelect<IChatClient>(kernel, function, arguments, out var aiService, out var defaultExecutionSettings);
+        serviceSelector.TrySelectChatClient<IChatClient>(kernel, function, arguments, out var aiService, out var defaultExecutionSettings);
         aiService?.Dispose();
 
         // Assert

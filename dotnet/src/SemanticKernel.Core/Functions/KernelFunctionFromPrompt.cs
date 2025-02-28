@@ -362,12 +362,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     continue;
                 }
 
-                // Return the first matching content type of an update if any
-                var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
-                if (updateContent is not null)
+                if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(TResult)))
                 {
-                    yield return (TResult)(object)updateContent;
-                    continue;
+                    // Return the first matching content type of an update if any
+                    var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
+                    if (updateContent is not null)
+                    {
+                        yield return (TResult)(object)updateContent;
+                        continue;
+                    }
                 }
 
                 if (typeof(TResult) == typeof(byte[]))
@@ -581,8 +584,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             aiService = textService;
         }
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        else if (serviceSelector is IServiceSelector chatClientServiceSelector
-            && chatClientServiceSelector.TrySelect<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
+        else if (serviceSelector is IChatClientSelector chatClientServiceSelector
+            && chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
         {
             // Resolves a ChatClient as AIService so it don't need to implement IChatCompletionService.
             aiService = new ChatClientAIService(chatClient);
