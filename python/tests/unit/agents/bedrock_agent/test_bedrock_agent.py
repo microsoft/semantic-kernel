@@ -87,6 +87,38 @@ async def test_bedrock_agent_create(
         assert agent.agent_model.agent_id == bedrock_agent_model_with_id_not_prepared_dict["agent"]["agentId"]
 
 
+# Test case to verify the creation of BedrockAgent
+@patch.object(boto3, "client", return_value=Mock())
+async def test_bedrock_agent_create_with_plugin_via_constructor(
+    client, bedrock_agent_unit_test_env, bedrock_agent_model_with_id_not_prepared_dict, custom_plugin_class
+):
+    agent = BedrockAgent(
+        name="test_agent", instructions="test_instructions", env_file_path="fake_path", plugins=[custom_plugin_class()]
+    )
+
+    assert agent.agent_model.agent_id is None
+
+    with (
+        patch.object(agent.bedrock_client, "create_agent") as mock_create_agent,
+        patch.object(agent.bedrock_client, "get_agent") as mock_get_agent,
+        patch.object(BedrockAgent, "prepare_agent", new_callable=AsyncMock),
+    ):
+        mock_create_agent.return_value = bedrock_agent_model_with_id_not_prepared_dict
+        mock_get_agent.return_value = bedrock_agent_model_with_id_not_prepared_dict
+
+        await agent.create_agent()
+
+        mock_create_agent.assert_called_once_with(
+            agentName="test_agent",
+            foundationModel=bedrock_agent_unit_test_env["BEDROCK_AGENT_FOUNDATION_MODEL"],
+            agentResourceRoleArn=bedrock_agent_unit_test_env["BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN"],
+            instruction="test_instructions",
+        )
+        assert agent.agent_model.agent_id == bedrock_agent_model_with_id_not_prepared_dict["agent"]["agentId"]
+        assert agent.kernel.plugins is not None
+        assert len(agent.kernel.plugins) == 1
+
+
 @patch.object(boto3, "client", return_value=Mock())
 async def test_bedrock_agent_create_existed(
     client,

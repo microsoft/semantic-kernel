@@ -3,15 +3,12 @@
 from collections.abc import AsyncIterable
 from unittest.mock import AsyncMock
 
-import pytest
-
-from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
+from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions import ServiceInvalidTypeError
 
 
 class MockChatHistoryHandler:
@@ -33,9 +30,6 @@ class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
 
     id: str = "mock_non_chat_history_handler"
-
-
-ChatHistoryAgentProtocol.register(MockChatHistoryHandler)
 
 
 class AsyncIterableMock:
@@ -130,24 +124,6 @@ async def test_invoke_leftover_in_queue():
     assert "Processed: Initial message" in received_messages[0].content
     assert "Final message" in received_messages[2].content
     assert received_messages[2].items[0].id == "test_id"
-
-
-async def test_invoke_incorrect_instance_throws():
-    channel = ChatHistoryChannel()
-    agent = MockNonChatHistoryHandler()
-
-    with pytest.raises(ServiceInvalidTypeError):
-        async for _ in channel.invoke(agent):
-            pass
-
-
-async def test_invoke_stream_incorrect_instance_throws():
-    channel = ChatHistoryChannel()
-    agent = MockNonChatHistoryHandler()
-
-    with pytest.raises(ServiceInvalidTypeError):
-        async for _ in channel.invoke_stream(agent, []):
-            pass
 
 
 async def test_receive():
