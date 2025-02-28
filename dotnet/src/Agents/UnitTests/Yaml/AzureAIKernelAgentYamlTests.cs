@@ -337,10 +337,10 @@ public class AzureAIKernelAgentYamlTests : IDisposable
 
     #region private
     private void SetupResponse(HttpStatusCode statusCode, string response) =>
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
-        {
-            Content = new StringContent(response)
-        });
+        this._messageHandlerStub.ResponseToReturn =
+            new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(response)
+            };
     #endregion
 }
