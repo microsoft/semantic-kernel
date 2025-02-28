@@ -19,18 +19,18 @@ namespace ChatWithAgent.ApiService;
 [Route("agent/completions")]
 public sealed class AgentCompletionsController : ControllerBase
 {
-    private readonly ILogger<AgentCompletionsController> _logger;
     private readonly ChatCompletionAgent _agent;
+    private readonly ILogger<AgentCompletionsController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentCompletionsController"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
     /// <param name="agent">The agent.</param>
-    public AgentCompletionsController(ILogger<AgentCompletionsController> logger, ChatCompletionAgent agent)
+    /// <param name="logger">The logger.</param>
+    public AgentCompletionsController(ChatCompletionAgent agent, ILogger<AgentCompletionsController> logger)
     {
-        this._logger = logger;
         this._agent = agent;
+        this._logger = logger;
     }
 
     /// <summary>
