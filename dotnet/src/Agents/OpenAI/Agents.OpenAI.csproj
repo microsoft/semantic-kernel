@@ -7,6 +7,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0110;SKEXP0001;OPENAI001;NU5104</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

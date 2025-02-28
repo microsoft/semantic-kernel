@@ -10,6 +10,9 @@ namespace ChatCompletion;
 // The following example shows how to use Semantic Kernel with OpenAI API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/>.
+    /// </summary>
     [Fact]
     public async Task ServicePromptAsync()
     {
@@ -23,6 +26,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         await StartChatAsync(chatCompletionService);
     }
 
+    /// <summary>
+    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/> also exploring the
+    /// breaking glass approach capturing the underlying <see cref="OpenAI.Chat.ChatCompletion"/> instance via <see cref="KernelContent.InnerContent"/>.
+    /// </summary>
     [Fact]
     public async Task ServicePromptWithInnerContentAsync()
     {
@@ -51,6 +58,9 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         OutputInnerContent(replyInnerContent!);
     }
 
+    /// <summary>
+    /// Sample showing how to use <see cref="Kernel"/> with chat completion and chat prompt syntax.
+    /// </summary>
     [Fact]
     public async Task ChatPromptAsync()
     {

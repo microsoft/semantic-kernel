@@ -21,12 +21,15 @@ The getting started with agents examples include:
 
 Example|Description
 ---|---
-[step1_chat_completion_agent](../getting_started_with_agents/chat_completion/step1_chat_completion_agent.py)|How to create and use an agent.
-[step2_chat_completion_agent_plugin](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_plugin.py)|How to create and use an agent with plugins.
-[step3_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
-[step4_kernel_function_strategies](../getting_started_with_agents/chat_completion/step4_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
-[step5_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
-[step6_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step6_chat_completion_agent_logging.py)|How to enable logging for agents.
+[step1_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step1_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
+[step2_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
+[step3_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
+[step4_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step4_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
+[step5_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
+[step6_kernel_function_strategies](../getting_started_with_agents/chat_completion/step6_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
+[step7_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step7_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
+[step8_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step8_chat_completion_agent_logging.py)|How to enable logging for agents.
+[step9_chat_completion_agent_structured_outputs](../getting_started_with_agents/chat_completion/step9_chat_completion_agent_structured_outputs.py)|How to use have a chat completion agent use structured outputs
 
 ## OpenAI Assistant Agent
 

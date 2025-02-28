@@ -43,7 +43,6 @@ async def main():
 
     # Create ChatCompletionAgents using the same kernel.
     agent_reviewer = ChatCompletionAgent(
-        service_id=REVIEWER_NAME,
         kernel=kernel,
         name=REVIEWER_NAME,
         instructions="""
@@ -60,7 +59,6 @@ RULES:
     )
 
     agent_writer = ChatCompletionAgent(
-        service_id=WRITER_NAME,
         kernel=kernel,
         name=WRITER_NAME,
         instructions="""

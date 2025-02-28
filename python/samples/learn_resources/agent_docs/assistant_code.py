@@ -112,6 +112,7 @@ async def main():
 
             if user_input.lower() == "exit":
                 is_complete = True
+                break
 
             await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
