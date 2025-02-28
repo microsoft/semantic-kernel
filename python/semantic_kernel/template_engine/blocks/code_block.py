@@ -14,6 +14,7 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
+from semantic_kernel.functions.function_result import FunctionResult
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -134,6 +135,8 @@ these will be ignored."
             error_msg = f"Error invoking function `{function_block.content}`"
             logger.error(error_msg)
             raise CodeBlockRenderException(error_msg) from exc
+        if isinstance(result, FunctionResult):
+            return str(result.value)
         return str(result) if result else ""
 
     def _enrich_function_arguments(
