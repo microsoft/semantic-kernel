@@ -91,7 +91,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    async def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
@@ -102,7 +102,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    async def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the

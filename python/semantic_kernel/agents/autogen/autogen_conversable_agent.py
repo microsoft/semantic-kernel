@@ -156,7 +156,7 @@ class AutoGenConversableAgent(Agent):
                 raise AgentInvokeException(f"Unexpected reply type from `a_generate_reply`: {type(reply)}")
 
     @override
-    async def invoke_stream(
+    def invoke_stream(
         self,
         message: str,
         kernel: "Kernel | None" = None,
