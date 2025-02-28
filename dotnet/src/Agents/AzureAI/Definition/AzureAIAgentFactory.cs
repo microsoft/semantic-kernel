@@ -16,7 +16,7 @@ public sealed class AzureAIAgentFactory : KernelAgentFactory
     /// <summary>
     /// The type of the Azure AI agent.
     /// </summary>
-    public const string AzureAIAgentType = "azureai_agent";
+    public const string AzureAIAgentType = "foundry_agent";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgentFactory"/> class.

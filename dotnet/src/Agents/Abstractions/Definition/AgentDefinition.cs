@@ -45,7 +45,7 @@ public sealed class AgentDefinition
     /// <summary>
     /// Gets or sets the metadata associated with the agent.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; set; }
+    public AgentMetadata? Metadata { get; set; }
 
     /// <summary>
     /// Gets or sets the model used by the agent.
