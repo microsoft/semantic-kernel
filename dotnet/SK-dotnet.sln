@@ -467,6 +467,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{41AC66EE-B656-4CDF-A512-C7259C2F6CF7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agent", "Agent", "{D1FD2171-A467-4F2D-9CF1-4B0DB753A689}"
+	ProjectSection(SolutionItems) = preProject
+		samples\Demos\Hosting\Agent\azure.yaml = samples\Demos\Hosting\Agent\azure.yaml
+		samples\Demos\Hosting\Agent\README.md = samples\Demos\Hosting\Agent\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithAgent.AppHost", "samples\Demos\Hosting\Agent\ChatWithAgent.AppHost\ChatWithAgent.AppHost.csproj", "{9B61C42F-63FE-4043-83E7-4B8BA3D74BEB}"
 EndProject

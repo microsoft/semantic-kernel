@@ -1,9 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ChatWithAgent.ApiService;
 
@@ -15,14 +20,17 @@ namespace ChatWithAgent.ApiService;
 public sealed class AgentCompletionsController : ControllerBase
 {
     private readonly ILogger<AgentCompletionsController> _logger;
+    private readonly ChatCompletionAgent _agent;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentCompletionsController"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    public AgentCompletionsController(ILogger<AgentCompletionsController> logger)
+    /// <param name="agent">The agent.</param>
+    public AgentCompletionsController(ILogger<AgentCompletionsController> logger, ChatCompletionAgent agent)
     {
         this._logger = logger;
+        this._agent = agent;
     }
 
     /// <summary>
@@ -33,6 +41,46 @@ public sealed class AgentCompletionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CompleteAsync([FromBody] AgentCompletionRequest request, CancellationToken cancellationToken)
     {
-        return this.Ok($"echo: {request.Prompt}");
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(request.Prompt);
+
+        if (request.IsStreaming)
+        {
+            return this.Ok(this.CompleteSteamingAsync(chatHistory, cancellationToken));
+        }
+
+        return this.Ok(this.CompleteAsync(chatHistory, cancellationToken));
+    }
+
+    /// <summary>
+    /// Completes the agent request.
+    /// </summary>
+    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The completion result.</returns>
+    private async IAsyncEnumerable<ChatMessageContent> CompleteAsync(ChatHistory chatHistory, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        IAsyncEnumerable<ChatMessageContent> content = this._agent.InvokeAsync(chatHistory, cancellationToken: cancellationToken);
+
+        await foreach (ChatMessageContent item in content.ConfigureAwait(false))
+        {
+            yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Completes the agent request with streaming.
+    /// </summary>
+    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The completion result.</returns>
+    private async IAsyncEnumerable<StreamingChatMessageContent> CompleteSteamingAsync(ChatHistory chatHistory, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        IAsyncEnumerable<StreamingChatMessageContent> content = this._agent.InvokeStreamingAsync(chatHistory, cancellationToken: cancellationToken);
+
+        await foreach (StreamingChatMessageContent item in content.ConfigureAwait(false))
+        {
+            yield return item;
+        }
     }
 }
