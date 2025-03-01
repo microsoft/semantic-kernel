@@ -25,6 +25,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/TestsSharedComponents.props" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />

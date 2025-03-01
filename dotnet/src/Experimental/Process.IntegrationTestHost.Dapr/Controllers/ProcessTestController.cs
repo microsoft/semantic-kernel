@@ -5,7 +5,7 @@ using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Serialization;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests.Controllers;
 
