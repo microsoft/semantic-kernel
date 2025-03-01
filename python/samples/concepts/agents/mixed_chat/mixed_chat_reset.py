@@ -30,7 +30,6 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 async def main():
     # First create the ChatCompletionAgent
     chat_agent = ChatCompletionAgent(
-        service_id="chat",
         kernel=_create_kernel_with_chat_completion("chat"),
         name="chat_agent",
         instructions="""

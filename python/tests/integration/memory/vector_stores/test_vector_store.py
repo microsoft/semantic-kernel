@@ -2,6 +2,7 @@
 
 import logging
 import platform
+from collections.abc import Callable
 from typing import Any
 
 import pandas as pd
@@ -431,7 +432,7 @@ class TestVectorStore(VectorStoreTestBase):
     # region test function
     async def test_vector_store(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         store_id: str,
         collection_name: str,
         collection_options: dict[str, Any],
@@ -451,7 +452,7 @@ class TestVectorStore(VectorStoreTestBase):
             data_model_definition = request.getfixturevalue(data_model_definition)
         try:
             async with (
-                stores[store_id] as vector_store,
+                stores[store_id]() as vector_store,
                 vector_store.get_collection(
                     collection_name, data_model_type, data_model_definition, **collection_options
                 ) as collection,

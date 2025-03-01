@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <remarks>
 /// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </remarks>
+[Experimental("SKEXP0110")]
 public abstract class AgentChannel
 {
     /// <summary>
@@ -83,6 +85,7 @@ public abstract class AgentChannel
 /// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// This class is a convenience upcast to an agent for <see cref="AgentChannel{TAgent}.InvokeAsync(TAgent, CancellationToken)"/>.
 /// </remarks>
+[Experimental("SKEXP0110")]
 public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 {
     /// <summary>

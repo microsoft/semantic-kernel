@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -64,7 +65,10 @@ public abstract class Agent
     /// For example, two OpenAI Assistant agents each targeting a different Azure OpenAI endpoint
     /// would require their own channel. In this case, the endpoint could be expressed as an additional key.
     /// </remarks>
+    [Experimental("SKEXP0110")]
+#pragma warning disable CA1024 // Use properties where appropriate
     protected internal abstract IEnumerable<string> GetChannelKeys();
+#pragma warning restore CA1024 // Use properties where appropriate
 
     /// <summary>
     /// Produce an <see cref="AgentChannel"/> appropriate for the agent type.
@@ -75,6 +79,7 @@ public abstract class Agent
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
+    [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 
     /// <summary>
@@ -87,6 +92,7 @@ public abstract class Agent
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
+    [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
     private ILogger? _logger;
