@@ -152,12 +152,10 @@ async def filter_agent_call(
 
 # Create a kernel with a chat completion service and plugins
 # Add Filter to stop when other Agents are called
-def _create_kernel_with_chat_completion(service_id: str, plugins: list) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id=service_id))
     kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, filter_agent_call)
-    for plugin in plugins:
-        kernel.add_plugin(plugin=plugin, plugin_name=type(plugin).__name__)
     return kernel
 
 
@@ -184,21 +182,23 @@ settings.parallel_tool_calls = False
 
 
 news_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("News", [NewsPlugin()]),
+    kernel=_create_kernel_with_chat_completion("News"),
+    plugins=[NewsPlugin()],
     name="NewsAgent",
     instructions=NEWS_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
 
 financial_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("Stock", [StockPlugin()]),
+    kernel=_create_kernel_with_chat_completion("Stock"),
+    plugins=[StockPlugin()],
     name="StockAgent",
     instructions=FINANCIAL_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
 
 writer_agent = ChatCompletionAgent(
-    kernel=_create_kernel_with_chat_completion("Writer", []),
+    kernel=_create_kernel_with_chat_completion("Writer"),
     name="WriterAgent",
     instructions=WRITER_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
@@ -206,7 +206,7 @@ writer_agent = ChatCompletionAgent(
 
 planner_agent = ChatCompletionAgent(
     name="PlannerAgent",
-    kernel=_create_kernel_with_chat_completion("Planner", plugins=[]),
+    kernel=_create_kernel_with_chat_completion("Planner"),
     instructions=PLANNER_INSTRUCTIONS,
     arguments=KernelArguments(settings=settings),
 )
