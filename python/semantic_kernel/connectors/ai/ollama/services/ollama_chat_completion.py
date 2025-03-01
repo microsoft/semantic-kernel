@@ -27,9 +27,9 @@ from semantic_kernel.connectors.ai.ollama.services.utils import (
 )
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -255,7 +255,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     def _create_chat_message_content_from_chat_response(self, response: ChatResponse) -> ChatMessageContent:
         """Create a chat message content from the response."""
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         if response.message.content:
             items.append(
                 TextContent(
@@ -274,7 +274,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     def _create_chat_message_content(self, response: Mapping[str, Any]) -> ChatMessageContent:
         """Create a chat message content from the response."""
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         if not (message := response.get("message", None)):
             raise ServiceInvalidResponseError("No message content found in response.")
 
