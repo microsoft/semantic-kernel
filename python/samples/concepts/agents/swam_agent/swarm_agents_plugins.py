@@ -5,17 +5,24 @@ from collections.abc import Callable, Coroutine
 from typing import Any
 
 from semantic_kernel.agents import Agent, AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.strategies.selection.swarm_selection_strategy import SwarmSelectionStrategy
+from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
 from semantic_kernel.contents import FunctionResultContent, TextContent
+from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
+
+#####################################################################
+# The following sample demonstrates how to create an OpenAI Swarm   #
+# Agent Networking using Semantic Kernel                            #
+#####################################################################
 
 PLANNER_INSTRUCTIONS = """You are a research planning coordinator.
     Coordinate market research by delegating to specialized agents:
@@ -92,6 +99,46 @@ class ApprovalTerminationStrategy(TerminationStrategy):
         return "terminate" in history[-1].content.lower()
 
 
+class SwarmSelectionStrategy(SelectionStrategy):
+    """Swarm Agent Strategy, Agents are selected with FunctionCalls that return an Agent Type."""
+
+    current_agent: Agent | None = None
+
+    async def select_agent(
+        self,
+        agents: list["Agent"],
+        history: list["ChatMessageContent"],
+    ) -> "Agent":
+        """Select the next agent in a swarm fashion.
+
+        Args:
+            agents: The list of agents to select from.
+            history: The history of messages in the conversation.
+
+        Returns:
+            The agent who takes the next turn.
+        """
+        # In the first iteration return the first agent
+        if len(history) <= 1:
+            self.current_agent = agents[0]
+            return agents[0]
+
+        # Pick the agent from the last message if it was a function call
+        # that returned an agent, if not, return the current agent
+        agent = self.get_agent_from_last_function_call(history[-1].items)
+        self.current_agent = agent
+        return agent
+
+    def get_agent_from_last_function_call(self, content: list["ITEM_TYPES"]) -> "Agent":
+        """Get the agent from the last function call in the history."""
+        for item in content:
+            if isinstance(item, FunctionResultContent) and isinstance(item.result, Agent):
+                return item.result
+        if self.current_agent is None:
+            raise AgentChatException("No agent found in the last function call and no current agent set.")
+        return self.current_agent
+
+
 # Intercept Function Calling Flow when another Agent should be called
 async def filter_agent_call(
     context: FunctionInvocationContext,
@@ -114,11 +161,13 @@ def _create_kernel_with_chat_completion(service_id: str, plugins: list) -> Kerne
     return kernel
 
 
+# Add handoff functions to the agents
 def _add_agent_handoffs(agent: Agent, agent_handoff: list[Agent]):
     for handoff in agent_handoff:
         _add_handoff(agent.kernel, handoff)
 
 
+# Add a Handoff as KernelFunction/FunctionCall to the Kernel
 def _add_handoff(kernel: Kernel, agent_handoff: Agent):
     @kernel_function(name=f"TransferTo{agent_handoff.name}", description=f"Handoff to {agent_handoff.name}")
     def handoff() -> Agent:
@@ -128,7 +177,7 @@ def _add_handoff(kernel: Kernel, agent_handoff: Agent):
 
 
 # Configure the function choice behavior to auto invoke kernel functions
-# Currently Parallel Tool Calls is not supported
+# Currently Parallel Tool Calls is not supported for the Swarm Approach
 settings = AzureChatPromptExecutionSettings()
 settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 settings.parallel_tool_calls = False
