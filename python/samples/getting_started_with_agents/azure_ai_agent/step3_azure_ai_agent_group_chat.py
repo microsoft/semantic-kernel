@@ -21,7 +21,12 @@ class ApprovalTerminationStrategy(TerminationStrategy):
 
     async def should_agent_terminate(self, agent, history):
         """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
+        resp = history[-1].content.lower()
+
+        # The agent would sometimes respond with simple "Not approved," which
+        # would trigger the termination. Even if the prompt clearly states not
+        # to use the word, it fails on 4o. This is a simple check to avoid that.
+        return "approved" in resp and not "not approved" in resp
 
 
 REVIEWER_NAME = "ArtDirector"
