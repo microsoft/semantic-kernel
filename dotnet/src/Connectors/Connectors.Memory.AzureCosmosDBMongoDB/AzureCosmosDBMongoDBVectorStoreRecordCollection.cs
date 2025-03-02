@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordVectorizedHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -34,6 +34,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid vector search.</summary>
+    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -250,27 +253,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         VectorSearchOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vector);
-
-        Array vectorArray = vector switch
-        {
-            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
-            _ => throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
-                $"Supported types are: {string.Join(", ", [
-                    typeof(ReadOnlyMemory<float>).FullName,
-                    typeof(ReadOnlyMemory<double>).FullName])}")
-        };
+        Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
-
-        if (vectorProperty is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
-        }
-
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
         var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
@@ -311,7 +297,65 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, cancellationToken));
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        Array vectorArray = VerifyVectorParam(vector);
+
+        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.FullTextPropertyName);
+        var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
+
+        var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
+            searchOptions.Filter,
+            this._storagePropertyNames);
+
+        // Constructing a query to fetch "skip + top" total items
+        // to perform skip logic locally, since skip option is not part of API. 
+        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+
+        var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
+
+        var searchQuery = vectorPropertyIndexKind switch
+        {
+            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                this._options.EfSearch,
+                filter),
+            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(
+                vectorArray,
+                vectorPropertyName,
+                itemsAmount,
+                filter),
+            _ => throw new InvalidOperationException(
+                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
+                $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
+        };
+
+        BsonDocument[] pipeline = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetHybridSearchPipeline(
+            searchQuery,
+            keywords,
+            this.CollectionName,
+            "nothing",
+            textDataPropertyName,
+            ScorePropertyName,
+            DocumentPropertyName,
+            searchOptions.Top,
+            itemsAmount,
+            filter);
+
+        var cursor = await this._mongoCollection
+            .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, cancellationToken));
     }
 
     #region private
@@ -324,6 +368,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var indexArray = new BsonArray();
 
+        // Create index parameters for each required property.
         indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetVectorIndexes(
             this._propertyReader.VectorProperties,
             this._storagePropertyNames,
@@ -336,6 +381,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             this._storagePropertyNames,
             uniqueIndexes));
 
+        var fullTextSearchIndex = AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(
+            this._propertyReader.DataProperties,
+            this._storagePropertyNames);
+
+        // Start the creation of the indexes in parallel.
+        Task<BsonDocument>? createIndexTask = null;
+        Task<string>? createFullTextSearchIndexTask = null;
+
         if (indexArray.Count > 0)
         {
             var createIndexCommand = new BsonDocument
@@ -344,7 +397,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 { "indexes", indexArray }
             };
 
-            await this._mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken).ConfigureAwait(false);
+            createIndexTask = this._mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken);
+        }
+
+        if (fullTextSearchIndex.ElementCount > 0)
+        {
+            createFullTextSearchIndexTask = this._mongoCollection.Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>((IndexKeysDefinition<BsonDocument>)fullTextSearchIndex), cancellationToken: cancellationToken);
+        }
+
+        // Wait for the index creation to complete.
+        if (createIndexTask is not null)
+        {
+            await createIndexTask.ConfigureAwait(false);
+        }
+
+        if (createFullTextSearchIndexTask is not null)
+        {
+            await createFullTextSearchIndexTask.ConfigureAwait(false);
         }
     }
 
@@ -374,7 +443,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         IAsyncCursor<BsonDocument> cursor,
-        VectorSearchOptions searchOptions,
+        int skip,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Aggregate";
@@ -385,7 +454,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         {
             foreach (var response in cursor.Current)
             {
-                if (skipCounter >= searchOptions.Skip)
+                if (skipCounter >= skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
@@ -484,33 +553,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <summary>
-    /// Get vector property to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
-    /// </summary>
-    /// <param name="vectorFieldName">The vector field name.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
-    {
-        // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorFieldName))
-        {
-            // Check vector properties by data model property name.
-            var vectorProperty = this._propertyReader.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
-
-            if (vectorProperty is not null)
-            {
-                return vectorProperty;
-            }
-
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
-        }
-
-        // If vector property is not provided in options, return first vector property from schema.
-        return this._propertyReader.VectorProperty;
-    }
-
-    /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
     private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
@@ -526,6 +568,22 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         }
 
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);
+    }
+
+    private static Array VerifyVectorParam<TVector>(TVector vector)
+    {
+        Verify.NotNull(vector);
+
+        return vector switch
+        {
+            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
+            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
+            _ => throw new NotSupportedException(
+                $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
+                $"Supported types are: {string.Join(", ", [
+                    typeof(ReadOnlyMemory<float>).FullName,
+                    typeof(ReadOnlyMemory<double>).FullName])}")
+        };
     }
 
     #endregion
