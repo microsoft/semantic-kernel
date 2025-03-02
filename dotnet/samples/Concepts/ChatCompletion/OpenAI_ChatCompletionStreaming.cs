@@ -214,37 +214,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         }
     }
 
-    private async Task StreamMessageOutputAsync(OpenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
-    {
-        bool roleWritten = false;
-        string fullMessage = string.Empty;
-
-        await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
-        {
-            if (!roleWritten && chatUpdate.Role.HasValue)
-            {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
-                roleWritten = true;
-            }
-
-            if (chatUpdate.Content is { Length: > 0 })
-            {
-                fullMessage += chatUpdate.Content;
-                Console.Write(chatUpdate.Content);
-            }
-
-            // The last message in the chunk has the usage metadata.
-            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
-            if (chatUpdate.Metadata?["Usage"] is not null)
-            {
-                Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
-            }
-        }
-
-        Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
-    }
-
     private async Task<string> StreamMessageOutputFromKernelAsync(Kernel kernel, string prompt)
     {
         bool roleWritten = false;

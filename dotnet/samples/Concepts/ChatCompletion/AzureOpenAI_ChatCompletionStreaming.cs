@@ -128,28 +128,4 @@ public class AzureOpenAI_ChatCompletionStreaming(ITestOutputHelper output) : Bas
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
-
-    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
-    {
-        bool roleWritten = false;
-        string fullMessage = string.Empty;
-
-        await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
-        {
-            if (!roleWritten && chatUpdate.Role.HasValue)
-            {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
-                roleWritten = true;
-            }
-
-            if (chatUpdate.Content is { Length: > 0 })
-            {
-                fullMessage += chatUpdate.Content;
-                Console.Write(chatUpdate.Content);
-            }
-        }
-
-        Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
-    }
 }
