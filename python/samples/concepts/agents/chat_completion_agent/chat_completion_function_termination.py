@@ -87,10 +87,10 @@ async def main():
         "Thank you",
     ]
 
-    for input in user_inputs:
+    for user_input in user_inputs:
         # 3. Add the user message to the chat history
-        chat_history.add_user_message(input)
-        print(f"# User: '{input}'")
+        chat_history.add_user_message(user_input)
+        print(f"# User: '{user_input}'")
 
         # 4. Get the response from the agent
         content = await agent.get_response(chat_history)

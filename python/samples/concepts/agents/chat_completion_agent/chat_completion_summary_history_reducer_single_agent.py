@@ -28,7 +28,7 @@ async def main():
     reducer_threshold = 10
 
     # Create a summarization reducer
-    summarization_reducer = ChatHistorySummarizationReducer(
+    history_summarization_reducer = ChatHistorySummarizationReducer(
         service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
     )
 
@@ -43,24 +43,24 @@ async def main():
     message_count = 50
     for index in range(1, message_count + 1, 2):
         # Add user message
-        summarization_reducer.add_user_message(str(index))
+        history_summarization_reducer.add_user_message(str(index))
         print(f"# User: '{index}'")
 
         # Attempt reduction
-        is_reduced = await summarization_reducer.reduce()
+        is_reduced = await history_summarization_reducer.reduce()
         if is_reduced:
-            print(f"@ History reduced to {len(summarization_reducer.messages)} messages.")
+            print(f"@ History reduced to {len(history_summarization_reducer.messages)} messages.")
 
         # Get agent response and store it
-        response = await agent.get_response(summarization_reducer)
-        summarization_reducer.add_message(response)
+        response = await agent.get_response(history_summarization_reducer)
+        history_summarization_reducer.add_message(response)
         print(f"# Agent - {response.name}: '{response.content}'")
 
-        print(f"@ Message Count: {len(summarization_reducer.messages)}\n")
+        print(f"@ Message Count: {len(history_summarization_reducer.messages)}\n")
 
         # If reduced, print summary if present
         if is_reduced:
-            for msg in summarization_reducer.messages:
+            for msg in history_summarization_reducer.messages:
                 if msg.metadata and msg.metadata.get("__summary__"):
                     print(f"\tSummary: {msg.content}")
                     break

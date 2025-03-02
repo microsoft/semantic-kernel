@@ -31,10 +31,10 @@ async def main():
     reducer_threshold = 10
 
     # Create a summarization reducer and clear its history
-    summarization_reducer = ChatHistorySummarizationReducer(
+    history_summarization_reducer = ChatHistorySummarizationReducer(
         service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
     )
-    summarization_reducer.clear()
+    history_summarization_reducer.clear()
 
     # Create our agent
     agent = ChatCompletionAgent(
@@ -44,7 +44,7 @@ async def main():
     )
 
     # Create a group chat using the reducer
-    chat = AgentGroupChat(chat_history=summarization_reducer)
+    chat = AgentGroupChat(chat_history=history_summarization_reducer)
 
     # Simulate user messages
     message_count = 50  # Number of messages to simulate
@@ -56,7 +56,7 @@ async def main():
         # Attempt to reduce history
         is_reduced = await chat.reduce_history()
         if is_reduced:
-            print(f"@ History reduced to {len(summarization_reducer.messages)} messages.")
+            print(f"@ History reduced to {len(history_summarization_reducer.messages)} messages.")
 
         # Invoke the agent and display responses
         async for message in chat.invoke(agent):
