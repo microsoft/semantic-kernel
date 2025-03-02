@@ -40,7 +40,7 @@ class StepInterface(ActorInterface, ABC):
 
     @abstractmethod
     @actormethod(name="to_dapr_step_info")
-    async def to_dapr_step_info(self) -> str:
+    async def to_dapr_step_info(self) -> dict:
         """Builds the current state of the step into a DaprStepInfo.
 
         Returns:
