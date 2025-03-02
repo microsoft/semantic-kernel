@@ -340,6 +340,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
