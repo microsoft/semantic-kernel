@@ -28,7 +28,7 @@ public class LMStudio_ChatCompletionStreaming(ITestOutputHelper output) : BaseTe
         Console.WriteLine($"======== LM Studio - Chat Completion - {nameof(UsingServiceStreamingWithLMStudio)} ========");
 
         var modelId = "llama-2-7b-chat"; // Update the modelId if you chose a different model.
-        var endpoint = new Uri("http://localhost:12345/v1"); // Update the endpoint if you chose a different port.
+        var endpoint = new Uri("http://localhost:1234/v1"); // Update the endpoint if you chose a different port.
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
@@ -69,7 +69,7 @@ public class LMStudio_ChatCompletionStreaming(ITestOutputHelper output) : BaseTe
         Console.WriteLine($"======== LM Studio - Chat Completion - {nameof(UsingKernelStreamingWithLMStudio)} ========");
 
         var modelId = "llama-2-7b-chat"; // Update the modelId if you chose a different model.
-        var endpoint = new Uri("http://localhost:12345/v1"); // Update the endpoint if you chose a different port.
+        var endpoint = new Uri("http://localhost:1234/v1"); // Update the endpoint if you chose a different port.
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
