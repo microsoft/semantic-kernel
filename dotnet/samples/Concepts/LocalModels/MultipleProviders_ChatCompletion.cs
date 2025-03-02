@@ -18,7 +18,7 @@ namespace LocalModels;
 /// OR
 ///
 /// 1. Start the Ollama Message API Server on http://localhost:11434 using docker
-/// 2. docker run -d --gpus=all -v "d:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
+/// 2. docker run -d --gpus=all -v "c:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
 /// 3. Set Llama2 as the current ollama model: docker exec -it ollama ollama run llama2
 /// 4. Run the Ollama examples.
 ///
@@ -30,20 +30,17 @@ namespace LocalModels;
 /// </summary>
 public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
-    [Theory(Skip = "Manual configuration needed")]
-    [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
-    [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
-    [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
-    public async Task LocalModel_ExampleAsync(string messageAPIPlatform, string url, string modelId)
+    [Fact]
+    public async Task UsingKernelNonStreamingWithLMStudio()
     {
-        Console.WriteLine($"Example using local {messageAPIPlatform}");
+        Console.WriteLine($"======== LM Studio - Chat Completion - {nameof(UsingKernelNonStreamingWithLMStudio)} ========");
         // Setup Llama2 as the model in LM Studio UI.
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: modelId,
+                modelId: "llama-2-7b-chat",
                 apiKey: null,
-                endpoint: new Uri(url))
+                endpoint: new Uri("http://localhost:12345/v1"))
             .Build();
 
         var prompt = @"Rewrite the text between triple backticks into a business mail. Use a professional tone, be clear and concise.
@@ -65,7 +62,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
     [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
     [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
-    public async Task LocalModel_StreamingExampleAsync(string messageAPIPlatform, string url, string modelId)
+    public async Task UsingKernelStreamingWithLMStudio(string messageAPIPlatform, string url, string modelId)
     {
         Console.WriteLine($"Example using local {messageAPIPlatform}");
 
