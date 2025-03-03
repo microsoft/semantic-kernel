@@ -355,7 +355,6 @@ jobs:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
-    environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
       MEMORY_CONCEPT_SAMPLE: "true"
