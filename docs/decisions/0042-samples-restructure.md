@@ -130,7 +130,7 @@ Cons:
 - More verbose structure adds extra friction to find the samples.
 - `KernelContent` or `Modalities` is a internal term that may not be clear for the customer
 - `Documentation` may be confused a documents only folder, which actually contains code samples used in documentation. (not clear message)
-- `Use Cases` may suggest an idea of real world use cases implemented, where in reality those are simple demostrations of a SK feature.
+- `Use Cases` may suggest an idea of real world use cases implemented, where in reality those are simple demonstrations of a SK feature.
 
 ## KernelSyntaxExamples Decomposition Options
 
@@ -449,7 +449,7 @@ Cons:
 
 ### KernelSyntaxExamples Decomposition Option 2 - Concept by Components Flattened Version
 
-Similar approach to Option 1, but with a flattened structure using a single level of folders to avoid deep nesting and complexity authough keeping easy to navigate around the componentized concepts.
+Similar approach to Option 1, but with a flattened structure using a single level of folders to avoid deep nesting and complexity although keeping easy to navigate around the componentized concepts.
 
 Large (Less files per folder):
 
