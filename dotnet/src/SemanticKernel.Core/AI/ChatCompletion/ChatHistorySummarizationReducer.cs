@@ -89,11 +89,17 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
+        var systemMessage = chatHistory.FirstOrDefault(l => l.Role == AuthorRole.System);
+
         // Identify where summary messages end and regular history begins
         int insertionPoint = chatHistory.LocateSummarizationBoundary(SummaryMetadataKey);
 
         // First pass to determine the truncation index
-        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount, insertionPoint);
+        int truncationIndex = chatHistory.LocateSafeReductionIndex(
+            this._targetCount,
+            this._thresholdCount,
+            insertionPoint,
+            hasSystemMessage: systemMessage is not null);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
@@ -104,17 +110,17 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 chatHistory.Extract(
                     this.UseSingleSummary ? 0 : insertionPoint,
                     truncationIndex,
-                    (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
+                    filter: (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try
             {
                 // Summarize
                 ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.System, this.SummarizationInstructions)];
-                ChatMessageContent summary = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
-                summary.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
+                ChatMessageContent summaryMessage = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
+                summaryMessage.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
                 // Assembly the summarized history
-                truncatedHistory = AssemblySummarizedHistory(summary);
+                truncatedHistory = AssemblySummarizedHistory(summaryMessage, systemMessage);
             }
             catch
             {
@@ -128,8 +134,13 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         return truncatedHistory;
 
         // Inner function to assemble the summarized history
-        IEnumerable<ChatMessageContent> AssemblySummarizedHistory(ChatMessageContent? summary)
+        IEnumerable<ChatMessageContent> AssemblySummarizedHistory(ChatMessageContent? summaryMessage, ChatMessageContent? systemMessage)
         {
+            if (systemMessage is not null)
+            {
+                yield return systemMessage;
+            }
+
             if (insertionPoint > 0 && !this.UseSingleSummary)
             {
                 for (int index = 0; index <= insertionPoint - 1; ++index)
@@ -138,9 +149,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 }
             }
 
-            if (summary != null)
+            if (summaryMessage is not null)
             {
-                yield return summary;
+                yield return summaryMessage;
             }
 
             for (int index = truncationIndex; index < chatHistory.Count; ++index)

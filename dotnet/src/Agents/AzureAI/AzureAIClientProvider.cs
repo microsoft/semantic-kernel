@@ -14,10 +14,17 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 public sealed class AzureAIClientProvider
 {
+    private AgentsClient? _agentsClient;
+
     /// <summary>
-    /// An active client instance.
+    /// Gets an active client instance.
     /// </summary>
     public AIProjectClient Client { get; }
+
+    /// <summary>
+    /// Gets an active assistant client instance.
+    /// </summary>
+    public AgentsClient AgentsClient => this._agentsClient ??= this.Client.GetAgentsClient();
 
     /// <summary>
     /// Configuration keys required for <see cref="AgentChannel"/> management.
@@ -31,11 +38,11 @@ public sealed class AzureAIClientProvider
     }
 
     /// <summary>
-    /// Produce a <see cref="AzureAIClientProvider"/>.
+    /// Produces a <see cref="AzureAIClientProvider"/>.
     /// </summary>
     /// <param name="connectionString">The Azure AI Foundry project connection string, in the form `endpoint;subscription_id;resource_group_name;project_name`.</param>
-    /// <param name="credential"> A credential used to authenticate to an Azure Service. </param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
+    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static AzureAIClientProvider FromConnectionString(
         string connectionString,
         TokenCredential credential,
@@ -50,7 +57,7 @@ public sealed class AzureAIClientProvider
     }
 
     /// <summary>
-    /// Directly provide a client instance.
+    /// Provides a client instance directly.
     /// </summary>
     public static AzureAIClientProvider FromClient(AIProjectClient client)
     {

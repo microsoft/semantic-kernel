@@ -28,12 +28,12 @@ from semantic_kernel.contents import (
 )
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase):
     """OnnxGenAI text completion service."""
 

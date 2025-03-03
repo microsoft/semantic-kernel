@@ -27,7 +27,7 @@ def actor_context():
         actor_client=MagicMock(),
     )
     kernel_mock = MagicMock()
-    actor = ProcessActor(runtime_context, actor_id, kernel=kernel_mock)
+    actor = ProcessActor(runtime_context, actor_id, kernel=kernel_mock, factories={})
 
     actor._state_manager = AsyncMock()
     actor._state_manager.try_add_state = AsyncMock(return_value=True)

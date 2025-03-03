@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import SUMMARY_METADATA_KEY
 from semantic_kernel.contents.history_reducer.chat_history_summarization_reducer import (
@@ -49,7 +49,6 @@ def test_summarization_reducer_init(mock_service):
     reducer = ChatHistorySummarizationReducer(
         service=mock_service,
         target_count=10,
-        service_id="my_service",
         threshold_count=5,
         summarization_instructions="Custom instructions",
         use_single_summary=False,
@@ -58,7 +57,6 @@ def test_summarization_reducer_init(mock_service):
 
     assert reducer.service == mock_service
     assert reducer.target_count == 10
-    assert reducer.service_id == "my_service"
     assert reducer.threshold_count == 5
     assert reducer.summarization_instructions == "Custom instructions"
     assert reducer.use_single_summary is False
@@ -72,7 +70,6 @@ def test_summarization_reducer_defaults(mock_service):
     assert reducer.summarization_instructions in reducer.summarization_instructions
     assert reducer.use_single_summary is True
     assert reducer.fail_on_error is True
-    assert reducer.service_id == DEFAULT_SERVICE_NAME
 
 
 def test_summarization_reducer_eq_and_hash(mock_service):
@@ -115,6 +112,7 @@ async def test_summarization_reducer_reduce_needed(mock_service):
     # Mock that the service will return a single summary message
     summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="This is a summary.")
     mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
 
     result = await reducer.reduce()
     assert result is not None, "We expect a shortened list with a new summary inserted."
@@ -122,6 +120,33 @@ async def test_summarization_reducer_reduce_needed(mock_service):
     assert any(msg.metadata.get(SUMMARY_METADATA_KEY) for msg in result), (
         "We expect to see a newly inserted summary message."
     )
+
+
+async def test_summarization_reducer_reduce_needed_auto(mock_service):
+    # Mock that the service will return a single summary message
+    summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="This is a summary.")
+    mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
+
+    messages = [
+        # A summary message (as in the original test)
+        ChatMessageContent(role=AuthorRole.SYSTEM, content="Existing summary", metadata={SUMMARY_METADATA_KEY: True}),
+        # Enough additional messages so total is > 4
+        ChatMessageContent(role=AuthorRole.USER, content="User says hello"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+    ]
+
+    reducer = ChatHistorySummarizationReducer(auto_reduce=True, service=mock_service, target_count=3, threshold_count=1)
+
+    for msg in messages:
+        await reducer.add_message_async(msg)
+        assert len(reducer.messages) <= 5, (
+            "We should auto-reduce after each message, we have one summary, and then 4 other messages."
+        )
 
 
 async def test_summarization_reducer_reduce_no_messages_to_summarize(mock_service):
@@ -196,6 +221,7 @@ async def test_summarization_reducer_private_summarize(mock_service):
 
     summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Mock Summary")
     mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
 
     actual_summary = await reducer._summarize(chat_messages)
     assert actual_summary is not None, "We should get a summary message back."

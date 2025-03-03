@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
-
-@experimental_class
+@experimental
 class RestApiExpectedResponse:
     """RestApiExpectedResponse."""
 

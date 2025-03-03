@@ -73,7 +73,7 @@ class AzureOpenAISettings(KernelBaseSettings):
     - api_version: str | None - The API version to use. The default value is "2024-02-01".
                 (Env var AZURE_OPENAI_API_VERSION)
     - token_endpoint: str - The token endpoint to use to retrieve the authentication token.
-                The default value is "https://cognitiveservices.azure.com".
+                The default value is "https://cognitiveservices.azure.com/.default".
                 (Env var AZURE_OPENAI_TOKEN_ENDPOINT)
     """
 
@@ -89,7 +89,7 @@ class AzureOpenAISettings(KernelBaseSettings):
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
     api_version: str = DEFAULT_AZURE_API_VERSION
-    token_endpoint: str = "https://cognitiveservices.azure.com"
+    token_endpoint: str = "https://cognitiveservices.azure.com/.default"
 
     def get_azure_openai_auth_token(self, token_endpoint: str | None = None) -> str | None:
         """Retrieve a Microsoft Entra Auth Token for a given token endpoint for the use with Azure OpenAI.
@@ -100,7 +100,7 @@ class AzureOpenAISettings(KernelBaseSettings):
         The `token_endpoint` argument takes precedence over the `token_endpoint` attribute.
 
         Args:
-            token_endpoint: The token endpoint to use. Defaults to `https://cognitiveservices.azure.com`.
+            token_endpoint: The token endpoint to use. Defaults to `https://cognitiveservices.azure.com/.default`.
 
         Returns:
             The Azure token or None if the token could not be retrieved.

@@ -12,22 +12,22 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 class Repo(BaseModel):
     id: int = Field(..., alias="id")
     name: str = Field(..., alias="full_name")
-    description: str | None = Field(None, alias="description")
+    description: str | None = Field(default=None, alias="description")
     url: str = Field(..., alias="html_url")
 
 
 class User(BaseModel):
     id: int = Field(..., alias="id")
     login: str = Field(..., alias="login")
-    name: str | None = Field(None, alias="name")
-    company: str | None = Field(None, alias="company")
+    name: str | None = Field(default=None, alias="name")
+    company: str | None = Field(default=None, alias="company")
     url: str = Field(..., alias="html_url")
 
 
 class Label(BaseModel):
     id: int = Field(..., alias="id")
     name: str = Field(..., alias="name")
-    description: str | None = Field(None, alias="description")
+    description: str | None = Field(default=None, alias="description")
 
 
 class Issue(BaseModel):
@@ -37,12 +37,12 @@ class Issue(BaseModel):
     title: str = Field(..., alias="title")
     state: str = Field(..., alias="state")
     labels: list[Label] = Field(..., alias="labels")
-    when_created: str | None = Field(None, alias="created_at")
-    when_closed: str | None = Field(None, alias="closed_at")
+    when_created: str | None = Field(default=None, alias="created_at")
+    when_closed: str | None = Field(default=None, alias="closed_at")
 
 
 class IssueDetail(Issue):
-    body: str | None = Field(None, alias="body")
+    body: str | None = Field(default=None, alias="body")
 
 
 # endregion

@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from functools import singledispatchmethod
 from html import unescape
-from typing import Any
+from typing import Any, TypeVar
 from xml.etree.ElementTree import Element, tostring  # nosec
 
 from defusedxml.ElementTree import XML, ParseError
-from pydantic import field_validator
+from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
@@ -19,56 +20,37 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
+_T = TypeVar("_T", bound="ChatHistory")
+
 
 class ChatHistory(KernelBaseModel):
     """This class holds the history of chat messages from a chat conversation.
 
-    Note: the constructor takes a system_message parameter, which is not part
-    of the class definition. This is to allow the system_message to be passed in
-    as a keyword argument, but not be part of the class definition.
+    Note: the system_message is added to the messages as a ChatMessageContent instance with role=AuthorRole.SYSTEM,
+    but updating it will not update the messages list.
 
-    Attributes:
-        messages (List[ChatMessageContent]): The list of chat messages in the history.
+    Args:
+        messages: The messages to add to the chat history.
+        system_message: A system message to add to the chat history, optional.
+            if passed, it is added to the messages
+            as a ChatMessageContent instance with role=AuthorRole.SYSTEM
+            before any other messages.
     """
 
-    messages: list[ChatMessageContent]
+    messages: list[ChatMessageContent] = Field(default_factory=list, kw_only=False)
+    system_message: str | None = Field(default=None, kw_only=False, repr=False)
 
-    def __init__(self, **data: Any):
-        """Initializes a new instance of the ChatHistory class.
-
-        Optionally incorporating a message and/or a system message at the beginning of the chat history.
-
-        This constructor allows for flexible initialization with chat messages and an optional messages or a
-        system message. If both 'messages' (a list of ChatMessageContent instances) and 'system_message' are
-        provided, the 'system_message' is prepended to the list of messages, ensuring it appears as the first
-        message in the history. If only 'system_message' is provided without any 'messages', the chat history is
-        initialized with the 'system_message' as its first item. If 'messages' are provided without a
-        'system_message', the chat history is initialized with the provided messages as is.
-
-        Note: The 'system_message' is not retained as part of the class's attributes; it's used during
-        initialization and then discarded. The rest of the keyword arguments are passed to the superclass
-        constructor and handled according to the Pydantic model's behavior.
-
-        Args:
-            **data: Arbitrary keyword arguments.
-                The constructor looks for two optional keys:
-                - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
-                - 'system_message' Optional[str]: An optional string representing a system-generated message to be
-                    included at the start of the chat history.
-
-        """
-        system_message_content = data.pop("system_message", None)
-
-        if system_message_content:
-            system_message = ChatMessageContent(role=AuthorRole.SYSTEM, content=system_message_content)
-
+    @model_validator(mode="before")
+    @classmethod
+    def _parse_system_message(cls, data: Any) -> Any:
+        """Parse the system_message and add it to the messages."""
+        if isinstance(data, dict) and (system_message := data.pop("system_message", None)):
+            msg = ChatMessageContent(role=AuthorRole.SYSTEM, content=system_message)
             if "messages" in data:
-                data["messages"] = [system_message] + data["messages"]
+                data["messages"] = [msg] + data["messages"]
             else:
-                data["messages"] = [system_message]
-        if "messages" not in data:
-            data["messages"] = []
-        super().__init__(**data)
+                data["messages"] = [msg]
+        return data
 
     @field_validator("messages", mode="before")
     @classmethod
@@ -85,76 +67,107 @@ class ChatHistory(KernelBaseModel):
 
     @singledispatchmethod
     def add_system_message(self, content: str | list[KernelContent], **kwargs) -> None:
-        """Add a system message to the chat history."""
+        """Add a system message to the chat history.
+
+        Args:
+            content: The content of the system message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_system_message.register
-    def add_system_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, content=content, **kwargs))
 
     @add_system_message.register(list)
-    def add_system_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, items=content, **kwargs))
 
     @singledispatchmethod
     def add_developer_message(self, content: str | list[KernelContent], **kwargs) -> None:
-        """Add a system message to the chat history."""
+        """Add a system message to the chat history.
+
+        Args:
+            content: The content of the developer message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_developer_message.register
-    def add_developer_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, content=content, **kwargs))
 
     @add_developer_message.register(list)
-    def add_developer_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.DEVELOPER, items=content, **kwargs))
 
     @singledispatchmethod
     def add_user_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add a user message to the chat history."""
+        """Add a user message to the chat history.
+
+        Args:
+            content: The content of the user message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+
+        """
         raise NotImplementedError
 
     @add_user_message.register
-    def add_user_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, content=content, **kwargs))
 
     @add_user_message.register(list)
-    def add_user_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, items=content, **kwargs))
 
     @singledispatchmethod
     def add_assistant_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add an assistant message to the chat history."""
+        """Add an assistant message to the chat history.
+
+        Args:
+            content: The content of the assistant message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_assistant_message.register
-    def add_assistant_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, content=content, **kwargs))
 
     @add_assistant_message.register(list)
-    def add_assistant_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, items=content, **kwargs))
 
     @singledispatchmethod
     def add_tool_message(self, content: str | list[KernelContent], **kwargs: Any) -> None:
-        """Add a tool message to the chat history."""
+        """Add a tool message to the chat history.
+
+        Args:
+            content: The content of the tool message, can be a string or a
+            list of KernelContent instances that are turned into a single ChatMessageContent.
+            **kwargs: Additional keyword arguments.
+        """
         raise NotImplementedError
 
     @add_tool_message.register
-    def add_tool_message_str(self, content: str, **kwargs: Any) -> None:
+    def _(self, content: str, **kwargs: Any) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, content=content, **kwargs))
 
     @add_tool_message.register(list)
-    def add_tool_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+    def _(self, content: list[KernelContent], **kwargs: Any) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, items=content, **kwargs))
 
@@ -245,6 +258,31 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
+    def clear(self) -> None:
+        """Clear the chat history."""
+        self.messages.clear()
+
+    def extend(self, messages: Iterable[ChatMessageContent]) -> None:
+        """Extend the chat history with a list of messages.
+
+        Args:
+            messages: The messages to add to the history.
+                Can be a list of ChatMessageContent instances or a ChatHistory itself.
+        """
+        self.messages.extend(messages)
+
+    def replace(self, messages: Iterable[ChatMessageContent]) -> None:
+        """Replace the chat history with a list of messages.
+
+        This calls clear() and then extend(messages=messages).
+
+        Args:
+            messages: The messages to add to the history.
+                Can be a list of ChatMessageContent instances or a ChatHistory itself.
+        """
+        self.clear()
+        self.extend(messages=messages)
+
     def to_prompt(self) -> str:
         """Return a string representation of the history."""
         chat_history_xml = Element(CHAT_HISTORY_TAG)
@@ -264,7 +302,7 @@ class ChatHistory(KernelBaseModel):
         return self.messages == other.messages
 
     @classmethod
-    def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
+    def from_rendered_prompt(cls: type[_T], rendered_prompt: str) -> _T:
         """Create a ChatHistory instance from a rendered prompt.
 
         Args:
@@ -305,12 +343,12 @@ class ChatHistory(KernelBaseModel):
             ValueError: If the ChatHistory instance cannot be serialized to JSON.
         """
         try:
-            return self.model_dump_json(indent=2, exclude_none=True)
+            return self.model_dump_json(exclude_none=True, indent=2)
         except Exception as e:  # pragma: no cover
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod
-    def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
+    def restore_chat_history(cls: type[_T], chat_history_json: str) -> _T:
         """Restores a ChatHistory instance from a JSON string.
 
         Args:
@@ -325,7 +363,7 @@ class ChatHistory(KernelBaseModel):
                 fails validation.
         """
         try:
-            return ChatHistory.model_validate_json(chat_history_json)
+            return cls(**json.loads(chat_history_json))
         except Exception as e:
             raise ContentInitializationError(f"Invalid JSON format: {e}")
 

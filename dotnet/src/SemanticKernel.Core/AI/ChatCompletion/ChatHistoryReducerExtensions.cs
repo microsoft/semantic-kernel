@@ -20,13 +20,24 @@ internal static class ChatHistoryReducerExtensions
     /// <param name="chatHistory">The source history</param>
     /// <param name="startIndex">The index of the first message to extract</param>
     /// <param name="finalIndex">The index of the last message to extract</param>
+    /// <param name="systemMessage">An optional system message content to include</param>
     /// <param name="filter">The optional filter to apply to each message</param>
-    public static IEnumerable<ChatMessageContent> Extract(this IReadOnlyList<ChatMessageContent> chatHistory, int startIndex, int? finalIndex = null, Func<ChatMessageContent, bool>? filter = null)
+    public static IEnumerable<ChatMessageContent> Extract(
+        this IReadOnlyList<ChatMessageContent> chatHistory,
+        int startIndex,
+        int? finalIndex = null,
+        ChatMessageContent? systemMessage = null,
+        Func<ChatMessageContent, bool>? filter = null)
     {
         int maxIndex = chatHistory.Count - 1;
         if (startIndex > maxIndex)
         {
             yield break;
+        }
+
+        if (systemMessage is not null)
+        {
+            yield return systemMessage;
         }
 
         finalIndex ??= maxIndex;
@@ -84,9 +95,17 @@ internal static class ChatHistoryReducerExtensions
     /// This is useful when messages have been injected that are not part of the raw dialog
     /// (such as summarization).
     /// </param>
+    /// <param name="hasSystemMessage">Indicates whether chat history contains system message.</param>
     /// <returns>An index that identifies the starting point for a reduced history that does not orphan sensitive content.</returns>
-    public static int LocateSafeReductionIndex(this IReadOnlyList<ChatMessageContent> chatHistory, int targetCount, int? thresholdCount = null, int offsetCount = 0)
+    public static int LocateSafeReductionIndex(
+        this IReadOnlyList<ChatMessageContent> chatHistory,
+        int targetCount,
+        int? thresholdCount = null,
+        int offsetCount = 0,
+        bool hasSystemMessage = false)
     {
+        targetCount -= hasSystemMessage ? 1 : 0;
+
         // Compute the index of the truncation threshold
         int thresholdIndex = chatHistory.Count - (thresholdCount ?? 0) - targetCount;
 

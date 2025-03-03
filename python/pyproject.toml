@@ -34,7 +34,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai ~= 1.0",
+    "openai ~= 1.61",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     # OpenTelemetry
@@ -45,12 +45,17 @@ dependencies = [
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
+    "scipy>=1.15.1",
 ]
 
 ### Optional dependencies
 [project.optional-dependencies]
+autogen = [
+    "autogen-agentchat >= 0.2, <0.4"
+]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
+    "azure-ai-projects >= 1.0.0b5",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
@@ -60,17 +65,17 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform ~= 1.60",
-    "google-generativeai ~= 0.7"
+    "google-cloud-aiplatform == 1.80.0",
+    "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 4.0",
-    "torch == 2.5.1"
+    "torch == 2.6.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.11",
-    "motor >= 3.3.2,< 3.7.0"
+    "pymongo >= 4.8.0, < 4.12",
+    "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
@@ -86,7 +91,7 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5"
+    "onnxruntime-genai ~= 0.5; python_version < '3.13'"
 ]
 anthropic = [
     "anthropic ~= 0.32"
@@ -106,17 +111,17 @@ redis = [
     "redisvl >= 0.3.6",
 ]
 usearch = [
-    "usearch ~= 2.9",
+    "usearch ~= 2.16",
     "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
-    "weaviate-client>=4.7,<5.0",
+    "weaviate-client>=4.10,<5.0",
 ]
 pandas = [
     "pandas ~= 2.2"
 ]
 aws = [
-    "boto3>=1.28.57",
+    "boto3>=1.36.4,<1.38.0",
 ]
 dapr = [
     "dapr>=1.14.0",
@@ -138,7 +143,7 @@ dev-dependencies = [
     "snoop ~= 0.4",
     "mypy >= 1.10",
     "types-PyYAML ~= 6.0.12.20240311",
-    "ruff ~= 0.7",
+    "ruff ~= 0.9"
 ]
 environments = [
     "sys_platform == 'darwin'",

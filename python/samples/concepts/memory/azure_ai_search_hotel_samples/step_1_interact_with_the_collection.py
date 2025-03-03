@@ -25,6 +25,9 @@ from semantic_kernel.data import (
 
 first_run = False
 
+# Note: you may need to update this `collection_name` depending upon how your index is named.
+COLLECTION_NAME = "hotels-sample-index"
+
 
 async def add_vectors(collection: AzureAISearchCollection, vectorizer: VectorStoreRecordUtils):
     """This is a simple function that uses the VectorStoreRecordUtils to add vectors to the records in the collection.
@@ -53,15 +56,17 @@ async def main(query: str, first_run: bool = False):
     vectorizer = VectorStoreRecordUtils(kernel)
     # Create the Azure AI Search collection
     collection = AzureAISearchCollection[HotelSampleClass](
-        collection_name="hotels-sample-index", data_model_type=HotelSampleClass
+        collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass
     )
     # Check if the collection exists.
     if not await collection.does_collection_exist():
         raise ValueError(
             "Collection does not exist, please create using the "
             "Azure AI Search portal wizard -> Import Data -> Samples -> hotels-sample."
-            "During creation adopt the schema to add the description_vector and description_fr_vector fields."
+            "During creation adapt the index schema to add the description_vector and description_fr_vector fields."
+            "You may need to rename other fields to match the data model."
             "Then run this sample with `first_run=True` to add the vectors."
+            "Refer to the README for more information."
         )
 
     # If it is the first run and there are no vectors, add them.

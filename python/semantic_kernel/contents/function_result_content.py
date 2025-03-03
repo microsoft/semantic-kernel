@@ -12,6 +12,7 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if TYPE_CHECKING:
@@ -194,10 +195,11 @@ class FunctionResultContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function result content."""
+        hashable_result = make_hashable(self.result)
         return hash((
             self.tag,
             self.id,
-            tuple(self.result) if isinstance(self.result, list) else self.result,
+            hashable_result,
             self.name,
             self.function_name,
             self.plugin_name,

@@ -224,6 +224,27 @@ public class ChatHistorySummarizationReducerTests
         VerifySummarization(messages[1]);
     }
 
+    /// <summary>
+    /// Validate history reduced and system message preserved when source history exceeds target threshold.
+    /// </summary>
+    [Fact]
+    public async Task VerifySystemMessageIsNotReducedAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20, includeSystemMessage: true).ToArray();
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
+
+        // Act
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        // Assert
+        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 11);
+        VerifySummarization(messages[1]);
+
+        Assert.Contains(messages, m => m.Role == AuthorRole.System);
+    }
+
     private static ChatMessageContent[] VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
     {
         Assert.NotNull(reducedHistory);

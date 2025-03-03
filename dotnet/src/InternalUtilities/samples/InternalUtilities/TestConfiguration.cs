@@ -48,6 +48,9 @@ public sealed class TestConfiguration
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
+    public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
+    public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+    public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -263,6 +266,11 @@ public sealed class TestConfiguration
         public string DatabaseName { get; set; }
     }
 
+    public class ApplicationInsightsConfig
+    {
+        public string ConnectionString { get; set; }
+    }
+
     /// <summary>
     /// Graph API connector configuration model.
     /// </summary>
@@ -308,5 +316,17 @@ public sealed class TestConfiguration
             this.TenantId = tenantId;
             this.RedirectUri = redirectUri;
         }
+    }
+
+    public class CrewAIConfig
+    {
+        public string Endpoint { get; set; }
+        public string AuthToken { get; set; }
+    }
+
+    public class BedrockAgentConfig
+    {
+        public string AgentResourceRoleArn { get; set; }
+        public string FoundationModel { get; set; }
     }
 }
