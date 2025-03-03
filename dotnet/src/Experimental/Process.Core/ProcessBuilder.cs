@@ -254,7 +254,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
     public ProcessProxyBuilder AddProxyStep(IReadOnlyList<string> externalTopics, string? name = null, IReadOnlyList<string>? aliases = null)
     {
-        Verify.NotNullOrWhiteSpace(name, nameof(name));
         ProcessProxyBuilder proxyBuilder = new(externalTopics, name ?? nameof(KernelProxyStep));
 
         return this.AddStep(proxyBuilder, aliases);
