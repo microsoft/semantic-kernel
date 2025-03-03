@@ -56,27 +56,21 @@ class NewsPlugin:
         """Get recent news articles about a company"""
         return [
             {
-                "title": "Tesla Expands Cybertruck Production",
-                "date": "2024-03-20",
+                "title": "Microsoft's Quantum Breakthrough",
+                "date": "2025-02-25",
                 "summary": (
-                    "Tesla ramps up Cybertruck manufacturing capacity at "
-                    "Gigafactory Texas, aiming to meet strong demand."
+                    "Microsoft’s Majorana chips mark a groundbreaking quantum computing breakthrough, "
+                    "potentially bringing practical quantum computers closer to reality."
                 ),
             },
             {
-                "title": "Tesla FSD Beta Shows Promise",
-                "date": "2024-03-19",
+                "title": "MSFT Earnings Release FY25 Q2",
+                "date": "2025-01-29",
                 "summary": (
-                    "Latest Full Self-Driving beta demonstrates significant "
-                    "improvements in urban navigation and safety features."
-                ),
-            },
-            {
-                "title": "Model Y Dominates Global EV Sales",
-                "date": "2024-03-18",
-                "summary": (
-                    "Tesla's Model Y becomes best-selling electric vehicle "
-                    "worldwide, capturing significant market share."
+                    "Revenue was $69.6 billion and increased 12%."
+                    "Operating income was $31.7 billion and increased 17% (up 16% in constant currency)"
+                    "Net income was $24.1 billion and increased 10%"
+                    "Diluted earnings per share was $3.23 and increased 10%"
                 ),
             },
         ]
@@ -88,7 +82,7 @@ class StockPlugin:
     @kernel_function(description="Get stock data.")
     def get_stock_data(self, symbol: str):
         """Get stock data for a given ticker"""
-        return {"price": 180.25, "volume": 1000000, "pe_ratio": 65.4, "market_cap": "700B"}
+        return {"price": 396.25, "volume": "32.85 Mil", "market_cap": "2951.22 Bil"}
 
 
 class ApprovalTerminationStrategy(TerminationStrategy):
@@ -228,7 +222,7 @@ async def main():
         termination_strategy=ApprovalTerminationStrategy(maximum_iterations=10),
     )
 
-    input = "Conduct market research for TSLA stock"
+    input = "Conduct market research for MSFT stock"
     await chat.add_chat_message(input)
     print(f"# {AuthorRole.USER}: '{input}'")
 
