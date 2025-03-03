@@ -8,7 +8,7 @@ This sample demonstrates how to build a conversational chatbot using Semantic Ke
 
 To run this sample a environment with keys for the chosen chat service is required. In line 61 you can change the model used. This sample uses a temporary file to store the chat history, so no additional setup is required.
 
-## [Store Chat History in Cosmos DB](./store_chat_history_in_cosmos_db.py)
+## [Store Chat History in Cosmos DB](./store_chat_history_in_cosmosdb.py)
 
 This a more complex version of the sample above, it uses Azure CosmosDB NoSQL to store the chat messages.
 
