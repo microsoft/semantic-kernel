@@ -17,16 +17,19 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
-
-        // Instructions, Name and Description properties defined via the config.
+        // Instructions, Name and Description properties defined via the PromptTemplateConfig.
         Assistant definition = await this.AssistantClient.CreateAssistantFromTemplateAsync(this.Model, templateConfig, metadata: SampleMetadata);
-        OpenAIAssistantAgent agent = new(definition, this.AssistantClient)
+        OpenAIAssistantAgent agent = new(
+            definition,
+            this.AssistantClient,
+            templateFactory: new KernelPromptTemplateFactory(),
+            templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
             Arguments =
             {
                 { "topic", "Dog" },
-                { "length", "3" },
-            },
+                { "length", "3" }
+            }
         };
 
         // Create a thread for the agent conversation.

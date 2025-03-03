@@ -23,9 +23,6 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// Gets the instructions for the agent (optional).
     /// </summary>
-    /// <remarks>
-    /// Instructions can be formatted in "semantic-kernel" template format (<see cref="KernelPromptTemplateFactory"/>).
-    /// </remarks>
     public string? Instructions { get; init; }
 
     /// <summary>
@@ -39,7 +36,7 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
-    public IPromptTemplate? Template { get; protected set; }
+    protected IPromptTemplate? Template { get; set; }
 
     /// <inheritdoc/>
     protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
@@ -53,18 +50,13 @@ public abstract class KernelAgent : Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        // If <see cref="Template"/> is not set, default instructions may be treated as "semantic-kernel" template.
-        if (this.Template == null)
+        if (this.Template is null)
         {
-            if (string.IsNullOrWhiteSpace(this.Instructions))
-            {
-                return null;
-            }
-
-            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory);
-            this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
+            // Use the instructions as-is
+            return this.Instructions;
         }
 
+        // Use the provided template as the instructions
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 

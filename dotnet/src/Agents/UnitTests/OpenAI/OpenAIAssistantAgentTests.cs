@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -77,10 +78,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantCapabilities capabilities = new("testmodel");
 
         // Act and Assert
-        await this.VerifyAgentTemplateAsync(capabilities, templateConfig);
-
-        // Act and Assert
         await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new KernelPromptTemplateFactory());
+        await Assert.ThrowsAsync<KernelException>(async () => await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new HandlebarsPromptTemplateFactory()));
     }
 
     /// <summary>
@@ -734,7 +733,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private async Task VerifyAgentTemplateAsync(
         OpenAIAssistantCapabilities capabilities,
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null)
+        IPromptTemplateFactory templateFactory)
     {
         this.SetupResponse(HttpStatusCode.OK, capabilities, templateConfig);
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// </summary>
 /// <param name="function">A <see cref="KernelFunction"/> used for selection criteria.</param>
 /// <param name="kernel">A kernel instance with services for function execution.</param>
+[Experimental("SKEXP0110")]
 public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel kernel) : SelectionStrategy
 {
     /// <summary>

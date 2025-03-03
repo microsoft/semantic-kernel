@@ -55,7 +55,9 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
             """
             Write a one verse poem on the requested topic in the styles of {{$style}}.
             Always state the requested style of the poem.
-            """);
+            """,
+            PromptTemplateConfig.SemanticKernelTemplateFormat,
+            new KernelPromptTemplateFactory());
     }
 
     [Fact]
@@ -84,8 +86,8 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
 
     private async Task InvokeAssistantAgentWithTemplateAsync(
         string instructionTemplate,
-        string? templateFormat = null,
-        IPromptTemplateFactory? templateFactory = null)
+        string templateFormat,
+        IPromptTemplateFactory templateFactory)
     {
         PromptTemplateConfig config = new()
         {
@@ -101,7 +103,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
                 metadata: SampleMetadata);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, plugins: null, config, templateFactory)
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, plugins: null, templateFactory, templateFormat)
         {
             Arguments =
             {

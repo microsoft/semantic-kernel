@@ -45,8 +45,8 @@ public class BedrockAgent : KernelAgent
         AmazonBedrockAgentRuntimeClient? runtimeClient = null)
     {
         this.AgentModel = agentModel;
-        this.Client ??= new AmazonBedrockAgentClient();
-        this.RuntimeClient ??= new AmazonBedrockAgentRuntimeClient();
+        this.Client = client ?? new AmazonBedrockAgentClient();
+        this.RuntimeClient = runtimeClient ?? new AmazonBedrockAgentRuntimeClient();
 
         this.Id = agentModel.AgentId;
         this.Name = agentModel.AgentName;
@@ -106,7 +106,7 @@ public class BedrockAgent : KernelAgent
         KernelArguments? arguments,
         CancellationToken cancellationToken = default)
     {
-        return invokeAgentRequest.StreamingConfigurations != null && invokeAgentRequest.StreamingConfigurations.StreamFinalResponse
+        return invokeAgentRequest.StreamingConfigurations != null && (invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false)
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
             : ActivityExtensions.RunWithActivityAsync(
                 () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -202,7 +202,7 @@ public class BedrockAgent : KernelAgent
                 StreamFinalResponse = true,
             };
         }
-        else if (!invokeAgentRequest.StreamingConfigurations.StreamFinalResponse)
+        else if (!(invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false))
         {
             throw new ArgumentException("The streaming configuration must have StreamFinalResponse set to true.");
         }

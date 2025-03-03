@@ -34,8 +34,7 @@ from samples.concepts.images.image_generation import main as image_generation
 from samples.concepts.local_models.lm_studio_chat_completion import main as lm_studio_chat_completion
 from samples.concepts.local_models.lm_studio_text_embedding import main as lm_studio_text_embedding
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
-from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
-from samples.concepts.memory.memory import main as memory
+from samples.concepts.memory.simple_memory import main as simple_memory
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -48,10 +47,22 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from samples.getting_started_with_agents.chat_completion.step1_agent import main as step1_agent
-from samples.getting_started_with_agents.chat_completion.step2_plugins import main as step2_plugins
-from samples.getting_started_with_agents.chat_completion.step3_chat import main as step3_chat
-from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step7_assistant
+from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
+    main as step1_chat_completion_agent_simple,
+)
+from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_with_kernel import (
+    main as step2_chat_completion_agent_with_kernel,
+)
+from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_plugin_simple import (
+    main as step3_chat_completion_agent_plugin_simple,
+)
+from samples.getting_started_with_agents.chat_completion.step4_chat_completion_agent_plugin_with_kernel import (
+    main as step4_chat_completion_agent_plugin_with_kernel,
+)
+from samples.getting_started_with_agents.chat_completion.step5_chat_completion_agent_group_chat import (
+    main as step5_chat_completion_agent_group_chat,
+)
+from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant
 from tests.utils import retry
 
 # These environment variable names are used to control which samples are run during integration testing.
@@ -230,15 +241,9 @@ concepts = [
         ),
     ),
     param(
-        azure_cognitive_search_memory,
+        simple_memory,
         [],
-        id="azure_cognitive_search_memory",
-        marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
-    ),
-    param(
-        memory,
-        ["What are my investments?", "exit"],
-        id="memory",
+        id="simple_memory",
         marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
     ),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
@@ -273,33 +278,49 @@ concepts = [
         ),
     ),
     param(
-        step1_agent,
+        step1_chat_completion_agent_simple,
         [],
-        id="step1_agent",
+        id="step1_chat_completion_agent_simple",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
     ),
     param(
-        step2_plugins,
+        step2_chat_completion_agent_with_kernel,
         [],
-        id="step2_agent_plugins",
+        id="step2_chat_completion_agent_with_kernel",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
     ),
     param(
-        step3_chat,
+        step3_chat_completion_agent_plugin_simple,
         [],
-        id="step3_chat",
+        id="step3_chat_completion_agent_plugin_simple",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
     ),
     param(
-        step7_assistant,
+        step4_chat_completion_agent_plugin_with_kernel,
         [],
-        id="step7_assistant",
+        id="step4_chat_completion_agent_plugin_with_kernel",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        step5_chat_completion_agent_group_chat,
+        [],
+        id="step5_chat_completion_agent_group_chat",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        step1_openai_assistant,
+        [],
+        id="step1_openai_assistant",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

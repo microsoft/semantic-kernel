@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
     from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 
 
-@experimental_class
+@experimental
 class ProcessInterface(ActorInterface, ABC):
     """Abstract base class for a process that follows the ActorInterface."""
 

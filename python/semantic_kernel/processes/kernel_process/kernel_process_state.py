@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class KernelProcessState(KernelProcessStepState):
     """The state of a kernel process."""
 

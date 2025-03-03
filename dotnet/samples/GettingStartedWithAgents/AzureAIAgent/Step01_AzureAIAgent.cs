@@ -19,16 +19,19 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
-
+        // Instructions, Name and Description properties defined via the PromptTemplateConfig.
         Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
-        // Instructions, Name and Description properties defined via the config.
-        AzureAIAgent agent = new(definition, this.AgentsClient)
+        AzureAIAgent agent = new(
+            definition,
+            this.AgentsClient,
+            templateFactory: new KernelPromptTemplateFactory(),
+            templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
             Arguments =
             {
                 { "topic", "Dog" },
-                { "length", "3" },
-            },
+                { "length", "3" }
+            }
         };
 
         // Create a thread for the agent conversation.
