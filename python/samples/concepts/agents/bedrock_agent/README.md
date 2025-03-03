@@ -36,7 +36,6 @@ Follow this [guide](https://boto3.amazonaws.com/v1/documentation/api/latest/guid
     )
     ```
 
-
 ## Samples
 
 | Sample | Description |
