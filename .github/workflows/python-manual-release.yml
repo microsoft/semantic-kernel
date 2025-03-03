@@ -7,6 +7,10 @@ on:
         description: "Tag to release"
         required: true
 
+permissions:
+  contents: read
+  id-token: "write"
+
 jobs:
   python-build-assets:
     name: Trigger ADO Pipeline for Python Release
