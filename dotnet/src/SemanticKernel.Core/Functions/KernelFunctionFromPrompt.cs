@@ -7,11 +7,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -252,6 +255,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             IChatCompletionService chatCompletion => await this.GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             ITextGenerationService textGeneration => await this.GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            IChatClient chatClient => await this.GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
@@ -271,7 +275,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             isStreaming: true,
             cancellationToken).ConfigureAwait(false);
 
-        IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
+        IAsyncEnumerable<object>? asyncReference = null;
 
         if (result.AIService is IChatCompletionService chatCompletion)
         {
@@ -281,32 +285,114 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
+        else if (result.AIService is IChatClient chatClient)
+        {
+            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings.ToChatOptions(kernel), cancellationToken);
+        }
         else
         {
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)}, {typeof(ITextGenerationService)}, and {typeof(IChatClient)}");
         }
 
-        await foreach (var content in asyncReference.ConfigureAwait(false))
+        await foreach (object content in asyncReference.ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            yield return typeof(TResult) switch
+            if (content is StreamingKernelContent kernelContent)
             {
-                _ when typeof(TResult) == typeof(string)
-                    => (TResult)(object)content.ToString(),
+                if (typeof(TResult) == typeof(string))
+                {
+                    yield return (TResult)(object)kernelContent.ToString();
+                    continue;
+                }
 
-                _ when content is TResult contentAsT
-                    => contentAsT,
+                if (content is TResult contentAsT)
+                {
+                    yield return contentAsT;
+                    continue;
+                }
 
-                _ when content.InnerContent is TResult innerContentAsT
-                    => innerContentAsT,
+                if (kernelContent.InnerContent is TResult innerContentAsT)
+                {
+                    yield return innerContentAsT;
+                    continue;
+                }
 
-                _ when typeof(TResult) == typeof(byte[])
-                    => (TResult)(object)content.ToByteArray(),
+                if (typeof(TResult) == typeof(byte[]))
+                {
+                    if (content is StreamingKernelContent byteKernelContent)
+                    {
+                        yield return (TResult)(object)byteKernelContent.ToByteArray();
+                        continue;
+                    }
+                }
 
-                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
-            };
+                // Attempting to use the new Microsoft Extensions AI types will trigger automatic conversion of SK chat contents.
+                if (typeof(ChatResponseUpdate).IsAssignableFrom(typeof(TResult))
+                    && content is StreamingChatMessageContent streamingChatMessageContent)
+                {
+                    yield return (TResult)(object)streamingChatMessageContent.ToChatResponseUpdate();
+                    continue;
+                }
+            }
+            else if (content is ChatResponseUpdate chatUpdate)
+            {
+                if (typeof(TResult) == typeof(string))
+                {
+                    yield return (TResult)(object)chatUpdate.ToString();
+                    continue;
+                }
+
+                if (chatUpdate is TResult contentAsT)
+                {
+                    yield return contentAsT;
+                    continue;
+                }
+
+                if (chatUpdate.Contents is TResult contentListsAsT)
+                {
+                    yield return contentListsAsT;
+                    continue;
+                }
+
+                if (chatUpdate.RawRepresentation is TResult rawRepresentationAsT)
+                {
+                    yield return rawRepresentationAsT;
+                    continue;
+                }
+
+                if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(TResult)))
+                {
+                    // Return the first matching content type of an update if any
+                    var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
+                    if (updateContent is not null)
+                    {
+                        yield return (TResult)(object)updateContent;
+                        continue;
+                    }
+                }
+
+                if (typeof(TResult) == typeof(byte[]))
+                {
+                    DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent && dataContent.Data.HasValue);
+                    if (dataContent is not null)
+                    {
+                        yield return (TResult)(object)dataContent.Data!.Value.ToArray();
+                        continue;
+                    }
+                }
+
+                // Avoid breaking changes this transformation will be dropped once we migrate fully to Microsoft Extensions AI abstractions.
+                // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
+                if (typeof(StreamingKernelContent).IsAssignableFrom(typeof(TResult)))
+                {
+                    yield return (TResult)(object)chatUpdate.ToStreamingChatMessageContent();
+                    continue;
+                }
+            }
+
+            throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are derivations of {typeof(StreamingKernelContent)}, {typeof(StreamingKernelContent)}, string, byte[], or a matching type for {typeof(StreamingKernelContent)}.{nameof(StreamingKernelContent.InnerContent)} property");
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
@@ -450,13 +536,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
 
     /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<int>(
+    private static readonly Histogram<long> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<long>(
         name: "semantic_kernel.function.invocation.token_usage.prompt",
         unit: "{token}",
         description: "Measures the prompt token usage");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<int>(
+    private static readonly Histogram<long> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<long>(
         name: "semantic_kernel.function.invocation.token_usage.completion",
         unit: "{token}",
         description: "Measures the completion token usage");
@@ -481,7 +567,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         var serviceSelector = kernel.ServiceSelector;
 
-        IAIService? aiService;
+        IAIService? aiService = null;
         string renderedPrompt = string.Empty;
 
         // Try to use IChatCompletionService.
@@ -491,12 +577,41 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             aiService = chatService;
         }
-        else
+        else if (serviceSelector.TrySelectAIService<ITextGenerationService>(
+            kernel, this, arguments,
+            out ITextGenerationService? textService, out executionSettings))
         {
-            // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
-            // throwing if it's not available.
-            (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+            aiService = textService;
         }
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        else if (serviceSelector is IChatClientSelector chatClientServiceSelector
+            && chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
+        {
+            // Resolves a ChatClient as AIService so it don't need to implement IChatCompletionService.
+            aiService = new ChatClientAIService(chatClient);
+        }
+
+        if (aiService is null)
+        {
+            var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(ITextGenerationService)).Append(", ").Append(typeof(IChatClient)).Append('.');
+            if (this.ExecutionSettings is not null)
+            {
+                string serviceIds = string.Join("|", this.ExecutionSettings.Keys);
+                if (!string.IsNullOrEmpty(serviceIds))
+                {
+                    message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
+                }
+
+                string modelIds = string.Join("|", this.ExecutionSettings.Values.Select(model => model.ModelId));
+                if (!string.IsNullOrEmpty(modelIds))
+                {
+                    message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
+                }
+            }
+
+            throw new KernelException(message.ToString());
+        }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         Verify.NotNull(aiService);
 
@@ -615,6 +730,46 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    private void CaptureUsageDetails(string? modelId, UsageDetails? usageDetails, ILogger logger)
+    {
+        if (!logger.IsEnabled(LogLevel.Information) &&
+            !s_invocationTokenUsageCompletion.Enabled &&
+            !s_invocationTokenUsagePrompt.Enabled)
+        {
+            // Bail early to avoid unnecessary work.
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            logger.LogInformation("No model ID provided to capture usage details.");
+            return;
+        }
+
+        if (usageDetails is null)
+        {
+            logger.LogInformation("No usage details was provided.");
+            return;
+        }
+
+        if (usageDetails.InputTokenCount.HasValue && usageDetails.OutputTokenCount.HasValue)
+        {
+            TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
+            s_invocationTokenUsagePrompt.Record(usageDetails.InputTokenCount.Value, in tags);
+            s_invocationTokenUsageCompletion.Record(usageDetails.OutputTokenCount.Value, in tags);
+        }
+        else
+        {
+            logger.LogWarning("Unable to get token details from model result.");
+        }
+    }
+
     private async Task<FunctionResult> GetChatCompletionResultAsync(
         IChatCompletionService chatCompletion,
         Kernel kernel,
@@ -644,6 +799,40 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         // Otherwise, return multiple results
         return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+    }
+
+    private async Task<FunctionResult> GetChatClientResultAsync(
+       IChatClient chatClient,
+       Kernel kernel,
+       PromptRenderingResult promptRenderingResult,
+       CancellationToken cancellationToken)
+    {
+        var chatResponse = await chatClient.GetResponseAsync(
+            promptRenderingResult.RenderedPrompt,
+            promptRenderingResult.ExecutionSettings,
+            kernel,
+            cancellationToken).ConfigureAwait(false);
+
+        if (chatResponse.Choices is { Count: 0 })
+        {
+            return new FunctionResult(this, chatResponse)
+            {
+                Culture = kernel.Culture,
+                RenderedPrompt = promptRenderingResult.RenderedPrompt
+            };
+        }
+
+        var modelId = chatClient.GetService<ChatClientMetadata>()?.ModelId;
+
+        // Usage details are global and duplicated for each chat message content, use first one to get usage information
+        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.ModelId, chatResponse.Usage, this._logger);
+
+        return new FunctionResult(this, chatResponse)
+        {
+            Culture = kernel.Culture,
+            RenderedPrompt = promptRenderingResult.RenderedPrompt,
+            Metadata = chatResponse.AdditionalProperties,
+        };
     }
 
     private async Task<FunctionResult> GetTextGenerationResultAsync(
