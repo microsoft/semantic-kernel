@@ -35,6 +35,6 @@ public class KernelProcessProxyTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(name: null!, "vTest", "testid"));
         Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState(name: "testname", null!, "testid"));
-        Assert.Throws<ArgumentNullException>(() => new KernelProcessStepState("testname", "vTest", null!));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessProxy(new KernelProcessStepState("testname", "vTest", null!), []));
     }
 }
