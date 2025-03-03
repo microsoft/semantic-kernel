@@ -8,15 +8,13 @@ on:
         required: true
 
 permissions:
-  contents: read
-  id-token: "write"
+  contents: write
+  id-token: write
 
 jobs:
   python-build-assets:
     name: Trigger ADO Pipeline for Python Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Azure Login
         uses: azure/login@v2
@@ -28,4 +26,4 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az pipelines run --folder-path "sk-python" --name ${{ secrets.ADO_PYTHON_RELEASE_PIPELINE_NAME }} --org ${{ secrets.ADO_PROJECT_URL }} --variables tag=${{ github.event.release.tag_name }} delay=0
+            az pipelines run --folder-path "sk-python" --name ${{ secrets.ADO_PYTHON_RELEASE_PIPELINE_NAME }} --org ${{ secrets.ADO_PROJECT_URL }} --variables tag=${{ inputs.tag }} delay=0
