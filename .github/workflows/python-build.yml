@@ -39,5 +39,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Start DevOps pipeline
-        run: |
-        az pipelines run --folder-path "sk-python" --name ${{ secrets.ADO_PYTHON_RELEASE_PIPELINE_NAME }} --org ${{ secrets.ADO_PROJECT_URL }} --variables tag=${{ github.event.release.tag_name }} delay=0
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az pipelines run --folder-path "sk-python" --name ${{ secrets.ADO_PYTHON_RELEASE_PIPELINE_NAME }} --org ${{ secrets.ADO_PROJECT_URL }} --variables tag=${{ github.event.release.tag_name }} delay=0
