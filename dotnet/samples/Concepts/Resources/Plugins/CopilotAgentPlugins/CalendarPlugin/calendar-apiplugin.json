@@ -10,10 +10,17 @@
     "conversation_starters": [
       {
         "text": "List events"
+      },
+      {
+        "text": "Create new navigation property to events for me"
       }
     ]
   },
   "functions": [
+    {
+      "name": "me_calendar_CreateEvents",
+      "description": "Create new navigation property to events for me"
+    },
     {
       "name": "me_calendar_ListEvents",
       "description": "Retrieve a list of events in a calendar. The calendar can be one for a user, or the default calendar of a Microsoft 365 group. The list of events contains single instance meetings and series masters. To get expanded event instances, you can get the calendar view, or\nget the instances of an event."
@@ -29,7 +36,8 @@
         "url": "calendar-openapi.yml"
       },
       "run_for_functions": [
-        "me_calendar_ListEvents"
+        "me_calendar_ListEvents",
+        "me_calendar_CreateEvents"
       ]
     }
   ]
