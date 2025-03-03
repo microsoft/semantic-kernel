@@ -6,10 +6,10 @@ from pydantic import SecretStr
 
 from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME, DEFAULT_SEARCH_INDEX_NAME
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class MongoDBAtlasSettings(KernelBaseSettings):
     """MongoDB Atlas model settings.
 

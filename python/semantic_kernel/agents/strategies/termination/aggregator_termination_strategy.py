@@ -9,13 +9,13 @@ from pydantic import Field
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 
-@experimental_class
+@experimental
 class AggregateTerminationCondition(str, Enum):
     """The condition for terminating the aggregation process."""
 
@@ -23,7 +23,7 @@ class AggregateTerminationCondition(str, Enum):
     ANY = "Any"
 
 
-@experimental_class
+@experimental
 class AggregatorTerminationStrategy(KernelBaseModel):
     """A strategy that aggregates multiple termination strategies."""
 

@@ -14,39 +14,22 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar, Deque, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, ClassVar, Deque
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.exceptions import ServiceInvalidTypeError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 
-@experimental_class
-@runtime_checkable
-class ChatHistoryAgentProtocol(Protocol):
-    """Contract for an agent that utilizes a ChatHistoryChannel."""
-
-    @abstractmethod
-    def invoke(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
-        """Invoke the chat history agent protocol."""
-        ...
-
-    @abstractmethod
-    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
-        """Invoke the chat history agent protocol in streaming mode."""
-        ...
-
-
-@experimental_class
+@experimental
 class ChatHistoryChannel(AgentChannel, ChatHistory):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
 
@@ -73,12 +56,6 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         Returns:
             An async iterable of ChatMessageContent.
         """
-        if not isinstance(agent, ChatHistoryAgentProtocol):
-            id = getattr(agent, "id", "")
-            raise ServiceInvalidTypeError(
-                f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
-            )
-
         message_count = len(self.messages)
         mutated_history = set()
         message_queue: Deque[ChatMessageContent] = deque()
@@ -116,7 +93,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     @override
     async def invoke_stream(
         self, agent: "Agent", messages: list[ChatMessageContent], **kwargs: Any
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
 
         Args:
@@ -127,12 +104,6 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         Returns:
             An async iterable of ChatMessageContent.
         """
-        if not isinstance(agent, ChatHistoryAgentProtocol):
-            id = getattr(agent, "id", "")
-            raise ServiceInvalidTypeError(
-                f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
-            )
-
         message_count = len(self.messages)
 
         async for response_message in agent.invoke_stream(self):

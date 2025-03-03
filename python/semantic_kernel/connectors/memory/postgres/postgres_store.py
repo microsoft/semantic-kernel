@@ -10,7 +10,7 @@ from psycopg_pool import AsyncConnectionPool
 from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.postgres.postgres_memory_store import DEFAULT_SCHEMA
 from semantic_kernel.data import VectorStore, VectorStoreRecordCollection, VectorStoreRecordDefinition
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class PostgresStore(VectorStore):
     """PostgreSQL store implementation."""
 

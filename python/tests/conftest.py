@@ -107,9 +107,9 @@ def custom_plugin_class():
 @fixture(scope="session")
 def experimental_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
-    from semantic_kernel.utils.experimental_decorator import experimental_class
+    from semantic_kernel.utils.feature_stage_decorator import experimental
 
-    @experimental_class
+    @experimental
     class ExperimentalPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:

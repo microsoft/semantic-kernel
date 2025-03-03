@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Defines aggregation behavior for <see cref="AggregatorTerminationStrategy"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public enum AggregateTerminationCondition
 {
     /// <summary>
@@ -26,6 +28,7 @@ public enum AggregateTerminationCondition
 /// Provides methods to aggregate a set of <see cref="TerminationStrategy"/> objects.
 /// </summary>
 /// <param name="strategies">The set of strategies upon which to aggregate.</param>
+[Experimental("SKEXP0110")]
 public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] strategies) : TerminationStrategy
 {
     private readonly TerminationStrategy[] _strategies = strategies;

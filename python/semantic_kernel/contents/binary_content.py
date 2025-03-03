@@ -14,7 +14,7 @@ from semantic_kernel.contents.const import BINARY_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.data_uri import DataUri
 from semantic_kernel.exceptions.content_exceptions import ContentException, ContentInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ _T = TypeVar("_T", bound="BinaryContent")
 DataUrl = Annotated[Url, UrlConstraints(allowed_schemes=["data"])]
 
 
-@experimental_class
+@experimental
 class BinaryContent(KernelContent):
     """This is a base class for different types of binary content.
 

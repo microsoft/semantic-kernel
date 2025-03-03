@@ -29,7 +29,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
@@ -38,7 +38,7 @@ _T = TypeVar("_T", bound="VectorStoreRecordCollection")
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 

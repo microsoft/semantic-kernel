@@ -27,7 +27,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection im
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class MongoDBAtlasStore(VectorStore):
     """MongoDB Atlas store implementation."""
 

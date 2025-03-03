@@ -11,12 +11,12 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import VectorStoreModelException
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 
-@experimental_function
+@experimental
 def vectorstoremodel(
     cls: Any | None = None,
 ):

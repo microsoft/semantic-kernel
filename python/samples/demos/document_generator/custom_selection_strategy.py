@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 NEWLINE = "\n"
 
 
-@experimental_class
+@experimental
 class CustomSelectionStrategy(SelectionStrategy):
     """A selection strategy that selects the next agent intelligently."""
 

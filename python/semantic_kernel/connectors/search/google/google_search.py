@@ -20,7 +20,7 @@ from semantic_kernel.data.text_search.text_search_options import TextSearchOptio
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class GoogleSearch(KernelBaseModel, TextSearch):
     """A search engine connector that uses the Google Search API to perform a web search."""
 

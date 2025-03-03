@@ -7,10 +7,10 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEvent,
     KernelProcessEventVisibility,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class LocalEvent(KernelBaseModel):
     """An event that is local to a namespace."""
 

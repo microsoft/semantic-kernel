@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -87,6 +88,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// An assistant removed by other means will result in an exception when invoked.
     /// </remarks>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to manage the Assistant definition lifecycle.")]
     public bool IsDeleted { get; private set; }
 
@@ -111,9 +113,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="templateFactory">An prompt template factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantFromTemplateAsync).")]
     public static async Task<OpenAIAssistantAgent> CreateFromTemplateAsync(
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIAssistantCapabilities capabilities,
         Kernel kernel,
         KernelArguments defaultArguments,
@@ -158,9 +163,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="defaultArguments">Optional default arguments, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantAsync).")]
     public static async Task<OpenAIAssistantAgent> CreateAsync(
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIAssistantDefinition definition,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
@@ -193,9 +201,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="clientProvider">The configuration for accessing the API service.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to query for assistant definitions (GetAssistantsAsync).")]
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
@@ -218,9 +229,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to retrieve an assistant definition (GetAssistantsAsync).")]
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         string id,
         Kernel kernel,
         KernelArguments? defaultArguments = null,
@@ -259,6 +273,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create a thread.")]
     public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
         => this.CreateThreadAsync(options: null, cancellationToken);
@@ -269,6 +284,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="options">The options for creating the thread.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to create a thread.")]
     public Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
         => this.Client.CreateThreadAsync(
@@ -284,6 +300,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to delete an existing thread.")]
     public async Task<bool> DeleteThreadAsync(
         string threadId,
@@ -330,6 +347,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// An assistant-based agent is not usable after deletion.
     /// </remarks>
+    [Experimental("SKEXP0110")]
     [Obsolete("Use the OpenAI.Assistants.AssistantClient to remove or otherwise modify the Assistant definition.")]
     public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
     {
@@ -440,10 +458,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         ChatHistory? messages = null,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeStreamingAsync(),
             cancellationToken);
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
@@ -455,6 +475,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Distinguish from other channel types.
@@ -464,6 +485,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         this.Logger.LogOpenAIAssistantAgentCreatingChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel));
@@ -487,6 +509,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         string threadId = channelState;

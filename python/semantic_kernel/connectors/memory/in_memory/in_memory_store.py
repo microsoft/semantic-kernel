@@ -12,14 +12,14 @@ else:
 
 from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
 from semantic_kernel.data import VectorStore, VectorStoreRecordCollection, VectorStoreRecordDefinition
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class InMemoryVectorStore(VectorStore):
     """Create a In Memory Vector Store."""
 

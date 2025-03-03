@@ -2,6 +2,7 @@
 
 import os
 import platform
+from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -26,11 +27,11 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_list_collection_names(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type: type,
     ):
         """Test list collection names."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             assert await store.list_collection_names() == []
 
             collection_name = "list_collection_names"
@@ -50,12 +51,12 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_collection_not_created(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type: type,
         data_record: dict[str, Any],
     ):
         """Test get without collection."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "collection_not_created"
             collection = store.get_collection(collection_name, data_model_type)
 
@@ -79,12 +80,12 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_custom_partition_key(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type: type,
         data_record: dict[str, Any],
     ):
         """Test custom partition key."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "custom_partition_key"
             collection = store.get_collection(
                 collection_name,
@@ -116,12 +117,12 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_get_include_vector(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type: type,
         data_record: dict[str, Any],
     ):
         """Test get with include_vector."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "get_include_vector"
             collection = store.get_collection(collection_name, data_model_type)
 
@@ -146,12 +147,12 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_get_not_include_vector(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type: type,
         data_record: dict[str, Any],
     ):
         """Test get with include_vector."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "get_not_include_vector"
             collection = store.get_collection(collection_name, data_model_type)
 
@@ -176,12 +177,12 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
     async def test_collection_with_key_as_key_field(
         self,
-        stores: dict[str, VectorStore],
+        stores: dict[str, Callable[[], VectorStore]],
         data_model_type_with_key_as_key_field: type,
         data_record_with_key_as_key_field: dict[str, Any],
     ):
         """Test collection with key as key field."""
-        async with stores["azure_cosmos_db_no_sql"] as store:
+        async with stores["azure_cosmos_db_no_sql"]() as store:
             collection_name = "collection_with_key_as_key_field"
             collection = store.get_collection(collection_name, data_model_type_with_key_as_key_field)
 

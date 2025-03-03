@@ -81,7 +81,6 @@ async def main():
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
     agent_reviewer = ChatCompletionAgent(
-        service_id="artdirector",
         kernel=kernel,
         name=REVIEWER_NAME,
         instructions=REVIEWER_INSTRUCTIONS,

@@ -47,9 +47,21 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from samples.getting_started_with_agents.chat_completion.step1_agent import main as step1_agent
-from samples.getting_started_with_agents.chat_completion.step2_plugins import main as step2_plugins
-from samples.getting_started_with_agents.chat_completion.step3_chat import main as step3_chat
+from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
+    main as step1_chat_completion_agent_simple,
+)
+from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_with_kernel import (
+    main as step2_chat_completion_agent_with_kernel,
+)
+from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_plugin_simple import (
+    main as step3_chat_completion_agent_plugin_simple,
+)
+from samples.getting_started_with_agents.chat_completion.step4_chat_completion_agent_plugin_with_kernel import (
+    main as step4_chat_completion_agent_plugin_with_kernel,
+)
+from samples.getting_started_with_agents.chat_completion.step5_chat_completion_agent_group_chat import (
+    main as step5_chat_completion_agent_group_chat,
+)
 from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant
 from tests.utils import retry
 
@@ -266,25 +278,41 @@ concepts = [
         ),
     ),
     param(
-        step1_agent,
+        step1_chat_completion_agent_simple,
         [],
-        id="step1_agent",
+        id="step1_chat_completion_agent_simple",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
     ),
     param(
-        step2_plugins,
+        step2_chat_completion_agent_with_kernel,
         [],
-        id="step2_agent_plugins",
+        id="step2_chat_completion_agent_with_kernel",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
     ),
     param(
-        step3_chat,
+        step3_chat_completion_agent_plugin_simple,
         [],
-        id="step3_chat",
+        id="step3_chat_completion_agent_plugin_simple",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        step4_chat_completion_agent_plugin_with_kernel,
+        [],
+        id="step4_chat_completion_agent_plugin_with_kernel",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        step5_chat_completion_agent_group_chat,
+        [],
+        id="step5_chat_completion_agent_group_chat",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

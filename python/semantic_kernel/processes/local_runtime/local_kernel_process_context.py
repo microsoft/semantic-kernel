@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.local_runtime.local_process import LocalProcess
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
     from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 
 
-@experimental_class
+@experimental
 class LocalKernelProcessContext(KernelBaseModel):
     """A local kernel process context."""
 

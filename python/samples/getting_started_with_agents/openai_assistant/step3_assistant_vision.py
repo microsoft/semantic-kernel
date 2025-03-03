@@ -15,32 +15,33 @@ and answer questions about them. This sample uses non-streaming responses.
 
 
 async def main():
-    # Create the OpenAI Assistant Agent client
+    # 1. Create the OpenAI Assistant Agent client
     # Note Azure OpenAI doesn't support vision files yet
     client, model = OpenAIAssistantAgent.setup_resources()
 
-    # Load a sample image of a cat used for the assistant to describe
+    # 2. Load a sample image of a cat used for the assistant to describe
     file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg")
 
     with open(file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
 
-    # Create the assistant definition
+    # 3. Create the assistant on the OpenAI service
     definition = await client.beta.assistants.create(
         model=model,
         instructions="Answer questions about the provided images.",
         name="Vision",
     )
 
-    # Create the OpenAIAssistantAgent instance
+    # 4. Create a Semantic Kernel agent for the OpenAI assistant
     agent = OpenAIAssistantAgent(
         client=client,
         definition=definition,
     )
 
-    # Define a thread and invoke the agent with the user input
+    # 5. Create a new thread on the OpenAI assistant service
     thread = await agent.client.beta.threads.create()
 
+    # 6. Define the user messages with the image content to simulate the conversation
     user_messages = {
         ChatMessageContent(
             role=AuthorRole.USER,
@@ -69,14 +70,14 @@ async def main():
 
     try:
         for message in user_messages:
+            # 7. Add the user input to the chat thread
             await agent.add_chat_message(thread_id=thread.id, message=message)
-
             print(f"# User: {str(message)}")  # type: ignore
-
+            # 8. Invoke the agent for the current thread and print the response
             async for content in agent.invoke(thread_id=thread.id):
                 print(f"# Agent: {content.content}\n")
-
     finally:
+        # 9. Clean up the resources
         await client.files.delete(file.id)
         await agent.client.beta.threads.delete(thread.id)
         await agent.client.beta.assistants.delete(assistant_id=agent.id)

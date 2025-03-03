@@ -4,30 +4,18 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
-    AutoFunctionInvocationContext,
-)
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.contents import ChatHistory, ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.filters import AutoFunctionInvocationContext
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
-###################################################################
-# The following sample demonstrates how to configure the auto     #
-# function invocation filter with use of a ChatCompletionAgent.   #
-###################################################################
-
-
-# Define the agent name and instructions
-HOST_NAME = "Host"
-HOST_INSTRUCTIONS = "Answer questions about the menu."
+"""
+The following sample demonstrates how to configure the auto
+function invocation filter while using a ChatCompletionAgent.
+This allows the developer or user to view the function call content
+and the function result content.
+"""
 
 
 # Define the auto function invocation filter that will be used by the kernel
@@ -58,17 +46,17 @@ class MenuPlugin:
         return "$9.99"
 
 
-def _create_kernel_with_chat_completionand_filter(service_id: str) -> Kernel:
+def _create_kernel_with_chat_completionand_filter() -> Kernel:
     """A helper function to create a kernel with a chat completion service and a filter."""
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
-    kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, auto_function_invocation_filter)
+    kernel.add_service(AzureChatCompletion())
+    kernel.add_filter("auto_function_invocation", auto_function_invocation_filter)
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
     return kernel
 
 
 def _write_content(content: ChatMessageContent) -> None:
-    """Write the content to the console."""
+    """Write the content to the console based on the content type."""
     last_item_type = type(content.items[-1]).__name__ if content.items else "(empty)"
     message_content = ""
     if isinstance(last_item_type, FunctionCallContent):
@@ -80,54 +68,79 @@ def _write_content(content: ChatMessageContent) -> None:
     print(f"[{last_item_type}] {content.role} : '{message_content}'")
 
 
-# A helper method to invoke the agent with the user input
-async def invoke_agent(agent: ChatCompletionAgent, input: str, chat_history: ChatHistory) -> None:
-    """Invoke the agent with the user input."""
-    chat_history.add_user_message(input)
-    print(f"# {AuthorRole.USER}: '{input}'")
+async def main():
+    # 1. Create the agent with a kernel instance that contains
+    # the auto function invocation filter and the AI service
+    agent = ChatCompletionAgent(
+        kernel=_create_kernel_with_chat_completionand_filter(),
+        name="Host",
+        instructions="Answer questions about the menu.",
+    )
 
-    async for content in agent.invoke(chat_history):
+    # 2. Define the chat history
+    chat_history = ChatHistory()
+
+    user_inputs = [
+        "Hello",
+        "What is the special soup?",
+        "What is the special drink?",
+        "Thank you",
+    ]
+
+    for user_input in user_inputs:
+        # 3. Add the user message to the chat history
+        chat_history.add_user_message(user_input)
+        print(f"# User: '{user_input}'")
+
+        # 4. Get the response from the agent
+        content = await agent.get_response(chat_history)
+        # Don't add the message if it is a function call or result
         if not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in content.items):
             chat_history.add_message(content)
         _write_content(content)
-
-
-async def main():
-    service_id = "agent"
-
-    # Create the kernel used by the chat completion agent
-    kernel = _create_kernel_with_chat_completionand_filter(service_id=service_id)
-
-    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
-
-    # Configure the function choice behavior to auto invoke kernel functions
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
-
-    # Create the agent
-    agent = ChatCompletionAgent(
-        service_id=service_id,
-        kernel=kernel,
-        name=HOST_NAME,
-        instructions=HOST_INSTRUCTIONS,
-        arguments=KernelArguments(settings=settings),
-    )
-
-    # Define the chat history
-    chat = ChatHistory()
-
-    # Respond to user input
-    await invoke_agent(agent=agent, input="Hello", chat_history=chat)
-    await invoke_agent(agent=agent, input="What is the special soup?", chat_history=chat)
-    await invoke_agent(agent=agent, input="What is the special drink?", chat_history=chat)
-    await invoke_agent(agent=agent, input="Thank you", chat_history=chat)
 
     print("================================")
     print("CHAT HISTORY")
     print("================================")
 
     # Print out the chat history to view the different types of messages
-    for message in chat.messages:
+    for message in chat_history.messages:
         _write_content(message)
+
+    """
+    Sample output:
+
+    # AuthorRole.USER: 'Hello'
+    [TextContent] AuthorRole.ASSISTANT : 'Hello! How can I assist you today?'
+    # AuthorRole.USER: 'What is the special soup?'
+    [FunctionResultContent] AuthorRole.TOOL : '
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            '
+    # AuthorRole.USER: 'What is the special drink?'
+    [TextContent] AuthorRole.ASSISTANT : 'The special drink is Chai Tea.'
+    # AuthorRole.USER: 'Thank you'
+    [TextContent] AuthorRole.ASSISTANT : 'You're welcome! If you have any more questions or need assistance with 
+        anything else, feel free to ask!'
+    ================================
+    CHAT HISTORY
+    ================================
+    [TextContent] AuthorRole.USER : 'Hello'
+    [TextContent] AuthorRole.ASSISTANT : 'Hello! How can I assist you today?'
+    [TextContent] AuthorRole.USER : 'What is the special soup?'
+    [FunctionCallContent] AuthorRole.ASSISTANT : 'menu-get_specials({})'
+    [FunctionResultContent] AuthorRole.TOOL : '
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            '
+    [TextContent] AuthorRole.USER : 'What is the special drink?'
+    [TextContent] AuthorRole.ASSISTANT : 'The special drink is Chai Tea.'
+    [TextContent] AuthorRole.USER : 'Thank you'
+    [TextContent] AuthorRole.ASSISTANT : 'You're welcome! If you have any more questions or need assistance with 
+        anything else, feel free to ask!'
+    """
 
 
 if __name__ == "__main__":

@@ -42,7 +42,7 @@ from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearc
 from semantic_kernel.exceptions import VectorStoreModelValidationError, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -55,7 +55,7 @@ TModel = TypeVar("TModel")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class PostgresCollection(
     VectorSearchBase[TKey, TModel],
     VectorizedSearchMixin[TModel],

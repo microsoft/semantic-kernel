@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Provides a base strategy class for selecting the next agent for an <see cref="AgentGroupChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public abstract class SelectionStrategy
 {
     /// <summary>

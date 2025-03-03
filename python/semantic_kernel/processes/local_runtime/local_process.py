@@ -24,7 +24,7 @@ from semantic_kernel.processes.local_runtime.local_event import (
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_message_factory import LocalMessageFactory
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class LocalProcess(LocalStep):
     """A local process that contains a collection of steps."""
 

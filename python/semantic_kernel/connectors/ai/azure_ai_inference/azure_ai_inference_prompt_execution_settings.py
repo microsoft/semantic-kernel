@@ -5,10 +5,10 @@ from typing import Annotated, Any, Literal
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     """Azure AI Inference Prompt Execution Settings.
 
@@ -26,7 +26,7 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     extra_parameters: dict[str, Any] | None = None
 
 
-@experimental_class
+@experimental
 class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
     """Azure AI Inference Chat Prompt Execution Settings."""
 
@@ -46,7 +46,7 @@ class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutio
     ] = None
 
 
-@experimental_class
+@experimental
 class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Azure AI Inference Embedding Prompt Execution Settings.
 

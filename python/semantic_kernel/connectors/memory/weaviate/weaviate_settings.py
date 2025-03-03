@@ -6,10 +6,10 @@ from pydantic import SecretStr, model_validator
 
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class WeaviateSettings(KernelBaseSettings):
     """Weaviate model settings.
 

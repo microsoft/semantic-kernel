@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IReadOnlyList<Microsoft.SemanticKernel.ChatMessageContent>>;
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// <see cref="BroadcastQueue"/> is never invoked concurrently, which eliminates
 /// race conditions over the queue dictionary.
 /// </remarks>
+[Experimental("SKEXP0110")]
 internal sealed class BroadcastQueue
 {
     private readonly Dictionary<string, QueueReference> _queues = [];

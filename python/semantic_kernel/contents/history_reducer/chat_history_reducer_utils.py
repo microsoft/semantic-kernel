@@ -7,7 +7,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 SUMMARY_METADATA_KEY = "__summary__"
 
 
-@experimental_function
+@experimental
 def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, int]]:
     """Identify all (FunctionCallContent, FunctionResultContent) pairs in the history.
 
@@ -45,7 +45,7 @@ def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, 
     return pairs
 
 
-@experimental_function
+@experimental
 def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     """Identify the index of the first message that is not a summary message.
 
@@ -60,7 +60,7 @@ def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     return len(history)
 
 
-@experimental_function
+@experimental
 def locate_safe_reduction_index(
     history: list[ChatMessageContent],
     target_count: int,
@@ -116,7 +116,7 @@ def locate_safe_reduction_index(
     return target_index
 
 
-@experimental_function
+@experimental
 def extract_range(
     history: list[ChatMessageContent],
     start: int,
@@ -211,7 +211,7 @@ def extract_range(
     return extracted
 
 
-@experimental_function
+@experimental
 def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
     """Return True if the message has any function call or function result."""
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)

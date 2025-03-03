@@ -22,6 +22,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
     AzureCosmosDBforMongoDBCollection,
     AzureCosmosDBNoSQLCollection,
 )
+from semantic_kernel.connectors.memory.chroma import ChromaCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -116,10 +117,12 @@ def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distan
 
 
 collection_name = "test"
-distance_function = DistanceFunction.COSINE_SIMILARITY
-# Depending on the vector database, the index kind and distance function may need to be adjusted,
+# Depending on the vector database, the index kind and distance function may need to be adjusted
 # since not all combinations are supported by all databases.
-DataModel = get_data_model("array", IndexKind.IVF_FLAT, distance_function)
+# The values below might need to be changed for your collection to work.
+distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
+index_kind = IndexKind.HNSW
+DataModel = get_data_model("array", index_kind, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
 # Available collections are:
@@ -140,6 +143,10 @@ DataModel = get_data_model("array", IndexKind.IVF_FLAT, distance_function)
 #   For this sample to work with Azure Cosmos NoSQL, please adjust the index_kind of the data model to QUANTIZED_FLAT.
 # - azure_cosmos_mongodb: Azure Cosmos MongoDB
 #   https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/introduction
+# - chroma: Chroma
+#   The chroma collection is currently only available for in-memory versions
+#   Client-Server mode and Chroma Cloud are not yet supported.
+#   More info on Chroma here: https://docs.trychroma.com/docs/overview/introduction
 # This is represented as a mapping from the collection name to a
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
@@ -182,6 +189,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
+    "chroma": lambda: ChromaCollection(data_model_type=DataModel, collection_name=collection_name),
 }
 
 
@@ -239,14 +247,11 @@ async def main(collection: str, use_azure_openai: bool):
         if isinstance(record_collection, VectorTextSearchMixin):
             print("-" * 30)
             print_with_color("Using text search", Colors.CBLUE)
-            try:
-                search_results = await record_collection.text_search("python", options)
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Text search could not execute.")
+            search_results = await record_collection.text_search("python", options)
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizedSearchMixin):
             print("-" * 30)
             print_with_color(
@@ -255,17 +260,14 @@ async def main(collection: str, use_azure_openai: bool):
                 f"",
                 Colors.CBLUE,
             )
-            try:
-                search_results = await record_collection.vectorized_search(
-                    vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                    options=options,
-                )
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Vectorized search could not execute.")
+            search_results = await record_collection.vectorized_search(
+                vector=(await embedder.generate_raw_embeddings(["python"]))[0],
+                options=options,
+            )
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizableTextSearchMixin):
             print("-" * 30)
             print_with_color(
@@ -273,14 +275,11 @@ async def main(collection: str, use_azure_openai: bool):
                 f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
                 Colors.CBLUE,
             )
-            try:
-                search_results = await record_collection.vectorizable_text_search("python", options)
-                if search_results.total_count == 0:
-                    print("\nNothing found...\n")
-                else:
-                    [print_record(result) async for result in search_results.results]
-            except Exception:
-                print("Vectorizable text search could not execute.")
+            search_results = await record_collection.vectorizable_text_search("python", options)
+            if search_results.total_count == 0:
+                print("\nNothing found...\n")
+            else:
+                [print_record(result) async for result in search_results.results]
         print("-" * 30)
         print_with_color("Deleting collection!", Colors.CBLUE)
         await record_collection.delete_collection()

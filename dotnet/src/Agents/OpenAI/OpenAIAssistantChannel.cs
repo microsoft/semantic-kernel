@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId)
     : AgentChannel<OpenAIAssistantAgent>
 {

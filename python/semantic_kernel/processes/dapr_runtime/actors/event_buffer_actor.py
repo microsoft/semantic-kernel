@@ -8,12 +8,12 @@ from dapr.actor import Actor
 
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.interfaces.message_buffer_interface import MessageBufferInterface
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class EventBufferActor(Actor, MessageBufferInterface):
     """Represents a message buffer actor that manages a queue of JSON strings representing events."""
 

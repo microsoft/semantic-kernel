@@ -23,10 +23,10 @@ from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class WeaviateStore(VectorStore):
     """A Weaviate store is a vector store that uses Weaviate as the backend."""
 

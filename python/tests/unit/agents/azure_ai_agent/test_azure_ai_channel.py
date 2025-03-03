@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import Agent as AzureAIAgentModel
 
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
@@ -32,14 +31,8 @@ async def test_azure_ai_channel_invoke_invalid_agent():
             pass
 
 
-async def test_azure_ai_channel_invoke_valid_agent():
-    client = AsyncMock(spec=AIProjectClient)
-    definition = AsyncMock(spec=AzureAIAgentModel)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAIAgent(client=client, definition=definition)
+async def test_azure_ai_channel_invoke_valid_agent(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
 
     async def fake_invoke(*args, **kwargs):
         yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
@@ -48,7 +41,7 @@ async def test_azure_ai_channel_invoke_valid_agent():
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        channel = AzureAIChannel(client, "thread123")
+        channel = AzureAIChannel(ai_project_client, "thread123")
         results = []
         async for is_visible, msg in channel.invoke(agent):
             results.append((is_visible, msg))
@@ -56,14 +49,8 @@ async def test_azure_ai_channel_invoke_valid_agent():
     assert len(results) == 1
 
 
-async def test_azure_ai_channel_invoke_stream_valid_agent():
-    client = AsyncMock(spec=AIProjectClient)
-    definition = AsyncMock(spec=AzureAIAgentModel)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAIAgent(client=client, definition=definition)
+async def test_azure_ai_channel_invoke_stream_valid_agent(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
 
     async def fake_invoke(*args, **kwargs):
         yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
@@ -72,7 +59,7 @@ async def test_azure_ai_channel_invoke_stream_valid_agent():
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        channel = AzureAIChannel(client, "thread123")
+        channel = AzureAIChannel(ai_project_client, "thread123")
         results = []
         async for is_visible, msg in channel.invoke_stream(agent, messages=[]):
             results.append((is_visible, msg))

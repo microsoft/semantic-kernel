@@ -2,10 +2,10 @@
 
 from enum import Enum
 
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_function
+@experimental
 class CosmosDBSimilarityType(str, Enum):
     """Cosmos DB Similarity Type as enumerator."""
 
@@ -17,7 +17,7 @@ class CosmosDBSimilarityType(str, Enum):
     """Euclidean distance"""
 
 
-@experimental_function
+@experimental
 class CosmosDBVectorSearchType(str, Enum):
     """Cosmos DB Vector Search Type as enumerator."""
 

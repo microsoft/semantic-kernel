@@ -4,7 +4,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 TState = TypeVar("TState")
 
 
-@experimental_class
+@experimental
 class KernelProcessStep(ABC, KernelBaseModel, Generic[TState]):
     """A KernelProcessStep Base class for process steps."""
 

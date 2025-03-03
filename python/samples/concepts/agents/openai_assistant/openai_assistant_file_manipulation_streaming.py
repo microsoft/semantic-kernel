@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_files
+from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
@@ -59,10 +59,10 @@ async def main():
             # "List the top 5 countries that generated the most profit.",
             "Create a tab delimited file report of profit by each country per month.",
         ]
-        for input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
-            print(f"# User: '{input}'")
+            print(f"# User: '{user_input}'")
             annotations: list[StreamingAnnotationContent] = []
             messages: list[ChatMessageContent] = []
             is_code = False

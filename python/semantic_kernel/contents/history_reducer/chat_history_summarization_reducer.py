@@ -27,7 +27,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     locate_summarization_boundary,
 )
 from semantic_kernel.exceptions.content_exceptions import ChatHistoryReducerException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ This summary must never:
 """
 
 
-@experimental_class
+@experimental
 class ChatHistorySummarizationReducer(ChatHistoryReducer):
     """A ChatHistory with logic to summarize older messages past a target count.
 

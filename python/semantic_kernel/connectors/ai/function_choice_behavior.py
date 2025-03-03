@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Literal, TypeVar
 from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 _T = TypeVar("_T", bound="FunctionChoiceBehavior")
 
 
-@experimental_class
+@experimental
 class FunctionChoiceBehavior(KernelBaseModel):
     """Class that controls function choice behavior.
 

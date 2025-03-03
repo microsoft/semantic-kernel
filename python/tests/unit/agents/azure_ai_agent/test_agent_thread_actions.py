@@ -3,8 +3,6 @@
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import Agent as AzureAIAgentModel
 from azure.ai.projects.models import (
     MessageTextContent,
     MessageTextDetails,
@@ -27,11 +25,7 @@ from azure.ai.projects.models import (
 
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
-from semantic_kernel.contents import (
-    FunctionCallContent,
-    FunctionResultContent,
-    TextContent,
-)
+from semantic_kernel.contents import FunctionCallContent, FunctionResultContent, TextContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -74,14 +68,8 @@ async def test_agent_thread_actions_create_message_no_content():
     assert FakeAgentClient.create_message.await_count == 0
 
 
-async def test_agent_thread_actions_invoke():
-    client = AsyncMock(spec=AIProjectClient)
-    definition = AsyncMock(spec=AzureAIAgentModel)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAIAgent(client=client, definition=definition)
+async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
 
     agent.client.agents = MagicMock()
 
@@ -137,15 +125,8 @@ async def test_agent_thread_actions_invoke():
         break
 
 
-async def test_agent_thread_actions_invoke_with_requires_action():
-    client = AsyncMock(spec=AIProjectClient)
-    definition = AsyncMock(spec=AzureAIAgentModel)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-
-    agent = AzureAIAgent(client=client, definition=definition)
+async def test_agent_thread_actions_invoke_with_requires_action(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
     agent.client.agents = MagicMock()
 
     mock_thread_run = ThreadRun(
@@ -319,14 +300,8 @@ class MockStream:
         pass
 
 
-async def test_agent_thread_actions_invoke_stream():
-    client = AsyncMock(spec=AIProjectClient)
-    definition = AsyncMock(spec=AzureAIAgentModel)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAIAgent(client=client, definition=definition)
+async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
     agent.client.agents = AsyncMock()
 
     events = [

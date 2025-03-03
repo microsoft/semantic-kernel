@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Adapt channel contract to underlying <see cref="AgentChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
     private readonly AgentChat _chat = chat;

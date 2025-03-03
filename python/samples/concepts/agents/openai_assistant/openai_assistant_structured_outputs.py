@@ -74,9 +74,9 @@ async def main():
     user_inputs = ["Why is the sky blue?"]
 
     try:
-        for input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=input)
-            print(f"# User: '{input}'")
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
+            print(f"# User: '{user_input}'")
             async for content in agent.invoke(thread_id=thread.id):
                 # The response returned is a Pydantic Model, so we can validate it using the model_validate_json method
                 response_model = ResponseModel.model_validate_json(content.content)

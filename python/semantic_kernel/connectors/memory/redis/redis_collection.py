@@ -53,7 +53,7 @@ from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.list_handler import desync_list
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ TModel = TypeVar("TModel")
 TQuery = TypeVar("TQuery", bound=BaseQuery)
 
 
-@experimental_class
+@experimental
 class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TModel], VectorTextSearchMixin[TModel]):
     """A vector store record collection implementation using Redis."""
 
@@ -263,7 +263,7 @@ class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TMode
         return result.get("vector_distance")
 
 
-@experimental_class
+@experimental
 class RedisHashsetCollection(RedisCollection):
     """A vector store record collection implementation using Redis Hashsets."""
 
@@ -383,7 +383,7 @@ class RedisHashsetCollection(RedisCollection):
         return query
 
 
-@experimental_class
+@experimental
 class RedisJsonCollection(RedisCollection):
     """A vector store record collection implementation using Redis Json."""
 
