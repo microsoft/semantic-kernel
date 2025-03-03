@@ -376,7 +376,7 @@ await WriteMessagesAsync(chat.InvokeAsync(agent1));
 await WriteMessagesAsync(chat.InvokeAsync(agent2));
 
 // The entire history may be accessed.
-// Agent specific history is an adapataton of the primary history.
+// Agent specific history is an adaptaton of the primary history.
 await WriteMessagesAsync(chat.GetHistoryAsync());
 await WriteMessagesAsync(chat.GetHistoryAsync(agent1));
 await WriteMessagesAsync(chat.GetHistoryAsync(agent2));
