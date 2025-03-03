@@ -19,7 +19,6 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 )
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.functions import KernelArguments
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -27,6 +26,11 @@ using Semantic Kernel, it features auto function calling,
 but with Azure CosmosDB as storage for the chat history.
 This sample stores and reads the chat history at every turn.
 This is not the best way to do it, but clearly demonstrates the mechanics.
+
+Further refinement would be to only write once when a conversation is done.
+And there is also no logic to see if there is something to write.
+You could also enhance the ChatHistoryModel with a summary and a vector for that
+in order to search for similar conversations.
 """
 
 
@@ -91,33 +95,13 @@ class ChatHistoryInCosmosDB(ChatHistory):
                     self.messages.append(ChatMessageContent.model_validate(message))
 
 
-# System message defining the behavior and persona of the chat bot.
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard,
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for,
-you will return a full answer to me as soon as possible.
-"""
-
+# 3. We now create a fairly standard kernel, with functions and a chat service.
 # Create and configure the kernel.
 kernel = Kernel()
 
 # Load some sample plugins (for demonstration of function calling).
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
-
-# Define a chat function (a template for how to handle user input).
-chat_function = kernel.add_function(
-    prompt="{{$chat_history}}",
-    plugin_name="ChatBot",
-    function_name="Chat",
-)
 
 # You can select from the following chat completion services that support function calling:
 # - Services.OPENAI
@@ -140,11 +124,11 @@ request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters=
 
 kernel.add_service(chat_completion_service)
 
-# Pass the request settings to the kernel arguments.
-arguments = KernelArguments(settings=request_settings)
 
-
-async def chat(history) -> bool:
+# 4. The main chat loop, which takes a history object and prompts the user for input.
+#    It then adds the user input to the history and gets a response from the chat completion service.
+#    Finally, it prints the response and saves the chat history to the Cosmos DB.
+async def chat(history: ChatHistoryInCosmosDB) -> bool:
     """
     Continuously prompt the user for input and show the assistant's response.
     Type 'exit' to exit.
@@ -153,7 +137,9 @@ async def chat(history) -> bool:
     print(f"Chat history successfully loaded {len(history.messages)} messages.")
     if len(history.messages) == 0:
         # if it is a new conversation, add the system message and a couple of initial messages.
-        history.add_system_message(system_message)
+        history.add_system_message(
+            "You are a chat bot. Your name is Mosscap and you have one goal: figure out what people need."
+        )
         history.add_user_message("Hi there, who are you?")
         history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
@@ -169,15 +155,12 @@ async def chat(history) -> bool:
 
     # add the user input to the chat history
     history.add_user_message(user_input)
-    arguments["chat_history"] = history
 
-    # Handle non-streaming responses
-    result = await kernel.invoke(chat_function, arguments=arguments)  # type: ignore
+    result = await chat_completion_service.get_chat_message_content(history, request_settings, kernel=kernel)
 
-    # Update the chat history with the assistant's response
     if result:
         print(f"Mosscap:> {result}")
-        history.add_message(result.value[0])  # Capture the full context of the response
+        history.add_message(result)
 
     # Save the chat history to CosmosDB.
     print(f"Saving {len(history.messages)} messages to AzureCosmosDB.")
@@ -189,6 +172,8 @@ async def main() -> None:
     delete_when_done = True
     session_id = "session1"
     chatting = True
+    # 5. We now create the store, ChatHistory and collection and start the chat loop.
+
     # First we enter the store context manager to connect.
     # The create_database flag will create the database if it does not exist.
     async with AzureCosmosDBNoSQLStore(create_database=True) as store:
@@ -201,8 +186,11 @@ async def main() -> None:
             "  Type 'exit' to exit.\n"
             "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
         )
-        while chatting:
-            chatting = await chat(history)
+        try:
+            while chatting:
+                chatting = await chat(history)
+        except Exception:
+            print("Closing chat...")
         if delete_when_done and history.collection:
             await history.collection.delete_collection()
 

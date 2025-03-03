@@ -4,12 +4,7 @@ import asyncio
 import tempfile
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.functions import KernelArguments
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -17,35 +12,10 @@ using Semantic Kernel, it features auto function calling,
 but with file-based serialization of the chat history.
 This sample stores and reads the chat history at every turn.
 This is not the best way to do it, but clearly demonstrates the mechanics.
+More optimal would for instance be to only write once when a conversation is done.
+And writing to something other then a file is also usually better.
 """
 
-# Create and configure the kernel.
-kernel = Kernel()
-
-# Load some sample plugins (for demonstration of function calling).
-kernel.add_plugin(MathPlugin(), plugin_name="math")
-kernel.add_plugin(TimePlugin(), plugin_name="time")
-
-# Define a chat function (a template for how to handle user input).
-chat_function = kernel.add_function(
-    prompt="{{$chat_history}}{{$user_input}}",
-    plugin_name="ChatBot",
-    function_name="Chat",
-)
-
-# System message defining the behavior and persona of the chat bot.
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard,
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for,
-you will return a full answer to me as soon as possible.
-"""
 
 # You can select from the following chat completion services that support function calling:
 # - Services.OPENAI
@@ -60,16 +30,7 @@ you will return a full answer to me as soon as possible.
 # - Services.VERTEX_AI
 # - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
-
-# Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
-# With `auto_invoke=True`, the model will automatically choose and call functions as needed.
-request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
-
-kernel.add_service(chat_completion_service)
-
-# Pass the request settings to the kernel arguments.
-arguments = KernelArguments(settings=request_settings)
+chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
 
 
 async def chat(file) -> bool:
@@ -82,14 +43,15 @@ async def chat(file) -> bool:
         history = ChatHistory.load_chat_history_from_file(file_path=file)
         print(f"Chat history successfully loaded {len(history.messages)} messages.")
     except Exception:
-        # Create a chat history to store the system message, initial messages, and the conversation.
+        # Create a new chat history to store the system message, initial messages, and the conversation.
         print("Chat history file not found. Starting a new conversation.")
         history = ChatHistory()
-        history.add_system_message(system_message)
-        history.add_user_message("Hi there, who are you?")
-        history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+        history.add_system_message(
+            "You are a chat bot. Your name is Mosscap and you have one goal: figure out what people need."
+        )
 
     try:
+        # Get the user input
         user_input = input("User:> ")
     except (KeyboardInterrupt, EOFError):
         print("\n\nExiting chat...")
@@ -99,22 +61,36 @@ async def chat(file) -> bool:
         print("\n\nExiting chat...")
         return False
 
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
-    # Handle non-streaming responses
-    result = await kernel.invoke(chat_function, arguments=arguments)  # type: ignore
+    # Add the user input to the chat history
+    history.add_user_message(user_input)
+    # Get a response from the chat completion service
+    result = await chat_completion_service.get_chat_message_content(history, request_settings)
 
     # Update the chat history with the user's input and the assistant's response
     if result:
         print(f"Mosscap:> {result}")
-        history.add_user_message(user_input)
-        history.add_message(result.value[0])  # Capture the full context of the response
+        history.add_message(result)
 
     # Save the chat history to a file.
     print(f"Saving {len(history.messages)} messages to the file.")
     history.store_chat_history_to_file(file_path=file)
     return True
+
+
+"""
+Sample output:
+
+Welcome to the chat bot!
+  Type 'exit' to exit.
+  Try a math question to see function calling in action (e.g. 'what is 3+3?').  
+  Your chat history will be saved in: <local working directory>/tmpq1n1f6qk.json
+Chat history file not found. Starting a new conversation.
+User:> Hello, how are you?
+Mosscap:> Hello! I'm here and ready to help. What do you need today?
+Saving 3 messages to the file.
+Chat history successfully loaded 3 messages.
+User:> exit
+"""
 
 
 async def main() -> None:
@@ -126,8 +102,11 @@ async def main() -> None:
             "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
             f"  Your chat history will be saved in: {file.name}"
         )
-        while chatting:
-            chatting = await chat(file.name)
+        try:
+            while chatting:
+                chatting = await chat(file.name)
+        except Exception:
+            print("Closing and removing the file.")
 
 
 if __name__ == "__main__":
