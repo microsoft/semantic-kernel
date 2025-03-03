@@ -59,7 +59,9 @@ class BedrockAgentBase(Agent):
             bedrock_runtime_client: The Bedrock Runtime Client.
             kwargs: Additional keyword arguments.
         """
-        agent_model = agent_model if isinstance(agent_model, BedrockAgentModel) else BedrockAgentModel(**agent_model)
+        agent_model = (
+            agent_model if isinstance(agent_model, BedrockAgentModel) else BedrockAgentModel.model_validate(agent_model)
+        )
 
         args = {
             "agent_model": agent_model,
