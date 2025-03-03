@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace ChatCompletion;
 
 /// <summary>
-/// These examples demonstrate the ways different content types are streamed by OpenAI LLM via the chat completion service.
+/// These examples demonstrate different ways of using streaming chat completion with OpenAI API.
 /// </summary>
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {

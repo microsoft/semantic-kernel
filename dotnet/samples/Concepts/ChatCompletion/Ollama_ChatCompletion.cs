@@ -8,7 +8,9 @@ using OllamaSharp.Models.Chat;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with Ollama Chat Completion API
+/// <summary>
+/// These examples demonstrate different ways of using chat completion with Ollama API.
+/// </summary>
 public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
@@ -152,29 +154,29 @@ public class Ollama_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Retrieve extra information from each streaming chunk response in a list of chunks.
+    /// Retrieve extra information from the final response.
     /// </summary>
-    /// <param name="innerContent">List of streaming chunks provided as inner content of a chat message</param>
+    /// <param name="innerContent">The complete OllamaSharp response provided as inner content of a chat message</param>
     /// <remarks>
     /// This is a breaking glass scenario, any attempt on running with different versions of OllamaSharp library that introduces breaking changes
     /// may cause breaking changes in the code below.
     /// </remarks>
     private void OutputInnerContent(ChatDoneResponseStream innerContent)
     {
-        Console.WriteLine($"Model: {innerContent.Model}"); // Model doesn't change per chunk, so we can get it from the first chunk only
-        Console.WriteLine(" -- Chunk changing data -- ");
-
-        Console.WriteLine($"Message role: {innerContent.Message.Role}");
-        Console.WriteLine($"Message content: {innerContent.Message.Content}");
-        Console.WriteLine($"Created at: {innerContent.CreatedAt}");
-        Console.WriteLine($"Done: {innerContent.Done}");
-        Console.WriteLine($"Done Reason: {innerContent.DoneReason}");
-        Console.WriteLine($"Eval count: {innerContent.EvalCount}");
-        Console.WriteLine($"Eval duration: {innerContent.EvalDuration}");
-        Console.WriteLine($"Load duration: {innerContent.LoadDuration}");
-        Console.WriteLine($"Total duration: {innerContent.TotalDuration}");
-        Console.WriteLine($"Prompt eval count: {innerContent.PromptEvalCount}");
-        Console.WriteLine($"Prompt eval duration: {innerContent.PromptEvalDuration}");
-        Console.WriteLine("------------------------");
+        Console.WriteLine($$"""
+            Model: {{innerContent.Model}}
+            Message role: {{innerContent.Message.Role}}
+            Message content: {{innerContent.Message.Content}}
+            Created at: {{innerContent.CreatedAt}}
+            Done: {{innerContent.Done}}
+            Done Reason: {{innerContent.DoneReason}}
+            Eval count: {{innerContent.EvalCount}}
+            Eval duration: {{innerContent.EvalDuration}}
+            Load duration: {{innerContent.LoadDuration}}
+            Total duration: {{innerContent.TotalDuration}}
+            Prompt eval count: {{innerContent.PromptEvalCount}}
+            Prompt eval duration: {{innerContent.PromptEvalDuration}}
+            ------------------------
+            """);
     }
 }

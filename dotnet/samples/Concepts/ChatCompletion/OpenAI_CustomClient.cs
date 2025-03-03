@@ -10,7 +10,8 @@ using OpenAI;
 namespace ChatCompletion;
 
 /// <summary>
-/// This example shows a way of using a Custom HttpClient and HttpHandler with OpenAI Connector to capture the request Uri and Headers for each request.
+/// This example shows a way of using a Custom HttpClient and HttpHandler with OpenAI Connector to capture
+/// the request Uri and Headers for each request.
 /// </summary>
 public sealed class OpenAI_CustomClient(ITestOutputHelper output) : BaseTest(output)
 {

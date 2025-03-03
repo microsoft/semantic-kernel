@@ -7,7 +7,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with OpenAI API
+/// <summary>
+/// These examples demonstrate different ways of using chat completion with OpenAI API.
+/// </summary>
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>

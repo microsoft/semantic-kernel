@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with HuggingFace API.
 /// <summary>
 /// This example shows a way of using Hugging Face connector with HuggingFace Text Generation Inference (TGI) API.
 /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.

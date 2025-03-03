@@ -9,7 +9,7 @@ using OllamaSharp.Models.Chat;
 namespace ChatCompletion;
 
 /// <summary>
-/// These examples demonstrate the ways different content types are streamed by Ollama via the chat completion service.
+/// These examples demonstrate different ways of using chat completion with Ollama API.
 /// </summary>
 public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
@@ -222,22 +222,26 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// </remarks>
     private void OutputInnerContent(ChatResponseStream streamChunk)
     {
-        Console.WriteLine($"Model: {streamChunk.Model}");
-        Console.WriteLine($"Message role: {streamChunk.Message.Role}");
-        Console.WriteLine($"Message content: {streamChunk.Message.Content}");
-        Console.WriteLine($"Created at: {streamChunk.CreatedAt}");
-        Console.WriteLine($"Done: {streamChunk.Done}");
+        Console.WriteLine($$"""
+            Model: {{streamChunk.Model}}
+            Message role: {{streamChunk.Message.Role}}
+            Message content: {{streamChunk.Message.Content}}
+            Created at: {{streamChunk.CreatedAt}}
+            Done: {{streamChunk.Done}}
+            """);
 
         /// The last message in the chunk is a <see cref="ChatDoneResponseStream"/> type with additional metadata.
         if (streamChunk is ChatDoneResponseStream doneStream)
         {
-            Console.WriteLine($"Done Reason: {doneStream.DoneReason}");
-            Console.WriteLine($"Eval count: {doneStream.EvalCount}");
-            Console.WriteLine($"Eval duration: {doneStream.EvalDuration}");
-            Console.WriteLine($"Load duration: {doneStream.LoadDuration}");
-            Console.WriteLine($"Total duration: {doneStream.TotalDuration}");
-            Console.WriteLine($"Prompt eval count: {doneStream.PromptEvalCount}");
-            Console.WriteLine($"Prompt eval duration: {doneStream.PromptEvalDuration}");
+            Console.WriteLine($$"""
+                Done Reason: {{doneStream.DoneReason}}
+                Eval count: {{doneStream.EvalCount}}
+                Eval duration: {{doneStream.EvalDuration}}
+                Load duration: {{doneStream.LoadDuration}}
+                Total duration: {{doneStream.TotalDuration}}
+                Prompt eval count: {{doneStream.PromptEvalCount}}
+                Prompt eval duration: {{doneStream.PromptEvalDuration}}
+                """);
         }
         Console.WriteLine("------------------------");
     }
