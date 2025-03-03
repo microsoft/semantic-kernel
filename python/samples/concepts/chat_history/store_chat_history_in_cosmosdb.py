@@ -21,11 +21,13 @@ from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.functions import KernelArguments
 
-# This sample demonstrates how to build a conversational chatbot
-# using Semantic Kernel, it features auto function calling,
-# but with Azure CosmosDB as storage for the chat history.
-# This sample stores and reads the chat history at every turn.
-# This is not the best way to do it, but clearly demonstrates the mechanics.
+"""
+This sample demonstrates how to build a conversational chatbot
+using Semantic Kernel, it features auto function calling,
+but with Azure CosmosDB as storage for the chat history.
+This sample stores and reads the chat history at every turn.
+This is not the best way to do it, but clearly demonstrates the mechanics.
+"""
 
 
 # 1. We first create simple datamodel for the chat history.

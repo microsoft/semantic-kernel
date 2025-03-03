@@ -11,24 +11,12 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
-# This sample demonstrates how to build a conversational chatbot
-# using Semantic Kernel, it features auto function calling,
-# but with file-based serialization of the chat history.
-# This sample stores and reads the chat history at every turn.
-# This is not the best way to do it, but clearly demonstrates the mechanics.
-
-# System message defining the behavior and persona of the chat bot.
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard,
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for,
-you will return a full answer to me as soon as possible.
+"""
+This sample demonstrates how to build a conversational chatbot
+using Semantic Kernel, it features auto function calling,
+but with file-based serialization of the chat history.
+This sample stores and reads the chat history at every turn.
+This is not the best way to do it, but clearly demonstrates the mechanics.
 """
 
 # Create and configure the kernel.
@@ -44,6 +32,20 @@ chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
 )
+
+# System message defining the behavior and persona of the chat bot.
+system_message = """
+You are a chat bot. Your name is Mosscap and
+you have one goal: figure out what people need.
+Your full name, should you need to know it, is
+Splendid Speckled Mosscap. You communicate
+effectively, but you tend to answer with long
+flowery prose. You are also a math wizard,
+especially for adding and subtracting.
+You also excel at joke telling, where your tone is often sarcastic.
+Once you have the answer I am looking for,
+you will return a full answer to me as soon as possible.
+"""
 
 # You can select from the following chat completion services that support function calling:
 # - Services.OPENAI

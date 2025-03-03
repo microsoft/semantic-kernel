@@ -33,7 +33,7 @@ Try to do a best effort to make sure that the samples are incremental in complex
 
 ### **Documentation**
 
-Try to over-document the samples. This includes comments in the code, README.md files, and any other documentation that is necessary to understand the sample. We use the guidance from [PEP8](https://peps.python.org/pep-0008/#comments) for comments in the code.
+Try to over-document the samples. This includes comments in the code, README.md files, and any other documentation that is necessary to understand the sample. We use the guidance from [PEP8](https://peps.python.org/pep-0008/#comments) for comments in the code, with a deviation for the initial summary comment in samples and the output of the samples.
 
 For the getting started samples and the concept samples, we should have the following:
 
@@ -41,10 +41,12 @@ For the getting started samples and the concept samples, we should have the foll
 2. A summary should be included at the top of the file that explains the purpose of the sample and required components/concepts to understand the sample. For example:
 
     ```python
-    # This sample shows how to create a chatbot. This sample uses the following two main components:
-    # - a ChatCompletionService: This component is responsible for generating responses to user messages.
-    # - a ChatHistory: This component is responsible for keeping track of the chat history.
-    # The chatbot in this sample is called Mosscap, who responds to user messages with long flowery prose.
+    '''
+    This sample shows how to create a chatbot. This sample uses the following two main components:
+    - a ChatCompletionService: This component is responsible for generating responses to user messages.
+    - a ChatHistory: This component is responsible for keeping track of the chat history.
+    The chatbot in this sample is called Mosscap, who responds to user messages with long flowery prose.
+    '''
     ```
 
 3. Mark the code with comments to explain the purpose of each section of the code. For example:
@@ -62,11 +64,13 @@ For the getting started samples and the concept samples, we should have the foll
 4. At the end of the sample, include a section that explains the expected output of the sample. For example:
 
     ```python
-    # Sample output:
-    # User:> Why is the sky blue in one sentence?
-    # Mosscap:> The sky is blue due to the scattering of sunlight by the molecules in the Earth's atmosphere,
-    #           a phenomenon known as Rayleigh scattering, which causes shorter blue wavelengths to become more
-    #           prominent in our visual perception.    
+    '''
+    Sample output:
+    User:> Why is the sky blue in one sentence?
+    Mosscap:> The sky is blue due to the scattering of sunlight by the molecules in the Earth's atmosphere,
+    a phenomenon known as Rayleigh scattering, which causes shorter blue wavelengths to become more
+    prominent in our visual perception.    
+    '''
     ```
 
 For the demos, a README.md file must be included that explains the purpose of the demo and how to run it. The README.md file should include the following:
