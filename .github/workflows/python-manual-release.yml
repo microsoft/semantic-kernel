@@ -8,13 +8,14 @@ on:
         required: true
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
+  id-token: "write"
 
 jobs:
   python-build-assets:
     name: Trigger ADO Pipeline for Python Release
     runs-on: ubuntu-latest
+    environment: "integration"
     steps:
       - name: Azure Login
         uses: azure/login@v2
