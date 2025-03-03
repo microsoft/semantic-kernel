@@ -33,7 +33,7 @@
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
-    <PackageVersion Include="Markdig" Version="0.37.0" />
+    <PackageVersion Include="Markdig" Version="0.40.0" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
