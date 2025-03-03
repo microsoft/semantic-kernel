@@ -5,6 +5,8 @@ using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.TestsShared.Steps;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 /// <summary>
 /// Collection of common steps used by UnitTests and IntegrationUnitTests
 /// </summary>
@@ -66,4 +68,7 @@ public static class CommonSteps
             await context.EmitEventAsync(OutputEvents.OddNumber, numberString);
         }
     }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+
 }

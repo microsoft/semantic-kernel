@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -12,7 +14,6 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class ProxyActor : StepActor, IProxy
 {
-    private bool _isInitialized;
     private readonly ILogger? _logger;
 
     internal DaprProxyInfo? _daprProxyInfo;
@@ -25,6 +26,7 @@ internal sealed class ProxyActor : StepActor, IProxy
     public ProxyActor(ActorHost host, Kernel kernel)
         : base(host, kernel)
     {
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(typeof(KernelProxyStep)) ?? new NullLogger<ProxyActor>();
     }
 
     internal override void AssignStepFunctionParameterValues(ProcessMessage message)
@@ -72,6 +74,7 @@ internal sealed class ProxyActor : StepActor, IProxy
     public async Task InitializeProxyAsync(DaprProxyInfo proxyInfo, string? parentProcessId)
     {
         this._daprProxyInfo = proxyInfo;
+
         await base.InitializeStepAsync(proxyInfo, parentProcessId).ConfigureAwait(false);
     }
 }
