@@ -8,6 +8,7 @@ from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -134,6 +135,8 @@ these will be ignored."
             error_msg = f"Error invoking function `{function_block.content}`"
             logger.error(error_msg)
             raise CodeBlockRenderException(error_msg) from exc
+        if isinstance(result, FunctionResult):
+            return str(result.value)
         return str(result) if result else ""
 
     def _enrich_function_arguments(
