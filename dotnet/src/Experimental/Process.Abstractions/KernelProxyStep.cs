@@ -18,11 +18,6 @@ public sealed class KernelProxyStep : KernelProcessStep
         /// Function name used to emit events externally
         /// </summary>
         public const string EmitExternalEvent = nameof(EmitExternalEvent);
-
-        /// <summary>
-        /// Function name used to emit events internally
-        /// </summary>
-        public const string EmitInternalEvent = nameof(EmitInternalEvent);
     }
 
     /// <summary>
@@ -35,19 +30,6 @@ public sealed class KernelProxyStep : KernelProcessStep
     public Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
     {
         Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));
-        return context.EmitExternalEventAsync(proxyEvent.ExternalTopicName!, proxyEvent);
-    }
-
-    /// <summary>
-    /// Step function used to emit events internally with a different SK process event name
-    /// </summary>
-    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
-    /// <param name="proxyEvent">event data passed to proxy step</param>
-    /// <returns></returns>
-    [KernelFunction(Functions.EmitInternalEvent)]
-    public async Task EmitInternalProcessEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
-    {
-        Verify.NotNull(proxyEvent.ProxyEventName, nameof(proxyEvent.ProxyEventName));
-        await context.EmitEventAsync(proxyEvent.ProxyEventName, proxyEvent).ConfigureAwait(false);
+        return context.EmitExternalEventAsync(proxyEvent.ExternalTopicName, proxyEvent);
     }
 }

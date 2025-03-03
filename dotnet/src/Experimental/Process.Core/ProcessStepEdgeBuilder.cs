@@ -72,21 +72,6 @@ public sealed class ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Emit the SK step event as a SK process public event with different name as the original step event
-    /// </summary>
-    /// <param name="proxyStep"></param>
-    /// <param name="topicName"></param>
-    /// <param name="defaultValue"></param>
-    /// <returns></returns>
-    public ProcessStepEdgeBuilder EmitInternalEvent(ProcessProxyBuilder proxyStep, string topicName, object? defaultValue = null)
-    {
-        // TODO-estenori: do linking of internal forward events
-
-        var targetBuilder = proxyStep.GetInternalFunctionTargetBuilder();
-        return this.SendEventTo(targetBuilder);
-    }
-
-    /// <summary>
     /// Emit the SK step event as an external event with specific topic name
     /// </summary>
     /// <returns></returns>

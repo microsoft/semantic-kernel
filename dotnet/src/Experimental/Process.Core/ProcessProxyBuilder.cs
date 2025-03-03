@@ -48,11 +48,6 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.Functions.EmitExternalEvent, parameterName: "proxyEvent");
     }
 
-    internal ProcessFunctionTargetBuilder GetInternalFunctionTargetBuilder()
-    {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.Functions.EmitInternalEvent, parameterName: "proxyEvent");
-    }
-
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
     {
         if (!this.ExternalTopicUsage.TryGetValue(topicName, out bool usedTopic))
