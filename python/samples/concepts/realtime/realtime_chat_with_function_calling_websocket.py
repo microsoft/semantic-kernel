@@ -21,14 +21,18 @@ from semantic_kernel.functions import kernel_function
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# This simple sample demonstrates how to use the OpenAI Realtime API to create
-# a chat bot that can listen and respond directly through audio.
-# It requires installing:
-# - semantic-kernel[realtime]
-# - pyaudio
-# - sounddevice
-# - pydub
-# e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+"""
+This simple sample demonstrates how to use the OpenAI Realtime API to create
+a chat bot that can listen and respond directly through audio.
+It requires installing:
+- semantic-kernel[realtime]
+- pyaudio
+- sounddevice
+- pydub
+e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+
+For more details of the exact setup, see the README.md in the realtime folder.
+"""
 
 
 @kernel_function
