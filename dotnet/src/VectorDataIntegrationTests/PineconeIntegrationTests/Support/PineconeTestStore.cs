@@ -4,6 +4,7 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Grpc.Net.Client;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Pinecone;
 using VectorDataSpecificationTests.Support;
 
@@ -21,10 +22,10 @@ internal sealed class PineconeTestStore : TestStore
     public static PineconeTestStore Instance { get; } = new();
 
     private IContainer? _container;
-    private PineconeClient? _client;
-    private IVectorStore? _defaultVectorStore;
+    private Pinecone.PineconeClient? _client;
+    private PineconeVectorStore? _defaultVectorStore;
 
-    public PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
+    public Pinecone.PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
     public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
@@ -55,11 +56,11 @@ internal sealed class PineconeTestStore : TestStore
             GrpcOptions = grpcOptions
         };
 
-        this._client = new PineconeClient(
+        this._client = new Pinecone.PineconeClient(
             apiKey: "ForPineconeLocalTheApiKeysAreIgnored",
             clientOptions: clientOptions);
 
-        //this._defaultVectorStore = new(this._client);
+        this._defaultVectorStore = new(this._client);
     }
 
     protected override async Task StopAsync()

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
-using Pinecone.Grpc;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -23,14 +22,6 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     private const string DatabaseName = "Pinecone";
-    private const string CreateCollectionName = "CreateCollection";
-    private const string CollectionExistsName = "CollectionExists";
-    private const string DeleteCollectionName = "DeleteCollection";
-
-    private const string UpsertOperationName = "Upsert";
-    private const string DeleteOperationName = "Delete";
-    private const string GetOperationName = "Get";
-    private const string QueryOperationName = "Query";
 
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
@@ -38,8 +29,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordPropertyReader _propertyReader;
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
-
-    private Sdk.Index<GrpcTransport>? _index;
+    private IndexClient? _indexClient;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -90,36 +80,39 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await this.RunOperationAsync(
-            CollectionExistsName,
+    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+        => this.RunOperationAsync(
+            "CollectionExists",
             async () =>
             {
-                var collections = await this._pineconeClient.ListIndexes(cancellationToken).ConfigureAwait(false);
+                var collections = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                return collections.Any(x => x.Name == this.CollectionName);
-            }).ConfigureAwait(false);
-
-        return result;
-    }
+                return collections.Indexes?.Any(x => x.Name == this.CollectionName) is true;
+            });
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._propertyReader.VectorProperty!;
-        var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
 
-        await this.RunOperationAsync(
-            CreateCollectionName,
-            () => this._pineconeClient.CreateServerlessIndex(
-                this.CollectionName,
-                dimension,
-                metric,
-                this._options.ServerlessIndexCloud,
-                this._options.ServerlessIndexRegion,
-                cancellationToken)).ConfigureAwait(false);
+        CreateIndexRequest request = new()
+        {
+            Name = this.CollectionName,
+            Dimension = vectorProperty.Dimensions ?? throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection."),
+            Metric = MapDistanceFunction(vectorProperty),
+            Spec = new ServerlessIndexSpec
+            {
+                Serverless = new ServerlessSpec
+                {
+                    Cloud = MapCloud(this._options.ServerlessIndexCloud),
+                    Region = this._options.ServerlessIndexRegion,
+                }
+            },
+        };
+
+        return this.RunOperationAsync("CreateCollection",
+            () => this._pineconeClient.CreateIndexAsync(request, cancellationToken: cancellationToken));
     }
 
     /// <inheritdoc />
@@ -127,24 +120,52 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (PineconeApiException ex) when (ex.InnerException is PineconeApiException)
+            {
+                // If the collection already exists, we should ignore the exception.
+                // TODO adsitnik: find out which exception is thrown when the collection already exists.
+                throw;
+            }
         }
     }
 
     /// <inheritdoc />
     public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync(
-            DeleteCollectionName,
-            () => this._pineconeClient.DeleteIndex(this.CollectionName, cancellationToken));
+            "DeleteCollection",
+            () => this._pineconeClient.DeleteIndexAsync(this.CollectionName, cancellationToken: cancellationToken));
 
     /// <inheritdoc />
     public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
-        var records = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        Sdk.FetchRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Ids = [key]
+        };
 
-        return records.FirstOrDefault();
+        var response = await this.RunOperationAsync(
+            "Get",
+            () => this.GetIndexClient().FetchAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        var result = response.Vectors?.Values.FirstOrDefault();
+        if (result is null)
+        {
+            return default;
+        }
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
+        return VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            "Get",
+            () => this._mapper.MapFromStorageToDataModel(result, mapperOptions));
     }
 
     /// <inheritdoc />
@@ -155,20 +176,32 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         Verify.NotNull(keys);
 
-        var indexNamespace = this.GetIndexNamespace();
-        var mapperOptions = new StorageToDataModelMapperOptions { IncludeVectors = options?.IncludeVectors ?? false };
+        List<string> keysList = keys.ToList();
+        if (keysList.Count == 0)
+        {
+            yield break;
+        }
 
-        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
+        Sdk.FetchRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Ids = keysList
+        };
 
-        var results = await this.RunOperationAsync(
-            GetOperationName,
-            () => index.Fetch(keys, indexNamespace, cancellationToken)).ConfigureAwait(false);
+        var response = await this.RunOperationAsync(
+            "GetBatch",
+            () => this.GetIndexClient().FetchAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        if (response.Vectors is null || response.Vectors.Count == 0)
+        {
+            yield break;
+        }
 
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            GetOperationName,
-            () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
+            "GetBatch",
+            () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
 
         foreach (var record in records)
         {
@@ -181,21 +214,37 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         Verify.NotNullOrWhiteSpace(key);
 
-        return this.DeleteBatchAsync([key], cancellationToken);
+        Sdk.DeleteRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Ids = [key]
+        };
+
+        return this.RunOperationAsync(
+            "Delete",
+            () => this.GetIndexClient().DeleteAsync(request, cancellationToken: cancellationToken));
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        var indexNamespace = this.GetIndexNamespace();
+        List<string> keysList = keys.ToList();
+        if (keysList.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
 
-        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
+        Sdk.DeleteRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Ids = keysList
+        };
 
-        await this.RunOperationAsync(
-            DeleteOperationName,
-            () => index.Delete(keys, indexNamespace, cancellationToken)).ConfigureAwait(false);
+        return this.RunOperationAsync(
+            "DeleteBatch",
+            () => this.GetIndexClient().DeleteAsync(request, cancellationToken: cancellationToken));
     }
 
     /// <inheritdoc />
@@ -203,19 +252,21 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         Verify.NotNull(record);
 
-        var indexNamespace = this.GetIndexNamespace();
-
-        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
-
         var vector = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            UpsertOperationName,
+            "Upsert",
             () => this._mapper.MapFromDataToStorageModel(record));
 
+        Sdk.UpsertRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Vectors = [vector],
+        };
+
         await this.RunOperationAsync(
-            UpsertOperationName,
-            () => index.Upsert([vector], indexNamespace, cancellationToken)).ConfigureAwait(false);
+            "Upsert",
+            () => this.GetIndexClient().UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         return vector.Id;
     }
@@ -225,19 +276,27 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         Verify.NotNull(records);
 
-        var indexNamespace = this.GetIndexNamespace();
-
-        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
-
         var vectors = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            UpsertOperationName,
+            "UpsertBatch",
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
+        if (vectors.Count == 0)
+        {
+            yield break;
+        }
+
+        Sdk.UpsertRequest request = new()
+        {
+            Namespace = this._options.IndexNamespace,
+            Vectors = vectors,
+        };
+
+        var indexClient = this._pineconeClient.Index(name: this.CollectionName);
         await this.RunOperationAsync(
-            UpsertOperationName,
-            () => index.Upsert(vectors, indexNamespace, cancellationToken)).ConfigureAwait(false);
+            "UpsertBatch",
+            () => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var vector in vectors)
         {
@@ -256,61 +315,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
                 $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}");
         }
 
-        // Resolve options and build filter clause.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var mapperOptions = new StorageToDataModelMapperOptions { IncludeVectors = options?.IncludeVectors ?? false };
-
-#pragma warning disable CS0618 // FilterClause is obsolete
-        var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
-            internalOptions.Filter?.FilterClauses,
-            this._propertyReader.StoragePropertyNamesMap);
-#pragma warning restore CS0618
-
-        // Get the current index.
-        var indexNamespace = this.GetIndexNamespace();
-        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
-
-        // Search.
-        var results = await this.RunOperationAsync(
-            QueryOperationName,
-            () => index.Query(
-                floatVector.ToArray(),
-                (uint)(internalOptions.Skip + internalOptions.Top),
-                filter,
-                sparseValues: null,
-                indexNamespace,
-                internalOptions.IncludeVectors,
-                includeMetadata: true,
-                cancellationToken)).ConfigureAwait(false);
-
-        // Skip the required results for paging.
-        var skippedResults = results.Skip(internalOptions.Skip);
-
-        // Map the results.
-        var records = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
-            QueryOperationName,
-            () =>
-            {
-                // First convert to Vector objects, since the
-                // mapper requires these as input.
-                var vectorResults = skippedResults.Select(x => (
-                    Vector: new Vector()
-                    {
-                        Id = x.Id,
-                        Values = x.Values ?? Array.Empty<float>(),
-                        Metadata = x.Metadata,
-                        SparseValues = x.SparseValues
-                    },
-                    x.Score));
-
-                return vectorResults.Select(x => new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(x.Vector, mapperOptions),
-                    x.Score));
-            });
-
-        return new VectorSearchResults<TRecord>(records.ToAsyncEnumerable());
+        throw new NotImplementedException();
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
@@ -336,7 +341,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             await operation.Invoke().ConfigureAwait(false);
         }
-        catch (RpcException ex)
+        catch (PineconeApiException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -347,13 +352,25 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         }
     }
 
-    private async Task<Sdk.Index<GrpcTransport>> GetIndexAsync(string indexName, CancellationToken cancellationToken)
-    {
-        this._index ??= await this._pineconeClient.GetIndex(indexName, cancellationToken).ConfigureAwait(false);
+    private IndexClient GetIndexClient()
+        => this._indexClient ??= this._pineconeClient.Index(name: this.CollectionName);
 
-        return this._index;
-    }
+    private static ServerlessSpecCloud MapCloud(string serverlessIndexCloud)
+        => serverlessIndexCloud switch
+        {
+            "aws" => ServerlessSpecCloud.Aws,
+            "azure" => ServerlessSpecCloud.Azure,
+            "gcp" => ServerlessSpecCloud.Gcp,
+            _ => throw new ArgumentException($"Invalid serverless index cloud: {serverlessIndexCloud}.", nameof(serverlessIndexCloud))
+        };
 
-    private string? GetIndexNamespace()
-        => this._options.IndexNamespace;
+    private static CreateIndexRequestMetric MapDistanceFunction(VectorStoreRecordVectorProperty vectorProperty)
+        => vectorProperty.DistanceFunction switch
+        {
+            DistanceFunction.CosineSimilarity => CreateIndexRequestMetric.Cosine,
+            DistanceFunction.DotProductSimilarity => CreateIndexRequestMetric.Dotproduct,
+            DistanceFunction.EuclideanSquaredDistance => CreateIndexRequestMetric.Euclidean,
+            null => CreateIndexRequestMetric.Cosine,
+            _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' is not supported.")
+        };
 }

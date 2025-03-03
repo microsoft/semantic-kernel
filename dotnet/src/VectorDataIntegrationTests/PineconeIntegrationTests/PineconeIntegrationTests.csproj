@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<ProjectReference Include="..\..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />-->
+    <ProjectReference Include="..\..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\VectorDataIntegrationTests\VectorDataIntegrationTests.csproj" />
   </ItemGroup>
 
