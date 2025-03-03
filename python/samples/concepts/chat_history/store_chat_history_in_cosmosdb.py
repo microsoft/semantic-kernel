@@ -21,13 +21,11 @@ from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.functions import KernelArguments
 
-################################################################################
-# This sample demonstrates how to build a conversational chatbot               #
-# using Semantic Kernel, it features auto function calling,                    #
-# but with Azure CosmosDB as storage for the chat history.                     #
-# This sample stores and reads the chat history at every turn.                 #
-# This is not the best way to do it, but clearly demonstrates the mechanics.   #
-################################################################################
+# This sample demonstrates how to build a conversational chatbot
+# using Semantic Kernel, it features auto function calling,
+# but with Azure CosmosDB as storage for the chat history.
+# This sample stores and reads the chat history at every turn.
+# This is not the best way to do it, but clearly demonstrates the mechanics.
 
 
 # 1. We first create simple datamodel for the chat history.
@@ -52,7 +50,7 @@ class ChatHistoryInCosmosDB(ChatHistory):
     session_id: str
     user_id: str
     store: VectorStore
-    collection: VectorStoreRecordCollection | None = None
+    collection: VectorStoreRecordCollection[str, ChatHistoryModel] | None = None
 
     async def create_collection(self, collection_name: str) -> None:
         """Create a collection with the inbuild data model using the vector store.
@@ -72,7 +70,11 @@ class ChatHistoryInCosmosDB(ChatHistory):
         """
         if self.collection:
             await self.collection.upsert(
-                ChatHistoryModel(self.session_id, self.user_id, [msg.model_dump() for msg in self.messages])
+                ChatHistoryModel(
+                    session_id=self.session_id,
+                    user_id=self.user_id,
+                    messages=[msg.model_dump() for msg in self.messages],
+                )
             )
 
     async def read_messages(self) -> None:
@@ -168,7 +170,7 @@ async def chat(history) -> bool:
     arguments["chat_history"] = history
 
     # Handle non-streaming responses
-    result = await kernel.invoke(chat_function, arguments=arguments)
+    result = await kernel.invoke(chat_function, arguments=arguments)  # type: ignore
 
     # Update the chat history with the assistant's response
     if result:
@@ -186,6 +188,7 @@ async def main() -> None:
     session_id = "session1"
     chatting = True
     # First we enter the store context manager to connect.
+    # The create_database flag will create the database if it does not exist.
     async with AzureCosmosDBNoSQLStore(create_database=True) as store:
         # Then we create the chat history in CosmosDB.
         history = ChatHistoryInCosmosDB(store=store, session_id=session_id, user_id="user")

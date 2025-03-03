@@ -11,13 +11,11 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
-#################################################################################
-# This sample demonstrates how to build a conversational chatbot                #
-# using Semantic Kernel, it features auto function calling,                     #
-# but with file-based serialization of the chat history.                        #
-# This sample stores and reads the chat history at every turn.                  #
-# This is not the best way to do it, but clearly demonstrates the mechanics.    #
-#################################################################################
+# This sample demonstrates how to build a conversational chatbot
+# using Semantic Kernel, it features auto function calling,
+# but with file-based serialization of the chat history.
+# This sample stores and reads the chat history at every turn.
+# This is not the best way to do it, but clearly demonstrates the mechanics.
 
 # System message defining the behavior and persona of the chat bot.
 system_message = """
@@ -103,7 +101,7 @@ async def chat(file) -> bool:
     arguments["chat_history"] = history
 
     # Handle non-streaming responses
-    result = await kernel.invoke(chat_function, arguments=arguments)
+    result = await kernel.invoke(chat_function, arguments=arguments)  # type: ignore
 
     # Update the chat history with the user's input and the assistant's response
     if result:

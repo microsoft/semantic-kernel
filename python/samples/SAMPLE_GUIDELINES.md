@@ -33,7 +33,7 @@ Try to do a best effort to make sure that the samples are incremental in complex
 
 ### **Documentation**
 
-Try to over-document the samples. This includes comments in the code, README.md files, and any other documentation that is necessary to understand the sample.
+Try to over-document the samples. This includes comments in the code, README.md files, and any other documentation that is necessary to understand the sample. We use the guidance from [PEP8](https://peps.python.org/pep-0008/#comments) for comments in the code.
 
 For the getting started samples and the concept samples, we should have the following:
 
@@ -62,14 +62,11 @@ For the getting started samples and the concept samples, we should have the foll
 4. At the end of the sample, include a section that explains the expected output of the sample. For example:
 
     ```python
-    '''
-    Sample output:
+    # Sample output:
     # User:> Why is the sky blue in one sentence?
     # Mosscap:> The sky is blue due to the scattering of sunlight by the molecules in the Earth's atmosphere,
     #           a phenomenon known as Rayleigh scattering, which causes shorter blue wavelengths to become more
-    #           prominent in our visual perception.
-    '''
-    
+    #           prominent in our visual perception.    
     ```
 
 For the demos, a README.md file must be included that explains the purpose of the demo and how to run it. The README.md file should include the following:
