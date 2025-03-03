@@ -70,7 +70,7 @@ samples/
 Pros:
 
 - Simpler and Less verbose structure (Worse is Better: Less is more approach)
-- Beginers will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
+- Beginners will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
 - Getting started will not be imposed.
 
 Cons:
