@@ -12,12 +12,24 @@ public class SampleTests(PineconeFixture fixture) : IClassFixture<PineconeFixtur
     [ConditionalFact]
     public async Task CanRunSampleCode()
     {
-        var collectionModel = await fixture.Client.CreateCollectionAsync(new CreateCollectionRequest
+        const string IndexName = "sample-index-name";
+
+        await fixture.Client.CreateIndexAsync(new CreateIndexRequest
         {
-            Name = "example-collection",
-            Source = "example-index",
+            Name = IndexName,
+            Dimension = 2,
+            Metric = CreateIndexRequestMetric.Cosine,
+            Spec = new ServerlessIndexSpec
+            {
+                Serverless = new ServerlessSpec
+                {
+                    Cloud = ServerlessSpecCloud.Aws,
+                    Region = "us-east-1",
+                }
+            },
+            DeletionProtection = DeletionProtection.Disabled,
         });
 
-        await fixture.Client.DeleteCollectionAsync(collectionModel.Name);
+        await fixture.Client.DeleteIndexAsync(IndexName);
     }
 }

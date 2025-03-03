@@ -2,6 +2,7 @@
 
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using Grpc.Net.Client;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 using VectorDataSpecificationTests.Support;
@@ -14,8 +15,8 @@ internal sealed class PineconeTestStore : TestStore
 {
     // Values taken from https://docs.pinecone.io/guides/operations/local-development
     private const string Image = "ghcr.io/pinecone-io/pinecone-local:v0.7.0";
-    private const ushort HttpPort = 5080;
-    private const string Host = "localhost";
+    private const ushort RestPort = 5080;
+    private const ushort GrpcPort = RestPort + 1;
 
     public static PineconeTestStore Instance { get; } = new();
 
@@ -35,19 +36,30 @@ internal sealed class PineconeTestStore : TestStore
     {
         this._container = await this.CreateContainerAsync();
 
-        string url = $"http://{this._container.Hostname}:{this._container.GetMappedPublicPort(HttpPort)}";
+        string restUrl = $"http://{this._container.Hostname}:{this._container.GetMappedPublicPort(RestPort)}";
+        string grpcUrl = $"http://{this._container.Hostname}:{this._container.GetMappedPublicPort(GrpcPort)}";
+
+        GrpcChannelOptions grpcOptions = new()
+        {
+            HttpClient = new()
+            {
+                BaseAddress = new(grpcUrl)
+            }
+        };
+
+        ClientOptions clientOptions = new()
+        {
+            BaseUrl = restUrl,
+            MaxRetries = 0,
+            IsTlsEnabled = false,
+            GrpcOptions = grpcOptions
+        };
 
         this._client = new PineconeClient(
             apiKey: "ForPineconeLocalTheApiKeysAreIgnored",
-            clientOptions: new()
-            {
-                BaseUrl = url,
-                MaxRetries = 0,
-                IsTlsEnabled = false
-            });
-        //this._defaultVectorStore = new(this._client);
+            clientOptions: clientOptions);
 
-        Console.WriteLine(url);
+        //this._defaultVectorStore = new(this._client);
     }
 
     protected override async Task StopAsync()
@@ -62,14 +74,8 @@ internal sealed class PineconeTestStore : TestStore
     {
         var container = new ContainerBuilder()
             .WithImage(Image)
-            .WithPortBinding(HttpPort, assignRandomHostPort: true)
-            .WithEnvironment("PINECONE_HOST", "localhost")
-            .WithEnvironment("PORT", HttpPort.ToString())
-            .WithHostname(Host)
-            .WithExposedPort(HttpPort)
-            //.WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(HttpPort)))
-            //.WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(HttpPort))
-            //.WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*Emulating a Pinecone serverless index.*"))
+            .WithPortBinding(RestPort, assignRandomHostPort: true)
+            .WithPortBinding(GrpcPort, assignRandomHostPort: true)
             .Build();
 
         await container.StartAsync();
