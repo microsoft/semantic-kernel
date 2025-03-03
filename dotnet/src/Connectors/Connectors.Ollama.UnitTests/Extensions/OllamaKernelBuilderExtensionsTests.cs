@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
+using System.IO;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -13,7 +14,6 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
 using Xunit;
-using System.IO;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests.Extensions;
 
