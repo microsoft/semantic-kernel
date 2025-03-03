@@ -27,4 +27,4 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az pipelines run --folder-path "sk-python" --name ${{ vars.ADO_PYTHON_RELEASE_PIPELINE_NAME }} --org ${{ vars.ADO_PROJECT_URL }} --variables tag=${{ inputs.tag }} delay=0
+            az pipelines run --id 308 --org ${{ vars.ADO_PROJECT_URL }} --project semantic-kernel --parameters tag=${{ inputs.tag }} delay=0
