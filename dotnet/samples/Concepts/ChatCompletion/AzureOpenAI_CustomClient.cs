@@ -5,6 +5,8 @@ using System.ClientModel.Primitives;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA5399 // HttpClient is created without enabling CheckCertificateRevocationList
+
 namespace ChatCompletion;
 
 /// <summary>
