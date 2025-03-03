@@ -101,7 +101,7 @@ Pros:
 
 Cons:
 
-- If the Getting starded example does not have a valid example for the customer it has go back on other folders for more content.
+- If the Getting started example does not have a valid example for the customer it has go back on other folders for more content.
 
 ### Option 3 - Conservative + Use Cases Based Root Categorization
 
