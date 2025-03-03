@@ -4,6 +4,8 @@ from abc import ABC
 from functools import partial
 from typing import Any, ClassVar
 
+import boto3
+
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -18,6 +20,26 @@ class BedrockBase(KernelBaseModel, ABC):
     bedrock_runtime_client: Any
     # Client: Use for model management
     bedrock_client: Any
+
+    def __init__(
+        self,
+        *,
+        runtime_client: Any | None = None,
+        client: Any | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the Amazon Bedrock Base Class.
+
+        Args:
+            runtime_client: The Amazon Bedrock runtime client to use.
+            client: The Amazon Bedrock client to use.
+            **kwargs: Additional keyword arguments.
+        """
+        super().__init__(
+            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
+            bedrock_client=client or boto3.client("bedrock"),
+            **kwargs,
+        )
 
     async def get_foundation_model_info(self, model_id: str) -> dict[str, Any]:
         """Get the foundation model information."""

@@ -51,6 +51,7 @@
         "nopep",
         "NOSQL",
         "ollama",
+        "Onnx",
         "onyourdatatest",
         "OPENAI",
         "opentelemetry",
