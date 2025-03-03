@@ -19,8 +19,10 @@ public static class CommonSteps
     {
         public const string CountFunction = nameof(Count);
 
+#pragma warning disable CA2211
+        // workaround for unit testing evaluation purposes
         public static int Index = 0;
-
+#pragma warning restore CA2211
         [KernelFunction]
         public string Count()
         {
