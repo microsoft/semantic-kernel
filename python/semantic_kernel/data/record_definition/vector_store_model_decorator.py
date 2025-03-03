@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from functools import wraps
 from inspect import Parameter, _empty, signature
 from types import MappingProxyType, NoneType
 from typing import TypeVar
@@ -53,7 +52,7 @@ def vectorstoremodel(
         setattr(cls, "__kernel_vectorstoremodel__", True)
         setattr(cls, "__kernel_vectorstoremodel_definition__", _parse_signature_to_definition(cls_sig.parameters))
 
-        return wraps(cls)  # type: ignore
+        return cls  # type: ignore
 
     # See if we're being called as @vectorstoremodel or @vectorstoremodel().
     if cls is None:
