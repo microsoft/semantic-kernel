@@ -61,7 +61,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
         private readonly string _modelNameStartsWith = modelNameStartsWith;
 
         /// <inheritdoc/>
-        public bool TrySelectChatClient<T>(
+        private bool TrySelect<T>(
             Kernel kernel, KernelFunction function, KernelArguments arguments,
             [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class
         {
@@ -104,6 +104,15 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
             KernelArguments arguments,
             [NotNullWhen(true)] out T? service,
             out PromptExecutionSettings? serviceSettings) where T : class, IAIService
-            => this.TrySelectChatClient(kernel, function, arguments, out service, out serviceSettings);
+            => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
+
+        /// <inheritdoc/>
+        public bool TrySelectChatClient<T>(
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments arguments,
+            [NotNullWhen(true)] out T? service,
+            out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
+            => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
     }
 }
