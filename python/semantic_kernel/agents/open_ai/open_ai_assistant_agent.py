@@ -146,6 +146,7 @@ class OpenAIAssistantAgent(Agent):
     @staticmethod
     def setup_resources(
         *,
+        ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
         env_file_path: str | None = None,
@@ -158,6 +159,7 @@ class OpenAIAssistantAgent(Agent):
         Any arguments provided will override the values in the environment variables/environment file.
 
         Args:
+            ai_model_id: The AI model ID
             api_key: The API key
             org_id: The organization ID
             env_file_path: The environment file path
@@ -170,6 +172,7 @@ class OpenAIAssistantAgent(Agent):
         """
         try:
             openai_settings = OpenAISettings.create(
+                chat_model_id=ai_model_id,
                 api_key=api_key,
                 org_id=org_id,
                 env_file_path=env_file_path,
