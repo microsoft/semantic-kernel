@@ -23,10 +23,10 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     get_text_embedding_request_body,
     parse_text_embedding_response,
 )
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.utils.async_utils import run_in_executor
 
 if TYPE_CHECKING:
     pass

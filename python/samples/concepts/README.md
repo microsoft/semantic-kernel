@@ -24,12 +24,12 @@
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
+
 - [Bedrock Agent Simple Chat Streaming](./agents/bedrock_agent/bedrock_agent_simple_chat_streaming.py)
 - [Bedrock Agent Simple Chat](./agents/bedrock_agent/bedrock_agent_simple_chat.py)
-- [Bedrock Agent Update Agent](./agents/bedrock_agent/bedrock_agent_update_agent.py)
-- [Bedrock Agent Use Existing](./agents/bedrock_agent/bedrock_agent_use_existing.py)
 - [Bedrock Agent With Code Interpreter Streaming](./agents/bedrock_agent/bedrock_agent_with_code_interpreter_streaming.py)
 - [Bedrock Agent With Code Interpreter](./agents/bedrock_agent/bedrock_agent_with_code_interpreter.py)
+- [Bedrock Agent With Kernel Function Simple](./agents/bedrock_agent/bedrock_agent_with_kernel_function_simple.py)
 - [Bedrock Agent With Kernel Function Streaming](./agents/bedrock_agent/bedrock_agent_with_kernel_function_streaming.py)
 - [Bedrock Agent With Kernel Function](./agents/bedrock_agent/bedrock_agent_with_kernel_function.py)
 - [Bedrock Agent Mixed Chat Agents Streaming](./agents/bedrock_agent/bedrock_mixed_chat_agents_streaming.py)
@@ -38,8 +38,12 @@
 #### [Chat Completion Agent](../../semantic_kernel/agents/chat_completion/chat_completion_agent.py)
 
 - [Chat Completion Function Termination](./agents/chat_completion_agent/chat_completion_function_termination.py)
-- [Chat Completion History Reducer](./agents/chat_completion_agent/chat_completion_history_reducer.py)
-- [Chat Completion Templating](./agents/chat_completion_agent/chat_completion_templating.py)
+- [Chat Completion Templating](./agents/chat_completion_agent/chat_completion_prompt_templating.py)
+- [Chat Completion Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_summary_history_reducer_agent_chat.py)
+- [Chat Completion Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_summary_history_reducer_single_agent.py)
+- [Chat Completion Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_agent_chat.py)
+- [Chat Completion Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_single_agent.py)
+
 
 #### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
 
