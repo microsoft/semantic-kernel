@@ -9,32 +9,32 @@
 
 Follow this [guide](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration) to configure your environment to use the Bedrock API.
 
-> Please configure the `aws_access_key_id`, `aws_secret_access_key`, and `region` otherwise you will need to create custom clients for the services. For example:
+Please configure the `aws_access_key_id`, `aws_secret_access_key`, and `region` otherwise you will need to create custom clients for the services. For example:
 
-    ```python
-    runtime_client=boto.client(
-        "bedrock-runtime",
-        aws_access_key_id="your_access_key",
-        aws_secret_access_key="your_secret_key",
-        region_name="your_region",
-        [...other parameters you may need...]
-    )
-    client=boto.client(
-        "bedrock",
-        aws_access_key_id="your_access_key",
-        aws_secret_access_key="your_secret_key",
-        region_name="your_region",
-        [...other parameters you may need...]
-    )
+```python
+runtime_client=boto.client(
+    "bedrock-runtime",
+    aws_access_key_id="your_access_key",
+    aws_secret_access_key="your_secret_key",
+    region_name="your_region",
+    [...other parameters you may need...]
+)
+client=boto.client(
+    "bedrock",
+    aws_access_key_id="your_access_key",
+    aws_secret_access_key="your_secret_key",
+    region_name="your_region",
+    [...other parameters you may need...]
+)
 
-    bedrock_agent = BedrockAgent.create_and_prepare_agent(
-        name="your_agent_name",
-        instructions="your_instructions",
-        runtime_client=runtime_client,
-        client=client,
-        [...other parameters you may need...]
-    )
-    ```
+bedrock_agent = BedrockAgent.create_and_prepare_agent(
+    name="your_agent_name",
+    instructions="your_instructions",
+    runtime_client=runtime_client,
+    client=client,
+    [...other parameters you may need...]
+)
+```
 
 ## Samples
 
