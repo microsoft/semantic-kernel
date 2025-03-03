@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -242,11 +243,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.AddStep(mapBuilder, aliases);
     }
 
-    public ProcessProxyBuilder AddProxyStep<TExternalMessageChannel>(IReadOnlyList<string> externalTopics, string? dependencyIdentifier = null, IReadOnlyList<string>? aliases = null)
-        where TExternalMessageChannel : IExternalKernelProcessMessageChannel
+    /// <summary>
+    /// Adds proxy step to the process that allows emitting events externally. For making use of it, there should be an implementation
+    /// of <see cref="IExternalKernelProcessMessageChannel"/> passed.
+    /// For now, the current implementation only allows for 1 implementation of <see cref="IExternalKernelProcessMessageChannel"/> at the time.
+    /// </summary>
+    /// <param name="externalTopics">topic names to be used externally</param>
+    /// <param name="name">name of the proxy step</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
+    public ProcessProxyBuilder AddProxyStep(IReadOnlyList<string> externalTopics, string? name = null, IReadOnlyList<string>? aliases = null)
     {
-        // TODO: store link between proxy step name and TExternalMessageChannel
-        ProcessProxyBuilder proxyBuilder = new(externalTopics, dependencyIdentifier ?? typeof(TExternalMessageChannel).Name);
+        Verify.NotNullOrWhiteSpace(name, nameof(name));
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, name ?? nameof(KernelProxyStep));
 
         return this.AddStep(proxyBuilder, aliases);
     }

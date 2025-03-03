@@ -94,7 +94,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
         var proxyTopics = new List<string>() { MockTopicNames.RepeatExternalTopic, MockTopicNames.EchoExternalTopic };
-        var proxyStep = processBuilder.AddProxyStep<MockCloudEventClient>(proxyTopics);
+        var proxyStep = processBuilder.AddProxyStep(proxyTopics);
 
         processBuilder
             .OnInputEvent(ProcessTestsEvents.StartProcess)

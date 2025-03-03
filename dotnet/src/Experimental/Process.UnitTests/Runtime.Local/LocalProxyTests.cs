@@ -28,7 +28,7 @@ public class LocalProxyTests
         ProcessBuilder process = new(nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
-        var proxyStep = process.AddProxyStep<MockCloudEventClient>([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
         counterStep.OnFunctionResult().EmitExternalEvent(proxyStep, this._topic1);
@@ -68,7 +68,7 @@ public class LocalProxyTests
         ProcessBuilder process = new(nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
-        var proxyStep = process.AddProxyStep<MockCloudEventClient>([this._topic1]);
+        var proxyStep = process.AddProxyStep([this._topic1]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
 
@@ -89,7 +89,7 @@ public class LocalProxyTests
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>();
-        var proxyStep = process.AddProxyStep<MockCloudEventClient>([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
 
         process
             .OnInputEvent(this._startProcessEvent)
