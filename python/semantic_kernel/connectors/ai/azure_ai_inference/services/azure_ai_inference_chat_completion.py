@@ -245,7 +245,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             items.append(
                 TextContent(
                     text=choice.message.content,
-                    inner_content=response,
                     metadata=metadata,
                 )
             )
