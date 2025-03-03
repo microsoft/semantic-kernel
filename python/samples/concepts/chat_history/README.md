@@ -2,13 +2,13 @@
 
 This folder contains samples that demonstrate how to manipulate chat history in Semantic Kernel.
 
-## [Serialize Chat History](serialize_chat_history.py)
+## [Serialize Chat History](./serialize_chat_history.py)
 
 This sample demonstrates how to build a conversational chatbot using Semantic Kernel, it features auto function calling, but with file-based serialization of the chat history. This sample stores and reads the chat history at every turn. This is not the best way to do it, but clearly demonstrates the mechanics.
 
 To run this sample a environment with keys for the chosen chat service is required. In line 61 you can change the model used. This sample uses a temporary file to store the chat history, so no additional setup is required.
 
-## [Store Chat History in Cosmos DB](store_chat_history_in_cosmos_db.py)
+## [Store Chat History in Cosmos DB](./store_chat_history_in_cosmos_db.py)
 
 This a more complex version of the sample above, it uses Azure CosmosDB NoSQL to store the chat messages.
 
