@@ -8,13 +8,13 @@ from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.functions.function_result import FunctionResult
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
