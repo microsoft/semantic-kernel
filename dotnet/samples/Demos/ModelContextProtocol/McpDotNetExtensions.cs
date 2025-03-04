@@ -13,6 +13,9 @@ namespace ModelContextProtocol;
 /// </summary>
 internal static class McpDotNetExtensions
 {
+    /// <summary>
+    /// Retrieve an <see cref="IMcpClient"/> instance configured to connect to a GitHub server running on stdio.
+    /// </summary>
     internal static async Task<IMcpClient> GetGitHubToolsAsync()
     {
         McpClientOptions options = new()
@@ -41,13 +44,17 @@ internal static class McpDotNetExtensions
         return await factory.GetClientAsync(config.Id).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Map the tools exposed on this <see cref="IMcpClient"/> to a collection of <see cref="KernelFunction"/> instances for use with the Semantic Kernel.
+    /// </summary>
     internal static async Task<IEnumerable<KernelFunction>> MapToFunctionsAsync(this IMcpClient mcpClient)
     {
         var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
         return tools.Tools.Select(t => t.ToKernelFunction(mcpClient)).ToList();
     }
 
-    internal static KernelFunction ToKernelFunction(this Tool tool, IMcpClient mcpClient)
+    #region private
+    private static KernelFunction ToKernelFunction(this Tool tool, IMcpClient mcpClient)
     {
         async Task<string> InvokeToolAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
@@ -93,7 +100,6 @@ internal static class McpDotNetExtensions
         );
     }
 
-    #region private
     private static object ToArgumentValue(this KernelFunction function, string name, object value)
     {
         var parameter = function.Metadata.Parameters.FirstOrDefault(p => p.Name == name);
@@ -108,7 +114,7 @@ internal static class McpDotNetExtensions
         } ?? value;
     }
 
-    private static IEnumerable<KernelParameterMetadata>? ToParameters(this Tool tool)
+    private static List<KernelParameterMetadata>? ToParameters(this Tool tool)
     {
         var inputSchema = tool.InputSchema;
         var properties = inputSchema?.Properties;
