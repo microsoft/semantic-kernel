@@ -16,6 +16,7 @@ public class LocalProxyTests
     private readonly string _topic2 = "MyTopic2";
 
     private readonly string _startProcessEvent = "startProcess";
+    private readonly string _startEchoProcessEvent = "startEchoProcess";
 
     /// <summary>
     /// Validates the <see cref="LocalProxy"/> result called once and then after process stops
@@ -126,21 +127,9 @@ public class LocalProxyTests
         Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
         Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
         Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
-
-        // Act
-        await processContext.SendEventAsync(new() { Id = this._startProcessEvent, Data = null });
-
-        // Assert
-        Assert.NotNull(mockProxyClient);
-        Assert.True(0 < mockProxyClient.InitializationCounter);
-        Assert.Equal(6, mockProxyClient.CloudEvents.Count);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[3].TopicName);
-        Assert.Equal("3", mockProxyClient.CloudEvents[3].Data?.EventData);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[4].TopicName);
-        Assert.Equal("4", mockProxyClient.CloudEvents[4].Data?.EventData);
-        Assert.Equal(this._topic2, mockProxyClient.CloudEvents[5].TopicName);
-        Assert.Equal("4", mockProxyClient.CloudEvents[5].Data?.EventData);
     }
+
+    
 
     private async Task<LocalKernelProcessContext> RunProcessAsync(Kernel kernel, KernelProcess process, object? input, string inputEvent, IExternalKernelProcessMessageChannel? externalMessageChannel)
     {

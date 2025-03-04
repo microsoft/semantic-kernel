@@ -36,6 +36,16 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
         }
     }
 
+    /// <summary>
+    /// For testing purposes reset public properties
+    /// </summary>
+    public void Reset()
+    {
+        this.InitializationCounter = 0;
+        this.UninitializationCounter = 0;
+        this.CloudEvents.Clear();
+    }
+
     /// <inheritdoc/>
     public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
     {

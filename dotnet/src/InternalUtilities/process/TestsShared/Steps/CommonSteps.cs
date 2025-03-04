@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -68,6 +69,19 @@ public static class CommonSteps
             }
 
             await context.EmitEventAsync(OutputEvents.OddNumber, numberString);
+        }
+    }
+
+    /// <summary>
+    /// A step that echos its input.
+    /// </summary>
+    public sealed class EchoStep : KernelProcessStep
+    {
+        [KernelFunction]
+        public string Echo(string message)
+        {
+            Console.WriteLine($"[ECHO] {message}");
+            return message;
         }
     }
 
