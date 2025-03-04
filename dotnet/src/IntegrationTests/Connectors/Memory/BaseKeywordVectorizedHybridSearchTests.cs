@@ -48,7 +48,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the third contains Grapes, so searching for
             // Grapes should return the third record first.
-            var searchResult = await hybridSearch!.HybridSearch(vector, ["Grapes"]);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"]);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -85,7 +85,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             {
                 Filter = new VectorSearchFilter().EqualTo("Code", 1)
             };
-            var searchResult = await hybridSearch!.HybridSearch(vector, ["Oranges"], options);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], options);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -118,7 +118,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the second contains Oranges, so the
             // second should be returned first.
-            var searchResult = await hybridSearch!.HybridSearch(vector, ["Oranges"], new() { Top = 1 });
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { Top = 1 });
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -151,7 +151,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the first and third contain healthy,
             // so when skipping the first two results, we should get the second record.
-            var searchResult = await hybridSearch!.HybridSearch(vector, ["healthy"], new() { Skip = 2 });
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], new() { Skip = 2 });
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -182,7 +182,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             await this.CreateCollectionAndAddDataAsync(sut, vector);
 
             // Act
-            var searchResult = await hybridSearch!.HybridSearch(vector, ["tangy", "nourishing"]);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"]);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -215,8 +215,8 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             await this.CreateCollectionAndAddDataAsync(sut, vector);
 
             // Act
-            var searchResult1 = await hybridSearch!.HybridSearch(vector, ["Apples"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
-            var searchResult2 = await hybridSearch!.HybridSearch(vector, ["Oranges"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
 
             // Assert
             var results1 = await searchResult1.Results.ToListAsync();
