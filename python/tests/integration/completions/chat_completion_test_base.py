@@ -88,7 +88,9 @@ class ChatCompletionTestBase(CompletionTestBase):
     """Base class for testing completion services."""
 
     @override
-    @pytest.fixture(scope="class")
+    @pytest.fixture(
+        scope="function"
+    )  # This needs to be scoped to function to avoid resources getting cleaned up after each test
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
         azure_openai_settings = AzureOpenAISettings.create()
