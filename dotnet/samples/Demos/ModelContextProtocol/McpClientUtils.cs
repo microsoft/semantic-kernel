@@ -13,18 +13,18 @@ internal static class McpClientUtils
     {
         McpClientOptions options = new()
         {
-            ClientInfo = new() { Name = "SimpleToolsConsole", Version = "1.0.0" }
+            ClientInfo = new() { Name = "GitHub", Version = "1.0.0" }
         };
 
         var config = new McpServerConfig
         {
-            Id = "everything",
-            Name = "Everything",
+            Id = "github",
+            Name = "GitHub",
             TransportType = "stdio",
             TransportOptions = new Dictionary<string, string>
             {
                 ["command"] = "npx",
-                ["arguments"] = "-y @modelcontextprotocol/server-everything",
+                ["arguments"] = "-y @modelcontextprotocol/server-github",
             }
         };
 
@@ -47,27 +47,37 @@ internal static class McpClientUtils
     {
         async Task<string> InvokeToolAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
-            // Convert arguments to dictionary format expected by mcpdotnet
-            Dictionary<string, object> mcpArguments = [];
-            foreach (var arg in arguments)
+            try
             {
-                if (arg.Value is not null)
+                // Convert arguments to dictionary format expected by mcpdotnet
+                Dictionary<string, object> mcpArguments = [];
+                foreach (var arg in arguments)
                 {
-                    mcpArguments[arg.Key] = function.ToArgumentValue(arg.Key, arg.Value);
+                    if (arg.Value is not null)
+                    {
+                        mcpArguments[arg.Key] = function.ToArgumentValue(arg.Key, arg.Value);
+                    }
                 }
+
+                // Call the tool through mcpdotnet
+                var result = await mcpClient.CallToolAsync(
+                    tool.Name,
+                    mcpArguments,
+                    cancellationToken: cancellationToken
+                ).ConfigureAwait(false);
+
+                // Extract the text content from the result
+                return string.Join("\n", result.Content
+                    .Where(c => c.Type == "text")
+                    .Select(c => c.Text));
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error invoking tool '{tool.Name}': {ex.Message}");
 
-            // Call the tool through mcpdotnet
-            var result = await mcpClient.CallToolAsync(
-                tool.Name,
-                mcpArguments,
-                cancellationToken: cancellationToken
-            ).ConfigureAwait(false);
-
-            // Extract the text content from the result
-            return string.Join("\n", result.Content
-                .Where(c => c.Type == "text")
-                .Select(c => c.Text));
+                // Rethrowing to allow the kernel to handle the exception
+                throw;
+            }
         }
 
         return KernelFunctionFactory.CreateFromMethod(
@@ -84,11 +94,11 @@ internal static class McpClientUtils
         var parameter = function.Metadata.Parameters.FirstOrDefault(p => p.Name == name);
         return parameter?.ParameterType switch
         {
-            Type t when t == typeof(int) => Convert.ToInt32(value),
-            Type t when t == typeof(double) => Convert.ToDouble(value),
-            Type t when t == typeof(bool) => Convert.ToBoolean(value),
-            Type t when t == typeof(IEnumerable<object>) => (value as IEnumerable<object>)?.ToList(),
-            Type t when t == typeof(IDictionary<string, object>) => (value as IDictionary<string, object>)?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+            Type t when Nullable.GetUnderlyingType(t) == typeof(int) => Convert.ToInt32(value),
+            Type t when Nullable.GetUnderlyingType(t) == typeof(double) => Convert.ToDouble(value),
+            Type t when Nullable.GetUnderlyingType(t) == typeof(bool) => Convert.ToBoolean(value),
+            Type t when t == typeof(List<string>) => (value as IEnumerable<object>)?.ToList(),
+            Type t when t == typeof(Dictionary<string, object>) => (value as Dictionary<string, object>)?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
             _ => value,
         } ?? value;
     }
@@ -127,16 +137,11 @@ internal static class McpClientUtils
             "integer" => typeof(int),
             "number" => typeof(double),
             "boolean" => typeof(bool),
-            "array" => typeof(IEnumerable<object>),
-            "object" => typeof(IDictionary<string, object>),
+            "array" => typeof(List<string>),
+            "object" => typeof(Dictionary<string, object>),
             _ => typeof(object)
         };
 
-        if (!required && type.IsValueType)
-        {
-            return typeof(Nullable<>).MakeGenericType(type);
-        }
-
-        return type;
+        return !required && type.IsValueType ? typeof(Nullable<>).MakeGenericType(type) : type;
     }
 }

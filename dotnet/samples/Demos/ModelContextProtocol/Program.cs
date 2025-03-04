@@ -35,7 +35,7 @@ foreach (var function in functions)
     Console.WriteLine($"{function.Name}: {function.Description}");
 }
 
-kernel.Plugins.AddFromFunctions("SimpleTools", functions);
+kernel.Plugins.AddFromFunctions("GitHub", functions);
 
 // Enable automatic function calling
 var executionSettings = new OpenAIPromptExecutionSettings
@@ -44,10 +44,7 @@ var executionSettings = new OpenAIPromptExecutionSettings
     FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 };
 
-// Test echo tool
-var result = await kernel.InvokePromptAsync("Please call the echo tool with the string 'Hello MCP from Semantic Kernel!' and return the response.", new(executionSettings)).ConfigureAwait(false);
-Console.WriteLine(result);
-
-// Test add tool
-result = await kernel.InvokePromptAsync("Add 40 and 60?", new(executionSettings)).ConfigureAwait(false);
+// Test using GitHub tools
+var result = await kernel.InvokePromptAsync("Summarize the last four commits to the microsoft/semantic-kernel repository?", new(executionSettings)).ConfigureAwait(false);
+Console.WriteLine("\n\nSummary of the last four commits to the microsoft/semantic-kernel repository:");
 Console.WriteLine(result);
