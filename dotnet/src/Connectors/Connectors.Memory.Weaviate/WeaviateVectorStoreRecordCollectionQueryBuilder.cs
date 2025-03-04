@@ -64,6 +64,62 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         """;
     }
 
+    /// <summary>
+    /// Builds Weaviate hybrid search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
+    /// </summary>
+    public static string BuildHybridSearchQuery<TVector>(
+        TVector vector,
+        string keywords,
+        string collectionName,
+        string vectorPropertyName,
+        string keyPropertyName,
+        string textPropertyName,
+        JsonSerializerOptions jsonSerializerOptions,
+        KeywordVectorizedHybridSearchOptions searchOptions,
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        IReadOnlyList<string> vectorPropertyStorageNames,
+        IReadOnlyList<string> dataPropertyStorageNames)
+    {
+        var vectorsQuery = searchOptions.IncludeVectors ?
+            $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
+            string.Empty;
+
+        var filter = BuildFilter(
+            searchOptions.Filter,
+            jsonSerializerOptions,
+            keyPropertyName,
+            storagePropertyNames);
+
+        var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
+
+        return $$"""
+        {
+          Get {
+            {{collectionName}} (
+              limit: {{searchOptions.Top}}
+              offset: {{searchOptions.Skip}}
+              {{filter}}
+              hybrid: {
+                query: "{{keywords}}"
+                properties: ["{{textPropertyName}}"]
+                targetVectors: ["{{vectorPropertyName}}"]
+                vector: {{vectorArray}}
+                fusionType: rankedFusion
+              }
+            ) {
+              {{string.Join(" ", dataPropertyStorageNames)}}
+              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                {{WeaviateConstants.ReservedKeyPropertyName}}
+                {{WeaviateConstants.HybridScorePropertyName}}
+                {{vectorsQuery}}
+              }
+            }
+          }
+        }
+        """;
+    }
+
     #region private
 
     /// <summary>

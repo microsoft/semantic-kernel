@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
 public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)
 {
-    private const string? SkipReason = "Azure CosmosDB MongoDB cluster is required";
+    private const string? SkipReason = null; //"Azure CosmosDB MongoDB cluster is required";
 
     [Theory(Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
@@ -23,7 +23,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName);
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName + AzureCosmosDBMongoDBVectorStoreFixture.TestIndexPostfix);
 
         // Act
         var actual = await sut.CollectionExistsAsync();
