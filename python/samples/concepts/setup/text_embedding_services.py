@@ -22,7 +22,7 @@ class Services(str, Enum):
     AZURE_AI_INFERENCE = "azure_ai_inference"
     BEDROCK = "bedrock"
     GOOGLE_AI = "google_ai"
-    HuggingFace = "huggingface"
+    HUGGING_FACE = "huggingface"
     MISTRAL_AI = "mistral_ai"
     OLLAMA = "ollama"
     VERTEX_AI = "vertex_ai"
@@ -46,7 +46,7 @@ def get_text_embedding_service_and_request_settings(
         Services.AZURE_AI_INFERENCE: lambda: get_azure_ai_inference_text_embedding_service_and_request_settings(),
         Services.BEDROCK: lambda: get_bedrock_text_embedding_service_and_request_settings(),
         Services.GOOGLE_AI: lambda: get_google_ai_text_embedding_service_and_request_settings(),
-        Services.HuggingFace: lambda: get_hugging_face_text_embedding_service_and_request_settings(),
+        Services.HUGGING_FACE: lambda: get_hugging_face_text_embedding_service_and_request_settings(),
         Services.MISTRAL_AI: lambda: get_mistral_ai_text_embedding_service_and_request_settings(),
         Services.OLLAMA: lambda: get_ollama_text_embedding_service_and_request_settings(),
         Services.VERTEX_AI: lambda: get_vertex_ai_text_embedding_service_and_request_settings(),

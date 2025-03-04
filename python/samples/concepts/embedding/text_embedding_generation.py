@@ -18,7 +18,7 @@ This sample shows how to generating embeddings for text data. This sample uses t
 # - Services.AZURE_AI_INFERENCE
 # - Services.BEDROCK
 # - Services.GOOGLE_AI
-# - Services.HuggingFace
+# - Services.HUGGING_FACE
 # - Services.MISTRAL_AI
 # - Services.OLLAMA
 # - Services.VERTEX_AI
