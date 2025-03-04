@@ -479,6 +479,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithAgent.ApiService", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithAgent.Web", "samples\Demos\Hosting\Agent\ChatWithAgent.Web\ChatWithAgent.Web.csproj", "{518EBD17-F582-9E69-2716-57C9329DC0BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithAgent.Configuration", "samples\Demos\Hosting\Agent\ChatWithAgent.Configuration\ChatWithAgent.Configuration.csproj", "{02663844-E371-416A-969A-66B6512BB2E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1296,6 +1298,12 @@ Global
 		{518EBD17-F582-9E69-2716-57C9329DC0BE}.Publish|Any CPU.Build.0 = Release|Any CPU
 		{518EBD17-F582-9E69-2716-57C9329DC0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{518EBD17-F582-9E69-2716-57C9329DC0BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Publish|Any CPU.ActiveCfg = Release|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Publish|Any CPU.Build.0 = Release|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02663844-E371-416A-969A-66B6512BB2E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1474,6 +1482,7 @@ Global
 		{FCEB6560-A377-88A0-3FFC-D82ACCCEB211} = {D1FD2171-A467-4F2D-9CF1-4B0DB753A689}
 		{CB494B28-A90B-C2AA-F7BB-CFD2A88639A0} = {D1FD2171-A467-4F2D-9CF1-4B0DB753A689}
 		{518EBD17-F582-9E69-2716-57C9329DC0BE} = {D1FD2171-A467-4F2D-9CF1-4B0DB753A689}
+		{02663844-E371-416A-969A-66B6512BB2E1} = {D1FD2171-A467-4F2D-9CF1-4B0DB753A689}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

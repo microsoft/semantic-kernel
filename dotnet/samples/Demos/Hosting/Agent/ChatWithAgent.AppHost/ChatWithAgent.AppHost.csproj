@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChatWithAgent.ApiService\ChatWithAgent.ApiService.csproj" />
+    <ProjectReference Include="..\ChatWithAgent.Configuration\ChatWithAgent.Configuration.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\ChatWithAgent.Web\ChatWithAgent.Web.csproj" />
   </ItemGroup>
 

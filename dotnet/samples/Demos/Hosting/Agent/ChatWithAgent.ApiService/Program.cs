@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.Identity;
+using System;
+using ChatWithAgent.ApiService.Extensions;
+using ChatWithAgent.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,8 +32,11 @@ public static class Program
         // Add services to the container.
         builder.Services.AddProblemDetails();
 
-        // Add Kernel and required AI services
-        AddKernelAndServices(builder);
+        // Load the host configuration.
+        var hostConfig = new HostConfig(builder.Configuration);
+
+        // Add Kernel and required AI services.
+        AddKernelAndServices(builder, hostConfig);
 
         var app = builder.Build();
 
@@ -45,20 +50,22 @@ public static class Program
         app.Run();
     }
 
-    private static void AddKernelAndServices(WebApplicationBuilder builder)
+    private static void AddKernelAndServices(WebApplicationBuilder builder, HostConfig hostConfig)
     {
-        // Add AzureOpenAI client.
-        builder.AddAzureOpenAIClient(
-            "azureOpenAI",
-            (settings) => settings.Credential = builder.Environment.IsProduction()
-                ? new DefaultAzureCredential()
-                : new AzureCliCredential()); // Use credentials from Azure CLI for local development.
-
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
-        // Add AzureOpenAI chat completion service.
-        kernelBuilder.Services.AddAzureOpenAIChatCompletion("chatModelDeployment");
+        switch (hostConfig.AIChatService)
+        {
+            case AzureOpenAIChatConfig.ConfigSectionName:
+            {
+                builder.AddAzureOpenAIServices(hostConfig);
+                break;
+            }
+
+            default:
+                throw new NotSupportedException($"AI service '{hostConfig.AIChatService}' is not supported.");
+        }
 
         // Add chat completion agent.
         kernelBuilder.Services.AddTransient<ChatCompletionAgent>((sp) =>
