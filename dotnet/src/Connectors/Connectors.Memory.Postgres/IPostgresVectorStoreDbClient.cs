@@ -17,7 +17,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <summary>
     /// The <see cref="NpgsqlDataSource"/> used to connect to the database.
     /// </summary>
-    public NpgsqlDataSource DataSource { get; }
+    NpgsqlDataSource DataSource { get; }
 
     /// <summary>
     /// Check if a table exists.
