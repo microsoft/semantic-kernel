@@ -14,13 +14,13 @@ public interface IExternalKernelProcessMessageChannel
     /// Initialization of the external messaging channel used
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public abstract ValueTask Initialize();
+    abstract ValueTask Initialize();
 
     /// <summary>
     /// Uninitialization of the external messaging channel used
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public abstract ValueTask Uninitialize();
+    abstract ValueTask Uninitialize();
 
     /// <summary>
     /// Emits the specified event from the step outside the SK process

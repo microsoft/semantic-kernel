@@ -6,7 +6,6 @@ from collections.abc import AsyncGenerator
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-import boto3
 from pydantic import ValidationError
 
 if sys.version_info >= (3, 12):
@@ -73,8 +72,8 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
         super().__init__(
             ai_model_id=bedrock_settings.text_model_id,
             service_id=service_id or bedrock_settings.text_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
         )
 
     # region Overriding base class methods
