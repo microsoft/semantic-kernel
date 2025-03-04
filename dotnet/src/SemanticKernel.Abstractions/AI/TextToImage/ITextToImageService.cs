@@ -23,7 +23,7 @@ public interface ITextToImageService : IAIService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Generated image contents</returns>
     [Experimental("SKEXP0001")]
-    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+    Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
