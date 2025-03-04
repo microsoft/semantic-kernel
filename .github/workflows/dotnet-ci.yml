@@ -21,6 +21,8 @@ jobs:
           include:
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '9.0', configuration: Debug }
+          - { os: ubuntu-latest, dotnet: '9.0', configuration: Release }
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,7 +52,7 @@ jobs:
       shell: bash
       run: |
         for project in ${{ env.testprojects }}; do
-          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --framework net${{ matrix.dotnet }} --no-build -v Normal --logger trx"
         done
 
     - name: Upload dotnet test results
@@ -66,7 +68,7 @@ jobs:
         matrix:
           os: [windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['8.0.x']
+          dotnet-version: ['8.0.x', '9.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
