@@ -24,7 +24,7 @@ public class LocalProxyTests
     public async Task ProcessWithProxyWithSingleTopicCalledTwiceAsync()
     {
         // Arrange
-        var mockProxyClient = MockCloudEventClient.Instance;
+        var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
@@ -64,7 +64,7 @@ public class LocalProxyTests
     public void ProcessWithProxyFailsToCreateDueMissingTopicRegistration()
     {
         // Arrange
-        var mockProxyClient = MockCloudEventClient.Instance;
+        var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
@@ -85,7 +85,7 @@ public class LocalProxyTests
     {
         // Arrange
         CommonSteps.CountStep.Index = 0;
-        var mockProxyClient = MockCloudEventClient.Instance;
+        var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
