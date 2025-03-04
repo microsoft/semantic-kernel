@@ -1,4 +1,6 @@
-## AI Service Settings used across SK:
+# Semantic Kernel Settings
+
+## AI Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -36,7 +38,7 @@
 | Onnx | [OnnxGenAIChatCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) | template, <br> ai_model_path | N/A, <br> ONNX_GEN_AI_CHAT_MODEL_FOLDER | Yes, <br> Yes | [OnnxGenAISettings](../../../semantic_kernel/connectors/ai/onnx/onnx_gen_ai_settings.py) |
 |  | [OnnxGenAITextCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_text_completion.py) | ai_model_path | ONNX_GEN_AI_TEXT_MODEL_FOLDER | Yes |  |
 
-## Memory Service Settings used across SK:
+## Memory Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -49,7 +51,7 @@
 | Redis | [RedisMemoryService](../../../semantic_kernel/connectors/memory/redis/redis_memory_store.py) | connection_string | REDIS_CONNECTION_STRING | Yes | [RedisSettings](../../../semantic_kernel/connectors/memory/redis/redis_settings.py) |
 | Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py) | url, <br> api_key, <br> use_embed | WEAVIATE_URL, <br> WEAVIATE_API_KEY, <br> WEAVIATE_USE_EMBED | No, <br> No, <br> No | [WeaviateSettings](../../../semantic_kernel/connectors/memory/weaviate/weaviate_settings.py) |
 
-## Other settings used:
+## Other settings used
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |

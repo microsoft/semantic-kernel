@@ -60,7 +60,7 @@ async def main():
         instructions=REVIEWER_INSTRUCTIONS,
     )
 
-    agent_writer = await BedrockAgent.create(
+    agent_writer = await BedrockAgent.create_and_prepare_agent(
         COPYWRITER_NAME,
         instructions=COPYWRITER_INSTRUCTIONS,
     )

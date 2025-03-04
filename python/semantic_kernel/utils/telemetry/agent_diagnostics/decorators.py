@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from opentelemetry.trace import get_tracer
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics import gen_ai_attributes
 
@@ -24,7 +25,9 @@ def trace_agent_invocation(invoke_func: Callable) -> Callable:
     OPERATION_NAME = "invoke_agent"
 
     @functools.wraps(invoke_func)
-    async def wrapper_decorator(*args: Any, **kwargs: Any) -> AsyncIterable:
+    async def wrapper_decorator(
+        *args: Any, **kwargs: Any
+    ) -> AsyncIterable[ChatMessageContent | StreamingChatMessageContent]:
         agent: "Agent" = args[0]
 
         with tracer.start_as_current_span(f"{OPERATION_NAME} {agent.name}") as span:

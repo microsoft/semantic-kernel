@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from collections.abc import Generator, Iterable
 from functools import singledispatchmethod
@@ -363,26 +362,30 @@ class ChatHistory(KernelBaseModel):
                 fails validation.
         """
         try:
-            return cls(**json.loads(chat_history_json))
+            return cls.model_validate_json(chat_history_json)
         except Exception as e:
             raise ContentInitializationError(f"Invalid JSON format: {e}")
 
     def store_chat_history_to_file(self, file_path: str) -> None:
         """Stores the serialized ChatHistory to a file.
 
+        Uses mode "w" which means the file is created if it does not exist and gets truncated if it does.
+
         Args:
-            file_path (str): The path to the file where the serialized data will be stored.
+            file_path: The path to the file where the serialized data will be stored.
         """
         json_str = self.serialize()
-        with open(file_path, "w") as file:
-            file.write(json_str)
+        with open(file_path, "w") as local_file:
+            local_file.write(json_str)
 
     @classmethod
-    def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
+    def load_chat_history_from_file(cls: type[_T], file_path: str) -> _T:
         """Loads the ChatHistory from a file.
 
+        Uses mode "r" which means it can only be read if it exists.
+
         Args:
-            file_path (str): The path to the file from which to load the ChatHistory.
+            file_path: The path to the file from which to load the ChatHistory.
 
         Returns:
             ChatHistory: The deserialized ChatHistory instance.

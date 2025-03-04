@@ -222,6 +222,15 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
+    {
+      "label": "build (CopilotAgentPluginsDemoSample)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample/CopilotAgentPluginsDemoSample.csproj"
+      ]
+    },
     // ****************
     // Samples (dotnet)
     // ****************

@@ -53,10 +53,10 @@ async def main():
     ]
 
     try:
-        for input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
-            print(f"# User: '{input}'")
+            print(f"# User: '{user_input}'")
 
             file_ids: list[str] = []
             is_code = False

@@ -461,6 +461,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.SummaryAgent", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.SummaryAgent\ProcessFramework.Aspire.SummaryAgent.csproj", "{37381352-4F10-427F-AB8A-51FEAB265201}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.TranslatorAgent", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.TranslatorAgent\ProcessFramework.Aspire.TranslatorAgent.csproj", "{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Bedrock", "src\Agents\Bedrock\Agents.Bedrock.csproj", "{8C658E1E-83C8-4127-B8BF-27A638A45DDD}"
 EndProject
 Global

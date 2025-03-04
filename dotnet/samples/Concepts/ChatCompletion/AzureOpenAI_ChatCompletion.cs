@@ -8,7 +8,9 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace ChatCompletion;
 
-// The following example shows how to use Semantic Kernel with Azure OpenAI API
+/// <summary>
+/// These examples demonstrate different ways of using chat completion with Azure OpenAI API.
+/// </summary>
 public class AzureOpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>

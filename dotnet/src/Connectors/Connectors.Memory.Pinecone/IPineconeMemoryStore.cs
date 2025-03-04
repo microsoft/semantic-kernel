@@ -126,7 +126,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="withEmbeddings"> if true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken"></param>
     /// <returns> the memory records that match the filter.</returns>
-    public IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(
+    IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(
         string indexName,
         Dictionary<string, object> filter,
         int limit = 10,
@@ -182,7 +182,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexNamespace"> the namespace to remove from.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task RemoveWithDocumentIdBatchAsync(
+    Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
         string indexNamespace = "",

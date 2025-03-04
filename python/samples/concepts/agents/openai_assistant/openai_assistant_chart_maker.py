@@ -53,9 +53,9 @@ async def main():
     ]
 
     try:
-        for input in user_inputs:
+        for user_input in user_inputs:
             file_ids = []
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
             async for message in agent.invoke(thread_id=thread.id):
                 if message.content:
                     print(f"# {message.role}: {message.content}")

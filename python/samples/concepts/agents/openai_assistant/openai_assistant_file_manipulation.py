@@ -57,10 +57,10 @@ async def main():
             "Create a tab delimited file report of profit by each country per month.",
         ]
 
-        for input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
-            print(f"# User: '{input}'")
+            print(f"# User: '{user_input}'")
             async for content in agent.invoke(thread_id=thread.id):
                 if content.metadata.get("code", False):
                     print(f"# {content.role}:\n\n```python")
