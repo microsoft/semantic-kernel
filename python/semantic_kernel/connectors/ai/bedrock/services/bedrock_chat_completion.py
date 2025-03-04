@@ -5,8 +5,6 @@ from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import boto3
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -25,7 +23,6 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import 
     finish_reason_from_bedrock_to_semantic_kernel,
     format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
-    run_in_executor,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -45,6 +42,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -95,8 +93,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         super().__init__(
             ai_model_id=bedrock_settings.chat_model_id,
             service_id=service_id or bedrock_settings.chat_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
         )
 
     # region Overriding base class methods
