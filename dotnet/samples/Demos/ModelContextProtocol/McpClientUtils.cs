@@ -82,7 +82,7 @@ internal static class McpClientUtils
     internal static object ToArgumentValue(this KernelFunction function, string name, object value)
     {
         var parameter = function.Metadata.Parameters.FirstOrDefault(p => p.Name == name);
-        return parameter!.ParameterType switch
+        return parameter?.ParameterType switch
         {
             Type t when t == typeof(int) => Convert.ToInt32(value),
             Type t when t == typeof(double) => Convert.ToDouble(value),
@@ -90,7 +90,7 @@ internal static class McpClientUtils
             Type t when t == typeof(IEnumerable<object>) => (value as IEnumerable<object>)?.ToList(),
             Type t when t == typeof(IDictionary<string, object>) => (value as IDictionary<string, object>)?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
             _ => value,
-        };
+        } ?? value;
     }
 
     internal static IEnumerable<KernelParameterMetadata>? ToParameters(this Tool tool)
