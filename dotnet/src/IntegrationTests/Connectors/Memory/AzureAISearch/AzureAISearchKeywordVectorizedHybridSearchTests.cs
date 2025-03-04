@@ -7,7 +7,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Azure AI Search setup and teardown.</param>
 [Collection("AzureAISearchVectorStoreCollection")]

@@ -8,7 +8,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
 /// </summary>
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBKeywordVectorizedHybridSearchTests(MongoDBVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<string>

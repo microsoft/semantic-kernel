@@ -76,7 +76,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         string keyPropertyName,
         string textPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
-        KeywordVectorizedHybridSearchOptions searchOptions,
+        HybridSearchOptions searchOptions,
         IReadOnlyDictionary<string, string> storagePropertyNames,
         IReadOnlyList<string> vectorPropertyStorageNames,
         IReadOnlyList<string> dataPropertyStorageNames)
