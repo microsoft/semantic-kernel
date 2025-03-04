@@ -288,6 +288,7 @@ public class LocalMapTests
     public async Task ProcessMapResultWithTargetExtraAsync()
     {
         // Arrange
+        CommonSteps.CountStep.Index = 0;
         ProcessBuilder process = new(nameof(ProcessMapResultProcessOperationAsync));
 
         ProcessBuilder mapProcess = new("MapOperation");

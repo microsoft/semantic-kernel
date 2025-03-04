@@ -14,6 +14,8 @@ internal sealed class LocalProxy : LocalStep
     private readonly KernelProcessProxy _proxy;
     private readonly ILogger _logger;
 
+    private bool _isInitialized = false;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalMap"/> class.
     /// </summary>
@@ -60,6 +62,11 @@ internal sealed class LocalProxy : LocalStep
     /// <inheritdoc/>
     protected override async ValueTask InitializeStepAsync()
     {
+        if (this._isInitialized)
+        {
+            return;
+        }
+
         // Ensure initialization happens only once if first time or again if "deinitialization" was called
         if (this.ExternalMessageChannel == null)
         {
@@ -68,5 +75,6 @@ internal sealed class LocalProxy : LocalStep
 
         await this.ExternalMessageChannel.Initialize().ConfigureAwait(false);
         await base.InitializeStepAsync().ConfigureAwait(false);
+        this._isInitialized = true;
     }
 }
