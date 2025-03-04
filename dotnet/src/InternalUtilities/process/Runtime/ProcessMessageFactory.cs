@@ -13,9 +13,10 @@ internal static class ProcessMessageFactory
     /// Creates a new <see cref="ProcessMessage"/> instance from a <see cref="KernelProcessEdge"/> and a data object.
     /// </summary>
     /// <param name="edge">An instance of <see cref="KernelProcessEdge"/></param>
+    /// <param name="sourceEventId">id of the source steps generating the event</param>
     /// <param name="data">A data object.</param>
     /// <returns>An instance of <see cref="ProcessMessage"/></returns>
-    internal static ProcessMessage CreateFromEdge(KernelProcessEdge edge, object? data)
+    internal static ProcessMessage CreateFromEdge(KernelProcessEdge edge, string sourceEventId, object? data)
     {
         KernelProcessFunctionTarget target = edge.OutputTarget;
         Dictionary<string, object?> parameterValue = [];
@@ -26,6 +27,7 @@ internal static class ProcessMessageFactory
 
         ProcessMessage newMessage = new(edge.SourceStepId, target.StepId, target.FunctionName, parameterValue)
         {
+            SourceEventId = sourceEventId,
             TargetEventId = target.TargetEventId,
             TargetEventData = data
         };

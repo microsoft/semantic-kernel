@@ -21,5 +21,5 @@ public interface IExternalMessageBuffer : IActor
     /// <param name="externalTopicEvent"></param>
     /// <param name="eventData"></param>
     /// <returns></returns>
-    abstract Task EmitExternalEventAsync(string externalTopicEvent, object? eventData);
+    abstract Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData);
 }

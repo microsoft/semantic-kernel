@@ -41,7 +41,7 @@ public abstract class ProcessStepBuilder
     {
         // scope the event to this instance of this step
         var scopedEventId = this.GetScopedEventId(eventId);
-        return new ProcessStepEdgeBuilder(this, scopedEventId);
+        return new ProcessStepEdgeBuilder(this, scopedEventId, eventId);
     }
 
     /// <summary>
@@ -229,7 +229,7 @@ public abstract class ProcessStepBuilder
 /// <summary>
 /// Provides functionality for incrementally defining a process step.
 /// </summary>
-public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
+public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
 {
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.

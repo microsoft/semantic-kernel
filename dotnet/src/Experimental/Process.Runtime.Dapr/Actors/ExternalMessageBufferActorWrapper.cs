@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// Class used to allow using <see cref="IExternalEventBuffer"/> as <see cref="IExternalKernelProcessMessageChannel"/>
 /// in SK Process shared abstractions
 /// </summary>
+[KnownType(typeof(KernelProcessProxyMessage))]
 public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageChannel
 {
     private readonly IExternalMessageBuffer _actor;
@@ -21,8 +23,8 @@ public class ExternalMessageBufferActorWrapper : IExternalKernelProcessMessageCh
         this._actor = actor;
     }
 
-    /// <inheritdoc cref="IExternalMessageBuffer.EmitExternalEventAsync(string, object?)"/>
-    public async Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
+    /// <inheritdoc cref="IExternalMessageBuffer.EmitExternalEventAsync(string, KernelProcessProxyMessage)"/>
+    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
     {
         await this._actor.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
     }

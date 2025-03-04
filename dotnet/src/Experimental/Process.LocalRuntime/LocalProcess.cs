@@ -120,10 +120,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
         Verify.NotNull(processEvent, nameof(processEvent));
-        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask().ConfigureAwait(false);
+
+        // make sure the process is running in case it was already cancelled
+        if (this._processCancelSource == null)
+        {
+            await this.StartAsync(this._kernel).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -201,6 +207,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                         ParentProcessId = this.Id,
                     };
             }
+            else if (step is KernelProcessProxy proxyStep)
+            {
+                localStep =
+                    new LocalProxy(proxyStep, this._kernel)
+                    {
+                        ParentProcessId = this.Id,
+                        EventProxy = this.EventProxy,
+                        ExternalMessageChannel = this.ExternalMessageChannel,
+                    };
+            }
             else
             {
                 // The current step should already have an Id.
@@ -211,7 +227,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
 
@@ -314,7 +329,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, "", externalEvent.Data);
                     messageChannel.Enqueue(message);
                 }
             }
@@ -342,7 +357,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             bool foundEdge = false;
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
                 messageChannel.Enqueue(message);
                 foundEdge = true;
             }
@@ -354,7 +369,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
                         messageChannel.Enqueue(message);
                     }
                 }

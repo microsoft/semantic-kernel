@@ -22,7 +22,7 @@ internal sealed class ExternalMessageBufferActor : Actor, IExternalMessageBuffer
         this._externalMessageChannel = externalMessageChannel;
     }
 
-    public async Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
+    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
     {
         await this._externalMessageChannel.EmitExternalEventAsync(externalTopicEvent, eventData).ConfigureAwait(false);
     }

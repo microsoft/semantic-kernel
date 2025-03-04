@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Serialization;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests;
 internal sealed class DaprTestProcessContext : KernelProcessContext
