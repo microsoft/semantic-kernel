@@ -293,10 +293,9 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             Vectors = vectors,
         };
 
-        var indexClient = this._pineconeClient.Index(name: this.CollectionName);
         await this.RunOperationAsync(
             "UpsertBatch",
-            () => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this.GetIndexClient().UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var vector in vectors)
         {
@@ -315,7 +314,54 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
                 $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}");
         }
 
-        throw new NotImplementedException();
+        options ??= s_defaultVectorSearchOptions;
+
+#pragma warning disable CS0618 // FilterClause is obsolete
+        var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
+            options.Filter?.FilterClauses,
+            this._propertyReader.StoragePropertyNamesMap);
+#pragma warning restore CS0618
+
+        Sdk.QueryRequest request = new()
+        {
+            TopK = (uint)(options.Top + options.Skip),
+            Namespace = this._options.IndexNamespace,
+            IncludeValues = options.IncludeVectors,
+            IncludeMetadata = true,
+            Vector = floatVector,
+            Filter = filter,
+        };
+
+        Sdk.QueryResponse response = await this.RunOperationAsync(
+            "Query",
+            () => this.GetIndexClient().QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        if (response.Results is null)
+        {
+            return new VectorSearchResults<TRecord>(Array.Empty<VectorSearchResult<TRecord>>().ToAsyncEnumerable());
+        }
+
+        // Pinecone does not provide a way to skip results, so we need to do it manually.
+        var skippedResults = response.Results
+            .Where(result => result.Matches is not null)
+            .SelectMany(result => result.Matches!)
+            .Skip(options.Skip);
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
+        var records = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            "Query",
+            () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
+            {
+                Id = x.Id,
+                Values = x.Values ?? Array.Empty<float>(),
+                Metadata = x.Metadata,
+                SparseValues = x.SparseValues
+            }, mapperOptions), x.Score)))
+            .ToAsyncEnumerable();
+
+        return new(records);
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)

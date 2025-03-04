@@ -20,9 +20,9 @@ internal static class PineconeVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNamesMap">A mapping from property name to the name under which the property would be stored.</param>
     /// <returns>The Pinecone <see cref="MetadataMap"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
-    public static MetadataMap BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
+    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
     {
-        var metadataMap = new MetadataMap();
+        var metadataMap = new Metadata();
 
         if (filterClauses is null)
         {
@@ -46,7 +46,6 @@ internal static class PineconeVectorStoreCollectionSearchMapping
                     bool boolValue => (MetadataValue)boolValue,
                     float floatValue => (MetadataValue)floatValue,
                     double doubleValue => (MetadataValue)doubleValue,
-                    decimal decimalValue => (MetadataValue)decimalValue,
                     _ => throw new InvalidOperationException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
                 };
 
