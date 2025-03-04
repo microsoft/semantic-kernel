@@ -120,16 +120,9 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            try
-            {
-                await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (PineconeApiException ex) when (ex.InnerException is PineconeApiException)
-            {
-                // If the collection already exists, we should ignore the exception.
-                // TODO adsitnik: find out which exception is thrown when the collection already exists.
-                throw;
-            }
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            // If the collection already exists, we should ignore the exception.
+            // TODO adsitnik: find out which exception is thrown when the collection already exists.
         }
     }
 

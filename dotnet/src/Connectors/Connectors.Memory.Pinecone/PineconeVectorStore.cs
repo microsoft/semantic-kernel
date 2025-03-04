@@ -67,7 +67,7 @@ public class PineconeVectorStore : IVectorStore
         {
             indexList = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (PineconeApiException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {

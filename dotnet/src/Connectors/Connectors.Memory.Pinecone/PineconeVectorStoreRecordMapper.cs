@@ -94,7 +94,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
                 this._propertyReader.DataPropertiesInfo,
                 this._propertyReader.StoragePropertyNamesMap,
                 storageModel.Metadata,
-                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType);
+                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType!);
         }
 
         return outputRecord;

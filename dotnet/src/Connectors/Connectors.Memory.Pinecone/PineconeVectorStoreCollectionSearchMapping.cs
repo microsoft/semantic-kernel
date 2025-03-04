@@ -14,11 +14,11 @@ internal static class PineconeVectorStoreCollectionSearchMapping
 {
 #pragma warning disable CS0618 // FilterClause is obsolete
     /// <summary>
-    /// Build a Pinecone <see cref="MetadataMap"/> from a set of filter clauses.
+    /// Build a Pinecone <see cref="Metadata"/> from a set of filter clauses.
     /// </summary>
-    /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="MetadataMap"/> from.</param>
+    /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="Metadata"/> from.</param>
     /// <param name="storagePropertyNamesMap">A mapping from property name to the name under which the property would be stored.</param>
-    /// <returns>The Pinecone <see cref="MetadataMap"/>.</returns>
+    /// <returns>The Pinecone <see cref="Metadata"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
     public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
     {
