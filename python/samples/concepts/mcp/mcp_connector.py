@@ -74,8 +74,6 @@ arguments = KernelArguments(settings=request_settings)
 # Create a chat history to store the system message, initial messages, and the conversation.
 history = ChatHistory()
 history.add_system_message(system_message)
-history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 
 async def chat() -> bool:
@@ -109,30 +107,14 @@ async def chat() -> bool:
 
 
 async def main() -> None:
-    # settings = MCPSseServerSettings(
-    #     url="http://localhost:8080/sse",
-    # )
-
     settings = MCPStdioServerSettings(
         server_params=StdioServerParameters(
-            command="uv",
-            args=[
-                "--directory",
-                "c:/git/opensource/arxiv-mcp-server",
-                "run",
-                "arxiv-mcp-server",
-                "--storage-path",
-                "c:/git/opensource/arxiv-mcp-server/papers",
-            ],
+            command="npx", args=["-y", "@modelcontextprotocol/server-everything"], env=None
         ),
     )
 
-    kernel.add_plugin(await KernelPlugin.from_mcp_server(plugin_name="MCPPlugin", settings=settings))
-    print(
-        "Welcome to the chat bot!\n"
-        "  Type 'exit' to exit.\n"
-        "  Try a math question to see function calling in action (e.g. 'what is 3+3?')."
-    )
+    kernel.add_plugin(await KernelPlugin.from_mcp_server(plugin_name="MCPEverything", settings=settings))
+    print("Welcome to the chat bot!\n  Type 'exit' to exit.")
     chatting = True
     while chatting:
         chatting = await chat()
