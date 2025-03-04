@@ -1,13 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using ChatWithAgent.Configuration;
+using ChatWithAgent.AppHost.Extensions;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Deploy and provision Azure OpenAI service with AI models
-var azureOpenAI = AddAzureOpenAIDeployments(builder);
+// Load host configuration.
+var hostConfig = new HostConfig(builder.Configuration);
 
-// Deploy and provision Api Service
+// Deploy and provision AI Service.
+var aiService = AddAIServices(builder, hostConfig);
+
+// Deploy and provision Api Service with dependencies.
 var apiService = builder.AddProject<Projects.ChatWithAgent_ApiService>("apiservice")
-    .WithReference(azureOpenAI);
+    .WithReference(aiService)
+    .WithEnvironment(hostConfig); // Add some host configuration as environment variables so that the Api Service can access them
 
 // Deploy and provision Web Frontend
 builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
@@ -17,15 +24,16 @@ builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
 
 builder.Build().Run();
 
-static IResourceBuilder<IResourceWithConnectionString> AddAzureOpenAIDeployments(IDistributedApplicationBuilder appBuilder)
+static IResourceBuilder<IResourceWithConnectionString> AddAIServices(IDistributedApplicationBuilder builder, HostConfig config)
 {
-    if (appBuilder.ExecutionContext.IsPublishMode)
+    switch (config.AIChatService)
     {
-        // Deploy and provision Azure OpenAI service with AI models
-        return appBuilder.AddAzureOpenAI("azureOpenAI")
-            .AddDeployment(new AzureOpenAIDeployment("chatModelDeployment", "gpt-4o-mini", "2024-07-18"));
-    }
+        case AzureOpenAIChatConfig.ConfigSectionName:
+        {
+            return builder.AddAzureOpenAI(config);
+        }
 
-    // Use an existing Azure OpenAI service via connection string
-    return appBuilder.AddConnectionString("azureOpenAI");
+        default:
+            throw new NotSupportedException($"AI service '{config.AIChatService}' is not supported.");
+    }
 }
