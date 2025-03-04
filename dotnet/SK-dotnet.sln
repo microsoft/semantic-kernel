@@ -465,6 +465,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosMongoDBIntegrationTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearchIntegrationTests", "src\VectorDataIntegrationTests\AzureAISearchIntegrationTests\AzureAISearchIntegrationTests.csproj", "{06181F0F-A375-43AE-B45F-73CBCFC30C14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineconeIntegrationTests", "src\VectorDataIntegrationTests\PineconeIntegrationTests\PineconeIntegrationTests.csproj", "{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1102,12 +1104,6 @@ Global
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Release|Any CPU.Build.0 = Release|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{232E1153-6366-4175-A982-D66B30AAD610}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E82B640C-1704-430D-8D71-FD8ED3695468}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E82B640C-1704-430D-8D71-FD8ED3695468}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E82B640C-1704-430D-8D71-FD8ED3695468}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1126,6 +1122,12 @@ Global
 		{39EAB599-742F-417D-AF80-95F90376BB18}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{39EAB599-742F-417D-AF80-95F90376BB18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39EAB599-742F-417D-AF80-95F90376BB18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{232E1153-6366-4175-A982-D66B30AAD610}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1264,6 +1266,12 @@ Global
 		{06181F0F-A375-43AE-B45F-73CBCFC30C14}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{06181F0F-A375-43AE-B45F-73CBCFC30C14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06181F0F-A375-43AE-B45F-73CBCFC30C14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1437,6 +1445,7 @@ Global
 		{A0E65043-6B00-4836-850F-000A52238914} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{11DFBF14-6FBA-41F0-B7F3-A288952D6FDB} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{06181F0F-A375-43AE-B45F-73CBCFC30C14} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
+		{9D37CD08-620D-4AAC-9FEC-A8126AD8AB56} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
