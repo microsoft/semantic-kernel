@@ -44,7 +44,6 @@
 - [Chat Completion Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_agent_chat.py)
 - [Chat Completion Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_single_agent.py)
 
-
 #### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
 
 - [Mixed Chat Agents Plugins](./agents/mixed_chat/mixed_chat_agents_plugins.py)
@@ -90,6 +89,7 @@
 ### ChatHistory - Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py)
 
 - [Serialize Chat History](./chat_history/serialize_chat_history.py)
+- [Store Chat History in CosmosDB](./chat_history/store_chat_history_in_cosmosdb.py)
 
 ### Filtering - Creating and using Filters
 
@@ -202,7 +202,7 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 
 1. **Reading Environment Variables:**
    - **Primary Source:** Pydantic first attempts to read the required settings from environment variables.
-   
+
 2. **Using a .env File:**
    - **Fallback Source:** If the required environment variables are not set, Pydantic will look for a `.env` file in the current working directory.
    - **Custom Path (Optional):** You can specify an alternative path for the `.env` file via `env_file_path`. This can be either a relative or an absolute path.
