@@ -107,9 +107,9 @@ def custom_plugin_class():
 @fixture(scope="session")
 def experimental_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
-    from semantic_kernel.utils.experimental_decorator import experimental_class
+    from semantic_kernel.utils.feature_stage_decorator import experimental
 
-    @experimental_class
+    @experimental
     class ExperimentalPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:
@@ -220,6 +220,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
         "AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME": "test_audio_to_text_deployment",
         "AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME": "test_text_to_audio_deployment",
+        "AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME": "test_realtime_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -256,6 +257,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
         "OPENAI_AUDIO_TO_TEXT_MODEL_ID": "test_audio_to_text_model_id",
         "OPENAI_TEXT_TO_AUDIO_MODEL_ID": "test_text_to_audio_model_id",
+        "OPENAI_REALTIME_MODEL_ID": "test_realtime_model_id",
     }
 
     env_vars.update(override_env_param_dict)

@@ -32,48 +32,51 @@ class MenuPlugin:
         return "$9.99"
 
 
+# Simulate a conversation with the agent
+USER_INPUTS = [
+    "Hello",
+    "What is the special soup?",
+    "What is the special drink?",
+    "How much is it?",
+    "Thank you",
+]
+
+
 async def main():
-    # Create the client using Azure OpenAI resources and configuration
+    # 1. Create the client using Azure OpenAI resources and configuration
     client, model = AzureAssistantAgent.setup_resources()
 
-    # Create the assistant definition
+    # 2. Create the assistant on the Azure OpenAI service
     definition = await client.beta.assistants.create(
         model=model,
         instructions="Answer questions about the menu.",
         name="Host",
     )
 
-    # Create the agent using the client and the assistant definition
+    # 3. Create a Semantic Kernel agent for the Azure OpenAI assistant
     agent = AzureAssistantAgent(
         client=client,
         definition=definition,
         plugins=[MenuPlugin()],  # The plugins can be passed in as a list to the constructor
     )
-
     # Note: plugins can also be configured on the Kernel and passed in as a parameter to the OpenAIAssistantAgent
 
-    # Define a thread and invoke the agent with the user input
+    # 4. Create a new thread on the Azure OpenAI assistant service
     thread = await agent.client.beta.threads.create()
 
-    user_inputs = [
-        "Hello",
-        "What is the special soup?",
-        "What is the special drink?",
-        "How much is it?",
-        "Thank you",
-    ]
-
     try:
-        for user_input in user_inputs:
+        for user_input in USER_INPUTS:
+            # 5. Add the user input to the chat thread
             await agent.add_chat_message(
                 thread_id=thread.id,
                 message=user_input,
             )
             print(f"# User: '{user_input}'")
+            # 6. Invoke the agent for the current thread and print the response
             async for content in agent.invoke(thread_id=thread.id):
                 print(f"# Agent: {content.content}")
-
     finally:
+        # 7. Clean up the resources
         await agent.client.beta.threads.delete(thread.id)
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 

@@ -720,8 +720,8 @@ async def test_handle_streaming_requires_action_returns_result():
     dummy_run.id = "dummy_run_id"
     dummy_function_steps = {"step1": MagicMock()}
     dummy_fccs = {"fcc_key": "fcc_value"}
-    dummy_function_call_content = MagicMock()
-    dummy_function_result_content = MagicMock()
+    dummy_function_call_streaming_content = MagicMock()
+    dummy_function_result_streaming_content = MagicMock()
     dummy_tool_outputs = {"output": "value"}
     dummy_kernel = MagicMock()
     dummy_agent_name = "TestAgent"
@@ -731,12 +731,12 @@ async def test_handle_streaming_requires_action_returns_result():
             return_value=dummy_fccs,
         ),
         patch(
-            "semantic_kernel.agents.open_ai.assistant_thread_actions.generate_function_call_content",
-            return_value=dummy_function_call_content,
+            "semantic_kernel.agents.open_ai.assistant_thread_actions.generate_function_call_streaming_content",
+            return_value=dummy_function_call_streaming_content,
         ),
         patch(
-            "semantic_kernel.agents.open_ai.assistant_thread_actions.merge_function_results",
-            return_value=[dummy_function_result_content],
+            "semantic_kernel.agents.open_ai.assistant_thread_actions.merge_streaming_function_results",
+            return_value=[dummy_function_result_streaming_content],
         ),
         patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=None)),
         patch.object(AssistantThreadActions, "_format_tool_outputs", return_value=dummy_tool_outputs),
@@ -749,8 +749,8 @@ async def test_handle_streaming_requires_action_returns_result():
         )
         assert result is not None
         assert isinstance(result, FunctionActionResult)
-        assert result.function_call_content == dummy_function_call_content
-        assert result.function_result_content == dummy_function_result_content
+        assert result.function_call_streaming_content == dummy_function_call_streaming_content
+        assert result.function_result_streaming_content == dummy_function_result_streaming_content
         assert result.tool_outputs == dummy_tool_outputs
 
 

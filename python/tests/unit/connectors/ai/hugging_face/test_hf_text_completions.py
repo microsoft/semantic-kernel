@@ -4,7 +4,7 @@ from threading import Thread
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from transformers import TextIteratorStreamer
+from transformers import AutoTokenizer, TextIteratorStreamer
 
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -134,6 +134,10 @@ async def test_text_completion_streaming(model_name, task, input_str):
         patch(
             "semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion.Thread",
             side_effect=Mock(spec=Thread),
+        ),
+        patch(
+            "semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion.AutoTokenizer",
+            side_effect=Mock(spec=AutoTokenizer),
         ),
         patch(
             "semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion.TextIteratorStreamer",

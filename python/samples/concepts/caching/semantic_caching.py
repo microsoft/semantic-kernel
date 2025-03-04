@@ -37,7 +37,7 @@ RECORD_ID_KEY = "cache_record_id"
 class CacheRecord:
     prompt: Annotated[str, VectorStoreRecordDataField(embedding_property_name="prompt_embedding")]
     result: Annotated[str, VectorStoreRecordDataField(is_full_text_searchable=True)]
-    prompt_embedding: Annotated[list[float], VectorStoreRecordVectorField(dimensions=1526)] = field(
+    prompt_embedding: Annotated[list[float], VectorStoreRecordVectorField(dimensions=1536)] = field(
         default_factory=list
     )
     id: Annotated[str, VectorStoreRecordKeyField] = field(default_factory=lambda: str(uuid4()))

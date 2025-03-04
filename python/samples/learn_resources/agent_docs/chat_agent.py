@@ -49,7 +49,6 @@ async def main():
 
     # Create the agent
     agent = ChatCompletionAgent(
-        service_id="agent",
         kernel=kernel,
         name="SampleAssistantAgent",
         instructions=f"""

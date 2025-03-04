@@ -38,14 +38,14 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorSearchExecutionException,
     VectorStoreModelDeserializationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection):
     """Azure Cosmos DB for MongoDB collection."""
 

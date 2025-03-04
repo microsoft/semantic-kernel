@@ -14,7 +14,7 @@ from semantic_kernel.contents.const import BINARY_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.data_uri import DataUri
 from semantic_kernel.exceptions.content_exceptions import ContentException, ContentInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ _T = TypeVar("_T", bound="BinaryContent")
 DataUrl = Annotated[Url, UrlConstraints(allowed_schemes=["data"])]
 
 
-@experimental_class
+@experimental
 class BinaryContent(KernelContent):
     """This is a base class for different types of binary content.
 
@@ -121,9 +121,16 @@ class BinaryContent(KernelContent):
         self.metadata.update(self._data_uri.parameters)
 
     @property
-    def data(self) -> bytes:
+    def data_string(self) -> str:
+        """Returns the data as a string, using the data format."""
+        if self._data_uri:
+            return self._data_uri._data_str()
+        return ""
+
+    @property
+    def data(self) -> bytes | ndarray:
         """Get the data."""
-        if self._data_uri and self._data_uri.data_array:
+        if self._data_uri and self._data_uri.data_array is not None:
             return self._data_uri.data_array.tobytes()
         if self._data_uri and self._data_uri.data_bytes:
             return self._data_uri.data_bytes
@@ -188,6 +195,7 @@ class BinaryContent(KernelContent):
             self._data_uri.data_array.tofile(path)
             return
         with open(path, "wb") as file:
+            assert isinstance(self.data, bytes)  # nosec
             file.write(self.data)
 
     def to_dict(self) -> dict[str, Any]:

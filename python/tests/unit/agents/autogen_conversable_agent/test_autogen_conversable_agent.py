@@ -27,6 +27,23 @@ async def test_autogen_conversable_agent_initialization(mock_conversable_agent):
     assert agent.conversable_agent == mock_conversable_agent
 
 
+async def test_autogen_conversable_agent_get_response(mock_conversable_agent):
+    mock_conversable_agent.a_generate_reply = AsyncMock(return_value="Mocked assistant response")
+    agent = AutoGenConversableAgent(mock_conversable_agent)
+
+    response = await agent.get_response("Hello")
+    assert response.role == AuthorRole.ASSISTANT
+    assert response.content == "Mocked assistant response"
+
+
+async def test_autogen_conversable_agent_get_response_exception(mock_conversable_agent):
+    mock_conversable_agent.a_generate_reply = AsyncMock(return_value=None)
+    agent = AutoGenConversableAgent(mock_conversable_agent)
+
+    with pytest.raises(AgentInvokeException):
+        await agent.get_response("Hello")
+
+
 async def test_autogen_conversable_agent_invoke_with_recipient(mock_conversable_agent):
     mock_conversable_agent.a_initiate_chat = AsyncMock()
     mock_conversable_agent.a_initiate_chat.return_value = MagicMock(

@@ -8,12 +8,12 @@ from pydantic import Field
 
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import AUDIO_CONTENT_TAG, ContentTypes
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 _T = TypeVar("_T", bound="AudioContent")
 
 
-@experimental_class
+@experimental
 class AudioContent(BinaryContent):
     """Audio Content class.
 
@@ -77,7 +77,7 @@ class AudioContent(BinaryContent):
         )
 
     @classmethod
-    def from_audio_file(cls: type[_T], path: str) -> "AudioContent":
+    def from_audio_file(cls: type[_T], path: str) -> _T:
         """Create an instance from an audio file."""
         mime_type = mimetypes.guess_type(path)[0]
         with open(path, "rb") as audio_file:

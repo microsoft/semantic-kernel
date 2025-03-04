@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Represents a round-robin turn-taking strategy. Agent order is based on the order
 /// in which they joined <see cref="AgentGroupChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class SequentialSelectionStrategy : SelectionStrategy
 {
     private int _index = -1;

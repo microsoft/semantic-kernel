@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Serialization;
 /// Represents a <see cref="ChatMessageContent"/> for serialization without metadata.
 /// </summary>
 /// <param name="message">The referenced message</param>
+[Experimental("SKEXP0110")]
 public sealed class ChatMessageReference(ChatMessageContent message)
 {
     /// <summary>

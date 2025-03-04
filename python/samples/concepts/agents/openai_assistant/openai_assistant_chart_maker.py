@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from samples.concepts.agents.assistant_agent.assistant_sample_utils import download_response_images
+from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 
@@ -53,9 +53,9 @@ async def main():
     ]
 
     try:
-        for input in user_inputs:
+        for user_input in user_inputs:
             file_ids = []
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
             async for message in agent.invoke(thread_id=thread.id):
                 if message.content:
                     print(f"# {message.role}: {message.content}")
