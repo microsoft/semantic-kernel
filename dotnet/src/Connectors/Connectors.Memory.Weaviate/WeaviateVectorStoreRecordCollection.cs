@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordVectorizedHybridSearch<TRecord>
+public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -87,7 +87,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
@@ -349,7 +349,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
 
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
         var fields = this._propertyReader.DataPropertyJsonNames;
@@ -369,15 +369,15 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearch<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
         VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.FullTextPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
 
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
         var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);

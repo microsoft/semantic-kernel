@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>,
     IVectorizableTextSearch<TRecord>,
-    IKeywordVectorizedHybridSearch<TRecord>
+    IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -72,7 +72,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
     private static readonly VectorData.VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -326,7 +326,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
 
         // Configure search settings.
@@ -367,7 +367,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
 
         // Configure search settings.
@@ -397,16 +397,16 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearch<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
         var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(internalOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
         var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.FullTextPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalPropertyName);
         var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
 
         // Configure search settings.

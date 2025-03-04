@@ -7,7 +7,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
 /// </summary>
 [Collection("QdrantVectorStoreCollection")]
 public class QdrantNamedVectorsKeywordVectorizedHybridSearchTests(QdrantVectorStoreFixture fixture) : BaseKeywordVectorizedHybridSearchTests<ulong>

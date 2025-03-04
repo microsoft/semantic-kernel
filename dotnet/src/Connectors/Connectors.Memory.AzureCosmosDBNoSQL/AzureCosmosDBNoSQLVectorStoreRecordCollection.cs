@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>,
     IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, TRecord>,
-    IKeywordVectorizedHybridSearch<TRecord>
+    IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -73,7 +73,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
@@ -372,7 +372,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this.VerifyVectorType(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
@@ -400,7 +400,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearch<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -408,10 +408,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this.VerifyVectorType(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
-        var textProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.FullTextPropertyName);
+        var textProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
         var textPropertyName = this._storagePropertyNames[textProperty.DataModelPropertyName];
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
