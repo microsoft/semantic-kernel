@@ -11,7 +11,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class MCPServerSettings(KernelBaseModel):
     """MCP server settings."""
 
-    session: ClientSession = None
+    session: ClientSession | None = None
     exit_stack: AsyncExitStack = AsyncExitStack()
 
     async def initialize_session(self):
