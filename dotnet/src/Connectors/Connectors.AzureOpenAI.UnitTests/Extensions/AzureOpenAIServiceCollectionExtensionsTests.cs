@@ -2,6 +2,9 @@
 
 using System;
 using System.ClientModel;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,23 +16,51 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
+using Moq.Protected;
+using Moq;
+using System.Net;
+using System.IO;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 /// <summary>
 /// Unit tests for the service collection extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
-public sealed class AzureOpenAIServiceCollectionExtensionsTests
+public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 {
+    public AzureOpenAIServiceCollectionExtensionsTests()
+    {
+        this._mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+        this._httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        this._mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(this._httpResponseMessage);
+
+        this._httpClient = new HttpClient(this._mockHttpMessageHandler.Object);
+    }
+    private readonly HttpResponseMessage _httpResponseMessage;
+    private readonly HttpClient _httpClient;
+    private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
     #region Chat completion
 
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._httpResponseMessage.Dispose();
+    }
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
-    public void ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
+    [InlineData(InitializationType.HttpClient)]
+    public async Task ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
@@ -46,6 +77,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.ClientInline => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
             InitializationType.ApiVersion => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://localhost", "api-key", httpClient: this._httpClient),
             _ => builder.Services
         };
 
@@ -55,6 +87,12 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
 
         var textGenerationService = builder.Build().GetRequiredService<ITextGenerationService>();
         Assert.True(textGenerationService is AzureOpenAIChatCompletionService);
+
+        if (type == InitializationType.HttpClient) //Verify that the httpclient passed in is used
+        {
+            await chatCompletionService.GetChatMessageContentAsync("what is the weather");
+            this._mockHttpMessageHandler.Protected().Verify("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+        }
     }
 
     #endregion
@@ -67,6 +105,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
+    [InlineData(InitializationType.HttpClient)]
     public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -84,6 +123,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.ClientInline => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
             InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
             _ => builder.Services
         };
 
@@ -194,6 +234,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         ClientInline,
         ClientInServiceProvider,
         ClientEndpoint,
-        ApiVersion
+        ApiVersion,
+        HttpClient
     }
 }
