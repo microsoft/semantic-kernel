@@ -9,7 +9,7 @@ using OpenAI.Chat;
 namespace ChatCompletion;
 
 // The following example shows how to use Semantic Kernel with OpenAI API
-public class OpenAI_ChatCompletion_WithReasoning(ITestOutputHelper output) : BaseTest(output)
+public class OpenAI_ChatCompletionWithReasoning(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Sample showing how to use <see cref="Kernel"/> with chat completion and chat prompt syntax.

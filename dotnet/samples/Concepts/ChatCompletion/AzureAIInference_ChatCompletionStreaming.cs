@@ -9,7 +9,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace ChatCompletion;
 
 /// <summary>
-/// These examples demonstrate the ways different content types are streamed by OpenAI LLM via the chat completion service.
+/// These examples demonstrate different ways of using streaming chat completion with Azure Foundry or GitHub models.
+/// Azure AI Foundry: https://ai.azure.com/explore/models
+/// GitHub Models: https://github.com/marketplace?type=models
 /// </summary>
 public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
@@ -118,36 +120,6 @@ public class AzureAIInference_ChatCompletionStreaming(ITestOutputHelper output) 
 
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
-    }
-
-    /// <summary>
-    /// Streams the message output from the chat completion service.
-    /// </summary>
-    /// <param name="chatCompletionService">The chat completion service instance.</param>
-    /// <param name="chatHistory">The chat history instance.</param>
-    /// <param name="authorRole">The author role.</param>
-    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
-    {
-        bool roleWritten = false;
-        string fullMessage = string.Empty;
-
-        await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
-        {
-            if (!roleWritten && chatUpdate.Role.HasValue)
-            {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
-                roleWritten = true;
-            }
-
-            if (chatUpdate.Content is { Length: > 0 })
-            {
-                fullMessage += chatUpdate.Content;
-                Console.Write(chatUpdate.Content);
-            }
-        }
-
-        Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
     }
 
     /// <summary>
