@@ -561,7 +561,7 @@ public class QdrantVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
-            new() { IncludeVectors = true, Filter = filter, Top = 5, Skip = 2 },
+            new() { IncludeVectors = true, OldFilter = filter, Top = 5, Skip = 2 },
             this._testCancellationToken);
 
         // Assert.

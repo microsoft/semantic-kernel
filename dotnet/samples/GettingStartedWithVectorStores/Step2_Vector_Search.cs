@@ -71,7 +71,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
             new()
             {
                 Top = 1,
-                NewFilter = g => g.Category == "AI"
+                Filter = g => g.Category == "AI"
             });
         var searchResultItems = await searchResult.Results.ToListAsync();
 

@@ -62,9 +62,9 @@ internal static class RedisVectorStoreCollectionSearchMapping
 #pragma warning disable CS0618 // Type or member is obsolete
         var filter = options switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(legacyFilter, storagePropertyNames),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new RedisFilterTranslator().Translate(newFilter, storagePropertyNames),
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(legacyFilter, storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new RedisFilterTranslator().Translate(newFilter, storagePropertyNames),
             _ => "*"
         };
 #pragma warning restore CS0618 // Type or member is obsolete

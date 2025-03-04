@@ -37,7 +37,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .EqualTo("TestProperty2", "test-value-2")
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
-        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Skip = 5, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { OldFilter = filter, Skip = 5, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -86,7 +86,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .EqualTo("TestProperty2", "test-value-2")
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
-        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { OldFilter = filter, Top = 10 };
 
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -131,7 +131,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         var filter = new VectorSearchFilter().EqualTo("non-existent-property", "test-value-2");
 
-        var searchOptions = new VectorSearchOptions<DummyType> { Filter = filter, Skip = 5, Top = 10 };
+        var searchOptions = new VectorSearchOptions<DummyType> { OldFilter = filter, Skip = 5, Top = 10 };
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>

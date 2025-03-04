@@ -387,7 +387,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
         });
@@ -420,7 +420,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
         });

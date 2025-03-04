@@ -190,22 +190,22 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (searchOptions.Filter is not null)
         {
-            if (searchOptions.NewFilter is not null)
+            if (searchOptions.Filter is not null)
             {
-                throw new ArgumentException("Either Filter or NewFilter can be specified, but not both");
+                throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
             }
 
             // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(searchOptions.Filter, this._dataTableName);
+            var filterConditions = this.GetFilterConditions(searchOptions.OldFilter, this._dataTableName);
 
             if (filterConditions is { Count: > 0 })
             {
                 conditions.AddRange(filterConditions);
             }
         }
-        else if (searchOptions.NewFilter is not null)
+        else if (searchOptions.Filter is not null)
         {
-            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.NewFilter);
+            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.Filter);
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 

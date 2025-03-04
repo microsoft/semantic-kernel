@@ -13,13 +13,13 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    [Obsolete("Use NewFilter instead")]
-    public VectorSearchFilter? Filter { get; init; }
+    [Obsolete("Use Filter instead")]
+    public VectorSearchFilter? OldFilter { get; init; }
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    public Expression<Func<TRecord, bool>>? NewFilter { get; init; }
+    public Expression<Func<TRecord, bool>>? Filter { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the vector property to search on.
