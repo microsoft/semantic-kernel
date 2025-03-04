@@ -5,8 +5,6 @@ from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import boto3
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -95,8 +93,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         super().__init__(
             ai_model_id=bedrock_settings.chat_model_id,
             service_id=service_id or bedrock_settings.chat_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
         )
 
     # region Overriding base class methods
