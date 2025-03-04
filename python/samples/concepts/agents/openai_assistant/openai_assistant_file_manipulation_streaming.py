@@ -59,10 +59,10 @@ async def main():
             # "List the top 5 countries that generated the most profit.",
             "Create a tab delimited file report of profit by each country per month.",
         ]
-        for input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=input)
+        for user_input in user_inputs:
+            await agent.add_chat_message(thread_id=thread.id, message=user_input)
 
-            print(f"# User: '{input}'")
+            print(f"# User: '{user_input}'")
             annotations: list[StreamingAnnotationContent] = []
             messages: list[ChatMessageContent] = []
             is_code = False
