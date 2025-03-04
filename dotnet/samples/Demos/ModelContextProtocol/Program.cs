@@ -23,11 +23,16 @@ if (config["OpenAI:ApiKey"] is not null)
         modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o",
         apiKey: config["OpenAI:ApiKey"]!);
 }
+else
+{
+    Console.Error.WriteLine("Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.");
+    return;
+}
 
 Kernel kernel = builder.Build();
 
 // Add the MCP simple tools as Kernel functions
-var mcpClient = await McpClientUtils.GetSimpleToolsAsync().ConfigureAwait(false);
+var mcpClient = await McpDotNetExtensions.GetGitHubToolsAsync().ConfigureAwait(false);
 var functions = await mcpClient.MapToFunctionsAsync().ConfigureAwait(false);
 
 foreach (var function in functions)
@@ -45,6 +50,6 @@ var executionSettings = new OpenAIPromptExecutionSettings
 };
 
 // Test using GitHub tools
-var result = await kernel.InvokePromptAsync("Summarize the last four commits to the microsoft/semantic-kernel repository?", new(executionSettings)).ConfigureAwait(false);
-Console.WriteLine("\n\nSummary of the last four commits to the microsoft/semantic-kernel repository:");
-Console.WriteLine(result);
+var prompt = "Summarize the last four commits to the microsoft/semantic-kernel repository?";
+var result = await kernel.InvokePromptAsync(prompt, new(executionSettings)).ConfigureAwait(false);
+Console.WriteLine($"\n\n{prompt}\n{result}");

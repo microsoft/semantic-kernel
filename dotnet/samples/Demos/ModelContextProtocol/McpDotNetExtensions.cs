@@ -7,9 +7,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 
 namespace ModelContextProtocol;
-internal static class McpClientUtils
+
+/// <summary>
+/// Extension methods for McpDotNet
+/// </summary>
+internal static class McpDotNetExtensions
 {
-    internal static async Task<IMcpClient> GetSimpleToolsAsync()
+    internal static async Task<IMcpClient> GetGitHubToolsAsync()
     {
         McpClientOptions options = new()
         {
@@ -89,7 +93,8 @@ internal static class McpClientUtils
         );
     }
 
-    internal static object ToArgumentValue(this KernelFunction function, string name, object value)
+    #region private
+    private static object ToArgumentValue(this KernelFunction function, string name, object value)
     {
         var parameter = function.Metadata.Parameters.FirstOrDefault(p => p.Name == name);
         return parameter?.ParameterType switch
@@ -103,7 +108,7 @@ internal static class McpClientUtils
         } ?? value;
     }
 
-    internal static IEnumerable<KernelParameterMetadata>? ToParameters(this Tool tool)
+    private static IEnumerable<KernelParameterMetadata>? ToParameters(this Tool tool)
     {
         var inputSchema = tool.InputSchema;
         var properties = inputSchema?.Properties;
@@ -122,7 +127,7 @@ internal static class McpClientUtils
             }).ToList();
     }
 
-    internal static KernelReturnParameterMetadata? ToReturnParameter()
+    private static KernelReturnParameterMetadata? ToReturnParameter()
     {
         return new KernelReturnParameterMetadata()
         {
@@ -144,4 +149,5 @@ internal static class McpClientUtils
 
         return !required && type.IsValueType ? typeof(Nullable<>).MakeGenericType(type) : type;
     }
+    #endregion
 }
