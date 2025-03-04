@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using ChatWithAgent.Configuration;
 using ChatWithAgent.AppHost.Extensions;
+using ChatWithAgent.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
