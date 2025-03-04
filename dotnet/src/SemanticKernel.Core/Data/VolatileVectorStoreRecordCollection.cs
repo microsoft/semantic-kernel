@@ -238,12 +238,12 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Filter records using the provided filter before doing the vector comparison.
-        if (internalOptions.NewFilter is not null)
+        if (internalOptions.Filter is not null)
         {
             throw new NotSupportedException("LINQ-based filtering is not supported with VolatileVectorStore, use Microsoft.SemanticKernel.Connectors.InMemory instead");
         }
 
-        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
+        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.OldFilter, this.GetCollectionDictionary().Values);
 
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<object, (object record, float score)?>((record) =>

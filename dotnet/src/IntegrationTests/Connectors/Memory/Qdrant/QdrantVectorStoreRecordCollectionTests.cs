@@ -68,7 +68,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new() { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
+            new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -396,7 +396,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             vector,
             new()
             {
-                Filter = filter
+                OldFilter = filter
             });
 
         // Assert.

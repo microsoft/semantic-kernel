@@ -240,9 +240,9 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var allValues = this.GetCollectionDictionary().Values.Cast<TRecord>();
         var filteredRecords = internalOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => InMemoryVectorStoreCollectionSearchMapping.FilterRecords(legacyFilter, allValues),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(newFilter),
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => InMemoryVectorStoreCollectionSearchMapping.FilterRecords(legacyFilter, allValues),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(newFilter),
             _ => allValues
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete

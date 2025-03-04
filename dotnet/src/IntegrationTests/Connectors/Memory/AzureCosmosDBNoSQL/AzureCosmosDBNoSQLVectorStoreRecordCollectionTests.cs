@@ -343,7 +343,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Filter = filter,
+            OldFilter = filter,
             Top = 4,
         });
 

@@ -36,13 +36,13 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
                 legacyFilter,
                 jsonSerializerOptions,
                 keyPropertyName,
                 storagePropertyNames),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
             _ => null
         };
 #pragma warning restore CS0618

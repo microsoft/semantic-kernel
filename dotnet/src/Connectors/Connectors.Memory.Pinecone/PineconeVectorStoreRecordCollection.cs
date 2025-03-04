@@ -262,7 +262,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
 #pragma warning disable CS0618 // FilterClause is obsolete
         var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
-            internalOptions.Filter?.FilterClauses,
+            internalOptions.OldFilter?.FilterClauses,
             this._propertyReader.StoragePropertyNamesMap);
 #pragma warning restore CS0618
 

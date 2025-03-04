@@ -200,7 +200,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
+            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
             Top = searchOptions.Top,
