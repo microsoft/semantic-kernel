@@ -3,8 +3,6 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from typing_extensions import deprecated
-
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -14,9 +12,6 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-@deprecated(
-    "This class has been moved to semantic_kernel.connectors.ai.embedding_generator_base. Please update your imports."
-)
 @experimental
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     """Base class for embedding generators."""
