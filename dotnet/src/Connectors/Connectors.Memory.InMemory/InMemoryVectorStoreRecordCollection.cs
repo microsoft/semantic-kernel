@@ -229,11 +229,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
-        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorPropertyName) ? this._propertyReader.FirstVectorPropertyName : internalOptions.VectorPropertyName;
-        if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
-        {
-            throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");
-        }
+        var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+        var vectorPropertyName = vectorProperty.DataModelPropertyName;
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.

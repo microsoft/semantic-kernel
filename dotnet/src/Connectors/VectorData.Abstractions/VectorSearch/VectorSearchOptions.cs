@@ -26,7 +26,13 @@ public class VectorSearchOptions<TRecord>
     /// Use the name of the vector property from your data model or as provided in the record definition.
     /// If not provided will default to the first vector property in the schema.
     /// </summary>
+    [Obsolete("Use VectorProperty instead")]
     public string? VectorPropertyName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the vector property to search on.
+    /// </summary>
+    public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to return.

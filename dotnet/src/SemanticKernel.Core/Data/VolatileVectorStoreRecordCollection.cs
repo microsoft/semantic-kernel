@@ -231,7 +231,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
-        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorPropertyName) ? this._propertyReader.FirstVectorPropertyName : internalOptions.VectorPropertyName;
+        var vectorPropertyName = this._propertyReader.GetVectorProperty(internalOptions).DataModelPropertyName;
         if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
         {
             throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");

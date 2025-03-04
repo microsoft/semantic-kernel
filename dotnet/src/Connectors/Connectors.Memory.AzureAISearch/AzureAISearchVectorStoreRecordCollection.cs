@@ -330,7 +330,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+        VectorStoreRecordVectorProperty vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+        string vectorFieldName = this._propertyReader.JsonPropertyNamesMap[vectorProperty.DataModelPropertyName];
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
@@ -385,7 +386,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+        VectorStoreRecordVectorProperty vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+        string vectorFieldName = this._propertyReader.JsonPropertyNamesMap[vectorProperty.DataModelPropertyName];
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
@@ -584,31 +586,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         }
 
         return innerOptions;
-    }
-
-    /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private string ResolveVectorFieldName(string? optionsVectorFieldName)
-    {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
-        {
-            if (!this._propertyReader.JsonPropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
-        {
-            vectorFieldName = this._propertyReader.FirstVectorPropertyJsonName;
-        }
-
-        return vectorFieldName!;
     }
 
     /// <summary>

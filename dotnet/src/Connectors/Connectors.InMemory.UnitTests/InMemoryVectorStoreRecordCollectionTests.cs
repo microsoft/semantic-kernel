@@ -508,7 +508,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
-            new() { IncludeVectors = true, VectorPropertyName = "Vector" },
+            new() { IncludeVectors = true, VectorProperty = record => "Vector" },
             this._testCancellationToken);
 
         // Assert

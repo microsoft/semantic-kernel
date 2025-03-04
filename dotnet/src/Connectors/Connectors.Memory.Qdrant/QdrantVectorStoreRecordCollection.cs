@@ -489,7 +489,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordColl
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            vectorName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+            var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+            vectorName = this._propertyReader.StoragePropertyNamesMap[vectorProperty.DataModelPropertyName];
         }
 
         // Specify whether to include vectors in the search results.
@@ -524,31 +525,6 @@ public class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordColl
                 "Query"));
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
-    }
-
-    /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private string ResolveVectorFieldName(string? optionsVectorFieldName)
-    {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
-        {
-            if (!this._propertyReader.StoragePropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
-        {
-            vectorFieldName = this._propertyReader.FirstVectorPropertyStoragePropertyName;
-        }
-
-        return vectorFieldName!;
     }
 
     /// <summary>

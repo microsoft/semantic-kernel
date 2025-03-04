@@ -129,21 +129,11 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// Resolve the distance function to use for a search by checking the distance function of the vector property specified in options
     /// or by falling back to the distance function of the first vector property, or by falling back to the default distance function.
     /// </summary>
-    /// <param name="options">The search options potentially containing a vector field to search.</param>
-    /// <param name="vectorProperties">The list of all vector properties.</param>
-    /// <param name="firstVectorProperty">The first vector property in the record.</param>
+    /// <param name="vectorProperty">The vector property.</param>
     /// <returns>The distance function for the vector we want to search.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a user asked for a vector property that doesn't exist on the record.</exception>
-    public static string ResolveDistanceFunction<TRecord>(VectorSearchOptions<TRecord> options, IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties, VectorStoreRecordVectorProperty firstVectorProperty)
+    public static string ResolveDistanceFunction(VectorStoreRecordVectorProperty vectorProperty)
     {
-        if (options.VectorPropertyName == null || vectorProperties.Count == 1)
-        {
-            return firstVectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
-        }
-
-        var vectorProperty = vectorProperties.FirstOrDefault(p => p.DataModelPropertyName == options.VectorPropertyName)
-            ?? throw new InvalidOperationException($"The collection does not have a vector field named '{options.VectorPropertyName}'.");
-
         return vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
     }
 

@@ -369,7 +369,8 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
                 });
 
             // Process the score of the result item.
-            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(internalOptions, this._propertyReader.VectorProperties, this._propertyReader.VectorProperty!);
+            var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 
             return new VectorSearchResult<TRecord>(dataModel, score);

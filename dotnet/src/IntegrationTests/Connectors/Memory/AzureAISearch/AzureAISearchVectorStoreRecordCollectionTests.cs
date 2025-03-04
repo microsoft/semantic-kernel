@@ -350,7 +350,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             new()
             {
                 IncludeVectors = includeVectors,
-                VectorPropertyName = "DescriptionEmbedding",
+                VectorProperty = r => "DescriptionEmbedding",
                 Filter = filter,
             });
 
@@ -389,7 +389,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             "A hotel with great views.",
             new()
             {
-                VectorPropertyName = "DescriptionEmbedding",
+                VectorProperty = r => "DescriptionEmbedding",
                 Filter = filter,
             });
 

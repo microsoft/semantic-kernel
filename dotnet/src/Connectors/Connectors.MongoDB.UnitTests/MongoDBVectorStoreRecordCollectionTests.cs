@@ -614,11 +614,13 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
+#pragma warning disable CS0618 // Type or member is obsolete
         var actual = await sut.VectorizedSearchAsync(vector, new()
         {
             VectorPropertyName = vectorPropertyName,
             Top = actualTop,
         });
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert
         Assert.NotNull(await actual.Results.FirstOrDefaultAsync());
@@ -640,7 +642,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorPropertyName = "non-existent-property" };
+        var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());

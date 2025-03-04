@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -335,6 +336,61 @@ internal sealed class VectorStoreRecordPropertyReader
     public string GetJsonPropertyName(string dataModelPropertyName)
     {
         return this._jsonPropertyNamesMap.Value[dataModelPropertyName];
+    }
+
+    /// <summary>
+    /// Get the <see cref="VectorStoreRecordVectorProperty"/> for the given property name.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">When there is no match.</exception>
+    public VectorStoreRecordVectorProperty GetVectorProperty<TRecord>(VectorSearchOptions<TRecord>? searchOptions)
+    {
+        if (searchOptions is not null)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            string? propertyName = searchOptions.VectorPropertyName;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
+            {
+                if (expression.Body is ConstantExpression constant && constant.Value is string text && !string.IsNullOrWhiteSpace(text))
+                {
+                    // This is something that VectorStoreGenericDataModel can use.
+                    propertyName = text;
+                }
+                // r => r.PropertyName is translated into
+                // r => (object)r.PropertyName
+                else if (expression.Body is UnaryExpression unary
+                    && unary.Operand.NodeType == ExpressionType.MemberAccess
+                    && unary.Operand is MemberExpression member
+                    && expression.Parameters.Count == 1
+                    && member.Expression == expression.Parameters[0]
+                    && member.Member is PropertyInfo property)
+                {
+                    for (int i = 0; i < this.VectorPropertiesInfo.Count; i++)
+                    {
+                        if (this.VectorPropertiesInfo[i] == property)
+                        {
+                            return this.VectorProperties[i];
+                        }
+                    }
+
+                    throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a Vector property.");
+                }
+                else
+                {
+                    throw new InvalidOperationException("The expression must be a constant or a property access.");
+                }
+            }
+
+            // If vector property name is provided in options, try to find it in schema or throw an exception.
+            if (!string.IsNullOrWhiteSpace(propertyName))
+            {
+                return this.VectorProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(propertyName, StringComparison.Ordinal))
+                    ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{propertyName}'.");
+            }
+        }
+
+        return this.VectorProperty ?? throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
     }
 
     /// <summary>

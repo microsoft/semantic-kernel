@@ -236,7 +236,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             new()
             {
                 NewFilter = filter,
-                Top = fixture.TestData.Count
+                Top = fixture.TestData.Count,
+                VectorProperty = r => r.Vector
             });
 
         var actual = await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();

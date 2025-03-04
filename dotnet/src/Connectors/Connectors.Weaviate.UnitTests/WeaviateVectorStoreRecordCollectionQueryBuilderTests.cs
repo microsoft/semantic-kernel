@@ -78,7 +78,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         {
             Skip = 2,
             Top = 3,
-            VectorPropertyName = "DescriptionEmbedding"
+            VectorProperty = r => "DescriptionEmbedding"
         };
 
         // Act
@@ -108,7 +108,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         {
             Skip = 2,
             Top = 3,
-            VectorPropertyName = "DescriptionEmbedding",
+            VectorProperty = r => "DescriptionEmbedding",
             IncludeVectors = true
         };
 
@@ -139,7 +139,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         {
             Skip = 2,
             Top = 3,
-            VectorPropertyName = "DescriptionEmbedding",
+            VectorProperty = r => "DescriptionEmbedding",
             Filter = new VectorSearchFilter()
                 .EqualTo("HotelName", "Test Name")
                 .AnyTagEqualTo("Tags", "t1")
@@ -170,7 +170,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         {
             Skip = 2,
             Top = 3,
-            VectorPropertyName = "DescriptionEmbedding",
+            VectorProperty = r => "DescriptionEmbedding",
             Filter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
         };
 
@@ -195,7 +195,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         {
             Skip = 2,
             Top = 3,
-            VectorPropertyName = "DescriptionEmbedding",
+            VectorProperty = r => "DescriptionEmbedding",
             Filter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
         };
 
