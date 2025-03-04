@@ -84,7 +84,7 @@ public abstract class TestStore
                     Top = recordCount,
                     // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
                     // so filtered searches show empty results. Add a filter to the seed data check below.
-                    NewFilter = filter
+                    Filter = filter
                 });
             var count = await results.Results.CountAsync();
             if (count == recordCount)

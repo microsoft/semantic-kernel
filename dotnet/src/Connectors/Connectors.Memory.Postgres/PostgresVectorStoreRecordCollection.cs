@@ -290,9 +290,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
                 pgVector,
                 searchOptions.Top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-                searchOptions.Filter,
+                searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
-                searchOptions.NewFilter,
+                searchOptions.Filter,
                 searchOptions.Skip,
                 searchOptions.IncludeVectors,
                 cancellationToken)

@@ -235,7 +235,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             new ReadOnlyMemory<float>([1, 2, 3]),
             new()
             {
-                NewFilter = filter,
+                Filter = filter,
                 Top = fixture.TestData.Count
             });
 
@@ -270,7 +270,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             new ReadOnlyMemory<float>([1, 2, 3]),
             new()
             {
-                Filter = legacyFilter,
+                OldFilter = legacyFilter,
                 Top = fixture.TestData.Count
             });
 
