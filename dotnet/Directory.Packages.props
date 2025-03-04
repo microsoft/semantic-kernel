@@ -70,6 +70,7 @@
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="Prompty.Core" Version="0.0.23-alpha" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
