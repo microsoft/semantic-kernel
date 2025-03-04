@@ -128,6 +128,10 @@ dapr = [
     "dapr-ext-fastapi>=1.14.0",
     "flask-dapr>=1.14.0"
 ]
+realtime = [
+    "websockets >= 13, < 15",
+    "aiortc>=1.9.0",
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
@@ -225,5 +229,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-
