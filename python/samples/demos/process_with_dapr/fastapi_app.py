@@ -70,7 +70,7 @@ async def start_process(process_id: str):
             (s.state for s in kernel_process.steps if s.state.name == "CStep"), None
         )
         c_step_state_validated = CStepState.model_validate(c_step_state.state)
-        print(f"CStepState current cycle: {c_step_state_validated.current_cycle}")
+        print(f"[FINAL STEP STATE]: CStepState current cycle: {c_step_state_validated.current_cycle}")
         return JSONResponse(content={"processId": process_id}, status_code=200)
     except Exception:
         return JSONResponse(content={"error": "Error starting process"}, status_code=500)
