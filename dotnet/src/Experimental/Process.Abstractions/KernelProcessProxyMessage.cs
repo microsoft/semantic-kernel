@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// Initializes a new instance of the <see cref="KernelProcessProxyMessage"/> class.
 /// </remarks>
 [DataContract]
-public record KernelProcessProxyMessage
+public sealed record KernelProcessProxyMessage
 {
     /// <summary>
     /// Id of the SK process that emits the external event
@@ -32,7 +32,7 @@ public record KernelProcessProxyMessage
     /// </summary>
     [DataMember]
     [JsonPropertyName("externalTopicName")]
-    public string? ExternalTopicName { get; init; }
+    public string ExternalTopicName { get; init; } = string.Empty;
     /// <summary>
     /// Event name used for publishing process event as another process event with a different event name
     /// </summary>

@@ -65,6 +65,7 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         string testInput = "Test";
         var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput }, MockCloudEventClient.Instance);
         var externalMessageChannel = await processHandle.GetExternalMessageChannelAsync();
+        var runningProcessId = await processHandle.GetProcessIdAsync();
 
         // Assert
         Assert.NotNull(externalMessageChannel);
@@ -72,6 +73,8 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(mockClient);
         Assert.True(mockClient.InitializationCounter > 0);
         Assert.Equal(2, mockClient.CloudEvents.Count);
+        Assert.Equal(runningProcessId, mockClient.CloudEvents[0].Data?.ProcessId);
+        Assert.Equal(runningProcessId, mockClient.CloudEvents[1].Data?.ProcessId);
         this.AssertProxyMessage(mockClient.CloudEvents[0].Data, expectedPublishTopic: MockTopicNames.EchoExternalTopic, expectedTopicData: testInput);
         this.AssertProxyMessage(mockClient.CloudEvents[1].Data, expectedPublishTopic: MockTopicNames.RepeatExternalTopic, expectedTopicData: $"{testInput} {testInput}");
     }

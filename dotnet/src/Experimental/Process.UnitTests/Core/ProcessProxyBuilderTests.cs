@@ -29,7 +29,7 @@ public class ProcessProxyBuilderTests
         Assert.NotNull(proxy.Id);
         Assert.NotNull(proxy.Name);
         Assert.Equal(this._proxyName, proxy.Name);
-        Assert.True(proxy.ExternalTopicUsage.Count > 0);
+        Assert.True(proxy._externalTopicUsage.Count > 0);
     }
 
     /// <summary>

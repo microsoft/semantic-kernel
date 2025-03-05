@@ -30,6 +30,6 @@ public sealed class KernelProxyStep : KernelProcessStep
     public Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
     {
         Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));
-        return context.EmitExternalEventAsync(proxyEvent.ExternalTopicName, proxyEvent);
+        return context.EmitExternalEventAsync(proxyEvent);
     }
 }

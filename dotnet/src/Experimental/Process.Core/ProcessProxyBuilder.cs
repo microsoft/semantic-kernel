@@ -25,19 +25,19 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
             throw new ArgumentException("No topic names registered");
         }
 
-        this.ExternalTopicUsage = externalTopics.ToDictionary(topic => topic, topic => false);
-        if (this.ExternalTopicUsage.Count < externalTopics.Count)
+        this._externalTopicUsage = externalTopics.ToDictionary(topic => topic, topic => false);
+        if (this._externalTopicUsage.Count < externalTopics.Count)
         {
             throw new ArgumentException("Topic names registered must be different");
         }
     }
 
     /// <summary>
-    /// Version of the map-step, used when saving the state of the step.
+    /// Version of the proxy step, used when saving the state of the step.
     /// </summary>
     public string Version { get; init; } = "v1";
 
-    internal Dictionary<string, bool> ExternalTopicUsage { get; }
+    internal readonly Dictionary<string, bool> _externalTopicUsage;
 
     // For supporting multiple step edges getting linked to the same external topic, current implementation needs to be updated
     // to instead have a list of potential edges in case event names in different steps have same name
@@ -50,7 +50,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
     {
-        if (!this.ExternalTopicUsage.TryGetValue(topicName, out bool usedTopic))
+        if (!this._externalTopicUsage.TryGetValue(topicName, out bool usedTopic))
         {
             throw new InvalidOperationException($"Topic name {topicName} is not registered as proxy publish event, register first before using");
         }
@@ -61,13 +61,13 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         }
 
         this.EventMetadata[eventData.EventName] = new() { EventId = eventData.EventId, TopicName = topicName };
-        this.ExternalTopicUsage[topicName] = true;
+        this._externalTopicUsage[topicName] = true;
     }
 
     /// <inheritdoc/>
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
-        if (this.ExternalTopicUsage.All(topic => !topic.Value))
+        if (this._externalTopicUsage.All(topic => !topic.Value))
         {
             throw new InvalidOperationException("Proxy step does not have linked steps to it, link step edges to proxy or remove proxy step");
         }
@@ -77,7 +77,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
             Name = this.Name,
             Id = this.Id,
             EventMetadata = this.EventMetadata,
-            PublishTopics = this.ExternalTopicUsage.ToList().Select(topic => topic.Key).ToList(),
+            PublishTopics = this._externalTopicUsage.ToList().Select(topic => topic.Key).ToList(),
         };
 
         // Build the edges first

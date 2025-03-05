@@ -56,7 +56,7 @@ internal sealed class ProxyActor : StepActor, IProxy
 
         if (this._daprProxyInfo?.ProxyMetadata != null && message.SourceEventId != null && this._daprProxyInfo.ProxyMetadata.EventMetadata.TryGetValue(message.SourceEventId, out var metadata) && metadata != null)
         {
-            functionParameters![kvp.Key] = KernelProcessProxyMessageFactory.CreateProxyMessage(this._eventNamespace!, message.SourceEventId, metadata.TopicName, kvp.Value);
+            functionParameters![kvp.Key] = KernelProcessProxyMessageFactory.CreateProxyMessage(this.ParentProcessId!, message.SourceEventId, metadata.TopicName, kvp.Value);
         }
     }
 

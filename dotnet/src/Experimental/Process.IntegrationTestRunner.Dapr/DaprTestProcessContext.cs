@@ -79,4 +79,6 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
             _ => response
         };
     }
+
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process.State.Id!);
 }

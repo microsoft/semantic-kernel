@@ -60,11 +60,18 @@ public sealed class KernelProcessStepContext
     /// Emit an external event to through a <see cref="IExternalKernelProcessMessageChannel"/>
     /// component if connected from within the SK process
     /// </summary>
-    /// <param name="topicName">name of the topic used for external messages</param>
     /// <param name="processEventData">data containing event details</param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    public async Task EmitExternalEventAsync(string topicName, KernelProcessProxyMessage processEventData)
+    public async Task EmitExternalEventAsync(KernelProcessProxyMessage processEventData)
+    {
+        if (this._externalMessageChannel == null)
+        {
+            throw new KernelException($"External message channel not configured for step with topic {processEventData.ExternalTopicName}");
+        }
+
+        await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, processEventData).ConfigureAwait(false);
+    }
     {
         if (this._externalMessageChannel == null)
         {
