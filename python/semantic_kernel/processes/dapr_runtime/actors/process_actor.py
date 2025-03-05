@@ -213,7 +213,7 @@ class ProcessActor(StepActor, ProcessInterface):
         """Gets the process information."""
         return await self.to_dapr_process_info()
 
-    async def to_dapr_process_info(self) -> DaprProcessInfo:
+    async def to_dapr_process_info(self) -> dict:
         """Converts the process to a Dapr process info."""
         if self.process is None:
             raise ValueError("The process must be initialized before converting to DaprProcessInfo.")
