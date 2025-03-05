@@ -195,7 +195,7 @@ public class KernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions

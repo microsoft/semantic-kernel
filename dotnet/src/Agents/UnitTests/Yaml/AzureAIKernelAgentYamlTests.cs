@@ -66,7 +66,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             $"""
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -99,7 +99,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -147,7 +147,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -189,7 +189,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -224,7 +224,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -259,7 +259,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
@@ -309,7 +309,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions

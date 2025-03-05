@@ -23,6 +23,7 @@ public static class AgentDefinitionYaml
             .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
             .WithTypeConverter(new ModelConfigurationTypeConverter())
             .WithTypeConverter(new AgentToolDefinitionTypeConverter())
+            .WithTypeConverter(new AgentMetadataTypeConverter())
             .Build();
 
         var agentDefinition = deserializer.Deserialize<AgentDefinition>(text);
