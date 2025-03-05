@@ -72,12 +72,4 @@ public sealed class KernelProcessStepContext
 
         await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, processEventData).ConfigureAwait(false);
     }
-    {
-        if (this._externalMessageChannel == null)
-        {
-            throw new KernelException($"External message channel not configured for step with topic {topicName}");
-        }
-
-        await this._externalMessageChannel.EmitExternalEventAsync(topicName, processEventData).ConfigureAwait(false);
-    }
 }
