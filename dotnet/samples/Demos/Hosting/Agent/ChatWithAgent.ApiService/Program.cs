@@ -33,11 +33,11 @@ public static class Program
         // Add services to the container.
         builder.Services.AddProblemDetails();
 
-        // Load the app configuration.
-        var appConfig = new AppConfig(builder.Configuration);
+        // Load the service configuration.
+        var config = new ServiceConfig(builder.Configuration);
 
         // Add Kernel and required AI services.
-        AddKernelAndAgent(builder, appConfig);
+        AddKernelAndAgent(builder, config);
 
         var app = builder.Build();
 
@@ -51,27 +51,27 @@ public static class Program
         app.Run();
     }
 
-    private static void AddKernelAndAgent(WebApplicationBuilder builder, AppConfig appConfig)
+    private static void AddKernelAndAgent(WebApplicationBuilder builder, ServiceConfig config)
     {
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
-        switch (appConfig.Host.AIChatService)
+        switch (config.Host.AIChatService)
         {
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
-                builder.AddAzureOpenAIServices(appConfig.Host);
+                builder.AddAzureOpenAIServices(config.Host);
                 break;
             }
 
             case OpenAIChatConfig.ConfigSectionName:
             {
-                builder.AddOpenAIServices(appConfig.Host);
+                builder.AddOpenAIServices(config.Host);
                 break;
             }
 
             default:
-                throw new NotSupportedException($"AI service '{appConfig.Host.AIChatService}' is not supported.");
+                throw new NotSupportedException($"AI service '{config.Host.AIChatService}' is not supported.");
         }
 
         // Add chat completion agent.
@@ -80,9 +80,9 @@ public static class Program
             return new ChatCompletionAgent()
             {
                 Kernel = sp.GetRequiredService<Kernel>(),
-                Name = appConfig.Agent.Name,
-                Description = appConfig.Agent.Description,
-                Instructions = appConfig.Agent.Instructions
+                Name = config.Agent.Name,
+                Description = config.Agent.Description,
+                Instructions = config.Agent.Instructions
             };
         });
     }

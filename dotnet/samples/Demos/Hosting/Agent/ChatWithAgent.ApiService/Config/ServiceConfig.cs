@@ -6,18 +6,18 @@ using Microsoft.Extensions.Configuration;
 namespace ChatWithAgent.ApiService.Config;
 
 /// <summary>
-/// Application configuration.
+/// Service configuration.
 /// </summary>
-public sealed class AppConfig
+public sealed class ServiceConfig
 {
     private readonly AgentConfig _agentConfig = new();
     private readonly HostConfig _hostConfig;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AppConfig"/> class.
+    /// Initializes a new instance of the <see cref="ServiceConfig"/> class.
     /// </summary>
     /// <param name="configurationManager">The configuration manager.</param>
-    public AppConfig(ConfigurationManager configurationManager)
+    public ServiceConfig(ConfigurationManager configurationManager)
     {
         configurationManager
             .GetSection(AgentConfig.ConfigSectionName)
