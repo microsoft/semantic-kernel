@@ -82,7 +82,7 @@ public class ProcessProxyBuilderTests
         Assert.Equal(proxy.Id, proxyInfo.State.Id);
         var processProxy = (KernelProcessProxy)proxyInfo;
         Assert.NotNull(processProxy?.ProxyMetadata);
-        Assert.Equal(proxy.EventMetadata, processProxy.ProxyMetadata.EventMetadata);
+        Assert.Equal(proxy._eventMetadata, processProxy.ProxyMetadata.EventMetadata);
     }
 
     /// <summary>
