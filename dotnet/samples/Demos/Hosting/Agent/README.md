@@ -103,12 +103,12 @@ Depending on the selected service, configure the relevant properties:
 `TBD`
 
 ## Connection strings
-   
-Some upstream dependencies require connection strings, which `azd` will prompt you for during deployment. Refer to the table below for the required formats:  
-   
-| Dependency | Format                         | Example                                          |  
-|------------|--------------------------------|--------------------------------------------------|  
-| OpenAI     | `Endpoint=<uri>;Key=<key>`     | `Endpoint=https://api.openai.com/v1;Key=123` or `Key=123` |
+
+Some upstream dependencies require connection strings, which `azd` will prompt you for during deployment. Refer to the table below for the required formats:
+
+| Dependency | Format                         | Example                                          |
+|------------|--------------------------------|--------------------------------------------------|
+| OpenAIChat     | `Endpoint=<uri>;Key=<key>`     | `Endpoint=https://api.openai.com/v1;Key=123` or `Key=123` |
 
 When running agent locally, the connections string should be specified in user secrets. Please refer to the [Running the agent locally](#running-the-agent-locally) section for more information.
 
@@ -121,7 +121,7 @@ To run the agent locally, follow these steps:
     ```json
     {
       "ConnectionStrings": {
-        "OpenAI": "Endpoint=https://api.openai.com/v1;Key=123"
+        "OpenAIChat": "Endpoint=https://api.openai.com/v1;Key=123"
       }
     }
     ```
