@@ -36,7 +36,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
@@ -525,18 +525,27 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
-
-        // Build filter object.
-        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
         var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalPropertyName);
         var textDataPropertyName = this._propertyReader.GetStoragePropertyName(textDataProperty.DataModelPropertyName);
+
+        // Build filter object.
+#pragma warning disable CS0618 // Type or member is obsolete
+        // Build filter object.
+        var filter = internalOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._propertyReader.StoragePropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => new Filter()
+        };
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Specify the vector name if named vectors are used.
         string? vectorName = null;

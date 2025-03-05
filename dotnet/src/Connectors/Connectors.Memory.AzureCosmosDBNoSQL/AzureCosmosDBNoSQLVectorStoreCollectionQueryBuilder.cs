@@ -30,7 +30,12 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         string vectorPropertyName,
         string? textPropertyName,
         string scorePropertyName,
-        VectorSearchOptions<TRecord> searchOptions)
+#pragma warning disable CS0618 // Type or member is obsolete
+        VectorSearchFilter? oldFilter,
+#pragma warning restore CS0618 // Type or member is obsolete
+        Expression<Func<TRecord, bool>>? filter,
+        int top,
+        int skip)
     {
         Verify.NotNull(vector);
 
@@ -55,7 +60,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var (whereClause, filterParameters) = searchOptions switch
+        var (whereClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => BuildSearchFilter(legacyFilter, storagePropertyNames),
@@ -72,7 +77,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         // If Offset is not configured, use Top parameter instead of Limit/Offset
         // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
         // so directly add it to the query here.
-        var topArgument = searchOptions.Skip == 0 ? $"TOP {searchOptions.Top} " : string.Empty;
+        var topArgument = skip == 0 ? $"TOP {top} " : string.Empty;
 
         var builder = new StringBuilder();
 
@@ -90,7 +95,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         {
             // Hybrid search doesn't allow offset and limit to be passed as parameters
             // so directly add it to the query here.
-            builder.AppendLine($"OFFSET {searchOptions.Skip} LIMIT {searchOptions.Top}");
+            builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
 
         // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.

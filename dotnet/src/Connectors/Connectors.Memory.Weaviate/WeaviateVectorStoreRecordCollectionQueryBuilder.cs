@@ -77,7 +77,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// Builds Weaviate hybrid search query.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>
-    public static string BuildHybridSearchQuery<TVector>(
+    public static string BuildHybridSearchQuery<TRecord, TVector>(
         TVector vector,
         string keywords,
         string collectionName,
@@ -85,7 +85,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         string keyPropertyName,
         string textPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
-        HybridSearchOptions searchOptions,
+        HybridSearchOptions<TRecord> searchOptions,
         IReadOnlyDictionary<string, string> storagePropertyNames,
         IReadOnlyList<string> vectorPropertyStorageNames,
         IReadOnlyList<string> dataPropertyStorageNames)
@@ -94,11 +94,19 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
             string.Empty;
 
-        var filter = BuildFilter(
-            searchOptions.Filter,
-            jsonSerializerOptions,
-            keyPropertyName,
-            storagePropertyNames);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = searchOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
+                legacyFilter,
+                jsonSerializerOptions,
+                keyPropertyName,
+                storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            _ => null
+        };
+#pragma warning restore CS0618
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
 

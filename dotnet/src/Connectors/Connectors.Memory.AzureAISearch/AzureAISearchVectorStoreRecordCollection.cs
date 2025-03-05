@@ -72,7 +72,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -331,7 +331,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
@@ -387,7 +387,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
@@ -427,7 +427,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
         var floatVector = VerifyVectorParam(vector);
@@ -442,7 +442,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
-        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        // Build filter object.
+        var filter = internalOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => null
+        };
+#pragma warning restore CS0618
 
         // Build search options.
         var searchOptions = new SearchOptions
@@ -450,7 +460,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             VectorSearch = new(),
             Size = internalOptions.Top,
             Skip = internalOptions.Skip,
-            Filter = filterString,
+            Filter = filter,
             IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);

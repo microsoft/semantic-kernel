@@ -1,16 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Linq.Expressions;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Options for hybrid search when using a dense vector and string keywords to do the search.
 /// </summary>
-public class HybridSearchOptions
+public class HybridSearchOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets a search filter to use before doing the hybrid search.
     /// </summary>
-    public VectorSearchFilter? Filter { get; init; }
+#pragma warning disable CS0618 // Type or member is obsolete
+    [Obsolete("Use Filter instead")]
+    public VectorSearchFilter? OldFilter { get; init; }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+    /// <summary>
+    /// Gets or sets a search filter to use before doing the vector search.
+    /// </summary>
+    public Expression<Func<TRecord, bool>>? Filter { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the target dense vector property to search on.

@@ -24,6 +24,6 @@ public interface IKeywordHybridSearch<TRecord>
     Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(
         TVector vector,
         ICollection<string> keywords,
-        HybridSearchOptions? options = default,
+        HybridSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 }

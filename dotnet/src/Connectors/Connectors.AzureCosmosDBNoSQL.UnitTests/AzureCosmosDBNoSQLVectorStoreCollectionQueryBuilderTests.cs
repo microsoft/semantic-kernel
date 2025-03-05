@@ -38,7 +38,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
             null,
             fields,
@@ -47,6 +47,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             null,
             ScorePropertyName,
             filter,
+            null,
             10,
             5);
 
@@ -83,7 +84,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
             null,
             fields,
@@ -92,6 +93,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             null,
             ScorePropertyName,
             filter,
+            null,
             10,
             0);
 
@@ -128,7 +130,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
                 vector,
                 null,
                 fields,
@@ -137,6 +139,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
                 null,
                 ScorePropertyName,
                 filter,
+                null,
                 10,
                 5));
     }
@@ -150,7 +153,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var fields = this._storagePropertyNames.Values.ToList();
 
         // Act
-        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
             null,
             fields,
@@ -158,6 +161,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             vectorPropertyName,
             null,
             ScorePropertyName,
+            null,
             null,
             10,
             5);
@@ -224,7 +228,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
             [keywordText],
             fields,
@@ -233,6 +237,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             textPropertyName,
             ScorePropertyName,
             filter,
+            null,
             10,
             5);
 
@@ -255,7 +260,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Equal("@cv1", queryParameters[2].Name);
         Assert.Equal("test-value-3", queryParameters[2].Value);
     }
-    
+
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
     private sealed class DummyType;
 #pragma warning restore CA1812

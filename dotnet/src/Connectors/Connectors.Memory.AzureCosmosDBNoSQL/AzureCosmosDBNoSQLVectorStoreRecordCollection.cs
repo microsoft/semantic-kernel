@@ -73,7 +73,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
@@ -373,6 +373,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
             vector,
             null,
@@ -381,9 +382,11 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             vectorPropertyName,
             null,
             ScorePropertyName,
+            searchOptions.OldFilter,
             searchOptions.Filter,
             searchOptions.Top,
             searchOptions.Skip);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
         var mappedResults = this.MapSearchResultsAsync(
@@ -396,7 +399,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -412,7 +415,8 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
 
-        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+#pragma warning disable CS0618 // Type or member is obsolete
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<TVector, TRecord>(
             vector,
             keywords,
             fields,
@@ -420,9 +424,11 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             vectorPropertyName,
             textPropertyName,
             ScorePropertyName,
+            searchOptions.OldFilter,
             searchOptions.Filter,
             searchOptions.Top,
             searchOptions.Skip);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
         var mappedResults = this.MapSearchResultsAsync(
