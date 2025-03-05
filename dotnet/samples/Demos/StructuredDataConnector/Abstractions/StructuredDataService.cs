@@ -20,8 +20,6 @@ public class StructuredDataService : IDisposable
     /// </summary>
     public List<string> AllowedTables { get; set; } = [];
 
-    private readonly bool _internalContext;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StructuredDataService"/> class.
     /// </summary>
@@ -39,25 +37,6 @@ public class StructuredDataService : IDisposable
     public StructuredDataService(DbContext dbContext)
     {
         this.Context = dbContext;
-    }
-
-    /// <summary>
-    /// Releases the unmanaged resources used by the StructuredDataService and optionally releases the managed resources.
-    /// </summary>
-    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing && this._internalContext)
-        {
-            this.Context.Dispose();
-        }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -106,6 +85,25 @@ public class StructuredDataService : IDisposable
         }
     }
 
+    /// <summary>
+    /// Releases the unmanaged resources used by the StructuredDataService and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && this._internalContext)
+        {
+            this.Context.Dispose();
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
     private void EnsureTableIsAllowed(string tableName)
     {
         if (!this.AllowedTables.Contains(tableName))
@@ -126,4 +124,6 @@ public class StructuredDataService : IDisposable
         CancellationToken cancellationToken = default);
 
     */
+
+    private readonly bool _internalContext;
 }

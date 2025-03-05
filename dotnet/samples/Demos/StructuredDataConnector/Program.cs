@@ -19,19 +19,33 @@ internal sealed class Program
         using var myDbContext = new MyDbContext(connectionString);
         using var structuredConnector = new StructuredDataService(myDbContext)
         {
-            AllowedTables = ["Test1"]
+            AllowedTables = ["Test1", "Test2"]
         };
 
+        // Typed records query
         var result = structuredConnector.SearchByEntity<MyEntity>(e => e.Description == "Test");
 
+        Console.WriteLine($"----- Records for {nameof(MyEntity)} -----");
         foreach (var entity in result)
         {
-            Console.WriteLine($"Id: {entity.Id}, Description: {entity.Description}");
+            Console.WriteLine($"""
+                Id: {entity.Id}
+                Description: {entity.Description}
+                -----
+                """);
         }
 
-        await foreach (var record in structuredConnector.SearchByTableAsync(structuredConnector.AllowedTables[0]).ConfigureAwait(false))
+        // Abstract dictionary based records query
+        await foreach (var record in structuredConnector
+            .SearchByTableAsync(structuredConnector.AllowedTables[1])
+            .ConfigureAwait(false))
         {
-            Console.WriteLine($"Id: {record[nameof(MyEntity.Id)]}, Description: {record[nameof(MyEntity.Description)]}");
+            Console.WriteLine($"----- Records for {structuredConnector.AllowedTables[1]} -----");
+            foreach (var key in record.Keys)
+            {
+                Console.WriteLine($"{key}: {record[key]}");
+            }
+            Console.WriteLine($"-----");
         }
     }
 }
@@ -42,8 +56,6 @@ internal sealed class MyDbContext : DbContext
         : base(connectionString)
     {
     }
-
-    public DbSet<MyEntity>? MyEntities { get; set; }
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
