@@ -35,13 +35,15 @@
         {
             messages.Add(new Message { Sender = "User", Text = userMessage });
 
+            var prompt = userMessage;
+
             userMessage = string.Empty;
 
             bool agentMessageAdded = false;
 
             var agentMessage = new Message { Sender = "Agent", Text = string.Empty };
 
-            await foreach (var update in AgentCompletionsApi.CompleteStreamingAsync(userMessage, CancellationToken.None))
+            await foreach (var update in AgentCompletionsApi.CompleteStreamingAsync(prompt, CancellationToken.None))
             {
                 if (!agentMessageAdded)
                 {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using ChatWithAgent.ApiService.Config;
 using ChatWithAgent.ApiService.Extensions;
 using ChatWithAgent.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -32,11 +33,11 @@ public static class Program
         // Add services to the container.
         builder.Services.AddProblemDetails();
 
-        // Load the host configuration.
-        var hostConfig = new HostConfig(builder.Configuration);
+        // Load the app configuration.
+        var appConfig = new AppConfig(builder.Configuration);
 
         // Add Kernel and required AI services.
-        AddKernelAndServices(builder, hostConfig);
+        AddKernelAndAgent(builder, appConfig);
 
         var app = builder.Build();
 
@@ -50,21 +51,27 @@ public static class Program
         app.Run();
     }
 
-    private static void AddKernelAndServices(WebApplicationBuilder builder, HostConfig hostConfig)
+    private static void AddKernelAndAgent(WebApplicationBuilder builder, AppConfig appConfig)
     {
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
-        switch (hostConfig.AIChatService)
+        switch (appConfig.Host.AIChatService)
         {
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
-                builder.AddAzureOpenAIServices(hostConfig);
+                builder.AddAzureOpenAIServices(appConfig.Host);
+                break;
+            }
+
+            case OpenAIChatConfig.ConfigSectionName:
+            {
+                builder.AddOpenAIServices(appConfig.Host);
                 break;
             }
 
             default:
-                throw new NotSupportedException($"AI service '{hostConfig.AIChatService}' is not supported.");
+                throw new NotSupportedException($"AI service '{appConfig.Host.AIChatService}' is not supported.");
         }
 
         // Add chat completion agent.
@@ -73,7 +80,9 @@ public static class Program
             return new ChatCompletionAgent()
             {
                 Kernel = sp.GetRequiredService<Kernel>(),
-                Instructions = "TBD"
+                Name = appConfig.Agent.Name,
+                Description = appConfig.Agent.Description,
+                Instructions = appConfig.Agent.Instructions
             };
         });
     }

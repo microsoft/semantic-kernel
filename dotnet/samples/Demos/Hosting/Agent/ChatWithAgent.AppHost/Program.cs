@@ -33,6 +33,12 @@ static IResourceBuilder<IResourceWithConnectionString> AddAIServices(IDistribute
             return builder.AddAzureOpenAI(config);
         }
 
+        case OpenAIChatConfig.ConfigSectionName:
+        {
+            // Use an existing Azure OpenAI service via connection string
+            return builder.AddConnectionString(OpenAIChatConfig.ConnectionStringName);
+        }
+
         default:
             throw new NotSupportedException($"AI service '{config.AIChatService}' is not supported.");
     }
