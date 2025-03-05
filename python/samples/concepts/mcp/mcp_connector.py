@@ -107,6 +107,9 @@ async def chat() -> bool:
 
 
 async def main() -> None:
+    # Since MCP uses local STDIO, we need to specify the command to run the server.
+    # The server runs on the local machine, please ensure Node.js/Npx is installed.
+    # Also ensure npx is added to your PATH environment variable.
     settings = MCPStdioServerSettings(
         server_params=StdioServerParameters(
             command="npx", args=["-y", "@modelcontextprotocol/server-everything"], env=None

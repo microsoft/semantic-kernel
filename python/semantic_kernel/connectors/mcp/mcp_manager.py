@@ -18,6 +18,9 @@ async def create_function_from_mcp_server(settings: MCPServerSettings):
 async def _create_function_from_mcp_server(settings: MCPServerSettings) -> list[KernelFunction]:
     """Loads Function from an MCP Server to KernelFunctions."""
     # List available tools
+    await settings.initialize_session()
+    if settings.session is None:
+        raise RuntimeError("The MCP Server Client Session is not initialized. Please initialize the session first.")
     response = await settings.session.list_tools()
     return [_generate_kernel_function_from_tool(tool, settings) for tool in response.tools]
 

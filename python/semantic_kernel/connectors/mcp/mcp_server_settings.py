@@ -18,10 +18,12 @@ class MCPServerSettings(KernelBaseModel):
         """Initialize the MCP session."""
         if self.session is not None:
             return self.session
+        # Get the MCP client and initialize the session.
         client = self._get_mcp_client()
-        transport = await self.exit_stack.enter_async_context(client)
-        read, write = transport
+        # Use the exit stack to manage the client and session.
+        read, write = await self.exit_stack.enter_async_context(client)
         self.session = await self.exit_stack.enter_async_context(ClientSession(read, write))
+        # Initialize the session.
         await self.session.initialize()
         return None
 
