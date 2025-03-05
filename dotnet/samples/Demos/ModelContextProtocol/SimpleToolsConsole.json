@@ -1,0 +1,17 @@
+{
+  "Options": {
+    "ClientInfo": {
+      "Name": "SimpleToolsConsole",
+      "Version": "1.0.0"
+    }
+  },
+  "Config": {
+    "Id": "everything",
+    "Name": "Everything",
+    "TransportType": "stdio",
+    "TransportOptions": {
+      "command": "npx",
+      "arguments": "-y @modelcontextprotocol/server-everything"
+    }
+  }
+}  
