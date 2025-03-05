@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Provides extension methods for <see cref="AgentDefinition"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public static class AgentDefinitionExtensions
 {
     /// <summary>
@@ -21,11 +23,11 @@ public static class AgentDefinitionExtensions
         if (agentDefinition?.Inputs is not null)
         {
             // Add default arguments for the agent
-            foreach (var input in agentDefinition.Inputs)
+            foreach (var keyValuePair in agentDefinition.Inputs)
             {
-                if (input.Default is not null)
+                if (keyValuePair.Value.Default is not null)
                 {
-                    arguments.Add(input.Name, input.Default);
+                    arguments.Add(keyValuePair.Key, keyValuePair.Value.Default);
                 }
             }
         }

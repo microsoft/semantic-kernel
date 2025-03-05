@@ -89,10 +89,16 @@ public class KernelAgentYamlTests : IDisposable
                 configuration:
                     type: azureai
             inputs:
-                - name: input1
-                  description: input1 description
-                - name: input2
-                  description: input2 description
+                input1:
+                    description: input1 description
+                    required: true
+                    default: input1 default
+                    sample: input1 sample
+                input2:
+                    description: input2 description
+                    required: false
+                    default: input2 default
+                    sample: input2 sample
             outputs:
                 - description: output1 description
             template:

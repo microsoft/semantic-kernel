@@ -53,14 +53,14 @@ public sealed class AgentDefinition
     public ModelDefinition? Model { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of input variables used by the agent.
+    /// Gets or sets the collection of inputs used by the agent.
     /// </summary>
-    public IList<InputVariable>? Inputs { get; set; }
+    public Dictionary<string, AgentInput>? Inputs { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of output variables supported by the agent.
+    /// Gets or sets the collection of outputs supported by the agent.
     /// </summary>
-    public IList<OutputVariable>? Outputs { get; set; }
+    public IList<AgentOutput>? Outputs { get; set; }
 
     /// <summary>
     /// Gets or sets the template options used by the agent.

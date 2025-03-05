@@ -25,6 +25,24 @@ public static class AgentDefinitionYaml
             .WithTypeConverter(new AgentToolDefinitionTypeConverter())
             .Build();
 
-        return deserializer.Deserialize<AgentDefinition>(text);
+        var agentDefinition = deserializer.Deserialize<AgentDefinition>(text);
+        return agentDefinition.Update();
     }
+
+    #region private
+    private static AgentDefinition Update(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+
+        if (agentDefinition?.Inputs is not null)
+        {
+            foreach (var keyValuePair in agentDefinition.Inputs)
+            {
+                keyValuePair.Value.Name = keyValuePair.Key;
+            }
+        }
+
+        return agentDefinition!;
+    }
+    #endregion
 }
