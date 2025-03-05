@@ -430,6 +430,62 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("json_data2", sut.GetJsonPropertyName("Data2"));
     }
 
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyNameFailsForNoVectorsAndNoPropertySpecified(Type type, VectorStoreRecordDefinition? definition)
+    {
+        VectorStoreRecordPropertyReader sut = new(type, definition, new VectorStoreRecordPropertyReaderOptions { RequiresAtLeastOneVector = false });
+
+        var exception = Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyName<object>(new()));
+
+        Assert.Equal("The collection does not have any vector properties, so vector search is not possible.", exception.Message);
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyNameJustReturnsTheLegacyValue(Type type, VectorStoreRecordDefinition? definition)
+    {
+        const string ExpectedName = "ExpectedName";
+
+        VectorStoreRecordPropertyReader sut = new(type, definition, new VectorStoreRecordPropertyReaderOptions { RequiresAtLeastOneVector = false });
+
+        VectorSearchOptions<object> searchOptions = new()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            VectorPropertyName = ExpectedName
+#pragma warning restore CS0618 // Type or member is obsolete
+        };
+
+        Assert.Equal(ExpectedName, sut.GetVectorPropertyName(searchOptions));
+    }
+
+    [Fact]
+    public void GetVectorPropertyNameReturnsFirstVectorPropertyWhenNoPropertySpecified()
+    {
+        VectorStoreRecordPropertyReader sut = new(typeof(MultiPropsModel), s_multiPropsDefinition, null);
+        VectorSearchOptions<MultiPropsModel> searchOptions = new();
+
+        string actual = sut.GetVectorPropertyName(searchOptions);
+
+        Assert.Equal("Vector1", actual);
+        Assert.Equal("Vector1", sut.GetStoragePropertyName(actual));
+    }
+
+    [Fact]
+    public void GetVectorPropertyNameReturnsTheSpecifiedProperty()
+    {
+        VectorStoreRecordPropertyReader sut = new(typeof(MultiPropsModel), s_multiPropsDefinition, null);
+        VectorSearchOptions<MultiPropsModel> searchOptions = new()
+        {
+            VectorProperty = record => record.Vector2
+        };
+
+        string actual = sut.GetVectorPropertyName(searchOptions);
+
+        Assert.Equal("Vector2", actual);
+        Assert.Equal("storage_vector2", sut.GetStoragePropertyName(actual));
+    }
+
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()
     {
         yield return new object?[] { typeof(NoKeyModel), s_noKeyDefinition };

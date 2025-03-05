@@ -218,11 +218,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Volatile Vector Store.");
@@ -231,7 +226,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
-        var vectorPropertyName = this._propertyReader.GetVectorProperty(internalOptions).DataModelPropertyName;
+        var vectorPropertyName = this._propertyReader.GetVectorPropertyName(internalOptions);
         if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
         {
             throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");

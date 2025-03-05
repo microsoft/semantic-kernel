@@ -339,27 +339,26 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Get the <see cref="VectorStoreRecordVectorProperty"/> for the given property name.
+    /// Get the <see cref="VectorStoreRecordProperty.DataModelPropertyName"/> for the given search options.
     /// </summary>
     /// <exception cref="InvalidOperationException">When there is no match.</exception>
-    public VectorStoreRecordVectorProperty GetVectorProperty<TRecord>(VectorSearchOptions<TRecord>? searchOptions)
+    public string GetVectorPropertyName<TRecord>(VectorSearchOptions<TRecord>? searchOptions)
     {
         if (searchOptions is not null)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            string? propertyName = searchOptions.VectorPropertyName;
+            string? obsoletePropertyName = searchOptions.VectorPropertyName;
 #pragma warning restore CS0618 // Type or member is obsolete
+            if (!string.IsNullOrEmpty(obsoletePropertyName))
+            {
+                return obsoletePropertyName!;
+            }
 
             if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
             {
-                if (expression.Body is ConstantExpression constant && constant.Value is string text && !string.IsNullOrWhiteSpace(text))
-                {
-                    // This is something that VectorStoreGenericDataModel can use.
-                    propertyName = text;
-                }
                 // r => r.PropertyName is translated into
                 // r => (object)r.PropertyName
-                else if (expression.Body is UnaryExpression unary
+                if (expression.Body is UnaryExpression unary
                     && unary.Operand.NodeType == ExpressionType.MemberAccess
                     && unary.Operand is MemberExpression member
                     && expression.Parameters.Count == 1
@@ -370,27 +369,43 @@ internal sealed class VectorStoreRecordPropertyReader
                     {
                         if (this.VectorPropertiesInfo[i] == property)
                         {
-                            return this.VectorProperties[i];
+                            return this.VectorProperties[i].DataModelPropertyName;
                         }
                     }
 
                     throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a Vector property.");
                 }
-                else
-                {
-                    throw new InvalidOperationException("The expression must be a constant or a property access.");
-                }
-            }
 
-            // If vector property name is provided in options, try to find it in schema or throw an exception.
-            if (!string.IsNullOrWhiteSpace(propertyName))
-            {
-                return this.VectorProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(propertyName, StringComparison.Ordinal))
-                    ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{propertyName}'.");
+                throw new InvalidOperationException("The expression must be a a valid Vector property access.");
             }
         }
 
-        return this.VectorProperty ?? throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        return this._vectorProperties.Count > 0
+            ? this._vectorProperties[0].DataModelPropertyName
+            : throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+    }
+
+    /// <summary>
+    /// Get the <see cref="VectorStoreRecordVectorProperty"/> for the given search options.
+    /// </summary>
+    /// <remarks>
+    /// The implementation assumes that the provided <see cref="VectorSearchOptions{TRecord}.VectorPropertyName"/>
+    /// refers to <see cref="VectorStoreRecordProperty.DataModelPropertyName" />, not
+    /// the <see cref="VectorStoreRecordProperty.StoragePropertyName" />!
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">When there is no match.</exception>
+    public T GetProperty<T>(string dataModelName) where T : VectorStoreRecordProperty
+    {
+        for (int i = 0; i < this.Properties.Count; i++)
+        {
+            if (this.Properties[i].DataModelPropertyName == dataModelName
+                && this.Properties[i] is T property)
+            {
+                return property;
+            }
+        }
+
+        throw new InvalidOperationException($"The collection does not have a property named '{dataModelName}'.");
     }
 
     /// <summary>

@@ -462,11 +462,6 @@ public class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordColl
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
@@ -489,8 +484,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordColl
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
-            vectorName = this._propertyReader.StoragePropertyNamesMap[vectorProperty.DataModelPropertyName];
+            vectorName = this._propertyReader.GetStoragePropertyName(this._propertyReader.GetVectorPropertyName(internalOptions));
         }
 
         // Specify whether to include vectors in the search results.

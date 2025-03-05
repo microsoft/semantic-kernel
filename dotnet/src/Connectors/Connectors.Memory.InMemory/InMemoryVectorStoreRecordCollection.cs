@@ -216,11 +216,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the InMemory Vector Store.");
@@ -229,7 +224,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
-        var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
+        var vectorProperty = this._propertyReader.GetProperty<VectorStoreRecordVectorProperty>(this._propertyReader.GetVectorPropertyName(internalOptions));
         var vectorPropertyName = vectorProperty.DataModelPropertyName;
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete

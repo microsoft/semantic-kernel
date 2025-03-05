@@ -318,11 +318,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Azure AI Search connector.");
@@ -330,8 +325,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        VectorStoreRecordVectorProperty vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
-        string vectorFieldName = this._propertyReader.JsonPropertyNamesMap[vectorProperty.DataModelPropertyName];
+        string vectorFieldName = this._propertyReader.GetJsonPropertyName(this._propertyReader.GetVectorPropertyName(internalOptions));
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
@@ -379,15 +373,9 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     {
         Verify.NotNull(searchText);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        VectorStoreRecordVectorProperty vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
-        string vectorFieldName = this._propertyReader.JsonPropertyNamesMap[vectorProperty.DataModelPropertyName];
+        string vectorFieldName = this._propertyReader.GetJsonPropertyName(this._propertyReader.GetVectorPropertyName(internalOptions));
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();

@@ -170,7 +170,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorProperty(searchOptions);
+        var vectorPropertyStorageName = this._propertyReader.GetStoragePropertyName(this._propertyReader.GetVectorPropertyName(searchOptions));
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -180,7 +180,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         var conditions = new List<SqliteWhereCondition>()
         {
-            new SqliteWhereMatchCondition(this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName), mappedArray),
+            new SqliteWhereMatchCondition(vectorPropertyStorageName, mappedArray),
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 

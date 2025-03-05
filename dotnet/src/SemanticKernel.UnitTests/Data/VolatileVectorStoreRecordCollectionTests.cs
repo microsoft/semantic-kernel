@@ -507,7 +507,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
-            new() { IncludeVectors = true, VectorProperty = record => "Vector" },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert

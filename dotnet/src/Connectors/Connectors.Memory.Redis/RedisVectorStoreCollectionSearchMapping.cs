@@ -48,14 +48,11 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="vectorBytes">The vector to search the database with as a byte array.</param>
     /// <param name="options">The options to configure the behavior of the search.</param>
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
-    /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
+    /// <param name="vectorPropertyName">The name of the vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, VectorSearchOptions<TRecord> options, IReadOnlyDictionary<string, string> storagePropertyNames, string firstVectorPropertyName, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, VectorSearchOptions<TRecord> options, IReadOnlyDictionary<string, string> storagePropertyNames, string vectorPropertyName, string[]? selectFields)
     {
-        // Resolve options.
-        var vectorPropertyName = ResolveVectorFieldName(options.VectorPropertyName, storagePropertyNames, firstVectorPropertyName);
-
         // Build search query.
         var redisLimit = options.Top + options.Skip;
 
@@ -160,33 +157,6 @@ internal static class RedisVectorStoreCollectionSearchMapping
             DistanceFunction.EuclideanSquaredDistance => redisScore,
             _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported."),
         };
-    }
-
-    /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
-    /// <param name="firstVectorPropertyName">The name of the first vector property in the data model.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private static string ResolveVectorFieldName(string? optionsVectorFieldName, IReadOnlyDictionary<string, string> storagePropertyNames, string firstVectorPropertyName)
-    {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
-        {
-            if (!storagePropertyNames.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
-        {
-            vectorFieldName = firstVectorPropertyName;
-        }
-
-        return vectorFieldName!;
     }
 
     /// <summary>

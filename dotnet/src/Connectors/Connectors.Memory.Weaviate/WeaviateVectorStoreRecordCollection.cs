@@ -350,8 +350,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorProperty(searchOptions);
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
+        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(this._propertyReader.GetVectorPropertyName(searchOptions));
         var fields = this._propertyReader.DataPropertyJsonNames;
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(

@@ -266,8 +266,11 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         };
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorProperty(searchOptions);
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var vectorDataModelPropertyName = this._propertyReader.GetVectorPropertyName(searchOptions);
+        if (!this._storagePropertyNames.TryGetValue(vectorDataModelPropertyName, out var vectorPropertyName))
+        {
+            throw new InvalidOperationException($"The collection does not have a vector field named '{vectorDataModelPropertyName}'.");
+        }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch

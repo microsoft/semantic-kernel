@@ -31,6 +31,7 @@ public class VectorSearchOptions<TRecord>
 
     /// <summary>
     /// Gets or sets the vector property to search on.
+    /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
 

@@ -378,16 +378,18 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         var internalOptions = options ?? s_defaultVectorSearchOptions;
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.JsonPropertyNamesMap, this._propertyReader.FirstVectorPropertyJsonName!, null);
+        var vectorDataModelPropertyName = this._propertyReader.GetVectorPropertyName(internalOptions);
+        if (!this._propertyReader.JsonPropertyNamesMap.TryGetValue(vectorDataModelPropertyName, out var vectorPropertyStorageName))
+        {
+            throw new InvalidOperationException($"The collection does not have a vector field named '{vectorDataModelPropertyName}', so vector search is not possible.");
+        }
+        var vectorProperty = this._propertyReader.GetProperty<VectorStoreRecordVectorProperty>(vectorDataModelPropertyName);
+        var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.JsonPropertyNamesMap, vectorPropertyStorageName, null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database
@@ -411,8 +413,6 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._propertyReader.GetVectorProperty(internalOptions);
-            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 
             return new VectorSearchResult<TRecord>(mappedRecord, score);

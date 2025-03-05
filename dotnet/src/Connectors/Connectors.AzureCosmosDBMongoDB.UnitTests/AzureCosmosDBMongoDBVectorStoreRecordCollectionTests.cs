@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -617,14 +618,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
+        Expression<Func<VectorSearchModel, object?>>? vectorSelector = vectorPropertyName switch
+        {
+            "TestEmbedding1" => record => record.TestEmbedding1,
+            "TestEmbedding2" => record => record.TestEmbedding2,
+            _ => null
+        };
+
         // Act
-#pragma warning disable CS0618 // Type or member is obsolete
         var actual = await sut.VectorizedSearchAsync(vector, new()
         {
-            VectorPropertyName = vectorPropertyName,
+            VectorProperty = vectorSelector,
             Top = actualTop,
         });
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert
         Assert.NotNull(await actual.Results.FirstOrDefaultAsync());

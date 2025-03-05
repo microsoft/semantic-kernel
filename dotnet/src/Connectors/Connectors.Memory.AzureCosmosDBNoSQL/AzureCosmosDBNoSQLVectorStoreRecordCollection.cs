@@ -373,10 +373,13 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorProperty(searchOptions);
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var vectorDataModelPropertyName = this._propertyReader.GetVectorPropertyName(searchOptions);
+        if (!this._storagePropertyNames.TryGetValue(vectorDataModelPropertyName, out var vectorPropertyName))
+        {
+            throw new InvalidOperationException($"The collection does not have a vector field named '{vectorDataModelPropertyName}'.");
+        }
 
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
             vector,

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using Xunit;
@@ -93,35 +94,15 @@ public class RedisVectorStoreCollectionSearchMappingTests
         {
             { "Vector", "storage_Vector" },
         };
-        var firstVectorPropertyName = "storage_FirstVector";
+        var vectorPropertyName = storagePropertyNames.Values.First();
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, selectFields);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, vectorPropertyName, selectFields);
 
         // Assert.
         Assert.NotNull(query);
         Assert.Equal("*=>[KNN 8 @storage_Vector $embedding AS vector_score]", query.QueryString);
-    }
-
-    [Fact]
-    public void BuildQueryFailsForInvalidVectorName()
-    {
-        // Arrange.
-        var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
-        var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var vectorSearchOptions = new VectorSearchOptions<DummyType> { VectorProperty = r => "UnknownVector" };
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Vector", "storage_Vector" },
-        };
-        var firstVectorPropertyName = "storage_FirstVector";
-
-        // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, firstVectorPropertyName, null);
-        });
     }
 
     [Theory]
