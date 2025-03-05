@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Exception thrown when a vector store command fails, such as upserting a record or deleting a collection.
+/// Defines an exception that's thrown when a vector store command fails, such as upserting a record or deleting a collection.
 /// </summary>
 public class VectorStoreOperationException : VectorStoreException
 {

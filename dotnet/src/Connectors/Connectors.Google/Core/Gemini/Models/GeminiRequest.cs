@@ -42,6 +42,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiContent? SystemInstruction { get; set; }
 
+    [JsonPropertyName("cachedContent")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CachedContent { get; set; }
+
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
@@ -67,6 +71,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(prompt);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -83,6 +88,7 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        AddAdditionalBodyFields(executionSettings, obj);
         return obj;
     }
 
@@ -211,6 +217,7 @@ internal sealed class GeminiRequest
     {
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
+        AudioContent audioContent => CreateGeminiPartFromAudio(audioContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
 
@@ -248,6 +255,42 @@ internal sealed class GeminiRequest
     {
         return imageContent.MimeType
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
+    }
+
+    private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
+    {
+        // Binary data takes precedence over URI.
+        if (audioContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromAudioContent(audioContent),
+                    InlineData = Convert.ToBase64String(audioContent.Data.Value.ToArray())
+                }
+            };
+        }
+
+        if (audioContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromAudioContent(audioContent),
+                    FileUri = audioContent.Uri ?? throw new InvalidOperationException("Audio content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Audio content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromAudioContent(AudioContent audioContent)
+    {
+        return audioContent.MimeType
+               ?? throw new InvalidOperationException("Audio content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
@@ -316,6 +359,11 @@ internal sealed class GeminiRequest
     {
         request.SafetySettings = executionSettings.SafetySettings?.Select(s
             => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
+    }
+
+    private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
+    {
+        request.CachedContent = executionSettings.CachedContent;
     }
 
     internal sealed class ConfigurationElement

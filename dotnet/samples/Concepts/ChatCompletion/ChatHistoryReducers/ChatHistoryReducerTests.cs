@@ -12,31 +12,6 @@ namespace ChatCompletion;
 public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output)
 {
     [Theory]
-    [InlineData(3, null, null, 5, 0)]
-    [InlineData(2, null, null, 1, 1)]
-    [InlineData(2, "SystemMessage", null, 2, 2)]
-    [InlineData(10, null, null, 3, 3)]
-    [InlineData(10, "SystemMessage", null, 3, 3)]
-    [InlineData(9, null, null, 5, 5)]
-    [InlineData(11, null, null, 5, 5)]
-    [InlineData(8, "SystemMessage", null, 5, 5)]
-    [InlineData(10, "SystemMessage", null, 5, 5)]
-    [InlineData(3, null, new int[] { 0 }, 3, 2)]
-    [InlineData(3, "SystemMessage", new int[] { 0 }, 4, 3)]
-    public async Task VerifyTruncatingChatHistoryReducerAsync(int messageCount, string? systemMessage, int[]? functionCallIndexes, int truncatedSize, int expectedSize)
-    {
-        // Arrange
-        var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes);
-        var reducer = new TruncatingChatHistoryReducer(truncatedSize);
-
-        // Act
-        var reducedHistory = await reducer.ReduceAsync(chatHistory);
-
-        // Assert
-        VerifyReducedHistory(reducedHistory, ComputeExpectedMessages(chatHistory, expectedSize));
-    }
-
-    [Theory]
     [InlineData(3, null, null, 100, 0)]
     [InlineData(3, "SystemMessage", null, 100, 0)]
     [InlineData(6, null, null, 100, 4)]
@@ -47,30 +22,7 @@ public class ChatHistoryReducerTests(ITestOutputHelper output) : BaseTest(output
     {
         // Arrange
         var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes, true);
-        var reducer = new MaxTokensChatHistoryReducer(maxTokens);
-
-        // Act
-        var reducedHistory = await reducer.ReduceAsync(chatHistory);
-
-        // Assert
-        VerifyReducedHistory(reducedHistory, ComputeExpectedMessages(chatHistory, expectedSize));
-    }
-
-    [Theory]
-    [InlineData(3, null, null, 5, 10, 0)]
-    [InlineData(10, null, null, 5, 10, 6)]
-    [InlineData(10, "SystemMessage", null, 5, 10, 6)]
-    [InlineData(10, null, new int[] { 1 }, 5, 10, 6)]
-    [InlineData(10, "SystemMessage", new int[] { 2 }, 5, 10, 6)]
-    public async Task VerifySummarizingChatHistoryReducerAsync(int messageCount, string? systemMessage, int[]? functionCallIndexes, int truncatedSize, int truncationThreshold, int expectedSize)
-    {
-        // Arrange
-        Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
-        Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatClient = new FakeChatCompletionService("The dialog consists of repetitive interaction where both the user and assistant exchange identical phrases in Latin.");
-
-        var chatHistory = CreateHistoryWithUserInput(messageCount, systemMessage, functionCallIndexes, true);
-        var reducer = new SummarizingChatHistoryReducer(chatClient, truncatedSize, truncationThreshold);
+        var reducer = new ChatHistoryMaxTokensReducer(maxTokens);
 
         // Act
         var reducedHistory = await reducer.ReduceAsync(chatHistory);

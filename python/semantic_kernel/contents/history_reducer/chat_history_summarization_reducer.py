@@ -2,20 +2,20 @@
 
 import logging
 import sys
-from typing import Any
-
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
     from typing import Self  # type: ignore # pragma: no cover
+if sys.version < "3.12":
+    from typing_extensions import override  # pragma: no cover
+else:
+    from typing import override  # type: ignore # pragma: no cover
 
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
@@ -27,6 +27,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     locate_summarization_boundary,
 )
 from semantic_kernel.exceptions.content_exceptions import ChatHistoryReducerException
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -47,75 +48,41 @@ This summary must never:
 """
 
 
-@experimental_class
+@experimental
 class ChatHistorySummarizationReducer(ChatHistoryReducer):
-    """A ChatHistory with logic to summarize older messages past a target count."""
+    """A ChatHistory with logic to summarize older messages past a target count.
+
+    This class inherits from ChatHistoryReducer, which in turn inherits from ChatHistory.
+    It can be used anywhere a ChatHistory is expected, while adding summarization capability.
+
+    Args:
+        target_count: The target message count.
+        threshold_count: The threshold count to avoid orphaning messages.
+        auto_reduce: Whether to automatically reduce the chat history, default is False.
+        service: The ChatCompletion service to use for summarization.
+        summarization_instructions: The summarization instructions, optional.
+        use_single_summary: Whether to use a single summary message, default is True.
+        fail_on_error: Raise error if summarization fails, default is True.
+        include_function_content_in_summary: Whether to include function calls/results in the summary, default is False.
+        execution_settings: The execution settings for the summarization prompt, optional.
+
+    """
 
     service: ChatCompletionClientBase
     summarization_instructions: str = Field(
-        default_factory=lambda: DEFAULT_SUMMARIZATION_PROMPT,
+        default=DEFAULT_SUMMARIZATION_PROMPT,
         description="The summarization instructions.",
+        kw_only=True,
     )
-    use_single_summary: bool = Field(True, description="Whether to use a single summary message.")
-    fail_on_error: bool = Field(True, description="Raise error if summarization fails.")
-    service_id: str = Field(
-        default_factory=lambda: DEFAULT_SERVICE_NAME, description="The ID of the chat completion service."
-    )
+    use_single_summary: bool = Field(default=True, description="Whether to use a single summary message.")
+    fail_on_error: bool = Field(default=True, description="Raise error if summarization fails.")
     include_function_content_in_summary: bool = Field(
-        False, description="Whether to include function calls/results in the summary."
+        default=False, description="Whether to include function calls/results in the summary."
     )
     execution_settings: PromptExecutionSettings | None = None
 
-    def __init__(
-        self,
-        service: ChatCompletionClientBase,
-        target_count: int,
-        service_id: str | None = None,
-        threshold_count: int | None = None,
-        summarization_instructions: str | None = None,
-        use_single_summary: bool | None = None,
-        fail_on_error: bool | None = None,
-        include_function_content_in_summary: bool | None = None,
-        execution_settings: PromptExecutionSettings | None = None,
-        **kwargs: Any,
-    ):
-        """Initialize the ChatHistorySummarizationReducer.
-
-        Args:
-            service (ChatCompletionClientBase): The chat completion service.
-            target_count (int): The target number of messages to retain after applying summarization.
-            service_id (str | None): The ID of the chat completion service.
-            threshold_count (int | None): The threshold beyond target_count required to trigger reduction.
-            summarization_instructions (str | None): The summarization instructions.
-            use_single_summary (bool | None): Whether to use a single summary message.
-            fail_on_error (bool | None): Raise error if summarization fails.
-            include_function_content_in_summary (bool | None): Whether to include function calls/results in the summary.
-            execution_settings (PromptExecutionSettings | None): The prompt execution settings.
-            **kwargs (Any): Additional keyword arguments.
-        """
-        args: dict[str, Any] = {
-            "service": service,
-            "target_count": target_count,
-        }
-        if service_id is not None:
-            args["service_id"] = service_id
-        if threshold_count is not None:
-            args["threshold_count"] = threshold_count
-        if summarization_instructions is not None:
-            args["summarization_instructions"] = summarization_instructions
-        if use_single_summary is not None:
-            args["use_single_summary"] = use_single_summary
-        if fail_on_error is not None:
-            args["fail_on_error"] = fail_on_error
-        if include_function_content_in_summary is not None:
-            args["include_function_content_in_summary"] = include_function_content_in_summary
-        if execution_settings is not None:
-            args["execution_settings"] = execution_settings
-
-        super().__init__(**args, **kwargs)
-
+    @override
     async def reduce(self) -> Self | None:
-        """Summarize the older messages past the target message count."""
         history = self.messages
         if len(history) <= self.target_count + (self.threshold_count or 0):
             return None  # No summarization needed
@@ -187,19 +154,15 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
         from semantic_kernel.contents.utils.author_role import AuthorRole
 
         chat_history = ChatHistory(messages=messages)
-
-        role = (
-            getattr(self.execution_settings, "instruction_role", AuthorRole.SYSTEM)
-            if self.execution_settings
-            else AuthorRole.SYSTEM
+        execution_settings = self.execution_settings or self.service.get_prompt_execution_settings_from_settings(
+            PromptExecutionSettings()
         )
-
-        chat_history.add_message(ChatMessageContent(role=role, content=self.summarization_instructions))
-
-        execution_settings = self.execution_settings or self.service.get_prompt_execution_settings_class()(
-            service_id=self.service_id
+        chat_history.add_message(
+            ChatMessageContent(
+                role=getattr(execution_settings, "instruction_role", AuthorRole.SYSTEM),
+                content=self.summarization_instructions,
+            )
         )
-
         return await self.service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
     def __eq__(self, other: object) -> bool:

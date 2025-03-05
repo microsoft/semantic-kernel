@@ -91,10 +91,10 @@ public class OpenAIClientProviderTests
 
         // Arrange
         using HttpClient httpClientWithHeaders = new() { BaseAddress = new Uri("http://myproxy:9819") };
-        httpClient.DefaultRequestHeaders.Add("X-Test", "Test");
+        httpClientWithHeaders.DefaultRequestHeaders.Add("X-Test", "Test");
 
         // Act
-        OpenAIClientProvider providerWithHeaders = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
+        OpenAIClientProvider providerWithHeaders = OpenAIClientProvider.ForOpenAI(httpClient: httpClientWithHeaders);
 
         // Assert
         Assert.NotNull(providerWithHeaders.Client);

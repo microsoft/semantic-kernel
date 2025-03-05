@@ -2,6 +2,7 @@
 
 import sys
 from functools import partial
+from importlib import util
 from typing import Any
 
 if sys.version_info >= (3, 12):
@@ -32,6 +33,9 @@ from semantic_kernel.utils.authentication.entra_id_authentication import get_ent
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing, is_test_running_on_supported_platforms, retry
 
+hugging_face_setup = util.find_spec("torch") is not None
+
+
 azure_openai_setup = True
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and is_test_running_on_supported_platforms([
     "Linux"
@@ -41,7 +45,6 @@ vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
-bedrock_setup = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
@@ -134,7 +137,6 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skipif(not bedrock_setup, reason="Not setup"),
             id="bedrock_amazon_titan_text_completion",
         ),
         pytest.param(
@@ -219,7 +221,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="patrickvonplaten/t5-tiny-random",
                     ai_model_id="patrickvonplaten/t5-tiny-random",
                     task="text2text-generation",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "hf_summ": (
@@ -227,7 +231,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="jotamunz/billsum_tiny_summarization",
                     ai_model_id="jotamunz/billsum_tiny_summarization",
                     task="summarization",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "hf_gen": (
@@ -235,7 +241,9 @@ class TestTextCompletion(CompletionTestBase):
                     service_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
                     ai_model_id="HuggingFaceM4/tiny-random-LlamaForCausalLM",
                     task="text-generation",
-                ),
+                )
+                if hugging_face_setup
+                else None,
                 HuggingFacePromptExecutionSettings,
             ),
             "onnx_gen_ai": (
@@ -245,27 +253,27 @@ class TestTextCompletion(CompletionTestBase):
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
             "bedrock_amazon_titan": (
-                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("amazon.titan-text-premier-v1:0"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                BedrockTextCompletion(model_id="anthropic.claude-v2") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("anthropic.claude-v2"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (
-                BedrockTextCompletion(model_id="cohere.command-text-v14") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("cohere.command-text-v14"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (
-                BedrockTextCompletion(model_id="ai21.j2-mid-v1") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("ai21.j2-mid-v1"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("meta.llama3-70b-instruct-v1:0"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_mistralai": (
-                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2") if bedrock_setup else None,
+                self._try_create_bedrock_text_completion_client("mistral.mistral-7b-instruct-v0:2"),
                 BedrockTextPromptExecutionSettings,
             ),
         }
@@ -363,3 +371,13 @@ class TestTextCompletion(CompletionTestBase):
                 name="text completions",
             )
             self.evaluate(response)
+
+    def _try_create_bedrock_text_completion_client(self, model_id: str) -> BedrockTextCompletion | None:
+        try:
+            return BedrockTextCompletion(model_id=model_id)
+        except Exception as ex:
+            from conftest import logger
+
+            logger.warning(ex)
+            # Returning None so that the test that uses this service will be skipped
+            return None

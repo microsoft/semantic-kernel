@@ -50,7 +50,9 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             """
             Write a one verse poem on the requested topic in the style of {{$style}}.
             Always state the requested style of the poem.
-            """);
+            """,
+            PromptTemplateConfig.SemanticKernelTemplateFormat,
+            new KernelPromptTemplateFactory());
     }
 
     [Fact]
@@ -79,8 +81,8 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
 
     private async Task InvokeChatCompletionAgentWithTemplateAsync(
         string instructionTemplate,
-        string? templateFormat = null,
-        IPromptTemplateFactory? templateFactory = null)
+        string templateFormat,
+        IPromptTemplateFactory templateFactory)
     {
         // Define the agent
         PromptTemplateConfig templateConfig =

@@ -34,9 +34,9 @@ from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -235,7 +235,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             part_dict = part.to_dict()
             if "text" in part_dict:
