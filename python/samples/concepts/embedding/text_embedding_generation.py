@@ -2,15 +2,12 @@
 
 import asyncio
 
-import scipy
-
 from samples.concepts.setup.text_embedding_services import Services, get_text_embedding_service_and_request_settings
 
 """
 This sample shows how to generating embeddings for text data. This sample uses the following component:
 - an text embedding generator: This component is responsible for generating embeddings for text data.
 """
-
 
 # You can select from the following text embedding services:
 # - Services.OPENAI
@@ -32,7 +29,11 @@ TEXTS = [
 
 
 def cosine_similarity(a, b):
-    return 1 - scipy.spatial.distance.cosine(a, b)
+    from scipy.spatial.distance import cosine
+
+    # Note that scipy.spatial.distance.cosine computes the cosine distance, which is 1 - cosine similarity.
+    # https://en.wikipedia.org/wiki/Cosine_similarity#Cosine_distance
+    return 1 - cosine(a, b)
 
 
 async def main() -> None:
