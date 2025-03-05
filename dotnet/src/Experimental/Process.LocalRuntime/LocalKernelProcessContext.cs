@@ -60,4 +60,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     {
         return Task.FromResult(this._localProcess.ExternalMessageChannel);
     }
+
+    /// <inheritdoc/>
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._localProcess.Id);
 }

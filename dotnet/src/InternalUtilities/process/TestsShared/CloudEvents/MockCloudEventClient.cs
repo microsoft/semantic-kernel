@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.IntegrationTests.CloudEvents;
+namespace SemanticKernel.Process.TestsShared.CloudEvents;
 /// <summary>
 /// Class used for testing purposes to mock emitting external cloud events
 /// </summary>
@@ -36,12 +36,22 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
         }
     }
 
+    /// <summary>
+    /// For testing purposes reset public properties
+    /// </summary>
+    public void Reset()
+    {
+        this.InitializationCounter = 0;
+        this.UninitializationCounter = 0;
+        this.CloudEvents.Clear();
+    }
+
     /// <inheritdoc/>
-    public Task EmitExternalEventAsync(string externalTopicEvent, object? eventData)
+    public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
     {
         if (eventData != null)
         {
-            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = (string)eventData });
+            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = eventData });
         }
 
         return Task.CompletedTask;
