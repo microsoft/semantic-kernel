@@ -41,7 +41,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     // For supporting multiple step edges getting linked to the same external topic, current implementation needs to be updated
     // to instead have a list of potential edges in case event names in different steps have same name
-    internal Dictionary<string, KernelProcessProxyEventMetadata> EventMetadata { get; } = [];
+    internal readonly Dictionary<string, KernelProcessProxyEventMetadata> _eventMetadata = [];
 
     internal ProcessFunctionTargetBuilder GetExternalFunctionTargetBuilder()
     {
@@ -60,7 +60,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
             throw new InvalidOperationException($"Topic name {topicName} is is already linked to another step edge");
         }
 
-        this.EventMetadata[eventData.EventName] = new() { EventId = eventData.EventId, TopicName = topicName };
+        this._eventMetadata[eventData.EventName] = new() { EventId = eventData.EventId, TopicName = topicName };
         this._externalTopicUsage[topicName] = true;
     }
 
@@ -76,7 +76,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
         {
             Name = this.Name,
             Id = this.Id,
-            EventMetadata = this.EventMetadata,
+            EventMetadata = this._eventMetadata,
             PublishTopics = this._externalTopicUsage.ToList().Select(topic => topic.Key).ToList(),
         };
 
