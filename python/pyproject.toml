@@ -70,6 +70,9 @@ google = [
     "google-cloud-aiplatform == 1.82.0",
     "google-generativeai ~= 0.8"
 ]
+faiss = [
+    "faiss-cpu>=1.10.0"
+]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 4.0",
