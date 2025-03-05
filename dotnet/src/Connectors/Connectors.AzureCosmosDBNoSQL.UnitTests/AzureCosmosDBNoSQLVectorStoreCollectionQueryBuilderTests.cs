@@ -9,6 +9,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder"/> class.
 /// </summary>
@@ -175,10 +177,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
-        const string ExpectedQueryText = "" +
-            "SELECT x.key,x.property_1,x.property_2 " +
-            "FROM x " +
-            "WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0) ";
+        const string ExpectedQueryText = """
+                                         SELECT x.key,x.property_1,x.property_2
+                                         FROM x
+                                         WHERE (x.key_property = @rk0  AND  x.partition_key_property = @pk0)
+                                         """;
 
         const string KeyStoragePropertyName = "key_property";
         const string PartitionKeyPropertyName = "partition_key_property";
@@ -252,4 +255,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Equal("@cv1", queryParameters[2].Name);
         Assert.Equal("test-value-3", queryParameters[2].Value);
     }
+    
+#pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
+    private sealed class DummyType;
+#pragma warning restore CA1812
 }

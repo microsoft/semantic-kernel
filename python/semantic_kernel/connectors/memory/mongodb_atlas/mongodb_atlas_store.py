@@ -5,6 +5,11 @@ import sys
 from importlib import metadata
 from typing import TYPE_CHECKING, Any, TypeVar
 
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -15,13 +20,15 @@ from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.driver_info import DriverInfo
 
+from semantic_kernel.connectors.memory.mongodb_atlas.const import DEFAULT_DB_NAME
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import (
     MongoDBAtlasCollection,
 )
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.data import VectorStoreRecordCollection
@@ -32,7 +39,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class MongoDBAtlasStore(VectorStore):
     """MongoDB Atlas store implementation."""
 
@@ -46,30 +53,32 @@ class MongoDBAtlasStore(VectorStore):
         mongo_client: AsyncMongoClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasStore client.
 
         Args:
-        connection_string (str): The connection string for MongoDB Atlas, optional.
+        connection_string: The connection string for MongoDB Atlas, optional.
             Can be read from environment variables.
-        database_name (str): The name of the database, optional. Can be read from environment variables.
-        mongo_client (MongoClient): The MongoDB client, optional.
-        env_file_path (str): Use the environment settings file as a fallback
+        database_name: The name of the database, optional. Can be read from environment variables.
+        mongo_client: The MongoDB client, optional.
+        env_file_path: Use the environment settings file as a fallback
             to environment variables.
-        env_file_encoding (str): The encoding of the environment settings file.
-
+        env_file_encoding: The encoding of the environment settings file.
+        kwargs: Additional keyword arguments.
         """
+        managed_client = kwargs.get("managed_client", not mongo_client)
+        if mongo_client:
+            super().__init__(
+                mongo_client=mongo_client,
+                managed_client=managed_client,
+                database_name=database_name or DEFAULT_DB_NAME,
+            )
+            return
         from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import (
             MongoDBAtlasSettings,
         )
 
-        if mongo_client and database_name:
-            super().__init__(
-                mongo_client=mongo_client,
-                managed_client=False,
-                database_name=database_name,
-            )
-        managed_client: bool = False
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings.create(
                 env_file_path=env_file_path,
@@ -79,12 +88,13 @@ class MongoDBAtlasStore(VectorStore):
             )
         except ValidationError as exc:
             raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
-        if not mongo_client:
-            mongo_client = AsyncMongoClient(
-                mongodb_atlas_settings.connection_string.get_secret_value(),
-                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
-            )
-            managed_client = True
+        if not mongodb_atlas_settings.connection_string:
+            raise VectorStoreInitializationException("The connection string is missing.")
+
+        mongo_client = AsyncMongoClient(
+            mongodb_atlas_settings.connection_string.get_secret_value(),
+            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+        )
 
         super().__init__(
             mongo_client=mongo_client,
@@ -129,7 +139,7 @@ class MongoDBAtlasStore(VectorStore):
         if self.managed_client:
             await self.mongo_client.close()
 
-    async def __aenter__(self) -> "MongoDBAtlasStore":
+    async def __aenter__(self) -> Self:
         """Enter the context manager."""
         await self.mongo_client.aconnect()
         return self

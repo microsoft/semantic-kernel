@@ -1,13 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from enum import Enum
-from typing import Any, Union, overload
+from typing import Annotated, Any, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
 
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.const import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -20,14 +22,16 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions import ContentAdditionException
 
-ITEM_TYPES = Union[
-    BinaryContent,
-    ImageContent,
-    StreamingTextContent,
-    FunctionCallContent,
-    FunctionResultContent,
-    StreamingFileReferenceContent,
-    StreamingAnnotationContent,
+STREAMING_CMC_ITEM_TYPES = Annotated[
+    BinaryContent
+    | AudioContent
+    | ImageContent
+    | FunctionResultContent
+    | FunctionCallContent
+    | StreamingTextContent
+    | StreamingAnnotationContent
+    | StreamingFileReferenceContent,
+    Field(discriminator=DISCRIMINATOR_FIELD),
 ]
 
 
@@ -66,7 +70,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def __init__(
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES],
+        items: list[STREAMING_CMC_ITEM_TYPES],
         choice_index: int,
         name: str | None = None,
         inner_content: Any | None = None,
@@ -96,7 +100,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         self,
         role: AuthorRole,
         choice_index: int,
-        items: list[ITEM_TYPES] | None = None,
+        items: list[STREAMING_CMC_ITEM_TYPES] | None = None,
         content: str | None = None,
         inner_content: Any | None = None,
         name: str | None = None,

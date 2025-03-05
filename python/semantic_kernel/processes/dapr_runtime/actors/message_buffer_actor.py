@@ -9,12 +9,12 @@ from dapr.actor.runtime.context import ActorRuntimeContext
 
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.interfaces.message_buffer_interface import MessageBufferInterface
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class MessageBufferActor(Actor, MessageBufferInterface):
     """Represents a message buffer actor that follows the MessageBuffer abstract class."""
 

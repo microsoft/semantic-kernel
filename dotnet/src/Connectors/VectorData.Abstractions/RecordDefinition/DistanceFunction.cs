@@ -3,11 +3,11 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines a list of well known distance functions that can be used to compare vectors.
+/// Defines a list of well-known distance functions that can be used to compare vectors.
 /// </summary>
 /// <remarks>
-/// Not all Vector Store connectors support all distance functions and some connectors may
-/// support additional distance functions that are not defined here. See the documentation
+/// Not all Vector Store connectors support all distance functions, and some connectors might
+/// support additional distance functions that aren't defined here. See the documentation
 /// for each connector for more information on what is supported.
 /// </remarks>
 public static class DistanceFunction
@@ -69,7 +69,7 @@ public static class DistanceFunction
     public const string EuclideanSquaredDistance = nameof(EuclideanSquaredDistance);
 
     /// <summary>
-    /// Number of differences between vectors at each dimensions.
+    /// The number of differences between vectors at each dimensions.
     /// </summary>
     public const string Hamming = nameof(Hamming);
 

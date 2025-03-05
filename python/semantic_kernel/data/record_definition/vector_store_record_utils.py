@@ -10,7 +10,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 )
 from semantic_kernel.exceptions import VectorStoreModelException
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 TModel = TypeVar("TModel", bound=object)
 
 
-@experimental_class
+@experimental
 class VectorStoreRecordUtils:
     """Helper class to easily add embeddings to a (set of) vector store record."""
 

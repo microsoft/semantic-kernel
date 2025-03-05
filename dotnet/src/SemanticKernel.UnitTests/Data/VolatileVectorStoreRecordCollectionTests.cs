@@ -294,7 +294,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert
@@ -338,7 +338,7 @@ public class VolatileVectorStoreRecordCollectionTests
         var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true, Filter = filter, IncludeTotalCount = true },
+            new() { IncludeVectors = true, OldFilter = filter, IncludeTotalCount = true },
             this._testCancellationToken);
 
         // Assert
@@ -390,7 +390,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert
@@ -431,7 +431,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new VectorSearchOptions { IncludeVectors = true, Top = 10, Skip = 10, IncludeTotalCount = true },
+            new() { IncludeVectors = true, Top = 10, Skip = 10, IncludeTotalCount = true },
             this._testCancellationToken);
 
         // Assert
@@ -507,7 +507,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
-            new VectorSearchOptions { IncludeVectors = true, VectorPropertyName = "Vector" },
+            new() { IncludeVectors = true, VectorPropertyName = "Vector" },
             this._testCancellationToken);
 
         // Assert

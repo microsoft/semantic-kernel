@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Unit tests for <see cref="WeaviateVectorStoreRecordCollectionQueryBuilder"/> class.
 /// </summary>
@@ -72,7 +74,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         }
         """;
 
-        var searchOptions = new VectorSearchOptions
+        var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
             Top = 3,
@@ -102,7 +104,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
     public void BuildSearchQueryWithIncludedVectorsReturnsValidQuery()
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions
+        var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
             Top = 3,
@@ -133,12 +135,12 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         const string ExpectedFirstSubquery = """{ path: ["hotelName"], operator: Equal, valueText: "Test Name" }""";
         const string ExpectedSecondSubquery = """{ path: ["tags"], operator: ContainsAny, valueText: ["t1"] }""";
 
-        var searchOptions = new VectorSearchOptions
+        var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
             Top = 3,
             VectorPropertyName = "DescriptionEmbedding",
-            Filter = new VectorSearchFilter()
+            OldFilter = new VectorSearchFilter()
                 .EqualTo("HotelName", "Test Name")
                 .AnyTagEqualTo("Tags", "t1")
         };
@@ -164,12 +166,12 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
     public void BuildSearchQueryWithInvalidFilterValueThrowsException()
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions
+        var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
             Top = 3,
             VectorPropertyName = "DescriptionEmbedding",
-            Filter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
+            OldFilter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
         };
 
         // Act & Assert
@@ -189,12 +191,12 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
     public void BuildSearchQueryWithNonExistentPropertyInFilterThrowsException()
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions
+        var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
             Top = 3,
             VectorPropertyName = "DescriptionEmbedding",
-            Filter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
+            OldFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
         };
 
         // Act & Assert
@@ -212,6 +214,9 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 
     #region private
 
+#pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
+    private sealed class DummyType;
+#pragma warning restore CA1812
     private sealed class TestFilterValue;
 
     #endregion

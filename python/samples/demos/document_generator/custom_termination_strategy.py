@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from opentelemetry import trace
+from pydantic import Field
 
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -20,16 +21,14 @@ if TYPE_CHECKING:
 TERMINATE_TRUE_KEYWORD = "yes"
 TERMINATE_FALSE_KEYWORD = "no"
 
+NEWLINE = "\n"
+
 
 class CustomTerminationStrategy(TerminationStrategy):
     NUM_OF_RETRIES: ClassVar[int] = 3
 
     maximum_iterations: int = 20
-    chat_completion_service: ChatCompletionClientBase
-
-    def __init__(self, **kwargs):
-        chat_completion_service = OpenAIChatCompletion()
-        super().__init__(chat_completion_service=chat_completion_service, **kwargs)
+    chat_completion_service: ChatCompletionClientBase = Field(default_factory=lambda: OpenAIChatCompletion())
 
     async def should_agent_terminate(self, agent: "Agent", history: list["ChatMessageContent"]) -> bool:
         """Check if the agent should terminate.
@@ -60,6 +59,9 @@ class CustomTerminationStrategy(TerminationStrategy):
                     AzureChatPromptExecutionSettings(),
                 )
 
+                if not completion:
+                    continue
+
                 if TERMINATE_FALSE_KEYWORD in completion.content.lower():
                     return False
                 if TERMINATE_TRUE_KEYWORD in completion.content.lower():
@@ -82,7 +84,7 @@ Each message in the chat history contains the agent's name and the message conte
 The chat history may start empty as no agents have spoken yet.
 
 Here are the agents with their indices, names, and descriptions:
-{"\n".join(f"[{index}] {agent.name}:\n{agent.description}" for index, agent in enumerate(self.agents))}
+{NEWLINE.join(f"[{index}] {agent.name}:{NEWLINE}{agent.description}" for index, agent in enumerate(self.agents))}
 
 Your task is NOT to continue the conversation. Determine if the latest content is approved by all agents.
 If approved, say "{TERMINATE_TRUE_KEYWORD}". Otherwise, say "{TERMINATE_FALSE_KEYWORD}".

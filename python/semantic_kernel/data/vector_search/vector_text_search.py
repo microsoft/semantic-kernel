@@ -11,7 +11,7 @@ from semantic_kernel.exceptions import (
     VectorStoreMixinException,
     VectorStoreModelDeserializationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.data.kernel_search_results import KernelSearchResults
@@ -22,7 +22,7 @@ TModel = TypeVar("TModel")
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class VectorTextSearchMixin(Generic[TModel]):
     """The mixin for text search, to be used in combination with VectorSearchBase."""
 

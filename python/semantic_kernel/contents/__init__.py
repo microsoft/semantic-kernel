@@ -11,6 +11,15 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHi
 from semantic_kernel.contents.history_reducer.chat_history_summarization_reducer import ChatHistorySummarizationReducer
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.realtime_events import (
+    RealtimeAudioEvent,
+    RealtimeEvent,
+    RealtimeEvents,
+    RealtimeFunctionCallEvent,
+    RealtimeFunctionResultEvent,
+    RealtimeImageEvent,
+    RealtimeTextEvent,
+)
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -33,6 +42,13 @@ __all__ = [
     "FunctionCallContent",
     "FunctionResultContent",
     "ImageContent",
+    "RealtimeAudioEvent",
+    "RealtimeEvent",
+    "RealtimeEvents",
+    "RealtimeFunctionCallEvent",
+    "RealtimeFunctionResultEvent",
+    "RealtimeImageEvent",
+    "RealtimeTextEvent",
     "StreamingAnnotationContent",
     "StreamingChatMessageContent",
     "StreamingFileReferenceContent",

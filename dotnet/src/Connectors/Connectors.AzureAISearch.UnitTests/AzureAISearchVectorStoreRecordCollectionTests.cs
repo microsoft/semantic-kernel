@@ -20,6 +20,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Contains tests for the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
@@ -514,10 +516,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             });
 
         // Act.
-        await sut.UpsertAsync(
-            model,
-            null,
-            this._testCancellationToken);
+        await sut.UpsertAsync(model, this._testCancellationToken);
 
         // Assert.
         mapperMock
@@ -575,7 +574,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             {
                 Top = 5,
                 Skip = 3,
-                Filter = filter,
+                OldFilter = filter,
                 VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken);
@@ -617,7 +616,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             {
                 Top = 5,
                 Skip = 3,
-                Filter = filter,
+                OldFilter = filter,
                 VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
             this._testCancellationToken);

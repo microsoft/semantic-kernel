@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.Extensions.VectorData;
 
@@ -17,13 +18,13 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// Builds Weaviate search query.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>
-    public static string BuildSearchQuery<TVector>(
+    public static string BuildSearchQuery<TRecord, TVector>(
         TVector vector,
         string collectionName,
         string vectorPropertyName,
         string keyPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
-        VectorSearchOptions searchOptions,
+        VectorSearchOptions<TRecord> searchOptions,
         IReadOnlyDictionary<string, string> storagePropertyNames,
         IReadOnlyList<string> vectorPropertyStorageNames,
         IReadOnlyList<string> dataPropertyStorageNames)
@@ -32,11 +33,19 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
             string.Empty;
 
-        var filter = BuildFilter(
-            searchOptions.Filter,
-            jsonSerializerOptions,
-            keyPropertyName,
-            storagePropertyNames);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = searchOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
+                legacyFilter,
+                jsonSerializerOptions,
+                keyPropertyName,
+                storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            _ => null
+        };
+#pragma warning restore CS0618
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
 
@@ -46,7 +55,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             {{collectionName}} (
               limit: {{searchOptions.Top}}
               offset: {{searchOptions.Skip}}
-              {{filter}}
+              {{(filter is null ? "" : "where: " + filter)}}
               nearVector: {
                 targetVectors: ["{{vectorPropertyName}}"]
                 vector: {{vectorArray}}
@@ -122,11 +131,12 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 
     #region private
 
+#pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>
     /// Builds filter for Weaviate search query.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/filters"/>.
     /// </summary>
-    private static string BuildFilter(
+    private static string BuildLegacyFilter(
         VectorSearchFilter? vectorSearchFilter,
         JsonSerializerOptions jsonSerializerOptions,
         string keyPropertyName,
@@ -190,8 +200,9 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             operands.Add(operand);
         }
 
-        return $$"""where: { operator: And, operands: [{{string.Join(", ", operands)}}] }""";
+        return $$"""{ operator: And, operands: [{{string.Join(", ", operands)}}] }""";
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets filter value type.

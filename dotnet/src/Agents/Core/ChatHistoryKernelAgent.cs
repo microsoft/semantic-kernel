@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// The reducer is automatically applied to the history before invoking the agent, only when using
     /// an <see cref="AgentChat"/>. It must be explicitly applied via <see cref="ReduceAsync"/>.
     /// </remarks>
+    [Experimental("SKEXP0110")]
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
     /// <summary>
@@ -61,10 +63,12 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="history">The source history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if reduction occurred.</returns>
+    [Experimental("SKEXP0110")]
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected sealed override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(ChatHistoryChannel).FullName!;
@@ -82,12 +86,13 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    [Experimental("SKEXP0110")]
     protected sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         ChatHistoryChannel channel =
             new()
             {
-                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+                Logger = this.ActiveLoggerFactory.CreateLogger<ChatHistoryChannel>()
             };
 
         return Task.FromResult<AgentChannel>(channel);

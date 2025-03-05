@@ -14,6 +14,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Integration tests for <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
 /// Tests work with an Azure AI Search Instance.
@@ -63,10 +65,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             embedding,
-            new VectorSearchOptions
+            new()
             {
                 IncludeVectors = true,
-                Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
+                OldFilter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
             });
 
         // Assert
@@ -349,7 +351,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             {
                 IncludeVectors = includeVectors,
                 VectorPropertyName = "DescriptionEmbedding",
-                Filter = filter,
+                OldFilter = filter,
             });
 
         // Assert.
@@ -388,7 +390,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             new()
             {
                 VectorPropertyName = "DescriptionEmbedding",
-                Filter = filter,
+                OldFilter = filter,
             });
 
         // Assert.

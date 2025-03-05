@@ -2,7 +2,15 @@
 
 from typing import TYPE_CHECKING
 
-from samples.demos.process_with_dapr.process.steps import AStep, BStep, CommonEvents, CStep, CStepState, KickOffStep
+from samples.demos.process_with_dapr.process.steps import (
+    AStep,
+    BStep,
+    CommonEvents,
+    CStep,
+    CStepState,
+    KickOffStep,
+    bstep_factory,
+)
 from semantic_kernel.processes import ProcessBuilder
 
 if TYPE_CHECKING:
@@ -16,7 +24,7 @@ def get_process() -> "KernelProcess":
     # Add the step types to the builder
     kickoff_step = process.add_step(step_type=KickOffStep)
     myAStep = process.add_step(step_type=AStep)
-    myBStep = process.add_step(step_type=BStep)
+    myBStep = process.add_step(step_type=BStep, factory_function=bstep_factory)
 
     # Initialize the CStep with an initial state and the state's current cycle set to 1
     myCStep = process.add_step(step_type=CStep, initial_state=CStepState(current_cycle=1))

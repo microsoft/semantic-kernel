@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData;
 public interface IVectorizedSearch<TRecord>
 {
     /// <summary>
-    /// Search the vector store for records that match the given embedding and filter.
+    /// Searches the vector store for records that match the given embedding and filter.
     /// </summary>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>
@@ -21,6 +21,6 @@ public interface IVectorizedSearch<TRecord>
     /// <returns>The records found by the vector search, including their result scores.</returns>
     Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
-        VectorSearchOptions? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 }

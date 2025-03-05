@@ -13,6 +13,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
+using MEVD = Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 
@@ -637,7 +638,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+        var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorPropertyName = "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());

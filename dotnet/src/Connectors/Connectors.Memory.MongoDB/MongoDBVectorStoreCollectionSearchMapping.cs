@@ -16,6 +16,7 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
     /// <summary>Returns distance function specified on vector property or default.</summary>
     public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : DistanceFunction.CosineSimilarity;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Build MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
@@ -23,13 +24,13 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
     /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
-    public static BsonDocument? BuildFilter(
-        VectorSearchFilter? vectorSearchFilter,
+    public static BsonDocument? BuildLegacyFilter(
+        VectorSearchFilter vectorSearchFilter,
         Dictionary<string, string> storagePropertyNames)
     {
         const string EqualOperator = "$eq";
 
-        var filterClauses = vectorSearchFilter?.FilterClauses.ToList();
+        var filterClauses = vectorSearchFilter.FilterClauses.ToList();
 
         if (filterClauses is not { Count: > 0 })
         {
@@ -82,6 +83,7 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
 
         return filter;
     }
+#pragma warning restore CS0618
 
     /// <summary>Returns search part of the search query.</summary>
     public static BsonDocument GetSearchQuery<TVector>(

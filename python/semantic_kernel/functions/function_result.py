@@ -17,9 +17,10 @@ class FunctionResult(KernelBaseModel):
     """The result of a function.
 
     Args:
-        function (KernelFunctionMetadata): The metadata of the function that was invoked.
-        value (Any): The value of the result.
-        metadata (Mapping[str, Any]): The metadata of the result.
+        function: The metadata of the function that was invoked.
+        value: The value of the result.
+        rendered_prompt: The rendered prompt of the result.
+        metadata: The metadata of the result.
 
     Methods:
         __str__: Get the string representation of the result, will call str() on the value,
@@ -31,6 +32,7 @@ class FunctionResult(KernelBaseModel):
 
     function: KernelFunctionMetadata
     value: Any
+    rendered_prompt: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     def __str__(self) -> str:
