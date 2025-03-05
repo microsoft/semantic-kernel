@@ -15,7 +15,11 @@ public sealed class HostConfig
     /// </summary>
     public const string AIServicesSectionName = "AIServices";
 
-    private readonly AzureOpenAIChatConfig _azureOpenAIChat = new();
+    private readonly ConfigurationManager _configurationManager;
+
+    private readonly AzureOpenAIChatConfig _azureOpenAIChatConfig = new();
+
+    private readonly OpenAIChatConfig _openAIChatConfig = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostConfig"/> class.
@@ -25,9 +29,14 @@ public sealed class HostConfig
     {
         configurationManager
             .GetSection($"{AIServicesSectionName}:{AzureOpenAIChatConfig.ConfigSectionName}")
-            .Bind(this._azureOpenAIChat);
+            .Bind(this._azureOpenAIChatConfig);
+        configurationManager
+            .GetSection($"{AIServicesSectionName}:{OpenAIChatConfig.ConfigSectionName}")
+            .Bind(this._openAIChatConfig);
         configurationManager
             .Bind(this);
+
+        this._configurationManager = configurationManager;
     }
 
     /// <summary>
@@ -39,5 +48,10 @@ public sealed class HostConfig
     /// <summary>
     /// The Azure OpenAI chat configuration.
     /// </summary>
-    public AzureOpenAIChatConfig AzureOpenAIChat => this._azureOpenAIChat;
+    public AzureOpenAIChatConfig AzureOpenAIChat => this._azureOpenAIChatConfig;
+
+    /// <summary>
+    /// The OpenAI chat configuration.
+    /// </summary>
+    public OpenAIChatConfig OpenAIChat => this._openAIChatConfig;
 }

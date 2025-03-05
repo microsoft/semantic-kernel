@@ -33,6 +33,13 @@ public static class ResourceBuilderExtensions
                 break;
             }
 
+            case OpenAIChatConfig.ConfigSectionName:
+            {
+                // Add OpenAI chat model name to environment variables so that Api Service can access it.
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{OpenAIChatConfig.ConfigSectionName}__{nameof(config.OpenAIChat.ModelName)}", config.OpenAIChat.ModelName);
+                break;
+            }
+
             default:
                 throw new NotSupportedException($"AI service '{config.AIChatService}' is not supported.");
         }

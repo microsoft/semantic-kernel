@@ -30,4 +30,18 @@ internal static class WebApplicationBuilderExtensions
         // Add AzureOpenAI chat completion service.
         builder.Services.AddAzureOpenAIChatCompletion(hostConfig.AzureOpenAIChat.DeploymentName);
     }
+
+    /// <summary>
+    /// Adds OpenAI services to the web application.
+    /// </summary>
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="hostConfig">The host configuration.</param>
+    internal static void AddOpenAIServices(this WebApplicationBuilder builder, HostConfig hostConfig)
+    {
+        // Add OpenAI client.
+        builder.AddOpenAIClient(OpenAIChatConfig.ConnectionStringName);
+
+        // Add AzureOpenAI chat completion service.
+        builder.Services.AddOpenAIChatCompletion(hostConfig.OpenAIChat.ModelName);
+    }
 }
