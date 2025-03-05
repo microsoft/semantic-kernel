@@ -39,14 +39,14 @@ from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
 
-@experimental
+@experimental_class
 class AzureAISearchCollection(
     VectorSearchBase[str, TModel],
     VectorizableTextSearchMixin[TModel],

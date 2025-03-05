@@ -19,12 +19,12 @@ from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import Mi
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
     """Mistral AI Inference Text Embedding Service."""
 

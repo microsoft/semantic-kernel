@@ -17,4 +17,5 @@ DISTANCE_FUNCTION_MAP: dict[DistanceFunction | str, Callable[..., Any]] = {
     DistanceFunction.MANHATTAN: cityblock,
     DistanceFunction.HAMMING: hamming,
     DistanceFunction.DOT_PROD: dot,
+    "default": cosine,
 }

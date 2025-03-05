@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
-    BedrockModelProvider,
-)
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     remove_none_recursively,
     update_settings_from_function_choice_configuration,
@@ -129,20 +124,3 @@ def test_update_settings_from_function_choice_configuration_required_with_more_t
 
     assert "any" in settings.tool_choice
     assert len(settings.tools) == 2
-
-
-def test_inference_profile_with_bedrock_model() -> None:
-    """Test the BedrockModelProvider class returns the correct model for a given inference profile."""
-
-    us_amazon_inference_profile = "us.amazon.nova-lite-v1:0"
-    assert BedrockModelProvider.to_model_provider(us_amazon_inference_profile) == BedrockModelProvider.AMAZON
-
-    us_anthropic_inference_profile = "us.anthropic.claude-3-sonnet-20240229-v1:0"
-    assert BedrockModelProvider.to_model_provider(us_anthropic_inference_profile) == BedrockModelProvider.ANTHROPIC
-
-    eu_meta_inference_profile = "eu.meta.llama3-2-3b-instruct-v1:0"
-    assert BedrockModelProvider.to_model_provider(eu_meta_inference_profile) == BedrockModelProvider.META
-
-    unknown_inference_profile = "unknown"
-    with pytest.raises(ValueError, match="Model ID unknown does not contain a valid model provider name."):
-        BedrockModelProvider.to_model_provider(unknown_inference_profile)

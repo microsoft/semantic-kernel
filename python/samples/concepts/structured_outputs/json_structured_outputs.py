@@ -109,7 +109,7 @@ history.add_user_message("how can I solve 8x + 7y = -23, and 4x=12?")
 
 
 async def main():
-    stream = False
+    stream = True
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
@@ -127,8 +127,7 @@ async def main():
             chat_function,
             chat_history=history,
         )
-        reasoned_result = Reasoning.model_validate_json(result.value[0].content)
-        print(f"Mosscap:> {reasoned_result}")
+        print(f"Mosscap:> {result}")
     history.add_assistant_message(str(result))
 
 

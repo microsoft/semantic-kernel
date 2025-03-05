@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
+using OpenAI.Files;
 using Resources;
 
 namespace Agents;
@@ -11,24 +11,32 @@ namespace Agents;
 /// <summary>
 /// Demonstrate using code-interpreter to manipulate and generate csv files with <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAssistantTest(output)
+public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        await using Stream stream = EmbeddedResource.ReadStream("sales.csv")!;
-        string fileId = await this.Client.UploadAssistantFileAsync(stream, "sales.csv");
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                enableCodeInterpreter: true,
-                codeInterpreterFileIds: [fileId],
-                metadata: SampleMetadata);
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
-        // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
+        OpenAIFile uploadFile =
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("sales.csv")!),
+                "sales.csv",
+                FileUploadPurpose.Assistants);
+
+        // Define the agent
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    EnableCodeInterpreter = true,
+                    CodeInterpreterFileIds = [uploadFile.Id],
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -42,8 +50,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
         }
         finally
         {
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
-            await this.Client.DeleteFileAsync(fileId);
+            await agent.DeleteAsync();
+            await fileClient.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -56,7 +64,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseContentAsync(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
             }
         }
     }

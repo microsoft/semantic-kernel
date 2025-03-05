@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-@experimental
+@experimental_class
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     """Base class for embedding generators."""
 

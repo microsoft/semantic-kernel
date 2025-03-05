@@ -38,12 +38,10 @@ public static class OllamaServiceCollectionExtensions
         Verify.NotNull(services);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-        {
-            return new OllamaTextGenerationService(
+            new OllamaTextGenerationService(
                 modelId: modelId,
                 endpoint: endpoint,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
-        });
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -63,12 +61,10 @@ public static class OllamaServiceCollectionExtensions
         Verify.NotNull(services);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-        {
-            return new OllamaTextGenerationService(
+            new OllamaTextGenerationService(
                 modelId: modelId,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
-        });
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -88,47 +84,10 @@ public static class OllamaServiceCollectionExtensions
         Verify.NotNull(services);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-        {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-            return new OllamaTextGenerationService(
+            new OllamaTextGenerationService(
                 modelId: modelId,
                 ollamaClient: ollamaClient,
-                loggerFactory: loggerFactory);
-        });
-    }
-
-    /// <summary>
-    /// Add Ollama Text Generation service to the kernel builder.
-    /// </summary>
-    /// <param name="services">The target service collection.</param>
-    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <returns>The updated kernel builder.</returns>
-    public static IServiceCollection AddOllamaTextGeneration(
-        this IServiceCollection services,
-        OllamaApiClient? ollamaClient = null,
-        string? serviceId = null)
-    {
-        Verify.NotNull(services);
-
-        return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-        {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            ollamaClient ??= serviceProvider.GetKeyedService<OllamaApiClient>(serviceId);
-            ollamaClient ??= serviceProvider.GetKeyedService<IOllamaApiClient>(serviceId) as OllamaApiClient;
-            ollamaClient ??= serviceProvider.GetService<OllamaApiClient>();
-            ollamaClient ??= serviceProvider.GetRequiredService<IOllamaApiClient>() as OllamaApiClient;
-
-            if (ollamaClient is null)
-            {
-                throw new InvalidOperationException($"No {nameof(IOllamaApiClient)} implementations found in the service collection.");
-            }
-
-            return new OllamaTextGenerationService(
-                ollamaClient: ollamaClient,
-                loggerFactory: loggerFactory);
-        });
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     #endregion
@@ -212,7 +171,7 @@ public static class OllamaServiceCollectionExtensions
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaChatCompletion(
         this IServiceCollection services,
-        OllamaApiClient? ollamaClient = null,
+        OllamaApiClient ollamaClient,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -220,15 +179,6 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            ollamaClient ??= serviceProvider.GetKeyedService<OllamaApiClient>(serviceId);
-            ollamaClient ??= serviceProvider.GetKeyedService<IOllamaApiClient>(serviceId) as OllamaApiClient;
-            ollamaClient ??= serviceProvider.GetService<OllamaApiClient>();
-            ollamaClient ??= serviceProvider.GetRequiredService<IOllamaApiClient>() as OllamaApiClient;
-
-            if (ollamaClient is null)
-            {
-                throw new InvalidOperationException($"No {nameof(IOllamaApiClient)} implementations found in the service collection.");
-            }
 
             var builder = ((IChatClient)ollamaClient)
                 .AsBuilder()
@@ -324,7 +274,7 @@ public static class OllamaServiceCollectionExtensions
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaTextEmbeddingGeneration(
         this IServiceCollection services,
-        OllamaApiClient? ollamaClient = null,
+        OllamaApiClient ollamaClient,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -332,15 +282,6 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            ollamaClient ??= serviceProvider.GetKeyedService<OllamaApiClient>(serviceId);
-            ollamaClient ??= serviceProvider.GetKeyedService<IOllamaApiClient>(serviceId) as OllamaApiClient;
-            ollamaClient ??= serviceProvider.GetService<OllamaApiClient>();
-            ollamaClient ??= serviceProvider.GetRequiredService<IOllamaApiClient>() as OllamaApiClient;
-
-            if (ollamaClient is null)
-            {
-                throw new InvalidOperationException($"No {nameof(IOllamaApiClient)} implementations found in the service collection.");
-            }
 
             var builder = ((IEmbeddingGenerator<string, Embedding<float>>)ollamaClient)
                 .AsBuilder();

@@ -1,23 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Represents a round-robin turn-taking strategy. Agent order is based on the order
+/// Round-robin turn-taking strategy.  Agent order is based on the order
 /// in which they joined <see cref="AgentGroupChat"/>.
 /// </summary>
-[Experimental("SKEXP0110")]
 public sealed class SequentialSelectionStrategy : SelectionStrategy
 {
     private int _index = -1;
 
     /// <summary>
-    /// Resets the selection to the initial (first) agent. Agent order is based on the order
+    /// Reset selection to initial/first agent. Agent order is based on the order
     /// in which they joined <see cref="AgentGroupChat"/>.
     /// </summary>
     public void Reset() => this._index = -1;
@@ -45,7 +42,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
 
         Agent agent = agents[this._index];
 
-        this.Logger.LogSequentialSelectionStrategySelectedAgent(nameof(NextAsync), this._index, agents.Count, agent.Id, agent.GetDisplayName());
+        this.Logger.LogSequentialSelectionStrategySelectedAgent(nameof(NextAsync), this._index, agents.Count, agent.Id);
 
         return Task.FromResult(agent);
 

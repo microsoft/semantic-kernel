@@ -5,7 +5,6 @@ using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Serialization;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests.Controllers;
 
@@ -71,23 +70,6 @@ public class ProcessTestController : Controller
         var serialized = JsonSerializer.Serialize(daprProcess);
 
         return this.Ok(daprProcess);
-    }
-
-    /// <summary>
-    /// Retrieves current state of the MockCloudEventClient used in the running process
-    /// </summary>
-    /// <param name="processId">The Id of the process.</param>
-    /// <param name="cloudClient">Mock Cloud client ingested via dependency injection</param>
-    /// <returns></returns>
-    [HttpGet("processes/{processId}/mockCloudClient")]
-    public Task<IActionResult> GetMockCloudClient(string processId, MockCloudEventClient cloudClient)
-    {
-        if (!s_processes.TryGetValue(processId, out DaprKernelProcessContext? context))
-        {
-            return Task.FromResult<IActionResult>(this.NotFound());
-        }
-
-        return Task.FromResult<IActionResult>(this.Ok(cloudClient));
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -49,7 +50,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

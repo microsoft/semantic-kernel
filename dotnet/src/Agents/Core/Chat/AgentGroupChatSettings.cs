@@ -1,36 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Provides settings that affect the behavior of <see cref="AgentGroupChat"/> instances.
+/// Settings that affect behavior of <see cref="AgentGroupChat"/>.
 /// </summary>
 /// <remarks>
-/// The default behavior results in no agent selection.
+/// Default behavior result in no agent selection.
 /// </remarks>
-[Experimental("SKEXP0110")]
 public class AgentGroupChatSettings
 {
     /// <summary>
-    /// Gets the strategy for terminating the agent.
+    /// Strategy for selecting the next agent.  Dfeault strategy limited to a single iteration and no termination criteria.
     /// </summary>
-    /// <value>
-    /// The strategy for terminating the agent. The default strategy a single iteration and no termination criteria.
-    /// </value>
-    /// <seealso cref="SelectionStrategy"/>
+    /// <remarks>
+    /// See <see cref="TerminationStrategy"/>.
+    /// </remarks>
     public TerminationStrategy TerminationStrategy { get; init; } = new DefaultTerminationStrategy();
 
     /// <summary>
-    /// Gets the strategy for selecting the next agent.
+    /// Strategy for selecting the next agent.  Defaults to <see cref="SequentialSelectionStrategy"/>.
     /// </summary>
-    /// <value>
-    /// The strategy for selecting the next agent. The default is <see cref="SequentialSelectionStrategy"/>.
-    /// </value>
-    /// <seealso cref="TerminationStrategy"/>
+    /// <remarks>
+    /// See <see cref="SelectionStrategy"/>.
+    /// </remarks>
     public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy();
 
     /// <summary>

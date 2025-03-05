@@ -427,13 +427,13 @@ internal sealed class RestApiOperationRunner
             // Use property argument name to look up the property value
             if (!string.IsNullOrEmpty(propertyMetadata.ArgumentName) && arguments.TryGetValue(propertyMetadata.ArgumentName!, out object? argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
                 continue;
             }
             // Use property name to look up the property value
             else if (arguments.TryGetValue(argumentName, out argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
                 continue;
             }
 

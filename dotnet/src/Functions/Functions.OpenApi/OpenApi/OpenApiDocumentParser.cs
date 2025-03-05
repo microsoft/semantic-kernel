@@ -27,6 +27,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 {
     /// <summary>

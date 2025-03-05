@@ -5,10 +5,10 @@ from typing import ClassVar
 from pydantic import SecretStr
 
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class AzureAISearchSettings(KernelBaseSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 

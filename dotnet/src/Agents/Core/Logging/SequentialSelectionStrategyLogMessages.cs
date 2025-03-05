@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[Experimental("SKEXP0110")]
 internal static partial class SequentialSelectionStrategyLogMessages
 {
     /// <summary>
@@ -23,12 +22,11 @@ internal static partial class SequentialSelectionStrategyLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Selected agent ({AgentIndex} / {AgentCount}): {AgentId}/{AgentName}")]
+        Message = "[{MethodName}] Selected agent ({AgentIndex} / {AgentCount}): {AgentId}")]
     public static partial void LogSequentialSelectionStrategySelectedAgent(
         this ILogger logger,
         string methodName,
         int agentIndex,
         int agentCount,
-        string agentId,
-        string agentName);
+        string agentId);
 }

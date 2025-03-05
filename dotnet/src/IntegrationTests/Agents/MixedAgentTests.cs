@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Assistants;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
@@ -72,7 +71,7 @@ public sealed class MixedAgentTests
 
     private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
-        OpenAIClientProvider clientProvider,
+        OpenAIClientProvider config,
         string modelName,
         bool useNewFunctionCallingModel)
     {
@@ -95,8 +94,16 @@ public sealed class MixedAgentTests
         chatAgent.Kernel.Plugins.Add(plugin);
 
         // Configure assistant agent with the plugin.
-        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(modelName, instructions: "Answer questions about the menu.");
-        OpenAIAssistantAgent assistantAgent = new(definition, clientProvider.AssistantClient, [plugin]);
+        OpenAIAssistantAgent assistantAgent =
+            await OpenAIAssistantAgent.CreateAsync(
+                config,
+                new(modelName)
+                {
+                    Name = "Assistant",
+                    Instructions = "Answer questions about the menu."
+                },
+                new Kernel());
+        assistantAgent.Kernel.Plugins.Add(plugin);
 
         // Act & Assert
         try
@@ -107,7 +114,7 @@ public sealed class MixedAgentTests
         }
         finally
         {
-            await clientProvider.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
+            await assistantAgent.DeleteAsync();
         }
     }
 

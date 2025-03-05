@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines a base class for filter clauses.
+/// Base class for filter clauses.
 /// </summary>
 /// <remarks>
 /// A <see cref="FilterClause"/> is used to request that the underlying search service should

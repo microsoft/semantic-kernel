@@ -47,24 +47,6 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     }
 
     [Fact]
-    public async Task CanCreateCollectionWithSpecialCharactersInNameAsync()
-    {
-        // Arrange
-        var sut = fixture.GetCollection<int, PostgresHotel<int>>("Special-Char");
-
-        try
-        {
-            // Act
-            await sut.CreateCollectionAsync();
-        }
-        finally
-        {
-            // Cleanup
-            await sut.DeleteCollectionAsync();
-        }
-    }
-
-    [Fact]
     public async Task CollectionCanUpsertAndGetAsync()
     {
         // Arrange
@@ -102,10 +84,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             Assert.Equal("tag1", fetchedHotel1!.Tags![0]);
             Assert.Equal("tag2", fetchedHotel1!.Tags![1]);
             Assert.Null(fetchedHotel1!.ListInts);
-
-            // Since these values are updated in the database, they will not match existly, but should be very close to each other.
-            Assert.True(TruncateMilliseconds(fetchedHotel1.CreatedAt) >= TruncateMilliseconds(writtenHotel1.CreatedAt) && TruncateMilliseconds(fetchedHotel1.CreatedAt) <= TruncateMilliseconds(writtenHotel1.CreatedAt).AddSeconds(1));
-            Assert.True(TruncateMilliseconds(fetchedHotel1.UpdatedAt) >= TruncateMilliseconds(writtenHotel1.UpdatedAt) && TruncateMilliseconds(fetchedHotel1.UpdatedAt) <= TruncateMilliseconds(writtenHotel1.UpdatedAt).AddSeconds(1));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel1.CreatedAt), TruncateMilliseconds(writtenHotel1.CreatedAt));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel1.UpdatedAt), TruncateMilliseconds(writtenHotel1.UpdatedAt));
 
             Assert.NotNull(fetchedHotel2);
             Assert.Equal(2, fetchedHotel2!.HotelId);
@@ -119,10 +99,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             Assert.Equal(2, fetchedHotel2!.ListInts!.Count);
             Assert.Equal(1, fetchedHotel2!.ListInts![0]);
             Assert.Equal(2, fetchedHotel2!.ListInts![1]);
-
-            // Since these values are updated in the database, they will not match existly, but should be very close to each other.
-            Assert.True(TruncateMilliseconds(fetchedHotel2.CreatedAt) >= TruncateMilliseconds(writtenHotel2.CreatedAt) && TruncateMilliseconds(fetchedHotel2.CreatedAt) <= TruncateMilliseconds(writtenHotel2.CreatedAt).AddSeconds(1));
-            Assert.True(TruncateMilliseconds(fetchedHotel2.UpdatedAt) >= TruncateMilliseconds(writtenHotel2.UpdatedAt) && TruncateMilliseconds(fetchedHotel2.UpdatedAt) <= TruncateMilliseconds(writtenHotel2.UpdatedAt).AddSeconds(1));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel2.CreatedAt), TruncateMilliseconds(writtenHotel2.CreatedAt));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel2.UpdatedAt), TruncateMilliseconds(writtenHotel2.UpdatedAt));
         }
         finally
         {

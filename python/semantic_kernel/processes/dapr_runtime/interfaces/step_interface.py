@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class StepInterface(ActorInterface, ABC):
     """Abstract base class for a step in the process workflow."""
 

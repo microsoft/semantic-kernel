@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
-using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -55,21 +54,11 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         var stringBuilder = new StringBuilder();
         var metadata = new Dictionary<string, object?>();
-        var hasUsage = false;
 
-        // Act & Assert
+        // Act
         await foreach (var update in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, null, kernel))
         {
             stringBuilder.Append(update.Content);
-
-            var openAIUpdate = Assert.IsType<StreamingChatCompletionUpdate>(update.InnerContent);
-            Assert.NotNull(openAIUpdate);
-
-            if (openAIUpdate.Usage is not null)
-            {
-                Assert.True(openAIUpdate.Usage.TotalTokenCount > 0);
-                hasUsage = true;
-            }
 
             foreach (var key in update.Metadata!.Keys)
             {
@@ -80,7 +69,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
             }
         }
 
-        Assert.True(hasUsage);
+        // Assert
         Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 

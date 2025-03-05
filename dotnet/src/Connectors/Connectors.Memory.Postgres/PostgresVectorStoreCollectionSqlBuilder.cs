@@ -149,7 +149,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
         return new PostgresSqlCommandInfo(
             commandText: $@"
-                CREATE INDEX ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+                CREATE INDEX {indexName} ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
         );
     }
 

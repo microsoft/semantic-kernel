@@ -9,10 +9,10 @@ from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data import DistanceFunction, IndexKind
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 @dataclass
 class VectorStoreRecordField(ABC):
     """Base class for all Vector Store Record Fields."""
@@ -21,13 +21,13 @@ class VectorStoreRecordField(ABC):
     property_type: str | None = None
 
 
-@experimental
+@experimental_class
 @dataclass
 class VectorStoreRecordKeyField(VectorStoreRecordField):
     """Memory record key field."""
 
 
-@experimental
+@experimental_class
 @dataclass
 class VectorStoreRecordDataField(VectorStoreRecordField):
     """Memory record data field."""
@@ -38,7 +38,7 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
     is_full_text_searchable: bool | None = None
 
 
-@experimental
+@experimental_class
 @dataclass
 class VectorStoreRecordVectorField(VectorStoreRecordField):
     """Memory record vector field.

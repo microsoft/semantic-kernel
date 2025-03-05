@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -11,22 +11,30 @@ namespace Agents;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistantTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTest(output)
 {
+    private const string AgentName = "ChartMaker";
+    private const string AgentInstructions = "Create charts as requested without explanation.";
+
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                "ChartMaker",
-                instructions: "Create charts as requested without explanation.",
-                enableCodeInterpreter: true,
-                metadata: SampleMetadata);
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+
+        // Define the agent
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Instructions = AgentInstructions,
+                    Name = AgentName,
+                    EnableCodeInterpreter = true,
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -50,7 +58,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistan
         }
         finally
         {
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -63,7 +71,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistan
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseImageAsync(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }

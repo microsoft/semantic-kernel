@@ -3,12 +3,12 @@
 from typing import Generic, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TState = TypeVar("TState")
 
 
-@experimental
+@experimental_class
 class KernelProcessStepState(KernelBaseModel, Generic[TState]):
     """The state of a step in a kernel process."""
 

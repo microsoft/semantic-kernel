@@ -16,4 +16,3 @@ class FilterContextBase(KernelBaseModel):
     function: "KernelFunction"
     kernel: "Kernel"
     arguments: "KernelArguments"
-    is_streaming: bool = False

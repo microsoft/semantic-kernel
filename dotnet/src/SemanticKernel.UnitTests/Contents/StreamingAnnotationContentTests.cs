@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
-using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;

@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Represents a filter clause that filters by checking if a field consisting of a list of values contains a specific value.
+/// <see cref="FilterClause"/> which filters by checking if a field consisting of a list of values contains a specific value.
 /// </summary>
 public sealed class AnyTagEqualToFilterClause : FilterClause
 {
@@ -19,12 +19,12 @@ public sealed class AnyTagEqualToFilterClause : FilterClause
     }
 
     /// <summary>
-    /// Gets the name of the field with the list of values.
+    /// The name of the field with the list of values.
     /// </summary>
     public string FieldName { get; private set; }
 
     /// <summary>
-    /// Gets the value that the list should contain.
+    /// The value that the list should contain.
     /// </summary>
     public string Value { get; private set; }
 }

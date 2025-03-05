@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 
 from dapr.actor import ActorInterface, actormethod
 
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class ExternalEventBufferInterface(ActorInterface, ABC):
     """Abstract base class for an external event buffer that follows the ActorInterface."""
 

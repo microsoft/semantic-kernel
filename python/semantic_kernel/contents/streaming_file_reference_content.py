@@ -8,14 +8,14 @@ from pydantic import Field
 
 from semantic_kernel.contents.const import STREAMING_FILE_REFERENCE_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="StreamingFileReferenceContent")
 
 
-@experimental
+@experimental_class
 class StreamingFileReferenceContent(KernelContent):
     """Streaming File reference content."""
 
@@ -25,8 +25,6 @@ class StreamingFileReferenceContent(KernelContent):
     )
     tag: ClassVar[str] = STREAMING_FILE_REFERENCE_CONTENT_TAG
     file_id: str | None = None
-    tools: list[Any] = Field(default_factory=list)
-    data_source: Any | None = None
 
     def __str__(self) -> str:
         """Return the string representation of the file reference content."""

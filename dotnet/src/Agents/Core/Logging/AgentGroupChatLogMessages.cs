@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -18,7 +17,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[Experimental("SKEXP0110")]
 internal static partial class AgentGroupChatLogMessages
 {
     /// <summary>
@@ -27,13 +25,12 @@ internal static partial class AgentGroupChatLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
-        Message = "[{MethodName}] Invoking chat: {AgentType}: {AgentId}/{AgentName}")]
+        Message = "[{MethodName}] Invoking chat: {AgentType}: {AgentId}")]
     public static partial void LogAgentGroupChatInvokingAgent(
         this ILogger logger,
         string methodName,
         Type agentType,
-        string agentId,
-        string agentName);
+        string agentId);
 
     /// <summary>
     /// Logs <see cref="AgentGroupChat"/> invoking agents (started).
@@ -43,7 +40,6 @@ internal static partial class AgentGroupChatLogMessages
             logLevel: LogLevel.Debug,
             eventId: 0,
             "[{MethodName}] Invoking chat: {Agents}");
-
     public static void LogAgentGroupChatInvokingAgents(
         this ILogger logger,
         string methodName,
@@ -51,9 +47,7 @@ internal static partial class AgentGroupChatLogMessages
     {
         if (logger.IsEnabled(LogLevel.Debug))
         {
-            var agentsMessage = string.Join(", ", agents.Select(a => $"{a.GetType()}:{a.Id}/{a.GetDisplayName()}"));
-
-            s_logAgentGroupChatInvokingAgents(logger, methodName, agentsMessage, null);
+            s_logAgentGroupChatInvokingAgents(logger, methodName, string.Join(", ", agents.Select(a => $"{a.GetType()}:{a.Id}")), null);
         }
     }
 
@@ -87,13 +81,12 @@ internal static partial class AgentGroupChatLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Agent selected {AgentType}: {AgentId}/{AgentName} by {StrategyType}")]
+        Message = "[{MethodName}] Agent selected {AgentType}: {AgentId} by {StrategyType}")]
     public static partial void LogAgentGroupChatSelectedAgent(
         this ILogger logger,
         string methodName,
         Type agentType,
         string agentId,
-        string agentName,
         Type strategyType);
 
     /// <summary>

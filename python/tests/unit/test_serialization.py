@@ -113,14 +113,14 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    ConversationSummaryPlugin,
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
     TextPlugin,
     TimePlugin,
     WaitPlugin,
-    WebSearchEnginePlugin,
+    pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
 ]
 
 BASE_CLASSES = [
@@ -146,20 +146,17 @@ PYDANTIC_MODELS = [
     KernelParameterMetadata,
     KernelFunctionMetadata,
     ChatHistory,
-]
-KERNEL_FUNCTION_OPTIONAL = [KernelFunction]
-KERNEL_FUNCTION_REQUIRED = [
     pytest.param(
         KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),
-    )
+    ),
 ]
 
 
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
         "kernel_type",
-        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + KERNEL_FUNCTION_OPTIONAL,
+        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES,
     )
     def test_usage_as_optional_field(
         self,
@@ -173,11 +170,11 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: kernel_type | None = None
+            field: t.Optional[kernel_type] = None
 
         assert_serializable(TestModel(), TestModel)
 
-    @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES + KERNEL_FUNCTION_REQUIRED)
+    @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
         kernel_factory: t.Callable[[t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT],

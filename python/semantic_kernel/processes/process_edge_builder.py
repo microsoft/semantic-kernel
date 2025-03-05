@@ -6,13 +6,13 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.process_builder import ProcessBuilder
 
 
-@experimental
+@experimental_class
 class ProcessEdgeBuilder(KernelBaseModel):
     """A builder for a process edge."""
 
@@ -32,9 +32,7 @@ class ProcessEdgeBuilder(KernelBaseModel):
             raise TypeError("Target cannot be None")
 
         if isinstance(target, ProcessStepBuilder):
-            target = ProcessFunctionTargetBuilder(
-                step=target, parameter_name=kwargs.get("parameter_name"), function_name=kwargs.get("function_name")
-            )
+            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name"))
 
         self.target = target
         edge_builder = ProcessStepEdgeBuilder(source=self.source, event_id=self.event_id)

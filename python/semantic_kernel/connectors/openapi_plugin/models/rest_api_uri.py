@@ -2,10 +2,10 @@
 
 from urllib.parse import urlparse
 
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class Uri:
     """The Uri class that represents the URI."""
 

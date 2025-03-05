@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class RestApiRunOptions:
     """The options for running the REST API operation."""
 

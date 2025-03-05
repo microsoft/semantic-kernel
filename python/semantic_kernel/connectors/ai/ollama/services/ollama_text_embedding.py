@@ -23,12 +23,12 @@ else:
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
     """Ollama embeddings client.
 

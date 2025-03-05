@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.local_runtime.local_process import LocalProcess
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
     from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 
 
-@experimental
+@experimental_class
 class LocalKernelProcessContext(KernelBaseModel):
     """A local kernel process context."""
 
@@ -33,10 +33,9 @@ class LocalKernelProcessContext(KernelBaseModel):
             process=process,
             kernel=kernel,
             parent_process_id=None,
-            factories=process.factories,
         )
 
-        super().__init__(local_process=local_process)  # type: ignore
+        super().__init__(local_process=local_process)
 
     async def start_with_event(self, initial_event: "KernelProcessEvent") -> None:
         """Starts the local process with an initial event."""

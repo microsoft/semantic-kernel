@@ -4,8 +4,6 @@ import asyncio
 import importlib
 import json
 import logging
-from collections.abc import Callable
-from inspect import isawaitable
 from queue import Queue
 from typing import Any
 
@@ -39,27 +37,25 @@ from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
-    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel, factories: dict[str, Callable]):
+    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
         """Initializes a new instance of StepActor.
 
         Args:
             ctx: The actor runtime context.
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
-            factories: The factory dictionary to use for creating the step.
         """
         super().__init__(ctx, actor_id)
         self.kernel = kernel
-        self.factories: dict[str, Callable] = factories
         self.parent_process_id: str | None = None
         self.step_info: DaprStepInfo | None = None
         self.initialize_task: bool | None = False
@@ -176,38 +172,31 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
 
     async def activate_step(self):
         """Initializes the step."""
-        # Instantiate an instance of the inner step object and retrieve its class reference.
-        if self.factories and self.inner_step_type in self.factories:
-            step_object = self.factories[self.inner_step_type]()
-            if isawaitable(step_object):
-                step_object = await step_object
-            step_cls = step_object.__class__
-            step_instance: KernelProcessStep = step_object  # type: ignore
-        else:
-            step_cls = self._get_class_from_string(self.inner_step_type)
-            step_instance: KernelProcessStep = step_cls()  # type: ignore
+        # Instantiate an instance of the inner step object
+        step_cls = self._get_class_from_string(self.inner_step_type)
+
+        step_instance: KernelProcessStep = step_cls()  # type: ignore
 
         kernel_plugin = self.kernel.add_plugin(
-            step_instance,
-            self.step_info.state.name if self.step_info.state else "default_name",
+            step_instance, self.step_info.state.name if self.step_info.state else "default_name"
         )
 
-        # Load the kernel functions.
+        # Load the kernel functions
         for name, f in kernel_plugin.functions.items():
             self.functions[name] = f
 
-        # Initialize the input channels.
+        # Initialize the input channels
         self.initial_inputs = find_input_channels(channel=self, functions=self.functions)
         self.inputs = {k: {kk: vv for kk, vv in v.items()} if v else {} for k, v in self.initial_inputs.items()}
 
-        # Use the existing state or create a new one if not provided.
+        # Use the existing state or create a new one if not provided
         state_object = self.step_info.state
 
-        # Extract TState from inner_step_type using the class reference.
+        # Extract TState from inner_step_type
         t_state = get_generic_state_type(step_cls)
 
         if t_state is not None:
-            # Create state_type as KernelProcessStepState[TState].
+            # Create state_type as KernelProcessStepState[TState]
             state_type = KernelProcessStepState[t_state]
 
             if state_object is None:
@@ -217,7 +206,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                     state=None,
                 )
             else:
-                # Ensure that state_object is an instance of the expected type.
+                # Make sure state_object is an instance of state_type
                 if not isinstance(state_object, KernelProcessStepState):
                     error_message = "State object is not of the expected type."
                     raise KernelException(error_message)
@@ -226,13 +215,15 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                     ActorStateKeys.StepStateType.value,
                     get_fully_qualified_name(t_state),
                 )
+
                 await self._state_manager.try_add_state(
                     ActorStateKeys.StepStateJson.value,
                     json.dumps(state_object.model_dump()),
                 )
+
                 await self._state_manager.save_state()
 
-            # Initialize state_object.state if it is not already set.
+            # Make sure that state_object.state is not None
             if state_object.state is None:
                 try:
                     state_object.state = t_state()
@@ -240,8 +231,9 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                     error_message = f"Cannot instantiate state of type {t_state}: {e}"
                     raise KernelException(error_message)
         else:
-            # The step has no user-defined state; use the base KernelProcessStepState.
+            # The step has no user-defined state; use the base KernelProcessStepState
             state_type = KernelProcessStepState
+
             if state_object is None:
                 state_object = state_type(
                     name=step_cls.__name__,
@@ -253,7 +245,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             error_message = "The state object for the KernelProcessStep could not be created."
             raise KernelException(error_message)
 
-        # Set the step state and activate the step with the state object.
+        # Set the step state and activate the step with the state object
         self.step_state = state_object
         await step_instance.activate(state_object)
 
@@ -332,7 +324,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
         invoke_result = None
-        event_name: str = ""
+        event_name = None
         event_value = None
 
         try:
@@ -340,8 +332,6 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 f"Invoking plugin `{function.plugin_name}` and function `{function.name}` with arguments: {arguments}"
             )
             invoke_result = await self.invoke_function(function, self.kernel, arguments)
-            if invoke_result is None:
-                raise KernelException(f"Function {target_function} returned None.")
             event_name = f"{target_function}.OnResult"
             event_value = invoke_result.value
 
@@ -408,9 +398,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             raise ValueError("The inner step type must be initialized before converting to DaprStepInfo.")
 
         step_info = DaprStepInfo(
-            inner_step_python_type=self.inner_step_type,
-            state=self.step_info.state,
-            edges=self.step_info.edges,
+            inner_step_python_type=self.inner_step_type, state=self.step_info.state, edges=self.step_info.edges
         )
 
         return step_info.model_dump_json()

@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines an exception that's thrown when a failure occurs while trying to convert models for storage or retrieval.
+/// Exception thrown when a failure occurs while trying to convert models for storage or retrieval.
 /// </summary>
 public class VectorStoreRecordMappingException : VectorStoreException
 {

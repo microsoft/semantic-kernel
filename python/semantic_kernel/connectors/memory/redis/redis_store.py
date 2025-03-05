@@ -19,14 +19,14 @@ from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
 
-@experimental
+@experimental_class
 class RedisStore(VectorStore):
     """Create a Redis Vector Store."""
 

@@ -26,7 +26,6 @@ def mock_process():
     process = MagicMock(spec=KernelProcess)
     process.state = state
     process.steps = [step_info]
-    process.factories = {}
     return process
 
 

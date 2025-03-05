@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.processes.dapr_runtime.dapr_kernel_process_context import DaprKernelProcessContext
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
 
-@experimental
+@experimental_function
 async def start(
     process: "KernelProcess",
     initial_event: KernelProcessEvent | str | Enum,

@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from importlib import util
-
 import pytest
 from azure.ai.inference.aio import EmbeddingsClient
 from azure.identity import DefaultAzureCredential
@@ -33,8 +31,6 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.utils import is_service_setup_for_testing
-
-hugging_face_setup = util.find_spec("torch") is not None
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
@@ -95,9 +91,7 @@ class EmbeddingServiceTestBase:
                 PromptExecutionSettings,
             ),
             "hugging_face": (
-                HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2")
-                if hugging_face_setup
-                else None,
+                HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2"),
                 PromptExecutionSettings,
             ),
             "ollama": (OllamaTextEmbedding() if ollama_setup else None, OllamaEmbeddingPromptExecutionSettings),

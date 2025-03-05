@@ -2,7 +2,10 @@
 
 import asyncio
 
-from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
+from samples.concepts.setup.chat_completion_services import (
+    Services,
+    get_chat_completion_service_and_request_settings,
+)
 from semantic_kernel.contents import ChatHistory
 
 # This sample shows how to create a chatbot. This sample uses the following two main components:
@@ -22,7 +25,6 @@ from semantic_kernel.contents import ChatHistory
 # - Services.OLLAMA
 # - Services.ONNX
 # - Services.VERTEX_AI
-# - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
 

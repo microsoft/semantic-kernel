@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -22,7 +23,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -69,7 +70,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -110,7 +111,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -173,7 +174,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();

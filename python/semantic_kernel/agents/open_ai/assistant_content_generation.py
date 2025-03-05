@@ -3,15 +3,13 @@
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
-from openai.types.beta.threads.file_citation_annotation import FileCitationAnnotation
 from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
-from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
 from openai.types.beta.threads.file_path_delta_annotation import FilePathDeltaAnnotation
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
 from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
 from openai.types.beta.threads.runs import CodeInterpreterLogs
-from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreterOutputImage
+from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreter
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
@@ -28,11 +26,12 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 if TYPE_CHECKING:
-    from openai.types.beta.threads.message import Message
-    from openai.types.beta.threads.run import Run
+    from openai.resources.beta.threads.messages import Message
+    from openai.resources.beta.threads.runs.runs import Run
+    from openai.types.beta.threads.annotation import Annotation
     from openai.types.beta.threads.runs import RunStep
     from openai.types.beta.threads.runs.tool_call import ToolCall
     from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
@@ -45,7 +44,7 @@ if TYPE_CHECKING:
 ###################################################################
 
 
-@experimental
+@experimental_function
 async def create_chat_message(
     client: AsyncOpenAI,
     thread_id: str,
@@ -77,7 +76,7 @@ async def create_chat_message(
     )
 
 
-@experimental
+@experimental_function
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
 
@@ -121,7 +120,7 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     return contents
 
 
-@experimental
+@experimental_function
 def generate_message_content(
     assistant_name: str, message: "Message", completed_step: "RunStep | None" = None
 ) -> ChatMessageContent:
@@ -164,28 +163,12 @@ def generate_message_content(
     return content
 
 
-@experimental
+@experimental_function
 def generate_streaming_message_content(
-    assistant_name: str,
-    message_delta_event: "MessageDeltaEvent",
-    completed_step: "RunStep | None" = None,
+    assistant_name: str, message_delta_event: "MessageDeltaEvent"
 ) -> StreamingChatMessageContent:
     """Generate streaming message content from a MessageDeltaEvent."""
     delta = message_delta_event.delta
-
-    metadata = (
-        {
-            "created_at": completed_step.created_at,
-            "message_id": message_delta_event.id,  # message needs to be defined in context
-            "step_id": completed_step.id,
-            "run_id": completed_step.run_id,
-            "thread_id": completed_step.thread_id,
-            "assistant_id": completed_step.assistant_id,
-            "usage": completed_step.usage,
-        }
-        if completed_step is not None
-        else None
-    )
 
     # Determine the role
     role = AuthorRole(delta.role) if delta.role is not None else AuthorRole("assistant")
@@ -219,54 +202,10 @@ def generate_streaming_message_content(
                     )
                 )
 
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
+    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
 
 
-@experimental
-def generate_final_streaming_message_content(
-    assistant_name: str,
-    message: "Message",
-    completed_step: "RunStep | None" = None,
-) -> StreamingChatMessageContent:
-    """Generate streaming message content from a MessageDeltaEvent."""
-    metadata = (
-        {
-            "created_at": completed_step.created_at,
-            "message_id": message.id,  # message needs to be defined in context
-            "step_id": completed_step.id,
-            "run_id": completed_step.run_id,
-            "thread_id": completed_step.thread_id,
-            "assistant_id": completed_step.assistant_id,
-            "usage": completed_step.usage,
-        }
-        if completed_step is not None
-        else None
-    )
-
-    # Determine the role
-    role = AuthorRole(message.role) if message.role is not None else AuthorRole("assistant")
-
-    items: list[StreamingTextContent | StreamingAnnotationContent | StreamingFileReferenceContent] = []
-
-    # Process each content block in the delta
-    for item_content in message.content:
-        if item_content.type == "text":
-            assert isinstance(item_content, TextContentBlock)  # nosec
-            items.append(StreamingTextContent(text=item_content.text.value, choice_index=0))
-            for annotation in item_content.text.annotations:
-                items.append(generate_streaming_annotation_content(annotation))
-        elif item_content.type == "image_file":
-            assert isinstance(item_content, ImageFileContentBlock)  # nosec
-            items.append(
-                StreamingFileReferenceContent(
-                    file_id=item_content.image_file.file_id,
-                )
-            )
-
-    return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0, metadata=metadata)  # type: ignore
-
-
-@experimental
+@experimental_function
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
 
@@ -280,7 +219,7 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
     return ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name, items=fccs)  # type: ignore
 
 
-@experimental
+@experimental_function
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
 ) -> ChatMessageContent:
@@ -297,7 +236,7 @@ def generate_function_result_content(
     return function_call_content
 
 
-@experimental
+@experimental_function
 def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCallContent]) -> list[FunctionCallContent]:
     """Extract function call contents from the run.
 
@@ -324,7 +263,7 @@ def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCal
     return function_call_contents
 
 
-@experimental
+@experimental_function
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -343,7 +282,7 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
     )
 
 
-@experimental
+@experimental_function
 def generate_streaming_function_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent":
@@ -381,7 +320,7 @@ def generate_streaming_function_content(
     )
 
 
-@experimental
+@experimental_function
 def generate_streaming_code_interpreter_content(
     agent_name: str, step_details: "ToolCallsStepDetails"
 ) -> "StreamingChatMessageContent | None":
@@ -409,7 +348,7 @@ def generate_streaming_code_interpreter_content(
                 metadata["code"] = True
             if tool.code_interpreter.outputs:
                 for output in tool.code_interpreter.outputs:
-                    if isinstance(output, CodeInterpreterOutputImage) and output.image.file_id:
+                    if isinstance(output, CodeInterpreter) and output.image.file_id:
                         items.append(
                             StreamingFileReferenceContent(
                                 file_id=output.image.file_id,
@@ -436,15 +375,14 @@ def generate_streaming_code_interpreter_content(
     )
 
 
-@experimental
-def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnnotation) -> AnnotationContent:
+@experimental_function
+def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
     """Generate annotation content."""
     file_id = None
-    match annotation:
-        case FilePathAnnotation():
-            file_id = annotation.file_path.file_id
-        case FileCitationAnnotation():
-            file_id = annotation.file_citation.file_id
+    if hasattr(annotation, "file_path"):
+        file_id = annotation.file_path.file_id
+    elif hasattr(annotation, "file_citation"):
+        file_id = annotation.file_citation.file_id
 
     return AnnotationContent(
         file_id=file_id,
@@ -454,21 +392,14 @@ def generate_annotation_content(annotation: FileCitationAnnotation | FilePathAnn
     )
 
 
-@experimental
-def generate_streaming_annotation_content(
-    annotation: FileCitationAnnotation | FilePathAnnotation | FilePathDeltaAnnotation | FileCitationDeltaAnnotation,
-) -> StreamingAnnotationContent:
+@experimental_function
+def generate_streaming_annotation_content(annotation: "Annotation") -> StreamingAnnotationContent:
     """Generate streaming annotation content."""
     file_id = None
-    match annotation:
-        case FilePathAnnotation():
-            file_id = annotation.file_path.file_id
-        case FileCitationAnnotation():
-            file_id = annotation.file_citation.file_id
-        case FilePathDeltaAnnotation():
-            file_id = annotation.file_path.file_id if annotation.file_path is not None else None
-        case FileCitationDeltaAnnotation():
-            file_id = annotation.file_citation.file_id if annotation.file_citation is not None else None
+    if hasattr(annotation, "file_path") and annotation.file_path:
+        file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
+    elif hasattr(annotation, "file_citation") and annotation.file_citation:
+        file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
 
     return StreamingAnnotationContent(
         file_id=file_id,

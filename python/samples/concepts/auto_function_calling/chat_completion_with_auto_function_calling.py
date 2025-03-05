@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from typing import TYPE_CHECKING
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
@@ -9,6 +10,9 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
+
+if TYPE_CHECKING:
+    pass
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
@@ -57,13 +61,12 @@ chat_function = kernel.add_function(
 # - Services.OLLAMA
 # - Services.ONNX
 # - Services.VERTEX_AI
-# - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 # Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
 # With `auto_invoke=True`, the model will automatically choose and call functions as needed.
-request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
+request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 kernel.add_service(chat_completion_service)
 

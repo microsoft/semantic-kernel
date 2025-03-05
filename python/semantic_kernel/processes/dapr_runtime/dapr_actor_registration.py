@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from dapr.actor import ActorId
@@ -20,32 +19,22 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 
-def create_actor_factories(kernel: "Kernel", factories: dict[str, Callable] | None = None) -> tuple:
+def create_actor_factories(kernel: "Kernel") -> tuple:
     """Creates actor factories for ProcessActor and StepActor."""
-    if factories is None:
-        factories = {}
 
-    def process_actor_factory(
-        ctx: ActorRuntimeContext,
-        actor_id: ActorId,
-    ) -> ProcessActor:
-        return ProcessActor(ctx, actor_id, kernel=kernel, factories=factories)
+    def process_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> ProcessActor:
+        return ProcessActor(ctx, actor_id, kernel)
 
-    def step_actor_factory(
-        ctx: ActorRuntimeContext,
-        actor_id: ActorId,
-    ) -> StepActor:
-        return StepActor(ctx, actor_id, kernel=kernel, factories=factories)
+    def step_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> StepActor:
+        return StepActor(ctx, actor_id, kernel=kernel)
 
     return process_actor_factory, step_actor_factory
 
 
 # Asynchronous registration for FastAPI
-async def register_fastapi_dapr_actors(
-    actor: FastAPIDaprActor, kernel: "Kernel", factories: dict[str, Callable] | None = None
-) -> None:
+async def register_fastapi_dapr_actors(actor: FastAPIDaprActor, kernel: "Kernel") -> None:
     """Registers the actors with the Dapr runtime for use with a FastAPI app."""
-    process_actor_factory, step_actor_factory = create_actor_factories(kernel, factories)
+    process_actor_factory, step_actor_factory = create_actor_factories(kernel)
     await actor.register_actor(ProcessActor, actor_factory=process_actor_factory)
     await actor.register_actor(StepActor, actor_factory=step_actor_factory)
     await actor.register_actor(EventBufferActor)
@@ -54,11 +43,9 @@ async def register_fastapi_dapr_actors(
 
 
 # Synchronous registration for Flask
-def register_flask_dapr_actors(
-    actor: FlaskDaprActor, kernel: "Kernel", factory: dict[str, Callable] | None = None
-) -> None:
+def register_flask_dapr_actors(actor: FlaskDaprActor, kernel: "Kernel") -> None:
     """Registers the actors with the Dapr runtime for use with a Flask app."""
-    process_actor_factory, step_actor_factory = create_actor_factories(kernel, factory)
+    process_actor_factory, step_actor_factory = create_actor_factories(kernel)
     actor.register_actor(ProcessActor, actor_factory=process_actor_factory)
     actor.register_actor(StepActor, actor_factory=step_actor_factory)
     actor.register_actor(EventBufferActor)

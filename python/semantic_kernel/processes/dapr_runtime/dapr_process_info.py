@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from collections.abc import MutableSequence
 from typing import Literal
 
 from pydantic import Field
@@ -10,15 +9,15 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class DaprProcessInfo(DaprStepInfo):
     """A Dapr process info."""
 
-    type: Literal["DaprProcessInfo"] = "DaprProcessInfo"  # type: ignore
-    steps: MutableSequence["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
+    type: Literal["DaprProcessInfo"] = Field("DaprProcessInfo")  # type: ignore
+    steps: list["DaprStepInfo | DaprProcessInfo"] = Field(default_factory=list)
 
     def to_kernel_process(self) -> KernelProcess:
         """Converts the Dapr process info to a kernel process."""
@@ -41,7 +40,7 @@ class DaprProcessInfo(DaprStepInfo):
             raise ValueError("Kernel process must be provided")
 
         dapr_step_info = DaprStepInfo.from_kernel_step_info(kernel_process)
-        dapr_steps: MutableSequence[DaprProcessInfo | DaprStepInfo] = []
+        dapr_steps: list[DaprProcessInfo | DaprStepInfo] = []
 
         for step in kernel_process.steps:
             if isinstance(step, KernelProcess):

@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;

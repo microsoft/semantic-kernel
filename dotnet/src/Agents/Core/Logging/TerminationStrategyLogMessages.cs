@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[Experimental("SKEXP0110")]
 internal static partial class TerminationStrategyLogMessages
 {
     /// <summary>
@@ -24,13 +23,12 @@ internal static partial class TerminationStrategyLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
-        Message = "[{MethodName}] Evaluating termination for agent {AgentType}: {AgentId}/{AgentName}.")]
+        Message = "[{MethodName}] Evaluating termination for agent {AgentType}: {AgentId}.")]
     public static partial void LogTerminationStrategyEvaluatingCriteria(
         this ILogger logger,
         string methodName,
         Type agentType,
-        string agentId,
-        string agentName);
+        string agentId);
 
     /// <summary>
     /// Logs <see cref="TerminationStrategy"/> agent out of scope.
@@ -38,13 +36,12 @@ internal static partial class TerminationStrategyLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
-        Message = "[{MethodName}] {AgentType} agent out of scope for termination: {AgentId}/{AgentName}.")]
+        Message = "[{MethodName}] {AgentType} agent out of scope for termination: {AgentId}.")]
     public static partial void LogTerminationStrategyAgentOutOfScope(
         this ILogger logger,
         string methodName,
         Type agentType,
-        string agentId,
-        string agentName);
+        string agentId);
 
     /// <summary>
     /// Logs <see cref="TerminationStrategy"/> evaluated criteria (complete).
@@ -52,12 +49,11 @@ internal static partial class TerminationStrategyLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Evaluated termination for agent {AgentType}: {AgentId}/{AgentName} - {TerminationResult}")]
+        Message = "[{MethodName}] Evaluated termination for agent {AgentType}: {AgentId} - {TerminationResult}")]
     public static partial void LogTerminationStrategyEvaluatedCriteria(
         this ILogger logger,
         string methodName,
         Type agentType,
         string agentId,
-        string agentName,
         bool terminationResult);
 }

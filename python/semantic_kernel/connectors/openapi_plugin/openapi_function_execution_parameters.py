@@ -11,12 +11,12 @@ from semantic_kernel.connectors.openapi_plugin.operation_selection_predicate_con
     OperationSelectionPredicateContext,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 
-@experimental
+@experimental_class
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 

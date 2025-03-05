@@ -34,12 +34,12 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var attrs = new Dictionary<string, object?>();
         this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
-        var metadata = chatClient.GetService<ChatClientMetadata>();
-        if (metadata?.ProviderUri is not null)
+        var metadata = chatClient.Metadata;
+        if (metadata.ProviderUri is not null)
         {
             attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
         }
-        if (metadata?.ModelId is not null)
+        if (metadata.ModelId is not null)
         {
             attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
         }
@@ -57,7 +57,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
         var currentSize = messageList.Count;
 
-        var completion = await this._chatClient.GetResponseAsync(
+        var completion = await this._chatClient.CompleteAsync(
             messageList,
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
@@ -76,7 +76,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        await foreach (var update in this._chatClient.GetStreamingResponseAsync(
+        await foreach (var update in this._chatClient.CompleteStreamingAsync(
             ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
@@ -158,19 +158,13 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                 else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
                     entry.Value is { } responseFormat)
                 {
-                    if (TryConvert(responseFormat, out string? responseFormatString))
+                    options.ResponseFormat = responseFormat switch
                     {
-                        options.ResponseFormat = responseFormatString switch
-                        {
-                            "text" => ChatResponseFormat.Text,
-                            "json_object" => ChatResponseFormat.Json,
-                            _ => null,
-                        };
-                    }
-                    else
-                    {
-                        options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
-                    }
+                        "text" => ChatResponseFormat.Text,
+                        "json_object" => ChatResponseFormat.Json,
+                        JsonElement e => ChatResponseFormat.ForJsonSchema(e),
+                        _ => null,
+                    };
                 }
                 else
                 {
@@ -274,9 +268,9 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         }
     }
 
-    /// <summary>Converts a <see cref="ChatResponseUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
+    /// <summary>Converts a <see cref="StreamingChatCompletionUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static StreamingChatMessageContent ToStreamingChatMessageContent(ChatResponseUpdate update)
+    private static StreamingChatMessageContent ToStreamingChatMessageContent(StreamingChatCompletionUpdate update)
     {
         StreamingChatMessageContent content = new(
             update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,

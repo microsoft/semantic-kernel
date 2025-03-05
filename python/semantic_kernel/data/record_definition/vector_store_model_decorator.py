@@ -3,7 +3,7 @@
 import logging
 from inspect import Parameter, _empty, signature
 from types import MappingProxyType, NoneType
-from typing import TypeVar
+from typing import Any
 
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
@@ -11,17 +11,15 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import VectorStoreModelException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 logger = logging.getLogger(__name__)
 
-_T = TypeVar("_T")
 
-
-@experimental
+@experimental_function
 def vectorstoremodel(
-    cls: type[_T] | None = None,
-) -> type[_T]:
+    cls: Any | None = None,
+):
     """Returns the class as a vector store model.
 
     This decorator makes a class a vector store model.
@@ -46,18 +44,18 @@ def vectorstoremodel(
         VectorStoreModelException: If there is a ndarray field without a serialize or deserialize function.
     """
 
-    def wrap(cls: type[_T]) -> type[_T]:
+    def wrap(cls: Any):
         # get fields and annotations
         cls_sig = signature(cls)
         setattr(cls, "__kernel_vectorstoremodel__", True)
         setattr(cls, "__kernel_vectorstoremodel_definition__", _parse_signature_to_definition(cls_sig.parameters))
 
-        return cls  # type: ignore
+        return cls
 
     # See if we're being called as @vectorstoremodel or @vectorstoremodel().
     if cls is None:
         # We're called with parens.
-        return wrap  # type: ignore
+        return wrap
 
     # We're called as @vectorstoremodel without parens.
     return wrap(cls)

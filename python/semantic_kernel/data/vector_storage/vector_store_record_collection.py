@@ -3,16 +3,9 @@
 import asyncio
 import contextlib
 import logging
-import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
-
 
 from pydantic import BaseModel, model_validator
 
@@ -29,7 +22,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
@@ -38,7 +31,7 @@ _T = TypeVar("_T", bound="VectorStoreRecordCollection")
 logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 
@@ -71,7 +64,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
         self._validate_data_model()
 
-    async def __aenter__(self) -> Self:
+    async def __aenter__(self) -> "VectorStoreRecordCollection":
         """Enter the context manager."""
         return self
 

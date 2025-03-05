@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from collections.abc import Awaitable, Callable, Coroutine
+from collections.abc import Callable, Coroutine
 from functools import partial
 from typing import Any, Literal, TypeVar
 
@@ -13,9 +13,7 @@ from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 FILTER_CONTEXT_TYPE = TypeVar("FILTER_CONTEXT_TYPE", bound=FilterContextBase)
-CALLABLE_FILTER_TYPE = Callable[
-    [FILTER_CONTEXT_TYPE, Callable[[FILTER_CONTEXT_TYPE], Awaitable[None]]], Awaitable[None]
-]
+CALLABLE_FILTER_TYPE = Callable[[FILTER_CONTEXT_TYPE, Callable[[FILTER_CONTEXT_TYPE], None]], None]
 
 ALLOWED_FILTERS_LITERAL = Literal[
     FilterTypes.AUTO_FUNCTION_INVOCATION, FilterTypes.FUNCTION_INVOCATION, FilterTypes.PROMPT_RENDERING
@@ -119,7 +117,6 @@ class KernelFilterExtension(KernelBaseModel, ABC):
 
 
 def _rebuild_auto_function_invocation_context() -> None:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings  # noqa: F401
     from semantic_kernel.contents.chat_history import ChatHistory  # noqa: F401
     from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
         AutoFunctionInvocationContext,

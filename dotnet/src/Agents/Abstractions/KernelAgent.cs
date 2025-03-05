@@ -3,74 +3,85 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Provides a base class for agents utilizing <see cref="Microsoft.SemanticKernel.Kernel"/> plugins or services.
+/// Base class for agents utilizing <see cref="Microsoft.SemanticKernel.Kernel"/> plugins or services.
 /// </summary>
 public abstract class KernelAgent : Agent
 {
     /// <summary>
-    /// Gets the arguments for the agent instruction parameters (optional).
+    /// Arguments for the agent instruction parameters (optional).
     /// </summary>
     /// <remarks>
     /// Also includes <see cref="PromptExecutionSettings"/>.
     /// </remarks>
-    public KernelArguments Arguments { get; init; } = [];
+    public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// Gets the instructions for the agent (optional).
+    /// The instructions for the agent (optional)
     /// </summary>
+    /// <remarks>
+    /// Instructions may be formatted in "semantic-kernel" template format.
+    /// (<see cref="KernelPromptTemplateFactory"/>)
+    /// </remarks>
     public string? Instructions { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
+    /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
     /// </summary>
-    /// <value>
-    /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime. The default value is an empty Kernel, but that can be overridden.
-    /// </value>
+    /// <remarks>
+    /// Defaults to empty Kernel, but may be overridden.
+    /// </remarks>
     public Kernel Kernel { get; init; } = new();
 
     /// <summary>
-    /// Gets or sets a prompt template based on the agent instructions.
+    /// A prompt-template based on the agent instructions.
     /// </summary>
-    protected IPromptTemplate? Template { get; set; }
-
-    /// <inheritdoc/>
-    protected override ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? this.Kernel.LoggerFactory;
+    public IPromptTemplate? Template { get; protected set; }
 
     /// <summary>
-    /// Formats the system instructions for the agent.
+    /// Format the system instructions for the agent.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The formatted system instructions for the agent.</returns>
+    /// <returns>The formatted system instructions for the agent</returns>
     protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        if (this.Template is null)
+        // If <see cref="Template"/> is not set, default instructions may be treated as "semantic-kernel" template.
+        if (this.Template == null)
         {
-            // Use the instructions as-is
-            return this.Instructions;
+            if (string.IsNullOrWhiteSpace(this.Instructions))
+            {
+                return null;
+            }
+
+            KernelPromptTemplateFactory templateFactory = new(this.LoggerFactory);
+            this.Template = templateFactory.Create(new PromptTemplateConfig(this.Instructions!));
         }
 
-        // Use the provided template as the instructions
         return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Provides a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
+    /// Provide a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
     /// </summary>
-    /// <param name="arguments">The override arguments.</param>
+    /// <param name="arguments">The override arguments</param>
     /// <remarks>
     /// This merge preserves original <see cref="PromptExecutionSettings"/> and <see cref="KernelArguments"/> parameters.
-    /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
+    /// and allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    protected KernelArguments MergeArguments(KernelArguments? arguments)
+    protected KernelArguments? MergeArguments(KernelArguments? arguments)
     {
+        // Avoid merge when default arguments are not set.
+        if (this.Arguments == null)
+        {
+            return arguments;
+        }
+
         // Avoid merge when override arguments are not set.
         if (arguments == null)
         {

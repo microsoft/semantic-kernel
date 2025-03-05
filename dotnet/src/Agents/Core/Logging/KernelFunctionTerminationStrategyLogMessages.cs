@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[Experimental("SKEXP0110")]
 internal static partial class KernelFunctionTerminationStrategyLogMessages
 {
     /// <summary>

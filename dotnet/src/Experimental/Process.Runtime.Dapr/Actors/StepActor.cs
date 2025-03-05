@@ -338,15 +338,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             this._functions.Add(f.Name, f);
         }
 
-        // Creating external process channel actor to be used for external messaging by some steps
-        IExternalKernelProcessMessageChannel? externalMessageChannelActor = null;
-        var scopedExternalMessageBufferId = this.ScopedActorId(new ActorId(this.Id.GetId()));
-        var actor = this.ProxyFactory.CreateActorProxy<IExternalMessageBuffer>(scopedExternalMessageBufferId, nameof(ExternalMessageBufferActor));
-        externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);
-
         // Initialize the input channels
-        // TODO: Issue #10328 Cloud Events - new Step type dedicated to work as Proxy Step abstraction https://github.com/microsoft/semantic-kernel/issues/10328
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed

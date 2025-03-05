@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents the context for an operation selection predicate.
 /// </summary>
+[Experimental("SKEXP0040")]
 public readonly struct OperationSelectionPredicateContext : IEquatable<OperationSelectionPredicateContext>
 {
     /// <summary>

@@ -3,13 +3,13 @@
 This directory contains the implementation of the AI connectors (aka AI services) that are used to interact with AI models.
 
 Depending on the modality, the AI connector can inherit from one of the following classes:
-
 - [`ChatCompletionClientBase`](./chat_completion_client_base.py) for chat completion tasks.
 - [`TextCompletionClientBase`](./text_completion_client_base.py) for text completion tasks.
 - [`AudioToTextClientBase`](./audio_to_text_client_base.py) for audio to text tasks.
 - [`TextToAudioClientBase`](./text_to_audio_client_base.py) for text to audio tasks.
 - [`TextToImageClientBase`](./text_to_image_client_base.py) for text to image tasks.
 - [`EmbeddingGeneratorBase`](./embeddings/embedding_generator_base.py) for text embedding tasks.
+
 
 All base clients inherit from the [`AIServiceClientBase`](../../services/ai_service_client_base.py) class.
 

@@ -4,14 +4,13 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -45,16 +44,16 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: CopyWriterName,
-                instructions: CopyWriterInstructions,
-                metadata: SampleMetadata);
-
-        // Create the agent
-        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient);
+        OpenAIAssistantAgent agentWriter =
+            await OpenAIAssistantAgent.CreateAsync(
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Instructions = CopyWriterInstructions,
+                    Name = CopyWriterName,
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =

@@ -14,10 +14,10 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
     AsyncDefaultAzureCredentialWrapper,
 )
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class AzureCosmosDBNoSQLBase(KernelBaseModel):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 

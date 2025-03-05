@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from collections.abc import MutableMapping, MutableSequence, Sequence
+from collections.abc import Mapping, Sequence
 from typing import TypeVar
 
 from pydantic import Field, field_validator, model_validator
@@ -15,8 +15,6 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-_T = TypeVar("_T", bound="PromptTemplateConfig")
 
 
 class PromptTemplateConfig(KernelBaseModel):
@@ -39,9 +37,9 @@ class PromptTemplateConfig(KernelBaseModel):
     description: str | None = ""
     template: str | None = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
-    input_variables: MutableSequence[InputVariable] = Field(default_factory=list)
+    input_variables: list[InputVariable] = Field(default_factory=list)
     allow_dangerously_set_content: bool = False
-    execution_settings: MutableMapping[str, PromptExecutionSettings] = Field(default_factory=dict)
+    execution_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def check_input_variables(self):
@@ -54,12 +52,12 @@ class PromptTemplateConfig(KernelBaseModel):
     @field_validator("execution_settings", mode="before")
     @classmethod
     def rewrite_execution_settings(
-        cls: type[_T],
+        cls,
         settings: PromptExecutionSettings
         | Sequence[PromptExecutionSettings]
-        | MutableMapping[str, PromptExecutionSettings]
+        | Mapping[str, PromptExecutionSettings]
         | None,
-    ) -> MutableMapping[str, PromptExecutionSettings]:
+    ) -> Mapping[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary."""
         if not settings:
             return {}
@@ -83,14 +81,14 @@ class PromptTemplateConfig(KernelBaseModel):
                 name=variable.name,
                 description=variable.description,
                 default_value=variable.default,
-                type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas # type: ignore
+                type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
             )
             for variable in self.input_variables
         ]
 
     @classmethod
-    def from_json(cls: type[_T], json_str: str) -> _T:
+    def from_json(cls, json_str: str) -> "PromptTemplateConfig":
         """Create a PromptTemplateConfig instance from a JSON string."""
         if not json_str:
             raise ValueError("json_str is empty")
@@ -104,15 +102,15 @@ class PromptTemplateConfig(KernelBaseModel):
 
     @classmethod
     def restore(
-        cls: type[_T],
+        cls,
         name: str,
         description: str,
         template: str,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        input_variables: MutableSequence[InputVariable] = [],
-        execution_settings: MutableMapping[str, PromptExecutionSettings] = {},
+        input_variables: Sequence[InputVariable] = [],
+        execution_settings: Mapping[str, PromptExecutionSettings] = {},
         allow_dangerously_set_content: bool = False,
-    ) -> _T:
+    ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
 
         Args:

@@ -36,9 +36,9 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -127,10 +127,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
-        if not self.service_settings.gemini_model_id:
-            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
         model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
+            self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
@@ -138,7 +136,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
             tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
+            tool_config=settings.tool_config,
         )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
@@ -156,10 +154,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
-        if not self.service_settings.gemini_model_id:
-            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
         model = GenerativeModel(
-            model_name=self.service_settings.gemini_model_id,
+            self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
@@ -167,7 +163,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
             tools=settings.tools,
-            tool_config=settings.tool_config,  # type: ignore
+            tool_config=settings.tool_config,
             stream=True,
         )
 
@@ -244,7 +240,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
-        items: list[CMC_ITEM_TYPES] = []
+        items: list[ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             if part.text:
                 items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))

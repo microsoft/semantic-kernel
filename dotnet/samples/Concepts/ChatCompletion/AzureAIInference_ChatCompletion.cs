@@ -8,11 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ChatCompletion;
 
-/// <summary>
-/// These examples demonstrate different ways of using chat completion with Azure Foundry or GitHub models.
-/// Azure AI Foundry: https://ai.azure.com/explore/models
-/// GitHub Models: https://github.com/marketplace?type=models
-/// </summary>
+// The following example shows how to use Semantic Kernel with Azure AI Inference / Azure AI Studio
 public class AzureAIInference_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]

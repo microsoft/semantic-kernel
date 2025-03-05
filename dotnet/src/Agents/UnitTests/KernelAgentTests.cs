@@ -18,18 +18,19 @@ public class KernelAgentTests
     public void VerifyNullArgumentMerge()
     {
         // Arrange
-        MockAgent agentWithNoArguments = new();
+        MockAgent agentWithNullArguments = new();
         // Act
-        KernelArguments arguments = agentWithNoArguments.MergeArguments(null);
+        KernelArguments? arguments = agentWithNullArguments.MergeArguments(null);
         // Assert
-        Assert.Empty(arguments);
+        Assert.Null(arguments);
 
         // Arrange
-        KernelArguments overrideArguments = new() { { "test", 1 } };
+        KernelArguments overrideArguments = [];
         // Act
-        arguments = agentWithNoArguments.MergeArguments(overrideArguments);
+        arguments = agentWithNullArguments.MergeArguments(overrideArguments);
         // Assert
-        Assert.StrictEqual(1, arguments.Count);
+        Assert.NotNull(arguments);
+        Assert.StrictEqual(overrideArguments, arguments);
 
         // Arrange
         MockAgent agentWithEmptyArguments = new() { Arguments = new() };

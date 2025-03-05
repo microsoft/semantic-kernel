@@ -9,17 +9,16 @@ if TYPE_CHECKING:
 
 
 class FunctionInvocationContext(FilterContextBase):
-    """The context for function invocation filtering.
+    """Class for function invocation context.
 
     This filter can be used to monitor which functions are called.
     To log what function was called with which parameters and what output.
     Finally it can be used for caching by setting the result value.
 
-    Args:
+    Attributes:
         function: The function invoked.
         kernel: The kernel used.
         arguments: The arguments used to call the function.
-        is_streaming: Whether the function is streaming.
         result: The result of the function, or None.
 
     """

@@ -349,15 +349,13 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         bool isStreaming,
-        PromptExecutionSettings? executionSettings,
         Func<PromptRenderContext, Task> renderCallback,
         CancellationToken cancellationToken)
     {
         PromptRenderContext context = new(this, function, arguments)
         {
             CancellationToken = cancellationToken,
-            IsStreaming = isStreaming,
-            ExecutionSettings = executionSettings
+            IsStreaming = isStreaming
         };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);

@@ -20,10 +20,18 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
-        include:
-          - python-version: "3.13"
-            os: "ubuntu-latest"
-            experimental: true
+        # include:
+        #   - python-version: "3.13"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 0
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 1
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
@@ -39,7 +47,6 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
-          cache-dependency-glob: "**/uv.lock"
       - name: Install the project
         run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Test with pytest

@@ -89,13 +89,13 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         OnnxRuntimeGenAIPromptExecutionSettings onnxPromptExecutionSettings = this.GetOnnxPromptExecutionSettingsSettings(executionSettings);
 
         var prompt = this.GetPrompt(chatHistory, onnxPromptExecutionSettings);
-        using var tokens = this.GetTokenizer().Encode(prompt);
+        var tokens = this.GetTokenizer().Encode(prompt);
 
         using var generatorParams = new GeneratorParams(this.GetModel());
         this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxPromptExecutionSettings);
+        generatorParams.SetInputSequences(tokens);
 
         using var generator = new Generator(this.GetModel(), generatorParams);
-        generator.AppendTokenSequences(tokens);
 
         bool removeNextTokenStartingWithSpace = true;
         while (!generator.IsDone())
@@ -104,6 +104,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
             yield return await Task.Run(() =>
             {
+                generator.ComputeLogits();
                 generator.GenerateNextToken();
 
                 var outputTokens = generator.GetSequence(0);

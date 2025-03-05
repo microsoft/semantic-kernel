@@ -35,7 +35,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Null(executionSettings.TopLogprobs);
         Assert.Null(executionSettings.Logprobs);
         Assert.Null(executionSettings.AzureChatDataSource);
-        Assert.False(executionSettings.SetNewMaxCompletionTokensEnabled);
         Assert.Equal(maxTokensSettings, executionSettings.MaxTokens);
         Assert.Null(executionSettings.Store);
         Assert.Null(executionSettings.Metadata);
@@ -59,8 +58,7 @@ public class AzureOpenAIPromptExecutionSettingsTests
             TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
             Seed = 123456,
             Store = true,
-            Metadata = new Dictionary<string, string>() { { "foo", "bar" } },
-            SetNewMaxCompletionTokensEnabled = true,
+            Metadata = new Dictionary<string, string>() { { "foo", "bar" } }
         };
 
         // Act
@@ -76,7 +74,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings.Seed, executionSettings.Seed);
         Assert.Equal(actualSettings.Store, executionSettings.Store);
         Assert.Equal(actualSettings.Metadata, executionSettings.Metadata);
-        Assert.Equal(actualSettings.SetNewMaxCompletionTokensEnabled, executionSettings.SetNewMaxCompletionTokensEnabled);
     }
 
     [Fact]
@@ -262,7 +259,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Throws<NotSupportedException>(() => executionSettings.TokenSelectionBiases?.Add(5, 6));
         Assert.Throws<InvalidOperationException>(() => executionSettings.Store = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.Metadata?.Add("bar", "foo"));
-        Assert.Throws<InvalidOperationException>(() => executionSettings.SetNewMaxCompletionTokensEnabled = true);
 
         executionSettings!.Freeze(); // idempotent
         Assert.True(executionSettings.IsFrozen);

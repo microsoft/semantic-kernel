@@ -11,7 +11,10 @@ from fastapi.responses import JSONResponse
 from samples.demos.process_with_dapr.process.process import get_process
 from samples.demos.process_with_dapr.process.steps import CommonEvents
 from semantic_kernel import Kernel
-from semantic_kernel.processes.dapr_runtime import register_fastapi_dapr_actors, start
+from semantic_kernel.processes.dapr_runtime import (
+    register_fastapi_dapr_actors,
+    start,
+)
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -31,16 +34,12 @@ kernel = Kernel()
 # and returns the actor instance with the kernel injected.              #
 #########################################################################
 
-# Get the process which means we have the `KernelProcess` object
-# along with any defined step factories
-process = get_process()
-
 
 # Define a lifespan method that registers the actors with the Dapr runtime
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("## actor startup ##")
-    await register_fastapi_dapr_actors(actor, kernel, process.factories)
+    await register_fastapi_dapr_actors(actor, kernel)
     yield
 
 
@@ -57,6 +56,8 @@ async def healthcheck():
 @app.get("/processes/{process_id}")
 async def start_process(process_id: str):
     try:
+        process = get_process()
+
         _ = await start(
             process=process,
             kernel=kernel,

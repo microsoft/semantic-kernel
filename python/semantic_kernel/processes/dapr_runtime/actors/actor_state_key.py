@@ -2,10 +2,10 @@
 
 from enum import Enum
 
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class ActorStateKeys(Enum):
     """Keys used to store actor state in Dapr."""
 

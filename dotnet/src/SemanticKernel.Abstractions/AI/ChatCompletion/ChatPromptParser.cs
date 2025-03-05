@@ -112,12 +112,19 @@ internal static class ChatPromptParser
     /// TagName = "message"<br/>
     /// Attributes = { "role" : "..." }<br/>
     /// optional one or more child nodes <image>...</image><br/>
-    /// optional one or more child nodes <text>...</text>
+    /// content not null or single child node <text>...</text>
     /// </remarks>
     private static bool IsValidChatMessage(PromptNode node)
     {
         return
             node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
-            node.Attributes.ContainsKey(RoleAttributeName);
+            node.Attributes.ContainsKey(RoleAttributeName) &&
+            IsValidChildNodes(node);
+    }
+
+    private static bool IsValidChildNodes(PromptNode node)
+    {
+        var textTagsCount = node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase));
+        return textTagsCount == 1 || (textTagsCount == 0 && node.Content is not null);
     }
 }

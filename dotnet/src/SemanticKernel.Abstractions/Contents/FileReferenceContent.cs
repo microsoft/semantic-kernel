@@ -17,15 +17,6 @@ public class FileReferenceContent : KernelContent
     public string FileId { get; init; } = string.Empty;
 
     /// <summary>
-    /// An optional tool association.
-    /// </summary>
-    /// <remarks>
-    /// Tool definition depends upon the context within which the content is consumed.
-    /// </remarks>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IReadOnlyList<string>? Tools { get; init; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
     /// </summary>
     [JsonConstructor]

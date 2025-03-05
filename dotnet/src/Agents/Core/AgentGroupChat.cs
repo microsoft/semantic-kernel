@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -9,40 +8,35 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents an <see cref="AgentChat"/> that supports multi-turn interactions.
+/// A an <see cref="AgentChat"/> that supports multi-turn interactions.
 /// </summary>
-[Experimental("SKEXP0110")]
 public sealed class AgentGroupChat : AgentChat
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test O(1) vs O(n) for list.
     private readonly List<Agent> _agents; // Maintain order the agents joined the chat
 
     /// <summary>
-    /// Gets or sets a value that indicates if the completion criteria have been met.
+    /// Indicates if completion criteria has been met.  If set, no further
+    /// agent interactions will occur.  Clear to enable more agent interactions.
     /// </summary>
-    /// <value>
-    /// <see langword="true"/> if the completion criteria have been met; otherwise <see langword="false"/>.
-    /// The default is <see langword="true"/>. Set to <see langword="false"/> to enable more agent interactions.
-    /// </value>
     public bool IsComplete { get; set; }
 
     /// <summary>
-    /// Gets or sets the settings for defining chat behavior.
+    /// Settings for defining chat behavior.
     /// </summary>
     public AgentGroupChatSettings ExecutionSettings { get; set; } = new AgentGroupChatSettings();
 
     /// <summary>
-    /// Gets the agents participating in the chat.
+    /// The agents participating in the chat.
     /// </summary>
     public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
-    /// Add an <see cref="Agent"/> to the chat.
+    /// Add a <see cref="Agent"/> to the chat.
     /// </summary>
     /// <param name="agent">The <see cref="KernelAgent"/> to add.</param>
     public void AddAgent(Agent agent)
@@ -54,16 +48,14 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Processes a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
+    /// Process a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
+    /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
+    /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
+    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
+    /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
     /// </summary>
-    /// <remarks>
-    /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the
-    /// <see cref="TerminationStrategy"/> defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
-    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method does not invoke any agents.
-    /// Any agent can be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
-    /// </remarks>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of messages.</returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
@@ -92,16 +84,14 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Processes a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
+    /// Process a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
+    /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
+    /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
+    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
+    /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
     /// </summary>
-    /// <remarks>
-    /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the
-    /// <see cref="TerminationStrategy"/> defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
-    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method does not invoke any agents.
-    /// Any agent can be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
-    /// </remarks>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of streaming messages.</returns>
+    /// <returns>Asynchronous enumeration of streaming messages.</returns>
     public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
@@ -130,21 +120,21 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Processes a single interaction between a given <see cref="Agent"/> and an <see cref="AgentGroupChat"/>.
+    /// Process a single interaction between a given <see cref="Agent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of messages.</returns>
-    /// <remarks>
-    /// The specified agent joins the chat.
-    /// </remarks>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remark>
+    /// Specified agent joins the chat.
+    /// </remark>>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
+        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
         this.AddAgent(agent);
 
@@ -159,21 +149,21 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Processes a single interaction between a given <see cref="Agent"/> and an <see cref="AgentGroupChat"/>.
+    /// Process a single interaction between a given <see cref="Agent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous enumeration of messages.</returns>
-    /// <remarks>
-    /// The specified agent joins the chat.
-    /// </remarks>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remark>
+    /// Specified agent joins the chat.
+    /// </remark>
     public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
+        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
         this.AddAgent(agent);
 
@@ -188,17 +178,17 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Creates a <see cref="KernelFunction"/> for a given strategy without HTML-encoding the specified parameters.
+    /// Convenience method to create a <see cref="KernelFunction"/> for a given strategy without HTML encoding the specified parameters.
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
     /// <param name="templateFactory">
-    /// An optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
-    /// The default factory is used when none is provided.
+    /// On optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
+    /// The default factory will be used when none is provided.
     /// </param>
     /// <param name="safeParameterNames">The parameter names to exclude from being HTML encoded.</param>
     /// <returns>A <see cref="KernelFunction"/> created via <see cref="KernelFunctionFactory"/> using the specified template.</returns>
     /// <remarks>
-    /// This method is particularly targeted to easily avoid encoding the history used by <see cref="KernelFunctionSelectionStrategy"/>
+    /// This is particularly targeted to easily avoid encoding the history used by <see cref="KernelFunctionSelectionStrategy"/>
     /// or <see cref="KernelFunctionTerminationStrategy"/>.
     /// </remarks>
     public static KernelFunction CreatePromptFunctionForStrategy(string template, IPromptTemplateFactory? templateFactory = null, params string[] safeParameterNames)
@@ -265,7 +255,7 @@ public sealed class AgentGroupChat : AgentChat
             throw;
         }
 
-        this.Logger.LogAgentGroupChatSelectedAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), this.ExecutionSettings.SelectionStrategy.GetType());
+        this.Logger.LogAgentGroupChatSelectedAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, this.ExecutionSettings.SelectionStrategy.GetType());
 
         return agent;
     }

@@ -12,7 +12,7 @@ public sealed class ChatPromptParserTests
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
-    [InlineData("<message role='user'><text>This is an invalid chat prompt</message></text>")]
+    [InlineData("<message role='user'><text>This is invalid</text><text>chat prompt</text></message>")]
     public void ItReturnsNullChatHistoryWhenPromptIsPlainTextOrInvalid(string prompt)
     {
         // Act
@@ -149,86 +149,6 @@ public sealed class ChatPromptParserTests
     }
 
     [Fact]
-    public void ItReturnsChatHistoryWithMultipleTextParts()
-    {
-        // Arrange
-        string prompt = GetValidPromptWithMultipleTextParts();
-
-        // Act
-        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
-
-        // Assert
-        Assert.True(result);
-        Assert.NotNull(chatHistory);
-
-        Assert.Collection(chatHistory,
-            c => Assert.Equal("What can I help with?", c.Content),
-            c =>
-            {
-                Assert.Equal("Hello", c.Content);
-                Assert.Collection(c.Items,
-                    o =>
-                    {
-                        Assert.IsType<TextContent>(o);
-                        Assert.Equal("Hello", ((TextContent)o).Text);
-                    }, o =>
-                    {
-                        Assert.IsType<TextContent>(o);
-                        Assert.Equal("I am user", ((TextContent)o).Text);
-                    });
-            });
-    }
-
-    [Fact]
-    public void ItReturnsChatHistoryWithMixedXmlContent()
-    {
-        // Arrange
-        string prompt = GetValidPromptWithMixedXmlContent();
-
-        // Act
-        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
-
-        // Assert
-        Assert.True(result);
-        Assert.NotNull(chatHistory);
-
-        Assert.Collection(chatHistory,
-            c => Assert.Equal("What can I help with?", c.Content),
-            c =>
-            {
-                Assert.Equal("Hi how are you?", c.Content);
-                Assert.Single(c.Items);
-            });
-    }
-
-    [Fact]
-    public void ItReturnsChatHistoryWithEmptyContent()
-    {
-        // Arrange
-        string prompt = GetValidPromptWithEmptyContent();
-
-        // Act
-        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
-
-        // Assert
-        Assert.True(result);
-        Assert.NotNull(chatHistory);
-
-        Assert.Collection(chatHistory,
-            c => Assert.Equal("What can I help with?", c.Content),
-            c =>
-            {
-                Assert.Null(c.Content);
-                Assert.Empty(c.Items);
-            },
-            c =>
-            {
-                Assert.Null(c.Content);
-                Assert.Empty(c.Items);
-            });
-    }
-
-    [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsIncludeCode()
     {
         // Arrange
@@ -334,50 +254,6 @@ public sealed class ChatPromptParserTests
             <message role='user'>
                 <text>Explain this image</text>
                 <image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII=</image>
-            </message>
-
-            """;
-    }
-
-    private static string GetValidPromptWithMultipleTextParts()
-    {
-        return
-            """
-
-            <message role="assistant">What can I help with?</message>
-
-            <message role='user'>
-                <text>Hello</text>
-                <text>I am user</text>
-            </message>
-
-            """;
-    }
-
-    private static string GetValidPromptWithMixedXmlContent()
-    {
-        return
-            """
-
-            <message role="assistant">What can I help with?</message>
-
-            <message role='user'>
-                This part will be discarded upon parsing
-                <text>Hi how are you?</text>
-                This part will also be discarded upon parsing
-            </message>
-
-            """;
-    }
-
-    private static string GetValidPromptWithEmptyContent()
-    {
-        return
-            """
-
-            <message role="assistant">What can I help with?</message>
-            <message role='user'/>
-            <message role='user'>
             </message>
 
             """;

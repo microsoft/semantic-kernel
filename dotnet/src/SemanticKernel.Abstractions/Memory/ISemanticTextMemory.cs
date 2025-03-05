@@ -24,7 +24,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
-    Task<string> SaveInformationAsync(
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -45,7 +45,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
-    Task<string> SaveReferenceAsync(
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
@@ -66,7 +66,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record, or null when nothing is found</returns>
-    Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = false, Kernel? kernel = null, CancellationToken cancellationToken = default);
+    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = false, Kernel? kernel = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Remove a memory by key.
@@ -77,7 +77,7 @@ public interface ISemanticTextMemory
     /// <param name="key">Unique memory record identifier.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task RemoveAsync(string collection, string key, Kernel? kernel = null, CancellationToken cancellationToken = default);
+    public Task RemoveAsync(string collection, string key, Kernel? kernel = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Find some information in memory
@@ -90,7 +90,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memories found</returns>
-    IAsyncEnumerable<MemoryQueryResult> SearchAsync(
+    public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
         string collection,
         string query,
         int limit = 1,
@@ -105,5 +105,5 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of collection names.</returns>
-    Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
+    public Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
 }

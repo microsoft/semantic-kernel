@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines a key property on a vector store record.
 /// </summary>
 /// <remarks>
-/// The characteristics defined here influence how the property is treated by the vector store.
+/// The characteristics defined here will influence how the property is treated by the vector store.
 /// </remarks>
 public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
 {
@@ -25,7 +25,7 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class by cloning the given source.
     /// </summary>
-    /// <param name="source">The source to clone.</param>
+    /// <param name="source">The source to clone</param>
     public VectorStoreRecordKeyProperty(VectorStoreRecordKeyProperty source)
         : base(source)
     {

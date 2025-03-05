@@ -27,9 +27,6 @@ from semantic_kernel.functions import KernelArguments
 # The purpose of this sample is to demonstrate how to use a kernel function and use a chat history reducer.
 # To build a basic chatbot, it is sufficient to use a ChatCompletionService with a chat history directly.
 
-# Toggle this flag to view the chat history summary after a reduction was performed.
-view_chat_history_summary_after_reduction = True
-
 # You can select from the following chat completion services:
 # - Services.OPENAI
 # - Services.AZURE_OPENAI
@@ -125,8 +122,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    if is_reduced := await summarization_reducer.reduce():
-        print(f"@ History reduced to {len(summarization_reducer.messages)} messages.")
+    await summarization_reducer.reduce()
 
     kernel_arguments = KernelArguments(
         settings=request_settings,
@@ -139,15 +135,6 @@ async def chat() -> bool:
         print(f"Mosscap:> {answer}")
         summarization_reducer.add_user_message(user_input)
         summarization_reducer.add_message(answer.value[0])
-
-    if view_chat_history_summary_after_reduction and is_reduced:
-        for msg in summarization_reducer.messages:
-            if msg.metadata and msg.metadata.get("__summary__"):
-                print("*" * 60)
-                print(f"Chat History Reduction Summary: {msg.content}")
-                print("*" * 60)
-                break
-        print("\n")
 
     return True
 

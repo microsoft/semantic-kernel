@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Azure.AI.Projects;
+using Azure.Identity;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -13,41 +13,40 @@ using OpenAI.Files;
 using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 
 /// <summary>
-/// Base class for samples that demonstrate the usage of host agents
-/// based on API's such as Open AI Assistants or Azure AI Agents.
-/// </summary>
-public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAgentsTest(output)
-{
-    /// <summary>
-    /// Metadata key to indicate the assistant as created for a sample.
-    /// </summary>
-    protected const string SampleMetadataKey = "sksample";
-
-    /// <summary>
-    /// Metadata to indicate the object was created for a sample.
-    /// </summary>
-    /// <remarks>
-    /// While the samples do attempt delete the objects it creates, it is possible
-    /// that some may remain.  This metadata can be used to identify and sample
-    /// objects for manual clean-up.
-    /// </remarks>
-    protected static readonly ReadOnlyDictionary<string, string> SampleMetadata =
-        new(new Dictionary<string, string>
-        {
-            { SampleMetadataKey, bool.TrueString }
-        });
-
-    /// <summary>
-    /// Gets the root client for the service.
-    /// </summary>
-    protected abstract TClient Client { get; }
-}
-
-/// <summary>
 /// Base class for samples that demonstrate the usage of agents.
 /// </summary>
 public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
+    /// <summary>
+    /// Metadata key to indicate the assistant as created for a sample.
+    /// </summary>
+    protected const string AssistantSampleMetadataKey = "sksample";
+
+    /// <summary>
+    /// Metadata to indicate the assistant as created for a sample.
+    /// </summary>
+    /// <remarks>
+    /// While the samples do attempt delete the assistants it creates, it is possible
+    /// that some assistants may remain.  This metadata can be used to identify and sample
+    /// agents for clean-up.
+    /// </remarks>
+    protected static readonly ReadOnlyDictionary<string, string> AssistantSampleMetadata =
+        new(new Dictionary<string, string>
+        {
+            { AssistantSampleMetadataKey, bool.TrueString }
+        });
+
+    /// <summary>
+    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
+    /// </summary>
+    protected OpenAIClientProvider GetClientProvider()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+                !string.IsNullOrWhiteSpace(this.ApiKey) ?
+                    OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+                    OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
+
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
@@ -92,17 +91,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             {
                 WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
             }
-            else if (usage is RunStepCompletionUsage agentUsage)
-            {
-                WriteUsage(agentUsage.TotalTokens, agentUsage.PromptTokens, agentUsage.CompletionTokens);
-            }
             else if (usage is ChatTokenUsage chatUsage)
             {
                 WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
             }
         }
 
-        void WriteUsage(long totalTokens, long inputTokens, long outputTokens)
+        void WriteUsage(int totalTokens, int inputTokens, int outputTokens)
         {
             Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
         }

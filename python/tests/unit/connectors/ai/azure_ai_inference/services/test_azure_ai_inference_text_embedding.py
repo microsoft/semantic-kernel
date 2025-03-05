@@ -83,7 +83,6 @@ def test_azure_ai_inference_text_embedding_init_with_empty_endpoint(azure_ai_inf
 async def test_azure_ai_inference_text_embedding(
     mock_embed,
     azure_ai_inference_service,
-    model_id,
 ) -> None:
     """Test text embedding generation of AzureAIInferenceTextEmbedding without settings"""
     texts = ["hello", "world"]
@@ -91,7 +90,6 @@ async def test_azure_ai_inference_text_embedding(
 
     mock_embed.assert_awaited_once_with(
         input=texts,
-        model=model_id,
         model_extras=None,
         dimensions=None,
         encoding_format=None,
@@ -108,7 +106,6 @@ async def test_azure_ai_inference_text_embedding(
 async def test_azure_ai_inference_text_embedding_with_standard_settings(
     mock_embed,
     azure_ai_inference_service,
-    model_id,
 ) -> None:
     """Test text embedding generation of AzureAIInferenceTextEmbedding with standard settings"""
     texts = ["hello", "world"]
@@ -119,7 +116,6 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
 
     mock_embed.assert_awaited_once_with(
         input=texts,
-        model=model_id,
         model_extras=None,
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
@@ -136,7 +132,6 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
 async def test_azure_ai_inference_text_embedding_with_extra_parameters(
     mock_embed,
     azure_ai_inference_service,
-    model_id,
 ) -> None:
     """Test text embedding generation of AzureAIInferenceTextEmbedding with extra parameters"""
     texts = ["hello", "world"]
@@ -146,7 +141,6 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
 
     mock_embed.assert_awaited_once_with(
         input=texts,
-        model=model_id,
         model_extras=extra_parameters,
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,

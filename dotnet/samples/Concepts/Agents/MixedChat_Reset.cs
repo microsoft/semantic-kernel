@@ -3,14 +3,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
 /// Demonstrate the use of <see cref="AgentChat.ResetAsync"/>.
 /// </summary>
-public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string AgentInstructions =
         """
@@ -21,15 +20,18 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
     [Fact]
     public async Task ResetChatAsync()
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                instructions: AgentInstructions,
-                metadata: SampleMetadata);
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        // Create the agent
-        OpenAIAssistantAgent assistantAgent = new(assistant, this.AssistantClient);
+        // Define the agents
+        OpenAIAssistantAgent assistantAgent =
+            await OpenAIAssistantAgent.CreateAsync(
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Name = nameof(OpenAIAssistantAgent),
+                    Instructions = AgentInstructions,
+                },
+                kernel: new Kernel());
 
         ChatCompletionAgent chatAgent =
             new()
@@ -62,7 +64,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
         finally
         {
             await chat.ResetAsync();
-            await this.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
+            await assistantAgent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.

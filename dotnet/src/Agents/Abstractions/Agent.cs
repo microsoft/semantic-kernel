@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,37 +20,32 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class Agent
 {
     /// <summary>
-    /// Gets the description of the agent (optional).
+    /// The description of the agent (optional)
     /// </summary>
     public string? Description { get; init; }
 
     /// <summary>
-    /// Gets the identifier of the agent (optional).
+    /// The identifier of the agent (optional).
     /// </summary>
-    /// <value>
-    /// The identifier of the agent. The default is a random GUID value, but that can be overridden.
-    /// </value>
+    /// <remarks>
+    /// Default to a random guid value, but may be overridden.
+    /// </remarks>
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets the name of the agent (optional).
+    /// The name of the agent (optional)
     /// </summary>
     public string? Name { get; init; }
 
     /// <summary>
     /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
     /// </summary>
-    public ILoggerFactory? LoggerFactory { get; init; }
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
 
     /// <summary>
     /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
-    protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
-
-    /// <summary>
-    /// Get the active logger factory, if defined; otherwise, provide the default.
-    /// </summary>
-    protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
+    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
@@ -65,13 +59,10 @@ public abstract class Agent
     /// For example, two OpenAI Assistant agents each targeting a different Azure OpenAI endpoint
     /// would require their own channel. In this case, the endpoint could be expressed as an additional key.
     /// </remarks>
-    [Experimental("SKEXP0110")]
-#pragma warning disable CA1024 // Use properties where appropriate
     protected internal abstract IEnumerable<string> GetChannelKeys();
-#pragma warning restore CA1024 // Use properties where appropriate
 
     /// <summary>
-    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type.
+    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
@@ -79,11 +70,10 @@ public abstract class Agent
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
-    [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Produce an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
+    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
     /// </summary>
     /// <param name="channelState">The channel state, as serialized</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -92,7 +82,6 @@ public abstract class Agent
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
-    [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
     private ILogger? _logger;

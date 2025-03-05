@@ -34,7 +34,7 @@ def test_initialization_with_visibility():
     # Assert
     assert event.id == event_id
     assert event.data == event_data
-    assert event.visibility == KernelProcessEventVisibility.Public
+    assert event.visibility == KernelProcessEventVisibility.Public.value
 
 
 def test_invalid_visibility():

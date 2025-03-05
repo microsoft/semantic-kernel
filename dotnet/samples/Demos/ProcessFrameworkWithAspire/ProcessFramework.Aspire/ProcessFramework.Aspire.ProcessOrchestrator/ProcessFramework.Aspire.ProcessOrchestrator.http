@@ -1,5 +1,0 @@
-GET https://localhost:7207/api/processdoc
-Accept: application/json
-
-###
-    

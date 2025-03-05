@@ -13,17 +13,18 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNullOrWhiteSpace(process.State?.Name);
 
         this._kernel = kernel;
-        this._localProcess = new LocalProcess(process, kernel)
+        this._localProcess = new LocalProcess(
+            process,
+            kernel)
         {
-            EventProxy = eventProxy,
-            ExternalMessageChannel = externalMessageChannel,
+            EventProxy = eventProxy
         };
     }
 
@@ -54,10 +55,4 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// Disposes of the resources used by the process.
     /// </summary>
     public void Dispose() => this._localProcess.Dispose();
-
-    /// <inheritdoc/>
-    public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
-    {
-        return Task.FromResult(this._localProcess.ExternalMessageChannel);
-    }
 }

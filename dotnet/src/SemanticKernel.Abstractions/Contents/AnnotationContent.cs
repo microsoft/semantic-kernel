@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Agents;
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// Content type to support message annotations.

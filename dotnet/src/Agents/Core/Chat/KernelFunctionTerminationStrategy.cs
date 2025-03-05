@@ -1,22 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Signals termination based on the evaluation of a <see cref="KernelFunction"/>.
 /// </summary>
-/// <param name="function">A <see cref="KernelFunction"/> used for termination criteria.</param>
+/// <param name="function">A <see cref="KernelFunction"/> used for termination criteria</param>
 /// <param name="kernel">A kernel instance with services for function execution.</param>
-[Experimental("SKEXP0110")]
 public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel kernel) : TerminationStrategy
 {
     /// <summary>
@@ -30,45 +27,45 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public const string DefaultHistoryVariableName = "_history_";
 
     /// <summary>
-    /// Gets the <see cref="KernelArguments"/> key associated with the agent name when
+    /// The <see cref="KernelArguments"/> key associated with the agent name when
     /// invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
     public string AgentVariableName { get; init; } = DefaultAgentVariableName;
 
     /// <summary>
-    /// Gets the <see cref="KernelArguments"/> key associated with the chat history when
+    /// The <see cref="KernelArguments"/> key associated with the chat history when
     /// invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public string HistoryVariableName { get; init; } = DefaultHistoryVariableName;
 
     /// <summary>
-    /// Gets optional arguments used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// Optional arguments used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
 
     /// <summary>
-    /// Gets the <see cref="KernelFunction"/> invoked as termination criteria.
+    /// The <see cref="KernelFunction"/> invoked as termination criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
 
     /// <summary>
-    /// Gets a value that indicates whether only the agent name is included in the history when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// Only include agent name in history when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public bool EvaluateNameOnly { get; init; }
 
     /// <summary>
-    /// Gets a callback responsible for translating the <see cref="FunctionResult"/>
+    /// A callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
     public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
     /// <summary>
-    /// Gets an optional <see cref="IChatHistoryReducer"/> to reduce the history.
+    /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
 

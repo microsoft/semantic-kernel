@@ -200,7 +200,6 @@ internal partial class ClientCore
             // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
-                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
@@ -385,7 +384,6 @@ internal partial class ClientCore
             // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
-                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
@@ -471,7 +469,6 @@ internal partial class ClientCore
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             StoredOutputEnabled = executionSettings.Store,
-            ReasoningEffortLevel = GetEffortLevel(executionSettings),
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -520,33 +517,6 @@ internal partial class ClientCore
         }
 
         return options;
-    }
-
-    protected static ChatReasoningEffortLevel? GetEffortLevel(OpenAIPromptExecutionSettings executionSettings)
-    {
-        var effortLevelObject = executionSettings.ReasoningEffort;
-        if (effortLevelObject is null)
-        {
-            return null;
-        }
-
-        if (effortLevelObject is ChatReasoningEffortLevel effort)
-        {
-            return effort;
-        }
-
-        if (effortLevelObject is string textEffortLevel)
-        {
-            return textEffortLevel.ToUpperInvariant() switch
-            {
-                "LOW" => ChatReasoningEffortLevel.Low,
-                "MEDIUM" => ChatReasoningEffortLevel.Medium,
-                "HIGH" => ChatReasoningEffortLevel.High,
-                _ => throw new NotSupportedException($"The provided reasoning effort '{textEffortLevel}' is not supported.")
-            };
-        }
-
-        throw new NotSupportedException($"The provided reasoning effort '{effortLevelObject.GetType()}' is not supported.");
     }
 
     /// <summary>
@@ -619,14 +589,13 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
-    /// <param name="textRole">Indicates what will be the role of the text. Defaults to system role prompt</param>
     /// <returns>Chat object</returns>
-    private static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null, AuthorRole? textRole = null)
+    private static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
         var chat = new ChatHistory();
 
         // If settings is not provided, create a new chat with the text as the system prompt
-        textRole ??= AuthorRole.System;
+        AuthorRole textRole = AuthorRole.System;
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
@@ -634,15 +603,9 @@ internal partial class ClientCore
             textRole = AuthorRole.User;
         }
 
-        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatDeveloperPrompt))
-        {
-            chat.AddDeveloperMessage(executionSettings!.ChatDeveloperPrompt!);
-            textRole = AuthorRole.User;
-        }
-
         if (!string.IsNullOrWhiteSpace(text))
         {
-            chat.AddMessage(textRole.Value, text!);
+            chat.AddMessage(textRole, text!);
         }
 
         return chat;
@@ -651,11 +614,6 @@ internal partial class ClientCore
     private static List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
         List<ChatMessage> messages = [];
-
-        if (!string.IsNullOrWhiteSpace(executionSettings.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
-        {
-            messages.Add(new DeveloperChatMessage(executionSettings.ChatDeveloperPrompt));
-        }
 
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
@@ -672,11 +630,6 @@ internal partial class ClientCore
 
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
     {
-        if (message.Role == AuthorRole.Developer)
-        {
-            return [new DeveloperChatMessage(message.Content) { ParticipantName = message.AuthorName }];
-        }
-
         if (message.Role == AuthorRole.System)
         {
             return [new SystemChatMessage(message.Content) { ParticipantName = message.AuthorName }];

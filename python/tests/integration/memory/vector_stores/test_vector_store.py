@@ -2,7 +2,6 @@
 
 import logging
 import platform
-from collections.abc import Callable
 from typing import Any
 
 import pandas as pd
@@ -24,18 +23,8 @@ class TestVectorStore(VectorStoreTestBase):
     """
 
     @pytest.mark.parametrize(
-        [
-            "store_id",
-            "collection_name",
-            "collection_options",
-            "data_model_type",
-            "data_model_definition",
-            "distance_function",
-            "index_kind",
-            "vector_property_type",
-            "dimensions",
-            "record",
-        ],
+        "store_id, collection_name, collection_options, data_model_type, data_model_definition, distance_function, "
+        "index_kind, vector_property_type, dimensions, record",
         [
             # region Redis
             pytest.param(
@@ -333,7 +322,7 @@ class TestVectorStore(VectorStoreTestBase):
                 id="weaviate_local_pandas_data_model",
             ),
             # endregion
-            # region Azure Cosmos DB
+            # region Azure Cosmos DB NoSQL
             pytest.param(
                 "azure_cosmos_db_no_sql",
                 "azure_cosmos_db_no_sql_array_data_model",
@@ -386,53 +375,11 @@ class TestVectorStore(VectorStoreTestBase):
                 id="azure_cosmos_db_no_sql_pandas_data_model",
             ),
             # endregion
-            # region Chroma
-            pytest.param(
-                "chroma",
-                "chroma_array_data_model",
-                {},
-                "dataclass_vector_data_model_array",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_ARRAY,
-                id="chroma_array_data_model",
-            ),
-            pytest.param(
-                "chroma",
-                "chroma_list_data_model",
-                {},
-                "dataclass_vector_data_model",
-                None,
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_LIST,
-                id="chroma_list_data_model",
-            ),
-            pytest.param(
-                "chroma",
-                "chroma_pandas_data_model",
-                {},
-                pd.DataFrame,
-                "data_model_definition_pandas",
-                None,
-                None,
-                None,
-                5,
-                RAW_RECORD_LIST,
-                id="chroma_pandas_data_model",
-            ),
-            # endregion
         ],
     )
-    # region test function
     async def test_vector_store(
         self,
-        stores: dict[str, Callable[[], VectorStore]],
+        stores: dict[str, VectorStore],
         store_id: str,
         collection_name: str,
         collection_options: dict[str, Any],
@@ -452,7 +399,7 @@ class TestVectorStore(VectorStoreTestBase):
             data_model_definition = request.getfixturevalue(data_model_definition)
         try:
             async with (
-                stores[store_id]() as vector_store,
+                stores[store_id] as vector_store,
                 vector_store.get_collection(
                     collection_name, data_model_type, data_model_definition, **collection_options
                 ) as collection,

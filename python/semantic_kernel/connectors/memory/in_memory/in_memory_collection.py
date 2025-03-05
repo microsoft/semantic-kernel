@@ -4,17 +4,18 @@ import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, TypeVar
 
+from pydantic import Field
+
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import Field
-
 from semantic_kernel.connectors.memory.in_memory.const import DISTANCE_FUNCTION_MAP
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
@@ -28,7 +29,6 @@ from semantic_kernel.data.vector_search.vector_text_search import VectorTextSear
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.list_handler import empty_generator
 
 KEY_TYPES = str | int | float
 
@@ -149,10 +149,7 @@ class InMemoryVectorCollection(
             raise ValueError("Vector field name must be provided in options for vector search.")
         field = options.vector_field_name
         assert isinstance(self.data_model_definition.fields.get(field), VectorStoreRecordVectorField)  # nosec
-        distance_metric = (
-            self.data_model_definition.fields.get(field).distance_function  # type: ignore
-            or DistanceFunction.COSINE_DISTANCE
-        )
+        distance_metric = self.data_model_definition.fields.get(field).distance_function or "default"  # type: ignore
         distance_func = DISTANCE_FUNCTION_MAP[distance_metric]
 
         for key, record in self._get_filtered_records(options).items():
@@ -163,13 +160,10 @@ class InMemoryVectorCollection(
                     distance_func,
                     invert_score=distance_metric == DistanceFunction.COSINE_SIMILARITY,
                 )
-        sorted_records = dict(
-            sorted(
-                return_records.items(),
-                key=lambda item: item[1],
-                reverse=DISTANCE_FUNCTION_DIRECTION_HELPER[distance_metric](1, 0),
-            )
-        )
+        if distance_metric in [DistanceFunction.COSINE_SIMILARITY, DistanceFunction.DOT_PROD]:
+            sorted_records = dict(sorted(return_records.items(), key=lambda item: item[1], reverse=True))
+        else:
+            sorted_records = dict(sorted(return_records.items(), key=lambda item: item[1]))
         if sorted_records:
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(
@@ -177,7 +171,7 @@ class InMemoryVectorCollection(
                 ),
                 total_count=len(return_records) if options and options.include_total_count else None,
             )
-        return KernelSearchResults(results=empty_generator())
+        return KernelSearchResults(results=None)
 
     async def _generate_return_list(
         self, return_records: dict[KEY_TYPES, float], options: VectorSearchOptions | None

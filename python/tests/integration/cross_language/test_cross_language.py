@@ -733,7 +733,7 @@ async def test_openapi_put_light_by_id(kernel: Kernel):
 
     assert request_content.get("method") == "PUT"
     assert request_content.get("url") == "https://127.0.0.1/Lights/1"
-    assert request_content.get("body") == '{"hexColor":"11EE11"}'
+    assert request_content.get("body") == '{"hexColor": "11EE11"}'
 
 
 # endregion

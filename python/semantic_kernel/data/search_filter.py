@@ -10,12 +10,12 @@ else:
 
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 _T = TypeVar("_T", bound="SearchFilter")
 
 
-@experimental
+@experimental_class
 class SearchFilter:
     """A filter clause for a search."""
 

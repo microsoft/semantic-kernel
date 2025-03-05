@@ -15,18 +15,17 @@ from numpy import ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from torch import Tensor
 
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     """Hugging Face text embedding service."""
 

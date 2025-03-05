@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Represents a filter clause that filters using equality of a field value.
+/// <see cref="FilterClause"/> which filters using equality of a field value.
 /// </summary>
 public sealed class EqualToFilterClause : FilterClause
 {
@@ -19,12 +19,12 @@ public sealed class EqualToFilterClause : FilterClause
     }
 
     /// <summary>
-    /// Gets the field name to match.
+    /// Field name to match.
     /// </summary>
     public string FieldName { get; private set; }
 
     /// <summary>
-    /// Gets the field value to match.
+    /// Field value to match.
     /// </summary>
     public object Value { get; private set; }
 }

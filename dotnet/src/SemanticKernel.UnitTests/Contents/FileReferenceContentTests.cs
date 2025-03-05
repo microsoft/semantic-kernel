@@ -21,7 +21,6 @@ public class FileReferenceContentTests
 
         Assert.Empty(definition.FileId);
     }
-
     /// <summary>
     /// Verify usage.
     /// </summary>
@@ -31,20 +30,5 @@ public class FileReferenceContentTests
         FileReferenceContent definition = new(fileId: "testfile");
 
         Assert.Equal("testfile", definition.FileId);
-        Assert.Null(definition.Tools);
-    }
-
-    /// <summary>
-    /// Verify usage.
-    /// </summary>
-    [Fact]
-    public void VerifyFileReferenceToolUsage()
-    {
-        FileReferenceContent definition = new(fileId: "testfile") { Tools = new[] { "a", "b", "c" } };
-
-        Assert.Equal("testfile", definition.FileId);
-        Assert.NotNull(definition.Tools);
-        Assert.Equal(3, definition.Tools.Count);
-        Assert.Equivalent(new[] { "a", "b", "c" }, definition.Tools);
     }
 }

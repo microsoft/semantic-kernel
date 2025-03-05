@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData;
 public class VectorSearchResults<TRecord>(IAsyncEnumerable<VectorSearchResult<TRecord>> results)
 {
     /// <summary>
-    /// Gets or sets the total count of results found by the search operation, or null
+    /// The total count of results found by the search operation, or null
     /// if the count was not requested or cannot be computed.
     /// </summary>
     /// <remarks>
@@ -21,12 +21,12 @@ public class VectorSearchResults<TRecord>(IAsyncEnumerable<VectorSearchResult<TR
     public long? TotalCount { get; init; }
 
     /// <summary>
-    /// Gets or sets the metadata associated with the content.
+    /// The metadata associated with the content.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; init; }
 
     /// <summary>
-    /// Gets the search results.
+    /// The search results.
     /// </summary>
     public IAsyncEnumerable<VectorSearchResult<TRecord>> Results { get; } = results;
 }

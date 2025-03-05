@@ -7,14 +7,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
 
-/// <summary>
-/// These examples demonstrate different ways of using chat completion with OpenAI API.
-/// </summary>
+// The following example shows how to use Semantic Kernel with OpenAI API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/>.
-    /// </summary>
     [Fact]
     public async Task ServicePromptAsync()
     {
@@ -23,36 +18,11 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine("======== Open AI - Chat Completion ========");
 
-        OpenAIChatCompletionService chatService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-
-        var chatHistory = new ChatHistory("You are a librarian, expert about books");
-
-        // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        OutputLastMessage(chatHistory);
-
-        // First assistant message
-        var reply = await chatService.GetChatMessageContentAsync(chatHistory);
-        chatHistory.Add(reply);
-        OutputLastMessage(chatHistory);
-
-        // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
-        OutputLastMessage(chatHistory);
-
-        // Second assistant message
-        reply = await chatService.GetChatMessageContentAsync(chatHistory);
-        chatHistory.Add(reply);
-        OutputLastMessage(chatHistory);
+        await StartChatAsync(chatCompletionService);
     }
 
-    /// <summary>
-    /// Sample showing how to use <see cref="IChatCompletionService"/> directly with a <see cref="ChatHistory"/> also exploring the
-    /// breaking glass approach capturing the underlying <see cref="OpenAI.Chat.ChatCompletion"/> instance via <see cref="KernelContent.InnerContent"/>.
-    /// </summary>
     [Fact]
     public async Task ServicePromptWithInnerContentAsync()
     {
@@ -81,9 +51,6 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         OutputInnerContent(replyInnerContent!);
     }
 
-    /// <summary>
-    /// Sample showing how to use <see cref="Kernel"/> with chat completion and chat prompt syntax.
-    /// </summary>
     [Fact]
     public async Task ChatPromptAsync()
     {
@@ -170,6 +137,32 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         OutputInnerContent(replyInnerContent!);
     }
 
+    private async Task StartChatAsync(IChatCompletionService chatGPT)
+    {
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
+
+        // First user message
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        OutputLastMessage(chatHistory);
+
+        // First assistant message
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
+        OutputLastMessage(chatHistory);
+
+        // Second user message
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
+        OutputLastMessage(chatHistory);
+
+        // Second assistant message
+        reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
+        OutputLastMessage(chatHistory);
+    }
+
     /// <summary>
     /// Retrieve extra information from a <see cref="ChatMessageContent"/> inner content of type <see cref="OpenAI.Chat.ChatCompletion"/>.
     /// </summary>
@@ -180,21 +173,19 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     /// </remarks>
     private void OutputInnerContent(OpenAI.Chat.ChatCompletion innerContent)
     {
-        Console.WriteLine($$"""
-            Message role: {{innerContent.Role}} // Available as a property of ChatMessageContent
-            Message content: {{innerContent.Content[0].Text}} // Available as a property of ChatMessageContent
+        Console.WriteLine($"Message role: {innerContent.Role}"); // Available as a property of ChatMessageContent
+        Console.WriteLine($"Message content: {innerContent.Content[0].Text}"); // Available as a property of ChatMessageContent
 
-            Model: {{innerContent.Model}} // Model doesn't change per chunk, so we can get it from the first chunk only
-            Created At: {{innerContent.CreatedAt}}
+        Console.WriteLine($"Model: {innerContent.Model}"); // Model doesn't change per chunk, so we can get it from the first chunk only
+        Console.WriteLine($"Created At: {innerContent.CreatedAt}");
 
-            Finish reason: {{innerContent.FinishReason}}
-            Input tokens usage: {{innerContent.Usage.InputTokenCount}}
-            Output tokens usage: {{innerContent.Usage.OutputTokenCount}}
-            Total tokens usage: {{innerContent.Usage.TotalTokenCount}}
-            Refusal: {{innerContent.Refusal}} 
-            Id: {{innerContent.Id}}
-            System fingerprint: {{innerContent.SystemFingerprint}}
-            """);
+        Console.WriteLine($"Finish reason: {innerContent.FinishReason}");
+        Console.WriteLine($"Input tokens usage: {innerContent.Usage.InputTokenCount}");
+        Console.WriteLine($"Output tokens usage: {innerContent.Usage.OutputTokenCount}");
+        Console.WriteLine($"Total tokens usage: {innerContent.Usage.TotalTokenCount}");
+        Console.WriteLine($"Refusal: {innerContent.Refusal} ");
+        Console.WriteLine($"Id: {innerContent.Id}");
+        Console.WriteLine($"System fingerprint: {innerContent.SystemFingerprint}");
 
         if (innerContent.ContentTokenLogProbabilities.Count > 0)
         {

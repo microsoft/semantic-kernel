@@ -3,7 +3,6 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -11,49 +10,41 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
-using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// Provides an <see cref="OpenAIClient"/> for use by <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-[Experimental("SKEXP0110")]
 public sealed class OpenAIClientProvider
 {
     /// <summary>
-    /// Specifies a key that avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
+    /// Avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
     /// </summary>
     private const string SingleSpaceKey = " ";
-    private AssistantClient? _assistantClient;
 
     /// <summary>
-    /// Gets an active client instance.
+    /// An active client instance.
     /// </summary>
     public OpenAIClient Client { get; }
 
     /// <summary>
-    /// Gets an active assistant client instance.
-    /// </summary>
-    public AssistantClient AssistantClient => this._assistantClient ??= this.Client.GetAssistantClient();
-
-    /// <summary>
-    /// Gets configuration keys required for <see cref="AgentChannel"/> management.
+    /// Configuration keys required for <see cref="AgentChannel"/> management.
     /// </summary>
     internal IReadOnlyList<string> ConfigurationKeys { get; }
 
     private OpenAIClientProvider(OpenAIClient client, IEnumerable<string> keys)
     {
         this.Client = client;
-        this.ConfigurationKeys = [.. keys];
+        this.ConfigurationKeys = keys.ToArray();
     }
 
     /// <summary>
-    /// Produces an <see cref="OpenAIClientProvider"/> based on <see cref="AzureOpenAIClient"/>.
+    /// Produce a <see cref="OpenAIClientProvider"/> based on <see cref="AzureOpenAIClient"/>.
     /// </summary>
-    /// <param name="apiKey">The API key.</param>
-    /// <param name="endpoint">The service endpoint.</param>
-    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="apiKey">The API key</param>
+    /// <param name="endpoint">The service endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIClientProvider ForAzureOpenAI(ApiKeyCredential apiKey, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(apiKey, nameof(apiKey));
@@ -65,11 +56,11 @@ public sealed class OpenAIClientProvider
     }
 
     /// <summary>
-    /// Produces an <see cref="OpenAIClientProvider"/> based on <see cref="AzureOpenAIClient"/>.
+    /// Produce a <see cref="OpenAIClientProvider"/> based on <see cref="AzureOpenAIClient"/>.
     /// </summary>
-    /// <param name="credential">The credentials.</param>
-    /// <param name="endpoint">The service endpoint.</param>
-    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="credential">The credentials</param>
+    /// <param name="endpoint">The service endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIClientProvider ForAzureOpenAI(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(credential, nameof(credential));
@@ -81,10 +72,10 @@ public sealed class OpenAIClientProvider
     }
 
     /// <summary>
-    /// Produces an <see cref="OpenAIClientProvider"/> based on <see cref="OpenAIClient"/>.
+    /// Produce a <see cref="OpenAIClientProvider"/> based on <see cref="OpenAIClient"/>.
     /// </summary>
-    /// <param name="endpoint">An optional endpoint.</param>
-    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="endpoint">An optional endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIClientProvider ForOpenAI(Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
@@ -92,11 +83,11 @@ public sealed class OpenAIClientProvider
     }
 
     /// <summary>
-    /// Produces an <see cref="OpenAIClientProvider"/> based on <see cref="OpenAIClient"/>.
+    /// Produce a <see cref="OpenAIClientProvider"/> based on <see cref="OpenAIClient"/>.
     /// </summary>
-    /// <param name="apiKey">The API key.</param>
-    /// <param name="endpoint">An optional endpoint.</param>
-    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="apiKey">The API key</param>
+    /// <param name="endpoint">An optional endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIClientProvider ForOpenAI(ApiKeyCredential apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
@@ -104,7 +95,7 @@ public sealed class OpenAIClientProvider
     }
 
     /// <summary>
-    /// Provides a client instance directly.
+    /// Directly provide a client instance.
     /// </summary>
     public static OpenAIClientProvider FromClient(OpenAIClient client)
     {

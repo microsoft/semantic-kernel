@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
-from collections.abc import AsyncGenerator, Sequence
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
@@ -11,7 +11,6 @@ import pytest_asyncio
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.memory.postgres import PostgresSettings, PostgresStore
-from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.data import (
     DistanceFunction,
     IndexKind,
@@ -21,7 +20,6 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,
@@ -51,13 +49,13 @@ pytestmark = pytest.mark.skipif(
 class SimpleDataModel(BaseModel):
     id: Annotated[int, VectorStoreRecordKeyField()]
     embedding: Annotated[
-        list[float] | None,
+        list[float],
         VectorStoreRecordVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=3,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
         ),
-    ] = None
+    ]
     data: Annotated[
         dict[str, Any],
         VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
@@ -99,9 +97,7 @@ async def vector_store() -> AsyncGenerator[PostgresStore, None]:
 
 
 @asynccontextmanager
-async def create_simple_collection(
-    vector_store: PostgresStore,
-) -> AsyncGenerator[PostgresCollection[int, SimpleDataModel], None]:
+async def create_simple_collection(vector_store: PostgresStore):
     """Returns a collection with a unique name that is deleted after the context.
 
     This can be moved to use a fixture with scope=function and loop_scope=session
@@ -111,7 +107,6 @@ async def create_simple_collection(
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
     collection_id = f"test_collection_{suffix}"
     collection = vector_store.get_collection(collection_id, SimpleDataModel)
-    assert isinstance(collection, PostgresCollection)
     await collection.create_collection()
     try:
         yield collection
@@ -218,7 +213,6 @@ async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
         # this should return only the two existing records.
         result = await simple_collection.get_batch([1, 2, 3])
         assert result is not None
-        assert isinstance(result, Sequence)
         assert len(result) == 2
         assert result[0] is not None
         assert result[0].id == record1.id
@@ -232,28 +226,3 @@ async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
         await simple_collection.delete_batch([1, 2])
         result_after_delete = await simple_collection.get_batch([1, 2])
         assert result_after_delete is None
-
-
-async def test_search(vector_store: PostgresStore):
-    async with create_simple_collection(vector_store) as simple_collection:
-        records = [
-            SimpleDataModel(id=1, embedding=[1.0, 0.0, 0.0], data={"key": "value1"}),
-            SimpleDataModel(id=2, embedding=[0.8, 0.2, 0.0], data={"key": "value2"}),
-            SimpleDataModel(id=3, embedding=[0.6, 0.0, 0.4], data={"key": "value3"}),
-            SimpleDataModel(id=4, embedding=[1.0, 1.0, 0.0], data={"key": "value4"}),
-            SimpleDataModel(id=5, embedding=[0.0, 1.0, 1.0], data={"key": "value5"}),
-            SimpleDataModel(id=6, embedding=[1.0, 0.0, 1.0], data={"key": "value6"}),
-        ]
-
-        await simple_collection.upsert_batch(records)
-
-        try:
-            search_results = await simple_collection.vectorized_search(
-                [1.0, 0.0, 0.0], options=VectorSearchOptions(top=3, include_total_count=True)
-            )
-            assert search_results is not None
-            assert search_results.total_count == 3
-            assert {result.record.id async for result in search_results.results} == {1, 2, 3}
-
-        finally:
-            await simple_collection.delete_batch([r.id for r in records])

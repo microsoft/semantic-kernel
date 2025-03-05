@@ -2,10 +2,10 @@
 
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-@experimental
+@experimental_class
 class AzureCosmosDBNoSQLCompositeKey(KernelBaseModel):
     """Azure CosmosDB NoSQL composite key."""
 

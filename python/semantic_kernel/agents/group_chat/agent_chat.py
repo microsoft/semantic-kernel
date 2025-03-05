@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import threading
-from collections.abc import AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable
 
 from pydantic import Field, PrivateAttr
 
@@ -16,12 +16,12 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@experimental_class
 class AgentChat(KernelBaseModel):
     """A base class chat interface for agents."""
 
@@ -54,19 +54,17 @@ class AgentChat(KernelBaseModel):
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
-    async def get_messages_in_descending_order(self) -> AsyncIterable[ChatMessageContent]:
+    async def get_messages_in_descending_order(self):
         """Get messages in descending order asynchronously."""
         for index in range(len(self.history.messages) - 1, -1, -1):
             yield self.history.messages[index]
             await asyncio.sleep(0)  # Yield control to the event loop
 
-    async def get_chat_messages(self, agent: "Agent | None" = None) -> AsyncIterable[ChatMessageContent]:
+    async def get_chat_messages(self, agent: "Agent | None" = None) -> AsyncGenerator[ChatMessageContent, None]:
         """Get chat messages asynchronously."""
         self.set_activity_or_throw()
 
         logger.info("Getting chat messages")
-
-        messages: AsyncIterable[ChatMessageContent] | None = None
         try:
             if agent is None:
                 messages = self.get_messages_in_descending_order()
@@ -97,11 +95,8 @@ class AgentChat(KernelBaseModel):
 
         return hash_value
 
-    async def add_chat_message(self, message: str | ChatMessageContent) -> None:
+    async def add_chat_message(self, message: ChatMessageContent) -> None:
         """Add a chat message."""
-        if isinstance(message, str):
-            message = ChatMessageContent(role=AuthorRole.USER, content=message)
-
         await self.add_chat_messages([message])
 
     async def add_chat_messages(self, messages: list[ChatMessageContent]) -> None:

@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -28,7 +29,7 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
             new()
             {
                 Kernel = kernel,
-                Arguments = new KernelArguments(new PromptExecutionSettings() { ServiceId = ServiceKeyGood }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyGood }),
             };
 
         // Define the agent targeting ServiceId = ServiceKeyBad
@@ -36,7 +37,7 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
             new()
             {
                 Kernel = kernel,
-                Arguments = new KernelArguments(new PromptExecutionSettings() { ServiceId = ServiceKeyBad }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }),
             };
 
         // Define the agent with no explicit ServiceId defined
@@ -56,21 +57,21 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
 
         // Invoke agent with override arguments where ServiceId = ServiceKeyGood: Expect agent response
         Console.WriteLine("\n[Bad Agent: Good ServiceId Override]");
-        await InvokeAgentAsync(agentBad, new(new PromptExecutionSettings() { ServiceId = ServiceKeyGood }));
+        await InvokeAgentAsync(agentBad, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyGood }));
 
         // Invoke agent with override arguments where ServiceId = ServiceKeyBad: Expect failure due to invalid service key
         Console.WriteLine("\n[Good Agent: Bad ServiceId Override]");
-        await InvokeAgentAsync(agentGood, new(new PromptExecutionSettings() { ServiceId = ServiceKeyBad }));
+        await InvokeAgentAsync(agentGood, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }));
         Console.WriteLine("\n[Default Agent: Bad ServiceId Override]");
-        await InvokeAgentAsync(agentDefault, new(new PromptExecutionSettings() { ServiceId = ServiceKeyBad }));
+        await InvokeAgentAsync(agentDefault, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }));
 
         // Invoke agent with override arguments with no explicit ServiceId: Expect agent response
         Console.WriteLine("\n[Good Agent: No ServiceId Override]");
-        await InvokeAgentAsync(agentGood, new(new PromptExecutionSettings()));
+        await InvokeAgentAsync(agentGood, new(new OpenAIPromptExecutionSettings()));
         Console.WriteLine("\n[Bad Agent: No ServiceId Override]");
-        await InvokeAgentAsync(agentBad, new(new PromptExecutionSettings()));
+        await InvokeAgentAsync(agentBad, new(new OpenAIPromptExecutionSettings()));
         Console.WriteLine("\n[Default Agent: No ServiceId Override]");
-        await InvokeAgentAsync(agentDefault, new(new PromptExecutionSettings()));
+        await InvokeAgentAsync(agentDefault, new(new OpenAIPromptExecutionSettings()));
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(ChatCompletionAgent agent, KernelArguments? arguments = null)

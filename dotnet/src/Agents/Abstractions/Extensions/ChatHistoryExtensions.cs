@@ -6,14 +6,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.Extensions;
 
 /// <summary>
-/// Provides extension methods for <see cref="ChatMessageContent"/>.
+/// Extension methods for <see cref="ChatMessageContent"/>
 /// </summary>
 public static class ChatHistoryExtensions
 {
     /// <summary>
-    /// Enumerates a chat history in descending order.
+    /// Enumeration of chat-history in descending order.
     /// </summary>
-    /// <param name="history">The chat history to sort.</param>
+    /// <param name="history">The chat-history</param>
     public static IEnumerable<ChatMessageContent> ToDescending(this ChatHistory history)
     {
         for (int index = history.Count; index > 0; --index)
@@ -23,9 +23,9 @@ public static class ChatHistoryExtensions
     }
 
     /// <summary>
-    /// Enumerates a history in descending order asynchronously.
+    /// Asynchronous enumeration of chat-history in descending order.
     /// </summary>
-    /// <param name="history">The chat history to sort.</param>
+    /// <param name="history">The chat-history</param>
     public static IAsyncEnumerable<ChatMessageContent> ToDescendingAsync(this ChatHistory history)
     {
         return history.ToDescending().ToAsyncEnumerable();

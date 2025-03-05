@@ -13,10 +13,9 @@ from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.experimental_decorator import experimental_function
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
 
@@ -70,7 +69,7 @@ logger = logging.getLogger(__name__)
 logger.addFilter(ChatHistoryMessageTimestampFilter())
 
 
-@experimental
+@experimental_function
 def are_model_diagnostics_enabled() -> bool:
     """Check if model diagnostics are enabled.
 
@@ -82,7 +81,7 @@ def are_model_diagnostics_enabled() -> bool:
     )
 
 
-@experimental
+@experimental_function
 def are_sensitive_events_enabled() -> bool:
     """Check if sensitive events are enabled.
 
@@ -91,7 +90,7 @@ def are_sensitive_events_enabled() -> bool:
     return MODEL_DIAGNOSTICS_SETTINGS.enable_otel_diagnostics_sensitive
 
 
-@experimental
+@experimental_function
 def trace_chat_completion(model_provider: str) -> Callable:
     """Decorator to trace chat completion activities.
 
@@ -142,7 +141,7 @@ def trace_chat_completion(model_provider: str) -> Callable:
     return inner_trace_chat_completion
 
 
-@experimental
+@experimental_function
 def trace_streaming_chat_completion(model_provider: str) -> Callable:
     """Decorator to trace streaming chat completion activities.
 
@@ -207,7 +206,7 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
     return inner_trace_streaming_chat_completion
 
 
-@experimental
+@experimental_function
 def trace_text_completion(model_provider: str) -> Callable:
     """Decorator to trace text completion activities.
 
@@ -258,7 +257,7 @@ def trace_text_completion(model_provider: str) -> Callable:
     return inner_trace_text_completion
 
 
-@experimental
+@experimental_function
 def trace_streaming_text_completion(model_provider: str) -> Callable:
     """Decorator to trace streaming text completion activities.
 
@@ -435,9 +434,9 @@ def _set_completion_response(
                 "message": completion.to_dict(),
             }
 
-            if isinstance(completion, ChatMessageContent):
+            if hasattr(completion, "finish_reason"):
                 full_response["finish_reason"] = completion.finish_reason
-            if isinstance(completion, StreamingContentMixin):
+            if hasattr(completion, "choice_index"):
                 full_response["index"] = completion.choice_index
 
             logger.info(

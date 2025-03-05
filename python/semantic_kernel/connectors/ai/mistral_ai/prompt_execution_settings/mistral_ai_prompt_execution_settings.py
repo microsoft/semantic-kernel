@@ -1,10 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Annotated, Any, Literal
 
 from mistralai import utils
-from pydantic import Field
+
+if sys.version_info >= (3, 11):
+    pass  # pragma: no cover
+else:
+    pass  # pragma: no cover
+
+from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
@@ -22,14 +29,7 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
 
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
     messages: list[dict[str, Any]] | None = None
-    safe_mode: Annotated[
-        bool,
-        Field(
-            exclude=True,
-            deprecated="The 'safe_mode' setting is no longer supported and is being ignored, "
-            "it will be removed in the Future.",
-        ),
-    ] = False
+    safe_mode: Annotated[bool, Field(exclude=True)] = False
     safe_prompt: bool = False
     max_tokens: Annotated[int | None, Field(gt=0)] = None
     seed: int | None = None
@@ -56,3 +56,12 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
             "on the function choice configuration.",
         ),
     ] = None
+
+    @field_validator("safe_mode")
+    @classmethod
+    def check_safe_mode(cls, v: bool) -> bool:
+        """The safe_mode setting is no longer supported."""
+        logger.warning(
+            "The 'safe_mode' setting is no longer supported and is being ignored, it will be removed in the Future."
+        )
+        return v
