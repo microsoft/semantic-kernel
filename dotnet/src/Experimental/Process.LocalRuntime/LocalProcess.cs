@@ -409,5 +409,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         this._joinableTaskContext.Dispose();
         this._joinableTaskContext.Dispose();
         this._processCancelSource?.Dispose();
+        foreach (var step in this._steps)
+        {
+            step.Dispose();
+        }
     }
 }

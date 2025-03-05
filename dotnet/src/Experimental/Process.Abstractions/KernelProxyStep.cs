@@ -21,6 +21,16 @@ public sealed class KernelProxyStep : KernelProcessStep
     }
 
     /// <summary>
+    /// On deactivation, external communication channel must be closed
+    /// </summary>
+    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
+    /// <returns></returns>
+    public override async ValueTask DeactivateAsync(KernelProcessStepContext context)
+    {
+        await context.CloseExternalEventChannelAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Step function used to emit events externally
     /// </summary>
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>

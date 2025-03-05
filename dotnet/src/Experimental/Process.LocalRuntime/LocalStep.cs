@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that is running in-process.
 /// </summary>
-internal class LocalStep : IKernelProcessMessageChannel
+internal class LocalStep : IKernelProcessMessageChannel, IDisposable
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
@@ -59,6 +59,11 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+    }
+
+    ~LocalStep()
+    {
+        this.Dispose();
     }
 
     /// <summary>
@@ -284,6 +289,25 @@ internal class LocalStep : IKernelProcessMessageChannel
     }
 
     /// <summary>
+    /// Deinitializes the step
+    /// </summary>
+    protected virtual async ValueTask DeinitializeStepAsync()
+    {
+        // Instantiate an instance of the inner step object
+        KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+
+        MethodInfo methodInfo =
+            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync)) ??
+            throw new KernelException("The DeactivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
+        var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
+        ValueTask deactivateTask =
+            (ValueTask?)methodInfo.Invoke(stepInstance, [context]) ??
+            throw new KernelException("The DeactivateAsync method failed to complete.").Log(this._logger);
+
+        await deactivateTask.ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Invokes the provides function with the provided kernel and arguments.
     /// </summary>
     /// <param name="function">The function to invoke.</param>
@@ -328,5 +352,19 @@ internal class LocalStep : IKernelProcessMessageChannel
     {
         Verify.NotNull(localEvent, nameof(localEvent));
         return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
+    }
+
+    /// <summary>
+    /// Dispose of step resources
+    /// </summary>
+    public void Dispose()
+    {
+        if (this._initializeTask.IsValueCreated)
+        {
+            // Ensure initialization is complete  
+            this._initializeTask.Value.AsTask().Wait();
+        }
+
+        this.DeinitializeStepAsync().AsTask().Wait();
     }
 }

@@ -72,4 +72,19 @@ public sealed class KernelProcessStepContext
 
         await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, processEventData).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Closes connection with external messaging channel
+    /// </summary>
+    /// <returns><see cref="Task"/></returns>
+    /// <exception cref="KernelException"></exception>
+    public async Task CloseExternalEventChannelAsync()
+    {
+        if (this._externalMessageChannel == null)
+        {
+            throw new KernelException("External message channel not configured for step");
+        }
+
+        await this._externalMessageChannel.Uninitialize().ConfigureAwait(false);
+    }
 }
