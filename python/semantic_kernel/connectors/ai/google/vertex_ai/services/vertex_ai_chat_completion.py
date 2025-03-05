@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.shared_utils import (
+    collapse_function_call_results_in_chat_history,
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
@@ -129,6 +130,8 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             system_instruction=filter_system_message(chat_history),
         )
 
+        collapse_function_call_results_in_chat_history(chat_history)
+
         response: GenerationResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=settings.prepare_settings_dict(),
@@ -155,6 +158,8 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
+
+        collapse_function_call_results_in_chat_history(chat_history)
 
         response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
