@@ -24,7 +24,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.data.search_options import SearchOptions
@@ -35,7 +35,7 @@ TMapInput = TypeVar("TMapInput")
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class TextSearch:
     """The base class for all text searches."""
 

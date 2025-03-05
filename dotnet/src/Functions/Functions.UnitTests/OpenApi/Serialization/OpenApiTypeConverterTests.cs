@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.VisualBasic;
 using Xunit;
@@ -111,5 +112,51 @@ public class OpenApiTypeConverterTests
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", new Collection() { 1, 2, 3 }).ToJsonString());
 
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", "[1, 2, 3]").ToJsonString());
+    }
+
+    [Fact]
+    public void ItShouldConvertWithNoTypeAndNoSchema()
+    {
+        // Act
+        var result = OpenApiTypeConverter.Convert("lat", null!, 51.8985136);
+
+        // Assert
+        Assert.Equal(51.8985136, result.GetValue<double>());
+    }
+
+    [Fact]
+    public void ItShouldConvertWithNoTypeAndValidSchema()
+    {
+        // Arrange
+        var schema = KernelJsonSchema.Parse(
+        """
+        {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+        }
+        """);
+
+        // Act
+        var result = OpenApiTypeConverter.Convert("lat", null!, 51.8985136, schema);
+
+        // Assert
+        Assert.Equal(51.8985136, result.GetValue<double>());
+    }
+
+    [Fact]
+    public void ItShouldThrowExceptionWhenNoTypeAndInvalidSchema()
+    {
+        // Arrange
+        var schema = KernelJsonSchema.Parse(
+        """
+        {
+            "type": "boolean",
+            "nullable": false
+        }
+        """);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => OpenApiTypeConverter.Convert("lat", null!, 51.8985136, schema));
     }
 }

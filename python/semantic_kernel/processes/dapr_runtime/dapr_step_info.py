@@ -11,14 +11,14 @@ from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.step_utils import get_fully_qualified_name
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
-    type: Literal["DaprStepInfo"] = Field("DaprStepInfo")
+    type: Literal["DaprStepInfo"] = "DaprStepInfo"
     inner_step_python_type: str
     state: KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)

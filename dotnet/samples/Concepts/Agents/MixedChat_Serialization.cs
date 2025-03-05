@@ -4,13 +4,14 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
 /// Demonstrate the serialization of <see cref="AgentGroupChat"/> with a <see cref="ChatCompletionAgent"/>
 /// and an <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
@@ -39,15 +40,16 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        OpenAIAssistantAgent agentCounter =
-            await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
-                clientProvider: this.GetClientProvider(),
-                definition: new(this.Model)
-                {
-                    Instructions = CounterInstructions,
-                    Name = CounterName,
-                });
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                name: CounterName,
+                instructions: CounterInstructions,
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent agentCounter = new(assistant, this.AssistantClient);
 
         AgentGroupChat chat = CreateGroupChat();
 

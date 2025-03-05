@@ -511,6 +511,41 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal(expected, result);
     }
 
+    [Fact]
+    public async Task ItRendersContentWithHtmlEntitiesAsync()
+    {
+        // Arrange
+        var template =
+            """
+            <message role="user">Can you help me tell &amp; the time in Seattle right now?</message>
+            <message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message>
+            <message role="user">What about New York?</message>
+            """;
+
+        var factory = new HandlebarsPromptTemplateFactory(options: new() { EnableHtmlDecoder = false });
+
+        var target = factory.Create(new PromptTemplateConfig(template)
+        {
+            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+        });
+
+        // Act
+        var prompt = await target.RenderAsync(this._kernel);
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+        Assert.Collection(chatHistory,
+            c => Assert.Equal(AuthorRole.User, c.Role),
+            c => Assert.Equal(AuthorRole.Assistant, c.Role),
+            c => Assert.Equal(AuthorRole.User, c.Role));
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("Can you help me tell & the time in Seattle right now?", c.Content),
+            c => Assert.Equal("Sure! The time in Seattle is currently 3:00 PM.", c.Content),
+            c => Assert.Equal("What about New York?", c.Content));
+    }
+
     #region private
 
     private HandlebarsPromptTemplateFactory _factory;

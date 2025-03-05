@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from jinja2 import BaseLoader, TemplateError
 from jinja2.sandbox import ImmutableSandboxedEnvironment
@@ -65,7 +65,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             return
         self._env = ImmutableSandboxedEnvironment(loader=BaseLoader(), enable_async=True)
 
-    async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments | None" = None) -> str:
         """Render the prompt template.
 
         Using the prompt template, replace the variables with their values

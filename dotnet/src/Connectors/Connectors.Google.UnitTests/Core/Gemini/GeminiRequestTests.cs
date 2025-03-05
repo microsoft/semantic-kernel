@@ -339,6 +339,33 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void FromChatHistoryAudioAsAudioContentItReturnsWithChatHistory()
+    {
+        // Arrange
+        ReadOnlyMemory<byte> audioAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage(contentItems:
+            [new AudioContent(new Uri("https://example-audio.com/file.wav")) { MimeType = "audio/wav" }]);
+        chatHistory.AddUserMessage(contentItems:
+            [new AudioContent(audioAsBytes, "audio/mp3")]);
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Items.Cast<AudioContent>().Single().Uri,
+                c.Parts![0].FileData!.FileUri),
+            c => Assert.True(audioAsBytes.ToArray()
+                .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
+    }
+
+    [Fact]
     public void FromChatHistoryUnsupportedContentItThrowsNotSupportedException()
     {
         // Arrange
@@ -468,6 +495,44 @@ public sealed class GeminiRequestTests
             c => string.Equals(message.Content, c.Parts![0].Text, StringComparison.Ordinal));
         Assert.Single(request.Contents,
             c => Equals(message.Role, c.Role));
+    }
+
+    [Fact]
+    public void CachedContentFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
+    }
+
+    [Fact]
+    public void CachedContentFromChatHistoryReturnsAsExpected()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage("user-message2");
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
     }
 
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :

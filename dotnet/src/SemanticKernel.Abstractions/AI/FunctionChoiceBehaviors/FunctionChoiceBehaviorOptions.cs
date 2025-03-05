@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -35,6 +34,5 @@ public sealed class FunctionChoiceBehaviorOptions
     /// The default value is set to false. If set to true, the AI model will strictly adhere to the function schema.
     /// </remarks>
     [JsonPropertyName("allow_strict_schema_adherence")]
-    [Experimental("SKEXP0001")]
     public bool AllowStrictSchemaAdherence { get; set; } = false;
 }

@@ -62,6 +62,38 @@ internal static class ModelDiagnostics
         => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
+    /// Start an agent invocation activity and return the activity.
+    /// </summary>
+    internal static Activity? StartAgentInvocationActivity(
+        string agentId,
+        string agentName,
+        string? agentDescription)
+    {
+        if (!IsModelDiagnosticsEnabled())
+        {
+            return null;
+        }
+
+        const string OperationName = "invoke_agent";
+
+        var activity = s_activitySource.StartActivityWithTags(
+            $"{OperationName} {agentName}",
+            [
+                new(ModelDiagnosticsTags.Operation, OperationName),
+                new(ModelDiagnosticsTags.AgentId, agentId),
+                new(ModelDiagnosticsTags.AgentName, agentName)
+            ],
+            ActivityKind.Internal);
+
+        if (!string.IsNullOrWhiteSpace(agentDescription))
+        {
+            activity?.SetTag(ModelDiagnosticsTags.AgentDescription, agentDescription);
+        }
+
+        return activity;
+    }
+
+    /// <summary>
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
@@ -440,6 +472,9 @@ internal static class ModelDiagnostics
         public const string Completion = "gen_ai.content.completion";
         public const string Address = "server.address";
         public const string Port = "server.port";
+        public const string AgentId = "gen_ai.agent.id";
+        public const string AgentName = "gen_ai.agent.name";
+        public const string AgentDescription = "gen_ai.agent.description";
 
         // Activity events
         public const string PromptEvent = "gen_ai.content.prompt";

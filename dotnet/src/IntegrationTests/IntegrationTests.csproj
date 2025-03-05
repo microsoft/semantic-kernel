@@ -74,6 +74,7 @@
     <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\Agents\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
@@ -194,5 +195,11 @@
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+    <ItemGroup>
+    <EmbeddedResource Include="Resources/gemini_cached_content.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
