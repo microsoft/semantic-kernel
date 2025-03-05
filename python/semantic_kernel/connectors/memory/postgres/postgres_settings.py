@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
+from psycopg_pool.abc import ACT
 from pydantic import Field, SecretStr
 
 from semantic_kernel.connectors.memory.postgres.constants import (
@@ -14,15 +15,12 @@ from semantic_kernel.connectors.memory.postgres.constants import (
     PGSSL_MODE_ENV_VAR,
     PGUSER_ENV_VAR,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorConnectionException,
-    MemoryConnectorInitializationError,
-)
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorConnectionException
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class PostgresSettings(KernelBaseSettings):
     """Postgres model settings.
 
@@ -61,12 +59,12 @@ class PostgresSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "POSTGRES_"
 
     connection_string: SecretStr | None = None
-    host: str | None = Field(None, alias=PGHOST_ENV_VAR)
-    port: int | None = Field(5432, alias=PGPORT_ENV_VAR)
-    dbname: str | None = Field(None, alias=PGDATABASE_ENV_VAR)
-    user: str | None = Field(None, alias=PGUSER_ENV_VAR)
-    password: SecretStr | None = Field(None, alias=PGPASSWORD_ENV_VAR)
-    sslmode: str | None = Field(None, alias=PGSSL_MODE_ENV_VAR)
+    host: str | None = Field(default=None, alias=PGHOST_ENV_VAR)
+    port: int | None = Field(default=5432, alias=PGPORT_ENV_VAR)
+    dbname: str | None = Field(default=None, alias=PGDATABASE_ENV_VAR)
+    user: str | None = Field(default=None, alias=PGUSER_ENV_VAR)
+    password: SecretStr | None = Field(default=None, alias=PGPASSWORD_ENV_VAR)
+    sslmode: str | None = Field(default=None, alias=PGSSL_MODE_ENV_VAR)
 
     min_pool: int = 1
     max_pool: int = 5
@@ -89,30 +87,34 @@ class PostgresSettings(KernelBaseSettings):
         if self.password:
             result["password"] = self.password.get_secret_value()
 
-        # Ensure required values
-        if "host" not in result:
-            raise MemoryConnectorInitializationError("host is required. Please set PGHOST or connection_string.")
-        if "dbname" not in result:
-            raise MemoryConnectorInitializationError(
-                "database is required. Please set PGDATABASE or connection_string."
-            )
-        if "user" not in result:
-            raise MemoryConnectorInitializationError("user is required. Please set PGUSER or connection_string.")
-        if "password" not in result:
-            raise MemoryConnectorInitializationError(
-                "password is required. Please set PGPASSWORD or connection_string."
-            )
-
         return result
 
-    async def create_connection_pool(self) -> AsyncConnectionPool:
-        """Creates a connection pool based off of settings."""
+    async def create_connection_pool(
+        self, connection_class: type[ACT] | None = None, **kwargs: Any
+    ) -> AsyncConnectionPool:
+        """Creates a connection pool based off of settings.
+
+        Args:
+            connection_class: The connection class to use.
+            kwargs: Additional keyword arguments to pass to the connection class.
+
+        Returns:
+            The connection pool.
+        """
         try:
+            # Only pass connection_class if it specified, or else allow psycopg to use the default connection class
+            extra_args: dict[str, Any] = {} if connection_class is None else {"connection_class": connection_class}
+
             pool = AsyncConnectionPool(
                 min_size=self.min_pool,
                 max_size=self.max_pool,
                 open=False,
-                kwargs=self.get_connection_args(),
+                # kwargs are passed to the connection class
+                kwargs={
+                    **self.get_connection_args(),
+                    **kwargs,
+                },
+                **extra_args,
             )
             await pool.open()
         except Exception as e:

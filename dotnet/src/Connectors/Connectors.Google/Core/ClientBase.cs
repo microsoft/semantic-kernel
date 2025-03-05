@@ -112,6 +112,7 @@ internal abstract class ClientBase
         => apiVersion switch
         {
             VertexAIVersion.V1 => "v1",
+            VertexAIVersion.V1_Beta => "v1beta1",
             _ => throw new NotSupportedException($"Vertex API version {apiVersion} is not supported.")
         };
 }

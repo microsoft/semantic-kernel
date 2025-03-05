@@ -19,6 +19,29 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
+    /// Gets or sets an object specifying the effort level for the model to use when generating the completion.
+    /// </summary>
+    /// <remarks>
+    /// Constrains effort on reasoning for reasoning models.
+    /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+    /// Possible values are:
+    /// <para>- <see cref="string"/> values: <c>"low"</c>, <c>"medium"</c>, <c>"high"</c>;</para>
+    /// <para>- <see cref="ChatReasoningEffortLevel"/> object;</para>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("reasoning_effort")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ReasoningEffort
+    {
+        get => this._reasoningEffort;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._reasoningEffort = value;
+        }
+    }
+
+    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// Default is 1.0.
@@ -180,6 +203,24 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._chatSystemPrompt = value;
+        }
+    }
+
+    /// <summary>
+    /// The system prompt to use when generating text using a chat model.
+    /// Defaults to "Assistant is a large language model."
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("chat_developer_prompt")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ChatDeveloperPrompt
+    {
+        get => this._chatDeveloperPrompt;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._chatDeveloperPrompt = value;
         }
     }
 
@@ -410,15 +451,18 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
+            ChatDeveloperPrompt = this.ChatDeveloperPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
+            ReasoningEffort = this.ReasoningEffort
         };
     }
 
     #region private ================================================================================
 
+    private object? _reasoningEffort;
     private double? _temperature;
     private double? _topP;
     private double? _presencePenalty;
@@ -431,6 +475,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
+    private string? _chatDeveloperPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
     private bool? _store;

@@ -15,7 +15,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunctionMetadata
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
     """A builder for a process step."""
 
@@ -189,9 +189,18 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         # Return an instance of KernelProcessStepInfo with the built state and edges.
         return KernelProcessStepInfo(inner_step_type=step_cls, state=state_object, output_edges=built_edges)
 
-    def on_function_result(self, function_name: str) -> "ProcessStepEdgeBuilder":
-        """Creates a new ProcessStepEdgeBuilder for the function result."""
-        return self.on_event(f"{function_name}.OnResult")
+    def on_function_result(self, function_name: str | Enum) -> "ProcessStepEdgeBuilder":
+        """Creates a new ProcessStepEdgeBuilder for the function result.
+
+        Args:
+            function_name: The function name as a string or Enum.
+
+        Returns:
+            ProcessStepEdgeBuilder: The ProcessStepEdgeBuilder instance.
+        """
+        function_name_str: str = function_name.value if isinstance(function_name, Enum) else function_name
+
+        return self.on_event(f"{function_name_str}.OnResult")
 
     def get_function_metadata_map(
         self, plugin_type, name: str | None = None, kernel: "Kernel | None" = None
