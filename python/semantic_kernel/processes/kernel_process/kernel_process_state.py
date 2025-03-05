@@ -12,4 +12,4 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 class KernelProcessState(KernelProcessStepState):
     """The state of a kernel process."""
 
-    type: Literal["KernelProcessState"] = Field("KernelProcessState")  # type: ignore
+    type: Literal["KernelProcessState"] = Field(default="KernelProcessState")  # type: ignore

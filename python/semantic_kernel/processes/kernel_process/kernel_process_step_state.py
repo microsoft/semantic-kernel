@@ -14,7 +14,7 @@ TState = TypeVar("TState")
 class KernelProcessStepState(KernelBaseModel, Generic[TState]):
     """The state of a step in a kernel process."""
 
-    type: Literal["KernelProcessStepState"] = Field("KernelProcessStepState")  # type: ignore
+    type: Literal["KernelProcessStepState"] = Field(default="KernelProcessStepState")  # type: ignore
 
     name: str
     id: str | None = None

@@ -107,14 +107,10 @@ class CStep(KernelProcessStep[CStepState]):
     # The activate method overrides the base class method to set the state in the step.
     async def activate(self, state: KernelProcessStepState[CStepState]):
         """Activates the step and sets the state."""
-        if isinstance(state.state, CStepState):
-            self.state = state.state
-        else:
-            # If validation is necessary, overwrite the original reference
-            # Overwriting the state object is crucial to link back to the original state
-            validated_state = CStepState.model_validate(state.state)
-            state.state = validated_state
-            self.state = state.state
+        # If validation is necessary, overwrite the original reference
+        # Overwriting the state object is crucial to link back to the original state
+        state.state = state.state if isinstance(state.state, CStepState) else CStepState.model_validate(state.state)
+        self.state = state.state
         print(f"##### CStep activated with Cycle = '{self.state.current_cycle}'.")
 
     @kernel_function()
