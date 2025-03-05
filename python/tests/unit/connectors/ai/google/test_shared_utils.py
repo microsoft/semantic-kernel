@@ -7,10 +7,15 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
+    collapse_function_call_results_in_chat_history,
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 
@@ -51,3 +56,41 @@ def test_format_gemini_function_name_to_kernel_function_fully_qualified_name() -
     # Doesn't contain the separator
     gemini_function_name = "function"
     assert format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_function_name) == "function"
+
+
+def test_collapse_function_call_results_in_chat_history() -> None:
+    chat_history = ChatHistory()
+    chat_history.extend([
+        ChatMessageContent(
+            AuthorRole.ASSISTANT,
+            items=[
+                FunctionCallContent(id="function1", name="function1"),
+                FunctionCallContent(id="function2", name="function2"),
+            ],
+        ),
+        # The following two messages should be collapsed into a single message
+        ChatMessageContent(
+            AuthorRole.TOOL,
+            items=[FunctionResultContent(id="function1", name="function1", result="result1")],
+        ),
+        ChatMessageContent(
+            AuthorRole.TOOL,
+            items=[FunctionResultContent(id="function2", name="function2", result="result2")],
+        ),
+        ChatMessageContent(AuthorRole.ASSISTANT, content="Assistant message"),
+        ChatMessageContent(AuthorRole.USER, content="User message"),
+        ChatMessageContent(
+            AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="function3", name="function3")],
+        ),
+        ChatMessageContent(
+            AuthorRole.TOOL,
+            items=[FunctionResultContent(id="function3", name="function3", result="result3")],
+        ),
+        ChatMessageContent(AuthorRole.ASSISTANT, content="Assistant message"),
+    ])
+
+    assert len(chat_history.messages) == 8
+    collapse_function_call_results_in_chat_history(chat_history)
+    assert len(chat_history.messages) == 7
+    assert len(chat_history.messages[1].items) == 2

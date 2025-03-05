@@ -198,7 +198,7 @@ def get_anthropic_chat_completion_service_and_request_settings() -> tuple[
 def get_bedrock_chat_completion_service_and_request_settings() -> tuple[
     "ChatCompletionClientBase", "PromptExecutionSettings"
 ]:
-    """Return Anthropic chat completion service and request settings.
+    """Return Bedrock chat completion service and request settings.
 
     The service credentials can be read by 3 ways:
     1. Via the constructor

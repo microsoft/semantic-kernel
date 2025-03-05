@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceTextEmbedding,
 )
 from semantic_kernel.connectors.ai.bedrock import BedrockEmbeddingPromptExecutionSettings, BedrockTextEmbedding
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google.google_ai import (
     GoogleAIEmbeddingPromptExecutionSettings,
     GoogleAITextEmbedding,
