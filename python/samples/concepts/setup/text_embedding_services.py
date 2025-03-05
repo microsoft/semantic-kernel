@@ -1,13 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from enum import Enum
-from typing import TYPE_CHECKING
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-
-if TYPE_CHECKING:
-    pass
 
 
 class Services(str, Enum):

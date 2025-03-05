@@ -2,7 +2,7 @@
 
 import asyncio
 
-from numpy import dot, linalg
+import scipy
 
 from samples.concepts.setup.text_embedding_services import Services, get_text_embedding_service_and_request_settings
 
@@ -32,7 +32,7 @@ TEXTS = [
 
 
 def cosine_similarity(a, b):
-    return dot(a, b) / (linalg.norm(a) * linalg.norm(b))
+    return 1 - scipy.spatial.distance.cosine(a, b)
 
 
 async def main() -> None:
