@@ -5,17 +5,17 @@ using System.ComponentModel.DataAnnotations;
 namespace ChatWithAgent.Configuration;
 
 /// <summary>
-/// OpenAI chat configuration.
+/// OpenAI embeddings configuration.
 /// </summary>
-public sealed class OpenAIChatConfig
+public sealed class OpenAIEmbeddingsConfig
 {
     /// <summary>
     /// Configuration section name.
     /// </summary>
-    public const string ConfigSectionName = "OpenAIChat";
+    public const string ConfigSectionName = "OpenAIEmbeddings";
 
     /// <summary>
-    /// The name of the chat model.
+    /// The name of the embeddings model.
     /// </summary>
     [Required]
     public string ModelName { get; set; } = string.Empty;

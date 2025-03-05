@@ -5,14 +5,14 @@ using System.ComponentModel.DataAnnotations;
 namespace ChatWithAgent.Configuration;
 
 /// <summary>
-/// Azure OpenAI chat configuration.
+/// Azure OpenAI embeddings configuration.
 /// </summary>
-public sealed class AzureOpenAIChatConfig
+public sealed class AzureOpenAIEmbeddingsConfig
 {
     /// <summary>
     /// Configuration section name.
     /// </summary>
-    public const string ConfigSectionName = "AzureOpenAIChat";
+    public const string ConfigSectionName = "AzureOpenAIEmbeddings";
 
     /// <summary>
     /// The name of the embeddings deployment.
@@ -21,12 +21,12 @@ public sealed class AzureOpenAIChatConfig
     public string DeploymentName { get; set; } = string.Empty;
 
     /// <summary>
-    /// The name of the chat model.
+    /// The name of the embeddings model.
     /// </summary>
     public string ModelName { get; set; } = string.Empty;
 
     /// <summary>
-    /// The chat model version.
+    /// The embeddings model version.
     /// </summary>
     public string ModelVersion { get; set; } = string.Empty;
 }

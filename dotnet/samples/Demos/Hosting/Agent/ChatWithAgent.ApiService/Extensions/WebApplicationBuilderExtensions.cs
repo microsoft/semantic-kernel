@@ -22,13 +22,20 @@ internal static class WebApplicationBuilderExtensions
     {
         // Add AzureOpenAI client.
         builder.AddAzureOpenAIClient(
-            AzureOpenAIChatConfig.ConnectionStringName,
+            HostConfig.AzureOpenAIConnectionStringName,
             (settings) => settings.Credential = builder.Environment.IsProduction()
                 ? new DefaultAzureCredential()
                 : new AzureCliCredential()); // Use credentials from Azure CLI for local development.
 
-        // Add AzureOpenAI chat completion service.
-        builder.Services.AddAzureOpenAIChatCompletion(hostConfig.AzureOpenAIChat.DeploymentName);
+        if (hostConfig.AIChatService == AzureOpenAIChatConfig.ConfigSectionName)
+        {
+            builder.Services.AddAzureOpenAIChatCompletion(hostConfig.AzureOpenAIChat.DeploymentName);
+        }
+
+        if (hostConfig.AIEmbeddingsService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            builder.Services.AddAzureOpenAITextEmbeddingGeneration(hostConfig.AzureOpenAIEmbeddings.DeploymentName);
+        }
     }
 
     /// <summary>
@@ -39,9 +46,16 @@ internal static class WebApplicationBuilderExtensions
     internal static void AddOpenAIServices(this WebApplicationBuilder builder, HostConfig hostConfig)
     {
         // Add OpenAI client.
-        builder.AddOpenAIClient(OpenAIChatConfig.ConnectionStringName);
+        builder.AddOpenAIClient(HostConfig.OpenAIConnectionStringName);
 
-        // Add AzureOpenAI chat completion service.
-        builder.Services.AddOpenAIChatCompletion(hostConfig.OpenAIChat.ModelName);
+        if (hostConfig.AIChatService == OpenAIChatConfig.ConfigSectionName)
+        {
+            builder.Services.AddOpenAIChatCompletion(hostConfig.OpenAIChat.ModelName);
+        }
+
+        if (hostConfig.AIEmbeddingsService == OpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            builder.Services.AddOpenAITextEmbeddingGeneration(hostConfig.OpenAIEmbeddings.ModelName);
+        }
     }
 }

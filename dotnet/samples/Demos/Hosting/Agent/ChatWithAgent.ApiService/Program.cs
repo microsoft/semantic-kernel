@@ -53,25 +53,31 @@ public static class Program
 
     private static void AddKernelAndAgent(WebApplicationBuilder builder, ServiceConfig config)
     {
+        if (config.Host.AIChatService != AzureOpenAIChatConfig.ConfigSectionName &&
+            config.Host.AIChatService != OpenAIChatConfig.ConfigSectionName)
+        {
+            throw new NotSupportedException($"AI service '{config.Host.AIChatService}' is not supported.");
+        }
+
+        if (config.Host.AIEmbeddingsService != AzureOpenAIEmbeddingsConfig.ConfigSectionName &&
+            config.Host.AIEmbeddingsService != OpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            throw new NotSupportedException($"AI service '{config.Host.AIEmbeddingsService}' is not supported.");
+        }
+
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
-        switch (config.Host.AIChatService)
+        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName ||
+            config.Host.AIEmbeddingsService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
         {
-            case AzureOpenAIChatConfig.ConfigSectionName:
-            {
-                builder.AddAzureOpenAIServices(config.Host);
-                break;
-            }
+            builder.AddAzureOpenAIServices(config.Host);
+        }
 
-            case OpenAIChatConfig.ConfigSectionName:
-            {
-                builder.AddOpenAIServices(config.Host);
-                break;
-            }
-
-            default:
-                throw new NotSupportedException($"AI service '{config.Host.AIChatService}' is not supported.");
+        if (config.Host.AIChatService == OpenAIChatConfig.ConfigSectionName ||
+            config.Host.AIEmbeddingsService == OpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            builder.AddOpenAIServices(config.Host);
         }
 
         // Add chat completion agent.

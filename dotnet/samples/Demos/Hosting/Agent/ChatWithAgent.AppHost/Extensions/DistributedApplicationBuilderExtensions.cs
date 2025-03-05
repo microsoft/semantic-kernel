@@ -10,26 +10,36 @@ namespace ChatWithAgent.AppHost.Extensions;
 internal static class DistributedApplicationBuilderExtensions
 {
     /// <summary>
-    /// Adds Azure OpenAI service and OpenAI model(s) to the distributed application.
+    /// Adds Azure OpenAI service and OpenAI models.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="config">The host configuration.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{IResourceWithConnectionString}"/>.</returns>
-    internal static IResourceBuilder<IResourceWithConnectionString> AddAzureOpenAI(this IDistributedApplicationBuilder builder, HostConfig config)
+    internal static IResourceBuilder<IResourceWithConnectionString> AddAzureOpenAIResources(this IDistributedApplicationBuilder builder, HostConfig config)
     {
-        if (builder.ExecutionContext.IsPublishMode)
+        // Add Azure OpenAI service
+        var azureOpenAI = builder.AddAzureOpenAI(HostConfig.AzureOpenAIConnectionStringName);
+
+        // Add Azure OpenAI chat model
+        if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName)
         {
-            // Deploy and provision Azure OpenAI service with AI models
-            return builder
-                .AddAzureOpenAI(AzureOpenAIChatConfig.ConnectionStringName)
-                .AddDeployment(new AzureOpenAIDeployment(
-                    name: config.AzureOpenAIChat.DeploymentName,
-                    modelName: config.AzureOpenAIChat.ModelName,
-                    modelVersion: config.AzureOpenAIChat.ModelVersion)
-                );
+            azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
+                name: config.AzureOpenAIChat.DeploymentName,
+                modelName: config.AzureOpenAIChat.ModelName,
+                modelVersion: config.AzureOpenAIChat.ModelVersion)
+            );
         }
 
-        // Use an existing Azure OpenAI service via connection string
-        return builder.AddConnectionString(AzureOpenAIChatConfig.ConnectionStringName);
+        // Add Azure OpenAI embeddings model
+        if (config.AIEmbeddingsService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
+                name: config.AzureOpenAIEmbeddings.DeploymentName,
+                modelName: config.AzureOpenAIEmbeddings.ModelName,
+                modelVersion: config.AzureOpenAIEmbeddings.ModelVersion)
+            );
+        }
+
+        return azureOpenAI;
     }
 }
