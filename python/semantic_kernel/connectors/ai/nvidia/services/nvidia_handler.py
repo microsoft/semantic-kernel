@@ -44,8 +44,8 @@ class NvidiaHandler(KernelBaseModel, ABC):
     async def _send_embedding_request(self, settings: NvidiaPromptExecutionSettings) -> list[Any]:
         """Send a request to the OpenAI embeddings endpoint."""
         try:
-            # exclude input-type from main body
-            response = await self.client.embeddings.create(**settings.prepare_settings_dict(exclude="input_type"))
+            # unsupported parameters are internally excluded from main dict and added to extra_body
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
 
             self.store_usage(response)
             return [x.embedding for x in response.data]
