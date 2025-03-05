@@ -14,6 +14,17 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 
+class ConcreteAgent(Agent):
+    async def get_response(self, *args, **kwargs) -> ChatMessageContent:
+        raise NotImplementedError
+
+    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+        raise NotImplementedError
+
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+        raise NotImplementedError
+
+
 @pytest.fixture
 def mock_channel():
     from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
@@ -135,7 +146,7 @@ async def test_invoke_raises_exception_for_non_bedrock_agent(mock_channel):
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.USER, content="User message"))
 
     # Create a dummy agent that is not BedrockAgent
-    non_bedrock_agent = Agent()
+    non_bedrock_agent = ConcreteAgent()
 
     with pytest.raises(AgentChatException) as exc_info:
         _ = [msg async for msg in mock_channel.invoke(non_bedrock_agent)]
@@ -189,7 +200,8 @@ async def test_invoke_stream_raises_error_for_non_bedrock_agent(mock_channel):
     """Test invoke_stream raises AgentChatException if the agent provided is not a BedrockAgent."""
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.USER, content="User message"))
 
-    non_bedrock_agent = Agent()
+    non_bedrock_agent = ConcreteAgent()
+
     with pytest.raises(AgentChatException) as exc_info:
         _ = [msg async for msg in mock_channel.invoke_stream(non_bedrock_agent, [])]
 

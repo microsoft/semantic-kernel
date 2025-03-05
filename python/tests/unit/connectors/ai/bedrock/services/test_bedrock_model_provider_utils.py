@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -13,7 +13,6 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import 
     finish_reason_from_bedrock_to_semantic_kernel,
     format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
-    run_in_executor,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -162,20 +161,6 @@ def test_inference_profile_with_bedrock_model() -> None:
     unknown_inference_profile = "unknown"
     with pytest.raises(ValueError, match="Model ID unknown does not contain a valid model provider name."):
         BedrockModelProvider.to_model_provider(unknown_inference_profile)
-
-
-async def test_run_in_executor_calls_executor_properly() -> None:
-    """Test that run_in_executor properly calls an executor and function."""
-    mock_executor = MagicMock()
-    mock_func = MagicMock(return_value="test_result")
-
-    with patch(
-        "asyncio.get_event_loop", return_value=MagicMock(run_in_executor=AsyncMock(return_value="test_result"))
-    ) as evt:
-        result = await run_in_executor(mock_executor, mock_func, "arg1", key="value")
-
-    evt.assert_called_once()
-    assert result == "test_result"
 
 
 def test_remove_none_recursively_empty_dict() -> None:
