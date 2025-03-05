@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines a base property class for properties on a vector store record.
 /// </summary>
 /// <remarks>
-/// The characteristics defined here will influence how the property is treated by the vector store.
+/// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
 public abstract class VectorStoreRecordProperty
 {
@@ -41,21 +41,23 @@ public abstract class VectorStoreRecordProperty
     }
 
     /// <summary>
-    /// Gets or sets the name of the property on the data model.
+    /// Gets the name of the property on the data model.
     /// </summary>
     public string DataModelPropertyName { get; private set; }
 
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.
-    /// E.g. the property name might be "MyProperty" but the storage name might be "my_property".
-    /// This property will only be respected by implementations that do not support a well known
-    /// serialization mechanism like JSON, in which case the attributes used by that seriallization system will
-    /// be used.
     /// </summary>
+    /// <remarks>
+    /// For example, the property name might be "MyProperty" and the storage name might be "my_property".
+    /// This property is only respected by implementations that do not support a well-known
+    /// serialization mechanism like JSON, in which case the attributes used by that serialization system will
+    /// be used.
+    /// </remarks>
     public string? StoragePropertyName { get; init; }
 
     /// <summary>
-    /// Gets or sets the type of the property.
+    /// Gets the type of the property.
     /// </summary>
     public Type PropertyType { get; private set; }
 }

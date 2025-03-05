@@ -3,6 +3,8 @@
 import asyncio
 import logging
 import uuid
+from collections.abc import Callable
+from inspect import isawaitable
 from queue import Queue
 from typing import Any
 
@@ -19,19 +21,18 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import LocalEvent
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.process_types import get_generic_state_type
-from semantic_kernel.processes.step_utils import find_input_channels
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
     """A local step that is part of a local process."""
 
@@ -47,6 +48,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
     output_edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
     parent_process_id: str | None = None
     init_lock: asyncio.Lock = Field(default_factory=asyncio.Lock, exclude=True)
+    factories: dict[str, Callable]
 
     @model_validator(mode="before")
     @classmethod
@@ -148,7 +150,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
         invoke_result = None
-        event_name = None
+        event_name: str = ""
         event_value = None
 
         try:
@@ -156,6 +158,8 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
                 f"Invoking plugin `{function.plugin_name}` and function `{function.name}` with arguments: {arguments}"
             )
             invoke_result = await self.invoke_function(function, self.kernel, arguments)
+            if invoke_result is None:
+                raise KernelException(f"Function {target_function} returned None.")
             event_name = f"{target_function}.OnResult"
             event_value = invoke_result.value
         except Exception as ex:
@@ -185,8 +189,16 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         """Initializes the step."""
         # Instantiate an instance of the inner step object
         step_cls = self.step_info.inner_step_type
-
-        step_instance: KernelProcessStep = step_cls()  # type: ignore
+        factory = (
+            self.factories.get(get_fully_qualified_name(self.step_info.inner_step_type)) if self.factories else None
+        )
+        if factory:
+            step_instance = factory()
+            if isawaitable(step_instance):
+                step_instance = await step_instance
+            step_cls = type(step_instance)
+        else:
+            step_instance = step_cls()  # type: ignore
 
         kernel_plugin = self.kernel.add_plugin(
             step_instance, self.step_info.state.name if self.step_info.state else "default_name"

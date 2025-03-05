@@ -157,6 +157,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                             function_call=function_call,
                             chat_history=chat_history,
                             arguments=kwargs.get("arguments"),
+                            execution_settings=settings,
                             function_call_count=fc_count,
                             request_index=request_index,
                             function_behavior=settings.function_choice_behavior,
@@ -263,7 +264,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
-                            if any(isinstance(item, FunctionCallContent) for item in msg.items):
+                            if not function_call_returned and any(
+                                isinstance(item, FunctionCallContent) for item in msg.items
+                            ):
                                 function_call_returned = True
                     yield messages
 
@@ -289,6 +292,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                             function_call=function_call,
                             chat_history=chat_history,
                             arguments=kwargs.get("arguments"),
+                            is_streaming=True,
+                            execution_settings=settings,
                             function_call_count=fc_count,
                             request_index=request_index,
                             function_behavior=settings.function_choice_behavior,
@@ -429,7 +434,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         return getattr(settings, "ai_model_id", self.ai_model_id) or self.ai_model_id
 
     def _yield_function_result_messages(self, function_result_messages: list) -> bool:
-        """Determine if the function result messages should be yielded."""
+        """Determine if the function result messages should be yielded.
+
+        If there are messages and if the first message has items, then yield the messages.
+        """
         return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
 
     # endregion

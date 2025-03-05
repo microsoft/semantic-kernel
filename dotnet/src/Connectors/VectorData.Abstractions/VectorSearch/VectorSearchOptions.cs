@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Options for vector search.
+/// Defines options for vector search.
 /// </summary>
 public class VectorSearchOptions
 {
@@ -15,9 +15,11 @@ public class VectorSearchOptions
     /// <summary>
     /// Gets or sets the name of the vector property to search on.
     /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// If not provided will look if there is a vector property, and
-    /// will throw if either none or multiple exist.
     /// </summary>
+    /// <value>
+    /// If not provided will check if there are vector propertes, and
+    /// will throw if either none or multiple exist.
+    /// </value>
     public string? VectorPropertyName { get; init; }
 
     /// <summary>
@@ -26,7 +28,7 @@ public class VectorSearchOptions
     public int Top { get; init; } = 3;
 
     /// <summary>
-    /// Gets or sets the number of results to skip before returning results, i.e. the index of the first result to return.
+    /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
     public int Skip { get; init; } = 0;
 
@@ -38,9 +40,11 @@ public class VectorSearchOptions
     /// <summary>
     /// Gets or sets a value indicating whether the total count should be included in the results.
     /// </summary>
+    /// <value>
+    /// The default value is false.
+    /// </value>
     /// <remarks>
-    /// Default value is false.
-    /// Not all vector search implementations will support this option in which case the total
+    /// Not all vector search implementations support this option, in which case the total
     /// count will be null even if requested via this option.
     /// </remarks>
     public bool IncludeTotalCount { get; init; } = false;

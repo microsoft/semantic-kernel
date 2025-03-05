@@ -120,6 +120,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -257,6 +258,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -321,6 +323,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
@@ -352,7 +355,6 @@ jobs:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
-    environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
       MEMORY_CONCEPT_SAMPLE: "true"
@@ -379,6 +381,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev

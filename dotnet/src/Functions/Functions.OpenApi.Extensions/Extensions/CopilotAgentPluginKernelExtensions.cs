@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -159,13 +160,44 @@ public static class CopilotAgentPluginKernelExtensions
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
+            static IDictionary<string, string>? CopilotAgentPluginHeadersFactory(RestApiOperation operation, IDictionary<string, object?> arguments, RestApiOperationRunOptions? options)
+            {
+                var graphAllowedHosts = new[]
+                {
+                    "graph.microsoft.com",
+                    "graph.microsoft.us",
+                    "dod-graph.microsoft.us",
+                    "graph.microsoft.de",
+                    "microsoftgraph.chinacloudapi.cn",
+                    "canary.graph.microsoft.com",
+                    "graph.microsoft-ppe.com"
+                };
+                if (options?.ApiHostUrl?.Host is not { } hostString || !graphAllowedHosts.Contains(hostString))
+                {
+                    return null;
+                }
+                string frameworkDescription = RuntimeInformation.FrameworkDescription;
+                string osDescription = RuntimeInformation.OSDescription;
+                string copilotAgentPluginVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(CopilotAgentPluginKernelExtensions));
+                var defaultHeaders = new Dictionary<string, string>
+                {
+                    // TODO: version and format updates
+                    ["SdkVersion"] = $"copilot-agent-plugins/{copilotAgentPluginVersion}, (runtimeEnvironment={frameworkDescription}; hostOS={osDescription})",
+                    ["client-request-id"] = Guid.NewGuid().ToString()
+                };
+
+                var currentHeaders = operation.BuildHeaders(arguments);
+                var finalHeaders = defaultHeaders.Concat(currentHeaders).ToDictionary(k => k.Key, v => v.Value);
+                return finalHeaders;
+            }
 
             var runner = new RestApiOperationRunner(
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true);
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true,
+                headersFactory: CopilotAgentPluginHeadersFactory);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
