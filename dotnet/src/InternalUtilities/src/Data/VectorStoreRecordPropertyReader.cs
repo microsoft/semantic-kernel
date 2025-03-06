@@ -338,6 +338,91 @@ internal sealed class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
+    /// Get the vector property with the provided name if a name is provided, and fall back
+    /// to a vector property in the schema if not. If no name is provided and there is more
+    /// than one vector property, an exception will be thrown.
+    /// </summary>
+    /// <param name="vectorPropertyName">The vector property name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
+    public VectorStoreRecordVectorProperty GetVectorPropertyOrSingle(string? vectorPropertyName)
+    {
+        // If vector property name is provided, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorPropertyName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this.VectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorPropertyName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
+        }
+
+        // If vector property name is not provided, return first vector property from schema, or throw if there are no vectors.
+        if (this.VectorProperty is null)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any vector properties.");
+        }
+
+        if (this.VectorProperties.Count > 1)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type has multiple vector properties, please specify your chosen property via options.");
+        }
+
+        return this.VectorProperty;
+    }
+
+    /// <summary>
+    /// Get the text data property, that has full text search indexing enabled, with the provided name if a name is provided, and fall back
+    /// to a text data property in the schema if not. If no name is provided and there is more than one text data property with
+    /// full text search indexing enabled, an exception will be thrown.
+    /// </summary>
+    /// <param name="propertyName">The property name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
+    public VectorStoreRecordDataProperty GetFullTextDataPropertyOrSingle(string? propertyName)
+    {
+        // If text data property name is provided, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(propertyName))
+        {
+            // Check string data properties by data model property name.
+            var dataProperty = this.DataProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(propertyName, StringComparison.Ordinal) && l.PropertyType == typeof(string));
+
+            if (dataProperty is null)
+            {
+                throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a text data property named '{propertyName}'.");
+            }
+
+            if (!dataProperty.IsFullTextSearchable)
+            {
+                throw new InvalidOperationException($"The text data property named '{propertyName}' on the {this._dataModelType.FullName} type must have full text search enabled.");
+            }
+
+            return dataProperty;
+        }
+
+        // If text data property name is not provided, check if a single full text searchable text property exists or throw otherwise.
+        var fullTextStringProperties = this.DataProperties
+            .Where(l => l.PropertyType == typeof(string) && l.IsFullTextSearchable)
+            .ToList();
+
+        if (fullTextStringProperties.Count == 0)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any text data properties that have full text search enabled.");
+        }
+
+        if (fullTextStringProperties.Count > 1)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type has multiple text data properties that have full text search enabled, please specify your chosen property via options.");
+        }
+
+        return fullTextStringProperties[0];
+    }
+
+    /// <summary>
     /// Check if we have previously loaded the <see cref="PropertyInfo"/> objects from the data model and if not, load them.
     /// </summary>
     private void LoadPropertyInfoIfNeeded()

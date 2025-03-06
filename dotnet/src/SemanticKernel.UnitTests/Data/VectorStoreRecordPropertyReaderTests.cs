@@ -430,6 +430,95 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("json_data2", sut.GetJsonPropertyName("Data2"));
     }
 
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleReturnsRequestedVectorAndThrowsForInvalidVector(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Equal("Vector2", sut.GetVectorPropertyOrSingle("Vector2").DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle("DoesNotExist"));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleThrowsForMultipleVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleThrowsForNoVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyReturnsRequestedPropOrOnlyTextDataPropAndThrowsForInvalidProp(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle("Data1").DataModelPropertyName);
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle(null).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("DoesNotExist"));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyThrowsForNoTextDataProps(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyThrowsForNonFullTextSearchProp(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("Data2"));
+    }
+
+    [Fact]
+    public void GetFullTextDataPropertyOrOnlyThrowsForMultipleMatchingProps()
+    {
+        // Arrange.
+        var properties = new List<VectorStoreRecordProperty>
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsFullTextSearchable = true }
+        };
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = properties
+        };
+        var sut = new VectorStoreRecordPropertyReader(typeof(object), definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
+    }
+
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()
     {
         yield return new object?[] { typeof(NoKeyModel), s_noKeyDefinition };

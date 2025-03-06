@@ -6,15 +6,17 @@ using System.Linq.Expressions;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search.
+/// Options for hybrid search when using a dense vector and string keywords to do the search.
 /// </summary>
-public class VectorSearchOptions<TRecord>
+public class HybridSearchOptions<TRecord>
 {
     /// <summary>
-    /// Gets or sets a search filter to use before doing the vector search.
+    /// Gets or sets a search filter to use before doing the hybrid search.
     /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
     [Obsolete("Use Filter instead")]
     public VectorSearchFilter? OldFilter { get; init; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
@@ -22,14 +24,21 @@ public class VectorSearchOptions<TRecord>
     public Expression<Func<TRecord, bool>>? Filter { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the vector property to search on.
+    /// Gets or sets the name of the target dense vector property to search on.
     /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// </summary>
-    /// <value>
-    /// If not provided will check if there is a vector property to use by default, and
+    /// If not provided will look if there is a vector property, and
     /// will throw if either none or multiple exist.
-    /// </value>
+    /// </summary>
     public string? VectorPropertyName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the name of the additional target property to do the text/keyword search on.
+    /// The property must have full text search enabled.
+    /// Use the name of the data property from your data model or as provided in the record definition.
+    /// If not provided will look if there is a text property with full text search enabled, and
+    /// will throw if either none or multiple exist.
+    /// </summary>
+    public string? AdditionalPropertyName { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to return.
@@ -37,7 +46,7 @@ public class VectorSearchOptions<TRecord>
     public int Top { get; init; } = 3;
 
     /// <summary>
-    /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
+    /// Gets or sets the number of results to skip before returning results, i.e. the index of the first result to return.
     /// </summary>
     public int Skip { get; init; } = 0;
 
@@ -49,11 +58,9 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether the total count should be included in the results.
     /// </summary>
-    /// <value>
-    /// The default value is false.
-    /// </value>
     /// <remarks>
-    /// Not all vector search implementations support this option, in which case the total
+    /// Default value is false.
+    /// Not all vector search implementations will support this option in which case the total
     /// count will be null even if requested via this option.
     /// </remarks>
     public bool IncludeTotalCount { get; init; } = false;

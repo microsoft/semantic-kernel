@@ -216,11 +216,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the InMemory Vector Store.");
@@ -228,12 +223,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-
-        var vectorPropertyName = string.IsNullOrWhiteSpace(internalOptions.VectorPropertyName) ? this._propertyReader.FirstVectorPropertyName : internalOptions.VectorPropertyName;
-        if (!this._vectorProperties.TryGetValue(vectorPropertyName!, out var vectorProperty))
-        {
-            throw new InvalidOperationException($"The collection does not have a vector field named '{internalOptions.VectorPropertyName}', so vector search is not possible.");
-        }
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
@@ -250,7 +240,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<TRecord, (TRecord record, float score)?>(record =>
         {
-            var vectorObject = this._vectorResolver(vectorPropertyName!, record);
+            var vectorObject = this._vectorResolver(vectorProperty.DataModelPropertyName!, record);
             if (vectorObject is not ReadOnlyMemory<float> dbVector)
             {
                 return null;
