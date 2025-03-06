@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.Ollama.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.Ollama.UnitTests</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>

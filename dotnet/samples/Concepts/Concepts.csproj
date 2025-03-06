@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Concepts</AssemblyName>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
