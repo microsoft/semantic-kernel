@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using SemanticKernel.Process.IntegrationTests;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 
 var builder = WebApplication.CreateBuilder(args);
 
