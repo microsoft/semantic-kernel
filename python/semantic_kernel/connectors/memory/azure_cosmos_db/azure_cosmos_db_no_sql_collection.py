@@ -42,13 +42,13 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, AzureCosmosDBNoSQLCompositeKey)
 
 
-@experimental_class
+@experimental
 class AzureCosmosDBNoSQLCollection(
     AzureCosmosDBNoSQLBase,
     VectorSearchBase[TKey, TModel],
@@ -178,23 +178,25 @@ class AzureCosmosDBNoSQLCollection(
         where_clauses = self._build_where_clauses_from_filter(options.filter)
         contains_clauses = " OR ".join(
             f"CONTAINS(c.{field}, @search_text)"
-            for field in self.data_model_definition.fields
-            if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
+            for field, field_def in self.data_model_definition.fields.items()
+            if isinstance(field_def, VectorStoreRecordDataField) and field_def.is_full_text_searchable
         )
+        if where_clauses:
+            where_clauses = f" {where_clauses} AND"
         return (
             f"SELECT TOP @top {self._build_select_clause(options.include_vectors)} "  # nosec: B608
-            f"FROM c WHERE ({contains_clauses}) AND {where_clauses}"  # nosec: B608
+            f"FROM c WHERE{where_clauses} ({contains_clauses})"  # nosec: B608
         )
 
     def _build_vector_query(self, options: VectorSearchOptions) -> str:
         where_clauses = self._build_where_clauses_from_filter(options.filter)
         if where_clauses:
-            where_clauses = f"WHERE {where_clauses}"
+            where_clauses = f"WHERE {where_clauses} "
         vector_field_name: str = self.data_model_definition.try_get_vector_field(options.vector_field_name).name  # type: ignore
         return (
-            f"SELECT TOP @top {self._build_select_clause(options.include_vectors)},"  # nosec: B608
-            f" VectorDistance(c.{vector_field_name}, @vector) AS distance FROM c ORDER "  # nosec: B608
-            f"BY VectorDistance(c.{vector_field_name}, @vector) {where_clauses}"  # nosec: B608
+            f"SELECT TOP @top {self._build_select_clause(options.include_vectors)}, "  # nosec: B608
+            f"VectorDistance(c.{vector_field_name}, @vector) AS distance FROM c "  # nosec: B608
+            f"{where_clauses}ORDER BY VectorDistance(c.{vector_field_name}, @vector)"  # nosec: B608
         )
 
     def _build_select_clause(self, include_vectors: bool) -> str:
@@ -218,11 +220,24 @@ class AzureCosmosDBNoSQLCollection(
             return ""
         clauses = []
         for filter in filters.filters:
+            field_def = self.data_model_definition.fields[filter.field_name]
             match filter:
                 case EqualTo():
-                    clauses.append(f"c.{filter.field_name} = {filter.value}")
+                    clause = ""
+                    if field_def.property_type in ["int", "float"]:
+                        clause = f"c.{filter.field_name} = {filter.value}"
+                    if field_def.property_type == "str":
+                        clause = f"c.{filter.field_name} = '{filter.value}'"
+                    if field_def.property_type == "list[str]":
+                        filter_value = f"ARRAY_CONTAINS(c.{filter.field_name}, '{filter.value}')"
+                    if field_def.property_type in ["list[int]", "list[float]"]:
+                        filter_value = f"ARRAY_CONTAINS(c.{filter.field_name}, {filter.value})"
+                    clauses.append(clause)
                 case AnyTagsEqualTo():
-                    clauses.append(f"{filter.value} IN c.{filter.field_name}")
+                    filter_value = filter.value
+                    if field_def.property_type == "list[str]":
+                        filter_value = f"'{filter.value}'"
+                    clauses.append(f"{filter_value} IN c.{filter.field_name}")
                 case _:
                     raise ValueError(f"Unsupported filter: {filter}")
         return " AND ".join(clauses)

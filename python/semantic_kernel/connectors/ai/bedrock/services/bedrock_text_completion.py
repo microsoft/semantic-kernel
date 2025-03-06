@@ -6,7 +6,6 @@ from collections.abc import AsyncGenerator
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-import boto3
 from pydantic import ValidationError
 
 if sys.version_info >= (3, 12):
@@ -22,11 +21,11 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     parse_streaming_text_completion_response,
     parse_text_completion_response,
 )
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_text_completion,
     trace_text_completion,
@@ -73,8 +72,8 @@ class BedrockTextCompletion(BedrockBase, TextCompletionClientBase):
         super().__init__(
             ai_model_id=bedrock_settings.text_model_id,
             service_id=service_id or bedrock_settings.text_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
         )
 
     # region Overriding base class methods

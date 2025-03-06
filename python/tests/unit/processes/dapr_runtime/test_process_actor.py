@@ -13,7 +13,7 @@ from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorS
 from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
 from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def actor_context():
         actor_client=MagicMock(),
     )
     kernel_mock = MagicMock()
-    actor = ProcessActor(runtime_context, actor_id, kernel=kernel_mock)
+    actor = ProcessActor(runtime_context, actor_id, kernel=kernel_mock, factories={})
 
     actor._state_manager = AsyncMock()
     actor._state_manager.try_add_state = AsyncMock(return_value=True)
@@ -51,12 +51,12 @@ async def test_initialize_process(actor_context):
     input_data = {
         "process_info": {
             "type": "DaprProcessInfo",
-            "state": {"name": "Test Process", "id": "proc_123"},
+            "state": {"type": "KernelProcessState", "name": "Test Process", "id": "proc_123"},
             "steps": [
                 {
-                    "state": {"name": "Step1", "id": "step_123"},
-                    "inner_step_python_type": "SomeStepType",
                     "type": "DaprStepInfo",
+                    "inner_step_python_type": "SomeStepType",
+                    "state": {"type": "KernelProcessState", "name": "Step1", "id": "step_123"},
                 }
             ],
             "inner_step_python_type": "SomeProcessType",
@@ -69,12 +69,12 @@ async def test_initialize_process(actor_context):
 
     dapr_process_info_instance = DaprProcessInfo(
         inner_step_python_type="SomeProcessType",
-        state=KernelProcessStepState(name="Test Process", id="proc_123"),
+        state=KernelProcessState(name="Test Process", id="proc_123"),
         edges={},
         steps=[
             DaprStepInfo(
                 inner_step_python_type="SomeStepType",
-                state=KernelProcessStepState(name="Step1", id="step_123"),
+                state=KernelProcessState(name="Step1", id="step_123"),
                 edges={},
             )
         ],
@@ -96,7 +96,6 @@ async def test_initialize_process(actor_context):
         )
 
         assert actual_process_info_call is not None, "ProcessInfoState call was not found."
-
         actual_process_info = clean_structure(actual_process_info_call[0][1])
 
         assert actual_process_info == expected_process_info, (

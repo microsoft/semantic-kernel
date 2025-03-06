@@ -5,6 +5,7 @@ import contextlib
 import json
 import logging
 import uuid
+from collections.abc import Callable, MutableSequence
 from queue import Queue
 from typing import Any
 
@@ -37,27 +38,29 @@ from semantic_kernel.processes.kernel_process.kernel_process_state import Kernel
 from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
-    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
+    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel, factories: dict[str, Callable]):
         """Initializes a new instance of ProcessActor.
 
         Args:
             ctx: The actor runtime context.
             actor_id: The unique ID for the actor.
             kernel: The Kernel dependency to be injected.
+            factories: The factory dictionary that contains step types to factory methods.
         """
-        super().__init__(ctx, actor_id, kernel)
+        super().__init__(ctx, actor_id, kernel, factories)
         self.kernel = kernel
-        self.steps: list[StepInterface] = []
-        self.step_infos: list[DaprStepInfo] = []
+        self.factories = factories
+        self.steps: MutableSequence[StepInterface] = []
+        self.step_infos: MutableSequence[DaprStepInfo] = []
         self.initialize_task: bool | None = False
         self.external_event_queue: Queue = Queue()
         self.process_task: asyncio.Task | None = None
@@ -93,7 +96,6 @@ class ProcessActor(StepActor, ProcessInterface):
         else:
             raise TypeError("process_info must be a JSON string or a dictionary")
 
-        # Reconstruct the DaprProcessInfo from the dictionary
         dapr_process_info = DaprProcessInfo.model_validate(process_info_dict)
 
         if dapr_process_info.steps is None:
@@ -130,7 +132,7 @@ class ProcessActor(StepActor, ProcessInterface):
         if not self.process_task or self.process_task.done():
             self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
 
-    async def run_once(self, process_event: str) -> None:
+    async def run_once(self, process_event: KernelProcessEvent | str | None) -> None:
         """Starts the process with an initial event and waits for it to finish.
 
         Args:
@@ -145,7 +147,9 @@ class ProcessActor(StepActor, ProcessInterface):
             actor_interface=ExternalEventBufferInterface,
         )
         try:
-            await external_event_queue.enqueue(process_event)
+            await external_event_queue.enqueue(
+                process_event.model_dump_json() if isinstance(process_event, KernelProcessEvent) else process_event
+            )
 
             logger.info(f"Run once for process event: {process_event}")
 
@@ -169,7 +173,7 @@ class ProcessActor(StepActor, ProcessInterface):
         with contextlib.suppress(asyncio.CancelledError):
             await self.process_task
 
-    async def initialize_step(self):
+    async def initialize_step(self, input: str) -> None:
         """Initializes the step."""
         # The process does not need any further initialization
         pass
@@ -189,7 +193,10 @@ class ProcessActor(StepActor, ProcessInterface):
                 has_value, parent_process_id = await self._state_manager.try_get_state(
                     ActorStateKeys.StepParentProcessId.value
                 )
-                combined_input = {**existing_process_info, **parent_process_id}  # type: ignore
+                combined_input = {
+                    "process_info": existing_process_info,
+                    "parent_process_id": parent_process_id,
+                }
                 await self.initialize_process(combined_input)
         except Exception as e:
             error_message = str(e)
@@ -202,23 +209,29 @@ class ProcessActor(StepActor, ProcessInterface):
             raise ProcessEventUndefinedException("The process event must be specified.")
         self.external_event_queue.put(process_event)
 
-    async def get_process_info(self):
+    async def get_process_info(self) -> dict:
         """Gets the process information."""
         return await self.to_dapr_process_info()
 
-    async def to_dapr_process_info(self) -> DaprProcessInfo:
+    async def to_dapr_process_info(self) -> dict:
         """Converts the process to a Dapr process info."""
         if self.process is None:
             raise ValueError("The process must be initialized before converting to DaprProcessInfo.")
-        if self.inner_step_type is None:
+        if self.process.inner_step_python_type is None:
             raise ValueError("The inner step type must be defined before converting to DaprProcessInfo.")
 
-        process_state = KernelProcessState(self.name, self.id.id)
+        process_state = KernelProcessState(name=self.name, id=self.id.id)
+
         step_tasks = [step.to_dapr_step_info() for step in self.steps]
-        steps = await asyncio.gather(*step_tasks)
-        return DaprProcessInfo(
-            inner_step_python_type=self.inner_step_type, edges=self.process.edges, state=process_state, steps=steps
+        steps_as_dicts = await asyncio.gather(*step_tasks)
+
+        dapr_process_info = DaprProcessInfo(
+            inner_step_python_type=self.process.inner_step_python_type,
+            edges=self.process.edges,
+            state=process_state,
+            steps=steps_as_dicts,
         )
+        return dapr_process_info.model_dump()
 
     async def handle_message(self, message: ProcessMessage) -> None:
         """Handles a message."""
@@ -251,7 +264,7 @@ class ProcessActor(StepActor, ProcessInterface):
         self.output_edges = {kvp[0]: list(kvp[1]) for kvp in self.process.edges.items()}
 
         for step in self.step_infos:
-            step_actor = None
+            step_actor: StepInterface | None = None
 
             # The current step should already have a name.
             assert step.state and step.state.name is not None  # nosec
@@ -283,7 +296,7 @@ class ProcessActor(StepActor, ProcessInterface):
                 assert step.state and step.state.id is not None  # nosec
 
                 scoped_step_id = self._scoped_actor_id(ActorId(step.state.id))
-                step_actor: StepInterface = ActorProxy.create(  # type: ignore
+                step_actor = ActorProxy.create(  # type: ignore
                     actor_type=f"{StepActor.__name__}",
                     actor_id=scoped_step_id,
                     actor_interface=StepInterface,

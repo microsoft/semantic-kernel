@@ -49,10 +49,20 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         return services
 
     def select_ai_service(
-        self, function: "KernelFunction", arguments: "KernelArguments"
+        self,
+        function: "KernelFunction | None" = None,
+        arguments: "KernelArguments | None" = None,
+        type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None = None,
     ) -> tuple[AIServiceClientBase, PromptExecutionSettings]:
-        """Uses the AI service selector to select a service for the function."""
-        return self.ai_service_selector.select_ai_service(self, function, arguments)
+        """Uses the AI service selector to select a service for the function.
+
+        Args:
+            function (KernelFunction | None): The function used.
+            arguments (KernelArguments | None): The arguments used.
+            type (Type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None): The type of
+                service to select. Defaults to None.
+        """
+        return self.ai_service_selector.select_ai_service(self, function=function, arguments=arguments, type_=type)
 
     def get_service(
         self,

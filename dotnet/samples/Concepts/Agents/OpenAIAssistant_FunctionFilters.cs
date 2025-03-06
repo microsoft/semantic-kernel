@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 
 namespace Agents;
 
@@ -13,10 +14,8 @@ namespace Agents;
 /// <see cref="IFunctionInvocationFilter"/> filters with <see cref="OpenAIAssistantAgent"/>
 /// via <see cref="AgentChat"/>.
 /// </summary>
-public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAgentsTest(output)
+public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAssistantTest(output)
 {
-    protected override bool ForceOpenAI => true; // %%% REMOVE
-
     [Fact]
     public async Task UseFunctionInvocationFilterAsync()
     {
@@ -80,7 +79,7 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
         finally
         {
             await chat.ResetAsync();
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 
@@ -103,7 +102,7 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
         finally
         {
             await chat.ResetAsync();
-            await agent.DeleteAsync();
+            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 
@@ -120,19 +119,19 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAge
 
     private async Task<OpenAIAssistantAgent> CreateAssistantAsync(Kernel kernel)
     {
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this.GetClientProvider(),
-                new OpenAIAssistantDefinition(base.Model)
-                {
-                    Instructions = "Answer questions about the menu.",
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: kernel
-            );
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                instructions: "Answer questions about the menu.",
+                metadata: SampleMetadata);
 
+        // Create the agent
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        agent.Kernel.Plugins.Add(plugin);
+        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin])
+        {
+            Kernel = kernel
+        };
 
         return agent;
     }
