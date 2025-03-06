@@ -41,7 +41,7 @@ jobs:
     - name: Build
       run: |
         for solution in ${{ env.solutions }}; do
-          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} /app/$solution"
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /app/$solution"
         done
 
     - name: Find test projects
@@ -52,7 +52,7 @@ jobs:
       shell: bash
       run: |
         for project in ${{ env.testprojects }}; do
-          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} --no-build -v Normal --logger trx /app/$project"
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} --no-build -v Normal --logger trx /app/$project"
         done
 
     - name: Upload dotnet test results
@@ -107,7 +107,7 @@ jobs:
       shell: bash
       run: |
         for solution in ${{ env.solutions }}; do
-          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }}
+          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
         done
 
     - name: Find test projects
@@ -118,7 +118,7 @@ jobs:
       shell: bash
       run: |
         for project in ${{ env.testprojects }}; do
-          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }}
+          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
         done
 
     - name: Upload dotnet test results
