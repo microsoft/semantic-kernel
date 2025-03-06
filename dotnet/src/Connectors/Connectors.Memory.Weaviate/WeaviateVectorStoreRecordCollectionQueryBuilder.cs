@@ -116,7 +116,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             {{collectionName}} (
               limit: {{searchOptions.Top}}
               offset: {{searchOptions.Skip}}
-              {{filter}}
+              {{(filter is null ? "" : "where: " + filter)}}
               hybrid: {
                 query: "{{keywords}}"
                 properties: ["{{textPropertyName}}"]

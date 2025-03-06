@@ -40,14 +40,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
-            null,
+            keywords: null,
             fields,
             this._storagePropertyNames,
             vectorPropertyName,
-            null,
+            textPropertyName: null,
             ScorePropertyName,
-            filter,
-            null,
+            oldFilter: filter,
+            filter: null,
             10,
             5);
 
@@ -86,14 +86,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
-            null,
+            keywords: null,
             fields,
             this._storagePropertyNames,
             vectorPropertyName,
-            null,
+            textPropertyName: null,
             ScorePropertyName,
-            filter,
-            null,
+            oldFilter: filter,
+            filter: null,
             10,
             0);
 
@@ -132,14 +132,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Throws<InvalidOperationException>(() =>
             AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
                 vector,
-                null,
+                keywords: null,
                 fields,
                 this._storagePropertyNames,
                 vectorPropertyName,
-                null,
+                textPropertyName: null,
                 ScorePropertyName,
-                filter,
-                null,
+                oldFilter: filter,
+                filter: null,
                 10,
                 5));
     }
@@ -155,14 +155,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         // Act
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
             vector,
-            null,
+            keywords: null,
             fields,
             this._storagePropertyNames,
             vectorPropertyName,
-            null,
+            textPropertyName: null,
             ScorePropertyName,
-            null,
-            null,
+            oldFilter: null,
+            filter: null,
             10,
             5);
 
@@ -236,8 +236,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             vectorPropertyName,
             textPropertyName,
             ScorePropertyName,
-            filter,
-            null,
+            oldFilter: filter,
+            filter: null,
             10,
             5);
 
