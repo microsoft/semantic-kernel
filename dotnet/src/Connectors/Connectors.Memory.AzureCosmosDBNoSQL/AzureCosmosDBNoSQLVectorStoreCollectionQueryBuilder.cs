@@ -24,18 +24,24 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     /// </summary>
     public static QueryDefinition BuildSearchQuery<TVector, TRecord>(
         TVector vector,
+        ICollection<string>? keywords,
         List<string> fields,
         Dictionary<string, string> storagePropertyNames,
         string vectorPropertyName,
+        string? textPropertyName,
         string scorePropertyName,
-        VectorSearchOptions<TRecord> searchOptions)
+#pragma warning disable CS0618 // Type or member is obsolete
+        VectorSearchFilter? oldFilter,
+#pragma warning restore CS0618 // Type or member is obsolete
+        Expression<Func<TRecord, bool>>? filter,
+        int top,
+        int skip)
     {
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        const string OffsetVariableName = "@offset";
-        const string LimitVariableName = "@limit";
-        const string TopVariableName = "@top";
+        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
+        //const string KeywordsVariableName = "@keywords";
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
 
@@ -43,11 +49,18 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
 
+        // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
+        var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
+        var formattedKeywords = sanitizedKeywords is not null ? $"[\"{string.Join("\", \"", sanitizedKeywords)}\"]" : null;
+        var fullTextScoreArgument = textPropertyName is not null && keywords is not null ? $"FullTextScore({tableVariableName}.{textPropertyName}, {formattedKeywords})" : null;
+
+        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
+
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var (whereClause, filterParameters) = searchOptions switch
+        var (whereClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => BuildSearchFilter(legacyFilter, storagePropertyNames),
@@ -62,8 +75,9 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         };
 
         // If Offset is not configured, use Top parameter instead of Limit/Offset
-        // since it's more optimized.
-        var topArgument = searchOptions.Skip == 0 ? $"TOP {TopVariableName} " : string.Empty;
+        // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
+        // so directly add it to the query here.
+        var topArgument = skip == 0 ? $"TOP {top} " : string.Empty;
 
         var builder = new StringBuilder();
 
@@ -75,18 +89,20 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
             builder.Append("WHERE ").AppendLine(whereClause);
         }
 
-        builder.AppendLine($"ORDER BY {vectorDistanceArgument}");
+        builder.AppendLine($"ORDER BY {rankingArgument}");
 
-        if (!string.IsNullOrEmpty(topArgument))
+        if (string.IsNullOrEmpty(topArgument))
         {
-            queryParameters.Add(TopVariableName, searchOptions.Top);
+            // Hybrid search doesn't allow offset and limit to be passed as parameters
+            // so directly add it to the query here.
+            builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
-        else
-        {
-            builder.AppendLine($"OFFSET {OffsetVariableName} LIMIT {LimitVariableName}");
-            queryParameters.Add(OffsetVariableName, searchOptions.Skip);
-            queryParameters.Add(LimitVariableName, searchOptions.Top);
-        }
+
+        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
+        //if (fullTextScoreArgument is not null)
+        //{
+        //    queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
+        //}
 
         var queryDefinition = new QueryDefinition(builder.ToString());
 

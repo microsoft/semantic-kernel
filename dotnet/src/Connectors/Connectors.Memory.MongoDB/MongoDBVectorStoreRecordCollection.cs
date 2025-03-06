@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -35,6 +35,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
     /// <summary>The default options for vector search.</summary>
     private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid vector search.</summary>
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -252,27 +255,10 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vector);
-
-        Array vectorArray = vector switch
-        {
-            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
-            _ => throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the MongoDB connector. " +
-                $"Supported types are: {string.Join(", ", [
-                    typeof(ReadOnlyMemory<float>).FullName,
-                    typeof(ReadOnlyMemory<double>).FullName])}")
-        };
+        Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
-
-        if (vectorProperty is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
-        }
-
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -315,7 +301,63 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Array vectorArray = VerifyVectorParam(vector);
+
+        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
+        var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = searchOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            _ => null
+        };
+#pragma warning restore CS0618
+
+        // Constructing a query to fetch "skip + top" total items
+        // to perform skip logic locally, since skip option is not part of API. 
+        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+
+        var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
+
+        BsonDocument[] pipeline = MongoDBVectorStoreCollectionSearchMapping.GetHybridSearchPipeline(
+            vectorArray,
+            keywords,
+            this.CollectionName,
+            this._options.VectorIndexName,
+            this._options.FullTextSearchIndexName,
+            vectorPropertyName,
+            textDataPropertyName,
+            ScorePropertyName,
+            DocumentPropertyName,
+            itemsAmount,
+            numCandidates,
+            filter);
+
+        return await this.RunOperationWithRetryAsync(
+            "KeywordVectorizedHybridSearch",
+            this._options.MaxRetries,
+            this._options.DelayInMilliseconds,
+            async () =>
+            {
+                var cursor = await this._mongoCollection
+                    .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
             },
             cancellationToken).ConfigureAwait(false);
     }
@@ -327,34 +369,64 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         var indexCursor = await this._mongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
         var indexes = indexCursor.ToList(cancellationToken).Select(index => index["name"].ToString()) ?? [];
 
-        if (indexes.Contains(this._options.VectorIndexName))
+        var indexArray = new BsonArray();
+
+        // Create the vector index config if the index does not exist
+        if (!indexes.Contains(this._options.VectorIndexName))
         {
-            // Vector index already exists.
-            return;
-        }
+            var fieldsArray = new BsonArray();
 
-        var fieldsArray = new BsonArray();
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(
+                this._propertyReader.VectorProperties,
+                this._storagePropertyNames));
 
-        fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(
-            this._propertyReader.VectorProperties,
-            this._storagePropertyNames));
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(
+                this._propertyReader.DataProperties,
+                this._storagePropertyNames));
 
-        fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(
-            this._propertyReader.DataProperties,
-            this._storagePropertyNames));
-
-        if (fieldsArray.Count > 0)
-        {
-            var indexArray = new BsonArray
+            if (fieldsArray.Count > 0)
             {
-                new BsonDocument
+                indexArray.Add(new BsonDocument
                 {
                     { "name", this._options.VectorIndexName },
                     { "type", "vectorSearch" },
                     { "definition", new BsonDocument { ["fields"] = fieldsArray } },
-                }
-            };
+                });
+            }
+        }
 
+        // Create the full text search index config if the index does not exist
+        if (!indexes.Contains(this._options.FullTextSearchIndexName))
+        {
+            var fieldsDocument = new BsonDocument();
+
+            fieldsDocument.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(
+                this._propertyReader.DataProperties,
+                this._storagePropertyNames));
+
+            if (fieldsDocument.ElementCount > 0)
+            {
+                indexArray.Add(new BsonDocument
+                {
+                    { "name", this._options.FullTextSearchIndexName },
+                    { "type", "search" },
+                    {
+                        "definition", new BsonDocument
+                        {
+                            ["mappings"] = new BsonDocument
+                            {
+                                ["dynamic"] = false,
+                                ["fields"] = fieldsDocument
+                            }
+                        }
+                    },
+                });
+            }
+        }
+
+        // Create any missing indexes.
+        if (indexArray.Count > 0)
+        {
             var createIndexCommand = new BsonDocument
             {
                 { "createSearchIndexes", collectionName },
@@ -391,7 +463,8 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         IAsyncCursor<BsonDocument> cursor,
-        MEVD.VectorSearchOptions<TRecord> searchOptions,
+        int skip,
+        bool includeVectors,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Aggregate";
@@ -402,14 +475,14 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             foreach (var response in cursor.Current)
             {
-                if (skipCounter >= searchOptions.Skip)
+                if (skipCounter >= skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
                         DatabaseName,
                         this.CollectionName,
                         OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = searchOptions.IncludeVectors }));
+                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors }));
 
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }
@@ -572,33 +645,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <summary>
-    /// Get vector property to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
-    /// </summary>
-    /// <param name="vectorFieldName">The vector field name.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
-    {
-        // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorFieldName))
-        {
-            // Check vector properties by data model property name.
-            var vectorProperty = this._propertyReader.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
-
-            if (vectorProperty is not null)
-            {
-                return vectorProperty;
-            }
-
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
-        }
-
-        // If vector property is not provided in options, return first vector property from schema.
-        return this._propertyReader.VectorProperty;
-    }
-
-    /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
     private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
@@ -616,5 +662,20 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);
     }
 
+    private static Array VerifyVectorParam<TVector>(TVector vector)
+    {
+        Verify.NotNull(vector);
+
+        return vector switch
+        {
+            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
+            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
+            _ => throw new NotSupportedException(
+                $"The provided vector type {vector.GetType().FullName} is not supported by the MongoDB connector. " +
+                $"Supported types are: {string.Join(", ", [
+                    typeof(ReadOnlyMemory<float>).FullName,
+                    typeof(ReadOnlyMemory<double>).FullName])}")
+        };
+    }
     #endregion
 }

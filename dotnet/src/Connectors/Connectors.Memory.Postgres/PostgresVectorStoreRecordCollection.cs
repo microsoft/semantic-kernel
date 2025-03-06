@@ -275,7 +275,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
 
         var pgVector = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 

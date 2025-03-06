@@ -28,7 +28,8 @@ public class VectorSearchOptions<TRecord>
     /// Use the name of the vector property from your data model or as provided in the record definition.
     /// </summary>
     /// <value>
-    /// The default value is the first vector property in the schema.
+    /// If not provided will check if there is a vector property to use by default, and
+    /// will throw if either none or multiple exist.
     /// </value>
     public string? VectorPropertyName { get; init; }
 

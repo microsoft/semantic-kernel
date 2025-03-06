@@ -378,16 +378,17 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         var internalOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions.VectorPropertyName);
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.JsonPropertyNamesMap, this._propertyReader.FirstVectorPropertyJsonName!, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
+            vectorBytes,
+            internalOptions,
+            this._propertyReader.JsonPropertyNamesMap,
+            this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName),
+            null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database

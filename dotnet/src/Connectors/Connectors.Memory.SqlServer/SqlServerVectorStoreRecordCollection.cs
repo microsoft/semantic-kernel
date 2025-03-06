@@ -328,7 +328,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
 
         using SqlCommand command = SqlServerCommandBuilder.SelectVector(
             this._sqlConnection,
