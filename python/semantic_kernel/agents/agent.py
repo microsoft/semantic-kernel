@@ -4,14 +4,16 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Iterable
-from typing import Any, ClassVar
+from typing import Annotated, Any, ClassVar
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -56,9 +58,7 @@ class Agent(KernelBaseModel, ABC):
     @staticmethod
     def _get_plugin_name(plugin: KernelPlugin | object) -> str:
         """Helper method to get the plugin name."""
-        if isinstance(plugin, KernelPlugin):
-            return plugin.name
-        return plugin.__class__.__name__
+        return getattr(plugin, "name", plugin.__class__.__name__)
 
     @model_validator(mode="before")
     @classmethod
@@ -73,6 +73,19 @@ class Agent(KernelBaseModel, ABC):
                 kernel.add_plugin(plugin, plugin_name=name)
             data["kernel"] = kernel
         return data
+
+    def model_post_init(self, __context: Any) -> None:
+        """Post initialization."""
+
+        @kernel_function(name=self.name, description=self.description)
+        async def _invoke_agent_as_function_inner(
+            task: Annotated[str, "The task to perform."],
+        ) -> Annotated[str, "The response from the agent."]:
+            history = ChatHistory()
+            history.add_user_message(task)
+            return (await self.get_response(history=history)).content
+
+        setattr(self, "_as_function", _invoke_agent_as_function_inner)
 
     @abstractmethod
     async def get_response(self, *args, **kwargs) -> ChatMessageContent:
