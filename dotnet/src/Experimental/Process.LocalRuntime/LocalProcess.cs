@@ -399,6 +399,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     #endregion
 
+#pragma warning disable CA2215
     public override void Dispose()
     {
         this._externalEventChannel.Writer.Complete();
@@ -409,4 +410,5 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             step.Dispose();
         }
     }
+#pragma warning restore CA2215
 }

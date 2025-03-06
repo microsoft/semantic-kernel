@@ -127,7 +127,6 @@ public class LocalProxyTests
             // Assert
             var runningProcessId = await processContext.GetProcessIdAsync();
 
-
             Assert.NotNull(mockProxyClient);
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
