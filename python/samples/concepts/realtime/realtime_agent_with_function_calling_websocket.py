@@ -11,9 +11,9 @@ from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtimeExecutionSettings,
     AzureRealtimeWebsocket,
-    ListenEvents,
     TurnDetection,
 )
+from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.realtime_events import RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
@@ -29,7 +29,7 @@ It requires installing:
 - pyaudio
 - sounddevice
 - pydub
-e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
 
 For more details of the exact setup, see the README.md in the realtime folder.
 """
@@ -60,20 +60,20 @@ def goodbye():
 
 async def main() -> None:
     print_transcript = True
-    # create the Kernel and add a simple function for function calling.
+    # create a Kernel and add a simple function for function calling.
     kernel = Kernel()
     kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
 
     # create the realtime client, in this the Azure Websocket client, there are also OpenAI Websocket and WebRTC clients
     # See 02b-chat_with_function_calling_webrtc.py for an example of the WebRTC client
-    realtime_client = AzureRealtimeWebsocket()
+    realtime_agent = AzureRealtimeWebsocket()
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebsocket()
-    audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
+    audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_agent)
 
     # Create the settings for the session
-    # The realtime api, does not use a system message, but takes instructions as a parameter for a session
+    # The realtime api, does not use a system message, but, like agents, takes instructions as a parameter for a session
     # Another important setting is to tune the server_vad turn detection
     # if this is turned off (by setting turn_detection=None), you will have to send
     # the "input_audio_buffer.commit" and "response.create" event to the realtime api
@@ -102,20 +102,20 @@ async def main() -> None:
         "I can tell you what the weather is or the time."
     )
 
-    # the context manager calls the create_session method on the client and starts listening to the audio stream
+    # the context manager calls the create_session method on the agent and starts listening to the audio stream
     async with (
         audio_player,
         audio_recorder,
-        realtime_client(
+        realtime_agent(
             settings=settings,
             chat_history=chat_history,
             kernel=kernel,
             create_response=True,
         ),
     ):
-        # the audio_output_callback can be added here or in the client constructor
+        # the audio_output_callback can be added here or in the constructor
         # using this gives the smoothest experience
-        async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
+        async for event in realtime_agent.receive(audio_output_callback=audio_player.client_callback):
             match event:
                 case RealtimeTextEvent():
                     if print_transcript:
@@ -133,7 +133,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: The model will start speaking immediately,"
+        "Instructions: The agent will start speaking immediately,"
         "this can be turned off by removing `create_response=True` above."
         "The model will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."

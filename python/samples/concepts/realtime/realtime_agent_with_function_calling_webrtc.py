@@ -6,14 +6,13 @@ from datetime import datetime
 from random import randint
 
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
-from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
-    ListenEvents,
     OpenAIRealtimeExecutionSettings,
     OpenAIRealtimeWebRTC,
     TurnDetection,
 )
+from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.realtime_events import RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
@@ -26,13 +25,13 @@ logger.setLevel(logging.INFO)
 
 """
 This simple sample demonstrates how to use the OpenAI Realtime API to create
-a chat bot that can listen and respond directly through audio.
+a agent that can listen and respond directly through audio.
 It requires installing:
 - semantic-kernel[realtime]
 - pyaudio
 - sounddevice
 - pydub
-e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
 
 For more details of the exact setup, see the README.md in the realtime folder.
 """
@@ -46,41 +45,42 @@ For more details of the exact setup, see the README.md in the realtime folder.
 check_audio_devices()
 
 
-@kernel_function
-def get_weather(location: str) -> str:
-    """Get the weather for a location."""
-    weather_conditions = ("sunny", "hot", "cloudy", "raining", "freezing", "snowing")
-    weather = weather_conditions[randint(0, len(weather_conditions) - 1)]  # nosec
-    logger.info(f"@ Getting weather for {location}: {weather}")
-    return f"The weather in {location} is {weather}."
+class Helpers:
+    """A set of helper functions for the Realtime Agent."""
 
+    @kernel_function
+    def get_weather(self, location: str) -> str:
+        """Get the weather for a location."""
+        weather_conditions = ("sunny", "hot", "cloudy", "raining", "freezing", "snowing")
+        weather = weather_conditions[randint(0, len(weather_conditions) - 1)]  # nosec
+        logger.info(f"@ Getting weather for {location}: {weather}")
+        return f"The weather in {location} is {weather}."
 
-@kernel_function
-def get_date_time() -> str:
-    """Get the current date and time."""
-    logger.info("@ Getting current datetime")
-    return f"The current date and time is {datetime.now().isoformat()}."
+    @kernel_function
+    def get_date_time(self) -> str:
+        """Get the current date and time."""
+        logger.info("@ Getting current datetime")
+        return f"The current date and time is {datetime.now().isoformat()}."
 
-
-@kernel_function
-def goodbye():
-    """When the user is done, say goodbye and then call this function."""
-    logger.info("@ Goodbye has been called!")
-    raise KeyboardInterrupt
+    @kernel_function
+    def goodbye(self):
+        """When the user is done, say goodbye and then call this function."""
+        logger.info("@ Goodbye has been called!")
+        raise KeyboardInterrupt
 
 
 async def main() -> None:
     print_transcript = True
-    # create the Kernel and add a simple function for function calling.
-    kernel = Kernel()
-    kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
-
     # create the audio player and audio track
-    # both take a device_id parameter, which is the index of the device to use, if None the default device is used
+    # both take a device_id parameter, which is the index of the device to use,
+    # if None the default device will be used
     audio_player = AudioPlayerWebRTC()
-    # create the realtime client and optionally add the audio output function, this is optional
+
+    # create the realtime agent and optionally add the audio output function, this is optional
     # and can also be passed in the receive method
-    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC())
+    # You can also pass in kernel, plugins, chat_history or settings here.
+    # For WebRTC the audio_track is required
+    realtime_agent = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC(), plugins=[Helpers()])
 
     # Create the settings for the session
     # The realtime api, does not use a system message, but takes instructions as a parameter for a session
@@ -111,14 +111,13 @@ async def main() -> None:
     # the context manager calls the create_session method on the client and starts listening to the audio stream
     async with (
         audio_player,
-        realtime_client(
+        realtime_agent(
             settings=settings,
             chat_history=chat_history,
-            kernel=kernel,
             create_response=True,
         ),
     ):
-        async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
+        async for event in realtime_agent.receive(audio_output_callback=audio_player.client_callback):
             match event:
                 case RealtimeTextEvent():
                     if print_transcript:

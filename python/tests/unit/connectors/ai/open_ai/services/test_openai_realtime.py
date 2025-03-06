@@ -47,11 +47,10 @@ from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceTyp
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
     OpenAIRealtimeExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import (
-    ListenEvents,
     OpenAIRealtimeWebRTC,
     OpenAIRealtimeWebsocket,
-    SendEvents,
     _create_openai_realtime_client_event,
     update_settings_from_function_call_configuration,
 )

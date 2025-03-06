@@ -5,13 +5,15 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any, ClassVar
 
+from semantic_kernel.kernel import Kernel
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
 
 from numpy import ndarray
-from pydantic import PrivateAttr
+from pydantic import ConfigDict, PrivateAttr
 
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
@@ -26,10 +28,15 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 class RealtimeClientBase(AIServiceClientBase, ABC):
     """Base class for a realtime client."""
 
+    model_config = ConfigDict(
+        extra="allow", populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True
+    )
+
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
     audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None
     _chat_history: ChatHistory | None = PrivateAttr(default=None)
     _settings: PromptExecutionSettings | None = PrivateAttr(default=None)
+    _kernel: Kernel | None = PrivateAttr(default=None)
     _create_kwargs: dict[str, Any] | None = PrivateAttr(default=None)
 
     @abstractmethod
@@ -136,7 +143,7 @@ class RealtimeClientBase(AIServiceClientBase, ABC):
         Args:
             chat_history: Chat history.
             settings: Prompt execution settings.
-            kwargs: Additional arguments, can include `kernel` or specific settings for the service.
+            kwargs: Additional arguments, can include `kernel` or `plugins` or specific settings for the service.
                 Check the update_session method for the specific service for more details.
         """
         self._chat_history = chat_history
