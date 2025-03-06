@@ -22,9 +22,14 @@ internal sealed class Program
 
         var result = structuredDataService.SearchByEntity<MyEntity>(e => e.Description == "Test");
 
+        Console.WriteLine($"----- Records for {nameof(MyEntity)} -----");
         foreach (var entity in result)
         {
-            Console.WriteLine($"Id: {entity.Id}, Description: {entity.Description}");
+            Console.WriteLine($"""
+                Id: {entity.Id}
+                Description: {entity.Description}
+                -----
+                """);
         }
     }
 }
