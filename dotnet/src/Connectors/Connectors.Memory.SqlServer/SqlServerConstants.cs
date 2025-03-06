@@ -7,15 +7,13 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class SqlServerConstants
 {
-    internal const string Schema = "dbo";
-
     internal static readonly HashSet<Type> SupportedKeyTypes =
     [
         typeof(int), // INT 
         typeof(long), // BIGINT
         typeof(string), // VARCHAR 
         typeof(Guid), // UNIQUEIDENTIFIER
-        typeof(DateTime), // DATETIME
+        typeof(DateTime), // DATETIME2
         typeof(byte[]) // VARBINARY
     ];
 
@@ -36,8 +34,12 @@ internal static class SqlServerConstants
         typeof(string), // NVARCHAR
         typeof(byte[]), //VARBINARY
         typeof(bool), // BIT
-        typeof(DateTime), // DATETIME
-        typeof(TimeSpan), // TIME
+        typeof(DateTime), // DATETIME2
+#if NET
+        // We don't support mapping TimeSpan to TIME on purpose
+        // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
+        typeof(TimeOnly), // TIME
+#endif
         typeof(decimal), // DECIMAL
         typeof(double), // FLOAT
         typeof(float), // REAL

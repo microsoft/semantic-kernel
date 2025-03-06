@@ -56,6 +56,15 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
             }
         }
 
+#if NET
+        // The SqlClient accepts TimeOnly as parameters, but returns them as TimeSpan.
+        // Since we don't support TimeSpan, we can convert it back to TimeOnly.
+        if (value is TimeSpan timeSpan)
+        {
+            return new TimeOnly(timeSpan.Ticks);
+        }
+#endif
+
         return value;
     }
 

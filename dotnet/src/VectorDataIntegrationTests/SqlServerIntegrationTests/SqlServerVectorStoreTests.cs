@@ -319,6 +319,60 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
+#if NETFRAMEWORK
+    [ConditionalFact]
+    public void TimeSpanIsNotSupported()
+    {
+        string collectionName = GetUniqueCollectionName();
+        var testStore = fixture.TestStore;
+
+        Assert.Throws<ArgumentException>(() => testStore.DefaultVectorStore.GetCollection<string, TimeModel>(collectionName));
+    }
+#else
+    [ConditionalFact]
+    public async Task TimeOnlyIsSupported()
+    {
+        string collectionName = GetUniqueCollectionName();
+        var testStore = fixture.TestStore;
+
+        var collection = testStore.DefaultVectorStore.GetCollection<string, TimeModel>(collectionName);
+
+        try
+        {
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            TimeModel inserted = new()
+            {
+                Id = "MyId",
+                Time = new TimeOnly(12, 34, 56)
+            };
+            string key = await collection.UpsertAsync(inserted);
+            Assert.Equal(inserted.Id, key);
+
+            TimeModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
+            Assert.NotNull(received);
+            Assert.Equal(inserted.Time, received.Time);
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+        }
+    }
+#endif
+
+    public sealed class TimeModel
+    {
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "time")]
+#if NETFRAMEWORK
+        public TimeSpan Time { get; set; }
+#else
+        public TimeOnly Time { get; set; }
+#endif
+    }
+
     [ConditionalFact]
     public Task CanUseFancyModels_Int() => this.CanUseFancyModels<int>();
 

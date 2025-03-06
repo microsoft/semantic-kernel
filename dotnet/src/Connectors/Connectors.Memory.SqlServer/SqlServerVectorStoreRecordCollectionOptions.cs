@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 
@@ -11,22 +10,10 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// </summary>
 public sealed class SqlServerVectorStoreRecordCollectionOptions<TRecord>
 {
-    private string _schema = SqlServerConstants.Schema;
-
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    /// <exception cref="ArgumentException">when provided schema is empty or composed entirely of whitespace.</exception>
-    public string Schema
-    {
-        get => this._schema;
-        init
-        {
-            Verify.NotNullOrWhiteSpace(value);
-
-            this._schema = value;
-        }
-    }
+    public string? Schema { get; init; }
 
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the SQL Server record.

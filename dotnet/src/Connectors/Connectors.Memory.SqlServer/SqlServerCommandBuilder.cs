@@ -16,7 +16,7 @@ internal static class SqlServerCommandBuilder
 {
     internal static SqlCommand CreateTable(
         SqlConnection connection,
-        string schema,
+        string? schema,
         string tableName,
         bool ifNotExists,
         VectorStoreRecordKeyProperty keyProperty,
@@ -48,7 +48,7 @@ internal static class SqlServerCommandBuilder
             sb.AppendFormat("[{0}] VECTOR({1}),", GetColumnName(vectorProperties[i]), vectorProperties[i].Dimensions);
             sb.AppendLine();
         }
-        sb.AppendFormat("PRIMARY KEY NONCLUSTERED ([{0}])", keyColumnName);
+        sb.AppendFormat("PRIMARY KEY ([{0}])", keyColumnName);
         sb.AppendLine();
         sb.AppendLine(");"); // end the table definition
 
@@ -69,7 +69,7 @@ internal static class SqlServerCommandBuilder
         return connection.CreateCommand(sb);
     }
 
-    internal static SqlCommand DropTableIfExists(SqlConnection connection, string schema, string tableName)
+    internal static SqlCommand DropTableIfExists(SqlConnection connection, string? schema, string tableName)
     {
         StringBuilder sb = new(50);
         sb.Append("DROP TABLE IF EXISTS ");
@@ -78,37 +78,37 @@ internal static class SqlServerCommandBuilder
         return connection.CreateCommand(sb);
     }
 
-    internal static SqlCommand SelectTableName(SqlConnection connection, string schema, string tableName)
+    internal static SqlCommand SelectTableName(SqlConnection connection, string? schema, string tableName)
     {
         SqlCommand command = connection.CreateCommand();
         command.CommandText = """
                 SELECT TABLE_NAME
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE'
-                    AND TABLE_SCHEMA = @schema
+                    AND (@schema is NULL or TABLE_SCHEMA = @schema)
                     AND TABLE_NAME = @tableName
                 """;
-        command.Parameters.AddWithValue("@schema", schema);
+        command.Parameters.AddWithValue("@schema", string.IsNullOrEmpty(schema) ? DBNull.Value : schema);
         command.Parameters.AddWithValue("@tableName", tableName); // the name is not escaped by us, just provided as parameter
         return command;
     }
 
-    internal static SqlCommand SelectTableNames(SqlConnection connection, string schema)
+    internal static SqlCommand SelectTableNames(SqlConnection connection, string? schema)
     {
         SqlCommand command = connection.CreateCommand();
         command.CommandText = """
                 SELECT TABLE_NAME
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE'
-                    AND TABLE_SCHEMA = @schema
+                    AND (@schema is NULL or TABLE_SCHEMA = @schema)
                 """;
-        command.Parameters.AddWithValue("@schema", schema);
+        command.Parameters.AddWithValue("@schema", string.IsNullOrEmpty(schema) ? DBNull.Value : schema);
         return command;
     }
 
     internal static SqlCommand MergeIntoSingle(
         SqlConnection connection,
-        string schema,
+        string? schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
@@ -163,7 +163,7 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand? MergeIntoMany(
         SqlConnection connection,
-        string schema,
+        string? schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
@@ -235,7 +235,7 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand DeleteSingle(
-        SqlConnection connection, string schema, string tableName,
+        SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, object key)
     {
         SqlCommand command = connection.CreateCommand();
@@ -253,7 +253,7 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand? DeleteMany<TKey>(
-        SqlConnection connection, string schema, string tableName,
+        SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
     {
         SqlCommand command = connection.CreateCommand();
@@ -275,7 +275,7 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand SelectSingle(
-        SqlConnection sqlConnection, string schema, string collectionName,
+        SqlConnection sqlConnection, string? schema, string collectionName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         object key,
@@ -300,7 +300,7 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand? SelectMany<TKey>(
-        SqlConnection connection, string schema, string tableName,
+        SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IEnumerable<TKey> keys,
@@ -329,7 +329,7 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand SelectVector<TRecord>(
-        SqlConnection connection, string schema, string tableName,
+        SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordVectorProperty vectorProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IReadOnlyDictionary<string, string> storagePropertyNamesMap,
@@ -337,7 +337,6 @@ internal static class SqlServerCommandBuilder
         ReadOnlyMemory<float> vector)
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
-        // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
         (string distanceMetric, string sorting) = MapDistanceFunction(distanceFunction);
 
         SqlCommand command = connection.CreateCommand();
@@ -412,17 +411,22 @@ internal static class SqlServerCommandBuilder
         return sb;
     }
 
-    internal static StringBuilder AppendTableName(this StringBuilder sb, string schema, string tableName)
+    internal static StringBuilder AppendTableName(this StringBuilder sb, string? schema, string tableName)
     {
         // If the column name contains a ], then escape it by doubling it.
         // "Name with [brackets]" becomes [Name with [brackets]]].
 
         sb.Append('[');
-        int index = sb.Length; // store the index, so we replace ] only for schema
-        sb.Append(schema);
-        sb.Replace("]", "]]", index, schema.Length); // replace the ] for schema
-        sb.Append("].[");
-        index = sb.Length;
+        int index = sb.Length; // store the index, so we replace ] only for the appended part
+
+        if (!string.IsNullOrEmpty(schema))
+        {
+            sb.Append(schema);
+            sb.Replace("]", "]]", index, schema.Length); // replace the ] for schema
+            sb.Append("].[");
+            index = sb.Length;
+        }
+
         sb.Append(tableName);
         sb.Replace("]", "]]", index, tableName.Length);
         sb.Append(']');
@@ -512,20 +516,20 @@ internal static class SqlServerCommandBuilder
 
     private static (string sqlName, string? autoGenerate) Map(Type type)
     {
-        const string NVARCHAR = "NVARCHAR(255) COLLATE Latin1_General_100_BIN2";
         return type switch
         {
             Type t when t == typeof(byte) => ("TINYINT", null),
             Type t when t == typeof(short) => ("SMALLINT", null),
             Type t when t == typeof(int) => ("INT", "IDENTITY(1,1)"),
             Type t when t == typeof(long) => ("BIGINT", "IDENTITY(1,1)"),
-            // TODO adsitnik: discuss using NEWID() vs NEWSEQUENTIALID().
             Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWSEQUENTIALID()"),
-            Type t when t == typeof(string) => (NVARCHAR, null),
+            Type t when t == typeof(string) => ("NVARCHAR(255)", null),
             Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", null),
             Type t when t == typeof(bool) => ("BIT", null),
             Type t when t == typeof(DateTime) => ("DATETIME2", null),
-            Type t when t == typeof(TimeSpan) => ("TIME", null),
+#if NET
+            Type t when t == typeof(TimeOnly) => ("TIME", null),
+#endif
             Type t when t == typeof(decimal) => ("DECIMAL", null),
             Type t when t == typeof(double) => ("FLOAT", null),
             Type t when t == typeof(float) => ("REAL", null),
@@ -533,6 +537,7 @@ internal static class SqlServerCommandBuilder
         };
     }
 
+    // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch
     {
         // A value of 0 indicates that the vectors are identical in direction (cosine similarity of 1),

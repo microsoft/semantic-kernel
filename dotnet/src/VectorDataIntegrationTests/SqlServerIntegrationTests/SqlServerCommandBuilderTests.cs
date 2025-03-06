@@ -12,9 +12,11 @@ public class SqlServerCommandBuilderTests
 {
     [Theory]
     [InlineData("schema", "name", "[schema].[name]")]
+    [InlineData(null, "name", "[name]")]
     [InlineData("schema", "[brackets]", "[schema].[[brackets]]]")]
+    [InlineData(null, "[needsEscaping]", "[[needsEscaping]]]")]
     [InlineData("needs]escaping", "[brackets]", "[needs]]escaping].[[brackets]]]")]
-    public void AppendTableName(string schema, string table, string expectedFullName)
+    public void AppendTableName(string? schema, string table, string expectedFullName)
     {
         StringBuilder result = new();
 
@@ -72,7 +74,7 @@ public class SqlServerCommandBuilderTests
         SELECT TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
         WHERE TABLE_TYPE = 'BASE TABLE'
-            AND TABLE_SCHEMA = @schema
+            AND (@schema is NULL or TABLE_SCHEMA = @schema)
             AND TABLE_NAME = @tableName
         """
         , command.CommandText);
@@ -93,7 +95,7 @@ public class SqlServerCommandBuilderTests
         SELECT TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
         WHERE TABLE_TYPE = 'BASE TABLE'
-            AND TABLE_SCHEMA = @schema
+            AND (@schema is NULL or TABLE_SCHEMA = @schema)
         """
         , command.CommandText);
         Assert.Equal(SchemaName, command.Parameters[0].Value);
@@ -131,10 +133,10 @@ public class SqlServerCommandBuilderTests
         BEGIN
         CREATE TABLE [schema].[table] (
         [id] BIGINT IDENTITY(1,1),
-        [simpleName] NVARCHAR(255) COLLATE Latin1_General_100_BIN2,
+        [simpleName] NVARCHAR(255),
         [with space] INT,
         [embedding] VECTOR(10),
-        PRIMARY KEY NONCLUSTERED ([id])
+        PRIMARY KEY ([id])
         );
         END;
         """;

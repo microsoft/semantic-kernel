@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.SqlServer</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 

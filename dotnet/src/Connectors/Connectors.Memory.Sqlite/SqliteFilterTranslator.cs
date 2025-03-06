@@ -18,21 +18,18 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 
     internal Dictionary<string, object> Parameters => this._parameters;
 
-    protected override void GenerateLiteral(bool value)
-        => this._sql.Append(value ? "TRUE" : "FALSE");
-
     // TODO: support Contains over array fields (#10343)
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
     {
         if (value is not IEnumerable elements)
         {
             throw new NotSupportedException("Unsupported Contains expression");
         }
 
-        this.Translate(item);
+        this.Translate(item, parent);
         this._sql.Append(" IN (");
 
         var isFirst = true;
@@ -47,13 +44,13 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.GenerateLiteral(element);
+            this.TranslateConstant(element);
         }
 
         this._sql.Append(')');
     }
 
-    protected override void TranslateLambdaVariables(string name, object? capturedValue)
+    protected override void TranslateCapturedVariable(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

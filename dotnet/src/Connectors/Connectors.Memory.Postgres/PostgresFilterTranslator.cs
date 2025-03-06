@@ -20,26 +20,23 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void GenerateLiteral(bool value)
-        => this._sql.Append(value ? "TRUE" : "FALSE");
-
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
     {
-        this.Translate(source);
+        this.Translate(source, parent);
         this._sql.Append(" @> ARRAY[");
-        this.Translate(item);
+        this.Translate(item, parent);
         this._sql.Append(']');
     }
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
     {
-        this.Translate(item);
+        this.Translate(item, parent);
         this._sql.Append(" = ANY (");
-        this.Translate(source);
+        this.Translate(source, parent);
         this._sql.Append(')');
     }
 
-    protected override void TranslateLambdaVariables(string name, object? capturedValue)
+    protected override void TranslateCapturedVariable(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

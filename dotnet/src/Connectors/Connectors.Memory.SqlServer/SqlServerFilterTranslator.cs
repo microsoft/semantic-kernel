@@ -25,26 +25,53 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void GenerateLiteral(bool value)
-        => this._sql.Append(value ? "1" : "0");
+    protected override void TranslateConstant(object? value)
+    {
+        switch (value)
+        {
+            case bool boolValue:
+                this._sql.Append(boolValue ? "1" : "0");
+                return;
+            case DateTime dateTime:
+                this._sql.AppendFormat("'{0:yyyy-MM-dd HH:mm:ss}'", dateTime);
+                return;
+            case DateTimeOffset dateTimeOffset:
+                this._sql.AppendFormat("'{0:yyy-MM-dd HH:mm:ss zzz}'", dateTimeOffset);
+                return;
+            default:
+                base.TranslateConstant(value);
+                break;
+        }
+    }
 
-    protected override void GenerateLiteral(DateTime dateTime)
-        => this._sql.AppendFormat("'{0:yyyy-MM-dd HH:mm:ss}'", dateTime);
+    protected override void TranslateColumn(string column, MemberExpression memberExpression, Expression? parent)
+    {
+        // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
+        // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
+        if (memberExpression.Type == typeof(bool)
+            && (parent is null // Where(x => x.Bool)
+                || parent is UnaryExpression { NodeType: ExpressionType.Not } // Where(x => !x.Bool)
+                || parent is BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse })) // Where(x => x.Bool && other)
+        {
+            this.TranslateBinary(Expression.MakeBinary(ExpressionType.Equal, memberExpression, Expression.Constant(true)));
+        }
+        else
+        {
+            this._sql.Append('[').Append(column).Append(']');
+        }
+    }
 
-    protected override void GenerateLiteral(DateTimeOffset dateTimeOffset)
-        => this._sql.AppendFormat("'{0:yyy-MM-dd HH:mm:ss zzz}'", dateTimeOffset);
-
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
     {
         if (value is not IEnumerable elements)
         {
             throw new NotSupportedException("Unsupported Contains expression");
         }
 
-        this.Translate(item);
+        this.Translate(item, parent);
         this._sql.Append(" IN (");
 
         var isFirst = true;
@@ -59,13 +86,13 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 this._sql.Append(", ");
             }
 
-            this.GenerateLiteral(element);
+            this.TranslateConstant(element);
         }
 
         this._sql.Append(')');
     }
 
-    protected override void TranslateLambdaVariables(string name, object? capturedValue)
+    protected override void TranslateCapturedVariable(string name, object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

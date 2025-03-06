@@ -40,10 +40,10 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        this.Translate(this._lambdaExpression.Body);
+        this.Translate(this._lambdaExpression.Body, null);
     }
 
-    protected void Translate(Expression? node)
+    protected void Translate(Expression? node, Expression? parent)
     {
         switch (node)
         {
@@ -52,11 +52,11 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case ConstantExpression constant:
-                this.TranslateConstant(constant);
+                this.TranslateConstant(constant.Value);
                 return;
 
             case MemberExpression member:
-                this.TranslateMember(member);
+                this.TranslateMember(member, parent);
                 return;
 
             case MethodCallExpression methodCall:
@@ -72,36 +72,36 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private void TranslateBinary(BinaryExpression binary)
+    protected void TranslateBinary(BinaryExpression binary)
     {
         // Special handling for null comparisons
         switch (binary.NodeType)
         {
             case ExpressionType.Equal when IsNull(binary.Right):
                 this._sql.Append('(');
-                this.Translate(binary.Left);
+                this.Translate(binary.Left, binary);
                 this._sql.Append(" IS NULL)");
                 return;
             case ExpressionType.NotEqual when IsNull(binary.Right):
                 this._sql.Append('(');
-                this.Translate(binary.Left);
+                this.Translate(binary.Left, binary);
                 this._sql.Append(" IS NOT NULL)");
                 return;
 
             case ExpressionType.Equal when IsNull(binary.Left):
                 this._sql.Append('(');
-                this.Translate(binary.Right);
+                this.Translate(binary.Right, binary);
                 this._sql.Append(" IS NULL)");
                 return;
             case ExpressionType.NotEqual when IsNull(binary.Left):
                 this._sql.Append('(');
-                this.Translate(binary.Right);
+                this.Translate(binary.Right, binary);
                 this._sql.Append(" IS NOT NULL)");
                 return;
         }
 
         this._sql.Append('(');
-        this.Translate(binary.Left);
+        this.Translate(binary.Left, binary);
 
         this._sql.Append(binary.NodeType switch
         {
@@ -119,7 +119,7 @@ internal abstract class SqlFilterTranslator
             _ => throw new NotSupportedException("Unsupported binary expression node type: " + binary.NodeType)
         });
 
-        this.Translate(binary.Right);
+        this.Translate(binary.Right, binary);
         this._sql.Append(')');
 
         static bool IsNull(Expression expression)
@@ -127,10 +127,7 @@ internal abstract class SqlFilterTranslator
                || (TryGetCapturedValue(expression, out _, out var capturedValue) && capturedValue is null);
     }
 
-    private void TranslateConstant(ConstantExpression constant)
-        => this.GenerateLiteral(constant.Value);
-
-    protected void GenerateLiteral(object? value)
+    protected virtual void TranslateConstant(object? value)
     {
         // TODO: Nullable
         switch (value)
@@ -152,20 +149,14 @@ internal abstract class SqlFilterTranslator
                 this._sql.Append('\'').Append(s.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
-                this.GenerateLiteral(b);
+                this._sql.Append(b ? "TRUE" : "FALSE");
                 return;
             case Guid g:
                 this._sql.Append('\'').Append(g.ToString()).Append('\'');
                 return;
 
             case DateTime dateTime:
-                this.GenerateLiteral(dateTime);
-                return;
-
             case DateTimeOffset dateTimeOffset:
-                this.GenerateLiteral(dateTimeOffset);
-                return;
-
             case Array:
                 throw new NotImplementedException();
 
@@ -178,25 +169,16 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    protected abstract void GenerateLiteral(bool value);
-
-    protected virtual void GenerateLiteral(DateTime dateTime)
-        => throw new NotImplementedException();
-
-    protected virtual void GenerateLiteral(DateTimeOffset dateTimeOffset)
-        => throw new NotImplementedException();
-
-    private void TranslateMember(MemberExpression memberExpression)
+    private void TranslateMember(MemberExpression memberExpression, Expression? parent)
     {
         switch (memberExpression)
         {
             case var _ when this.TryGetColumn(memberExpression, out var column):
-                this._sql.Append('"').Append(column).Append('"');
+                this.TranslateColumn(column, memberExpression, parent);
                 return;
 
-            // Identify captured lambda variables, translate to PostgreSQL parameters ($1, $2...)
             case var _ when TryGetCapturedValue(memberExpression, out var name, out var value):
-                this.TranslateLambdaVariables(name, value);
+                this.TranslateCapturedVariable(name, value);
                 return;
 
             default:
@@ -204,7 +186,10 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    protected abstract void TranslateLambdaVariables(string name, object? capturedValue);
+    protected virtual void TranslateColumn(string column, MemberExpression memberExpression, Expression? parent)
+        => this._sql.Append('"').Append(column).Append('"');
+
+    protected abstract void TranslateCapturedVariable(string name, object? capturedValue);
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -213,7 +198,7 @@ internal abstract class SqlFilterTranslator
             // Enumerable.Contains()
             case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
                 when contains.Method.DeclaringType == typeof(Enumerable):
-                this.TranslateContains(source, item);
+                this.TranslateContains(source, item, methodCall);
                 return;
 
             // List.Contains()
@@ -227,7 +212,7 @@ internal abstract class SqlFilterTranslator
                 Object: Expression source,
                 Arguments: [var item]
             } when declaringType.GetGenericTypeDefinition() == typeof(List<>):
-                this.TranslateContains(source, item);
+                this.TranslateContains(source, item, methodCall);
                 return;
 
             default:
@@ -235,18 +220,18 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private void TranslateContains(Expression source, Expression item)
+    private void TranslateContains(Expression source, Expression item, MethodCallExpression parent)
     {
         switch (source)
         {
             // Contains over array column (r => r.Strings.Contains("foo"))
             case var _ when this.TryGetColumn(source, out _):
-                this.TranslateContainsOverArrayColumn(source, item);
+                this.TranslateContainsOverArrayColumn(source, item, parent);
                 return;
 
             // Contains over inline array (r => new[] { "foo", "bar" }.Contains(r.String))
             case NewArrayExpression newArray:
-                this.Translate(item);
+                this.Translate(item, parent);
                 this._sql.Append(" IN (");
 
                 var isFirst = true;
@@ -261,7 +246,7 @@ internal abstract class SqlFilterTranslator
                         this._sql.Append(", ");
                     }
 
-                    this.Translate(element);
+                    this.Translate(element, parent);
                 }
 
                 this._sql.Append(')');
@@ -269,7 +254,7 @@ internal abstract class SqlFilterTranslator
 
             // Contains over captured array (r => arrayLocalVariable.Contains(r.String))
             case var _ when TryGetCapturedValue(source, out _, out var value):
-                this.TranslateContainsOverCapturedArray(source, item, value);
+                this.TranslateContainsOverCapturedArray(source, item, parent, value);
                 return;
 
             default:
@@ -277,9 +262,9 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
+    protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent);
 
-    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value);
+    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value);
 
     private void TranslateUnary(UnaryExpression unary)
     {
@@ -298,7 +283,7 @@ internal abstract class SqlFilterTranslator
                 }
 
                 this._sql.Append("(NOT ");
-                this.Translate(unary.Operand);
+                this.Translate(unary.Operand, unary);
                 this._sql.Append(')');
                 return;
 

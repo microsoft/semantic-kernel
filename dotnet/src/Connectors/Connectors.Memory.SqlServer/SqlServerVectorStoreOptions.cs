@@ -12,5 +12,5 @@ public sealed class SqlServerVectorStoreOptions
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; init; } = SqlServerConstants.Schema;
+    public string? Schema { get; init; } = null;
 }

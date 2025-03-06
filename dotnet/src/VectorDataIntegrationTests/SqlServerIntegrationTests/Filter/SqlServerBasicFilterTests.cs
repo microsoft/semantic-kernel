@@ -12,14 +12,6 @@ namespace SqlServerIntegrationTests.Filter;
 public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture)
     : BasicFilterTests<int>(fixture), IClassFixture<SqlServerBasicFilterTests.Fixture>
 {
-    // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is fine
-    // "SELECT * FROM MyTable WHERE BooleanColumn;" is not
-    // TODO adsitnik: get it to work anyway
-    public override Task Bool() => this.TestFilterAsync(r => r.Bool == true);
-
-    // Same as above, "WHERE NOT BooleanColumn" is not supported
-    public override Task Not_over_bool() => this.TestFilterAsync(r => r.Bool == false);
-
     public override async Task Not_over_Or()
     {
         // Test sends: WHERE (NOT (("Int" = 8) OR ("String" = 'foo')))
@@ -62,14 +54,11 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
 
     public new class Fixture : BasicFilterTests<int>.Fixture
     {
+        private static readonly string s_uniqueName = Guid.NewGuid().ToString();
+
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
-        protected override string CollectionName
-#if NET // make sure different TFMs use different collection names (as they may run in parallel and cause trouble)
-            => "FilterTests-core";
-#else
-            => "FilterTests-framework";
-#endif
+        protected override string CollectionName => s_uniqueName;
 
         // Override to remove the string collection properties, which aren't (currently) supported on SqlServer
         protected override VectorStoreRecordDefinition GetRecordDefinition()

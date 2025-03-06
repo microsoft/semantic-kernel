@@ -31,7 +31,7 @@ internal sealed class RecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, 
         for (int i = 0; i < vectorProperties.Count; i++)
         {
             // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
-            ReadOnlyMemory<float> floats = (ReadOnlyMemory<float>)vectorPropertiesInfo[i].GetValue(dataModel);
+            ReadOnlyMemory<float> floats = (ReadOnlyMemory<float>)vectorPropertiesInfo[i].GetValue(dataModel)!;
             map[SqlServerCommandBuilder.GetColumnName(vectorProperties[i])] = floats;
         }
 
