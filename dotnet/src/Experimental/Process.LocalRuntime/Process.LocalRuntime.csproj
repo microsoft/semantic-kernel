@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Process.LocalRuntime</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
-    <TargetFrameworks>net8.0;net9.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>

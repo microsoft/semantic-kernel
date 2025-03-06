@@ -107,7 +107,7 @@ jobs:
       shell: bash
       run: |
         for solution in ${{ env.solutions }}; do
-          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
+          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }}
         done
 
     - name: Find test projects
@@ -118,7 +118,7 @@ jobs:
       shell: bash
       run: |
         for project in ${{ env.testprojects }}; do
-          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }}
         done
 
     - name: Upload dotnet test results

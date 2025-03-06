@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
-    <TargetFrameworks>net8.0;net9.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>$(NoWarn);SKEXP0001,SKEXP0120</NoWarn>

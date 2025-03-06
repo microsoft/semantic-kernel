@@ -90,5 +90,5 @@ jobs:
         run: |
           for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
             echo "Running dotnet format on $csproj"
-            docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet format $csproj --verify-no-changes --framework net${{ matrix.dotnet }} --verbosity diagnostic"
+            docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet format $csproj --verify-no-changes --verbosity diagnostic"
           done
