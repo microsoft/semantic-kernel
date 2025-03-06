@@ -21,23 +21,20 @@ public static class ResourceBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(config);
 
-        // Add configured AI chat and embeddings services to the environment variables so that Api Service can access them.
+        // Add AI chat service configuration to the environment variables so that Api Service can access it.
         builder.WithEnvironment(nameof(config.AIChatService), config.AIChatService);
-        builder.WithEnvironment(nameof(config.AIEmbeddingsService), config.AIEmbeddingsService);
 
         switch (config.AIChatService)
         {
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
-                // Add Azure OpenAI chat model deployment name to environment variables so that Api Service can access it.
-                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{AzureOpenAIChatConfig.ConfigSectionName}__{nameof(config.AzureOpenAIChat.DeploymentName)}", config.AzureOpenAIChat.DeploymentName);
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIChat)}__{nameof(config.AzureOpenAIChat.DeploymentName)}", config.AzureOpenAIChat.DeploymentName);
                 break;
             }
 
             case OpenAIChatConfig.ConfigSectionName:
             {
-                // Add OpenAI chat model name to environment variables so that Api Service can access it.
-                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{OpenAIChatConfig.ConfigSectionName}__{nameof(config.OpenAIChat.ModelName)}", config.OpenAIChat.ModelName);
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.OpenAIChat)}__{nameof(config.OpenAIChat.ModelName)}", config.OpenAIChat.ModelName);
                 break;
             }
 
@@ -45,24 +42,29 @@ public static class ResourceBuilderExtensions
                 throw new NotSupportedException($"AI service '{config.AIChatService}' is not supported.");
         }
 
-        switch (config.AIEmbeddingsService)
+        // Add RAG configuration to the environment variables so that Api Service can access it.
+        if (config.Rag is not null)
         {
-            case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
-            {
-                // Add Azure OpenAI embeddings model deployment name to environment variables so that Api Service can access it.
-                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{AzureOpenAIEmbeddingsConfig.ConfigSectionName}__{nameof(config.AzureOpenAIEmbeddings.DeploymentName)}", config.AzureOpenAIEmbeddings.DeploymentName);
-                break;
-            }
+            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.AIEmbeddingService)}", config.Rag.AIEmbeddingService);
+            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.VectorStoreType)}", config.Rag.VectorStoreType);
 
-            case OpenAIEmbeddingsConfig.ConfigSectionName:
+            switch (config.Rag?.AIEmbeddingService)
             {
-                // Add OpenAI embeddings model name to environment variables so that Api Service can access it.
-                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{OpenAIEmbeddingsConfig.ConfigSectionName}__{nameof(config.OpenAIEmbeddings.ModelName)}", config.OpenAIEmbeddings.ModelName);
-                break;
-            }
+                case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.DeploymentName)}", config.AzureOpenAIEmbeddings.DeploymentName);
+                    break;
+                }
 
-            default:
-                throw new NotSupportedException($"AI service '{config.AIEmbeddingsService}' is not supported.");
+                case OpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.OpenAIEmbeddings)}__{nameof(config.OpenAIEmbeddings.ModelName)}", config.OpenAIEmbeddings.ModelName);
+                    break;
+                }
+
+                default:
+                    throw new NotSupportedException($"AI service '{config.Rag?.AIEmbeddingService}' is not supported.");
+            }
         }
 
         return builder;

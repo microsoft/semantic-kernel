@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Azure.Identity;
 using ChatWithAgent.ApiService.Config;
-using ChatWithAgent.ApiService.Extensions;
 using ChatWithAgent.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,31 +53,60 @@ public static class Program
 
     private static void AddKernelAndAgent(WebApplicationBuilder builder, ServiceConfig config)
     {
-        if (config.Host.AIChatService != AzureOpenAIChatConfig.ConfigSectionName &&
-            config.Host.AIChatService != OpenAIChatConfig.ConfigSectionName)
-        {
-            throw new NotSupportedException($"AI service '{config.Host.AIChatService}' is not supported.");
-        }
-
-        if (config.Host.AIEmbeddingsService != AzureOpenAIEmbeddingsConfig.ConfigSectionName &&
-            config.Host.AIEmbeddingsService != OpenAIEmbeddingsConfig.ConfigSectionName)
-        {
-            throw new NotSupportedException($"AI service '{config.Host.AIEmbeddingsService}' is not supported.");
-        }
-
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
-        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName ||
-            config.Host.AIEmbeddingsService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+        // Add AzureOpenAI client.
+        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Host.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
         {
-            builder.AddAzureOpenAIServices(config.Host);
+            builder.AddAzureOpenAIClient(
+                HostConfig.AzureOpenAIConnectionStringName,
+                (settings) => settings.Credential = builder.Environment.IsProduction()
+                    ? new DefaultAzureCredential()
+                    : new AzureCliCredential()); // Use credentials from Azure CLI for local development.
         }
 
-        if (config.Host.AIChatService == OpenAIChatConfig.ConfigSectionName ||
-            config.Host.AIEmbeddingsService == OpenAIEmbeddingsConfig.ConfigSectionName)
+        // Add OpenAI client.
+        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Host.Rag?.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
         {
-            builder.AddOpenAIServices(config.Host);
+            builder.AddOpenAIClient(HostConfig.OpenAIConnectionStringName);
+        }
+
+        // Add chat completion services.
+        switch (config.Host.AIChatService)
+        {
+            case AzureOpenAIChatConfig.ConfigSectionName:
+            {
+                builder.Services.AddAzureOpenAIChatCompletion(config.Host.AzureOpenAIChat.DeploymentName);
+                break;
+            }
+            case OpenAIChatConfig.ConfigSectionName:
+            {
+                builder.Services.AddOpenAIChatCompletion(config.Host.OpenAIChat.ModelName);
+                break;
+            }
+            default:
+                throw new NotSupportedException($"AI chat service '{config.Host.AIChatService}' is not supported.");
+        }
+
+        if (config.Host.Rag is not null)
+        {
+            // Add text embedding generation services.
+            switch (config.Host.Rag.AIEmbeddingService)
+            {
+                case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.Host.AzureOpenAIEmbeddings.DeploymentName);
+                    break;
+                }
+                case OpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.Services.AddOpenAITextEmbeddingGeneration(config.Host.OpenAIEmbeddings.ModelName);
+                    break;
+                }
+                default:
+                    throw new NotSupportedException($"AI embeddings service '{config.Host.Rag.AIEmbeddingService}' is not supported.");
+            }
         }
 
         // Add chat completion agent.

@@ -66,12 +66,6 @@ public sealed class HostConfig
     public string AIChatService { get; set; } = string.Empty;
 
     /// <summary>
-    /// The AI embeddings service to use.
-    /// </summary>
-    [Required]
-    public string AIEmbeddingsService { get; set; } = string.Empty;
-
-    /// <summary>
     /// The Azure OpenAI chat service configuration.
     /// </summary>
     public AzureOpenAIChatConfig AzureOpenAIChat => this._azureOpenAIChatConfig;
@@ -90,4 +84,9 @@ public sealed class HostConfig
     /// The OpenAI embeddings service configuration.
     /// </summary>
     public OpenAIEmbeddingsConfig OpenAIEmbeddings => this._openAIEmbeddingsConfig;
+
+    /// <summary>
+    /// The RAG configuration.
+    /// </summary>
+    public RagConfig? Rag { get; set; }
 }
