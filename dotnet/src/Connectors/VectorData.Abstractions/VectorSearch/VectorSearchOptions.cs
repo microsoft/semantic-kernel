@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Options for vector search.
+/// Defines options for vector search.
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
@@ -15,19 +15,21 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    [Obsolete("Use NewFilter instead")]
-    public VectorSearchFilter? Filter { get; init; }
+    [Obsolete("Use Filter instead")]
+    public VectorSearchFilter? OldFilter { get; init; }
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    public Expression<Func<TRecord, bool>>? NewFilter { get; init; }
+    public Expression<Func<TRecord, bool>>? Filter { get; init; }
 
     /// <summary>
     /// Gets or sets the name of the vector property to search on.
     /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// If not provided will default to the first vector property in the schema.
     /// </summary>
+    /// <value>
+    /// The default value is the first vector property in the schema.
+    /// </value>
     public string? VectorPropertyName { get; init; }
 
     /// <summary>
@@ -49,7 +51,7 @@ public class VectorSearchOptions<TRecord>
     }
 
     /// <summary>
-    /// Gets or sets the number of results to skip before returning results, i.e. the index of the first result to return.
+    /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 0.</exception>
     public int Skip
@@ -74,9 +76,11 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether the total count should be included in the results.
     /// </summary>
+    /// <value>
+    /// The default value is false.
+    /// </value>
     /// <remarks>
-    /// Default value is false.
-    /// Not all vector search implementations will support this option in which case the total
+    /// Not all vector search implementations support this option, in which case the total
     /// count will be null even if requested via this option.
     /// </remarks>
     public bool IncludeTotalCount { get; init; } = false;

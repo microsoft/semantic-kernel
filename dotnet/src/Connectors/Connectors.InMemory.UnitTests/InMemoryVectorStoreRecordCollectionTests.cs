@@ -338,7 +338,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new() { IncludeVectors = true, Filter = filter, IncludeTotalCount = true },
+            new() { IncludeVectors = true, OldFilter = filter, IncludeTotalCount = true },
             this._testCancellationToken);
 
         // Assert

@@ -451,7 +451,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new()
             {
                 IncludeVectors = includeVectors,
-                Filter = filter,
+                OldFilter = filter,
                 Top = 5,
                 Skip = 2
             });

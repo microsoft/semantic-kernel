@@ -3,12 +3,12 @@
 from typing import Generic, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 TModel = TypeVar("TModel")
 
 
-@experimental_class
+@experimental
 class VectorSearchResult(KernelBaseModel, Generic[TModel]):
     """The result of a vector search."""
 

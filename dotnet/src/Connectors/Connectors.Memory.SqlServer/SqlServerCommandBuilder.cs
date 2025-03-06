@@ -353,11 +353,11 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
-        if (options.NewFilter is not null)
+        if (options.Filter is not null)
         {
             int startParamIndex = command.Parameters.Count;
 
-            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, options.NewFilter, sb, startParamIndex: startParamIndex);
+            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, options.Filter, sb, startParamIndex: startParamIndex);
             translator.Translate(appendWhere: true);
             List<object> parameters = translator.ParameterValues;
 

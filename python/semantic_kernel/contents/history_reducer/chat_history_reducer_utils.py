@@ -7,7 +7,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.utils.experimental_decorator import experimental_function
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 SUMMARY_METADATA_KEY = "__summary__"
 
 
-@experimental_function
+@experimental
 def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, int]]:
     """Identify all (FunctionCallContent, FunctionResultContent) pairs in the history.
 
@@ -45,7 +45,7 @@ def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, 
     return pairs
 
 
-@experimental_function
+@experimental
 def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     """Identify the index of the first message that is not a summary message.
 
@@ -60,7 +60,7 @@ def locate_summarization_boundary(history: list[ChatMessageContent]) -> int:
     return len(history)
 
 
-@experimental_function
+@experimental
 def locate_safe_reduction_index(
     history: list[ChatMessageContent],
     target_count: int,
@@ -96,10 +96,11 @@ def locate_safe_reduction_index(
     message_index = total_count - target_count
 
     # Move backward to avoid cutting function calls / results
+    # also skip over developer/system messages
     while message_index >= offset_count:
-        if not any(
-            isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in history[message_index].items
-        ):
+        if history[message_index].role not in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
+            break
+        if not contains_function_call_or_result(history[message_index]):
             break
         message_index -= 1
 
@@ -115,7 +116,7 @@ def locate_safe_reduction_index(
     return target_index
 
 
-@experimental_function
+@experimental
 def extract_range(
     history: list[ChatMessageContent],
     start: int,
@@ -164,6 +165,11 @@ def extract_range(
             i += 1
             continue
 
+        # skipping system/developer message
+        if msg.role in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
+            i += 1
+            continue
+
         # If preserve_pairs is on, and there's a paired index, skip or include them both
         if preserve_pairs and idx in pair_map:
             paired_idx = pair_map[idx]
@@ -205,7 +211,7 @@ def extract_range(
     return extracted
 
 
-@experimental_function
+@experimental
 def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
     """Return True if the message has any function call or function result."""
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)

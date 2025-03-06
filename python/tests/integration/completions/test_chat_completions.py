@@ -12,15 +12,12 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import ChatMessageContent, TextContent
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.connectors.ai import PromptExecutionSettings
+from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, TextContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
-    bedrock_setup,
     mistral_ai_setup,
     ollama_setup,
     onnx_setup,
@@ -192,7 +189,6 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            marks=pytest.mark.skipif(not bedrock_setup, reason="Bedrock Environment Variables not set"),
             id="bedrock_amazon_titan_text_input",
         ),
         pytest.param(

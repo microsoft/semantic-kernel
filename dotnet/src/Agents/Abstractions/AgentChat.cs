@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -15,12 +16,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Point of interaction for one or more agents.
+/// Provides a point of interaction for one or more agents.
 /// </summary>
 /// <remarks>
-/// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
-/// will throw exception if concurrent activity is attempted for any public method.
+/// <see cref="AgentChat" /> instances don't support concurrent invocation and
+/// will throw an exception if concurrent activity is attempted for any public method.
 /// </remarks>
+[Experimental("SKEXP0110")]
 public abstract class AgentChat
 {
     private readonly BroadcastQueue _broadcastQueue;
@@ -31,62 +33,62 @@ public abstract class AgentChat
     private ILogger? _logger;
 
     /// <summary>
-    /// The agents participating in the chat.
+    /// Gets the agents participating in the chat.
     /// </summary>
     public abstract IReadOnlyList<Agent> Agents { get; }
 
     /// <summary>
-    /// Indicates if a chat operation is active.  Activity is defined as
-    /// any the execution of any public method.
+    /// Gets a value that indicates whether a chat operation is active. Activity is defined as
+    /// any execution of a public method.
     /// </summary>
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
     /// <summary>
-    /// The <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
+    /// Gets the <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
     /// </summary>
     public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
 
     /// <summary>
-    /// The <see cref="ILogger"/> associated with this chat.
+    /// Gets the <see cref="ILogger"/> associated with this chat.
     /// </summary>
     protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
-    /// Exposes the internal history to subclasses.
+    /// Gets the internal history to expose it to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
 
     /// <summary>
-    /// Process a series of interactions between the agents participating in this chat.
+    /// Processes a series of interactions between the agents participating in this chat.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Process a series of interactions between the agents participating in this chat.
+    /// Processes a series of interactions between the agents participating in this chat.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieve the chat history.
+    /// Retrieves the chat history.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The message history</returns>
+    /// <returns>The message history.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(CancellationToken cancellationToken = default) =>
         this.GetChatMessagesAsync(agent: null, cancellationToken);
 
     /// <summary>
-    /// Retrieve the message history, either the primary history or
-    /// an agent specific version.
+    /// Retrieves the message history, either the primary history or
+    /// an agent-specific version.
     /// </summary>
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The message history</returns>
+    /// <returns>The message history.</returns>
     /// <remarks>
-    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(
@@ -132,39 +134,38 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Append a message to the conversation.  Adding a message while an agent
+    /// Appends a message to the conversation. Adding a message while an agent
     /// is active is not allowed.
     /// </summary>
-    /// <param name="message">A non-system message with which to append to the conversation.</param>
+    /// <param name="message">A non-system message to append to the conversation.</param>
     /// <remarks>
-    /// Adding a message to the conversation requires any active <see cref="AgentChannel"/> remains
+    /// Adding a message to the conversation requires that any active <see cref="AgentChannel"/> remains
     /// synchronized, so the message is broadcast to all channels.
-    /// </remarks>
-    /// <throws>KernelException if a system message is present, without taking any other action</throws>
-    /// <remarks>
-    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    ///
+    /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
+    /// <exception cref="KernelException">A system message is present, and no other action is taken.</exception>
     public void AddChatMessage(ChatMessageContent message)
     {
         this.AddChatMessages([message]);
     }
 
     /// <summary>
-    /// Append messages to the conversation.  Adding messages while an agent
+    /// Appends messages to the conversation. Adding messages while an agent
     /// is active is not allowed.
     /// </summary>
-    /// <param name="messages">Set of non-system messages with which to append to the conversation.</param>
+    /// <param name="messages">A set of non-system messages to append to the conversation.</param>
     /// <remarks>
-    /// Adding messages to the conversation requires any active <see cref="AgentChannel"/> remains
+    /// Adding messages to the conversation requires that any active <see cref="AgentChannel"/> remains
     /// synchronized, so the messages are broadcast to all channels.
-    /// </remarks>
-    /// <throws>KernelException if a system message is present, without taking any other action</throws>
-    /// <throws>KernelException chat has current activity.</throws>
-    /// <remarks>
-    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    ///
+    /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
+    /// <exception cref="KernelException">A system message is present, and no other action is taken.
+    /// -or-
+    /// The chat has current activity.</exception>
     public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
@@ -198,13 +199,13 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> and a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <returns>An asynchronous enumeration of messages.</returns>
     /// <remarks>
-    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
@@ -213,7 +214,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         try
         {
@@ -226,7 +227,7 @@ public abstract class AgentChat
 
             await foreach ((bool isVisible, ChatMessageContent message) in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
+                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), message);
 
                 messages.Add(message);
 
@@ -248,7 +249,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
         finally
         {
@@ -257,13 +258,13 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// Processes a discrete incremental interaction between a single <see cref="Agent"/> and a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     /// <remarks>
-    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// <see cref="AgentChat" /> instances don't support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAgentAsync(
@@ -272,7 +273,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
         try
         {
@@ -290,7 +291,7 @@ public abstract class AgentChat
 
             this.History.AddRange(messages);
 
-            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
+            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName(), messages);
 
             // Broadcast message to other channels (in parallel)
             // Note: Able to queue messages without synchronizing channels.
@@ -300,7 +301,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
         finally
         {
@@ -309,7 +310,7 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Reset the chat, clearing all history and persisted state.
+    /// Resets the chat, clearing all history and persisted state.
     /// All agents will remain present.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -395,12 +396,12 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Test to ensure chat is not concurrently active and throw exception if it is.
+    /// Checks to ensure the chat is not concurrently active and throws an exception if it is.
     /// If not, activity is signaled.
     /// </summary>
     /// <remarks>
-    /// Rather than allowing concurrent invocation to result in undefined behavior / failure,
-    /// it is preferred to fail-fast in order to avoid side-effects / state mutation.
+    /// Rather than allowing concurrent invocation to result in undefined behavior or failure,
+    /// it's preferred to fail fast to avoid side effects or state mutation.
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
@@ -433,7 +434,7 @@ public abstract class AgentChat
         AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
         if (channel is null)
         {
-            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
 
             channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
@@ -445,7 +446,7 @@ public abstract class AgentChat
                 await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
             }
 
-            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
         }
 
         return channel;

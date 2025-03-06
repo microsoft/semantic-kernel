@@ -375,7 +375,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo(nameof(PineconeHotel.HotelCode), 42);
-        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Top = 1, Filter = filter });
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Top = 1, OldFilter = filter });
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
         var searchResultRecord = searchResults.First().Record;

@@ -661,6 +661,65 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal(isStreaming, actualStreamingFlag);
     }
 
+    [Fact]
+    public async Task PromptExecutionSettingsArePropagatedFromInvokePromptToFilterContextAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Function1")]);
+
+        AutoFunctionInvocationContext? actualContext = null;
+
+        var kernel = this.GetKernelWithFilter(plugin, (context, next) =>
+        {
+            actualContext = context;
+            return Task.CompletedTask;
+        });
+
+        var expectedExecutionSettings = new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(expectedExecutionSettings));
+
+        // Assert
+        Assert.NotNull(actualContext);
+        Assert.Same(expectedExecutionSettings, actualContext!.ExecutionSettings);
+    }
+
+    [Fact]
+    public async Task PromptExecutionSettingsArePropagatedFromInvokePromptStreamingToFilterContextAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Function1")]);
+
+        AutoFunctionInvocationContext? actualContext = null;
+
+        var kernel = this.GetKernelWithFilter(plugin, (context, next) =>
+        {
+            actualContext = context;
+            return Task.CompletedTask;
+        });
+
+        var expectedExecutionSettings = new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(expectedExecutionSettings)))
+        { }
+
+        // Assert
+        Assert.NotNull(actualContext);
+        Assert.Same(expectedExecutionSettings, actualContext!.ExecutionSettings);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

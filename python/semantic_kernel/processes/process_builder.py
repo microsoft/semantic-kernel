@@ -2,6 +2,7 @@
 
 import contextlib
 import inspect
+from collections.abc import Callable
 from copy import copy
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -17,13 +18,14 @@ from semantic_kernel.processes.process_function_target_builder import ProcessFun
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 from semantic_kernel.processes.process_types import TState, TStep
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.processes.step_utils import get_fully_qualified_name
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
 
-@experimental_class
+@experimental
 class ProcessBuilder(ProcessStepBuilder):
     """A builder for a process."""
 
@@ -32,19 +34,37 @@ class ProcessBuilder(ProcessStepBuilder):
     has_parent_process: bool = False
 
     steps: list["ProcessStepBuilder"] = Field(default_factory=list)
+    factories: dict[str, Callable] = Field(default_factory=dict)
 
     def add_step(
         self,
         step_type: type[TStep],
         name: str | None = None,
         initial_state: TState | None = None,
+        factory_function: Callable | None = None,
         **kwargs,
     ) -> ProcessStepBuilder[TState, TStep]:
-        """Register a step type with optional constructor arguments."""
+        """Register a step type with optional constructor arguments.
+
+        Args:
+            step_type: The step type.
+            name: The name of the step. Defaults to None.
+            initial_state: The initial state of the step. Defaults to None.
+            factory_function: The factory function. Allows for a callable that is used to create the step instance
+                that may have complex dependencies that cannot be JSON serialized or deserialized. Defaults to None.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            The process step builder.
+        """
         if not inspect.isclass(step_type):
             raise ProcessInvalidConfigurationException(
                 f"Expected a class type, but got an instance of {type(step_type).__name__}"
             )
+
+        if factory_function:
+            fq_name = get_fully_qualified_name(step_type)
+            self.factories[fq_name] = factory_function
 
         name = name or step_type.__name__
         process_step_builder = ProcessStepBuilder(type=step_type, name=name, initial_state=initial_state, **kwargs)
@@ -117,4 +137,4 @@ class ProcessBuilder(ProcessStepBuilder):
         built_edges = {key: [edge.build() for edge in edges] for key, edges in self.edges.items()}
         built_steps = [step.build_step() for step in self.steps]
         process_state = KernelProcessState(name=self.name, id=self.id if self.has_parent_process else None)
-        return KernelProcess(state=process_state, steps=built_steps, edges=built_edges)
+        return KernelProcess(state=process_state, steps=built_steps, edges=built_edges, factories=self.factories)

@@ -372,7 +372,7 @@ WHERE "{keyColumn}" = ANY($1);
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var (where, parameters) = (oldFilter: legacyFilter, newFilter) switch
         {
-            (not null, not null) => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
+            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, propertyReader.RecordDefinition.Properties, legacyFilter, startParamIndex: 2),
             (null, not null) => GenerateNewFilterWhereClause(propertyReader, newFilter),
             _ => (Clause: string.Empty, Parameters: [])
