@@ -81,10 +81,12 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the second contains Oranges, however
             // adding the filter should limit the results to only the first.
-            var options = new HybridSearchOptions
+#pragma warning disable CS0618 // Type or member is obsolete
+            var options = new HybridSearchOptions<KeyWithVectorAndStringRecord<TKey>>
             {
-                Filter = new VectorSearchFilter().EqualTo("Code", 1)
+                OldFilter = new VectorSearchFilter().EqualTo("Code", 1)
             };
+#pragma warning restore CS0618 // Type or member is obsolete
             var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], options);
 
             // Assert
