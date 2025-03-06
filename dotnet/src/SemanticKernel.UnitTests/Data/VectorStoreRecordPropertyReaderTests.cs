@@ -432,26 +432,36 @@ public class VectorStoreRecordPropertyReaderTests
 
     [Theory]
     [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
-    public void GetVectorPropertyOrFirstReturnsRequestedVectorOrFirstVectorAndThrowsForInvalidVector(Type type, VectorStoreRecordDefinition? definition)
+    public void GetVectorPropertyOrSingleReturnsRequestedVectorAndThrowsForInvalidVector(Type type, VectorStoreRecordDefinition? definition)
     {
         // Arrange.
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Equal("Vector2", sut.GetVectorPropertyOrFirst("Vector2").DataModelPropertyName);
-        Assert.Equal("Vector1", sut.GetVectorPropertyOrFirst(null).DataModelPropertyName);
-        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrFirst("DoesNotExist"));
+        Assert.Equal("Vector2", sut.GetVectorPropertyOrSingle("Vector2").DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle("DoesNotExist"));
     }
 
     [Theory]
     [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
-    public void GetVectorPropertyOrFirstThrowsForNoVectors(Type type, VectorStoreRecordDefinition? definition)
+    public void GetVectorPropertyOrSingleThrowsForMultipleVectors(Type type, VectorStoreRecordDefinition? definition)
     {
         // Arrange.
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrFirst(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleThrowsForNoVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(null));
     }
 
     [Theory]

@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <summary>
 /// Options for hybrid search when using a dense vector and string keywords to do the search.
 /// </summary>
-public class KeywordVectorizedHybridSearchOptions
+public class HybridSearchOptions
 {
     /// <summary>
     /// Gets or sets a search filter to use before doing the hybrid search.
@@ -15,18 +15,19 @@ public class KeywordVectorizedHybridSearchOptions
     /// <summary>
     /// Gets or sets the name of the target dense vector property to search on.
     /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// If not provided will default to the first vector property in the schema.
+    /// If not provided will look if there is a vector property, and
+    /// will throw if either none or multiple exist.
     /// </summary>
     public string? VectorPropertyName { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the target text property to do the text/keyword search on.
+    /// Gets or sets the name of the additional target property to do the text/keyword search on.
     /// The property must have full text search enabled.
     /// Use the name of the data property from your data model or as provided in the record definition.
     /// If not provided will look if there is a text property with full text search enabled, and
     /// will throw if either none or multiple exist.
     /// </summary>
-    public string? FullTextPropertyName { get; init; }
+    public string? AdditionalPropertyName { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to return.

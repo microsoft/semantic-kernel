@@ -15,7 +15,8 @@ public class VectorSearchOptions
     /// <summary>
     /// Gets or sets the name of the vector property to search on.
     /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// If not provided will default to the first vector property in the schema.
+    /// If not provided will look if there is a vector property, and
+    /// will throw if either none or multiple exist.
     /// </summary>
     public string? VectorPropertyName { get; init; }
 

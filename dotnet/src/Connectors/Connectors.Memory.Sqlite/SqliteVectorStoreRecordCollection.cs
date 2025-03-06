@@ -169,7 +169,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 

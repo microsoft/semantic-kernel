@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Contains a method for doing a hybrid search using a vector and keywords.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
-public interface IKeywordVectorizedHybridSearch<TRecord>
+public interface IKeywordHybridSearch<TRecord>
 {
     /// <summary>
     /// Performs a hybrid search for records that match the given embedding and keywords, after applying the provided filters.
@@ -21,9 +21,9 @@ public interface IKeywordVectorizedHybridSearch<TRecord>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the hybrid search, including their result scores.</returns>
-    Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(
+    Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(
         TVector vector,
         ICollection<string> keywords,
-        KeywordVectorizedHybridSearchOptions? options = default,
+        HybridSearchOptions? options = default,
         CancellationToken cancellationToken = default);
 }

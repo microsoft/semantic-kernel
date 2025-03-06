@@ -8,7 +8,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Weaviate setup and teardown.</param>
 [Collection("WeaviateVectorStoreCollection")]

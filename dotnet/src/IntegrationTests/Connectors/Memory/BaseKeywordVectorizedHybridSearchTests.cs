@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for common integration tests that should pass for any <see cref="IKeywordVectorizedHybridSearch{TRecord}"/>.
+/// Base class for common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
 public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
@@ -38,7 +38,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwhybrid",
             this.KeyWithVectorAndStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
         try
         {
@@ -48,7 +48,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the third contains Grapes, so searching for
             // Grapes should return the third record first.
-            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Grapes"]);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"]);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -71,7 +71,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwfilteredhybrid",
             this.KeyWithVectorAndStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
         try
         {
@@ -81,11 +81,11 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the second contains Oranges, however
             // adding the filter should limit the results to only the first.
-            var options = new KeywordVectorizedHybridSearchOptions
+            var options = new HybridSearchOptions
             {
                 Filter = new VectorSearchFilter().EqualTo("Code", 1)
             };
-            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], options);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], options);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -108,7 +108,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwtophybrid",
             this.KeyWithVectorAndStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
         try
         {
@@ -118,7 +118,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the second contains Oranges, so the
             // second should be returned first.
-            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], new() { Top = 1 });
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { Top = 1 });
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -141,7 +141,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwskiphybrid",
             this.KeyWithVectorAndStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
         try
         {
@@ -151,7 +151,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             // Act
             // All records have the same vector, but the first and third contain healthy,
             // so when skipping the first two results, we should get the second record.
-            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["healthy"], new() { Skip = 2 });
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], new() { Skip = 2 });
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -174,7 +174,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwmultikeywordhybrid",
             this.KeyWithVectorAndStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<KeyWithVectorAndStringRecord<TKey>>;
 
         try
         {
@@ -182,7 +182,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             await this.CreateCollectionAndAddDataAsync(sut, vector);
 
             // Act
-            var searchResult = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["tangy", "nourishing"]);
+            var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"]);
 
             // Assert
             var results = await searchResult.Results.ToListAsync();
@@ -207,7 +207,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             "kwmultitexthybrid",
             this.MultiSearchStringRecordDefinition);
 
-        var hybridSearch = sut as IKeywordVectorizedHybridSearch<MultiSearchStringRecord<TKey>>;
+        var hybridSearch = sut as IKeywordHybridSearch<MultiSearchStringRecord<TKey>>;
 
         try
         {
@@ -215,8 +215,8 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             await this.CreateCollectionAndAddDataAsync(sut, vector);
 
             // Act
-            var searchResult1 = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Apples"], new() { FullTextPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
-            var searchResult2 = await hybridSearch!.KeywordVectorizedHybridSearch(vector, ["Oranges"], new() { FullTextPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
 
             // Assert
             var results1 = await searchResult1.Results.ToListAsync();

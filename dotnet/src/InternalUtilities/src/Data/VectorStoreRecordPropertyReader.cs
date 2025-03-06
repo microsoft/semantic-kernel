@@ -339,11 +339,12 @@ internal sealed class VectorStoreRecordPropertyReader
 
     /// <summary>
     /// Get the vector property with the provided name if a name is provided, and fall back
-    /// to the first vector property in the schema if not.
+    /// to a vector property in the schema if not. If no name is provided and there is more
+    /// than one vector property, an exception will be thrown.
     /// </summary>
     /// <param name="vectorPropertyName">The vector property name.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
-    public VectorStoreRecordVectorProperty GetVectorPropertyOrFirst(string? vectorPropertyName)
+    public VectorStoreRecordVectorProperty GetVectorPropertyOrSingle(string? vectorPropertyName)
     {
         // If vector property name is provided, try to find it in schema or throw an exception.
         if (!string.IsNullOrWhiteSpace(vectorPropertyName))
@@ -364,6 +365,11 @@ internal sealed class VectorStoreRecordPropertyReader
         if (this.VectorProperty is null)
         {
             throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any vector properties.");
+        }
+
+        if (this.VectorProperties.Count > 1)
+        {
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type has multiple vector properties, please specify your chosen property via options.");
         }
 
         return this.VectorProperty;
@@ -410,7 +416,7 @@ internal sealed class VectorStoreRecordPropertyReader
 
         if (fullTextStringProperties.Count > 1)
         {
-            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does has multiple text data properties that have full text search enabled, please specify your chosen property via options.");
+            throw new InvalidOperationException($"The {this._dataModelType.FullName} type has multiple text data properties that have full text search enabled, please specify your chosen property via options.");
         }
 
         return fullTextStringProperties[0];

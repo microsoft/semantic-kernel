@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordVectorizedHybridSearch<TRecord>
+public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -36,7 +36,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly KeywordVectorizedHybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly HybridSearchOptions s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -256,7 +256,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
         var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
@@ -301,14 +301,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> KeywordVectorizedHybridSearch<TVector>(TVector vector, ICollection<string> keywords, KeywordVectorizedHybridSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrFirst(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.FullTextPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
         var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
 
         var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
