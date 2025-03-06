@@ -520,11 +520,11 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(int) => ("INT", "IDENTITY(1,1)"),
             Type t when t == typeof(long) => ("BIGINT", "IDENTITY(1,1)"),
             // TODO adsitnik: discuss using NEWID() vs NEWSEQUENTIALID().
-            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWID()"),
+            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWSEQUENTIALID()"),
             Type t when t == typeof(string) => (NVARCHAR, null),
             Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", null),
             Type t when t == typeof(bool) => ("BIT", null),
-            Type t when t == typeof(DateTime) => ("DATETIME", null),
+            Type t when t == typeof(DateTime) => ("DATETIME2", null),
             Type t when t == typeof(TimeSpan) => ("TIME", null),
             Type t when t == typeof(decimal) => ("DECIMAL", null),
             Type t when t == typeof(double) => ("FLOAT", null),
