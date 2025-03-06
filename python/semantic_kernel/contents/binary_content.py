@@ -121,9 +121,16 @@ class BinaryContent(KernelContent):
         self.metadata.update(self._data_uri.parameters)
 
     @property
-    def data(self) -> bytes:
+    def data_string(self) -> str:
+        """Returns the data as a string, using the data format."""
+        if self._data_uri:
+            return self._data_uri._data_str()
+        return ""
+
+    @property
+    def data(self) -> bytes | ndarray:
         """Get the data."""
-        if self._data_uri and self._data_uri.data_array:
+        if self._data_uri and self._data_uri.data_array is not None:
             return self._data_uri.data_array.tobytes()
         if self._data_uri and self._data_uri.data_bytes:
             return self._data_uri.data_bytes
@@ -188,6 +195,7 @@ class BinaryContent(KernelContent):
             self._data_uri.data_array.tofile(path)
             return
         with open(path, "wb") as file:
+            assert isinstance(self.data, bytes)  # nosec
             file.write(self.data)
 
     def to_dict(self) -> dict[str, Any]:

@@ -16,6 +16,7 @@ def kernel_with_ai_service():
     kernel = create_autospec(Kernel)
     mock_ai_service_client = create_autospec(ChatCompletionClientBase)
     mock_prompt_execution_settings = create_autospec(PromptExecutionSettings)
+    mock_prompt_execution_settings.function_choice_behavior = None
     kernel.select_ai_service.return_value = (mock_ai_service_client, mock_prompt_execution_settings)
     mock_ai_service_client.get_chat_message_contents = AsyncMock(
         return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]

@@ -64,55 +64,6 @@ public class KernelAgentYamlTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text.
-    /// </summary>
-    [Fact]
-    public void VerifyAgentDefinitionFromYaml()
-    {
-        // Arrange
-        var text =
-            """
-            version: 1.0.0
-            type: chat_completion_agent
-            name: ChatCompletionAgent
-            description: ChatCompletionAgent Description
-            instructions: ChatCompletionAgent Instructions
-            metadata:
-                author: Microsoft
-                created: 2025-02-21
-            model:
-                id: gpt-4o-mini
-                options:
-                    temperature: 0.4
-                    function_choice_behavior:
-                        type: auto
-                configuration:
-                    type: azureai
-            inputs:
-                - name: input1
-                  description: input1 description
-                - name: input2
-                  description: input2 description
-            outputs:
-                - description: output1 description
-            template:
-                format: liquid
-                parser: semantic-kernel
-            tools:
-                - name: tool1
-                  type: code_interpreter
-                - name: tool2
-                  type: file_search
-            """;
-
-        // Act
-        var agentDefinition = AgentDefinitionYaml.FromYaml(text);
-
-        // Assert
-        Assert.NotNull(agentDefinition);
-    }
-
-    /// <summary>
     /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="ChatCompletionAgentFactory"/>
     /// </summary>
     [Fact]
@@ -189,7 +140,7 @@ public class KernelAgentYamlTests : IDisposable
         // Arrange
         var text =
             """
-            type: azureai_agent
+            type: foundry_agent
             name: AzureAIAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions

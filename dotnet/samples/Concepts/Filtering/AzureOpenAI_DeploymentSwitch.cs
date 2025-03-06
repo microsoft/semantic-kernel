@@ -30,8 +30,8 @@ public class AzureOpenAI_DeploymentSwitch(ITestOutputHelper output) : BaseTest(o
         kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
 
         // Define the endpoints for the two Azure OpenAI services
-        var endpoint1 = "https://lightspeed-team-shared-openai-eastus.openai.azure.com/";
-        var endpoint2 = "https://lightspeed-team-shared-openai-swedencentral.openai.azure.com/";
+        var endpoint1 = "https://contoso-eastus.openai.azure.com/";
+        var endpoint2 = "https://contoso-swedencentral.openai.azure.com/";
 
         // Add Azure OpenAI chat completion services
         kernelBuilder.AddAzureOpenAIChatCompletion(

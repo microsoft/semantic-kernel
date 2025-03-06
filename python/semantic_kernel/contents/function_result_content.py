@@ -42,7 +42,6 @@ class FunctionResultContent(KernelContent):
 
     def __init__(
         self,
-        content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = FUNCTION_RESULT_CONTENT_TAG,  # type: ignore
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
@@ -57,7 +56,6 @@ class FunctionResultContent(KernelContent):
         """Create function result content.
 
         Args:
-            content_type: The content type.
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call that the result relates to.
@@ -80,7 +78,6 @@ class FunctionResultContent(KernelContent):
             else:
                 function_name = name
         args = {
-            "content_type": content_type,
             "inner_content": inner_content,
             "ai_model_id": ai_model_id,
             "id": id,
