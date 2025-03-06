@@ -77,7 +77,7 @@ public static class Program
         {
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
-                builder.Services.AddAzureOpenAIChatCompletion(config.Host.AzureOpenAIChat.DeploymentName);
+                builder.Services.AddAzureOpenAIChatCompletion(config.Host.AzureOpenAIChat.DeploymentName, modelId: config.Host.AzureOpenAIChat.ModelName);
                 break;
             }
             case OpenAIChatConfig.ConfigSectionName:
@@ -96,7 +96,7 @@ public static class Program
             {
                 case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
                 {
-                    builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.Host.AzureOpenAIEmbeddings.DeploymentName);
+                    builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.Host.AzureOpenAIEmbeddings.DeploymentName, modelId: config.Host.AzureOpenAIEmbeddings.ModelName);
                     break;
                 }
                 case OpenAIEmbeddingsConfig.ConfigSectionName:

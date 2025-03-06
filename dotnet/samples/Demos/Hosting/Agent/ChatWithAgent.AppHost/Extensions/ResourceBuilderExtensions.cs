@@ -29,6 +29,7 @@ public static class ResourceBuilderExtensions
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
                 builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIChat)}__{nameof(config.AzureOpenAIChat.DeploymentName)}", config.AzureOpenAIChat.DeploymentName);
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIChat)}__{nameof(config.AzureOpenAIChat.ModelName)}", config.AzureOpenAIChat.ModelName);
                 break;
             }
 
@@ -53,6 +54,7 @@ public static class ResourceBuilderExtensions
                 case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
                 {
                     builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.DeploymentName)}", config.AzureOpenAIEmbeddings.DeploymentName);
+                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.ModelName)}", config.AzureOpenAIEmbeddings.ModelName);
                     break;
                 }
 
