@@ -7,6 +7,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from semantic_kernel.kernel import Kernel
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -33,7 +35,7 @@ class MockAgent(Agent):
 
     channel_type: ClassVar[type[AgentChannel]] = MockChannel
 
-    def __init__(self, name: str = "Test-Agent", description: str = "A test agent", id: str = None):
+    def __init__(self, name: str = "TestAgent", description: str = "A test agent", id: str = None):
         args = {
             "name": name,
             "description": description,
@@ -171,3 +173,21 @@ def test_merge_arguments_both_not_none():
 
     assert merged["param1"] == "baseVal", "Should retain base param from agent"
     assert merged["param2"] == "override_param", "Should include param from override"
+
+
+def test_function_from_agent():
+    agent = MockAgent()
+    assert hasattr(agent, "_as_function")
+    func = agent._as_function
+    assert hasattr(func, "__kernel_function__")
+    assert func.__kernel_function_description__ == agent.description
+    assert func.__kernel_function_name__ == agent.name
+    assert len(func.__kernel_function_parameters__) == 1
+
+
+def test_add_agent_as_plugin(kernel: Kernel):
+    agent = MockAgent()
+    kernel.add_plugin(agent)
+    assert len(kernel.plugins) == 1
+    assert len(kernel.plugins[agent.name].functions) == 1
+    assert kernel.plugins[agent.name].functions[agent.name].parameters[0].name == "task"

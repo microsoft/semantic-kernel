@@ -85,7 +85,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             self.plugins[plugin.name] = plugin
             return self.plugins[plugin.name]
         if not plugin_name:
-            plugin_name = plugin.name if hasattr(plugin, "name") else plugin.__class__.__name__
+            plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
         if not isinstance(plugin_name, str):
             raise TypeError("plugin_name must be a string.")
         if plugin:
