@@ -41,7 +41,7 @@ jobs:
     - name: Build
       run: |
         for solution in ${{ env.solutions }}; do
-          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} /app/$solution"
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} /app/$solution"
         done
 
     - name: Find test projects
@@ -52,7 +52,7 @@ jobs:
       shell: bash
       run: |
         for project in ${{ env.testprojects }}; do
-          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} --no-build -v Normal --logger trx"
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }} --no-build -v Normal --logger trx /app/$project"
         done
 
     - name: Upload dotnet test results
@@ -68,7 +68,7 @@ jobs:
         matrix:
           os: [windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['8.0.x', '9.0.x']
+          dotnet-version: ['8.0', '9.0']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -77,10 +77,10 @@ jobs:
       with:
         clean: true
 
-    - name: Setup .NET SDK ${{ matrix.dotnet-version }}
+    - name: Setup .NET SDK ${{ matrix.dotnet-version }}.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ matrix.dotnet-version }}
+        dotnet-version: ${{ matrix.dotnet-version }}.x
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
 
@@ -107,7 +107,7 @@ jobs:
       shell: bash
       run: |
         for solution in ${{ env.solutions }}; do
-          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
+          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }} -p:TargetFrameworks=$(TargetFrameworks);net${{ matrix.dotnet }}
         done
 
     - name: Find test projects
