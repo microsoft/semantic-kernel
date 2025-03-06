@@ -5,8 +5,6 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any, ClassVar
 
-from semantic_kernel.kernel import Kernel
-
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -20,6 +18,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.realtime_events import RealtimeEvents
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 

@@ -8,13 +8,12 @@ from random import randint
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    ListenEvents,
     OpenAIRealtimeExecutionSettings,
     OpenAIRealtimeWebRTC,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.realtime_events import RealtimeTextEvent
+from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
 
 logging.basicConfig(level=logging.WARNING)

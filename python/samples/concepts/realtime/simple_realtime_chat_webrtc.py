@@ -5,10 +5,10 @@ import logging
 
 from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
+    ListenEvents,
     OpenAIRealtimeExecutionSettings,
     OpenAIRealtimeWebRTC,
 )
-from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
 
 logging.basicConfig(level=logging.WARNING)
 utils_log = logging.getLogger("samples.concepts.realtime.utils")

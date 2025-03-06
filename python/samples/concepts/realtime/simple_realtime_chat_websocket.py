@@ -7,8 +7,8 @@ from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderW
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtimeExecutionSettings,
     AzureRealtimeWebsocket,
+    ListenEvents,
 )
-from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
 from semantic_kernel.contents import RealtimeAudioEvent, RealtimeTextEvent
 
 logging.basicConfig(level=logging.WARNING)

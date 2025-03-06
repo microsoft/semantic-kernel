@@ -11,11 +11,10 @@ from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtimeExecutionSettings,
     AzureRealtimeWebsocket,
+    ListenEvents,
     TurnDetection,
 )
-from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.realtime_events import RealtimeTextEvent
+from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
@@ -64,8 +63,9 @@ async def main() -> None:
     kernel = Kernel()
     kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
 
-    # create the realtime client, in this the Azure Websocket client, there are also OpenAI Websocket and WebRTC clients
-    # See 02b-chat_with_function_calling_webrtc.py for an example of the WebRTC client
+    # create the realtime agent, in this using Azure OpenAI through Websockets,
+    # there are also OpenAI Websocket and WebRTC clients
+    # See realtime_agent_with_function_calling_webrtc.py for an example of the WebRTC client
     realtime_agent = AzureRealtimeWebsocket()
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
