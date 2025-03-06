@@ -6,14 +6,17 @@
 		"ghcr.io/devcontainers/features/dotnet:1": {
 			"version": "9"
 		},
-		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
+		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {},
+		"ghcr.io/dapr/cli/dapr-cli:0": {}
 	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"ms-dotnettools.csdevkit",
+				"ms-azuretools.vscode-dapr"
 			]
 		}
 	},
