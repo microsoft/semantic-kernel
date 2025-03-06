@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
@@ -22,6 +23,9 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly ILogger _logger;
 
+    private bool _disposed = false;
+    private KernelProcessStep? _stepInstance = null;
+
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
 
@@ -29,6 +33,9 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
+
+    internal readonly JoinableTaskFactory _joinableTaskFactory;
+    internal readonly JoinableTaskContext _joinableTaskContext;
 
     internal readonly string _eventNamespace;
 
@@ -59,6 +66,8 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._joinableTaskContext = new JoinableTaskContext();
+        this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
     }
 
     ~LocalStep()
@@ -251,8 +260,8 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     protected virtual async ValueTask InitializeStepAsync()
     {
         // Instantiate an instance of the inner step object
-        KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
+        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
@@ -281,10 +290,10 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
         this._stepState = stateObject;
 
         ValueTask activateTask =
-            (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]) ??
+            (ValueTask?)methodInfo.Invoke(this._stepInstance, [stateObject]) ??
             throw new KernelException("The ActivateAsync method failed to complete.").Log(this._logger);
 
-        await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
+        await this._stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
         await activateTask.ConfigureAwait(false);
     }
 
@@ -293,15 +302,12 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     /// </summary>
     protected virtual async ValueTask DeinitializeStepAsync()
     {
-        // Instantiate an instance of the inner step object
-        KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-
         MethodInfo methodInfo =
-            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync)) ??
-            throw new KernelException("The DeactivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
+            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static) ??
+            throw new KernelException($"The DeactivateAsync method for the KernelProcessStep could not be found for {this.Name}").Log(this._logger);
         var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
         ValueTask deactivateTask =
-            (ValueTask?)methodInfo.Invoke(stepInstance, [context]) ??
+            (ValueTask?)methodInfo.Invoke(this._stepInstance, [context]) ??
             throw new KernelException("The DeactivateAsync method failed to complete.").Log(this._logger);
 
         await deactivateTask.ConfigureAwait(false);
@@ -357,14 +363,24 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     /// <summary>
     /// Dispose of step resources
     /// </summary>
-    public void Dispose()
+    public virtual void Dispose()
     {
-        if (this._initializeTask.IsValueCreated)
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (this._disposed)
         {
-            // Ensure initialization is complete  
-            this._initializeTask.Value.AsTask().Wait();
+            return;
         }
 
-        this.DeinitializeStepAsync().AsTask().Wait();
+        if (disposing)
+        {
+            this._joinableTaskFactory.Run(() => this.DeinitializeStepAsync().AsTask());
+        }
+        this._joinableTaskContext.Dispose();
+        this._disposed = true;
     }
 }

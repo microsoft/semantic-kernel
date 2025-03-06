@@ -18,8 +18,6 @@ internal delegate bool ProcessEventProxy(ProcessEvent processEvent);
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private readonly JoinableTaskFactory _joinableTaskFactory;
-    private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
     private readonly Lazy<ValueTask> _initializeTask;
 
@@ -46,8 +44,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         this._process = process;
         this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
-        this._joinableTaskContext = new JoinableTaskContext();
-        this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
     }
 
@@ -403,10 +399,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     #endregion
 
-    public void Dispose()
+    public override void Dispose()
     {
         this._externalEventChannel.Writer.Complete();
-        this._joinableTaskContext.Dispose();
         this._joinableTaskContext.Dispose();
         this._processCancelSource?.Dispose();
         foreach (var step in this._steps)
