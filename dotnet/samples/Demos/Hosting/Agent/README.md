@@ -112,7 +112,9 @@ To configure the text embedding model, locate, open, and edit the `appsettings.j
       "ModelName": "text-embedding-ada-002"
     }
   },
-  "AIEmbeddingsService": "OpenAIEmbeddings"
+  "Rag": {
+    "AIEmbeddingService": "AzureOpenAIEmbeddings"
+  }
 }
 ```
 
