@@ -303,14 +303,17 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     protected virtual async ValueTask DeinitializeStepAsync()
     {
         MethodInfo methodInfo =
-            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static) ??
+            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
             throw new KernelException($"The DeactivateAsync method for the KernelProcessStep could not be found for {this.Name}").Log(this._logger);
-        var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
-        ValueTask deactivateTask =
-            (ValueTask?)methodInfo.Invoke(this._stepInstance, [context]) ??
-            throw new KernelException("The DeactivateAsync method failed to complete.").Log(this._logger);
+        if (this._stepInstance != null)
+        {
+            var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
+            ValueTask deactivateTask =
+                (ValueTask?)methodInfo.Invoke(this._stepInstance, [context]) ??
+                throw new KernelException("The DeactivateAsync method failed to complete.").Log(this._logger);
 
-        await deactivateTask.ConfigureAwait(false);
+            await deactivateTask.ConfigureAwait(false);
+        }
     }
 
     /// <summary>
