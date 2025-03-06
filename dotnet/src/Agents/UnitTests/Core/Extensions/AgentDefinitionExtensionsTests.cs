@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
@@ -19,11 +20,11 @@ public class AgentDefinitionExtensionsTests
         // Arrange
         AgentDefinition agentDefinition = new()
         {
-            Inputs =
-            [
-                new() { Name = "Input1", IsRequired = false, Default = "Default1" },
-                new() { Name = "Input2", IsRequired = true, Default = "Default2" }
-            ],
+            Inputs = new Dictionary<string, AgentInput>
+            {
+                ["Input1"] = new() { Name = "Input1", Required = false, Default = "Default1" },
+                ["Input2"] = new() { Name = "Input2", Required = true, Default = "Default2" }
+            },
         };
 
         // Act

@@ -26,6 +26,28 @@ public static class AgentDefinitionYaml
             .WithTypeConverter(new AgentMetadataTypeConverter())
             .Build();
 
-        return deserializer.Deserialize<AgentDefinition>(text);
+        var agentDefinition = deserializer.Deserialize<AgentDefinition>(text);
+        return agentDefinition.UpdateInputNames();
     }
+
+    #region private
+    /// <summary>
+    /// Update the input names to match dictionary keys in this <see cref="AgentDefinition"/> instance.
+    /// </summary>
+    /// <param name="agentDefinition">AgentDefinition instance to update.</param>
+    private static AgentDefinition UpdateInputNames(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+
+        if (agentDefinition?.Inputs is not null)
+        {
+            foreach (var keyValuePair in agentDefinition.Inputs)
+            {
+                keyValuePair.Value.Name = keyValuePair.Key;
+            }
+        }
+
+        return agentDefinition!;
+    }
+    #endregion
 }
