@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel import Kernel
 
 if sys.version_info >= (3, 12):
@@ -49,7 +50,7 @@ class MockAgent(Agent):
 
     @override
     async def get_response(self, *args, **kwargs):
-        raise NotImplementedError
+        return ChatMessageContent(role="assistant", content="test")
 
     @override
     async def invoke(self, *args, **kwargs):
@@ -175,7 +176,7 @@ def test_merge_arguments_both_not_none():
     assert merged["param2"] == "override_param", "Should include param from override"
 
 
-def test_function_from_agent():
+async def test_function_from_agent():
     agent = MockAgent()
     assert hasattr(agent, "_as_function")
     func = agent._as_function
@@ -183,6 +184,7 @@ def test_function_from_agent():
     assert func.__kernel_function_description__ == agent.description
     assert func.__kernel_function_name__ == agent.name
     assert len(func.__kernel_function_parameters__) == 1
+    assert (await func(task="")) == "test"
 
 
 def test_add_agent_as_plugin(kernel: Kernel):
