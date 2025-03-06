@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents an output for and agent.
+/// Represents an output for an agent.
 /// </summary>
 [ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]

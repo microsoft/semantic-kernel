@@ -27,11 +27,15 @@ public static class AgentDefinitionYaml
             .Build();
 
         var agentDefinition = deserializer.Deserialize<AgentDefinition>(text);
-        return agentDefinition.Update();
+        return agentDefinition.UpdateInputNames();
     }
 
     #region private
-    private static AgentDefinition Update(this AgentDefinition agentDefinition)
+    /// <summary>
+    /// Update the input names to match dictionary keys in ths <see cref="AgentDefinition"/> instance.
+    /// </summary>
+    /// <param name="agentDefinition">AgentDefinition instance to update.</param>
+    private static AgentDefinition UpdateInputNames(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 

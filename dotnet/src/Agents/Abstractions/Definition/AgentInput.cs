@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents an input for and agent.
+/// Represents an input for an agent.
 /// </summary>
 [ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
@@ -44,7 +44,7 @@ public sealed class AgentInput
     /// </summary>
     /// <remarks>
     /// The default is true.
-    /// When set to false the value of the input input is treated as safe content.
+    /// When set to false the value of the input is treated as safe content.
     /// </remarks>
     public bool Strict { get; set; } = true;
 
