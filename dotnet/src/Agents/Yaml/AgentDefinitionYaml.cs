@@ -32,7 +32,7 @@ public static class AgentDefinitionYaml
 
     #region private
     /// <summary>
-    /// Update the input names to match dictionary keys in ths <see cref="AgentDefinition"/> instance.
+    /// Update the input names to match dictionary keys in this <see cref="AgentDefinition"/> instance.
     /// </summary>
     /// <param name="agentDefinition">AgentDefinition instance to update.</param>
     private static AgentDefinition UpdateInputNames(this AgentDefinition agentDefinition)
