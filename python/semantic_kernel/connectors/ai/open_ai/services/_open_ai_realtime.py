@@ -263,6 +263,7 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
     def model_post_init(self, __context: Any) -> None:
         """Post init hook."""
+        super().model_post_init(__context)
         if self.model_extra:
             if "kernel" in self.model_extra:
                 self._kernel = self.model_extra["kernel"]
