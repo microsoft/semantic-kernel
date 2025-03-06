@@ -58,10 +58,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         public override void OnSendingRequest(HttpMessage message)
         {
             message.Request.Headers.Add(
-                HttpHeaderConstant.Names.UserAgent,
-                nameof(AzureAIAgent));
-
-            message.Request.Headers.Add(
                 HttpHeaderConstant.Names.SemanticKernelVersion,
                 HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureAIAgent)));
         }

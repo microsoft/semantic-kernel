@@ -101,7 +101,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     private static void ConfigureClientOptions(HttpClient? httpClient, ClientPipelineOptions options)
     {
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
-        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.UserAgent, nameof(OpenAIAssistantAgent)), PipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
@@ -115,15 +114,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         =>
             new((message) =>
             {
-                var headers = message?.Request?.Headers;
-
-                if (headers is not null)
+                if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
                 {
-                    var value = !headers.TryGetValue(headerName, out string? existingHeaderValue) || string.IsNullOrWhiteSpace(existingHeaderValue) ?
-                        headerValue :
-                        $"{headerValue} {existingHeaderValue}";
-
-                    headers.Set(headerName, value);
+                    message.Request.Headers.Set(headerName, headerValue);
                 }
             });
 }
