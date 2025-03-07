@@ -2,10 +2,7 @@
 import logging
 import sys
 from collections.abc import MutableMapping, Sequence
-from typing import Any, Generic
-
-import numpy as np
-from pydantic import Field
+from typing import TYPE_CHECKING, Any, Generic
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -13,6 +10,8 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import faiss
+import numpy as np
+from pydantic import Field
 
 from semantic_kernel.connectors.memory.in_memory.in_memory_collection import (
     IN_MEMORY_SCORE_KEY,
@@ -28,6 +27,9 @@ from semantic_kernel.data.vector_search.vector_search_options import VectorSearc
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
+
+if TYPE_CHECKING:
+    from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 
 logger = logging.getLogger(__name__)
 
@@ -201,8 +203,8 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
         if vector:
             return_list = []
             filtered_records = self._get_filtered_records(options)
-            vector = np.array(vector, dtype=np.float32).reshape(1, -1)
-            distances, indexes = self.indexes[field].search(vector, min(options.top, self.indexes[field].ntotal))
+            np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
+            distances, indexes = self.indexes[field].search(np_vector, min(options.top, self.indexes[field].ntotal))
             for i, index in enumerate(indexes[0]):
                 key = list(self.indexes_key_map[field].keys())[index]
                 if key not in filtered_records:
@@ -224,13 +226,13 @@ class FaissStore(VectorStore):
         return list(self.vector_record_collections.keys())
 
     @override
-    async def get_collection(
+    def get_collection(
         self,
         collection_name: str,
         data_model_type: type[object],
         data_model_definition=None,
         **kwargs,
-    ) -> FaissCollection:
+    ) -> "VectorStoreRecordCollection":
         self.vector_record_collections[collection_name] = FaissCollection(
             collection_name=collection_name,
             data_model_type=data_model_type,
