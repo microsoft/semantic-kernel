@@ -239,7 +239,7 @@ async def test_search_no_filter(bing_search, async_client_mock, mock_bing_search
     assert params["count"] == options.top
     assert params["offset"] == options.skip
 
-    # TODO: shouldn't this output be "test query" instead of "test query+"?
+    # TODO check: shouldn't this output be "test query" instead of "test query+"?
     assert params["q"] == "test query+"
 
 
