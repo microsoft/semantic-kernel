@@ -75,10 +75,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
     private static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        AzureOpenAIClientOptions options = new()
-        {
-            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
-        };
+        AzureOpenAIClientOptions options = new();
 
         ConfigureClientOptions(httpClient, options);
 
@@ -89,7 +86,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         OpenAIClientOptions options = new()
         {
-            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };
 
@@ -101,6 +97,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     private static void ConfigureClientOptions(HttpClient? httpClient, ClientPipelineOptions options)
     {
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.UserAgent, $"{HttpHeaderConstant.Values.UserAgent} {nameof(OpenAIAssistantAgent)}"), PipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
@@ -114,9 +111,15 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         =>
             new((message) =>
             {
-                if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
+                var headers = message?.Request?.Headers;
+
+                if (headers is not null)
                 {
-                    message.Request.Headers.Set(headerName, headerValue);
+                    var value = !headers.TryGetValue(headerName, out string? existingHeaderValue) || string.IsNullOrWhiteSpace(existingHeaderValue) ?
+                        headerValue :
+                        $"{headerValue} {existingHeaderValue}";
+
+                    headers.Set(headerName, value);
                 }
             });
 }
