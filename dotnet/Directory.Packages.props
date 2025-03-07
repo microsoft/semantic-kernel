@@ -24,6 +24,7 @@
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
+    <PackageVersion Include="mcpdotnet" Version="1.0.1.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />

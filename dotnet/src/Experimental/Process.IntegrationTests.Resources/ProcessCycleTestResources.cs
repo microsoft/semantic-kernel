@@ -112,19 +112,6 @@ public static class CommonEvents
 }
 
 /// <summary>
-/// A step that echos its input.
-/// </summary>
-public sealed class EchoStep : KernelProcessStep
-{
-    [KernelFunction]
-    public string Echo(string message)
-    {
-        Console.WriteLine($"[ECHO] {message}");
-        return message;
-    }
-}
-
-/// <summary>
 /// A step that repeats its input. Emits data internally AND publicly
 /// </summary>
 public sealed class RepeatStep : KernelProcessStep<StepState>

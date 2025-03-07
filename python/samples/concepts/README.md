@@ -24,12 +24,12 @@
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
+
 - [Bedrock Agent Simple Chat Streaming](./agents/bedrock_agent/bedrock_agent_simple_chat_streaming.py)
 - [Bedrock Agent Simple Chat](./agents/bedrock_agent/bedrock_agent_simple_chat.py)
-- [Bedrock Agent Update Agent](./agents/bedrock_agent/bedrock_agent_update_agent.py)
-- [Bedrock Agent Use Existing](./agents/bedrock_agent/bedrock_agent_use_existing.py)
 - [Bedrock Agent With Code Interpreter Streaming](./agents/bedrock_agent/bedrock_agent_with_code_interpreter_streaming.py)
 - [Bedrock Agent With Code Interpreter](./agents/bedrock_agent/bedrock_agent_with_code_interpreter.py)
+- [Bedrock Agent With Kernel Function Simple](./agents/bedrock_agent/bedrock_agent_with_kernel_function_simple.py)
 - [Bedrock Agent With Kernel Function Streaming](./agents/bedrock_agent/bedrock_agent_with_kernel_function_streaming.py)
 - [Bedrock Agent With Kernel Function](./agents/bedrock_agent/bedrock_agent_with_kernel_function.py)
 - [Bedrock Agent Mixed Chat Agents Streaming](./agents/bedrock_agent/bedrock_mixed_chat_agents_streaming.py)
@@ -43,7 +43,6 @@
 - [Chat Completion Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_summary_history_reducer_single_agent.py)
 - [Chat Completion Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_agent_chat.py)
 - [Chat Completion Truncate History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_truncate_history_reducer_single_agent.py)
-
 
 #### [Mixed Agent Group Chat](../../semantic_kernel/agents/group_chat/agent_group_chat.py)
 
@@ -86,10 +85,13 @@
 - [Simple Chatbot with Summary History Reducer Keeping Function Content](./chat_completion/simple_chatbot_with_summary_history_reducer_keep_func_content.py)
 - [Simple Chatbot with Summary History Reducer](./chat_completion/simple_chatbot_with_summary_history_reducer.py)
 - [Simple Chatbot with Truncation History Reducer](./chat_completion/simple_chatbot_with_truncation_history_reducer.py)
+- [Simple Chatbot with Summary History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_summary_history_reducer_autoreduce.py)
+- [Simple Chatbot with Truncation History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_truncation_history_reducer_autoreduce.py)
 
 ### ChatHistory - Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py)
 
 - [Serialize Chat History](./chat_history/serialize_chat_history.py)
+- [Store Chat History in CosmosDB](./chat_history/store_chat_history_in_cosmosdb.py)
 
 ### Filtering - Creating and using Filters
 
@@ -202,7 +204,7 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 
 1. **Reading Environment Variables:**
    - **Primary Source:** Pydantic first attempts to read the required settings from environment variables.
-   
+
 2. **Using a .env File:**
    - **Fallback Source:** If the required environment variables are not set, Pydantic will look for a `.env` file in the current working directory.
    - **Custom Path (Optional):** You can specify an alternative path for the `.env` file via `env_file_path`. This can be either a relative or an absolute path.

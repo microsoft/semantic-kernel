@@ -32,13 +32,14 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
+    collapse_function_call_results_in_chat_history,
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -134,6 +135,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             system_instruction=filter_system_message(chat_history),
         )
 
+        collapse_function_call_results_in_chat_history(chat_history)
+
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
@@ -162,6 +165,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             model_name=self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
+
+        collapse_function_call_results_in_chat_history(chat_history)
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
@@ -244,7 +249,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             if part.text:
                 items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
