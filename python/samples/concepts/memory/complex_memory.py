@@ -191,7 +191,7 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
     ),
     "chroma": lambda: ChromaCollection(data_model_type=DataModel, collection_name=collection_name),
-    "faiss": lambda: FaissCollection[DataModel](
+    "faiss": lambda: FaissCollection[str, DataModel](
         collection_name=collection_name,
         data_model_type=DataModel,
         enable_gpu=False,
