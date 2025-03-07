@@ -85,6 +85,8 @@
 - [Simple Chatbot with Summary History Reducer Keeping Function Content](./chat_completion/simple_chatbot_with_summary_history_reducer_keep_func_content.py)
 - [Simple Chatbot with Summary History Reducer](./chat_completion/simple_chatbot_with_summary_history_reducer.py)
 - [Simple Chatbot with Truncation History Reducer](./chat_completion/simple_chatbot_with_truncation_history_reducer.py)
+- [Simple Chatbot with Summary History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_summary_history_reducer_autoreduce.py)
+- [Simple Chatbot with Truncation History Reducer using Auto Reduce](./chat_completion/simple_chatbot_with_truncation_history_reducer_autoreduce.py)
 
 ### ChatHistory - Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py)
 

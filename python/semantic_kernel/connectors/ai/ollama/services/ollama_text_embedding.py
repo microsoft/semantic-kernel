@@ -22,7 +22,7 @@ else:
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)

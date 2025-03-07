@@ -32,6 +32,7 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
+    collapse_function_call_results_in_chat_history,
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
 )
@@ -134,6 +135,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             system_instruction=filter_system_message(chat_history),
         )
 
+        collapse_function_call_results_in_chat_history(chat_history)
+
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
@@ -162,6 +165,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             model_name=self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
+
+        collapse_function_call_results_in_chat_history(chat_history)
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
