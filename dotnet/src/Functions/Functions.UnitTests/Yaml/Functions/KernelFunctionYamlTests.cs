@@ -193,97 +193,97 @@ public class KernelFunctionYamlTests
     }
 
     private readonly string _yamlNoExecutionSettings = @"
-        template_format: semantic-kernel
-        template:        Say hello world to {{$name}} in {{$language}}
-        description:     Say hello to the specified person using the specified language
-        name:            SayHello
-        input_variables:
-          - name:          name
-            description:   The name of the person to greet
-            default:       John
-          - name:          language
-            description:   The language to generate the greeting in
-            default: English
-        ";
+            template_format: semantic-kernel
+            template:        Say hello world to {{$name}} in {{$language}}
+            description:     Say hello to the specified person using the specified language
+            name:            SayHello
+            input_variables:
+              - name:          name
+                description:   The name of the person to greet
+                default:       John
+              - name:          language
+                description:   The language to generate the greeting in
+                default: English
+            ";
 
     private readonly string _yaml = """
-        template_format: semantic-kernel
-        template:        Say hello world to {{$name}} in {{$language}}
-        description:     Say hello to the specified person using the specified language
-        name:            SayHello
-        input_variables:
-          - name:          name
-            description:   The name of the person to greet
-            default:       John
-          - name:          language
-            description:   The language to generate the greeting in
-            default: English
-        execution_settings:
-          service1:
-            model_id:          gpt-4
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    []
-            function_choice_behavior:
-              type: auto
-              functions:
-              - p1.f1
-          service2:
-            model_id:          gpt-3.5
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    [ "foo", "bar", "baz" ]
-            function_choice_behavior:
-              type: required
-              functions:
-              - p2.f2
-          service3:
-            model_id:          gpt-3.5
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    [ "foo", "bar", "baz" ]
-            function_choice_behavior:
-              type: none
-              functions:
-              - p3.f3
-        """;
+            template_format: semantic-kernel
+            template:        Say hello world to {{$name}} in {{$language}}
+            description:     Say hello to the specified person using the specified language
+            name:            SayHello
+            input_variables:
+              - name:          name
+                description:   The name of the person to greet
+                default:       John
+              - name:          language
+                description:   The language to generate the greeting in
+                default: English
+            execution_settings:
+              service1:
+                model_id:          gpt-4
+                temperature:       1.0
+                top_p:             0.0
+                presence_penalty:  0.0
+                frequency_penalty: 0.0
+                max_tokens:        256
+                stop_sequences:    []
+                function_choice_behavior:
+                  type: auto
+                  functions:
+                  - p1.f1
+              service2:
+                model_id:          gpt-3.5
+                temperature:       1.0
+                top_p:             0.0
+                presence_penalty:  0.0
+                frequency_penalty: 0.0
+                max_tokens:        256
+                stop_sequences:    [ "foo", "bar", "baz" ]
+                function_choice_behavior:
+                  type: required
+                  functions:
+                  - p2.f2
+              service3:
+                model_id:          gpt-3.5
+                temperature:       1.0
+                top_p:             0.0
+                presence_penalty:  0.0
+                frequency_penalty: 0.0
+                max_tokens:        256
+                stop_sequences:    [ "foo", "bar", "baz" ]
+                function_choice_behavior:
+                  type: none
+                  functions:
+                  - p3.f3
+            """;
 
     private readonly string _yamlWithCustomSettings = """
-        template_format: semantic-kernel
-        template:        Say hello world to {{$name}} in {{$language}}
-        description:     Say hello to the specified person using the specified language
-        name:            SayHello
-        input_variables:
-          - name:          name
-            description:   The name of the person to greet
-            default:       John
-          - name:          language
-            description:   The language to generate the greeting in
-            default:       English
-        execution_settings:
-          service1:
-            model_id:          gpt-4
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    []
-          service2:
-            model_id:          random-model
-            temperaturex:      1.0
-            top_q:             0.0
-            rando_penalty:     0.0
-            max_token_count:   256
-            stop_sequences:    [ "foo", "bar", "baz" ]
-        """;
+            template_format: semantic-kernel
+            template:        Say hello world to {{$name}} in {{$language}}
+            description:     Say hello to the specified person using the specified language
+            name:            SayHello
+            input_variables:
+              - name:          name
+                description:   The name of the person to greet
+                default:       John
+              - name:          language
+                description:   The language to generate the greeting in
+                default:       English
+            execution_settings:
+              service1:
+                model_id:          gpt-4
+                temperature:       1.0
+                top_p:             0.0
+                presence_penalty:  0.0
+                frequency_penalty: 0.0
+                max_tokens:        256
+                stop_sequences:    []
+              service2:
+                model_id:          random-model
+                temperaturex:      1.0
+                top_q:             0.0
+                rando_penalty:     0.0
+                max_token_count:   256
+                stop_sequences:    [ "foo", "bar", "baz" ]
+            """;
 }
