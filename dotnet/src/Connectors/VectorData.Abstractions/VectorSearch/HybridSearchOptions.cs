@@ -34,13 +34,12 @@ public class HybridSearchOptions<TRecord>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the additional target property to do the text/keyword search on.
+    /// Gets or sets the additional target property to do the text/keyword search on.
     /// The property must have full text search enabled.
-    /// Use the name of the data property from your data model or as provided in the record definition.
     /// If not provided will look if there is a text property with full text search enabled, and
     /// will throw if either none or multiple exist.
     /// </summary>
-    public string? AdditionalPropertyName { get; init; }
+    public Expression<Func<TRecord, object?>>? AdditionalProperty { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to return.

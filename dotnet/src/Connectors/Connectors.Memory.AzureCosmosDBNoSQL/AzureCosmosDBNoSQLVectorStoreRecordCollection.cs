@@ -410,7 +410,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
-        var textProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
+        var textProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
         var textPropertyName = this._storagePropertyNames[textProperty.DataModelPropertyName];
 
         var fields = new List<string>(searchOptions.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);

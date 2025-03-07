@@ -556,9 +556,10 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle("Data1").DataModelPropertyName);
-        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle(null).DataModelPropertyName);
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("DoesNotExist"));
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Data1).DataModelPropertyName);
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(null).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Vector1));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => "DoesNotExist"));
     }
 
     [Theory]
@@ -569,7 +570,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<NoVectorModel>(null));
     }
 
     [Theory]
@@ -580,7 +581,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(type, definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle("Data2"));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Data2));
     }
 
     [Fact]
@@ -600,7 +601,7 @@ public class VectorStoreRecordPropertyReaderTests
         var sut = new VectorStoreRecordPropertyReader(typeof(object), definition, null);
 
         // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle(null));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<object>(null));
     }
 
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()
