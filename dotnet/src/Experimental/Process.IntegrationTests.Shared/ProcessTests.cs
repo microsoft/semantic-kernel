@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.TestSettings;
+using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 
@@ -384,13 +385,13 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     private ProcessBuilder CreateLinearProcess(string name)
     {
         var processBuilder = new ProcessBuilder(name);
-        var echoStep = processBuilder.AddStepFromType<EchoStep>();
+        var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>();
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
-        echoStep.OnFunctionResult(nameof(EchoStep.Echo))
+        echoStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo))
             .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
 
         return processBuilder;
@@ -417,14 +418,14 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     private ProcessBuilder CreateFanInProcess(string name)
     {
         var processBuilder = new ProcessBuilder(name);
-        var echoAStep = processBuilder.AddStepFromType<EchoStep>("EchoStepA");
+        var echoAStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("EchoStepA");
         var repeatBStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStepB");
         var fanInCStep = processBuilder.AddStepFromType<FanInStep>();
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
 
-        echoAStep.OnFunctionResult(nameof(EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
+        echoAStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
         repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
 
         return processBuilder;

@@ -160,7 +160,7 @@ class ChatCompletionTestBase(CompletionTestBase):
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                self._try_create_bedrock_chat_completion_client("anthropic.claude-3-5-sonnet-20240620-v1:0"),
+                self._try_create_bedrock_chat_completion_client("anthropic.claude-3-sonnet-20240229-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (

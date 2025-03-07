@@ -390,7 +390,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             )
             await target_step.enqueue(message.model_dump_json())
 
-    async def to_dapr_step_info(self) -> str:
+    async def to_dapr_step_info(self) -> dict:
         """Converts the step to a DaprStepInfo object."""
         if not self.step_activated:
             async with self.init_lock:
@@ -407,13 +407,16 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if self.inner_step_type is None:
             raise ValueError("The inner step type must be initialized before converting to DaprStepInfo.")
 
+        if self.step_state is not None:
+            self.step_info.state = self.step_state
+
         step_info = DaprStepInfo(
             inner_step_python_type=self.inner_step_type,
             state=self.step_info.state,
             edges=self.step_info.edges,
         )
 
-        return step_info.model_dump_json()
+        return step_info.model_dump()
 
     async def _on_activate(self) -> None:
         """Override the Actor's on_activate method."""

@@ -17,9 +17,9 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
     AzureRealtimeExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import OpenAIRealtimeWebsocketBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import OpenAIRealtimeWebsocketBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -79,6 +79,13 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
                 environment variables. (Optional)
             env_file_encoding: The encoding of the environment settings file. (Optional)
             kwargs: Additional arguments.
+            kwargs: Additional arguments.
+                This can include:
+                kernel (Kernel): the kernel to use for function calls
+                plugins (list[object] or dict[str, object]): the plugins to use for function calls
+                settings (OpenAIRealtimeExecutionSettings): the settings to use for the session
+                chat_history (ChatHistory): the chat history to use for the session
+                Otherwise they can also be passed to the context manager.
         """
         try:
             azure_openai_settings = AzureOpenAISettings.create(
