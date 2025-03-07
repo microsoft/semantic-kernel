@@ -258,7 +258,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -312,9 +312,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
         var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete

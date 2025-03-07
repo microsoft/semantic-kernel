@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -615,10 +616,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
+        Expression<Func<VectorSearchModel, object?>>? vectorSelector = vectorPropertyName switch
+        {
+            "TestEmbedding1" => record => record.TestEmbedding1,
+            "TestEmbedding2" => record => record.TestEmbedding2,
+            _ => null
+        };
+
         // Act
         var actual = await sut.VectorizedSearchAsync(vector, new()
         {
-            VectorPropertyName = vectorPropertyName,
+            VectorProperty = vectorSelector,
             Top = actualTop,
         });
 
@@ -642,7 +650,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new MEVD.VectorSearchOptions<AzureCosmosDBMongoDBHotelModel> { VectorPropertyName = "non-existent-property" };
+        var options = new MEVD.VectorSearchOptions<AzureCosmosDBMongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());
