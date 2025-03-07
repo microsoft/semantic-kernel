@@ -131,7 +131,11 @@ internal static class StepExtensions
                 // and are instantiated here.
                 if (param.ParameterType == typeof(KernelProcessStepContext))
                 {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(channel, externalMessageChannel);
+                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(channel);
+                }
+                else if (param.ParameterType == typeof(KernelProcessStepExternalContext))
+                {
+                    inputs[kvp.Key]![param.Name] = new KernelProcessStepExternalContext(externalMessageChannel);
                 }
                 else
                 {
