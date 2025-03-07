@@ -27,7 +27,7 @@ class VectorStore(KernelBaseModel):
         data_model_type: type[object],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         **kwargs: Any,
-    ) -> VectorStoreRecordCollection:
+    ) -> "VectorStoreRecordCollection":
         """Get a vector record store."""
         ...  # pragma: no cover
 
