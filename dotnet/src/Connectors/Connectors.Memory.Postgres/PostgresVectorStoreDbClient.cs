@@ -74,7 +74,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         var createIndexCommands =
             PostgresVectorStoreRecordPropertyMapping.GetVectorIndexInfo(properties)
                 .Select(index =>
-                    this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function)
+                    this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function, ifNotExists)
                 );
 
         // Execute the commands in a transaction.
@@ -152,11 +152,19 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     public async IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, IReadOnlyList<VectorStoreRecordProperty> properties, bool includeVectors = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TKey : notnull
     {
+        Verify.NotNull(keys);
+
+        List<TKey> listOfKeys = keys.ToList();
+        if (listOfKeys.Count == 0)
+        {
+            yield break;
+        }
+
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildGetBatchCommand(this._schema, tableName, properties, keys.ToList(), includeVectors);
+            var commandInfo = this._sqlBuilder.BuildGetBatchCommand(this._schema, tableName, properties, listOfKeys, includeVectors);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -198,7 +206,13 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     /// <inheritdoc />
     public async Task DeleteBatchAsync<TKey>(string tableName, string keyColumn, IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        var commandInfo = this._sqlBuilder.BuildDeleteBatchCommand(this._schema, tableName, keyColumn, keys.ToList());
+        var listOfKeys = keys.ToList();
+        if (listOfKeys.Count == 0)
+        {
+            return;
+        }
+
+        var commandInfo = this._sqlBuilder.BuildDeleteBatchCommand(this._schema, tableName, keyColumn, listOfKeys);
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
 
