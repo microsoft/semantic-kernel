@@ -15,7 +15,7 @@ public sealed class AzureOpenAIChatConfig
     public const string ConfigSectionName = "AzureOpenAIChat";
 
     /// <summary>
-    /// The name of the embeddings deployment.
+    /// The name of the chat deployment.
     /// </summary>
     [Required]
     public string DeploymentName { get; set; } = string.Empty;
