@@ -26,16 +26,14 @@ public class LocalProcessTests
         ], []);
 
         var mockKernel = new Kernel();
-        using (var localProcess = new LocalProcess(mockKernelProcess, mockKernel))
-        {
-            // Act
-            await localProcess.StartAsync();
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
+        // Act
+        await localProcess.StartAsync();
 
-            // Assert
-            Assert.Equal(2, localProcess._steps.Count);
-            Assert.Contains(localProcess._steps, s => s.Name == "Step1");
-            Assert.Contains(localProcess._steps, s => s.Name == "Step2");
-        }
+        // Assert
+        Assert.Equal(2, localProcess._steps.Count);
+        Assert.Contains(localProcess._steps, s => s.Name == "Step1");
+        Assert.Contains(localProcess._steps, s => s.Name == "Step2");
     }
 
     /// <summary>
