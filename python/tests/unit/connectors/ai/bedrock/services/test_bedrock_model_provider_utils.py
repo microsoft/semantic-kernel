@@ -11,7 +11,6 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     MESSAGE_CONVERTERS,
     finish_reason_from_bedrock_to_semantic_kernel,
-    format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
     update_settings_from_function_choice_configuration,
 )
@@ -260,7 +259,7 @@ def test_format_assistant_message_function_call_content() -> None:
     tool_use = formatted["content"][0].get("toolUse")
     assert tool_use
     assert tool_use["toolUseId"] == "fc1"
-    assert tool_use["name"] == "plugin_function"
+    assert tool_use["name"] == "plugin-function"
     assert tool_use["input"] == {"param": "value"}
 
 
@@ -318,20 +317,6 @@ def test_format_tool_message_image_raises() -> None:
     assert "Image content is not supported in a tool message." in str(exc.value)
 
 
-def test_format_bedrock_function_name_to_kernel_function_fully_qualified_name_no_sep() -> None:
-    """Test function names without underscore remain unchanged."""
-    name = "SinglePartName"
-    result = format_bedrock_function_name_to_kernel_function_fully_qualified_name(name)
-    assert result == name
-
-
-def test_format_bedrock_function_name_to_kernel_function_fully_qualified_name_with_sep() -> None:
-    """Test function names with underscore are split into plugin/function with the default sep."""
-    name = "plugin_function"
-    result = format_bedrock_function_name_to_kernel_function_fully_qualified_name(name)
-    assert result == "plugin-function"
-
-
 def test_finish_reason_from_bedrock_to_semantic_kernel_stop() -> None:
     """Test that 'stop_sequence' maps to FinishReason.STOP"""
     reason = finish_reason_from_bedrock_to_semantic_kernel("stop_sequence")
@@ -377,7 +362,7 @@ def mock_function_choice_config() -> FunctionCallChoiceConfiguration:
 
     # We'll create mock kernel functions with metadata
     mock_func_1 = MagicMock()
-    mock_func_1.custom_fully_qualified_name.return_value = "plugin_function1"
+    mock_func_1.fully_qualified_name = "plugin-function1"
     mock_func_1.description = "Function 1 description"
 
     param1 = MagicMock()
@@ -395,7 +380,7 @@ def mock_function_choice_config() -> FunctionCallChoiceConfiguration:
         param2,
     ]
     mock_func_2 = MagicMock()
-    mock_func_2.custom_fully_qualified_name.return_value = "plugin_function2"
+    mock_func_2.fully_qualified_name = "plugin-function2"
     mock_func_2.description = "Function 2 description"
     mock_func_2.parameters = []
 
@@ -427,7 +412,7 @@ def test_update_settings_from_function_choice_configuration_auto_two_tools(
     assert len(mock_bedrock_settings.tools) == 2
     # Validate structure of first tool
     tool_spec_1 = mock_bedrock_settings.tools[0].get("toolSpec")
-    assert tool_spec_1["name"] == "plugin_function1"
+    assert tool_spec_1["name"] == "plugin-function1"
     assert tool_spec_1["description"] == "Function 1 description"
 
 
@@ -445,7 +430,7 @@ def test_update_settings_from_function_choice_configuration_required_many(
 def test_update_settings_from_function_choice_configuration_required_one(mock_bedrock_settings) -> None:
     """Test that REQUIRED with a single function picks "tool" with that function name."""
     single_func = MagicMock()
-    single_func.custom_fully_qualified_name.return_value = "plugin_function"
+    single_func.fully_qualified_name = "plugin-function"
     single_func.description = "Only function"
     single_func.parameters = []
 
@@ -453,6 +438,6 @@ def test_update_settings_from_function_choice_configuration_required_one(mock_be
     config.available_functions = [single_func]
 
     update_settings_from_function_choice_configuration(config, mock_bedrock_settings, FunctionChoiceType.REQUIRED)
-    assert mock_bedrock_settings.tool_choice == {"tool": {"name": "plugin_function"}}
+    assert mock_bedrock_settings.tool_choice == {"tool": {"name": "plugin-function"}}
     assert len(mock_bedrock_settings.tools) == 1
-    assert mock_bedrock_settings.tools[0]["toolSpec"]["name"] == "plugin_function"
+    assert mock_bedrock_settings.tools[0]["toolSpec"]["name"] == "plugin-function"
