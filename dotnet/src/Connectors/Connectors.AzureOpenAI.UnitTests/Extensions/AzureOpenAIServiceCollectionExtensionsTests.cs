@@ -1,10 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
+using System.IO;
+using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +18,8 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
-using Moq.Protected;
 using Moq;
-using System.Net;
-using System.IO;
+using Moq.Protected;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
