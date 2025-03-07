@@ -15,11 +15,25 @@ public sealed class HostConfig
     /// </summary>
     public const string AIServicesSectionName = "AIServices";
 
+    /// <summary>
+    /// The name of the connection string of Azure OpenAI service.
+    /// </summary>
+    public const string AzureOpenAIConnectionStringName = "AzureOpenAI";
+
+    /// <summary>
+    /// The name of the connection string of OpenAI service.
+    /// </summary>
+    public const string OpenAIConnectionStringName = "OpenAI";
+
     private readonly ConfigurationManager _configurationManager;
 
     private readonly AzureOpenAIChatConfig _azureOpenAIChatConfig = new();
 
+    private readonly AzureOpenAIEmbeddingsConfig _azureOpenAIEmbeddingsConfig = new();
+
     private readonly OpenAIChatConfig _openAIChatConfig = new();
+
+    private readonly OpenAIEmbeddingsConfig _openAIEmbeddingsConfig = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostConfig"/> class.
@@ -31,8 +45,14 @@ public sealed class HostConfig
             .GetSection($"{AIServicesSectionName}:{AzureOpenAIChatConfig.ConfigSectionName}")
             .Bind(this._azureOpenAIChatConfig);
         configurationManager
+            .GetSection($"{AIServicesSectionName}:{AzureOpenAIEmbeddingsConfig.ConfigSectionName}")
+            .Bind(this._azureOpenAIEmbeddingsConfig);
+        configurationManager
             .GetSection($"{AIServicesSectionName}:{OpenAIChatConfig.ConfigSectionName}")
             .Bind(this._openAIChatConfig);
+        configurationManager
+            .GetSection($"{AIServicesSectionName}:{OpenAIEmbeddingsConfig.ConfigSectionName}")
+            .Bind(this._openAIEmbeddingsConfig);
         configurationManager
             .Bind(this);
 
@@ -46,12 +66,27 @@ public sealed class HostConfig
     public string AIChatService { get; set; } = string.Empty;
 
     /// <summary>
-    /// The Azure OpenAI chat configuration.
+    /// The Azure OpenAI chat service configuration.
     /// </summary>
     public AzureOpenAIChatConfig AzureOpenAIChat => this._azureOpenAIChatConfig;
 
     /// <summary>
-    /// The OpenAI chat configuration.
+    /// The Azure OpenAI embeddings service configuration.
+    /// </summary>
+    public AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => this._azureOpenAIEmbeddingsConfig;
+
+    /// <summary>
+    /// The OpenAI chat service configuration.
     /// </summary>
     public OpenAIChatConfig OpenAIChat => this._openAIChatConfig;
+
+    /// <summary>
+    /// The OpenAI embeddings service configuration.
+    /// </summary>
+    public OpenAIEmbeddingsConfig OpenAIEmbeddings => this._openAIEmbeddingsConfig;
+
+    /// <summary>
+    /// The RAG configuration.
+    /// </summary>
+    public RagConfig? Rag { get; set; }
 }

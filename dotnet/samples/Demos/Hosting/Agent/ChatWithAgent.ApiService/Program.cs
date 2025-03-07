@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Azure.Identity;
 using ChatWithAgent.ApiService.Config;
-using ChatWithAgent.ApiService.Extensions;
 using ChatWithAgent.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,22 +56,57 @@ public static class Program
         // Add Kernel.
         var kernelBuilder = builder.Services.AddKernel();
 
+        // Add AzureOpenAI client.
+        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Host.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            builder.AddAzureOpenAIClient(
+                HostConfig.AzureOpenAIConnectionStringName,
+                (settings) => settings.Credential = builder.Environment.IsProduction()
+                    ? new DefaultAzureCredential()
+                    : new AzureCliCredential()); // Use credentials from Azure CLI for local development.
+        }
+
+        // Add OpenAI client.
+        if (config.Host.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Host.Rag?.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
+        {
+            builder.AddOpenAIClient(HostConfig.OpenAIConnectionStringName);
+        }
+
+        // Add chat completion services.
         switch (config.Host.AIChatService)
         {
             case AzureOpenAIChatConfig.ConfigSectionName:
             {
-                builder.AddAzureOpenAIServices(config.Host);
+                builder.Services.AddAzureOpenAIChatCompletion(config.Host.AzureOpenAIChat.DeploymentName, modelId: config.Host.AzureOpenAIChat.ModelName);
                 break;
             }
-
             case OpenAIChatConfig.ConfigSectionName:
             {
-                builder.AddOpenAIServices(config.Host);
+                builder.Services.AddOpenAIChatCompletion(config.Host.OpenAIChat.ModelName);
                 break;
             }
-
             default:
-                throw new NotSupportedException($"AI service '{config.Host.AIChatService}' is not supported.");
+                throw new NotSupportedException($"AI chat service '{config.Host.AIChatService}' is not supported.");
+        }
+
+        if (config.Host.Rag is not null)
+        {
+            // Add text embedding generation services.
+            switch (config.Host.Rag.AIEmbeddingService)
+            {
+                case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.Host.AzureOpenAIEmbeddings.DeploymentName, modelId: config.Host.AzureOpenAIEmbeddings.ModelName);
+                    break;
+                }
+                case OpenAIEmbeddingsConfig.ConfigSectionName:
+                {
+                    builder.Services.AddOpenAITextEmbeddingGeneration(config.Host.OpenAIEmbeddings.ModelName);
+                    break;
+                }
+                default:
+                    throw new NotSupportedException($"AI embeddings service '{config.Host.Rag.AIEmbeddingService}' is not supported.");
+            }
         }
 
         // Add chat completion agent.

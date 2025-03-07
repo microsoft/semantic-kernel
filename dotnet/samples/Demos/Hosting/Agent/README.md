@@ -58,14 +58,12 @@ Configure the relevant properties:
 - `Description`: This property provides a brief description of the agent's role or purpose. For instance, `This bot assists users with support inquiries.` describes that the bot is intended to help users with their support-related questions.
 - `Instructions`: This property gives specific instructions on how the agent should interact with users. An example could be, `Greet the user, ask how you can help, and provide solutions based on their questions.` This guides the agent on how to initiate conversations and respond to user inquiries.
 
-### Chat completion model configuration
+### Chat Completion Model configuration
 
 To configure the chat completion model, locate, open, and edit the `appsettings.json` file in the `ChatWithAgent.AppHost` project. The following settings are available:
 
 ```json
 {
-  "Logging": {
-  },
   "AIServices": {
     "AzureOpenAIChat": {
       "DeploymentName": "gpt-4o-mini",
@@ -98,6 +96,45 @@ Depending on the selected service, configure the relevant properties:
    
 `OpenAIChat`:  
 - `ModelName`: The name of the chat completion model.  
+
+### Text Embedding Model configuration
+
+To configure the text embedding model, locate, open, and edit the `appsettings.json` file in the `ChatWithAgent.AppHost` project. The following settings are available:
+```json
+{
+  "AIServices": {
+    "AzureOpenAIEmbeddings": {
+      "DeploymentName": "text-embedding-ada-002",
+      "ModelName": "text-embedding-ada-002",
+      "ModelVersion": "2"
+    },
+    "OpenAIEmbeddings": {
+      "ModelName": "text-embedding-ada-002"
+    }
+  },
+  "Rag": {
+    "AIEmbeddingService": "AzureOpenAIEmbeddings"
+  }
+}
+```
+
+#### 1. Choose the text embedding service
+
+Set the `AIEmbeddingsService` property to the text embedding service you want to use. The available services are:
+    - `AzureOpenAIEmbeddings`: Azure OpenAI text embedding model.
+    - `OpenAIEmbeddings`: OpenAI text embedding model.
+
+#### 2. Configure the Selected Text Embedding Model
+
+Depending on the selected service, configure the relevant properties:
+
+`AzureOpenAIEmbeddings`:
+- `DeploymentName`: The name of the deployment that hosts the text embedding model.
+- `ModelName`: The name of the text embedding model.
+- `ModelVersion`: The version of the text embedding model.
+
+`OpenAIEmbeddings`:
+- `ModelName`: The name of the text embedding model.
 
 ### Vector Store Configuration
 `TBD`

@@ -8,15 +8,15 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Load host configuration.
 var hostConfig = new HostConfig(builder.Configuration);
 
-// Deploy and provision AI Service.
-var aiService = AddAIServices(builder, hostConfig);
+// Add Api Service AI upstream dependencies
+var aiServices = AddAIServices(builder, hostConfig);
 
-// Deploy and provision Api Service with dependencies.
+// Add Api Service
 var apiService = builder.AddProject<Projects.ChatWithAgent_ApiService>("apiservice")
-    .WithReference(aiService)
-    .WithEnvironment(hostConfig); // Add some host configuration as environment variables so that the Api Service can access them
+    .WithEnvironment(hostConfig)  // Add some host configuration as environment variables so that the Api Service can access them
+    .WithReferences(aiServices);
 
-// Deploy and provision Web Frontend
+// Add Web Frontend
 builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
@@ -24,22 +24,61 @@ builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
 
 builder.Build().Run();
 
-static IResourceBuilder<IResourceWithConnectionString> AddAIServices(IDistributedApplicationBuilder builder, HostConfig config)
+static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDistributedApplicationBuilder builder, HostConfig config)
 {
-    switch (config.AIChatService)
-    {
-        case AzureOpenAIChatConfig.ConfigSectionName:
-        {
-            return builder.AddAzureOpenAI(config);
-        }
+    IResourceBuilder<IResourceWithConnectionString>? chatResource = null;
+    IResourceBuilder<IResourceWithConnectionString>? embeddingsResource = null;
 
-        case OpenAIChatConfig.ConfigSectionName:
+    // Add Azure OpenAI service and configured AI models
+    if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+    {
+        if (builder.ExecutionContext.IsPublishMode)
+        {
+            // Add Azure OpenAI service
+            var azureOpenAI = builder.AddAzureOpenAI(HostConfig.AzureOpenAIConnectionStringName);
+
+            // Add chat deployment
+            if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName)
+            {
+                chatResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
+                    name: config.AzureOpenAIChat.DeploymentName,
+                    modelName: config.AzureOpenAIChat.ModelName,
+                    modelVersion: config.AzureOpenAIChat.ModelVersion)
+                );
+            }
+
+            // Add deployment
+            if (config.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+            {
+                embeddingsResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
+                    name: config.AzureOpenAIEmbeddings.DeploymentName,
+                    modelName: config.AzureOpenAIEmbeddings.ModelName,
+                    modelVersion: config.AzureOpenAIEmbeddings.ModelVersion)
+                );
+            }
+        }
+        else
         {
             // Use an existing Azure OpenAI service via connection string
-            return builder.AddConnectionString(OpenAIChatConfig.ConnectionStringName);
+            chatResource = embeddingsResource = builder.AddConnectionString(HostConfig.AzureOpenAIConnectionStringName);
         }
-
-        default:
-            throw new NotSupportedException($"AI service '{config.AIChatService}' is not supported.");
     }
+
+    // Add OpenAI service via connection string
+    if (config.AIChatService == OpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
+    {
+        chatResource = embeddingsResource = builder.AddConnectionString(HostConfig.OpenAIConnectionStringName);
+    }
+
+    if (chatResource is null)
+    {
+        throw new NotSupportedException($"AI Chat service '{config.AIChatService}' is not supported.");
+    }
+
+    if (config.Rag is not null && embeddingsResource is null)
+    {
+        throw new NotSupportedException($"AI Embedding service '{config.Rag?.AIEmbeddingService}' is not supported.");
+    }
+
+    return [chatResource, embeddingsResource];
 }
