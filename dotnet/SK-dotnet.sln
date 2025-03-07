@@ -462,6 +462,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosMongoDBIntegrationTests", "src\VectorDataIntegrationTests\CosmosMongoDBIntegrationTests\CosmosMongoDBIntegrationTests.csproj", "{11DFBF14-6FBA-41F0-B7F3-A288952D6FDB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearchIntegrationTests", "src\VectorDataIntegrationTests\AzureAISearchIntegrationTests\AzureAISearchIntegrationTests.csproj", "{06181F0F-A375-43AE-B45F-73CBCFC30C14}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.AzureAI", "src\Agents\AzureAI\Agents.AzureAI.csproj", "{EA35F1B5-9148-4189-BE34-5E00AED56D65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\Plugins.AI\Plugins.AI.csproj", "{0C64EC81-8116-4388-87AD-BA14D4B59974}"

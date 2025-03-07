@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -342,23 +344,71 @@ internal sealed class VectorStoreRecordPropertyReader
     /// to a vector property in the schema if not. If no name is provided and there is more
     /// than one vector property, an exception will be thrown.
     /// </summary>
-    /// <param name="vectorPropertyName">The vector property name.</param>
+    /// <param name="searchOptions">The search options.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
-    public VectorStoreRecordVectorProperty GetVectorPropertyOrSingle(string? vectorPropertyName)
+    public VectorStoreRecordVectorProperty GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord>? searchOptions)
     {
-        // If vector property name is provided, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorPropertyName))
+        if (searchOptions is not null)
         {
-            // Check vector properties by data model property name.
-            var vectorProperty = this.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorPropertyName, StringComparison.Ordinal));
+#pragma warning disable CS0618 // Type or member is obsolete
+            string? vectorPropertyName = searchOptions.VectorPropertyName;
+#pragma warning restore CS0618 // Type or member is obsolete
 
-            if (vectorProperty is not null)
+            // If vector property name is provided, try to find it in schema or throw an exception.
+            if (!string.IsNullOrWhiteSpace(vectorPropertyName))
             {
-                return vectorProperty;
+                // Check vector properties by data model property name.
+                return this.VectorProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorPropertyName, StringComparison.Ordinal))
+                    ?? throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
             }
 
-            throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
+            if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
+            {
+                // (TRecord r) => r.PropertyName is translated into
+                // (TRecord r) => (object)r.PropertyName
+                if (expression.Body is UnaryExpression unary
+                    && unary.Operand.NodeType == ExpressionType.MemberAccess
+                    && unary.Operand is MemberExpression member
+                    && expression.Parameters.Count == 1
+                    && member.Expression == expression.Parameters[0]
+                    && member.Member is PropertyInfo property)
+                {
+                    for (int i = 0; i < this.VectorPropertiesInfo.Count; i++)
+                    {
+                        if (this.VectorPropertiesInfo[i] == property)
+                        {
+                            return this.VectorProperties[i];
+                        }
+                    }
+
+                    throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a Vector property.");
+                }
+                // (VectorStoreGenericDataModel r) => r.Vectors["PropertyName"]
+                else if (expression.Body is MethodCallExpression methodCall
+                    // It's a Func<VectorStoreGenericDataModel<TKey>, object>
+                    && expression.Type.IsGenericType
+                    && expression.Type.GenericTypeArguments.Length == 2
+                    && expression.Type.GenericTypeArguments[0].IsGenericType
+                    && expression.Type.GenericTypeArguments[0].GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>)
+                    // It's accessing VectorStoreGenericDataModel.Vectors (not Data)
+                    && methodCall.Object is MemberExpression memberAccess
+                    && memberAccess.Member.Name == nameof(VectorStoreGenericDataModel<object>.Vectors)
+                    // and has a single argument
+                    && methodCall.Arguments.Count == 1)
+                {
+                    string key = methodCall.Arguments[0] switch
+                    {
+                        ConstantExpression constant when constant.Value is string text => text,
+                        MemberExpression field when TryGetCapturedValue(field, out object? capturedValue) && capturedValue is string text => text,
+                        _ => throw new InvalidOperationException("Provided expression was invalid.")
+                    };
+
+                    return this.VectorProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(key, StringComparison.Ordinal))
+                        ?? throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{key}'.");
+                }
+
+                throw new InvalidOperationException("Provided expression was invalid.");
+            }
         }
 
         // If vector property name is not provided, return first vector property from schema, or throw if there are no vectors.
@@ -726,5 +776,19 @@ internal sealed class VectorStoreRecordPropertyReader
         }
 
         return property.DataModelPropertyName;
+    }
+
+    private static bool TryGetCapturedValue(Expression expression, out object? capturedValue)
+    {
+        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
+            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
+            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
+        {
+            capturedValue = fieldInfo.GetValue(constant.Value);
+            return true;
+        }
+
+        capturedValue = null;
+        return false;
     }
 }

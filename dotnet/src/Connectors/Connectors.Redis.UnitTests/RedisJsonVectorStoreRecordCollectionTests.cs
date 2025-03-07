@@ -472,7 +472,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
             {
                 IncludeVectors = true,
                 OldFilter = filter,
-                VectorPropertyName = nameof(MultiPropsModel.Vector1),
+                VectorProperty = r => r.Vector1,
                 Top = 5,
                 Skip = 2
             });

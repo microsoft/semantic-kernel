@@ -263,7 +263,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         };
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete

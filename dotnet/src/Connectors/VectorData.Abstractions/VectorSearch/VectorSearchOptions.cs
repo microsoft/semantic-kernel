@@ -29,7 +29,18 @@ public class VectorSearchOptions<TRecord>
     /// If not provided will check if there is a vector property to use by default, and
     /// will throw if either none or multiple exist.
     /// </value>
+    [Obsolete("Use VectorProperty instead")]
     public string? VectorPropertyName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the vector property to search on.
+    /// Only needs to be set when the collection has multiple vector properties.
+    /// </summary>
+    /// <value>
+    /// If not provided will check if there is a vector property to use by default, and
+    /// will throw if either none or multiple exist.
+    /// </value>
+    public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to return.
