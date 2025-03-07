@@ -38,6 +38,27 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     }
 
     /// <summary>
+    /// Demonstrates how to use an existing <see cref="BedrockAgent"/> and interact with it.
+    /// The agent will respond to the user query.
+    /// </summary>
+    [Fact]
+    public async Task UseExistingAgentAsync()
+    {
+        // Retrieve the agent
+        // Replace "bedrock-agent-id" with the ID of the agent you want to use
+        var agentId = "bedrock-agent-id";
+        var getAgentResponse = await this.Client.GetAgentAsync(new() { AgentId = agentId });
+        var bedrockAgent = new BedrockAgent(getAgentResponse.Agent, this.Client);
+
+        // Respond to user input
+        var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
+        await foreach (var response in responses)
+        {
+            this.Output.WriteLine(response.Content);
+        }
+    }
+
+    /// <summary>
     /// Demonstrates how to create a new <see cref="BedrockAgent"/> and interact with it using streaming.
     /// The agent will respond to the user query.
     /// </summary>
