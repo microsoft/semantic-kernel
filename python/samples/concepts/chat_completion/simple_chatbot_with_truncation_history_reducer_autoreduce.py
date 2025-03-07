@@ -102,7 +102,8 @@ truncation_reducer = ChatHistoryTruncationReducer(
     threshold_count=2,
     # auto_reduce:
     # Purpose: Automatically truncates the chat history after adding a new message using the method add_message_async.
-    # What it controls: When enabled, the reducer will automatically truncate the chat history after adding a new message using the method add_message_async.
+    # What it controls: When enabled, the reducer will automatically truncate the chat history
+    # after adding a new message using the method add_message_async.
     auto_reduce=True,
 )
 
@@ -145,7 +146,7 @@ async def chat() -> bool:
         # after adding a new message using the method add_message_async.
         # If auto_reduce is disabled, you can manually truncate the chat history using the method reduce.
         await truncation_reducer.add_message_async(answer.value[0])
-    
+
     print(f"Current number of messages: {len(truncation_reducer.messages)}")
 
     return True

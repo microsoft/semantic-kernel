@@ -107,7 +107,8 @@ summarization_reducer = ChatHistorySummarizationReducer(
     threshold_count=2,
     # auto_reduce:
     # Purpose: Automatically summarizes the chat history after adding a new message using the method add_message_async.
-    # What it controls: When enabled, the reducer will automatically summarize the chat history after adding a new message using the method add_message_async.
+    # What it controls: When enabled, the reducer will automatically summarize the chat history
+    # after adding a new message using the method add_message_async.
     auto_reduce=True,
 )
 
@@ -150,7 +151,6 @@ async def chat() -> bool:
             print("*" * 60)
             print("Summary detected:", msg.content)
             print("*" * 60)
-            
 
         print("\n")
 
