@@ -599,7 +599,7 @@ internal sealed class VectorStoreRecordPropertyReader
             {
                 definitionProperties.Add(new VectorStoreRecordKeyProperty(keyProperty.Name, keyProperty.PropertyType)
                 {
-                    StoragePropertyName = keyAttribute.StoragePropertyName,
+                    StoragePropertyName = keyAttribute.StoragePropertyName
                 });
             }
         }

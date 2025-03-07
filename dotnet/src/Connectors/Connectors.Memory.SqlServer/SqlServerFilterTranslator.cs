@@ -53,7 +53,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 || parent is UnaryExpression { NodeType: ExpressionType.Not } // Where(x => !x.Bool)
                 || parent is BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse })) // Where(x => x.Bool && other)
         {
-            this.TranslateBinary(Expression.MakeBinary(ExpressionType.Equal, memberExpression, Expression.Constant(true)));
+            this.TranslateBinary(Expression.Equal(memberExpression, Expression.Constant(true)));
         }
         else
         {

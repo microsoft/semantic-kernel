@@ -25,7 +25,7 @@ internal static class SqlServerConstants
         typeof(long), // BIGINT.
         typeof(Guid), // UNIQUEIDENTIFIER.
         typeof(string), // NVARCHAR
-        typeof(byte[]), //VARBINARY
+        typeof(byte[]), // VARBINARY
         typeof(bool), // BIT
         typeof(DateTime), // DATETIME2
 #if NET
