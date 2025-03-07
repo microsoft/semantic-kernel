@@ -404,7 +404,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     #endregion
 
     /// <inheritdoc/>
-    internal override async ValueTask DeinitializeStepAsync()
+    public override async ValueTask DeinitializeStepAsync()
     {
         await Task.Run(() => this.Dispose()).ConfigureAwait(false);
     }

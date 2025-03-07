@@ -25,7 +25,7 @@ public sealed class KernelProxyStep : KernelProcessStep
     /// </summary>
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
     /// <returns></returns>
-    public override async ValueTask DeactivateAsync(KernelProcessStepContext context)
+    public async ValueTask DeactivateAsync(KernelProcessStepExternalContext context)
     {
         await context.CloseExternalEventChannelAsync().ConfigureAwait(false);
     }
@@ -37,7 +37,7 @@ public sealed class KernelProxyStep : KernelProcessStep
     /// <param name="proxyEvent">event data passed to proxy step</param>
     /// <returns></returns>
     [KernelFunction(Functions.EmitExternalEvent)]
-    public Task EmitExternalEventAsync(KernelProcessStepContext context, KernelProcessProxyMessage proxyEvent)
+    public Task EmitExternalEventAsync(KernelProcessStepExternalContext context, KernelProcessProxyMessage proxyEvent)
     {
         Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));
         return context.EmitExternalEventAsync(proxyEvent);

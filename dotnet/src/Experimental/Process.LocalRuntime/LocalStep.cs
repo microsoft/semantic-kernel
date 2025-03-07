@@ -19,10 +19,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
-    private readonly KernelProcessStepInfo _stepInfo;
     private readonly ILogger _logger;
-
-    private KernelProcessStep? _stepInstance = null;
 
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
@@ -32,6 +29,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
 
+    internal KernelProcessStep? _stepInstance = null;
+    internal readonly KernelProcessStepInfo _stepInfo;
     internal readonly string _eventNamespace;
 
     /// <summary>
@@ -288,15 +287,14 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// Deinitializes the step
     /// </summary>
-    internal virtual async ValueTask DeinitializeStepAsync()
+    public virtual async ValueTask DeinitializeStepAsync()
     {
         MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-        var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
         if (derivedMethod != null && this._stepInstance != null)
         {
             ValueTask deactivateTask =
-                (ValueTask?)derivedMethod.Invoke(this._stepInstance, [context]) ??
+                (ValueTask?)derivedMethod.Invoke(this._stepInstance, []) ??
                 throw new KernelException($"The derived DeactivateAsync method failed to complete for step {this.Name}.").Log(this._logger);
 
             await deactivateTask.ConfigureAwait(false);
