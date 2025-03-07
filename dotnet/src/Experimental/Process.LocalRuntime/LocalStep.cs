@@ -9,21 +9,19 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
-using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a step in a process that is running in-process.
 /// </summary>
-internal class LocalStep : IKernelProcessMessageChannel, IDisposable
+internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly ILogger _logger;
 
-    private bool _disposed = false;
     private KernelProcessStep? _stepInstance = null;
 
     protected readonly Kernel _kernel;
@@ -33,9 +31,6 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
-
-    internal readonly JoinableTaskFactory _joinableTaskFactory;
-    internal readonly JoinableTaskContext _joinableTaskContext;
 
     internal readonly string _eventNamespace;
 
@@ -66,13 +61,6 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
-        this._joinableTaskContext = new JoinableTaskContext();
-        this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
-    }
-
-    ~LocalStep()
-    {
-        this.Dispose();
     }
 
     /// <summary>
@@ -300,17 +288,16 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     /// <summary>
     /// Deinitializes the step
     /// </summary>
-    protected virtual async ValueTask DeinitializeStepAsync()
+    internal virtual async ValueTask DeinitializeStepAsync()
     {
-        MethodInfo methodInfo =
-            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) ??
-            throw new KernelException($"The DeactivateAsync method for the KernelProcessStep could not be found for {this.Name}").Log(this._logger);
-        if (this._stepInstance != null)
+        MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
+        if (derivedMethod != null && this._stepInstance != null)
         {
-            var context = new KernelProcessStepContext(this, this.ExternalMessageChannel);
             ValueTask deactivateTask =
-                (ValueTask?)methodInfo.Invoke(this._stepInstance, [context]) ??
-                throw new KernelException("The DeactivateAsync method failed to complete.").Log(this._logger);
+                (ValueTask?)derivedMethod.Invoke(this._stepInstance, [context]) ??
+                throw new KernelException($"The derived DeactivateAsync method failed to complete for step {this.Name}.").Log(this._logger);
 
             await deactivateTask.ConfigureAwait(false);
         }
@@ -361,29 +348,5 @@ internal class LocalStep : IKernelProcessMessageChannel, IDisposable
     {
         Verify.NotNull(localEvent, nameof(localEvent));
         return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
-    }
-
-    /// <summary>
-    /// Dispose of step resources
-    /// </summary>
-    public virtual void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (this._disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            this._joinableTaskFactory.Run(() => this.DeinitializeStepAsync().AsTask());
-        }
-        this._joinableTaskContext.Dispose();
-        this._disposed = true;
     }
 }
