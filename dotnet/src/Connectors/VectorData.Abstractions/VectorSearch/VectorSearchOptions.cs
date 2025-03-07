@@ -10,6 +10,8 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
+    private int _top = 3, _skip = 0;
+
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
@@ -34,12 +36,38 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets the maximum number of results to return.
     /// </summary>
-    public int Top { get; init; } = 3;
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 1.</exception>
+    public int Top
+    {
+        get => this._top;
+        init
+        {
+            if (value < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Top must be greater than or equal to 1.");
+            }
+
+            this._top = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
     /// </summary>
-    public int Skip { get; init; } = 0;
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 0.</exception>
+    public int Skip
+    {
+        get => this._skip;
+        init
+        {
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Skip must be greater than or equal to 0.");
+            }
+
+            this._skip = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.

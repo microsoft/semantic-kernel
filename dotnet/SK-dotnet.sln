@@ -462,6 +462,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosMongoDBIntegrationTests", "src\VectorDataIntegrationTests\CosmosMongoDBIntegrationTests\CosmosMongoDBIntegrationTests.csproj", "{11DFBF14-6FBA-41F0-B7F3-A288952D6FDB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearchIntegrationTests", "src\VectorDataIntegrationTests\AzureAISearchIntegrationTests\AzureAISearchIntegrationTests.csproj", "{06181F0F-A375-43AE-B45F-73CBCFC30C14}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.AzureAI", "src\Agents\AzureAI\Agents.AzureAI.csproj", "{EA35F1B5-9148-4189-BE34-5E00AED56D65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\Plugins.AI\Plugins.AI.csproj", "{0C64EC81-8116-4388-87AD-BA14D4B59974}"
@@ -490,6 +491,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Bedrock", "src\Agents\Bedrock\Agents.Bedrock.csproj", "{8C658E1E-83C8-4127-B8BF-27A638A45DDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocol", "samples\Demos\ModelContextProtocol\ModelContextProtocol.csproj", "{B16AC373-3DA8-4505-9510-110347CD635D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerIntegrationTests", "src\VectorDataIntegrationTests\SqlServerIntegrationTests\SqlServerIntegrationTests.csproj", "{A5E6193C-8431-4C6E-B674-682CB41EAA0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1356,6 +1359,12 @@ Global
 		{B16AC373-3DA8-4505-9510-110347CD635D}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{B16AC373-3DA8-4505-9510-110347CD635D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B16AC373-3DA8-4505-9510-110347CD635D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1541,6 +1550,7 @@ Global
 		{DAD5FC6A-8CA0-43AC-87E1-032DFBD6B02A} = {3F260A77-B6C9-97FD-1304-4B34DA936CF4}
 		{8C658E1E-83C8-4127-B8BF-27A638A45DDD} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 		{B16AC373-3DA8-4505-9510-110347CD635D} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

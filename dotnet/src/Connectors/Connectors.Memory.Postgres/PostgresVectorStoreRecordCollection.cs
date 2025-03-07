@@ -168,6 +168,8 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(records);
+
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
@@ -175,6 +177,11 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+
+        if (storageModels.Count == 0)
+        {
+            yield break;
+        }
 
         var keys = storageModels.Select(model => model[this._propertyReader.KeyPropertyStoragePropertyName]!).ToList();
 
@@ -243,6 +250,8 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <inheritdoc/>
     public virtual Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         const string OperationName = "DeleteBatch";
         return this.RunOperationAsync(OperationName, () =>
             this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken)
@@ -319,7 +328,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not NotSupportedException)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -336,7 +345,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not NotSupportedException)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
