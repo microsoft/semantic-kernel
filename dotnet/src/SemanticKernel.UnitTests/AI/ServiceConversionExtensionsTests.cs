@@ -291,7 +291,16 @@ public class ServiceConversionExtensionsTests
 
         await client.GetResponseAsync(messages, new()
         {
-            Tools = [new NopAIFunction("AIFunc1"), new NopAIFunction("AIFunc2")],
+            Tools =
+            [
+                new NopAIFunction("AIFunc1"),
+                new NopAIFunction("AIFunc2"),
+                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction").AsAIFunction(),
+                .. KernelPluginFactory.CreateFromFunctions("NiftyPlugin",
+                [
+                    KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction")
+                ]).AsAIFunctions(),
+            ],
             ToolMode = mode,
         });
 
@@ -306,18 +315,22 @@ public class ServiceConversionExtensionsTests
             case null:
             case AutoChatToolMode:
                 Assert.Equal(FunctionChoice.Auto, config.Choice);
-                Assert.Equal(2, config.Functions?.Count);
+                Assert.Equal(4, config.Functions?.Count);
                 Assert.Equal("AIFunc1", config.Functions?[0].Name);
                 Assert.Equal("AIFunc2", config.Functions?[1].Name);
+                Assert.Equal("NiftyFunction", config.Functions?[2].Name);
+                Assert.Equal("NiftyPlugin_NiftyFunction", config.Functions?[3].Name);
                 break;
 
             case RequiredChatToolMode r:
                 Assert.Equal(FunctionChoice.Required, config.Choice);
                 if (r.RequiredFunctionName is null)
                 {
-                    Assert.Equal(2, config.Functions?.Count);
+                    Assert.Equal(4, config.Functions?.Count);
                     Assert.Equal("AIFunc1", config.Functions?[0].Name);
                     Assert.Equal("AIFunc2", config.Functions?[1].Name);
+                    Assert.Equal("NiftyFunction", config.Functions?[2].Name);
+                    Assert.Equal("NiftyPlugin_NiftyFunction", config.Functions?[3].Name);
                 }
                 else
                 {
