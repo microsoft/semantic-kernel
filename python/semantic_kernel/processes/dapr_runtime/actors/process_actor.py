@@ -5,7 +5,7 @@ import contextlib
 import json
 import logging
 import uuid
-from collections.abc import Callable, MutableSequence, Sequence
+from collections.abc import Callable, MutableSequence
 from queue import Queue
 from typing import Any
 
@@ -38,12 +38,12 @@ from semantic_kernel.processes.kernel_process.kernel_process_state import Kernel
 from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
@@ -96,7 +96,6 @@ class ProcessActor(StepActor, ProcessInterface):
         else:
             raise TypeError("process_info must be a JSON string or a dictionary")
 
-        # Reconstruct the DaprProcessInfo from the dictionary
         dapr_process_info = DaprProcessInfo.model_validate(process_info_dict)
 
         if dapr_process_info.steps is None:
@@ -194,7 +193,10 @@ class ProcessActor(StepActor, ProcessInterface):
                 has_value, parent_process_id = await self._state_manager.try_get_state(
                     ActorStateKeys.StepParentProcessId.value
                 )
-                combined_input = {**existing_process_info, **parent_process_id}  # type: ignore
+                combined_input = {
+                    "process_info": existing_process_info,
+                    "parent_process_id": parent_process_id,
+                }
                 await self.initialize_process(combined_input)
         except Exception as e:
             error_message = str(e)
@@ -207,27 +209,29 @@ class ProcessActor(StepActor, ProcessInterface):
             raise ProcessEventUndefinedException("The process event must be specified.")
         self.external_event_queue.put(process_event)
 
-    async def get_process_info(self):
+    async def get_process_info(self) -> dict:
         """Gets the process information."""
         return await self.to_dapr_process_info()
 
-    async def to_dapr_process_info(self) -> DaprProcessInfo:
+    async def to_dapr_process_info(self) -> dict:
         """Converts the process to a Dapr process info."""
         if self.process is None:
             raise ValueError("The process must be initialized before converting to DaprProcessInfo.")
-        if self.inner_step_type is None:
+        if self.process.inner_step_python_type is None:
             raise ValueError("The inner step type must be defined before converting to DaprProcessInfo.")
 
-        process_state = KernelProcessState(self.name, self.id.id)
+        process_state = KernelProcessState(name=self.name, id=self.id.id)
+
         step_tasks = [step.to_dapr_step_info() for step in self.steps]
-        steps: Sequence[str] = await asyncio.gather(*step_tasks)
-        return DaprProcessInfo(
-            inner_step_python_type=self.inner_step_type,
+        steps_as_dicts = await asyncio.gather(*step_tasks)
+
+        dapr_process_info = DaprProcessInfo(
+            inner_step_python_type=self.process.inner_step_python_type,
             edges=self.process.edges,
             state=process_state,
-            # steps are model dumps of the classes, which pydantic can parse back.
-            steps=steps,  # type: ignore
+            steps=steps_as_dicts,
         )
+        return dapr_process_info.model_dump()
 
     async def handle_message(self, message: ProcessMessage) -> None:
         """Handles a message."""

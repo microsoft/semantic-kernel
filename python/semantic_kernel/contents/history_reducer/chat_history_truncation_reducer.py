@@ -18,12 +18,12 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     extract_range,
     locate_safe_reduction_index,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class ChatHistoryTruncationReducer(ChatHistoryReducer):
     """A ChatHistory that supports truncation logic.
 

@@ -39,12 +39,12 @@ from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
@@ -390,7 +390,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             )
             await target_step.enqueue(message.model_dump_json())
 
-    async def to_dapr_step_info(self) -> str:
+    async def to_dapr_step_info(self) -> dict:
         """Converts the step to a DaprStepInfo object."""
         if not self.step_activated:
             async with self.init_lock:
@@ -407,13 +407,16 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if self.inner_step_type is None:
             raise ValueError("The inner step type must be initialized before converting to DaprStepInfo.")
 
+        if self.step_state is not None:
+            self.step_info.state = self.step_state
+
         step_info = DaprStepInfo(
             inner_step_python_type=self.inner_step_type,
             state=self.step_info.state,
             edges=self.step_info.edges,
         )
 
-        return step_info.model_dump_json()
+        return step_info.model_dump()
 
     async def _on_activate(self) -> None:
         """Override the Actor's on_activate method."""
