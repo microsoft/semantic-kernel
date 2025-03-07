@@ -40,21 +40,21 @@ internal sealed class Program
 
         // Direct calling the function
         var insertResult = await dataBasePlugin["InsertMyEntityRecord"].InvokeAsync(kernel, new() { ["entity"] = newRecord });
-        var functionInsertedEntity = insertResult.GetValue<MyEntity>()!;
+        var insertedEntity = insertResult.GetValue<MyEntity>()!;
 
         Console.WriteLine($"""
             ----- Inserted Record -----
-            Id: {functionInsertedEntity.Id}
-            Description: {functionInsertedEntity.Description}
-            DateCreated: {functionInsertedEntity.DateCreated}
+            Id: {insertedEntity.Id}
+            Description: {insertedEntity.Description}
+            DateCreated: {insertedEntity.DateCreated}
             -----
             """);
 
         // Direct calling select function
         var selectResult = await dataBasePlugin["SelectMyEntityRecords"].InvokeAsync(kernel);
-        var functionResultEntities = selectResult.GetValue<IEnumerable<MyEntity>>()!;
-        Console.WriteLine("----- Selected Records -----");
-        foreach (var entity in functionResultEntities)
+        var selectedEntities = selectResult.GetValue<IList<MyEntity>>()!;
+        Console.WriteLine($"----- Selected {selectedEntities.Count} records -----");
+        foreach (var entity in selectedEntities)
         {
             Console.WriteLine($"""
                 Id: {entity.Id}
