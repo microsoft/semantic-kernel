@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -22,7 +22,6 @@ using Moq;
 using Moq.Protected;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
-
 /// <summary>
 /// Unit tests for the service collection extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
