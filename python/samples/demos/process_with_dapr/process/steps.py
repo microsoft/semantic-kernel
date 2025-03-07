@@ -6,8 +6,8 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -61,7 +61,7 @@ class AStep(KernelProcessStep):
 async def bstep_factory():
     """Creates a BStep instance with ephemeral references like ChatCompletionAgent."""
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion())
+    kernel.add_service(AzureChatCompletion())
 
     agent = ChatCompletionAgent(kernel=kernel, name="echo", instructions="repeat the input back")
     step_instance = BStep()
