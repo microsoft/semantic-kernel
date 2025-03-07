@@ -7,7 +7,7 @@ from typing import ClassVar
 from pydantic import Field
 
 from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -61,7 +61,7 @@ class AStep(KernelProcessStep):
 async def bstep_factory():
     """Creates a BStep instance with ephemeral references like ChatCompletionAgent."""
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion())
+    kernel.add_service(OpenAIChatCompletion())
 
     agent = ChatCompletionAgent(kernel=kernel, name="echo", instructions="repeat the input back")
     step_instance = BStep()
@@ -107,9 +107,6 @@ class CStep(KernelProcessStep[CStepState]):
     # The activate method overrides the base class method to set the state in the step.
     async def activate(self, state: KernelProcessStepState[CStepState]):
         """Activates the step and sets the state."""
-        # If validation is necessary, overwrite the original reference
-        # Overwriting the state object is crucial to link back to the original state
-        state.state = state.state if isinstance(state.state, CStepState) else CStepState.model_validate(state.state)
         self.state = state.state
         print(f"##### CStep activated with Cycle = '{self.state.current_cycle}'.")
 
