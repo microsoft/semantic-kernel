@@ -400,18 +400,18 @@ internal sealed class VectorStoreRecordPropertyReader
                     {
                         ConstantExpression constant when constant.Value is string text => text,
                         MemberExpression field when TryGetCapturedValue(field, out object? capturedValue) && capturedValue is string text => text,
-                        _ => throw new InvalidOperationException("Provided expression was invalid.")
+                        _ => throw new InvalidOperationException("The value of the provided VectorProperty option is not a valid expression.")
                     };
 
                     return this.VectorProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(key, StringComparison.Ordinal))
                         ?? throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have a vector property named '{key}'.");
                 }
 
-                throw new InvalidOperationException("Provided expression was invalid.");
+                throw new InvalidOperationException("The value of the provided VectorProperty option is not a valid expression.");
             }
         }
 
-        // If vector property name is not provided, return first vector property from schema, or throw if there are no vectors.
+        // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
         if (this.VectorProperty is null)
         {
             throw new InvalidOperationException($"The {this._dataModelType.FullName} type does not have any vector properties.");
