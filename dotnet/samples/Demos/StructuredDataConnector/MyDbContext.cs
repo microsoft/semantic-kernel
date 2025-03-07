@@ -22,7 +22,7 @@ internal sealed class MyDbContext : DbContext
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
         Database.SetInitializer<MyDbContext>(null);
-        modelBuilder.Entity<MyEntity>().ToTable("Test1");
+        modelBuilder.Entity<Product>().ToTable("Test1");
         base.OnModelCreating(modelBuilder);
     }
 }

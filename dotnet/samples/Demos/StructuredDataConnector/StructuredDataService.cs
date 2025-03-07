@@ -2,6 +2,7 @@
 
 using System.Data.Entity;
 using System.Linq.Expressions;
+using System.Reflection.Metadata;
 
 namespace StructuredDataConnector;
 
@@ -43,11 +44,11 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// The search to the database is deferred until the query is enumerated.
     /// </remarks>
     /// <typeparam name="TEntity">The entity type.</typeparam>
-    /// <param name="expression">Expression to filter entities.</param>
-    public IQueryable<TEntity> Select<TEntity>(Expression<Func<TEntity, bool>>? expression = null)
+    /// <param name="query">Query string to filter entities.</param>
+    public IQueryable<TEntity> Select<TEntity>(string? query = null)
         where TEntity : class
     {
-        expression ??= (entity) => true;
+        var expression = this.ParseQuery<TEntity>(query);
 
         return this.Context.Set<TEntity>().Where(expression);
     }
@@ -127,6 +128,90 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
         }
 
         this._disposed = true;
+    }
+
+    /// <summary>
+    /// Parses a filter string into an expression.
+    /// </summary>
+    /// <remarks>
+    /// The filter query parameter is a string where users can pass expressions like
+    /// <code>price gt 100 and category eq 'electronics'</code>
+    /// </remarks>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
+    /// <param name="filter">Filter string.</param>
+    /// <returns>Expression representing the filter.</returns>
+    /// <exception cref="NotSupportedException">Operator not supported.</exception>
+    protected virtual Expression<Func<TEntity, bool>> ParseQuery<TEntity>(string filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return p => true;
+        }
+
+        var param = Expression.Parameter(typeof(TEntity), "p");
+        var conditions = filter.Split(new[] { " and ", " or " }, StringSplitOptions.None);
+        Expression combined = null;
+        bool isOr = filter.Contains(" or ");
+
+        foreach (var condition in conditions)
+        {
+            var trimmed = condition.Trim();
+            Expression? current = null;
+
+            if (trimmed.Contains("contains("))
+            {
+                current = ParseMethod(trimmed, "contains", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("Contains", new[] { typeof(string) }), v));
+            }
+            else if (trimmed.Contains("startswith("))
+            {
+                current = ParseMethod(trimmed, "startswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("StartsWith", new[] { typeof(string) }), v));
+            }
+            else if (trimmed.Contains("endswith("))
+            {
+                current = ParseMethod(trimmed, "endswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("EndsWith", new[] { typeof(string) }), v));
+            }
+            else
+            {
+                var tokens = trimmed.Split(' ');
+                var property = tokens[0];
+                var op = tokens[1];
+                var value = tokens[2].Trim('\'');
+
+                var member = Expression.Property(param, property);
+                ConstantExpression? constant = null;
+                if (member.Type == typeof(DateTime?) || member.Type == typeof(DateTime))
+                {
+                    constant = Expression.Constant(DateTime.Parse(value));
+                }
+                else
+                {
+                    constant = Expression.Constant(Convert.ChangeType(value, member.Type));
+                }
+
+                current = op switch
+                {
+                    "gt" => Expression.GreaterThan(member, constant),
+                    "lt" => Expression.LessThan(member, constant),
+                    "eq" => Expression.Equal(member, constant),
+                    _ => throw new NotSupportedException($"Operator {op} not supported")
+                };
+            }
+        }
+
+        static Expression ParseMethod(string condition, string methodName, ParameterExpression param, Func<Expression, Expression, Expression> methodCall)
+        {
+            var start = condition.IndexOf(methodName + "(") + methodName.Length + 1;
+            var end = condition.LastIndexOf(")");
+            var args = condition.Substring(start, end - start).Split(',');
+            var property = args[0].Trim();
+            var value = args[1].Trim().Trim('\'');
+
+            var member = Expression.Property(param, property);
+            var constant = Expression.Constant(value);
+            return methodCall(member, constant);
+        }
+
+        return Expression.Lambda<Func<TEntity, bool>>(combined, param);
     }
 
     /// <summary>

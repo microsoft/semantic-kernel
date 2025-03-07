@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using System.Text.Json;
 
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
 
 namespace StructuredDataConnector;
@@ -19,79 +21,77 @@ internal sealed class Program
             .AddTransient<StructuredDataService<MyDbContext>>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
+        var config = serviceProvider.GetRequiredService<IConfiguration>();
         using var structuredDataService = serviceProvider.GetRequiredService<StructuredDataService<MyDbContext>>();
+        using var myHandler = new MyHandler();
+        using var httpClient = new HttpClient(myHandler);
 
-        var dataBasePlugin = KernelPluginFactory.CreateFromFunctions("DatabasePlugin", "Allows CRUDE operations against the database",
-            [
-                structuredDataService.CreateSelectFunction<MyDbContext, MyEntity>(),
-                structuredDataService.CreateInsertFunction<MyDbContext, MyEntity>(),
-                structuredDataService.CreateUpdateFunction<MyDbContext, MyEntity>(),
-                structuredDataService.CreateDeleteFunction<MyDbContext, MyEntity>(),
-            ]
-        );
+        // Create kernel builder and add OpenAI
+        var kernelBuilder = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: "gpt-4o",
+                apiKey: config["OpenAI:ApiKey"]!,
+                httpClient: httpClient);
 
-        var kernel = new Kernel(serviceProvider, [dataBasePlugin]);
+        // Add the database plugin using the factory with default operations
+        var databasePlugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<MyDbContext, Product>(
+            structuredDataService);
 
-        var newRecord = new MyEntity
+        kernelBuilder.Plugins.Add(databasePlugin);
+
+        // Build the kernel and add the plugin
+        var kernel = kernelBuilder.Build();
+
+        // Create settings for function calling
+        var settings = new OpenAIPromptExecutionSettings
         {
-            Description = $"New test - {Guid.NewGuid().ToString().Substring(0,4)}",
-            DateCreated = DateTime.Now
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
-        // Direct calling the function
-        var insertResult = await dataBasePlugin["InsertMyEntityRecord"].InvokeAsync(kernel, new() { ["entity"] = newRecord });
-        var insertedEntity = insertResult.GetValue<MyEntity>()!;
+        // Example 1: Insert a new record
+        Console.WriteLine("Creating a new record...");
+        var insertPrompt = $"Create a new record with description 'Test from OpenAI' and current date {DateTime.Now.Date:yyyy-MM-dd}";
+        var insertResult = await kernel.InvokePromptAsync(insertPrompt, new(settings));
+        Console.WriteLine($"Insert Result: {insertResult}");
 
-        Console.WriteLine($"""
-            ----- Inserted Record -----
-            Id: {insertedEntity.Id}
-            Description: {insertedEntity.Description}
-            DateCreated: {insertedEntity.DateCreated}
-            -----
-            """);
+        // Example 2: Query records
+        Console.WriteLine("\nQuerying all records...");
+        var queryPrompt = "Show me all the records in the database";
+        var queryResult = await kernel.InvokePromptAsync(queryPrompt, new(settings));
+        Console.WriteLine($"Query Result: {queryResult}");
 
-        // Direct calling select function
-        var selectResult = await dataBasePlugin["SelectMyEntityRecords"].InvokeAsync(kernel);
-        var selectedEntities = selectResult.GetValue<IList<MyEntity>>()!;
-        Console.WriteLine($"----- Selected {selectedEntities.Count} records -----");
-        foreach (var entity in selectedEntities)
+        // Example 3: Complex query with specific criteria
+        Console.WriteLine("\nQuerying records with specific criteria...");
+        var complexPrompt = $"Find records that were created today: {DateTime.Now.Date:yyyy-MM-dd} and show their descriptions";
+        var complexResult = await kernel.InvokePromptAsync(complexPrompt, new(settings));
+        Console.WriteLine($"Complex Query Result: {complexResult}");
+
+        // Example 4: Interactive chat-like interaction
+        Console.WriteLine("\nStarting interactive mode (type 'exit' to quit)");
+        while (true)
         {
-            Console.WriteLine($"""
-                Id: {entity.Id}
-                Description: {entity.Description}
-                -----
-                """);
+            Console.Write("\nEnter your database query: ");
+            var userInput = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(userInput) || userInput.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
+            var result = await kernel.InvokePromptAsync(userInput, new(settings));
+            Console.WriteLine($"\nResult: {result}");
         }
     }
 
-    private async Task UsingServiceDirectlyAsync<T>(StructuredDataService<T> structuredDataService)
-        where T : DbContext
+    private class MyHandler : HttpClientHandler
     {
-        var result = structuredDataService.Select<MyEntity>();
-
-        Console.WriteLine($"----- Records for {nameof(MyEntity)} -----");
-        foreach (var entity in result)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Console.WriteLine($"""
-                Id: {entity.Id}
-                Description: {entity.Description}
-                -----
-                """);
+            var requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+            // Console.WriteLine($"Request: {request.Method} {request.RequestUri}");
+            Console.WriteLine($"Request Body: {JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(requestBody), new JsonSerializerOptions { WriteIndented = true })}");
+            // Custom logic for handling HTTP requests
+            return await base.SendAsync(request, cancellationToken);
         }
-
-        var newRecord = new MyEntity
-        {
-            Description = "New test",
-            DateCreated = DateTime.Now
-        };
-
-        var insertedEntity = await structuredDataService.InsertAsync(newRecord);
-        Console.WriteLine($"""
-            ----- Inserted Record -----
-            Id: {insertedEntity.Id}
-            Description: {insertedEntity.Description}
-            DateCreated: {insertedEntity.DateCreated}
-            -----
-            """);
     }
 }

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Data.Entity;
+using System.Text.Json;
+using System.Text.Json.Schema;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
 
 namespace StructuredDataConnector;
@@ -27,10 +30,15 @@ public static class StructuredDataServiceExtensions
         options ??= new KernelFunctionFromMethodOptions
         {
             FunctionName = $"Insert{typeof(TEntity).Name}Record",
-            Description = "Insert the provided entity record into the database.",
+            Description = "Creates / Inserts the provided entity record into the database.",
             Parameters =
             [
-                new KernelParameterMetadata("entity") { Description = "Entity record information", IsRequired = true },
+                new KernelParameterMetadata("entity") {
+                    ParameterType = typeof(TEntity),
+                    Schema = KernelJsonSchemaBuilder.Build(typeof(TEntity)),
+                    Description = "Entity record information",
+                    IsRequired = true
+                },
             ],
             ReturnParameter = new() { ParameterType = typeof(TEntity) },
         };
@@ -61,13 +69,30 @@ public static class StructuredDataServiceExtensions
         {
             FunctionName = $"Select{typeof(TEntity).Name}Records",
             Description = $"Gets {typeof(TEntity).Name} records from the database.",
-            Parameters = [],
+            Parameters =
+            [
+                new KernelParameterMetadata("filter")
+                {
+                    ParameterType = typeof(string),
+                    Description = string.Concat($"A filter expression to query {typeof(TEntity).Name}.",
+                        "Supported operators: ",
+                        "'gt' (greater than), ",
+                        "'lt' (less than), ",
+                        "'eq' (equals), ",
+                        "'contains' (string contains), ",
+                        "'startswith' (string starts with), ",
+                        "'endswith' (string ends with), ",
+                        "Combine with 'and', 'or'. ",
+                        "Wrap string values in single quotes."),
+                    IsRequired = false
+                },
+            ],
             ReturnParameter = new() { ParameterType = typeof(IList<TEntity>) },
         };
 
-        async Task<IList<TEntity>> SelectAsync(CancellationToken cancellationToken)
+        async Task<IList<TEntity>> SelectAsync(string? filter = null, CancellationToken cancellationToken = default)
         {
-            return await service.Select<TEntity>().ToListAsync().ConfigureAwait(false);
+            return await service.Select<TEntity>(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         return KernelFunctionFactory.CreateFromMethod(SelectAsync, options);
@@ -93,7 +118,12 @@ public static class StructuredDataServiceExtensions
             Description = "Update the provided entity record in the database.",
             Parameters =
             [
-                new KernelParameterMetadata("entity") { Description = "Entity record information to update", IsRequired = true },
+                new KernelParameterMetadata("entity")
+                {
+                    ParameterType = typeof(TEntity),
+                    Description = "Entity record information to update",
+                    IsRequired = true
+                },
             ],
             ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" },
         };
@@ -126,7 +156,12 @@ public static class StructuredDataServiceExtensions
             Description = "Delete the provided entity record from the database.",
             Parameters =
             [
-                new KernelParameterMetadata("entity") { Description = "Entity record to delete", IsRequired = true },
+                new KernelParameterMetadata("entity")
+                {
+                    ParameterType = typeof(TEntity),
+                    Description = "Entity record to delete",
+                    IsRequired = true
+                },
             ],
             ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" },
         };
