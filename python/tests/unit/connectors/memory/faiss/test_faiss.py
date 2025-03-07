@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import faiss
-from pytest import fixture, mark
+from pytest import fixture
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
 from semantic_kernel.data.const import DistanceFunction, IndexKind
@@ -87,38 +87,29 @@ async def test_text_search_with_filter(collection):
     assert len([res async for res in results.results]) == 1
 
 
-@mark.parametrize(
-    "distance_function",
-    [
-        DistanceFunction.MANHATTAN,
-        DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE,
-        DistanceFunction.DOT_PROD,
-    ],
-)
-@mark.parametrize(
-    "index_kind",
-    [
-        IndexKind.FLAT,
-        IndexKind.HNSW,
-        IndexKind.IVF_FLAT,
-    ],
-)
-async def test_create_collection_and_search(collection, index_kind, distance_function):
+async def test_create_collection_and_search(collection):
     collection.data_model_definition.fields["vector"].dimensions = 5
-    collection.data_model_definition.fields["vector"].distance_function = distance_function
-    collection.data_model_definition.fields["vector"].index_kind = index_kind
-    await collection.create_collection(n_list=1, hnsw_m=1)
-    assert collection.indexes["vector"] is not None
-    assert isinstance(collection.indexes["vector"], faiss.Index)
-    record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
-    record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
-    await collection.upsert_batch([record1, record2])
-    results = await collection.vectorized_search(
-        vector=[0.9, 0.9, 0.9, 0.9, 0.9],
-        options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),
-    )
-    assert results.total_count == 2
-    idx = 0
-    async for res in results.results:
-        assert res.record == record1 if idx == 0 else record2
-        idx += 1
+    for index_kind in (IndexKind.FLAT, IndexKind.HNSW, IndexKind.IVF_FLAT):
+        for distance_function in (
+            DistanceFunction.MANHATTAN,
+            DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE,
+            DistanceFunction.DOT_PROD,
+        ):
+            await collection.delete_collection()
+            collection.data_model_definition.fields["vector"].distance_function = distance_function
+            collection.data_model_definition.fields["vector"].index_kind = index_kind
+            await collection.create_collection(n_list=1, hnsw_m=1)
+            assert collection.indexes["vector"] is not None
+            assert isinstance(collection.indexes["vector"], faiss.Index)
+            record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
+            record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
+            await collection.upsert_batch([record1, record2])
+            results = await collection.vectorized_search(
+                vector=[0.9, 0.9, 0.9, 0.9, 0.9],
+                options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),
+            )
+            assert results.total_count == 2
+            idx = 0
+            async for res in results.results:
+                assert res.record == record1 if idx == 0 else record2
+                idx += 1
