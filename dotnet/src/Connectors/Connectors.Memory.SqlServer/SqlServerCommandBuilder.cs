@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
@@ -36,7 +35,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
         var keyMapping = Map(keyProperty.PropertyType);
-        sb.AppendFormat("[{0}] {1} {2},", keyColumnName, keyMapping.sqlName, keyProperty.AutoGenerate ? keyMapping.autoGenerate : "NOT NULL");
+        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, keyMapping.sqlName);
         sb.AppendLine();
         for (int i = 0; i < dataProperties.Count; i++)
         {
@@ -143,17 +142,13 @@ internal static class SqlServerCommandBuilder
         --sb.Length; // remove the last comma
         sb.AppendLine();
 
-        // We must not try to insert the key if it is auto-generated.
-        var propertiesToInsert = keyProperty.AutoGenerate
-            ? properties.Where(p => p != keyProperty)
-            : properties;
         sb.Append("WHEN NOT MATCHED THEN");
         sb.AppendLine();
         sb.Append("INSERT (");
-        sb.AppendColumnNames(propertiesToInsert);
+        sb.AppendColumnNames(properties);
         sb.AppendLine(")");
         sb.Append("VALUES (");
-        sb.AppendColumnNames(propertiesToInsert, prefix: "s.");
+        sb.AppendColumnNames(properties, prefix: "s.");
         sb.AppendLine(")");
         sb.AppendFormat("OUTPUT inserted.[{0}];", GetColumnName(keyProperty));
 

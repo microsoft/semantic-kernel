@@ -394,7 +394,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
             FancyTestModel<TKey> inserted = new()
             {
-                // We let the DB assign Id!
+                Id = testStore.GenerateKey<TKey>(1),
                 Number8 = byte.MaxValue,
                 Number16 = short.MaxValue,
                 Number32 = int.MaxValue,
@@ -403,7 +403,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Bytes = [1, 2, 3],
             };
             TKey key = await collection.UpsertAsync(inserted);
-            Assert.NotEqual(default, key); // key should be assigned by the DB (auto-increment)
+            Assert.NotEqual(default, key);
 
             FancyTestModel<TKey>? received = await collection.GetAsync(key, new() { IncludeVectors = true });
             AssertEquality(inserted, received, key);
@@ -444,7 +444,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
     public sealed class FancyTestModel<TKey>
     {
-        [VectorStoreRecordKey(StoragePropertyName = "key", AutoGenerate = true)]
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
         public TKey? Id { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "byte")]

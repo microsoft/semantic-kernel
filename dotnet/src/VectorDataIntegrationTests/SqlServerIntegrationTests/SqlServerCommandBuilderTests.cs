@@ -107,10 +107,7 @@ public class SqlServerCommandBuilderTests
     [InlineData(false)]
     public void CreateTable(bool ifNotExists)
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
-        {
-            AutoGenerate = true
-        };
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
         VectorStoreRecordDataProperty[] dataProperties =
         [
             new VectorStoreRecordDataProperty("simpleName", typeof(string)),
@@ -132,7 +129,7 @@ public class SqlServerCommandBuilderTests
         """
         BEGIN
         CREATE TABLE [schema].[table] (
-        [id] BIGINT IDENTITY(1,1),
+        [id] BIGINT NOT NULL,
         [simpleName] NVARCHAR(255),
         [with space] INT,
         [embedding] VECTOR(10),
@@ -151,10 +148,7 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void MergeIntoSingle()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long))
-        {
-            AutoGenerate = true
-        };
+        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
         VectorStoreRecordProperty[] properties =
         [
             keyProperty,
@@ -185,8 +179,8 @@ public class SqlServerCommandBuilderTests
         WHEN MATCHED THEN
         UPDATE SET t.[simpleString] = s.[simpleString],t.[simpleInt] = s.[simpleInt],t.[embedding] = s.[embedding]
         WHEN NOT MATCHED THEN
-        INSERT ([simpleString],[simpleInt],[embedding])
-        VALUES (s.[simpleString],s.[simpleInt],s.[embedding])
+        INSERT ([id],[simpleString],[simpleInt],[embedding])
+        VALUES (s.[id],s.[simpleString],s.[simpleInt],s.[embedding])
         OUTPUT inserted.[id];
         """";
 

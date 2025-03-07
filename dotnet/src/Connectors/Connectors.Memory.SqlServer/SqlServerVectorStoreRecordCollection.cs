@@ -50,17 +50,13 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 SupportsMultipleVectors = true,
             });
 
-        HashSet<Type> supportedKeyTypes = propertyReader.KeyProperty.AutoGenerate
-            ? SqlServerConstants.SupportedAutoGenerateKeyTypes
-            : SqlServerConstants.SupportedKeyTypes;
-
         if (VectorStoreRecordPropertyVerification.IsGenericDataModel(typeof(TRecord)))
         {
-            VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.Mapper is not null, supportedKeyTypes);
+            VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.Mapper is not null, SqlServerConstants.SupportedKeyTypes);
         }
         else
         {
-            propertyReader.VerifyKeyProperties(supportedKeyTypes);
+            propertyReader.VerifyKeyProperties(SqlServerConstants.SupportedKeyTypes);
         }
         propertyReader.VerifyDataProperties(SqlServerConstants.SupportedDataTypes, supportEnumerable: false);
         propertyReader.VerifyVectorProperties(SqlServerConstants.SupportedVectorTypes);
