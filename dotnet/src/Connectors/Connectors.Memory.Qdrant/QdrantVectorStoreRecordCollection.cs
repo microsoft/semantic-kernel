@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,10 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
+public class QdrantVectorStoreRecordCollection<TRecord> :
+    IVectorStoreRecordCollection<ulong, TRecord>,
+    IVectorStoreRecordCollection<Guid, TRecord>,
+    IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
@@ -29,7 +33,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid vector search.</summary>
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
@@ -127,7 +134,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     public string CollectionName => this._collectionName;
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "CollectionExists",
@@ -135,7 +142,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         if (!this._options.HasNamedVectors)
         {
@@ -221,7 +228,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -230,7 +237,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "DeleteCollection",
@@ -238,7 +245,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -247,7 +254,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -256,19 +263,19 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(ulong key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -282,7 +289,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(Guid key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -296,7 +303,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<ulong> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -310,7 +317,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<Guid> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -324,7 +331,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<ulong> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -343,7 +350,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    async Task<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    async Task<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(TRecord record, CancellationToken cancellationToken)
     {
         Verify.NotNull(record);
 
@@ -362,7 +369,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -385,7 +392,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(records);
 
@@ -457,30 +464,30 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vector);
+        var floatVector = VerifyVectorParam(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
-        }
-
+        // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = QdrantVectorStoreCollectionSearchMapping.BuildFilter(internalOptions.Filter, this._propertyReader.StoragePropertyNamesMap);
+        var filter = internalOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._propertyReader.StoragePropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => new Filter()
+        };
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Specify the vector name if named vectors are used.
         string? vectorName = null;
         if (this._options.HasNamedVectors)
         {
-            vectorName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
         }
 
         // Specify whether to include vectors in the search results.
@@ -517,29 +524,96 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
-    /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private string ResolveVectorFieldName(string? optionsVectorFieldName)
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
+        var floatVector = VerifyVectorParam(vector);
+
+        // Resolve options.
+        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
+        var textDataPropertyName = this._propertyReader.GetStoragePropertyName(textDataProperty.DataModelPropertyName);
+
+        // Build filter object.
+#pragma warning disable CS0618 // Type or member is obsolete
+        // Build filter object.
+        var filter = internalOptions switch
         {
-            if (!this._propertyReader.StoragePropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._propertyReader.StoragePropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => new Filter()
+        };
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        // Specify the vector name if named vectors are used.
+        string? vectorName = null;
+        if (this._options.HasNamedVectors)
         {
-            vectorFieldName = this._propertyReader.FirstVectorPropertyStoragePropertyName;
+            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
         }
 
-        return vectorFieldName!;
+        // Specify whether to include vectors in the search results.
+        var vectorsSelector = new WithVectorsSelector();
+        vectorsSelector.Enable = internalOptions.IncludeVectors;
+
+        // Build the vector query.
+        var vectorQuery = new PrefetchQuery
+        {
+            Filter = filter,
+            Query = new Query
+            {
+                Nearest = new VectorInput(floatVector.ToArray()),
+            },
+        };
+
+        if (this._options.HasNamedVectors)
+        {
+            vectorQuery.Using = vectorName;
+        }
+
+        // Build the keyword query.
+        var keywordFilter = filter.Clone();
+        var keywordSubFilter = new Filter();
+        foreach (string keyword in keywords)
+        {
+            keywordSubFilter.Should.Add(new Condition() { Field = new FieldCondition() { Key = textDataPropertyName, Match = new Match { Text = keyword } } });
+        }
+        keywordFilter.Must.Add(new Condition() { Filter = keywordSubFilter });
+        var keywordQuery = new PrefetchQuery
+        {
+            Filter = keywordFilter,
+        };
+
+        // Build the fusion query.
+        var fusionQuery = new Query
+        {
+            Fusion = Fusion.Rrf,
+        };
+
+        // Execute Search.
+        var points = await this.RunOperationAsync(
+            "Query",
+            () => this._qdrantClient.QueryAsync(
+                this.CollectionName,
+                prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
+                query: fusionQuery,
+                limit: (ulong)internalOptions.Top,
+                offset: (ulong)internalOptions.Skip,
+                vectorsSelector: vectorsSelector,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        // Map to data model.
+        var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
+                point,
+                this._mapper,
+                internalOptions.IncludeVectors,
+                DatabaseName,
+                this._collectionName,
+                "Query"));
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     /// <summary>
@@ -587,5 +661,17 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 OperationName = operationName
             };
         }
+    }
+
+    private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
+    {
+        Verify.NotNull(vector);
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
+        }
+
+        return floatVector;
     }
 }

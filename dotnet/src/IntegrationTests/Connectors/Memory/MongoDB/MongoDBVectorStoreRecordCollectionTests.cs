@@ -12,6 +12,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {
@@ -408,7 +410,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Filter = new VectorSearchFilter().EqualTo(nameof(MongoDBHotel.HotelName), "My Hotel key2")
+            OldFilter = new VectorSearchFilter().EqualTo(nameof(MongoDBHotel.HotelName), "My Hotel key2")
         });
 
         // Assert

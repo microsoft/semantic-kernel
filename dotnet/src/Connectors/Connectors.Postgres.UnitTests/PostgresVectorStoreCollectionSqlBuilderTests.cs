@@ -76,10 +76,13 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
     }
 
     [Theory]
-    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance)]
-    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity)]
-    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance)]
-    public void TestBuildCreateIndexCommand(string indexKind, string distanceFunction)
+    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, true)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, false)]
+    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity, true)]
+    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity, false)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance, true)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance, false)]
+    public void TestBuildCreateIndexCommand(string indexKind, string distanceFunction, bool ifNotExists)
     {
         var builder = new PostgresVectorStoreCollectionSqlBuilder();
 
@@ -87,15 +90,28 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction));
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
             return;
         }
 
-        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction);
+        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
-        Assert.Contains("ON public.\"testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
+        // Make sure ifNotExists is respected
+        if (ifNotExists)
+        {
+            Assert.Contains("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+        }
+        else
+        {
+            Assert.DoesNotContain("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+        }
+        // Make sure the name is escaped, so names starting with a digit are OK.
+        Assert.Contains($"\"1testcollection_{vectorColumn}_index\"", cmdInfo.CommandText);
+
+        Assert.Contains("ON public.\"1testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
         if (distanceFunction == null)
         {
             // Check for distance function defaults to cosine distance
@@ -362,59 +378,6 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         Assert.NotNull(cmdInfo.Parameters);
         Assert.Single(cmdInfo.Parameters);
         Assert.Equal(keys, cmdInfo.Parameters[0].Value);
-
-        // Output
-        this._output.WriteLine(cmdInfo.CommandText);
-    }
-
-    [Fact]
-    public void TestBuildGetNearestMatchCommand()
-    {
-        // Arrange
-        var builder = new PostgresVectorStoreCollectionSqlBuilder();
-
-        var vectorProperty = new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
-        {
-            Dimensions = 10,
-            IndexKind = "hnsw",
-        };
-
-        var recordDefinition = new VectorStoreRecordDefinition()
-        {
-            Properties = [
-                new VectorStoreRecordKeyProperty("id", typeof(long)),
-                new VectorStoreRecordDataProperty("name", typeof(string)),
-                new VectorStoreRecordDataProperty("code", typeof(int)),
-                new VectorStoreRecordDataProperty("rating", typeof(float?)),
-                new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
-                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                vectorProperty,
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
-                {
-                    Dimensions = 10,
-                    IndexKind = "hnsw",
-                }
-            ]
-        };
-
-        var vector = new Vector(s_vector);
-
-        // Act
-        var cmdInfo = builder.BuildGetNearestMatchCommand("public", "testcollection",
-            properties: recordDefinition.Properties,
-            vectorProperty: vectorProperty,
-            vectorValue: vector,
-            filter: null,
-            skip: null,
-            includeVectors: true,
-            limit: 10);
-
-        // Assert
-        Assert.Contains("SELECT", cmdInfo.CommandText);
-        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
-        Assert.Contains("ORDER BY", cmdInfo.CommandText);
-        Assert.Contains("LIMIT 10", cmdInfo.CommandText);
 
         // Output
         this._output.WriteLine(cmdInfo.CommandText);

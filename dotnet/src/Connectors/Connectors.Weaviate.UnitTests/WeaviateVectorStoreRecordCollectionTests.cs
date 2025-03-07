@@ -530,11 +530,12 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         // Arrange
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
 
-        var searchOptions = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
-
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(
+                new ReadOnlyMemory<float>([1f, 2f, 3f]),
+                new() { VectorProperty = r => "non-existent-property" }))
+                .Results.ToListAsync());
     }
 
     public void Dispose()

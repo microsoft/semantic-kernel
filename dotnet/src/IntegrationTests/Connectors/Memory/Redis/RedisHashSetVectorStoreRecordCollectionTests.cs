@@ -13,6 +13,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
@@ -65,7 +67,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var actual = await sut
             .VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-                new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
+                new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -316,10 +318,10 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions
+            new()
             {
                 IncludeVectors = includeVectors,
-                Filter = filter
+                OldFilter = filter
             });
 
         // Assert
@@ -360,7 +362,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions
+            new()
             {
                 Top = 3,
                 Skip = 2
@@ -390,7 +392,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions
+            new()
             {
                 IncludeVectors = includeVectors,
                 Top = 1

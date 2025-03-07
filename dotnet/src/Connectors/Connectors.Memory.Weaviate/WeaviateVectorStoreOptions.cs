@@ -12,6 +12,7 @@ public sealed class WeaviateVectorStoreOptions
     /// <summary>
     /// An optional factory to use for constructing <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
+    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IWeaviateVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 
     /// <summary>

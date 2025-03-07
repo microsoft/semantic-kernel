@@ -415,6 +415,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -450,7 +451,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new()
             {
                 IncludeVectors = includeVectors,
-                Filter = filter,
+                OldFilter = filter,
                 Top = 5,
                 Skip = 2
             });
@@ -508,6 +509,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             Assert.False(results.First().Record.Vector.HasValue);
         }
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.

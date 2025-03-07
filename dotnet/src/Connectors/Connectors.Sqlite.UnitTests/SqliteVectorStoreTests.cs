@@ -43,6 +43,7 @@ public sealed class SqliteVectorStoreTests
         Assert.NotNull(collectionWithStringKey);
     }
 
+#pragma warning disable CS0618 // ISqliteVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -72,6 +73,7 @@ public sealed class SqliteVectorStoreTests
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()

@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     private const string DatabaseName = "Pinecone";
@@ -32,7 +32,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private const string GetOperationName = "Get";
     private const string QueryOperationName = "Query";
 
-    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -90,7 +90,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         var result = await this.RunOperationAsync(
             CollectionExistsName,
@@ -105,7 +105,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._propertyReader.VectorProperty!;
@@ -123,7 +123,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -132,13 +132,13 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync(
             DeleteCollectionName,
             () => this._pineconeClient.DeleteIndex(this.CollectionName, cancellationToken));
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -148,7 +148,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(
+    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(
         IEnumerable<string> keys,
         GetRecordOptions? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -177,15 +177,15 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
-        return this.DeleteBatchAsync([key], options, cancellationToken);
+        return this.DeleteBatchAsync([key], cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -199,7 +199,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -221,10 +221,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(
-        IEnumerable<TRecord> records,
-        UpsertRecordOptions? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -249,7 +246,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -262,9 +259,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         // Resolve options and build filter clause.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
         var mapperOptions = new StorageToDataModelMapperOptions { IncludeVectors = options?.IncludeVectors ?? false };
+
+#pragma warning disable CS0618 // FilterClause is obsolete
         var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
-            internalOptions.Filter?.FilterClauses,
+            internalOptions.OldFilter?.FilterClauses,
             this._propertyReader.StoragePropertyNamesMap);
+#pragma warning restore CS0618
 
         // Get the current index.
         var indexNamespace = this.GetIndexNamespace();

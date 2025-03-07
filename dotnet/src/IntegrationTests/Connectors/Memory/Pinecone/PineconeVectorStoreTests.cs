@@ -17,6 +17,7 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
 {
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
 
+#pragma warning disable CS0618 // IPineconeVectorStoreRecordCollectionFactory is obsolete
     [VectorStoreFact]
     public void CreateCollectionUsingFactory()
     {
@@ -49,4 +50,5 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
             return (new PineconeVectorStoreRecordCollection<TRecord>(pineconeClient, "factory" + name) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
     }
+#pragma warning restore CS0618
 }

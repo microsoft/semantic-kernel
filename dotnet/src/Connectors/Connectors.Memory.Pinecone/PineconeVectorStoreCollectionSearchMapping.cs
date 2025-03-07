@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 internal static class PineconeVectorStoreCollectionSearchMapping
 {
+#pragma warning disable CS0618 // FilterClause is obsolete
     /// <summary>
     /// Build a Pinecone <see cref="MetadataMap"/> from a set of filter clauses.
     /// </summary>
@@ -59,4 +60,5 @@ internal static class PineconeVectorStoreCollectionSearchMapping
 
         return metadataMap;
     }
+#pragma warning restore CS0618 // FilterClause is obsolete
 }

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>VectorDataSpecificationTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory.Data" />
+  </ItemGroup>
+
+</Project>
