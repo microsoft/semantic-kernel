@@ -67,7 +67,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             $"""
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -100,7 +100,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -148,7 +148,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -190,7 +190,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -225,7 +225,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -260,7 +260,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:
@@ -310,7 +310,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var text =
             """
             type: foundry_agent
-            name: AzureAIAgent
+            name: FoundryAgent
             description: AzureAIAgent Description
             instructions: AzureAIAgent Instructions
             model:

@@ -41,6 +41,8 @@ internal static class AgentDefinitionExtensions
     /// <exception cref="InvalidOperationException"></exception>
     public static IEnumerable<ToolDefinition> GetAzureToolDefinitions(this AgentDefinition agentDefinition)
     {
+        Verify.NotNull(agentDefinition);
+
         return agentDefinition.Tools?.Select<AgentToolDefinition, ToolDefinition>(tool =>
         {
             return tool.Type switch
@@ -60,6 +62,35 @@ internal static class AgentDefinitionExtensions
     }
 
     /// <summary>
+    /// Return the Azure AI tool resources which corresponds with the provided <see cref="AgentDefinition"/>.
+    /// </summary>
+    /// <param name="agentDefinition">Agent definition</param>
+    public static ToolResources GetAzureToolResources(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+
+        var toolResources = new ToolResources();
+
+        var codeInterpreter = agentDefinition.GetCodeInterpreterToolResource();
+        if (codeInterpreter is not null)
+        {
+            toolResources.CodeInterpreter = codeInterpreter;
+        }
+        var fileSearch = agentDefinition.GetFileSearchToolResource();
+        if (fileSearch is not null)
+        {
+            toolResources.FileSearch = fileSearch;
+        }
+        var azureAISearch = agentDefinition.GetAzureAISearchResource();
+        if (azureAISearch is not null)
+        {
+            toolResources.AzureAISearch = azureAISearch;
+        }
+
+        return toolResources;
+    }
+
+    /// <summary>
     /// Retrieve the metadata from the agent definition.
     /// </summary>
     /// <param name="agentDefinition">Agent definition</param>
@@ -72,6 +103,34 @@ internal static class AgentDefinitionExtensions
     }
 
     #region private
+    private static CodeInterpreterToolResource? GetCodeInterpreterToolResource(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+        return null;
+    }
+
+    private static FileSearchToolResource? GetFileSearchToolResource(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+
+        var fileSearch = agentDefinition.GetFirstToolDefinition(FileSearchType);
+        if (fileSearch is not null)
+        {
+            var vectorStoreIds = fileSearch.GetVectorStoreIds();
+            if (vectorStoreIds is not null)
+            {
+                return new FileSearchToolResource(vectorStoreIds, vectorStores: null);
+            }
+        }
+
+        return null;
+    }
+    private static AzureAISearchResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
+    {
+        Verify.NotNull(agentDefinition);
+        return null;
+    }
+
     private static AzureAISearchToolDefinition CreateAzureAISearchToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);

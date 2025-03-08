@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -68,7 +69,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunPromptWithAutoFunctionChoiceBehaviorAdvertisingAllKernelFunctionsInvokedAutomaticallyAsync()
     {
-        Kernel kernel = CreateKernel();
+        Kernel kernel = CreateKernel(this.Output);
 
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
@@ -525,12 +526,23 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
     }
 
-    private static Kernel CreateKernel()
+    private static Kernel CreateKernel(ITestOutputHelper? output = null)
     {
         // Create kernel
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        // Create a logging handler to output HTTP requests and responses
+        if (output is not null)
+        {
+            var handler = new LoggingHandler(new HttpClientHandler(), output);
+            var httpClient = new HttpClient(handler);
+
+            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, httpClient: httpClient);
+        }
+        else
+        {
+            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        }
 
         Kernel kernel = builder.Build();
 
@@ -553,6 +565,83 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 }, "GetWeatherForCity", "Gets the current weather for the specified city and specified date time."),
         ]);
 
+        kernel.Plugins.AddFromType<MenuPlugin>();
+
         return kernel;
     }
 }
+
+public sealed class MenuPlugin
+{
+    [KernelFunction, Description("Provides a list of specials from the menu.")]
+    public MenuItem[] GetMenu()
+    {
+        return s_menuItems;
+    }
+
+    [KernelFunction, Description("Provides a list of specials from the menu.")]
+    public MenuItem[] GetSpecials()
+    {
+        return s_menuItems.Where(i => i.IsSpecial).ToArray();
+    }
+
+    [KernelFunction, Description("Provides the price of the requested menu item.")]
+    public float? GetItemPrice(
+        [Description("The name of the menu item.")]
+        string menuItem)
+    {
+        return s_menuItems.FirstOrDefault(i => i.Name.Equals(menuItem, StringComparison.OrdinalIgnoreCase))?.Price;
+    }
+
+    private static readonly MenuItem[] s_menuItems =
+        [
+            new()
+            {
+                Category = "Soup",
+                Name = "Clam Chowder",
+                Price = 4.95f,
+                IsSpecial = true,
+            },
+            new()
+            {
+                Category = "Soup",
+                Name = "Tomato Soup",
+                Price = 4.95f,
+                IsSpecial = false,
+            },
+            new()
+            {
+                Category = "Salad",
+                Name = "Cobb Salad",
+                Price = 9.99f,
+            },
+            new()
+            {
+                Category = "Salad",
+                Name = "House Salad",
+                Price = 4.95f,
+            },
+            new()
+            {
+                Category = "Drink",
+                Name = "Chai Tea",
+                Price = 2.95f,
+                IsSpecial = true,
+            },
+            new()
+            {
+                Category = "Drink",
+                Name = "Soda",
+                Price = 1.95f,
+            },
+        ];
+
+    public sealed class MenuItem
+    {
+        public string Category { get; init; }
+        public string Name { get; init; }
+        public float Price { get; init; }
+        public bool IsSpecial { get; init; }
+    }
+}
+

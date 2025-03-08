@@ -24,20 +24,47 @@ internal static class AgentToolDefinitionExtensions
 
     internal static BinaryData GetParameters(this AgentToolDefinition agentToolDefinition)
     {
-        Verify.NotNull(agentToolDefinition.Configuration);
+        var parameters = agentToolDefinition.GetConfiguration<List<object>?>("parameters");
+        return parameters is not null ? CreateParameterSpec(parameters) : s_noParams;
+    }
 
-        var parameters = agentToolDefinition.GetConfiguration<List<object>>("parameters");
+    internal static BinaryData CreateParameterSpec(List<object> parameters)
+    {
+        JsonSchemaFunctionParameters parameterSpec = new();
+        foreach (var parameter in parameters)
+        {
+            var parameterProps = parameter as Dictionary<object, object>;
+            if (parameterProps is not null)
+            {
+                bool isRequired = parameterProps.TryGetValue("required", out var requiredValue) && requiredValue is string requiredString && requiredString.Equals("true", StringComparison.OrdinalIgnoreCase);
+                string? name = parameterProps.TryGetValue("name", out var nameValue) && nameValue is string nameString ? nameString : null;
+                string? type = parameterProps.TryGetValue("type", out var typeValue) && typeValue is string typeString ? typeString : null;
+                string? description = parameterProps.TryGetValue("description", out var descriptionValue) && descriptionValue is string descriptionString ? descriptionString : null;
 
-        // TODO Needswork
-        return parameters is not null ? new BinaryData(parameters) : s_noParams;
+                if (name is null || type is null)
+                {
+                    throw new ArgumentException("The configuration keys 'name' and 'type' are required for a parameter.");
+                }
+
+                if (isRequired)
+                {
+                    parameterSpec.Required.Add(name);
+                }
+                parameterSpec.Properties.Add(name, KernelJsonSchema.Parse($"{{ \"type\": \"{type}\", \"description\": \"{description}\" }}"));
+            }
+        }
+
+        return BinaryData.FromObjectAsJson(parameterSpec);
     }
 
     internal static FileSearchToolDefinitionDetails GetFileSearchToolDefinitionDetails(this AgentToolDefinition agentToolDefinition)
     {
-        var details = new FileSearchToolDefinitionDetails()
+        var details = new FileSearchToolDefinitionDetails();
+        var maxNumResults = agentToolDefinition.GetConfiguration<int?>("max_num_results");
+        if (maxNumResults is not null && maxNumResults > 0)
         {
-            MaxNumResults = agentToolDefinition.GetConfiguration<int>("max_num_results")
-        };
+            details.MaxNumResults = maxNumResults;
+        }
 
         FileSearchRankingOptions? rankingOptions = agentToolDefinition.GetFileSearchRankingOptions();
         if (rankingOptions is not null)
@@ -66,15 +93,17 @@ internal static class AgentToolDefinitionExtensions
     {
         Verify.NotNull(agentToolDefinition.Configuration);
 
-        var specification = agentToolDefinition.GetRequiredConfiguration<Dictionary<object, object>>("specification");
+        var specification = agentToolDefinition.GetRequiredConfiguration<object>("specification");
+        if (specification is string specificationStr)
+        {
+            return new BinaryData(specificationStr);
+        }
 
         return new BinaryData(specification);
     }
 
     internal static OpenApiAuthDetails GetOpenApiAuthDetails(this AgentToolDefinition agentToolDefinition)
     {
-        Verify.NotNull(agentToolDefinition.Configuration);
-
         var connectionId = agentToolDefinition.GetConfiguration<string>("connection_id");
         if (!string.IsNullOrEmpty(connectionId))
         {
@@ -88,6 +117,11 @@ internal static class AgentToolDefinitionExtensions
         }
 
         return new OpenApiAnonymousAuthDetails();
+    }
+
+    internal static List<string>? GetVectorStoreIds(this AgentToolDefinition agentToolDefinition)
+    {
+        return agentToolDefinition.GetConfiguration<List<object>>("vector_store_ids")?.Select(id => id.ToString()!).ToList();
     }
 
     private static AzureFunctionBinding GetAzureFunctionBinding(this AgentToolDefinition agentToolDefinition, string bindingType)
@@ -142,6 +176,12 @@ internal static class AgentToolDefinitionExtensions
                 throw new ArgumentNullException($"The configuration key '{key}' must be a non null value.");
             }
 
+            if (value is T expectedValue)
+            {
+                return expectedValue;
+            }
+            throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T)}' but is '{value.GetType()}'.");
+            /*
             try
             {
                 return (T)Convert.ChangeType(value, typeof(T));
@@ -150,6 +190,7 @@ internal static class AgentToolDefinitionExtensions
             {
                 throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T)}' but is '{value.GetType()}'.");
             }
+            */
         }
 
         throw new ArgumentException($"The configuration key '{key}' is required.");
