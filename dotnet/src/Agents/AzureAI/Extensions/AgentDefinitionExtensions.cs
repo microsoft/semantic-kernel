@@ -125,6 +125,7 @@ internal static class AgentDefinitionExtensions
 
         return null;
     }
+
     private static AzureAISearchResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);

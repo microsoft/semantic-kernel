@@ -370,64 +370,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
     }
 
-    [Fact]
-    public async Task AzureAIAgentWithAzureFunctionAsync()
-    {
-        var text =
-            """
-            type: foundry_agent
-            name: AzureFunctionAgent
-            instructions: Answer questions about the weather. For all other questions politely decline to answer.
-            description: This agent answers question about the weather.
-            model:
-              id: gpt-4o
-              options:
-                temperature: 0.4
-            tools:
-              - type: azure_function
-                name: GetWeather
-                description: Retrieves current weather data for a location based using an Azure Function.
-                configuration:  
-            """;
-        AzureAIAgentFactory factory = new();
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
-
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
-
-        await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
-    }
-
-    [Fact]
-    public async Task AzureAIAgentWithAzureAISearchAsync()
-    {
-        var text =
-            """
-            type: foundry_agent
-            name: AzureAISearchAgent
-            instructions: Use hotel sample info to answer questions about hotels.
-            description: This agent uses hotel sample info to answer questions about hotels.
-            model:
-              id: gpt-4o
-              options:
-                temperature: 0.4
-            tools:
-              - type: azure_ai_search
-                description: Hotel sample data.
-            """;
-        AzureAIAgentFactory factory = new();
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
-
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
-
-        await InvokeAgentAsync(agent!, "Recommend a New York hotel with a pool or gym?", false);
-    }
-
     #region private
     private readonly Kernel _kernel;
 

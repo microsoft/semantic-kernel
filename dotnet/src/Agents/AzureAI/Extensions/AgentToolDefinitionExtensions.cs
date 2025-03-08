@@ -39,7 +39,7 @@ internal static class AgentToolDefinitionExtensions
                 bool isRequired = parameterProps.TryGetValue("required", out var requiredValue) && requiredValue is string requiredString && requiredString.Equals("true", StringComparison.OrdinalIgnoreCase);
                 string? name = parameterProps.TryGetValue("name", out var nameValue) && nameValue is string nameString ? nameString : null;
                 string? type = parameterProps.TryGetValue("type", out var typeValue) && typeValue is string typeString ? typeString : null;
-                string? description = parameterProps.TryGetValue("description", out var descriptionValue) && descriptionValue is string descriptionString ? descriptionString : null;
+                string? description = parameterProps.TryGetValue("description", out var descriptionValue) && descriptionValue is string descriptionString ? descriptionString : string.Empty;
 
                 if (name is null || type is null)
                 {
