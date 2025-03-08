@@ -58,7 +58,12 @@
     "Endpoint": ""
   },
   "HuggingFace": {
-    "ApiKey": ""
+    "EmbeddingModelId": "sentence-transformers/all-MiniLM-L6-v2",
+    "TextGenerationModelId": "openai-community/gpt2",
+    "ChatCompletionModelId": "tgi",
+    "ApiKey": "",
+    "Endpoint": "",
+    "ChatCompletionDeploymentEndpoint": "https://<your-deployment>.endpoints.huggingface.cloud/v1/"
   },
   "GoogleAI": {
     "EmbeddingModelId": "embedding-001",
