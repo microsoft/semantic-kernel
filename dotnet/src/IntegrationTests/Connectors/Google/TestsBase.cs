@@ -61,6 +61,16 @@ public abstract class TestsBase(ITestOutputHelper output)
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
+    protected ITextEmbeddingGenerationService GetEmbeddingServiceWithDimensions(ServiceType serviceType, int dimensions) => serviceType switch
+    {
+        ServiceType.GoogleAI => new GoogleAITextEmbeddingGenerationService(
+            this.GoogleAIGetEmbeddingModel(),
+            this.GoogleAIGetApiKey(),
+            dimensions: dimensions),
+        ServiceType.VertexAI => throw new NotImplementedException("Semantic Kernel does not support configuring dimensions for Vertex AI embeddings"),
+        _ => throw new ArgumentException($"Invalid service type: {serviceType}", nameof(serviceType))
+    };
+
     public enum ServiceType
     {
         GoogleAI,
