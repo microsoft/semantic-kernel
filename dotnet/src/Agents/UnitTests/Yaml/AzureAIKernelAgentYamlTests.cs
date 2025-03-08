@@ -109,19 +109,20 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                 - type: azure_function
                   name: function1
                   description: function1 description
-                  input_binding:
-                      storage_service_endpoint: https://storage_service_endpoint
-                      queue_name: queue_name
-                  output_binding:
-                      storage_service_endpoint: https://storage_service_endpoint
-                      queue_name: queue_name
-                  parameters:
-                      - name: param1
-                        type: string
-                        description: param1 description
-                      - name: param2
-                        type: string
-                        description: param2 description
+                  configuration:
+                      input_binding:
+                          storage_service_endpoint: https://storage_service_endpoint
+                          queue_name: queue_name
+                      output_binding:
+                          storage_service_endpoint: https://storage_service_endpoint
+                          queue_name: queue_name
+                      parameters:
+                          - name: param1
+                            type: string
+                            description: param1 description
+                          - name: param2
+                            type: string
+                            description: param2 description
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -157,13 +158,14 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                 - type: function
                   name: function1
                   description: function1 description
-                  parameters:
-                      - name: param1
-                        type: string
-                        description: param1 description
-                      - name: param2
-                        type: string
-                        description: param2 description
+                  configuration:
+                      parameters:
+                          - name: param1
+                            type: string
+                            description: param1 description
+                          - name: param2
+                            type: string
+                            description: param2 description
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -197,8 +199,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: bing_grounding
-                  tool_connections:
-                    - connection_string
+                  configuration:
+                    tool_connections:
+                      - connection_string
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -232,8 +235,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: fabric_aiskill
-                  tool_connections:
-                    - connection_string
+                  configuration:
+                      tool_connections:
+                        - connection_string
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -269,19 +273,22 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                 - type: openapi
                   name: function1
                   description: function1 description
-                  specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
+                  configuration:
+                    specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
                 - type: openapi
                   name: function2
                   description: function2 description
-                  specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
-                  authentication:
-                      connection_id: connection_id
+                  configuration:
+                      specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
+                      authentication:
+                          connection_id: connection_id
                 - type: openapi
                   name: function3
                   description: function3 description
-                  specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
-                  authentication:
-                      audience: audience
+                  configuration:
+                      specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
+                      authentication:
+                          audience: audience
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -317,8 +324,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: sharepoint_grounding
-                  tool_connections:
-                    - connection_string
+                  configuration:
+                    tool_connections:
+                        - connection_string
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
