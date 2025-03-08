@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -479,9 +480,18 @@ def test_plugin_no_plugin(kernel: Kernel):
         kernel.add_plugin(plugin_name="test")
 
 
-def test_plugin_name_error(kernel: Kernel):
-    with pytest.raises(ValueError):
-        kernel.add_plugin(" ", None)
+def test_plugin_name_from_class_name(kernel: Kernel):
+    kernel.add_plugin(" ", None)
+    assert "str" in kernel.plugins
+
+
+def test_plugin_name_from_name_attribute(kernel: Kernel):
+    @dataclass
+    class TestPlugin:
+        name: str = "test_plugin"
+
+    kernel.add_plugin(TestPlugin(), None)
+    assert "test_plugin" in kernel.plugins
 
 
 def test_plugin_name_not_string_error(kernel: Kernel):
