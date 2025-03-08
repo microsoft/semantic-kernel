@@ -33,13 +33,7 @@ public sealed partial class AzureAIAgent : KernelAgent
 
     private static AIProjectClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        AIProjectClientOptions options =
-            new()
-            {
-                Diagnostics = {
-                    ApplicationId = HttpHeaderConstant.Values.UserAgent,
-                }
-            };
+        AIProjectClientOptions options = new();
 
         options.AddPolicy(new SemanticKernelHeadersPolicy(), HttpPipelinePosition.PerCall);
 
@@ -57,6 +51,10 @@ public sealed partial class AzureAIAgent : KernelAgent
     {
         public override void OnSendingRequest(HttpMessage message)
         {
+            message.Request.Headers.Add(
+                HttpHeaderConstant.Names.UserAgent,
+                $"{HttpHeaderConstant.Values.UserAgent} {nameof(AzureAIAgent)}");
+
             message.Request.Headers.Add(
                 HttpHeaderConstant.Names.SemanticKernelVersion,
                 HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureAIAgent)));

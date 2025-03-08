@@ -58,6 +58,11 @@ class DaprKernelProcessContext:
         await self.dapr_process.stop()
 
     async def get_state(self) -> KernelProcess:
-        """Retrieves the current state of the process."""
-        dapr_process = await self.dapr_process.get_process_info()
-        return dapr_process.to_kernel_process()
+        """Retrieves the current state of the process.
+
+        Returns:
+            The current state of the process.
+        """
+        raw_process_info = await self.dapr_process.get_process_info()
+        dapr_process_info = DaprProcessInfo.model_validate(raw_process_info)
+        return dapr_process_info.to_kernel_process()

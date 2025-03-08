@@ -34,6 +34,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_tex
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
     OpenAITextToImageExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.azure_realtime import AzureRealtimeWebsocket
@@ -44,10 +45,8 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_image import A
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text import OpenAIAudioToText
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import (
-    ListenEvents,
     OpenAIRealtimeWebRTC,
     OpenAIRealtimeWebsocket,
-    SendEvents,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
