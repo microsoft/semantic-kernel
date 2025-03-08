@@ -644,4 +644,3 @@ public sealed class MenuPlugin
         public bool IsSpecial { get; init; }
     }
 }
-
