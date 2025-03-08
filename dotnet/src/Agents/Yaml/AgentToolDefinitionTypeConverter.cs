@@ -10,17 +10,17 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Type converter custom deserialization for <see cref="AgentMetadata"/> from YAML.
+/// Type converter custom deserialization for <see cref="AgentToolDefinition"/> from YAML.
 /// </summary>
 /// <remarks>
-/// Required to correctly deserialize the <see cref="AgentDefinition.Metadata"/> from YAML.
+/// Required to correctly deserialize the <see cref="AgentToolDefinition.Configuration"/> from YAML.
 /// </remarks>
-internal sealed class AgentMetadataTypeConverter : IYamlTypeConverter
+internal sealed class AgentToolDefinitionTypeConverter : IYamlTypeConverter
 {
     /// <inheritdoc/>
     public bool Accepts(Type type)
     {
-        return type == typeof(AgentMetadata);
+        return type == typeof(AgentToolDefinition);
     }
 
     /// <inheritdoc/>
@@ -33,25 +33,28 @@ internal sealed class AgentMetadataTypeConverter : IYamlTypeConverter
 
         parser.MoveNext(); // Move to the first property  
 
-        var agentMetadata = new AgentMetadata();
+        var agentToolDefinition = new AgentToolDefinition();
         while (parser.Current is not MappingEnd)
         {
             var propertyName = parser.Consume<Scalar>().Value;
             switch (propertyName)
             {
-                case "authors":
-                    agentMetadata.Authors = s_deserializer.Deserialize<List<string>>(parser);
+                case "type":
+                    agentToolDefinition.Type = s_deserializer.Deserialize<string>(parser);
                     break;
-                case "tags":
-                    agentMetadata.Tags = s_deserializer.Deserialize<List<string>>(parser);
+                case "name":
+                    agentToolDefinition.Name = s_deserializer.Deserialize<string>(parser);
+                    break;
+                case "description":
+                    agentToolDefinition.Description = s_deserializer.Deserialize<string>(parser);
                     break;
                 default:
-                    (agentMetadata.ExtensionData ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
+                    (agentToolDefinition.Configuration ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
                     break;
             }
         }
         parser.MoveNext(); // Move past the MappingEnd event  
-        return agentMetadata;
+        return agentToolDefinition;
     }
 
     /// <inheritdoc/>

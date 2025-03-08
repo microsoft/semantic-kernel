@@ -51,10 +51,10 @@ public abstract class KernelAgentFactory
         Verify.NotNull(kernel);
         Verify.NotNull(agentDefinition);
 
-        var kernelAgent = this.TryCreateAsync(kernel, agentDefinition, cancellationToken);
-        if (kernelAgent is not null)
+        var result = this.TryCreateAsync(kernel, agentDefinition, cancellationToken);
+        if (result is not null)
         {
-            return kernelAgent!;
+            return result!;
         }
 
         throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
