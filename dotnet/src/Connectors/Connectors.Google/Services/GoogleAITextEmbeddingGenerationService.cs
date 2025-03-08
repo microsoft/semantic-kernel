@@ -54,7 +54,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
 
         if (dimensions.HasValue)
         {
-            this._attributesInternal.Add(AIServiceExtensions.DimensionsKey, dimensions);
+            this._attributesInternal.Add(EmbeddingGenerationExtensions.DimensionsKey, dimensions);
         }
     }
 

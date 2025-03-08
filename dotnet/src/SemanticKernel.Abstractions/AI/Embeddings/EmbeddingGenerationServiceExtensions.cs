@@ -19,6 +19,11 @@ namespace Microsoft.SemanticKernel.Embeddings;
 public static class EmbeddingGenerationExtensions
 {
     /// <summary>
+    /// Gets the key used to store the dimensions value in the <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/> dictionary.
+    /// </summary>
+    public static string DimensionsKey => "Dimensions";
+
+    /// <summary>
     /// Generates an embedding from the given <paramref name="value"/>.
     /// </summary>
     /// <typeparam name="TValue">The type from which embeddings will be generated.</typeparam>
@@ -88,6 +93,17 @@ public static class EmbeddingGenerationExtensions
         return generator is ITextEmbeddingGenerationService service ?
             service :
             new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
+    }
+
+    /// <summary>
+    /// Gets the dimensions from <paramref name="service"/>'s <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.
+    /// </summary>
+    /// <param name="service">The service from which to get the dimensions.</param>
+    /// <returns>The dimensions if it was specified in the service's attributes; otherwise, null.</returns>
+    public static int? GetDimensions<TValue, TEmbedding>(this IEmbeddingGenerationService<TValue, TEmbedding> service) where TEmbedding : unmanaged
+    {
+        Verify.NotNull(service);
+        return service.Attributes.TryGetValue(DimensionsKey, out object? value) ? value as int? : null;
     }
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>

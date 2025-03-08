@@ -31,11 +31,6 @@ public static class AIServiceExtensions
     public static string ApiVersionKey => "ApiVersion";
 
     /// <summary>
-    /// Gets the key used to store the dimensions value in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public static string DimensionsKey => "Dimensions";
-
-    /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
     /// <param name="service">The service from which to get the model identifier.</param>
@@ -55,17 +50,6 @@ public static class AIServiceExtensions
     /// <param name="service">The service from which to get the API version.</param>
     /// <returns>The API version if it was specified in the service's attributes; otherwise, null.</returns>
     public static string? GetApiVersion(this IAIService service) => service.GetAttribute(ApiVersionKey);
-
-    /// <summary>
-    /// Gets the dimensions from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
-    /// </summary>
-    /// <param name="service">The service from which to get the dimensions.</param>
-    /// <returns>The dimensions if it was specified in the service's attributes; otherwise, null.</returns>
-    public static int? GetDimensions(this IAIService service)
-    {
-        Verify.NotNull(service);
-        return service.Attributes?.TryGetValue(DimensionsKey, out object? value) == true ? value as int? : null;
-    }
 
     /// <summary>
     /// Gets the specified attribute.
