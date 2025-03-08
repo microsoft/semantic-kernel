@@ -277,6 +277,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await mapActor.InitializeMapAsync(mapStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMapId, nameof(MapActor));
             }
+            else if (step is DaprProxyInfo proxyStep)
+            {
+                // Initialize the step as a proxy
+                ActorId scopedProxyId = this.ScopedActorId(new ActorId(proxyStep.State.Id!));
+                IProxy proxyActor = this.ProxyFactory.CreateActorProxy<IProxy>(scopedProxyId, nameof(ProxyActor));
+                await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
+            }
             else
             {
                 // The current step should already have an Id.
@@ -369,7 +377,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 foreach (KernelProcessEdge edge in edges)
                 {
-                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Id, externalEvent.Data);
                     var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
                     var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
@@ -405,7 +413,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         {
             foreach (ProcessEvent errorEvent in processErrorEvents)
             {
-                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.Data);
+                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.SourceId, errorEvent.Data);
                 var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
                 var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
                 await errorStepQueue.EnqueueAsync(errorMessage.ToJson()).ConfigureAwait(false);
@@ -434,7 +442,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 {
                     foreach (var edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.Data);
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.SourceId, scopedEvent.Data);
                         var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId), scopeToParent: true);
                         var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                         await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);

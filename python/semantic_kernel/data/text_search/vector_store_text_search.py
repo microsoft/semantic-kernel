@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult

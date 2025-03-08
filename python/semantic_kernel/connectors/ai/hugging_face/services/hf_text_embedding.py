@@ -13,7 +13,7 @@ import sentence_transformers
 import torch
 from numpy import ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.utils.feature_stage_decorator import experimental
 

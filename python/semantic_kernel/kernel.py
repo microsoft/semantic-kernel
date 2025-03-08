@@ -5,7 +5,7 @@ from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
