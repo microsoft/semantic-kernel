@@ -69,7 +69,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunPromptWithAutoFunctionChoiceBehaviorAdvertisingAllKernelFunctionsInvokedAutomaticallyAsync()
     {
-        Kernel kernel = CreateKernel(this.Output);
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
@@ -526,6 +526,10 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
     }
 
+    /// <summary>
+    /// Creates a kernel with the OpenAI chat completion model and some helper functions.
+    /// </summary>
+    /// <param name="output">Optionally set this to log the function calling requests and responses</param>
     private static Kernel CreateKernel(ITestOutputHelper? output = null)
     {
         // Create kernel
