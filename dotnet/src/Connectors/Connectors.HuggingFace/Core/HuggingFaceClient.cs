@@ -284,11 +284,6 @@ internal sealed class HuggingFaceClient
     {
         var endpoint = this.GetEmbeddingGenerationEndpoint(this.ModelId);
 
-        if (data.Count > 1)
-        {
-            throw new NotSupportedException("Currently this interface does not support multiple embeddings results per data item, use only one data item");
-        }
-
         var request = new TextEmbeddingRequest
         {
             Inputs = data
@@ -301,8 +296,7 @@ internal sealed class HuggingFaceClient
 
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
 
-        // Currently only one embedding per data is supported
-        return response.ToList()!;
+        return response;
     }
 
     private Uri GetEmbeddingGenerationEndpoint(string? modelId)
