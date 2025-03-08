@@ -154,9 +154,9 @@ A pending change has been authored that introduces `FunctionChoiceBehavior` as a
 
 #### Assistant Invocation Options
 
-When invoking an `OpenAIAssistantAgent` directly (no-chat), definition that only apply to a discrete run may be specified.  These definition are defined as `OpenAIAssistantInvocationOptions` and ovetake precedence over any corresponding assistant or thread definition.
+When invoking an `OpenAIAssistantAgent` directly (no-chat), definition that only apply to a discrete run may be specified.  These definition are defined as `OpenAIAssistantInvocationOptions` and overtake precedence over any corresponding assistant or thread definition.
 
-> Note: These definition are also impacted by the `ToolCallBehavior` / `FunctionChoiceBehavior` quadary.
+> Note: These definition are also impacted by the `ToolCallBehavior` / `FunctionChoiceBehavior` quandary.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 370pt;"></kbd>

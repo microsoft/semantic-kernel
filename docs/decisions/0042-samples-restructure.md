@@ -70,7 +70,7 @@ samples/
 Pros:
 
 - Simpler and Less verbose structure (Worse is Better: Less is more approach)
-- Beginers will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
+- Beginners will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
 - Getting started will not be imposed.
 
 Cons:
@@ -101,7 +101,7 @@ Pros:
 
 Cons:
 
-- If the Getting starded example does not have a valid example for the customer it has go back on other folders for more content.
+- If the Getting started example does not have a valid example for the customer it has go back on other folders for more content.
 
 ### Option 3 - Conservative + Use Cases Based Root Categorization
 
@@ -130,7 +130,7 @@ Cons:
 - More verbose structure adds extra friction to find the samples.
 - `KernelContent` or `Modalities` is a internal term that may not be clear for the customer
 - `Documentation` may be confused a documents only folder, which actually contains code samples used in documentation. (not clear message)
-- `Use Cases` may suggest an idea of real world use cases implemented, where in reality those are simple demostrations of a SK feature.
+- `Use Cases` may suggest an idea of real world use cases implemented, where in reality those are simple demonstrations of a SK feature.
 
 ## KernelSyntaxExamples Decomposition Options
 
@@ -449,7 +449,7 @@ Cons:
 
 ### KernelSyntaxExamples Decomposition Option 2 - Concept by Components Flattened Version
 
-Similar approach to Option 1, but with a flattened structure using a single level of folders to avoid deep nesting and complexity authough keeping easy to navigate around the componentized concepts.
+Similar approach to Option 1, but with a flattened structure using a single level of folders to avoid deep nesting and complexity although keeping easy to navigate around the componentized concepts.
 
 Large (Less files per folder):
 
