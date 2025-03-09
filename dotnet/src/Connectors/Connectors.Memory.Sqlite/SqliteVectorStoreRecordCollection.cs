@@ -169,7 +169,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -204,7 +204,10 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
         else if (searchOptions.Filter is not null)
         {
-            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.Filter);
+            SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, searchOptions.Filter);
+            translator.Translate(appendWhere: false);
+            extraWhereFilter = translator.Clause.ToString();
+            extraParameters = translator.Parameters;
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 

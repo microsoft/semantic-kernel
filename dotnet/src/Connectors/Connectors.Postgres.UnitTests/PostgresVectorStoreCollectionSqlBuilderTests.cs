@@ -76,10 +76,13 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
     }
 
     [Theory]
-    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance)]
-    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity)]
-    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance)]
-    public void TestBuildCreateIndexCommand(string indexKind, string distanceFunction)
+    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, true)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance, false)]
+    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity, true)]
+    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity, false)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance, true)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance, false)]
+    public void TestBuildCreateIndexCommand(string indexKind, string distanceFunction, bool ifNotExists)
     {
         var builder = new PostgresVectorStoreCollectionSqlBuilder();
 
@@ -87,15 +90,28 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction));
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
             return;
         }
 
-        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction);
+        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
-        Assert.Contains("ON public.\"testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
+        // Make sure ifNotExists is respected
+        if (ifNotExists)
+        {
+            Assert.Contains("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+        }
+        else
+        {
+            Assert.DoesNotContain("CREATE INDEX IF NOT EXISTS", cmdInfo.CommandText);
+        }
+        // Make sure the name is escaped, so names starting with a digit are OK.
+        Assert.Contains($"\"1testcollection_{vectorColumn}_index\"", cmdInfo.CommandText);
+
+        Assert.Contains("ON public.\"1testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
         if (distanceFunction == null)
         {
             // Check for distance function defaults to cosine distance

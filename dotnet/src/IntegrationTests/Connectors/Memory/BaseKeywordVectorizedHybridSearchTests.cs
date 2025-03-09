@@ -217,8 +217,8 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             await this.CreateCollectionAndAddDataAsync(sut, vector);
 
             // Act
-            var searchResult1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
-            var searchResult2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { AdditionalPropertyName = nameof(MultiSearchStringRecord<string>.Text2) });
+            var searchResult1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], new() { AdditionalProperty = r => r.Text2 });
+            var searchResult2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { AdditionalProperty = r => r.Text2 });
 
             // Assert
             var results1 = await searchResult1.Results.ToListAsync();

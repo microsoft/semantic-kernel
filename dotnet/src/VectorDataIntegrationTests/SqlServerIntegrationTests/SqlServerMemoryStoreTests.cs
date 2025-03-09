@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -36,14 +32,8 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             .AddUserSecrets<SqlServerMemoryStore>()
             .Build();
 
-        var connectionString = configuration["SqlServer:ConnectionString"];
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new ArgumentException("SqlServer memory connection string is not configured.");
-        }
-
-        this._connectionString = connectionString;
+        this._connectionString = configuration["SqlServer:ConnectionString"]
+            ?? throw new ArgumentException("SqlServer memory connection string is not configured.");
 
         await this.CleanupDatabaseAsync();
         await this.InitializeDatabaseAsync();
@@ -79,7 +69,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync("collection1");
         await this.Store.CreateCollectionAsync("collection2");
 
-        var collections = await this.Store.GetCollectionsAsync().ToListAsync();
+        var collections = await this.Store.GetCollectionsAsync().ToArrayAsync();
         Assert.Contains("collection1", collections);
         Assert.Contains("collection2", collections);
     }
@@ -212,8 +202,8 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
         await this.InsertSampleDataAsync();
 
-        List<(MemoryRecord Record, double SimilarityScore)> results =
-            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToListAsync();
+        (MemoryRecord Record, double SimilarityScore)[] results =
+            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToArrayAsync();
 
         Assert.All(results, t => Assert.True(t.SimilarityScore > 0));
 
@@ -254,13 +244,13 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.Store.CreateCollectionAsync(DefaultCollectionName);
         await this.InsertSampleDataAsync();
 
-        List<(MemoryRecord Record, double SimilarityScore)> results =
-            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToListAsync();
+        (MemoryRecord Record, double SimilarityScore)[] results =
+            await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2).ToArrayAsync();
 
         var firstId = results[0].Record.Metadata.Id;
         var firstSimilarityScore = results[0].SimilarityScore;
 
-        results = await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToListAsync();
+        results = await this.Store.GetNearestMatchesAsync(DefaultCollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, minRelevanceScore: firstSimilarityScore + 0.0001).ToArrayAsync();
 
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }
@@ -324,18 +314,29 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
 
     private async Task InitializeDatabaseAsync()
     {
+#if NET // IAsyncDisposable is not present in Full Framework
         await using var connection = new SqlConnection(this._connectionString);
-        await connection.OpenAsync();
         await using var cmd = connection.CreateCommand();
+#else
+        using var connection = new SqlConnection(this._connectionString);
+        using var cmd = connection.CreateCommand();
+#endif
+
+        await connection.OpenAsync();
         cmd.CommandText = $"CREATE SCHEMA {SchemaName}";
         await cmd.ExecuteNonQueryAsync();
     }
 
     private async Task CleanupDatabaseAsync()
     {
+#if NET
         await using var connection = new SqlConnection(this._connectionString);
-        await connection.OpenAsync();
         await using var cmd = connection.CreateCommand();
+#else
+        using var connection = new SqlConnection(this._connectionString);
+        using var cmd = connection.CreateCommand();
+#endif
+        await connection.OpenAsync();
         cmd.CommandText = $"""
             DECLARE tables_cursor CURSOR FOR
             SELECT table_name 
