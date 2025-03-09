@@ -7,4 +7,4 @@ using Amazon.BedrockRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal interface IBedrockCommonTextEmbeddingService;
+internal interface IBedrockCommonTextEmbeddingGenerationService;

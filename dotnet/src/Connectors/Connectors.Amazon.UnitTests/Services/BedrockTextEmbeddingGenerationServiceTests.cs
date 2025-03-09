@@ -17,7 +17,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
-/// Unit tests for Bedrock Chat Completion Service.
+/// Unit tests for Bedrock Text Embedding Generation Service.
 /// </summary>
 public sealed class BedrockTextEmbeddingGenerationServiceTests
 {

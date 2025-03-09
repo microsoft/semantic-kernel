@@ -7,7 +7,7 @@ using Amazon.BedrockRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal class AmazonEmbedService : IBedrockCommonSplitTextEmbeddingService
+internal class AmazonEmbedGenerationService : IBedrockCommonSplitTextEmbeddingGenerationService
 {
     /// <inheritdoc />
     public object GetInvokeModelRequestBody(string modelId, string text)

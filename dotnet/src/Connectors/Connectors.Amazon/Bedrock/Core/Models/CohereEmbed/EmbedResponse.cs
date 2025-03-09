@@ -17,11 +17,14 @@ internal sealed class EmbedResponse
     [JsonPropertyName("inputTextTokenCount")]
     public int InputTextTokenCount { get; set; }
 
+    /// <summary>
+    /// The provided input text strings for text embedding response.
+    /// </summary>
     [JsonPropertyName("texts")]
     public IList<string>? Texts { get; set; }
 
     /// <summary>
-    /// The float array of the embedding.
+    /// A list containing float arrays of the embeddings for each text string.
     /// </summary>
     [JsonPropertyName("embedding")]
     public IList<IList<float>?>? Embeddings { get; set; }

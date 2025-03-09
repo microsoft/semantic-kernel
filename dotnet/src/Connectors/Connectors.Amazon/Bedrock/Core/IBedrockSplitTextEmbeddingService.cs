@@ -10,9 +10,9 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Bedrock input-output service to build the request and response bodies as required by the given model.
 /// <remarks>This service is used to embed a single text string at a time in models that can't handle batch inputs.</remarks>
-/// <seealso cref="IBedrockCommonBatchTextEmbeddingService"/>
+/// <seealso cref="IBedrockCommonBatchTextEmbeddingGenerationService"/>
 /// </summary>
-internal interface IBedrockCommonSplitTextEmbeddingService : IBedrockCommonTextEmbeddingService
+internal interface IBedrockCommonSplitTextEmbeddingGenerationService : IBedrockCommonTextEmbeddingGenerationService
 {
     /// <summary>
     /// Get the request body for the Invoke Model call.

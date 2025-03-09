@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 internal sealed class BedrockTextEmbeddingGenerationClient
 {
     private readonly string _modelId;
-    private readonly IBedrockCommonTextEmbeddingService _ioVectorService;
+    private readonly IBedrockCommonTextEmbeddingGenerationService _ioVectorGenerationService;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
     private readonly ILogger _logger;
 
@@ -33,7 +33,7 @@ internal sealed class BedrockTextEmbeddingGenerationClient
         var serviceFactory = new BedrockServiceFactory();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioVectorService = serviceFactory.CreateTextEmbeddingService(modelId);
+        this._ioVectorGenerationService = serviceFactory.CreateTextEmbeddingService(modelId);
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
@@ -43,10 +43,10 @@ internal sealed class BedrockTextEmbeddingGenerationClient
     {
         Verify.NotNullOrEmpty(texts);
 
-        return this._ioVectorService switch
+        return this._ioVectorGenerationService switch
         {
-            IBedrockCommonSplitTextEmbeddingService => await this.GenerateSingleEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
-            IBedrockCommonBatchTextEmbeddingService => await this.GenerateBatchEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
+            IBedrockCommonSplitTextEmbeddingGenerationService => await this.GenerateSingleEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
+            IBedrockCommonBatchTextEmbeddingGenerationService => await this.GenerateBatchEmbeddingsAsync(texts, cancellationToken).ConfigureAwait(false),
             _ => throw new NotSupportedException("Unsupported service type")
         };
     }
@@ -78,7 +78,7 @@ internal sealed class BedrockTextEmbeddingGenerationClient
         string text,
         CancellationToken cancellationToken = default)
     {
-        var splitVectorService = this._ioVectorService as IBedrockCommonSplitTextEmbeddingService;
+        var splitVectorService = this._ioVectorGenerationService as IBedrockCommonSplitTextEmbeddingGenerationService;
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
@@ -116,7 +116,7 @@ internal sealed class BedrockTextEmbeddingGenerationClient
         CancellationToken cancellationToken = default
     )
     {
-        var batchVectorService = this._ioVectorService as IBedrockCommonBatchTextEmbeddingService;
+        var batchVectorService = this._ioVectorGenerationService as IBedrockCommonBatchTextEmbeddingGenerationService;
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,

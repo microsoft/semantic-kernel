@@ -9,7 +9,7 @@ using Amazon.BedrockRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal class CohereEmbedService : IBedrockCommonBatchTextEmbeddingService
+internal class CohereEmbedGenerationService : IBedrockCommonBatchTextEmbeddingGenerationService
 {
     ///<inheritdoc />
     public object GetInvokeModelRequestBody(string modelId, IList<string> texts)

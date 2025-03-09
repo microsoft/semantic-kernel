@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
-/// The Amazon Titan Text response object when deserialized from Invoke Model call.
+/// The Amazon Titan Embed response object when deserialized from Invoke Model call.
 /// </summary>
 internal sealed class TitanTextEmbeddingResponse
 {
