@@ -4,6 +4,7 @@ using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
@@ -51,6 +52,25 @@ public class BedrockKernelBuilderExtensionTests
 
         // Assert
         Assert.IsType<BedrockChatCompletionService>(service);
+    }
+
+    /// <summary>
+    /// Checks that AddBedrockTextEmbeddingGenerationService builds a proper kernel with a non-null bedrockRuntime.
+    /// </summary>
+    [Fact]
+    public void AddBedrockTextEmbeddingGenerationCreatesServiceWithNonNullBedrockRuntime()
+    {
+        // Arrange
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var builder = Kernel.CreateBuilder();
+        builder.AddBedrockTextEmbeddingGenerationService("amazon.titan-embed-text-v2:0", bedrockRuntime);
+
+        // Act
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+
+        // Assert
+        Assert.IsType<BedrockTextEmbeddingGenerationService>(service);
     }
 
     [Fact]

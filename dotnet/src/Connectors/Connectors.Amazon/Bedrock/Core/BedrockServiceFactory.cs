@@ -125,6 +125,35 @@ internal sealed class BedrockServiceFactory
         }
     }
 
+    /// <summary>
+    /// Gets the model service for body conversion.
+    /// </summary>
+    /// <param name="modelId">The model to get the service for.</param>
+    /// <returns><see cref="IBedrockCommonTextEmbeddingGenerationService"/> object</returns>
+    /// <exception cref="NotSupportedException">Thrown if provider or model is not supported for text embedding generation.</exception>
+    internal IBedrockCommonTextEmbeddingGenerationService CreateTextEmbeddingService(string modelId)
+    {
+        (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
+
+        switch (modelProvider.ToUpperInvariant())
+        {
+            case "AMAZON":
+                if (modelName.StartsWith("titan-embed-text", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new AmazonEmbedGenerationService();
+                }
+                throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
+            case "COHERE":
+                if (modelName.StartsWith("embed-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new CohereEmbedGenerationService();
+                }
+                throw new NotSupportedException($"Unsupported Cohere model: {modelId}");
+            default:
+                throw new NotSupportedException($"Unsupported model provider: {modelProvider}");
+        }
+    }
+
     internal (string modelProvider, string modelName) GetModelProviderAndName(string modelId)
     {
         string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
