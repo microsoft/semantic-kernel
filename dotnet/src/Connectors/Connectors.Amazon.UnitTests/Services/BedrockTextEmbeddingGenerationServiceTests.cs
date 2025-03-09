@@ -1,0 +1,95 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Amazon.BedrockRuntime;
+using Amazon.BedrockRuntime.Model;
+using Amazon.Runtime.Endpoints;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Services;
+using Moq;
+using Xunit;
+
+namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
+
+/// <summary>
+/// Unit tests for Bedrock Chat Completion Service.
+/// </summary>
+public sealed class BedrockTextEmbeddingGenerationServiceTests
+{
+    /// <summary>
+    /// Checks that modelID is added to the list of service attributes when service is registered.
+    /// </summary>
+    [Fact]
+    public void AttributesShouldContainModelId()
+    {
+        // Arrange & Act
+        string modelId = "amazon.titan-embed-text-v2:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Assert
+        Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    /// <summary>
+    /// Checks that an invalid model ID cannot create a new service.
+    /// </summary>
+    [Fact]
+    public void ShouldThrowExceptionForInvalidModelId()
+    {
+        // Arrange
+        string invalidModelId = "invalid.invalid";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+
+        // Act
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(invalidModelId, mockBedrockApi.Object).Build();
+
+        // Assert
+        Assert.Throws<KernelException>(() =>
+            kernel.GetRequiredService<IChatCompletionService>());
+    }
+
+    /// <summary>
+    /// Checks that an empty model ID cannot create a new service.
+    /// </summary>
+    [Fact]
+    public void ShouldThrowExceptionForEmptyModelId()
+    {
+        // Arrange
+        string emptyModelId = string.Empty;
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+
+        // Act
+        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(emptyModelId, mockBedrockApi.Object).Build();
+
+        // Assert
+        Assert.Throws<KernelException>(() =>
+            kernel.GetRequiredService<IChatCompletionService>());
+    }
+
+    /// <summary>
+    /// Checks that an invalid BedrockRuntime object will throw an exception.
+    /// </summary>
+    [Fact]
+    public async Task ShouldThrowExceptionForNullBedrockRuntimeAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v2:0";
+        List<string> prompts = new List<string> { "King", "Queen", "Prince" };
+        IAmazonBedrockRuntime? nullBedrockRuntime = null;
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
+            var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+            await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
+        }).ConfigureAwait(true);
+    }
+}

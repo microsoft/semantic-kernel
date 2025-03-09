@@ -59,7 +59,7 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>Returns back <see cref="IKernelBuilder"/> with a configured service.</returns>
-    public static IKernelBuilder AddBedrockTextEmbeddingService(
+    public static IKernelBuilder AddBedrockTextEmbeddingGenerationService(
         this IKernelBuilder builder,
         string modelId,
         IAmazonBedrockRuntime? bedrockRuntime = null,
@@ -67,7 +67,7 @@ public static class BedrockKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddBedrockTextEmbeddingGeneration(modelId, bedrockRuntime, serviceId);
+        builder.Services.AddBedrockTextEmbeddingGenerationService(modelId, bedrockRuntime, serviceId);
 
         return builder;
     }

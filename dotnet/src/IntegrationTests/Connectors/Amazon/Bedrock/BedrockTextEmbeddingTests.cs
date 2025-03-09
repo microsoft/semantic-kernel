@@ -24,7 +24,7 @@ public class BedrockTextEmbeddingTests
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             "What is the capital of Spain?"
         ];
-        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingService(modelId).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId).Build();
         var textGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         // Act
